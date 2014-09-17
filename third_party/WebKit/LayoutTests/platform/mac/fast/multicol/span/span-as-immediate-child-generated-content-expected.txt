@@ -12,7 +12,7 @@ layer at (8,16) size 760x422
 layer at (13,21) size 750x18
   RenderBlock (anonymous multi-column) at (5,5) size 750x18
     RenderBlock (generated) at (0,0) size 367x18 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 166x18
+      RenderTextFragment at (0,0) size 166x18
         text run at (0,0) width 166: "Before Generated Content"
 layer at (13,107) size 750x326
   RenderBlock (anonymous multi-column) at (5,90.81) size 750x326
@@ -55,7 +55,7 @@ layer at (13,107) size 750x326
         text run at (0,578) width 354: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,596) width 154: "Nulla varius enim ac mi."
     RenderBlock (generated) at (0,614) size 367x20 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 156x18
+      RenderTextFragment at (0,0) size 156x18
         text run at (0,0) width 156: "After Generated Content"
 layer at (8,454) size 760x420
   RenderBlock {DIV} at (0,437.81) size 760x419.81 [border: (5px solid #800000)]
@@ -66,7 +66,7 @@ layer at (8,454) size 760x420
 layer at (13,459) size 750x324
   RenderBlock (anonymous multi-column) at (5,5) size 750x324
     RenderBlock (generated) at (0,0) size 367x18 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 166x18
+      RenderTextFragment at (0,0) size 166x18
         text run at (0,0) width 166: "Before Generated Content"
     RenderBlock (anonymous) at (0,18) size 367x612
       RenderText {#text} at (0,0) size 363x612
@@ -109,7 +109,7 @@ layer at (13,459) size 750x324
 layer at (13,851) size 750x18
   RenderBlock (anonymous multi-column) at (5,396.81) size 750x18
     RenderBlock (generated) at (0,0) size 367x20 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 156x18
+      RenderTextFragment at (0,0) size 156x18
         text run at (0,0) width 156: "After Generated Content"
 layer at (8,890) size 760x453
   RenderBlock {DIV} at (0,873.63) size 760x453.81 [border: (5px solid #800000)]
@@ -120,7 +120,7 @@ layer at (8,890) size 760x453
 layer at (13,895) size 750x142
   RenderBlock (anonymous multi-column) at (5,5) size 750x142
     RenderBlock (generated) at (0,0) size 367x18 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 166x18
+      RenderTextFragment at (0,0) size 166x18
         text run at (0,0) width 166: "Before Generated Content"
     RenderBlock {P} at (0,34) size 367x234
       RenderText {#text} at (0,0) size 363x234
@@ -166,7 +166,7 @@ layer at (13,1104) size 750x234
         text run at (0,362) width 331: "vitae pede. Lorem ipsum dolor sit amet, consectetuer"
         text run at (0,380) width 91: "adipiscing elit."
     RenderBlock (generated) at (0,430) size 367x20 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 156x18
+      RenderTextFragment at (0,0) size 156x18
         text run at (0,0) width 156: "After Generated Content"
 layer at (8,1359) size 760x438
   RenderBlock {DIV} at (0,1343.44) size 760x437.81 [border: (5px solid #800000)]
@@ -177,7 +177,7 @@ layer at (8,1359) size 760x438
 layer at (13,1364) size 750x126
   RenderBlock (anonymous multi-column) at (5,5) size 750x126
     RenderBlock (generated) at (0,0) size 367x18 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 166x18
+      RenderTextFragment at (0,0) size 166x18
         text run at (0,0) width 166: "Before Generated Content"
     RenderBlock (anonymous) at (0,18) size 367x234
       RenderText {#text} at (0,0) size 363x234
@@ -227,7 +227,7 @@ layer at (13,1558) size 750x234
         text run at (0,164) width 362: "nec felis. Sed varius turpis vitae pede. Lorem ipsum dolor"
         text run at (0,182) width 229: "sit amet, consectetuer adipiscing elit."
     RenderBlock (generated) at (0,430) size 367x20 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 156x18
+      RenderTextFragment at (0,0) size 156x18
         text run at (0,0) width 156: "After Generated Content"
 layer at (8,1813) size 760x438
   RenderBlock {DIV} at (0,1797.25) size 760x437.81 [border: (5px solid #800000)]
@@ -238,7 +238,7 @@ layer at (8,1813) size 760x438
 layer at (13,1818) size 750x234
   RenderBlock (anonymous multi-column) at (5,5) size 750x234
     RenderBlock (generated) at (0,0) size 367x18 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 166x18
+      RenderTextFragment at (0,0) size 166x18
         text run at (0,0) width 166: "Before Generated Content"
     RenderBlock (anonymous) at (0,18) size 367x198
       RenderInline {SPAN} at (0,0) size 362x198
@@ -291,7 +291,7 @@ layer at (13,2120) size 750x126
         text run at (0,164) width 362: "nec felis. Sed varius turpis vitae pede. Lorem ipsum dolor"
         text run at (0,182) width 229: "sit amet, consectetuer adipiscing elit."
     RenderBlock (generated) at (0,232) size 367x20 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 156x18
+      RenderTextFragment at (0,0) size 156x18
         text run at (0,0) width 156: "After Generated Content"
 layer at (8,2267) size 760x490
   RenderBlock {DIV} at (0,2251.06) size 760x489.81 [border: (5px solid #800000)]
@@ -306,7 +306,7 @@ layer at (8,2267) size 760x490
 layer at (13,2272) size 750x266
   RenderBlock (anonymous multi-column) at (5,5) size 750x266
     RenderBlock (generated) at (0,0) size 367x18 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 166x18
+      RenderTextFragment at (0,0) size 166x18
         text run at (0,0) width 166: "Before Generated Content"
     RenderBlock {P} at (0,34) size 367x198
       RenderText {#text} at (0,0) size 362x198
@@ -360,5 +360,5 @@ layer at (13,2642) size 750x110
           text run at (0,164) width 91: "adipiscing elit."
       RenderText {#text} at (0,0) size 0x0
     RenderBlock (generated) at (0,182) size 367x20 [bgcolor=#FFFF00]
-      RenderText at (0,0) size 156x18
+      RenderTextFragment at (0,0) size 156x18
         text run at (0,0) width 156: "After Generated Content"

@@ -5,9 +5,9 @@ layer at (0,0) size 800x479
     RenderBody {BODY} at (8,16) size 784x455 [color=#0000FF]
       RenderBlock {P} at (0,0) size 784x250
         RenderInline (generated) at (0,0) size 88x164 [color=#00FFFF]
-          RenderText {#text} at (0,3) size 88x164
+          RenderTextFragment {#text} at (0,3) size 88x164
             text run at (0,3) width 88: "T"
-        RenderText {#text} at (88,89) size 56x55
+        RenderTextFragment {#text} at (88,89) size 56x55
           text run at (88,89) width 56: "he "
         RenderInline {STRONG} at (0,0) size 205x55
           RenderText {#text} at (144,88) size 205x55
@@ -51,9 +51,9 @@ layer at (0,0) size 800x479
           text run at (0,230) width 82: "line. (TEST1)"
       RenderBlock {P} at (0,266) size 784x77
         RenderInline (generated) at (0,0) size 32x36 [color=#00FFFF]
-          RenderText {#text} at (0,0) size 32x36
+          RenderTextFragment {#text} at (0,0) size 32x36
             text run at (0,0) width 32: "\"T"
-        RenderText {#text} at (32,13) size 94x19
+        RenderTextFragment {#text} at (32,13) size 94x19
           text run at (32,13) width 94: "est\": The first "
         RenderInline {STRONG} at (0,0) size 110x19
           RenderText {#text} at (126,13) size 110x19
@@ -88,9 +88,9 @@ layer at (0,0) size 800x479
           text run at (209,57) width 390: "the paragraph must be displayed on more than one line. (TEST2)"
       RenderBlock {P} at (0,359) size 784x60
         RenderInline (generated) at (0,0) size 9x19 [color=#00FFFF]
-          RenderText {#text} at (0,0) size 9x19
+          RenderTextFragment {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "T"
-        RenderText {#text} at (9,0) size 18x19
+        RenderTextFragment {#text} at (9,0) size 18x19
           text run at (9,0) width 18: "he "
         RenderInline {STRONG} at (0,0) size 67x19
           RenderText {#text} at (27,0) size 67x19

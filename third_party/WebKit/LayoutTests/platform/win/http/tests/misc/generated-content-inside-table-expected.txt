@@ -11,5 +11,5 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (0,0) size 172x17
                   text run at (0,0) width 172: "This text should not break "
                 RenderInline (generated) at (0,0) size 5x17
-                  RenderText at (171,0) size 5x17
+                  RenderTextFragment at (171,0) size 5x17
                     text run at (171,0) width 5: "."

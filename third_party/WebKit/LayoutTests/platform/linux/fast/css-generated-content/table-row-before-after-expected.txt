@@ -23,7 +23,7 @@ layer at (0,0) size 800x112
                 text run at (3,3) width 9: "S"
           RenderTableRow {DIV} at (0,26) size 62x26
             RenderTableCell (anonymous) at (0,26) size 15x26 [bgcolor=#FFFFFF] [border: (3px solid #FFFFFF)] [r=1 c=0 rs=1 cs=1]
-              RenderText at (3,3) size 9x19
+              RenderTextFragment at (3,3) size 9x19
                 text run at (3,3) width 9: "P"
             RenderTableCell {DIV} at (15,26) size 17x26 [bgcolor=#FFFFFF] [border: (3px solid #FFFFFF)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 11x19
@@ -32,5 +32,5 @@ layer at (0,0) size 800x112
               RenderText {#text} at (3,3) size 9x19
                 text run at (3,3) width 9: "S"
             RenderTableCell (anonymous) at (47,26) size 15x26 [bgcolor=#FFFFFF] [border: (3px solid #FFFFFF)] [r=1 c=3 rs=1 cs=1]
-              RenderText at (3,3) size 9x19
+              RenderTextFragment at (3,3) size 9x19
                 text run at (3,3) width 9: "S"

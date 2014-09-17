@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
           text run at (0,1) width 770: "Inheritance bug for floated first-letter"
       RenderBlock {P} at (0,89.16) size 784x200 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
         RenderInline (generated) at (0,0) size 54x86 [color=#008000] [border: (1px dashed #008000)]
-          RenderText {#text} at (2,2) size 52x84
+          RenderTextFragment {#text} at (2,2) size 52x84
             text run at (2,2) width 52: "H"
-        RenderText {#text} at (55,48) size 763x150
+        RenderTextFragment {#text} at (55,48) size 763x150
           text run at (55,48) width 709: "ere is the first paragraph. Here the CSS :first-line rule sets the text"
           text run at (1,87) width 255: "to a green, sans-serif font. "
           text run at (256,87) width 478: "Then, the CSS :first-letter rule sets the font size to"
@@ -19,9 +19,9 @@ layer at (0,0) size 800x600
           text run at (1,171) width 100: "correctly)."
       RenderBlock {P} at (0,313.16) size 784x142 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
         RenderBlock (floating) at (1,1) size 54x88 [color=#008000] [border: (1px dashed #008000)]
-          RenderText {#text} at (1,2) size 52x84
+          RenderTextFragment {#text} at (1,2) size 52x84
             text run at (1,2) width 52: "H"
-        RenderText {#text} at (55,1) size 781x139
+        RenderTextFragment {#text} at (55,1) size 781x139
           text run at (55,1) width 727: "ere is the second paragraph. This is just like the first except that the"
           text run at (55,29) width 375: "rule p.floated:first-letter floats the first "
           text run at (430,29) width 161: "letter to the left. "

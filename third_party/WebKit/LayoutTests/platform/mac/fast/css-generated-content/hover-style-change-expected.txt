@@ -7,7 +7,7 @@ layer at (0,0) size 800x208
         RenderText {#text} at (0,0) size 82x18
           text run at (0,0) width 82: "This is a test "
         RenderInline (generated) at (0,0) size 178x18
-          RenderText at (82,0) size 178x18
+          RenderTextFragment at (82,0) size 178x18
             text run at (82,0) width 178: "and generated hover content"
       RenderBlock {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,44) size 784x36

@@ -66,7 +66,7 @@ layer at (17,18) size 80x36
       text run at (0,24) width 34: "AT ALL"
 layer at (638,18) size 20x20
   RenderBlock (positioned) at (638,18) size 20x20 [color=#FFFFFF] [bgcolor=#FF00FF]
-    RenderText at (0,0) size 20x20
+    RenderTextFragment at (0,0) size 20x20
       text run at (0,0) width 20: "X"
 layer at (10,10) size 83x46
   RenderBlock (positioned) {DIV} at (10,10) size 83x46 [color=#00000000]

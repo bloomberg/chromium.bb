@@ -5,9 +5,9 @@ layer at (0,0) size 785x1037
     RenderBody {BODY} at (8,8) size 769x1021 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 769x18
         RenderInline (generated) at (0,0) size 10x17 [color=#800000]
-          RenderText {#text} at (0,0) size 10x17
+          RenderTextFragment {#text} at (0,0) size 10x17
             text run at (0,0) width 10: "T"
-        RenderText {#text} at (9,0) size 354x17
+        RenderTextFragment {#text} at (9,0) size 354x17
           text run at (9,0) width 354: "he style declarations which apply to the text below are:"
       RenderBlock {PRE} at (0,34) size 769x112
         RenderText {#text} at (0,0) size 368x112
@@ -27,9 +27,9 @@ layer at (0,0) size 785x1037
       RenderBlock {HR} at (0,159) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,177) size 769x54
         RenderInline (generated) at (0,0) size 10x17 [color=#800000]
-          RenderText {#text} at (0,0) size 10x17
+          RenderTextFragment {#text} at (0,0) size 10x17
             text run at (0,0) width 10: "T"
-        RenderText {#text} at (9,0) size 744x53
+        RenderTextFragment {#text} at (9,0) size 744x53
           text run at (9,0) width 735: "he first letter of this paragraph, and only that one, should be maroon (dark red), while the entire first line should be"
           text run at (0,18) width 44: "green. "
           text run at (43,18) width 525: "If this precise combination does not occur, then the user agent has failed this test. "
@@ -37,9 +37,9 @@ layer at (0,0) size 785x1037
           text run at (0,36) width 505: "ensure a complete test, the paragraph must be displayed on more than one line."
       RenderBlock {P} at (0,247) size 769x183
         RenderInline (generated) at (0,0) size 69x124 [color=#800000]
-          RenderText {#text} at (0,2) size 69x124
+          RenderTextFragment {#text} at (0,2) size 69x124
             text run at (0,2) width 69: "T"
-        RenderText {#text} at (68,73) size 766x109
+        RenderTextFragment {#text} at (68,73) size 766x109
           text run at (68,73) width 634: "he first letter of this paragraph, and only that one,"
           text run at (0,129) width 754: "should be 350% bigger than the rest of the first line of this paragraph and maroon (dark red), while the entire first line"
           text run at (0,147) width 304: "should be 200% bigger than normal and green. "
@@ -48,9 +48,9 @@ layer at (0,0) size 785x1037
           text run at (57,165) width 678: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than one line."
       RenderBlock {P} at (0,446) size 769x118
         RenderInline (generated) at (0,0) size 76x62 [color=#800000]
-          RenderText {#text} at (0,1) size 76x62
+          RenderTextFragment {#text} at (0,1) size 76x62
             text run at (0,1) width 76: "\"W"
-        RenderText {#text} at (75,37) size 757x80
+        RenderTextFragment {#text} at (75,37) size 757x80
           text run at (75,37) width 340: "e should check for quotation support,\" it was said. "
           text run at (414,37) width 305: "The first two characters in this paragraph-- a"
           text run at (0,64) width 741: "double-quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon (dark red)."
@@ -71,9 +71,9 @@ layer at (0,0) size 785x1037
             RenderTableCell {TD} at (12,26) size 755x413 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x54
                 RenderInline (generated) at (0,0) size 10x17 [color=#800000]
-                  RenderText {#text} at (0,0) size 10x17
+                  RenderTextFragment {#text} at (0,0) size 10x17
                     text run at (0,0) width 10: "T"
-                RenderText {#text} at (9,0) size 744x53
+                RenderTextFragment {#text} at (9,0) size 744x53
                   text run at (9,0) width 735: "he first letter of this paragraph, and only that one, should be maroon (dark red), while the entire first line should be"
                   text run at (0,18) width 44: "green. "
                   text run at (43,18) width 525: "If this precise combination does not occur, then the user agent has failed this test. "
@@ -81,9 +81,9 @@ layer at (0,0) size 785x1037
                   text run at (0,36) width 505: "ensure a complete test, the paragraph must be displayed on more than one line."
               RenderBlock {P} at (4,74) size 747x201
                 RenderInline (generated) at (0,0) size 69x124 [color=#800000]
-                  RenderText {#text} at (0,2) size 69x124
+                  RenderTextFragment {#text} at (0,2) size 69x124
                     text run at (0,2) width 69: "T"
-                RenderText {#text} at (68,73) size 742x127
+                RenderTextFragment {#text} at (68,73) size 742x127
                   text run at (68,73) width 634: "he first letter of this paragraph, and only that one,"
                   text run at (0,129) width 726: "should be 350% bigger than the rest of the first line of this paragraph and maroon (dark red), while the entire first"
                   text run at (0,147) width 332: "line should be 200% bigger than normal and green. "
@@ -93,9 +93,9 @@ layer at (0,0) size 785x1037
                   text run at (0,183) width 56: "one line."
               RenderBlock {P} at (4,291) size 747x118
                 RenderInline (generated) at (0,0) size 76x62 [color=#800000]
-                  RenderText {#text} at (0,1) size 76x62
+                  RenderTextFragment {#text} at (0,1) size 76x62
                     text run at (0,1) width 76: "\"W"
-                RenderText {#text} at (75,37) size 744x80
+                RenderTextFragment {#text} at (75,37) size 744x80
                   text run at (75,37) width 340: "e should check for quotation support,\" it was said. "
                   text run at (414,37) width 305: "The first two characters in this paragraph-- a"
                   text run at (0,64) width 741: "double-quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon (dark red)."

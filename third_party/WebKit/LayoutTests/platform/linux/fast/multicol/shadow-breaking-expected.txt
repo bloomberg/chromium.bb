@@ -7,9 +7,9 @@ layer at (0,0) size 800x8
 layer at (20,36) size 424x289
   RenderBlock (positioned) {P} at (20,36) size 424x289 [border: (2px solid #000000)]
     RenderBlock (floating) at (2,2) size 24x43
-      RenderText {#text} at (0,1) size 24x41
+      RenderTextFragment {#text} at (0,1) size 24x41
         text run at (0,1) width 24: "L"
-    RenderText {#text} at (30,2) size 200x553
+    RenderTextFragment {#text} at (30,2) size 200x553
       text run at (30,2) width 172: "orem ipsum dolor sit"
       text run at (30,22) width 172: "amet, consectetur"
       text run at (2,42) width 200: "adipiscing elit. Cras pharetra"

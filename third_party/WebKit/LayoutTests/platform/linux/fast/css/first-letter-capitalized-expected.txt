@@ -21,9 +21,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 229: "The following lines should be identical:"
       RenderBlock {DIV} at (0,92) size 784x20
         RenderInline (generated) at (0,0) size 9x19 [color=#008000]
-          RenderText {#text} at (0,0) size 9x19
+          RenderTextFragment {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "L"
-        RenderText {#text} at (9,0) size 72x19
+        RenderTextFragment {#text} at (9,0) size 72x19
           text run at (9,0) width 72: "orem Ipsum"
       RenderBlock {P} at (0,128) size 784x20
         RenderInline {SPAN} at (0,0) size 9x19 [color=#008000]

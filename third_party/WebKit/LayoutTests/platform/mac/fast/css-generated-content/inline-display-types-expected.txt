@@ -8,13 +8,13 @@ layer at (0,0) size 800x600
           text run at (0,0) width 90: "Blocks"
       RenderBlock {DIV} at (0,58.44) size 784x18
         RenderInline (generated) at (0,0) size 35x18
-          RenderText at (0,0) size 35x18
+          RenderTextFragment at (0,0) size 35x18
             text run at (0,0) width 35: "Test: "
         RenderText {#text} at (35,0) size 46x18
           text run at (35,0) width 46: "content"
       RenderBlock {DIV} at (0,76.44) size 784x18
         RenderBlock (generated) at (0,0) size 31x18
-          RenderText at (0,0) size 31x18
+          RenderTextFragment at (0,0) size 31x18
             text run at (0,0) width 31: "Test:"
         RenderText {#text} at (31,0) size 46x18
           text run at (31,0) width 46: "content"
@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           RenderTableSection (anonymous) at (0,0) size 31x18
             RenderTableRow (anonymous) at (0,0) size 31x18
               RenderTableCell (anonymous) at (0,0) size 31x18 [r=0 c=0 rs=1 cs=1]
-                RenderText at (0,0) size 31x18
+                RenderTextFragment at (0,0) size 31x18
                   text run at (0,0) width 31: "Test:"
         RenderText {#text} at (31,0) size 46x18
           text run at (31,0) width 46: "content"
@@ -33,14 +33,14 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,192.31) size 784x54
         RenderInline {SPAN} at (0,0) size 81x18
           RenderInline (generated) at (0,0) size 35x18
-            RenderText at (0,0) size 35x18
+            RenderTextFragment at (0,0) size 35x18
               text run at (0,0) width 35: "Test: "
           RenderText {#text} at (35,0) size 46x18
             text run at (35,0) width 46: "content"
         RenderBR {BR} at (81,14) size 0x0
         RenderInline {SPAN} at (0,0) size 77x18
           RenderBlock (generated) at (0,18) size 31x18
-            RenderText at (0,0) size 31x18
+            RenderTextFragment at (0,0) size 31x18
               text run at (0,0) width 31: "Test:"
           RenderText {#text} at (31,18) size 46x18
             text run at (31,18) width 46: "content"
@@ -50,7 +50,7 @@ layer at (0,0) size 800x600
             RenderTableSection (anonymous) at (0,0) size 31x18
               RenderTableRow (anonymous) at (0,0) size 31x18
                 RenderTableCell (anonymous) at (0,0) size 31x18 [r=0 c=0 rs=1 cs=1]
-                  RenderText at (0,0) size 31x18
+                  RenderTextFragment at (0,0) size 31x18
                     text run at (0,0) width 31: "Test:"
           RenderText {#text} at (31,36) size 46x18
             text run at (31,36) width 46: "content"

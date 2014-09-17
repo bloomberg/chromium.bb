@@ -5,9 +5,9 @@ layer at (0,0) size 785x715
     RenderBody {BODY} at (8,8) size 769x699 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 769x18
         RenderInline (generated) at (0,0) size 10x17 [color=#800000]
-          RenderText {#text} at (0,0) size 10x17
+          RenderTextFragment {#text} at (0,0) size 10x17
             text run at (0,0) width 10: "T"
-        RenderText {#text} at (9,0) size 354x17
+        RenderTextFragment {#text} at (9,0) size 354x17
           text run at (9,0) width 354: "he style declarations which apply to the text below are:"
       RenderBlock {PRE} at (0,34) size 769x64
         RenderText {#text} at (0,0) size 312x64
@@ -21,9 +21,9 @@ layer at (0,0) size 785x715
       RenderBlock {HR} at (0,111) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,129) size 769x54
         RenderInline (generated) at (0,0) size 10x17 [color=#800000]
-          RenderText {#text} at (0,0) size 10x17
+          RenderTextFragment {#text} at (0,0) size 10x17
             text run at (0,0) width 10: "T"
-        RenderText {#text} at (9,0) size 766x53
+        RenderTextFragment {#text} at (9,0) size 766x53
           text run at (9,0) width 445: "he first letter of this paragraph, and only that one, should be maroon. "
           text run at (453,0) width 305: "If this precise combination does not occur, then"
           text run at (0,18) width 216: "the user agent has failed this test. "
@@ -31,9 +31,9 @@ layer at (0,0) size 785x715
           text run at (0,36) width 124: "more than one line."
       RenderBlock {P} at (0,199) size 769x73
         RenderInline (generated) at (0,0) size 20x36 [color=#800000]
-          RenderText {#text} at (0,0) size 20x36
+          RenderTextFragment {#text} at (0,0) size 20x36
             text run at (0,0) width 20: "T"
-        RenderText {#text} at (19,15) size 752x57
+        RenderTextFragment {#text} at (19,15) size 752x57
           text run at (19,15) width 626: "he first letter of this paragraph, and only that one, should be a larger font size, as well as maroon. "
           text run at (644,15) width 88: "If this precise"
           text run at (0,37) width 433: "combination does not occur, then the user agent has failed this test. "
@@ -41,9 +41,9 @@ layer at (0,0) size 785x715
           text run at (0,55) width 355: "the paragraph must be displayed on more than one line."
       RenderBlock {P} at (0,288) size 769x100
         RenderInline (generated) at (0,0) size 76x62 [color=#800000]
-          RenderText {#text} at (0,1) size 76x62
+          RenderTextFragment {#text} at (0,1) size 76x62
             text run at (0,1) width 76: "\"W"
-        RenderText {#text} at (75,37) size 754x62
+        RenderTextFragment {#text} at (75,37) size 754x62
           text run at (75,37) width 325: "e should check for quotation support,\" it was said. "
           text run at (399,37) width 339: "The first two characters in this paragraph-- a double-"
           text run at (0,64) width 628: "quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon. "
@@ -63,9 +63,9 @@ layer at (0,0) size 785x715
             RenderTableCell {TD} at (12,26) size 755x267 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x54
                 RenderInline (generated) at (0,0) size 10x17 [color=#800000]
-                  RenderText {#text} at (0,0) size 10x17
+                  RenderTextFragment {#text} at (0,0) size 10x17
                     text run at (0,0) width 10: "T"
-                RenderText {#text} at (9,0) size 726x53
+                RenderTextFragment {#text} at (9,0) size 726x53
                   text run at (9,0) width 445: "he first letter of this paragraph, and only that one, should be maroon. "
                   text run at (453,0) width 273: "If this precise combination does not occur,"
                   text run at (0,18) width 248: "then the user agent has failed this test. "
@@ -73,9 +73,9 @@ layer at (0,0) size 785x715
                   text run at (0,36) width 209: "displayed on more than one line."
               RenderBlock {P} at (4,74) size 747x73
                 RenderInline (generated) at (0,0) size 20x36 [color=#800000]
-                  RenderText {#text} at (0,0) size 20x36
+                  RenderTextFragment {#text} at (0,0) size 20x36
                     text run at (0,0) width 20: "T"
-                RenderText {#text} at (19,15) size 732x57
+                RenderTextFragment {#text} at (19,15) size 732x57
                   text run at (19,15) width 626: "he first letter of this paragraph, and only that one, should be a larger font size, as well as maroon. "
                   text run at (644,15) width 88: "If this precise"
                   text run at (0,37) width 433: "combination does not occur, then the user agent has failed this test. "
@@ -83,9 +83,9 @@ layer at (0,0) size 785x715
                   text run at (0,55) width 385: "test, the paragraph must be displayed on more than one line."
               RenderBlock {P} at (4,163) size 747x100
                 RenderInline (generated) at (0,0) size 76x62 [color=#800000]
-                  RenderText {#text} at (0,1) size 76x62
+                  RenderTextFragment {#text} at (0,1) size 76x62
                     text run at (0,1) width 76: "\"W"
-                RenderText {#text} at (75,37) size 738x62
+                RenderTextFragment {#text} at (75,37) size 738x62
                   text run at (75,37) width 325: "e should check for quotation support,\" it was said. "
                   text run at (399,37) width 339: "The first two characters in this paragraph-- a double-"
                   text run at (0,64) width 628: "quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon. "

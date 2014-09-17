@@ -19,9 +19,9 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,56) size 784x34
         RenderInline (generated) at (0,0) size 47x27
           RenderInline (generated) at (0,0) size 18x33 [color=#008000]
-            RenderText at (0,0) size 18x33
+            RenderTextFragment at (0,0) size 18x33
               text run at (0,0) width 18: "T"
-          RenderText at (18,5) size 29x27
+          RenderTextFragment at (18,5) size 29x27
             text run at (18,5) width 29: "he "
         RenderText {#text} at (47,5) size 407x27
           text run at (47,5) width 407: "first letter is green and larger than the rest."

@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
           text run at (0,12) width 29: "Foo "
         RenderRuby (inline) {RUBY} at (0,0) size 75x19
           RenderInline (generated) at (0,0) size 49x19
-            RenderText at (29,12) size 49x19
+            RenderTextFragment at (29,12) size 49x19
               text run at (29,12) width 49: "[before]"
           RenderRubyRun (anonymous) at (74,12) size 34x20
             RenderRubyText {RT} at (0,-12) size 34x12
@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (13,0) size 8x19
                 text run at (13,0) width 8: "b"
           RenderInline (generated) at (0,0) size 37x19
-            RenderText at (55,12) size 37x19
+            RenderTextFragment at (55,12) size 37x19
               text run at (55,12) width 37: "[after]"
         RenderText {#text} at (92,12) size 26x19
           text run at (92,12) width 26: " Bar"
@@ -50,7 +50,7 @@ layer at (0,0) size 800x600
           text run at (0,12) width 29: "Foo "
         RenderRuby (inline) {RUBY} at (0,0) size 112x19
           RenderInline (generated) at (0,0) size 49x19
-            RenderText at (29,12) size 49x19
+            RenderTextFragment at (29,12) size 49x19
               text run at (29,12) width 49: "[before]"
           RenderRubyRun (anonymous) at (74,12) size 34x20
             RenderRubyText {RT} at (0,-12) size 34x12
@@ -60,7 +60,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (13,0) size 8x19
                 text run at (13,0) width 8: "b"
           RenderInline (generated) at (0,0) size 37x19
-            RenderText at (104,12) size 37x19
+            RenderTextFragment at (104,12) size 37x19
               text run at (104,12) width 37: "[after]"
         RenderText {#text} at (141,12) size 26x19
           text run at (141,12) width 26: " Bar"

@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (91,0) size 72x19
             text run at (91,0) width 72: "a single line."
         RenderBlock (generated) at (0,20) size 784x20
-          RenderText at (0,0) size 184x19
+          RenderTextFragment at (0,0) size 184x19
             text run at (0,0) width 184: "This should be the second line."
       RenderBlock {DIV} at (0,96) size 784x20
         RenderBlock {DIV} at (0,0) size 784x0

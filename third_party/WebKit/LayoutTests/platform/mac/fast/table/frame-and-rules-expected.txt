@@ -9,7 +9,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (22,0) size 224x18
               text run at (22,0) width 224: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (246,0) size 5x18
+            RenderTextFragment at (246,0) size 5x18
               text run at (246,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20
           RenderTableRow {TR} at (0,0) size 273x20
@@ -58,7 +58,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (16,0) size 236x18
               text run at (16,0) width 236: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (251,0) size 6x18
+            RenderTextFragment at (251,0) size 6x18
               text run at (251,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x21
           RenderTableRow {TR} at (0,0) size 273x21
@@ -107,7 +107,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (16,0) size 236x18
               text run at (16,0) width 236: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (251,0) size 6x18
+            RenderTextFragment at (251,0) size 6x18
               text run at (251,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20
           RenderTableRow {TR} at (0,0) size 273x20
@@ -156,7 +156,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (15,0) size 238x18
               text run at (15,0) width 238: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (252,0) size 6x18
+            RenderTextFragment at (252,0) size 6x18
               text run at (252,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x21
           RenderTableRow {TR} at (0,0) size 273x21
@@ -205,7 +205,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (17,0) size 236x18
               text run at (17,0) width 236: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (252,0) size 6x18
+            RenderTextFragment at (252,0) size 6x18
               text run at (252,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x20
           RenderTableRow {TR} at (0,0) size 274x20
@@ -254,7 +254,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (26,0) size 217x18
               text run at (26,0) width 217: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (242,0) size 6x18
+            RenderTextFragment at (242,0) size 6x18
               text run at (242,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x20
           RenderTableRow {TR} at (0,0) size 274x20
@@ -303,7 +303,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (25,0) size 219x18
               text run at (25,0) width 219: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (243,0) size 6x18
+            RenderTextFragment at (243,0) size 6x18
               text run at (243,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20
           RenderTableRow {TR} at (0,0) size 273x20
@@ -352,7 +352,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (24,0) size 222x18
               text run at (24,0) width 222: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (245,0) size 6x18
+            RenderTextFragment at (245,0) size 6x18
               text run at (245,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x21
           RenderTableRow {TR} at (0,0) size 274x21
@@ -401,7 +401,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (15,0) size 240x18
               text run at (15,0) width 240: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}none\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (255,0) size 5x18
+            RenderTextFragment at (255,0) size 5x18
               text run at (255,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 274x21
           RenderTableRow {TR} at (0,0) size 274x21
@@ -450,7 +450,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (16,0) size 236x18
               text run at (16,0) width 236: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (252,0) size 5x18
+            RenderTextFragment at (252,0) size 5x18
               text run at (252,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 273x20
@@ -499,7 +499,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (10,0) size 248x18
               text run at (10,0) width 248: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (257,0) size 6x18
+            RenderTextFragment at (257,0) size 6x18
               text run at (257,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x21 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 273x21
@@ -548,7 +548,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (10,0) size 248x18
               text run at (10,0) width 248: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (257,0) size 6x18
+            RenderTextFragment at (257,0) size 6x18
               text run at (257,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 273x20
@@ -597,7 +597,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (9,0) size 250x18
               text run at (9,0) width 250: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (258,0) size 6x18
+            RenderTextFragment at (258,0) size 6x18
               text run at (258,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x21 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 273x21
@@ -646,7 +646,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (11,0) size 248x18
               text run at (11,0) width 248: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (258,0) size 6x18
+            RenderTextFragment at (258,0) size 6x18
               text run at (258,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x20 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 274x20
@@ -695,7 +695,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (20,0) size 229x18
               text run at (20,0) width 229: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (248,0) size 6x18
+            RenderTextFragment at (248,0) size 6x18
               text run at (248,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x20 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 274x20
@@ -744,7 +744,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (19,0) size 231x18
               text run at (19,0) width 231: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (249,0) size 6x18
+            RenderTextFragment at (249,0) size 6x18
               text run at (249,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 273x20
@@ -793,7 +793,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (18,0) size 234x18
               text run at (18,0) width 234: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (251,0) size 6x18
+            RenderTextFragment at (251,0) size 6x18
               text run at (251,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x21 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 274x21
@@ -842,7 +842,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (9,0) size 252x18
               text run at (9,0) width 252: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}groups\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (261,0) size 5x18
+            RenderTextFragment at (261,0) size 5x18
               text run at (261,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 274x21 [border: (1px solid #808080) none (1px solid #808080) none]
           RenderTableRow {TR} at (0,0) size 274x21
@@ -891,7 +891,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (23,0) size 222x18
               text run at (23,0) width 222: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (245,0) size 5x18
+            RenderTextFragment at (245,0) size 5x18
               text run at (245,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20
           RenderTableRow {TR} at (0,0) size 273x20
@@ -940,7 +940,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (17,0) size 234x18
               text run at (17,0) width 234: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (250,0) size 6x18
+            RenderTextFragment at (250,0) size 6x18
               text run at (250,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x21
           RenderTableRow {TR} at (0,0) size 273x21
@@ -989,7 +989,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (17,0) size 234x18
               text run at (17,0) width 234: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (250,0) size 6x18
+            RenderTextFragment at (250,0) size 6x18
               text run at (250,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20
           RenderTableRow {TR} at (0,0) size 273x20
@@ -1038,7 +1038,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (16,0) size 236x18
               text run at (16,0) width 236: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (251,0) size 6x18
+            RenderTextFragment at (251,0) size 6x18
               text run at (251,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x21
           RenderTableRow {TR} at (0,0) size 273x21
@@ -1087,7 +1087,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (18,0) size 234x18
               text run at (18,0) width 234: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (251,0) size 6x18
+            RenderTextFragment at (251,0) size 6x18
               text run at (251,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x20
           RenderTableRow {TR} at (0,0) size 274x20
@@ -1136,7 +1136,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (27,0) size 215x18
               text run at (27,0) width 215: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (241,0) size 6x18
+            RenderTextFragment at (241,0) size 6x18
               text run at (241,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x20
           RenderTableRow {TR} at (0,0) size 274x20
@@ -1185,7 +1185,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (26,0) size 217x18
               text run at (26,0) width 217: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (242,0) size 6x18
+            RenderTextFragment at (242,0) size 6x18
               text run at (242,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 273x20
           RenderTableRow {TR} at (0,0) size 273x20
@@ -1234,7 +1234,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (25,0) size 220x18
               text run at (25,0) width 220: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (244,0) size 6x18
+            RenderTextFragment at (244,0) size 6x18
               text run at (244,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 274x21
           RenderTableRow {TR} at (0,0) size 274x21
@@ -1283,7 +1283,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (16,0) size 238x18
               text run at (16,0) width 238: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}rows\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (254,0) size 5x18
+            RenderTextFragment at (254,0) size 5x18
               text run at (254,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 274x21
           RenderTableRow {TR} at (0,0) size 274x21
@@ -1332,7 +1332,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (27,0) size 216x18
               text run at (27,0) width 216: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (243,0) size 5x18
+            RenderTextFragment at (243,0) size 5x18
               text run at (243,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 275x20
           RenderTableRow {TR} at (0,0) size 275x20
@@ -1381,7 +1381,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (21,0) size 228x18
               text run at (21,0) width 228: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (248,0) size 6x18
+            RenderTextFragment at (248,0) size 6x18
               text run at (248,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 275x21
           RenderTableRow {TR} at (0,0) size 275x21
@@ -1430,7 +1430,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (21,0) size 228x18
               text run at (21,0) width 228: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (248,0) size 6x18
+            RenderTextFragment at (248,0) size 6x18
               text run at (248,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 275x20
           RenderTableRow {TR} at (0,0) size 275x20
@@ -1479,7 +1479,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (20,0) size 230x18
               text run at (20,0) width 230: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (249,0) size 6x18
+            RenderTextFragment at (249,0) size 6x18
               text run at (249,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 275x21
           RenderTableRow {TR} at (0,0) size 275x21
@@ -1528,7 +1528,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (22,0) size 228x18
               text run at (22,0) width 228: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (249,0) size 6x18
+            RenderTextFragment at (249,0) size 6x18
               text run at (249,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 276x20
           RenderTableRow {TR} at (0,0) size 276x20
@@ -1577,7 +1577,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (31,0) size 209x18
               text run at (31,0) width 209: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (239,0) size 6x18
+            RenderTextFragment at (239,0) size 6x18
               text run at (239,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 276x20
           RenderTableRow {TR} at (0,0) size 276x20
@@ -1626,7 +1626,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (30,0) size 211x18
               text run at (30,0) width 211: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (240,0) size 6x18
+            RenderTextFragment at (240,0) size 6x18
               text run at (240,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 275x20
           RenderTableRow {TR} at (0,0) size 275x20
@@ -1675,7 +1675,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (29,0) size 214x18
               text run at (29,0) width 214: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (242,0) size 6x18
+            RenderTextFragment at (242,0) size 6x18
               text run at (242,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 276x21
           RenderTableRow {TR} at (0,0) size 276x21
@@ -1724,7 +1724,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (20,0) size 232x18
               text run at (20,0) width 232: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}cols\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (252,0) size 5x18
+            RenderTextFragment at (252,0) size 5x18
               text run at (252,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 276x21
           RenderTableRow {TR} at (0,0) size 276x21
@@ -1773,7 +1773,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (31,0) size 208x18
               text run at (31,0) width 208: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (238,0) size 6x18
+            RenderTextFragment at (238,0) size 6x18
               text run at (238,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 275x20
           RenderTableRow {TR} at (0,0) size 275x20
@@ -1822,7 +1822,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (26,0) size 218x18
               text run at (26,0) width 218: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (244,0) size 5x18
+            RenderTextFragment at (244,0) size 5x18
               text run at (244,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 275x21
           RenderTableRow {TR} at (0,0) size 275x21
@@ -1871,7 +1871,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (26,0) size 218x18
               text run at (26,0) width 218: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (244,0) size 5x18
+            RenderTextFragment at (244,0) size 5x18
               text run at (244,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 275x20
           RenderTableRow {TR} at (0,0) size 275x20
@@ -1920,7 +1920,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (25,0) size 220x18
               text run at (25,0) width 220: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (245,0) size 5x18
+            RenderTextFragment at (245,0) size 5x18
               text run at (245,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 275x21
           RenderTableRow {TR} at (0,0) size 275x21
@@ -1969,7 +1969,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (27,0) size 218x18
               text run at (27,0) width 218: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (245,0) size 5x18
+            RenderTextFragment at (245,0) size 5x18
               text run at (245,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 276x20
           RenderTableRow {TR} at (0,0) size 276x20
@@ -2018,7 +2018,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (36,0) size 199x18
               text run at (36,0) width 199: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (235,0) size 5x18
+            RenderTextFragment at (235,0) size 5x18
               text run at (235,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 276x20
           RenderTableRow {TR} at (0,0) size 276x20
@@ -2067,7 +2067,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (35,0) size 201x18
               text run at (35,0) width 201: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (236,0) size 5x18
+            RenderTextFragment at (236,0) size 5x18
               text run at (236,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 275x20
           RenderTableRow {TR} at (0,0) size 275x20
@@ -2116,7 +2116,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (34,0) size 204x18
               text run at (34,0) width 204: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 5x18
-            RenderText at (238,0) size 5x18
+            RenderTextFragment at (238,0) size 5x18
               text run at (238,0) width 5: ":"
         RenderTableSection {THEAD} at (0,18) size 276x21
           RenderTableRow {TR} at (0,0) size 276x21
@@ -2165,7 +2165,7 @@ layer at (0,0) size 785x7608
             RenderText {#text} at (24,0) size 224x18
               text run at (24,0) width 224: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}all\x{201D}"
           RenderInline (generated) at (0,0) size 6x18
-            RenderText at (247,0) size 6x18
+            RenderTextFragment at (247,0) size 6x18
               text run at (247,0) width 6: ":"
         RenderTableSection {THEAD} at (0,18) size 276x21
           RenderTableRow {TR} at (0,0) size 276x21
@@ -2215,7 +2215,7 @@ layer at (393,24) size 392x150
         RenderText {#text} at (61,0) size 235x18
           text run at (61,0) width 235: "Local links to specific testcase tables"
         RenderInline (generated) at (0,0) size 6x18
-          RenderText at (295,0) size 6x18
+          RenderTextFragment at (295,0) size 6x18
             text run at (295,0) width 6: ":"
       RenderTableCol {COLGROUP} at (0,0) size 0x0
       RenderTableCol {COLGROUP} at (0,0) size 0x0

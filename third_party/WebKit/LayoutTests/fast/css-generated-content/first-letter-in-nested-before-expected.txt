@@ -12,6 +12,6 @@ layer at (0,0) size 800x600
             RenderTableRow (anonymous) at (0,0) size 100x100
               RenderTableCell (anonymous) at (0,0) size 100x100 [r=0 c=0 rs=1 cs=1]
                 RenderInline (generated) at (0,0) size 100x100
-                  RenderText at (0,0) size 100x100
+                  RenderTextFragment at (0,0) size 100x100
                     text run at (0,0) width 100: "A"
-                RenderText at (0,0) size 0x0
+                RenderTextFragment at (0,0) size 0x0

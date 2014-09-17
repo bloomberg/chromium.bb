@@ -9,7 +9,7 @@ layer at (0,0) size 800x349
             RenderTableCell (anonymous) at (0,0) size 693x317 [r=0 c=0 rs=1 cs=1]
               RenderInline (generated) at (0,0) size 13x36
                 RenderQuote at (0,0) size 13x36
-                  RenderText at (0,280) size 13x36
+                  RenderTextFragment at (0,280) size 13x36
                     text run at (0,280) width 13: "\""
               RenderText {#text} at (13,280) size 30x36
                 text run at (13,280) width 30: " A"
@@ -17,7 +17,7 @@ layer at (0,0) size 800x349
                 text run at (651,280) width 29: "B "
               RenderInline (generated) at (0,0) size 13x36
                 RenderQuote at (0,0) size 13x36
-                  RenderText at (680,280) size 13x36
+                  RenderTextFragment at (680,280) size 13x36
                     text run at (680,280) width 13: "\""
 layer at (59,16) size 608x308
   RenderPartObject {IFRAME} at (43,0) size 608x308 [border: (4px inset #EEEEEE)]

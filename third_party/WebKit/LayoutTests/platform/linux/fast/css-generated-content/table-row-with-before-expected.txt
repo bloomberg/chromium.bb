@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
             RenderTableSection (anonymous) at (0,0) size 28x20
               RenderTableRow (anonymous) at (0,0) size 28x20
                 RenderTableCell (anonymous) at (0,0) size 28x20 [r=0 c=0 rs=1 cs=1]
-                  RenderText at (0,0) size 28x19
+                  RenderTextFragment at (0,0) size 28x19
                     text run at (0,0) width 28: "hello"
           RenderBlock (anonymous) at (0,40) size 744x20
             RenderText {#text} at (0,0) size 21x19

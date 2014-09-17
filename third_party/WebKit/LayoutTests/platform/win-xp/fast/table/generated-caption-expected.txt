@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (0,0) size 29x19
                   text run at (0,0) width 29: "table"
           RenderBlock (generated) at (0,20) size 29x20
-            RenderText at (0,0) size 27x19
+            RenderTextFragment at (0,0) size 27x19
               text run at (0,0) width 27: "after"
       RenderBlock {P} at (0,128) size 784x40
         RenderTable {TABLE} at (0,0) size 29x40

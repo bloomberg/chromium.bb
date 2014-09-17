@@ -17,5 +17,5 @@ layer at (0,0) size 800x600
               RenderBlock (anonymous) at (0,41.72) size 305x20
                 RenderInline {FORM} at (0,0) size 0x0
                 RenderInline (generated) at (0,0) size 4x19
-                  RenderText at (0,0) size 4x19
+                  RenderTextFragment at (0,0) size 4x19
                     text run at (0,0) width 4: "."

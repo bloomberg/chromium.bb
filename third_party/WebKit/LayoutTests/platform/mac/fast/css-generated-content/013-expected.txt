@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {H1} at (0,0) size 784x37
         RenderInline (generated) at (0,0) size 207x37
-          RenderText at (0,0) size 207x37
+          RenderTextFragment at (0,0) size 207x37
             text run at (0,0) width 207: "First Chapter: "
         RenderText {#text} at (207,0) size 105x37
           text run at (207,0) width 105: "TEST 1"
@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 239: "Should read: \"First Chapter: TEST 1\""
       RenderBlock {H2} at (0,96.34) size 784x28
         RenderInline (generated) at (0,0) size 99x28
-          RenderText at (0,0) size 99x28
+          RenderTextFragment at (0,0) size 99x28
             text run at (0,0) width 99: "Chapter: "
         RenderText {#text} at (99,0) size 79x28
           text run at (99,0) width 79: "TEST 2"
@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 207: "Should read: \"Chapter: TEST 2\""
       RenderBlock {H3} at (0,180.97) size 784x22
         RenderInline (generated) at (0,0) size 114x22
-          RenderText at (0,0) size 114x22
+          RenderTextFragment at (0,0) size 114x22
             text run at (0,0) width 114: "Chapter One: "
         RenderText {#text} at (114,0) size 60x22
           text run at (114,0) width 60: "TEST 3"
@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 238: "Should read: \"Chapter One: TEST 3\""
       RenderBlock {H4} at (0,260.95) size 784x18
         RenderInline (generated) at (0,0) size 66x18
-          RenderText at (0,0) size 66x18
+          RenderTextFragment at (0,0) size 66x18
             text run at (0,0) width 66: "Chapter: "
         RenderText {#text} at (66,0) size 54x18
           text run at (66,0) width 54: "TEST 4"
