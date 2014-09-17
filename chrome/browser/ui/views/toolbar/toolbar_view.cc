@@ -14,7 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -271,25 +270,9 @@ void ToolbarView::Init() {
 
 void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
                                             bool visible) {
-  if (visible) {
-    // Safe to call multiple times; the bubble will only appear once.
+  // Safe to call multiple times; the bubble will only appear once.
+  if (visible)
     extension_message_bubble_factory_->MaybeShow(app_menu_);
-  }
-}
-
-void ToolbarView::OnWidgetActivationChanged(views::Widget* widget,
-                                            bool active) {
-  extensions::ExtensionCommandsGlobalRegistry* registry =
-      extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
-  if (registry) {
-    if (active) {
-      registry->set_registry_for_active_window(
-          browser_actions_->extension_keybinding_registry());
-    } else if (registry->registry_for_active_window() ==
-               browser_actions_->extension_keybinding_registry()) {
-      registry->set_registry_for_active_window(NULL);
-    }
-  }
 }
 
 void ToolbarView::Update(WebContents* tab) {

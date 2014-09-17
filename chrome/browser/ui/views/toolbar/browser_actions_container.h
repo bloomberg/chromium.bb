@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
-#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
@@ -19,6 +18,7 @@
 #include "ui/views/view.h"
 
 class BrowserActionsContainerObserver;
+class ExtensionKeybindingRegistryViews;
 class ExtensionPopup;
 
 namespace extensions {
@@ -157,11 +157,6 @@ class BrowserActionsContainer
 
   // Returns the profile this container is associated with.
   Profile* profile() const { return profile_; }
-
-  // The class that registers for keyboard shortcuts for extension commands.
-  extensions::ExtensionKeybindingRegistry* extension_keybinding_registry() {
-    return extension_keybinding_registry_.get();
-  }
 
   // Get a particular browser action view.
   BrowserActionView* GetBrowserActionViewAt(int index) {

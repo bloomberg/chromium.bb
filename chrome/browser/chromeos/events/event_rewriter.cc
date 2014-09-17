@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -103,28 +102,6 @@ bool IsISOLevel5ShiftUsedByCurrentInputMethod() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   return manager->IsISOLevel5ShiftUsedByCurrentInputMethod();
-}
-
-bool IsExtensionCommandRegistered(const ui::KeyEvent& key_event) {
-  // Some keyboard events for ChromeOS get rewritten, such as:
-  // Search+Shift+Left gets converted to Shift+Home (BeginDocument).
-  // This doesn't make sense if the user has assigned that shortcut
-  // to an extension. Because:
-  // 1) The extension would, upon seeing a request for Ctrl+Shift+Home have
-  //    to register for Shift+Home, instead.
-  // 2) The conversion is unnecessary, because Shift+Home (BeginDocument) isn't
-  //    going to be executed.
-  // Therefore, we skip converting the accelerator if an extension has
-  // registered for this shortcut.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile || !extensions::ExtensionCommandsGlobalRegistry::Get(profile))
-    return false;
-
-  int modifiers = key_event.flags() & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                       ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  ui::Accelerator accelerator(key_event.key_code(), modifiers);
-  return extensions::ExtensionCommandsGlobalRegistry::Get(profile)
-      ->IsRegistered(accelerator);
 }
 
 EventRewriter::DeviceType GetDeviceType(const std::string& device_name) {
@@ -383,8 +360,6 @@ bool EventRewriter::RewriteWithKeyboardRemappingsByKeyCode(
 ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     const ui::KeyEvent& key_event,
     scoped_ptr<ui::Event>* rewritten_event) {
-  if (IsExtensionCommandRegistered(key_event))
-    return ui::EVENT_REWRITE_CONTINUE;
   if (key_event.source_device_id() != ui::ED_UNKNOWN_DEVICE)
     DeviceKeyPressedOrReleased(key_event.source_device_id());
   MutableKeyState state = {key_event.flags(), key_event.key_code()};

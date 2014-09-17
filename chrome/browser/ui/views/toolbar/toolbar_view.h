@@ -139,8 +139,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // views::WidgetObserver:
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
                                          bool visible) OVERRIDE;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
