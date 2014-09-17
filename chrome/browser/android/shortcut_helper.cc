@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/manifest.h"
 #include "jni/ShortcutHelper_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -46,7 +47,8 @@ ShortcutHelper::ShortcutHelper(JNIEnv* env,
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       url_(web_contents->GetURL()),
-      web_app_capable_(WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED) {
+      web_app_capable_(WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED),
+      weak_ptr_factory_(this) {
 }
 
 void ShortcutHelper::Initialize() {
@@ -71,6 +73,25 @@ void ShortcutHelper::OnDidGetWebApplicationInfo(
   title_ = web_app_info.title.empty() ? web_contents()->GetTitle()
                                       : web_app_info.title;
 
+  web_contents()->GetManifest(base::Bind(&ShortcutHelper::OnDidGetManifest,
+                                         weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
+  // Set the title based on the manifest value, if any.
+  if (!manifest.short_name.is_null())
+    title_ = manifest.short_name.string();
+  else if (!manifest.name.is_null())
+    title_ = manifest.name.string();
+
+  // Set the url based on the manifest value, if any.
+  if (manifest.start_url.is_valid())
+    url_ = manifest.start_url;
+
+  // The ShortcutHelper is now able to notify its Java counterpart that it is
+  // initialized. OnInitialized method is not conceptually part of getting the
+  // manifest data but it happens that the initialization is finalized when
+  // these data are available.
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   ScopedJavaLocalRef<jstring> j_title =

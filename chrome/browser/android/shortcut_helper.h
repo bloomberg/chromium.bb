@@ -16,6 +16,7 @@
 
 namespace content {
 class WebContents;
+struct Manifest;
 }  // namespace content
 
 namespace IPC {
@@ -46,6 +47,9 @@ class ShortcutHelper : public content::WebContentsObserver {
 
   // IPC message received when the initialization is finished.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
+
+  // Callback run when the Manifest is ready to be used.
+  void OnDidGetManifest(const content::Manifest& manifest);
 
   // Adds a shortcut to the current URL to the Android home screen.
   void AddShortcut(JNIEnv* env,
@@ -83,6 +87,8 @@ class ShortcutHelper : public content::WebContentsObserver {
   WebApplicationInfo::MobileCapable web_app_capable_;
   favicon_base::FaviconRawBitmapResult icon_;
   base::CancelableTaskTracker cancelable_task_tracker_;
+
+  base::WeakPtrFactory<ShortcutHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutHelper);
 };
