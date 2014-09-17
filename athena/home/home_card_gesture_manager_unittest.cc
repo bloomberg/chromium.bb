@@ -46,13 +46,8 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
 
   // Process a gesture event for our use case.
   bool ProcessGestureEvent(ui::EventType type, int y) {
-    ui::GestureEventDetails details;
-    if (type == ui::ET_GESTURE_SCROLL_BEGIN ||
-        type == ui::ET_GESTURE_SCROLL_UPDATE)
-      details = ui::GestureEventDetails(type, 0, (y - last_y_));
-    else
-      details = ui::GestureEventDetails(type);
-    ui::GestureEvent event(0, y, ui::EF_NONE, base::TimeDelta(), details);
+    ui::GestureEvent event(0, y, ui::EF_NONE, base::TimeDelta(),
+                           ui::GestureEventDetails(type, 0, (y - last_y_)));
     if (type == ui::ET_GESTURE_SCROLL_BEGIN) {
       // Compute the position that the home card would have wrt to the top of
       // the screen if the screen had screen_bounds().

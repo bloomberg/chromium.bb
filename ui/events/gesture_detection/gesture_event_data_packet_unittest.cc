@@ -16,7 +16,7 @@ const float kTouchX = 13.7f;
 const float kTouchY = 14.2f;
 
 GestureEventData CreateGesture(EventType type) {
-  return GestureEventData(GestureEventDetails(type),
+  return GestureEventData(GestureEventDetails(type, 0, 0),
                           0,
                           MotionEvent::TOOL_TYPE_FINGER,
                           base::TimeTicks(),
