@@ -69,7 +69,9 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       const scoped_refptr<base::RefCountedString> chunk) {
     if (!OpenFileIfNeededOnFileThread())
       return;
-    fwrite(chunk->data().c_str(), strlen(chunk->data().c_str()), 1, file_);
+    size_t written = fwrite(chunk->data().c_str(),
+        strlen(chunk->data().c_str()), 1, file_);
+    DCHECK_EQ(1u, written);
   }
 
   bool OpenFileIfNeededOnFileThread() {
@@ -81,7 +83,8 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       return false;
     }
     const char preamble[] = "{\"traceEvents\": [";
-    fwrite(preamble, strlen(preamble), 1, file_);
+    size_t written = fwrite(preamble, strlen(preamble), 1, file_);
+    DCHECK_EQ(1u, written);
     return true;
   }
 
@@ -90,8 +93,12 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       fputc(']', file_);
       if (!system_trace_.empty()) {
         const char systemTraceEvents[] = ",\"systemTraceEvents\": ";
-        fwrite(systemTraceEvents, strlen(systemTraceEvents), 1, file_);
-        fwrite(system_trace_.c_str(), strlen(system_trace_.c_str()), 1, file_);
+        size_t written = fwrite(systemTraceEvents, strlen(systemTraceEvents),
+            1, file_);
+        DCHECK_EQ(1u, written);
+        written = fwrite(system_trace_.c_str(),
+            strlen(system_trace_.c_str()), 1, file_);
+        DCHECK_EQ(1u, written);
       }
       fputc('}', file_);
       base::CloseFile(file_);
