@@ -8,6 +8,7 @@ The histogram data is the same data as is visible from "chrome://histograms".
 More information can be found at: chromium/src/base/metrics/histogram.h
 """
 
+import collections
 import json
 import logging
 
@@ -57,6 +58,32 @@ def SubtractHistogram(histogram_json, start_histogram_json):
   histogram['count'] -= start_histogram['count']
 
   return json.dumps(histogram)
+
+
+def AddHistograms(histogram_jsons):
+  """Adds histograms together. Used for aggregating data.
+
+  The parameter is a list of json serializations and the returned result is a
+  json serialization too.
+
+  Note that the histograms to be added together are typically from different
+  processes.
+  """
+
+  buckets = collections.defaultdict(int)
+  for histogram_json in histogram_jsons:
+    h = json.loads(histogram_json)
+    for b in h['buckets']:
+      key = (b['low'], b['high'])
+      buckets[key] += b['count']
+
+  buckets = [{'low': key[0], 'high': key[1], 'count': value}
+      for key, value in buckets.iteritems()]
+  buckets.sort(key = lambda h : h['low'])
+
+  result_histogram = {}
+  result_histogram['buckets'] = buckets
+  return json.dumps(result_histogram)
 
 
 def GetHistogram(histogram_type, histogram_name, tab):

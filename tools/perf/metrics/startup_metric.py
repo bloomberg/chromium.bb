@@ -6,9 +6,9 @@ import json
 import logging
 
 from metrics import Metric
-from metrics import histogram_util
 
 from telemetry.core import util
+from telemetry.value import histogram_util
 from telemetry.value import scalar
 
 

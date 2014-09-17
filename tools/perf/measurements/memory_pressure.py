@@ -10,7 +10,7 @@ the entire test rather than each single page.
 
 import logging
 
-from metrics import histogram_util
+from telemetry.value import histogram_util
 from telemetry.page import page_test
 
 

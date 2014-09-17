@@ -12,11 +12,11 @@ Power usage is also measured.
 
 import time
 
-from metrics import histogram_util
 from metrics import power
 from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.value import histogram
+from telemetry.value import histogram_util
 
 # TODO: Revisit this test once multitab support is finalized.
 
