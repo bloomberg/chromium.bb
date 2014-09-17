@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -88,8 +89,7 @@ static void DispatchEventToExtension(EventRouterForwarder* event_router,
 class EventRouterForwarderTest : public testing::Test {
  protected:
   EventRouterForwarderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
         profile_manager_(
             TestingBrowserProcess::GetGlobal()) {
 #if defined(OS_MACOSX)
@@ -104,15 +104,11 @@ class EventRouterForwarderTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     // Inject a BrowserProcess with a ProfileManager.
-    ASSERT_TRUE(io_thread_.Start());
-
     profile1_ = profile_manager_.CreateTestingProfile("one");
     profile2_ = profile_manager_.CreateTestingProfile("two");
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
   scoped_ptr<base::PowerMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.

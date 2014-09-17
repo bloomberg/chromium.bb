@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "url/gurl.h"
@@ -36,6 +37,8 @@ struct DomainMatchCase {
 }  // namespace
 
 class ExtensionCookiesTest : public testing::Test {
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
