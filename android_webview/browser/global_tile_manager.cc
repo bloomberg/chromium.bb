@@ -6,6 +6,8 @@
 #include "android_webview/browser/global_tile_manager_client.h"
 #include "base/lazy_instance.h"
 
+using content::SynchronousCompositorMemoryPolicy;
+
 namespace android_webview {
 
 namespace {
@@ -30,7 +32,7 @@ void GlobalTileManager::Remove(Key key) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(mru_list_.end() != key);
 
-  total_allocated_tiles_ -= (*key)->GetNumTiles();
+  total_allocated_tiles_ -= (*key)->GetMemoryPolicy().num_resources_limit;
   mru_list_.erase(key);
   DCHECK(IsConsistent());
 }
@@ -49,8 +51,9 @@ size_t GlobalTileManager::Evict(size_t desired_num_tiles, Key key) {
     if (*it == *key)
       break;
 
-    size_t evicted_tiles = (*it)->GetNumTiles();
-    (*it)->SetNumTiles(0, true);
+    size_t evicted_tiles = (*it)->GetMemoryPolicy().num_resources_limit;
+    SynchronousCompositorMemoryPolicy zero_policy;
+    (*it)->SetMemoryPolicy(zero_policy, true);
 
     total_evicted_tiles += evicted_tiles;
     if (total_evicted_tiles >= desired_num_tiles)
@@ -64,10 +67,13 @@ void GlobalTileManager::SetTileLimit(size_t num_tiles_limit) {
   num_tiles_limit_ = num_tiles_limit;
 }
 
-void GlobalTileManager::RequestTiles(size_t new_num_of_tiles, Key key) {
+void GlobalTileManager::RequestTiles(
+    SynchronousCompositorMemoryPolicy new_policy,
+    Key key) {
   DCHECK(IsConsistent());
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  size_t old_num_of_tiles = (*key)->GetNumTiles();
+  size_t new_num_of_tiles = new_policy.num_resources_limit;
+  size_t old_num_of_tiles = (*key)->GetMemoryPolicy().num_resources_limit;
   size_t num_of_active_views = std::distance(mru_list_.begin(), key) + 1;
   size_t tiles_per_view_limit;
   if (num_of_active_views == 0)
@@ -80,7 +86,8 @@ void GlobalTileManager::RequestTiles(size_t new_num_of_tiles, Key key) {
   // Has enough tiles to satisfy the request.
   if (new_total_allocated_tiles <= num_tiles_limit_) {
     total_allocated_tiles_ = new_total_allocated_tiles;
-    (*key)->SetNumTiles(new_num_of_tiles, false);
+    new_policy.num_resources_limit = new_num_of_tiles;
+    (*key)->SetMemoryPolicy(new_policy, false);
     return;
   }
 
@@ -92,11 +99,14 @@ void GlobalTileManager::RequestTiles(size_t new_num_of_tiles, Key key) {
   if (evicted_tiles >= new_total_allocated_tiles - num_tiles_limit_) {
     new_total_allocated_tiles -= evicted_tiles;
     total_allocated_tiles_ = new_total_allocated_tiles;
-    (*key)->SetNumTiles(new_num_of_tiles, false);
+    new_policy.num_resources_limit = new_num_of_tiles;
+    (*key)->SetMemoryPolicy(new_policy, false);
     return;
   } else {
     total_allocated_tiles_ = num_tiles_limit_;
-    (*key)->SetNumTiles(tiles_left + old_num_of_tiles + evicted_tiles, false);
+    new_policy.num_resources_limit =
+        tiles_left + old_num_of_tiles + evicted_tiles;
+    (*key)->SetMemoryPolicy(new_policy, false);
     return;
   }
 }
@@ -130,7 +140,7 @@ bool GlobalTileManager::IsConsistent() const {
   size_t total_tiles = 0;
   ListType::const_iterator it;
   for (it = mru_list_.begin(); it != mru_list_.end(); it++) {
-    total_tiles += (*it)->GetNumTiles();
+    total_tiles += (*it)->GetMemoryPolicy().num_resources_limit;
   }
 
   bool is_consistent = (total_tiles <= num_tiles_limit_ &&

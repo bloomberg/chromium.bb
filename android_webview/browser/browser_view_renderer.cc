@@ -135,9 +135,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       compositor_needs_continuous_invalidate_(false),
       block_invalidates_(false),
       width_(0),
-      height_(0),
-      num_tiles_(0u),
-      num_bytes_(0u) {
+      height_(0) {
   CHECK(web_contents_);
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
 
@@ -208,22 +206,16 @@ BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
 // well as the tile resource allocation in GlobalTileManager.
 void BrowserViewRenderer::RequestMemoryPolicy(
     SynchronousCompositorMemoryPolicy& new_policy) {
-  // This will be used in SetNumTiles.
-  num_bytes_ = new_policy.bytes_limit;
-
   GlobalTileManager* manager = GlobalTileManager::GetInstance();
 
-  // The following line will call BrowserViewRenderer::SetTilesNum().
-  manager->RequestTiles(new_policy.num_resources_limit, tile_manager_key_);
+  // The following line will call BrowserViewRenderer::SetMemoryPolicy().
+  manager->RequestTiles(new_policy, tile_manager_key_);
 }
 
-void BrowserViewRenderer::SetNumTiles(size_t num_tiles,
-                                      bool effective_immediately) {
-  num_tiles_ = num_tiles;
-
-  memory_policy_.num_resources_limit = num_tiles_;
-  memory_policy_.bytes_limit = num_bytes_;
-
+void BrowserViewRenderer::SetMemoryPolicy(
+    SynchronousCompositorMemoryPolicy new_policy,
+    bool effective_immediately) {
+  memory_policy_ = new_policy;
   if (effective_immediately)
     EnforceMemoryPolicyImmediately(memory_policy_);
 }
@@ -234,8 +226,8 @@ void BrowserViewRenderer::EnforceMemoryPolicyImmediately(
   ForceFakeCompositeSW();
 }
 
-size_t BrowserViewRenderer::GetNumTiles() const {
-  return memory_policy_.num_resources_limit;
+SynchronousCompositorMemoryPolicy BrowserViewRenderer::GetMemoryPolicy() const {
+  return memory_policy_;
 }
 
 bool BrowserViewRenderer::OnDraw(jobject java_canvas,

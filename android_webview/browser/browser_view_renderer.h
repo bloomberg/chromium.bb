@@ -137,9 +137,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
   // GlobalTileManagerClient overrides.
-  virtual size_t GetNumTiles() const OVERRIDE;
-  virtual void SetNumTiles(size_t num_tiles,
-                           bool effective_immediately) OVERRIDE;
+  virtual content::SynchronousCompositorMemoryPolicy GetMemoryPolicy()
+      const OVERRIDE;
+  virtual void SetMemoryPolicy(
+      content::SynchronousCompositorMemoryPolicy new_policy,
+      bool effective_immediately) OVERRIDE;
 
   void UpdateParentDrawConstraints();
 
@@ -234,11 +236,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   GlobalTileManager::Key tile_manager_key_;
   content::SynchronousCompositorMemoryPolicy memory_policy_;
-
-  // The following 2 are used to construct a memory policy and set the memory
-  // policy on the shared_renderer_state_ atomically.
-  size_t num_tiles_;
-  size_t num_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

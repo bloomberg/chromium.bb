@@ -16,19 +16,22 @@ const size_t kDefaultNumTiles = 150;
 
 using android_webview::GlobalTileManager;
 using android_webview::GlobalTileManagerClient;
+using content::SynchronousCompositorMemoryPolicy;
 using testing::Test;
 
 class MockGlobalTileManagerClient : public GlobalTileManagerClient {
  public:
-  virtual size_t GetNumTiles() const OVERRIDE { return num_tiles_; }
-  virtual void SetNumTiles(size_t num_tiles,
-                           bool effective_immediately) OVERRIDE {
-    num_tiles_ = num_tiles;
+  virtual SynchronousCompositorMemoryPolicy GetMemoryPolicy() const OVERRIDE {
+    return memory_policy_;
+  }
+
+  virtual void SetMemoryPolicy(SynchronousCompositorMemoryPolicy new_policy,
+                               bool effective_immediately) OVERRIDE {
+    memory_policy_ = new_policy;
   }
 
   MockGlobalTileManagerClient() {
-    num_tiles_ = 0;
-    tile_request_ = kDefaultNumTiles;
+    tile_request_.num_resources_limit = kDefaultNumTiles;
     key_ = GlobalTileManager::GetInstance()->PushBack(this);
   }
 
@@ -36,12 +39,12 @@ class MockGlobalTileManagerClient : public GlobalTileManagerClient {
     GlobalTileManager::GetInstance()->Remove(key_);
   }
 
-  size_t GetTileRequest() { return tile_request_; }
+  SynchronousCompositorMemoryPolicy GetTileRequest() { return tile_request_; }
   GlobalTileManager::Key GetKey() { return key_; }
 
  private:
-  size_t num_tiles_;
-  size_t tile_request_;
+  SynchronousCompositorMemoryPolicy memory_policy_;
+  SynchronousCompositorMemoryPolicy tile_request_;
   GlobalTileManager::Key key_;
 };
 
@@ -61,7 +64,8 @@ TEST_F(GlobalTileManagerTest, RequestTilesUnderLimit) {
 
     // Ensure clients get what they asked for when the manager is under tile
     // limit.
-    EXPECT_EQ(clients[i].GetNumTiles(), kDefaultNumTiles);
+    EXPECT_EQ(clients[i].GetMemoryPolicy().num_resources_limit,
+              kDefaultNumTiles);
   }
 }
 
@@ -75,7 +79,7 @@ TEST_F(GlobalTileManagerTest, EvictHappensWhenOverLimit) {
 
   size_t total_tiles = 0;
   for (size_t i = 0; i < 4; i++) {
-    total_tiles += clients[i].GetNumTiles();
+    total_tiles += clients[i].GetMemoryPolicy().num_resources_limit;
   }
 
   // Ensure that eviction happened and kept the total number of tiles within
@@ -103,7 +107,7 @@ TEST_F(GlobalTileManagerTest, RandomizedStressRequests) {
 
   size_t total_tiles = 0;
   for (size_t i = 0; i < 100; i++) {
-    total_tiles += clients[i].GetNumTiles();
+    total_tiles += clients[i].GetMemoryPolicy().num_resources_limit;
   }
 
   // Ensure that eviction happened and kept the total number of tiles within
@@ -124,7 +128,8 @@ TEST_F(GlobalTileManagerTest, FixedOrderedRequests) {
 
   // Ensure that the total tiles are divided evenly among all clients.
   for (size_t i = 0; i < 10; i++) {
-    EXPECT_EQ(clients[i].GetNumTiles(), kNumTilesLimit / 10);
+    EXPECT_EQ(clients[i].GetMemoryPolicy().num_resources_limit,
+              kNumTilesLimit / 10);
   }
 }
 
@@ -149,11 +154,12 @@ TEST_F(GlobalTileManagerTest, FixedOrderedRequestsWithInactiveClients) {
 
   // Ensure that the total tiles are divided evenly among all clients.
   for (size_t i = 0; i < 10; i++) {
-    EXPECT_EQ(clients[i].GetNumTiles(), kNumTilesLimit / 10);
+    EXPECT_EQ(clients[i].GetMemoryPolicy().num_resources_limit,
+              kNumTilesLimit / 10);
   }
 
   // Ensure that the inactive tiles are evicted.
   for (size_t i = 11; i < 20; i++) {
-    EXPECT_EQ(clients[i].GetNumTiles(), 0u);
+    EXPECT_EQ(clients[i].GetMemoryPolicy().num_resources_limit, 0u);
   }
 }
