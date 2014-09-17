@@ -26,7 +26,7 @@ class InfoMap;
 namespace chrome_url_request_util {
 
 // Sets allowed=true to allow a chrome-extension:// resource request coming from
-// renderer A to access a resource in an extension running in renderer B.\
+// renderer A to access a resource in an extension running in renderer B.
 // Returns false when it couldn't determine if the resource is allowed or not
 bool AllowCrossRendererResourceLoad(net::URLRequest* request,
                                           bool is_incognito,
