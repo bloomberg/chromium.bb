@@ -21,31 +21,20 @@ class EasyUnlockPrivateCryptoDelegateStub
     callback.Run("", "");
   }
 
-  virtual void PerformECDHKeyAgreement(const std::string& private_key,
-                                       const std::string& public_key,
-                                       const DataCallback& callback) OVERRIDE {
+  virtual void PerformECDHKeyAgreement(
+      const easy_unlock_private::PerformECDHKeyAgreement::Params& params,
+      const DataCallback& callback) OVERRIDE {
     callback.Run("");
   }
 
   virtual void CreateSecureMessage(
-      const std::string& payload,
-      const std::string& key,
-      const std::string& associated_data,
-      const std::string& public_metadata,
-      const std::string& verification_key_id,
-      const std::string& decryption_key_id,
-      easy_unlock_private::EncryptionType encryption_type,
-      easy_unlock_private::SignatureType signature_type,
+      const easy_unlock_private::CreateSecureMessage::Params& params,
       const DataCallback& callback) OVERRIDE {
     callback.Run("");
   }
 
   virtual void UnwrapSecureMessage(
-      const std::string& message,
-      const std::string& key,
-      const std::string& associated_data,
-      easy_unlock_private::EncryptionType encryption_type,
-      easy_unlock_private::SignatureType signature_type,
+      const easy_unlock_private::UnwrapSecureMessage::Params& params,
       const DataCallback& callback) OVERRIDE {
     callback.Run("");
   }

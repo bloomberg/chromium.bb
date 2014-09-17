@@ -153,15 +153,16 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEskGenerated(
 
 void EasyUnlockCreateKeysOperation::ChallengeCreator::GeneratePayload() {
   // Work around to get HeaderAndBody bytes to use as challenge payload.
+  EasyUnlockClient::CreateSecureMessageOptions options;
+  options.key = esk_;
+  // TODO(xiyuan, tbarzic): Wrap in a GenericPublicKey proto.
+  options.verification_key_id = tpm_pub_key_;
+  options.encryption_type = easy_unlock::kEncryptionTypeAES256CBC;
+  options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   easy_unlock_client_->CreateSecureMessage(
       session_key_,
-      esk_,
-      std::string(),  // associated data
-      std::string(),  // public meta
-      tpm_pub_key_,   // TODO(xiyuan): Wrap in a GenericPublicKey proto.
-      std::string(),  // decryption key id
-      easy_unlock::kEncryptionTypeAES256CBC,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      options,
       base::Bind(&ChallengeCreator::OnPayloadMessageGenerated,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -169,12 +170,14 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::GeneratePayload() {
 void
 EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadMessageGenerated(
     const std::string& payload_message) {
+  EasyUnlockClient::UnwrapSecureMessageOptions options;
+  options.key = esk_;
+  options.encryption_type = easy_unlock::kEncryptionTypeAES256CBC;
+  options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   easy_unlock_client_->UnwrapSecureMessage(
       payload_message,
-      esk_,
-      std::string(),  // associated data
-      easy_unlock::kEncryptionTypeAES256CBC,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      options,
       base::Bind(&ChallengeCreator::OnPayloadGenerated,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -187,15 +190,15 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadGenerated(
     return;
   }
 
+  EasyUnlockClient::CreateSecureMessageOptions options;
+  options.key = esk_;
+  options.decryption_key_id = ec_public_key_;
+  options.encryption_type = easy_unlock::kEncryptionTypeAES256CBC;
+  options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   easy_unlock_client_->CreateSecureMessage(
       payload,
-      esk_,
-      std::string(),   // associated data
-      std::string(),   // public meta
-      std::string(),   // verification key id
-      ec_public_key_,  // decryption key id
-      easy_unlock::kEncryptionTypeAES256CBC,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      options,
       base::Bind(&ChallengeCreator::OnChallengeGenerated,
                  weak_ptr_factory_.GetWeakPtr()));
 }

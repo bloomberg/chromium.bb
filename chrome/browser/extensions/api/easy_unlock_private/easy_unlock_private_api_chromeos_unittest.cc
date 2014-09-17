@@ -166,16 +166,19 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
       new EasyUnlockPrivateCreateSecureMessageFunction());
   function->set_has_callback(true);
 
+  chromeos::EasyUnlockClient::CreateSecureMessageOptions create_options;
+  create_options.key = "KEY";
+  create_options.associated_data = "ASSOCIATED_DATA";
+  create_options.public_metadata = "PUBLIC_METADATA";
+  create_options.verification_key_id = "VERIFICATION_KEY_ID";
+  create_options.decryption_key_id = "DECRYPTION_KEY_ID";
+  create_options.encryption_type = easy_unlock::kEncryptionTypeAES256CBC;
+  create_options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   std::string expected_result;
   client_->CreateSecureMessage(
       "PAYLOAD",
-      "KEY",
-      "ASSOCIATED_DATA",
-      "PUBLIC_METADATA",
-      "VERIFICATION_KEY_ID",
-      "DECRYPTION_KEY_ID",
-      easy_unlock::kEncryptionTypeAES256CBC,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      create_options,
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
@@ -211,16 +214,15 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
       new EasyUnlockPrivateCreateSecureMessageFunction());
   function->set_has_callback(true);
 
+  chromeos::EasyUnlockClient::CreateSecureMessageOptions create_options;
+  create_options.key = "KEY";
+  create_options.encryption_type = easy_unlock::kEncryptionTypeNone;
+  create_options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   std::string expected_result;
   client_->CreateSecureMessage(
       "PAYLOAD",
-      "KEY",
-      "",  // associated data
-      "",  // public metadata
-      "",  // verification key id
-      "",  // decryption key id
-      easy_unlock::kEncryptionTypeNone,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      create_options,
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
@@ -244,16 +246,17 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
       new EasyUnlockPrivateCreateSecureMessageFunction());
   function->set_has_callback(true);
 
+  chromeos::EasyUnlockClient::CreateSecureMessageOptions create_options;
+  create_options.key = "KEY";
+  create_options.associated_data = "ASSOCIATED_DATA";
+  create_options.verification_key_id = "VERIFICATION_KEY_ID";
+  create_options.encryption_type = easy_unlock::kEncryptionTypeNone;
+  create_options.signature_type = easy_unlock::kSignatureTypeECDSAP256SHA256;
+
   std::string expected_result;
   client_->CreateSecureMessage(
       "PAYLOAD",
-      "KEY",
-      "ASSOCIATED_DATA",
-      "",  // public metadata
-      "VERIFICATION_KEY_ID",
-      "",  // decryption key id
-      easy_unlock::kEncryptionTypeNone,
-      easy_unlock::kSignatureTypeECDSAP256SHA256,
+      create_options,
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
@@ -284,18 +287,21 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
       new EasyUnlockPrivateUnwrapSecureMessageFunction());
   function->set_has_callback(true);
 
+  chromeos::EasyUnlockClient::UnwrapSecureMessageOptions unwrap_options;
+  unwrap_options.key = "KEY";
+  unwrap_options.associated_data = "ASSOCIATED_DATA";
+  unwrap_options.encryption_type = easy_unlock::kEncryptionTypeAES256CBC;
+  unwrap_options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   std::string expected_result;
   client_->UnwrapSecureMessage(
-      "PAYLOAD",
-      "KEY",
-      "ASSOCIATED_DATA",
-      easy_unlock::kEncryptionTypeAES256CBC,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      "MESSAGE",
+      unwrap_options,
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(StringToBinaryValue("PAYLOAD"));
+  args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
   args->Append(options);
@@ -321,13 +327,15 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
       new EasyUnlockPrivateUnwrapSecureMessageFunction());
   function->set_has_callback(true);
 
+  chromeos::EasyUnlockClient::UnwrapSecureMessageOptions unwrap_options;
+  unwrap_options.key = "KEY";
+  unwrap_options.encryption_type = easy_unlock::kEncryptionTypeNone;
+  unwrap_options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
+
   std::string expected_result;
   client_->UnwrapSecureMessage(
       "MESSAGE",
-      "KEY",
-      "",  // associated data
-      easy_unlock::kEncryptionTypeNone,
-      easy_unlock::kSignatureTypeHMACSHA256,
+      unwrap_options,
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
@@ -351,13 +359,16 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
       new EasyUnlockPrivateUnwrapSecureMessageFunction());
   function->set_has_callback(true);
 
+  chromeos::EasyUnlockClient::UnwrapSecureMessageOptions unwrap_options;
+  unwrap_options.key = "KEY";
+  unwrap_options.associated_data = "ASSOCIATED_DATA";
+  unwrap_options.encryption_type = easy_unlock::kEncryptionTypeNone;
+  unwrap_options.signature_type = easy_unlock::kSignatureTypeECDSAP256SHA256;
+
   std::string expected_result;
   client_->UnwrapSecureMessage(
       "MESSAGE",
-      "KEY",
-      "ASSOCIATED_DATA",
-      easy_unlock::kEncryptionTypeNone,
-      easy_unlock::kSignatureTypeECDSAP256SHA256,
+      unwrap_options,
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
