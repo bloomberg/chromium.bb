@@ -103,6 +103,12 @@ void StreamParserBuffer::SetConfigId(int config_id) {
     preroll_buffer_->SetConfigId(config_id);
 }
 
+int StreamParserBuffer::GetSpliceBufferConfigId(size_t index) const {
+  return index < splice_buffers().size()
+      ? splice_buffers_[index]->GetConfigId()
+      : GetConfigId();
+}
+
 void StreamParserBuffer::ConvertToSpliceBuffer(
     const BufferQueue& pre_splice_buffers) {
   DCHECK(splice_buffers_.empty());

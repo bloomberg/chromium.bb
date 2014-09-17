@@ -127,6 +127,11 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   int GetConfigId() const;
   void SetConfigId(int config_id);
 
+  // Returns the config ID of this buffer if it has no splice buffers or
+  // |index| is out of range.  Otherwise returns the config ID for the
+  // buffer in |splice_buffers_| at position |index|.
+  int GetSpliceBufferConfigId(size_t index) const;
+
   // Gets the parser's media type associated with this buffer. Value is
   // meaningless for EOS buffers.
   Type type() const { return type_; }
