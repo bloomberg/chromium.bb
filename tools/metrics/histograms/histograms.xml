@@ -48435,6 +48435,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP"/>
   <int value="6" label="PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP"/>
   <int value="7" label="PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP"/>
+  <int value="8" label="PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP"/>
 </enum>
 
 <enum name="PrerenderPageviewEvents" type="int">
@@ -54857,6 +54858,9 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="prerender is enabled with multiple simultanious prerenders."/>
   <suffix name="Prerender5minTTL"
       label="prerender is enabled, and the TTL is extended to 5 minutes."/>
+  <suffix name="PrerenderMatchComplete"
+      label="prerender is enabled, and match complete replacements are used
+             to gather extended statistics."/>
   <affected-histogram name="HttpCache.EntryLockWait"/>
   <affected-histogram name="Net.HttpTimeToFirstByte"/>
   <affected-histogram name="PLT.Abandoned"/>
@@ -54948,6 +54952,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.FinalStatus_Prerender5minTTL"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderControl"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.FinalStatus_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderMulti"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderNoUse"/>
   <affected-histogram name="Prerender.FinalStatusMatchComplete"/>
@@ -54957,6 +54962,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.FinalStatusMatchComplete_PrerenderControl"/>
   <affected-histogram
       name="Prerender.FinalStatusMatchComplete_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.FinalStatusMatchComplete_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.FinalStatusMatchComplete_PrerenderMulti"/>
   <affected-histogram name="Prerender.FinalStatusMatchComplete_PrerenderNoUse"/>
   <affected-histogram name="Prerender.FractionPixelsFinalAtSwapin"/>
@@ -54967,6 +54974,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="Prerender.FractionPixelsFinalAtSwapin_PrerenderEnabled"/>
   <affected-histogram
+      name="Prerender.FractionPixelsFinalAtSwapin_PrerenderMatchComplete"/>
+  <affected-histogram
       name="Prerender.FractionPixelsFinalAtSwapin_PrerenderMulti"/>
   <affected-histogram
       name="Prerender.FractionPixelsFinalAtSwapin_PrerenderNoUse"/>
@@ -54974,6 +54983,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.LocalPredictorEvent_Prerender5minTTL"/>
   <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderControl"/>
   <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.LocalPredictorEvent_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderMulti"/>
   <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderNoUse"/>
   <affected-histogram name="Prerender.LocalPredictorTimeUntilUsed"/>
@@ -54984,6 +54995,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.PerceivedPLT_Prerender5minTTL"/>
   <affected-histogram name="Prerender.PerceivedPLT_PrerenderControl"/>
   <affected-histogram name="Prerender.PerceivedPLT_PrerenderEnabled"/>
+  <affected-histogram name="Prerender.PerceivedPLT_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.PerceivedPLT_PrerenderMulti"/>
   <affected-histogram name="Prerender.PerceivedPLT_PrerenderNoUse"/>
   <affected-histogram name="Prerender.PerceivedPLTFirstAfterMiss"/>
@@ -54993,6 +55005,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderControl"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderMatchComplete"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMiss_PrerenderMulti"/>
   <affected-histogram
@@ -55005,6 +55019,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderEnabled"/>
   <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderMatchComplete"/>
+  <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderMulti"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissAnyOnly_PrerenderNoUse"/>
@@ -55015,6 +55031,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderControl"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderMatchComplete"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissBoth_PrerenderMulti"/>
   <affected-histogram
@@ -55028,6 +55046,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderEnabled"/>
   <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderMatchComplete"/>
+  <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderMulti"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping_PrerenderNoUse"/>
@@ -55040,6 +55060,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderEnabled"/>
   <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderMatchComplete"/>
+  <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderMulti"/>
   <affected-histogram
       name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly_PrerenderNoUse"/>
@@ -55047,6 +55069,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.PerceivedPLTMatched_Prerender5minTTL"/>
   <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderControl"/>
   <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatched_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderMulti"/>
   <affected-histogram name="Prerender.PerceivedPLTMatched_PrerenderNoUse"/>
   <affected-histogram name="Prerender.PerceivedPLTMatchedComplete"/>
@@ -55056,6 +55080,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.PerceivedPLTMatchedComplete_PrerenderControl"/>
   <affected-histogram
       name="Prerender.PerceivedPLTMatchedComplete_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTMatchedComplete_PrerenderMatchComplete"/>
   <affected-histogram
       name="Prerender.PerceivedPLTMatchedComplete_PrerenderMulti"/>
   <affected-histogram
@@ -55070,6 +55096,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="Prerender.PerceivedPLTWindowNotMatched_PrerenderEnabled"/>
   <affected-histogram
+      name="Prerender.PerceivedPLTWindowNotMatched_PrerenderMatchComplete"/>
+  <affected-histogram
       name="Prerender.PerceivedPLTWindowNotMatched_PrerenderMulti"/>
   <affected-histogram
       name="Prerender.PerceivedPLTWindowNotMatched_PrerenderNoUse"/>
@@ -55080,6 +55108,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.PercentLoadDoneAtSwapin_PrerenderControl"/>
   <affected-histogram
       name="Prerender.PercentLoadDoneAtSwapin_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PercentLoadDoneAtSwapin_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.PercentLoadDoneAtSwapin_PrerenderMulti"/>
   <affected-histogram name="Prerender.PercentLoadDoneAtSwapin_PrerenderNoUse"/>
   <affected-histogram name="Prerender.PrerenderNotSwappedInPLT"/>
@@ -55089,6 +55119,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.PrerenderNotSwappedInPLT_PrerenderControl"/>
   <affected-histogram
       name="Prerender.PrerenderNotSwappedInPLT_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.PrerenderNotSwappedInPLT_PrerenderMatchComplete"/>
   <affected-histogram name="Prerender.PrerenderNotSwappedInPLT_PrerenderMulti"/>
   <affected-histogram name="Prerender.PrerenderNotSwappedInPLT_PrerenderNoUse"/>
   <affected-histogram name="Prerender.PrerendersPerSessionCount"/>
@@ -55100,6 +55132,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderEnabled"/>
   <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderMatchComplete"/>
+  <affected-histogram
       name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderMulti"/>
   <affected-histogram
       name="Prerender.SimulatedLocalBrowsingBaselinePLT_PrerenderNoUse"/>
@@ -55110,6 +55144,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Prerender.SimulatedLocalBrowsingPLT_PrerenderControl"/>
   <affected-histogram
       name="Prerender.SimulatedLocalBrowsingPLT_PrerenderEnabled"/>
+  <affected-histogram
+      name="Prerender.SimulatedLocalBrowsingPLT_PrerenderMatchComplete"/>
   <affected-histogram
       name="Prerender.SimulatedLocalBrowsingPLT_PrerenderMulti"/>
   <affected-histogram

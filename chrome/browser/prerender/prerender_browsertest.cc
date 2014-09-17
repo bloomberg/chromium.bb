@@ -3357,6 +3357,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroupRendererInitiated) {
 // account for the MatchComplete case, and it must have a final status of
 // FINAL_STATUS_WOULD_HAVE_BEEN_USED.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
 
   std::vector<FinalStatus> expected_final_status_queue;
   expected_final_status_queue.push_back(FINAL_STATUS_INVALID_HTTP_METHOD);
@@ -3382,6 +3385,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
 // progress does not also classify the previous navigation as a MatchComplete.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MatchCompleteDummyCancelNavigation) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
+
   // Arrange for a URL to hang.
   const GURL kNoCommitUrl("http://never-respond.example.com");
   base::FilePath file(FILE_PATH_LITERAL(
@@ -3587,6 +3594,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
 // Test that prerenders abort when navigating to a stream.
 // See chrome/browser/extensions/api/streams_private/streams_private_apitest.cc
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
+
   ASSERT_TRUE(StartSpawnedTestServer());
 
   const extensions::Extension* extension = LoadExtension(
@@ -3787,6 +3798,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that canceling a MatchComplete dummy doesn't result in two
 // stop events.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelMatchCompleteDummy) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
+
   std::vector<FinalStatus> expected_final_status_queue;
   expected_final_status_queue.push_back(FINAL_STATUS_JAVASCRIPT_ALERT);
   expected_final_status_queue.push_back(FINAL_STATUS_CANCELLED);
@@ -3901,6 +3916,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that deferred redirects in a synchronous XHR abort the
 // prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
   PrerenderTestURL("files/prerender/prerender_deferred_sync_xhr.html",
                    FINAL_STATUS_BAD_DEFERRED_REDIRECT, 0);
   NavigateToDestURL();

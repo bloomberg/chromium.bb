@@ -916,6 +916,10 @@ TEST_F(PrerenderTest, NotSoRecentlyVisited) {
 
 // Tests that our PPLT dummy prerender gets created properly.
 TEST_F(PrerenderTest, PPLTDummy) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
+
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
@@ -939,6 +943,10 @@ TEST_F(PrerenderTest, PPLTDummy) {
 // Tests that our PPLT dummy prerender gets created properly, even
 // when navigating to a page that has been recently navigated to.
 TEST_F(PrerenderTest, RecentlyVisitedPPLTDummy) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
+
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
@@ -957,6 +965,10 @@ TEST_F(PrerenderTest, RecentlyVisitedPPLTDummy) {
 }
 
 TEST_F(PrerenderTest, PPLTLateCancel) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
+
   GURL url("http://www.google.com");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(

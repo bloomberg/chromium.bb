@@ -690,7 +690,8 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
       entry->match_complete_status() ==
           PrerenderContents::MATCH_COMPLETE_DEFAULT &&
       NeedMatchCompleteDummyForFinalStatus(final_status) &&
-      ActuallyPrerendering()) {
+      ActuallyPrerendering() &&
+      GetMode() == PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP) {
     // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
     // However, what if new conditions are added and
     // NeedMatchCompleteDummyForFinalStatus is not being updated.  Not sure
@@ -763,6 +764,8 @@ const char* PrerenderManager::GetModeString() {
       return "_15MinTTL";
     case PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP:
       return "_NoUse";
+    case PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP:
+      return "_MatchComplete";
     case PRERENDER_MODE_MAX:
     default:
       NOTREACHED() << "Invalid PrerenderManager mode.";
