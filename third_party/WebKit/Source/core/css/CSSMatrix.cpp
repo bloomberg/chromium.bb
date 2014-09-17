@@ -56,16 +56,12 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         return;
 
     // FIXME: crbug.com/154772 - should this continue to use legacy style parsing?
-    RefPtrWillBeRawPtr<MutableStylePropertySet> styleDeclaration = MutableStylePropertySet::create();
-    if (CSSParser::parseValue(styleDeclaration.get(), CSSPropertyWebkitTransform, string, true, HTMLStandardMode, 0)) {
-        // Convert to TransformOperations. This can fail if a property
-        // requires style (i.e., param uses 'ems' or 'exs')
-        RefPtrWillBeRawPtr<CSSValue> value = styleDeclaration->getPropertyCSSValue(CSSPropertyWebkitTransform);
-
-        // Check for a "none" or empty transform. In these cases we can use the default identity matrix.
-        if (!value || (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone))
+    if (RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyWebkitTransform, string)) {
+        // Check for a "none" transform. In these cases we can use the default identity matrix.
+        if (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone)
             return;
 
+        // FIXME: This has a null pointer crash if we use ex units (crbug.com/414145)
         DEFINE_STATIC_REF(RenderStyle, defaultStyle, RenderStyle::createDefaultStyle());
         TransformOperations operations;
         if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(defaultStyle, defaultStyle, 0, 0, 1.0f), operations)) {

@@ -41,9 +41,19 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
     return BisonCSSParser::parseValue(declaration, propertyID, string, important, parserMode, styleSheet);
 }
 
-bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const Document& document)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
-    return BisonCSSParser::parseValue(declaration, propertyID, string, important, document);
+    return BisonCSSParser::parseValue(declaration, propertyID, string, important, context);
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseSingleValue(CSSPropertyID propertyID, const String& string, const CSSParserContext& context)
+{
+    if (string.isEmpty())
+        return nullptr;
+    RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
+    bool success = parseValue(stylePropertySet.get(), propertyID, string, false, context);
+    ASSERT_UNUSED(success, success == stylePropertySet->hasProperty(propertyID));
+    return stylePropertySet->getPropertyCSSValue(propertyID);
 }
 
 PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParser::parseInlineStyleDeclaration(const String& styleString, Element* element)
@@ -64,11 +74,6 @@ PassRefPtrWillBeRawPtr<StyleKeyframe> CSSParser::parseKeyframeRule(const CSSPars
 bool CSSParser::parseSupportsCondition(const String& condition)
 {
     return BisonCSSParser(CSSParserContext(HTMLStandardMode, 0)).parseSupportsCondition(condition);
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSParser::parseFontFaceValue(const AtomicString& fontFace)
-{
-    return BisonCSSParser::parseFontFaceValue(fontFace);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseAnimationTimingFunctionValue(const String& timingFunction)

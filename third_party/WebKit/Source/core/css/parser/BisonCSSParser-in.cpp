@@ -879,22 +879,6 @@ static bool parseSimpleTransform(MutableStylePropertySet* properties, CSSPropert
 }
 
 // FIXME: Push this logic up into CSSParser
-PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const AtomicString& string)
-{
-    if (string.isEmpty())
-        return nullptr;
-    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
-    if (!parseValue(dummyStyle.get(), CSSPropertyFontFamily, string, false, HTMLQuirksMode, 0))
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSValue> fontFamily = dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily);
-    if (!fontFamily->isValueList())
-        return nullptr;
-
-    return toCSSValueList(dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily).get());
-}
-
-// FIXME: Push this logic up into CSSParser
 PassRefPtrWillBeRawPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionValue(const String& string)
 {
     if (string.isEmpty())
@@ -912,11 +896,9 @@ PassRefPtrWillBeRawPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionVal
     return valueList->item(0);
 }
 
-bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const Document& document)
+bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
     ASSERT(!string.isEmpty());
-
-    CSSParserContext context(document, UseCounter::getFrom(&document));
 
     if (parseSimpleLengthValue(declaration, propertyID, string, important, context.mode()))
         return true;

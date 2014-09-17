@@ -141,8 +141,11 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const Ato
         m_fontFaceValueCache.clear();
 
     RefPtrWillBeMember<CSSValueList>& value = m_fontFaceValueCache.add(string, nullptr).storedValue->value;
-    if (!value)
-        value = CSSParser::parseFontFaceValue(string);
+    if (!value) {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
+        if (parsedValue && parsedValue->isValueList())
+            value = toCSSValueList(parsedValue.get());
+    }
     return value;
 }
 

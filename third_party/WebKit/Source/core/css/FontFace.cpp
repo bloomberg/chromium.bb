@@ -53,6 +53,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGFontFaceSource.h"
 #include "core/svg/SVGRemoteFontFaceSource.h"
@@ -61,15 +62,10 @@
 
 namespace blink {
 
-// FIXME: This should probably live in CSSParser since the same logic is
-// duplicated elsewhere in the codebase
 static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)
 {
-    if (s.isEmpty())
-        return nullptr;
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create();
-    CSSParser::parseValue(parsedStyle.get(), propertyID, s, true, *document);
-    return parsedStyle->getPropertyCSSValue(propertyID);
+    CSSParserContext context(*document, UseCounter::getFrom(document));
+    return CSSParser::parseSingleValue(propertyID, s, context);
 }
 
 PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const FontFaceDescriptors& descriptors)

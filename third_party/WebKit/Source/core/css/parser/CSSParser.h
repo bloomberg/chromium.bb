@@ -22,9 +22,10 @@ public:
 
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
     static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&, const TextPosition& startPosition, CSSParserObserver*, bool logErrors = false);
-    // FIXME: Unify these two into a single function
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
-    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const Document&);
+
+    // This is for non-shorthands only
+    static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
 
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
 
@@ -33,7 +34,6 @@ public:
 
     static bool parseSupportsCondition(const String&);
 
-    static PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
 
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
@@ -41,6 +41,8 @@ public:
     static StyleColor colorFromRGBColorString(const String&);
 
 private:
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
+
     BisonCSSParser m_bisonParser;
 };
 

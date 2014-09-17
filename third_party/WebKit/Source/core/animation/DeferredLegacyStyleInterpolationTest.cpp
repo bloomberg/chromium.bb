@@ -22,10 +22,9 @@ protected:
         CSSParserMode parserMode = HTMLStandardMode;
         if (propertyID == CSSPropertyFloodColor)
             parserMode = SVGAttributeMode;
-        RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
-        bool parseSuccess = CSSParser::parseValue(dummyStyle.get(), propertyID, string, false, parserMode, 0);
-        ASSERT_UNUSED(parseSuccess, parseSuccess);
-        return DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*dummyStyle->getPropertyCSSValue(propertyID));
+        RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(propertyID, string, CSSParserContext(parserMode, 0));
+        ASSERT(value);
+        return DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*value);
     }
 };
 
