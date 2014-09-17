@@ -8,7 +8,7 @@ layer at (0,0) size 800x64
           RenderTableSection (anonymous) at (0,0) size 64x16
             RenderTableRow (anonymous) at (0,0) size 64x16
               RenderTableCell (anonymous) at (0,0) size 64x16 [r=0 c=0 rs=1 cs=1]
-                RenderTextFragment at (0,0) size 64x16
+                RenderText at (0,0) size 64x16
                   text run at (0,0) width 64: "ABCD"
         RenderTable {DIV} at (0,16) size 64x16
           RenderTableSection (anonymous) at (0,0) size 64x16
@@ -20,5 +20,5 @@ layer at (0,0) size 800x64
           RenderTableSection (anonymous) at (0,0) size 64x16
             RenderTableRow (anonymous) at (0,0) size 64x16
               RenderTableCell (anonymous) at (0,0) size 64x16 [r=0 c=0 rs=1 cs=1]
-                RenderTextFragment at (0,0) size 64x16
+                RenderText at (0,0) size 64x16
                   text run at (0,0) width 64: "EFGH"

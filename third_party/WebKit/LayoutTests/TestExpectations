@@ -1131,17 +1131,6 @@ crbug.com/384564 crypto/rsassa-pkcs1-v1_5-generate-key.html [ Pass Timeout ]
 crbug.com/384950 fast/forms/submit-change-fragment.html [ Pass Timeout ]
 crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pass ]
 
-Bug(dsinclair) fast/table/table-before-child-style-update.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-cell-before-after-content-around-table-block.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-cell-before-after-content-around-table-row.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-cell-before-after-content-around-table.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-row-before-after-content-around-block.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-row-before-after-content-around-table-cell.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-row-before-after-content-around-table.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-row-before-child-style-update.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-row-style-not-updated-with-after-content.html [ NeedsRebaseline ]
-Bug(dsinclair) fast/table/table-row-style-not-updated-with-before-content.html [ NeedsRebaseline ]
-
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win ] http/tests/images/drag-image-to-desktop.html [ Failure ]
