@@ -438,9 +438,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Only used for the VIDEO_HOLE logic.
   bool needs_external_surface_;
 
-  // Whether valid metadata are available
-  bool has_valid_metadata_;
-
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.
   // Accessed on main thread and on compositor thread when main thread is
