@@ -136,7 +136,7 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
     base::DictionaryValue* info = new base::DictionaryValue();
     info->SetInteger("sequence_number", it->first);
     info->SetInteger("received", it->second.ToDebuggingValue());
-    revived->Append(info);
+    received->Append(info);
   }
 
   return dict;
