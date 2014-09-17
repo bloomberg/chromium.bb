@@ -53,12 +53,12 @@ class KioskAppMenuHandler
   // NetworkStateInformer::NetworkStateInformerObserver overrides:
   virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
 
-  base::WeakPtrFactory<KioskAppMenuHandler> weak_ptr_factory_;
-
   // True when WebUI is initialized. Otherwise don't allow calling JS functions.
   bool is_webui_initialized_;
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
+
+  base::WeakPtrFactory<KioskAppMenuHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppMenuHandler);
 };

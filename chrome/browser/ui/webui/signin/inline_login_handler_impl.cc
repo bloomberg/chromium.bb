@@ -222,8 +222,8 @@ void InlineSigninHelper::OnSigninOAuthInformationFailure(
 }  // namespace
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
-      : weak_factory_(this),
-        confirm_untrusted_signin_(false) {
+      : confirm_untrusted_signin_(false),
+        weak_factory_(this) {
 }
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}

@@ -46,10 +46,11 @@ class PeopleResult : public ChromeSearchResult {
   scoped_ptr<Person> person_;
 
   gfx::ImageSkia image_;
-  base::WeakPtrFactory<PeopleResult> weak_factory_;
 
   // Caches the id of the hangouts extension.
   std::string hangouts_extension_id_;
+
+  base::WeakPtrFactory<PeopleResult> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleResult);
 };

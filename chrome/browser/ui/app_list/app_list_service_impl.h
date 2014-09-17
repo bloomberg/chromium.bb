@@ -87,10 +87,11 @@ class AppListServiceImpl : public AppListService,
       const base::FilePath& profile_path) OVERRIDE;
 
   scoped_ptr<ProfileStore> profile_store_;
-  base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
   base::CommandLine command_line_;
   PrefService* local_state_;
   scoped_ptr<ProfileLoader> profile_loader_;
+
+  base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImpl);
 };

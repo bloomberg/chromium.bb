@@ -75,11 +75,12 @@ class AutofillDialogCocoa : public AutofillDialogView,
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
   base::scoped_nsobject<AutofillDialogWindowController> sheet_delegate_;
 
+  // The delegate |this| queries for logic and state.
+  AutofillDialogViewDelegate* delegate_;
+
   // WeakPtrFactory for deferred close.
   base::WeakPtrFactory<AutofillDialogCocoa> close_weak_ptr_factory_;
 
-  // The delegate |this| queries for logic and state.
-  AutofillDialogViewDelegate* delegate_;
 };
 
 }  // autofill

@@ -98,8 +98,6 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
       const base::FilePath& screenshot_path);
 #endif
 
-  base::WeakPtrFactory<ScreenshotTaker> factory_;
-
   // The timestamp when the screenshot task was issued last time.
   base::Time last_screenshot_timestamp_;
 
@@ -108,6 +106,8 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   base::FilePath screenshot_directory_for_test_;
   std::string screenshot_basename_for_test_;
   Profile* profile_for_test_;
+
+  base::WeakPtrFactory<ScreenshotTaker> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);
 };

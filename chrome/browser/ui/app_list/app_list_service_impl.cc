@@ -229,10 +229,10 @@ void AppListServiceImpl::SendAppListStats() {
 AppListServiceImpl::AppListServiceImpl()
     : profile_store_(
           new ProfileStoreImpl(g_browser_process->profile_manager())),
-      weak_factory_(this),
       command_line_(*CommandLine::ForCurrentProcess()),
       local_state_(g_browser_process->local_state()),
-      profile_loader_(new ProfileLoader(profile_store_.get())) {
+      profile_loader_(new ProfileLoader(profile_store_.get())),
+      weak_factory_(this) {
   profile_store_->AddProfileObserver(this);
 }
 
@@ -240,10 +240,10 @@ AppListServiceImpl::AppListServiceImpl(const CommandLine& command_line,
                                        PrefService* local_state,
                                        scoped_ptr<ProfileStore> profile_store)
     : profile_store_(profile_store.Pass()),
-      weak_factory_(this),
       command_line_(command_line),
       local_state_(local_state),
-      profile_loader_(new ProfileLoader(profile_store_.get())) {
+      profile_loader_(new ProfileLoader(profile_store_.get())),
+      weak_factory_(this) {
   profile_store_->AddProfileObserver(this);
 }
 

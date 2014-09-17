@@ -77,12 +77,12 @@ class MessageCenterTrayBridge :
   // Obj-C controller for the on-screen popup notifications.
   base::scoped_nsobject<MCPopupCollection> popup_collection_;
 
-  // Weak pointer factory to posts tasks to self.
-  base::WeakPtrFactory<MessageCenterTrayBridge> weak_ptr_factory_;
-
   // A PrefMember that calls OnShowStatusItemChanged when the pref is updated
   // by the user's selection in the main menu.
   BooleanPrefMember show_status_item_;
+
+  // Weak pointer factory to posts tasks to self.
+  base::WeakPtrFactory<MessageCenterTrayBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterTrayBridge);
 };

@@ -31,9 +31,9 @@ class DevToolsUI : public content::WebUIController,
                         DevToolsAndroidBridge::RemotePage* page);
 
   DevToolsUIBindings bindings_;
-  base::WeakPtrFactory<DevToolsUI> weak_factory_;
   GURL remote_frontend_loading_url_;
   GURL remote_page_opening_url_;
+  base::WeakPtrFactory<DevToolsUI> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsUI);
 };
 

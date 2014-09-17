@@ -339,11 +339,11 @@ class PrintPreviewHandler
       privet_local_print_operation_;
 #endif
 
-  base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
-
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.
   base::Closure pdf_file_saved_closure_;
+
+  base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };

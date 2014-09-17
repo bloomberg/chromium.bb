@@ -35,9 +35,9 @@ const char kKioskShowErrorOldAPI[] = "login.AppsMenuButton.showError";
 
 KioskAppMenuHandler::KioskAppMenuHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
-    : weak_ptr_factory_(this),
-      is_webui_initialized_(false),
-      network_state_informer_(network_state_informer) {
+    : is_webui_initialized_(false),
+      network_state_informer_(network_state_informer),
+      weak_ptr_factory_(this) {
   KioskAppManager::Get()->AddObserver(this);
   network_state_informer_->AddObserver(this);
 }

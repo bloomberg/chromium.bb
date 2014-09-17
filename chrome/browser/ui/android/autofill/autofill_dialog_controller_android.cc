@@ -514,8 +514,8 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
       source_url_(source_url),
       callback_(callback),
       cares_about_shipping_(true),
-      weak_ptr_factory_(this),
-      was_ui_latency_logged_(false) {
+      was_ui_latency_logged_(false),
+      weak_ptr_factory_(this) {
   DCHECK(!callback_.is_null());
 }
 

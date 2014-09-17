@@ -389,8 +389,8 @@ const int GetScreenshotNotificationText(
 }  // namespace
 
 ScreenshotTaker::ScreenshotTaker()
-    : factory_(this),
-      profile_for_test_(NULL) {
+    : profile_for_test_(NULL),
+      factory_(this) {
 }
 
 ScreenshotTaker::~ScreenshotTaker() {

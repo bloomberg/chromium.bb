@@ -22,8 +22,8 @@ AutofillDialogView* AutofillDialogView::Create(
 }
 
 AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogViewDelegate* delegate)
-    : close_weak_ptr_factory_(this),
-      delegate_(delegate) {
+    : delegate_(delegate),
+      close_weak_ptr_factory_(this) {
 }
 
 AutofillDialogCocoa::~AutofillDialogCocoa() {

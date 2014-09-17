@@ -235,7 +235,6 @@ class SystemTrayDelegateChromeOS
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
 
-  base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
@@ -257,6 +256,8 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
   base::ScopedPtrHashMap<std::string, ash::tray::UserAccountsDelegate>
       accounts_delegates_;
+
+  base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateChromeOS);
 };

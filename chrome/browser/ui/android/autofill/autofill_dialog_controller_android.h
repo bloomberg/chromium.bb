@@ -94,14 +94,14 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   // we should show a shipping section.
   bool cares_about_shipping_;
 
-  base::WeakPtrFactory<AutofillDialogControllerAndroid>
-      weak_ptr_factory_;
-
   // Whether the latency to display to the UI was logged to UMA yet.
   bool was_ui_latency_logged_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+
+  base::WeakPtrFactory<AutofillDialogControllerAndroid>
+      weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerAndroid);
 };
