@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
-#include "core/frame/UseCounter.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/NotificationClient.h"
 #include "modules/notifications/NotificationController.h"
@@ -157,7 +156,6 @@ const String& Notification::permissionString(NotificationClient::Permission perm
 
 const String& Notification::permission(ExecutionContext* context)
 {
-    UseCounter::count(context, UseCounter::NotificationPermission);
     return permissionString(NotificationController::clientFrom(context).checkPermission(context));
 }
 
@@ -165,7 +163,6 @@ void Notification::requestPermission(ExecutionContext* context, PassOwnPtrWillBe
 {
     // FIXME: Assert that this code-path will only be reached for Document environments
     // when Blink supports [Exposed] annotations on class members in IDL definitions.
-
     if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context)) {
         permissionClient->requestPermission(context, callback);
         return;

@@ -499,6 +499,9 @@ public:
         MixedContentPrivateHostnameInPublicHostname = 530,
         LegacyProtocolEmbeddedAsSubresource = 531,
         RequestedSubresourceWithEmbeddedCredentials = 532,
+        NotificationCreated = 533,
+        NotificationClosed = 534,
+        NotificationPermissionRequested = 535,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

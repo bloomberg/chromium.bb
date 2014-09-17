@@ -34,10 +34,11 @@
     ActiveDOMObject,
     Constructor(DOMString title, optional NotificationOptions options),
     ConstructorCallWith=ExecutionContext,
+    MeasureAs=NotificationCreated,
     RuntimeEnabled=Notifications,
 ] interface Notification : EventTarget {
-    [CallWith=ExecutionContext] static readonly attribute DOMString permission;
-    [CallWith=ExecutionContext] static void requestPermission(optional NotificationPermissionCallback callback);
+    [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute DOMString permission;
+    [CallWith=ExecutionContext, MeasureAs=NotificationPermissionRequested] static void requestPermission(optional NotificationPermissionCallback callback);
 
     // FIXME: Implement the Notification.get() method.
 
@@ -53,5 +54,5 @@
     readonly attribute DOMString tag;
     readonly attribute DOMString icon;
 
-    void close();
+    [MeasureAs=NotificationClosed] void close();
 };
