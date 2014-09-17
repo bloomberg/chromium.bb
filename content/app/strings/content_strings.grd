@@ -457,6 +457,14 @@ below:
       <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON" desc="accessibility role description for hide closed captions button">
         hide closed captions
       </message>
+      
+      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="accessibility role description for remote playback button">
+        play on remote device
+      </message>
+      
+      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON" desc="accessibility role description for remote playback control button">
+        control remote playback
+      </message>
 
       <message name="IDS_AX_MEDIA_AUDIO_ELEMENT_HELP" desc="Accessible help of audio controls">
         audio
@@ -516,6 +524,14 @@ below:
 
       <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON_HELP" desc="accessibility help description for hide closed captions button">
         stop displaying closed captions
+      </message>
+
+      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON_HELP" desc="accessibility help description for remote playback button">
+        play on remote device
+      </message>
+      
+      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON_HELP" desc="accessibility help description for remote playback control button">
+        control remote playback
       </message>
 
       <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessible description of the millisecond field in a date/time control">

@@ -73,6 +73,12 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   // Destroys the player in the browser process
   void DestroyPlayer(int player_id);
 
+  // Requests remote playback if possible
+  void RequestRemotePlayback(int player_id);
+
+  // Requests control of remote playback
+  void RequestRemotePlaybackControl(int player_id);
+
   // Requests the player to enter fullscreen.
   void EnterFullscreen(int player_id, blink::WebFrame* frame);
 
@@ -147,6 +153,7 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
   void OnRequestFullscreen(int player_id);
+  void OnRemoteRouteAvailabilityChanged(int player_id, bool routes_available);
   void OnPauseVideo();
 
   // Release all video player resources.

@@ -225,6 +225,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON;
     case WebLocalizedString::AXMediaHideClosedCaptionsButton:
       return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON;
+    case WebLocalizedString::AxMediaCastOffButton:
+      return IDS_AX_MEDIA_CAST_OFF_BUTTON;
+    case WebLocalizedString::AxMediaCastOnButton:
+      return IDS_AX_MEDIA_CAST_ON_BUTTON;
     case WebLocalizedString::AXMediaAudioElementHelp:
       return IDS_AX_MEDIA_AUDIO_ELEMENT_HELP;
     case WebLocalizedString::AXMediaVideoElementHelp:
@@ -255,6 +259,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON_HELP;
     case WebLocalizedString::AXMediaHideClosedCaptionsButtonHelp:
       return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON_HELP;
+    case WebLocalizedString::AxMediaCastOffButtonHelp:
+      return IDS_AX_MEDIA_CAST_OFF_BUTTON_HELP;
+    case WebLocalizedString::AxMediaCastOnButtonHelp:
+      return IDS_AX_MEDIA_CAST_ON_BUTTON_HELP;
     case WebLocalizedString::AXMillisecondFieldText:
       return IDS_AX_MILLISECOND_FIELD_TEXT;
     case WebLocalizedString::AXMinuteFieldText:
@@ -760,6 +768,10 @@ const DataResource kDataResources[] = {
     IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
   { "mediaplayerFullscreenDown",
     IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerCastOff",
+    IDR_MEDIAPLAYER_CAST_BUTTON_OFF, ui::SCALE_FACTOR_100P },
+  { "mediaplayerCastOn",
+    IDR_MEDIAPLAYER_CAST_BUTTON_ON, ui::SCALE_FACTOR_100P },
   { "mediaplayerFullscreenDisabled",
     IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DISABLED, ui::SCALE_FACTOR_100P },
   { "mediaplayerOverlayPlay",

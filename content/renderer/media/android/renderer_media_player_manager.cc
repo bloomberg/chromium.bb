@@ -56,6 +56,8 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_PauseVideo, OnPauseVideo)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_RemoteRouteAvailabilityChanged,
+                        OnRemoteRouteAvailabilityChanged)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -112,6 +114,15 @@ void RendererMediaPlayerManager::ReleaseResources(int player_id) {
 
 void RendererMediaPlayerManager::DestroyPlayer(int player_id) {
   Send(new MediaPlayerHostMsg_DestroyMediaPlayer(routing_id(), player_id));
+}
+
+void RendererMediaPlayerManager::RequestRemotePlayback(int player_id) {
+  Send(new MediaPlayerHostMsg_RequestRemotePlayback(routing_id(), player_id));
+}
+
+void RendererMediaPlayerManager::RequestRemotePlaybackControl(int player_id) {
+  Send(new MediaPlayerHostMsg_RequestRemotePlaybackControl(routing_id(),
+                                                           player_id));
 }
 
 void RendererMediaPlayerManager::OnMediaMetadataChanged(
@@ -230,6 +241,13 @@ void RendererMediaPlayerManager::OnPauseVideo() {
   ReleaseVideoResources();
 }
 
+void RendererMediaPlayerManager::OnRemoteRouteAvailabilityChanged(
+    int player_id,
+    bool routes_available) {
+  WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
+  if (player)
+    player->OnRemoteRouteAvailabilityChanged(routes_available);
+}
 void RendererMediaPlayerManager::EnterFullscreen(int player_id,
                                                  blink::WebFrame* frame) {
   pending_fullscreen_frame_ = frame;

@@ -517,6 +517,15 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
     fullscreen_player_id_ = -1;
 }
 
+void BrowserMediaPlayerManager::OnRequestRemotePlayback(int /* player_id */) {
+  // Does nothing if we don't have a remote player
+}
+
+void BrowserMediaPlayerManager::OnRequestRemotePlaybackControl(
+    int /* player_id */) {
+  // Does nothing if we don't have a remote player
+}
+
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
   DCHECK(!GetPlayer(player->player_id()));
   players_.push_back(player);

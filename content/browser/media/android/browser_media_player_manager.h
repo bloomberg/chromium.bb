@@ -118,6 +118,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSetPoster(int player_id, const GURL& poster);
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
+  virtual void OnRequestRemotePlayback(int player_id);
+  virtual void OnRequestRemotePlaybackControl(int player_id);
   virtual void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player);
 #if defined(VIDEO_HOLE)
   void OnNotifyExternalSurface(

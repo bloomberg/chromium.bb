@@ -334,6 +334,14 @@ void WebMediaPlayerAndroid::pause() {
   Pause(true);
 }
 
+void WebMediaPlayerAndroid::requestRemotePlayback() {
+  player_manager_->RequestRemotePlayback(player_id_);
+}
+
+void WebMediaPlayerAndroid::requestRemotePlaybackControl() {
+  player_manager_->RequestRemotePlaybackControl(player_id_);
+}
+
 void WebMediaPlayerAndroid::seek(double seconds) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
@@ -905,6 +913,7 @@ void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(
   DrawRemotePlaybackText(remote_playback_message);
   is_remote_ = true;
   SetNeedsEstablishPeer(false);
+  client_->connectedToRemoteDevice();
 }
 
 void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
@@ -915,6 +924,7 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
     EstablishSurfaceTexturePeer();
   is_remote_ = false;
   ReallocateVideoFrame();
+  client_->disconnectedFromRemoteDevice();
 }
 
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
@@ -952,6 +962,11 @@ void WebMediaPlayerAndroid::OnMediaPlayerPause() {
 
 void WebMediaPlayerAndroid::OnRequestFullscreen() {
   client_->requestFullscreen();
+}
+
+void WebMediaPlayerAndroid::OnRemoteRouteAvailabilityChanged(
+    bool routes_available) {
+  client_->remoteRouteAvailabilityChanged(routes_available);
 }
 
 void WebMediaPlayerAndroid::OnDurationChanged(const base::TimeDelta& duration) {

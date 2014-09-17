@@ -108,6 +108,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
+  virtual void requestRemotePlayback();
+  virtual void requestRemotePlaybackControl();
   virtual blink::WebTimeRanges buffered() const;
   virtual double maxTimeSeekable() const;
 
@@ -199,6 +201,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnMediaPlayerPlay();
   void OnMediaPlayerPause();
   void OnRequestFullscreen();
+  void OnRemoteRouteAvailabilityChanged(bool routes_available);
 
   // StreamTextureFactoryContextObserver implementation.
   virtual void ResetStreamTextureProxy() OVERRIDE;
