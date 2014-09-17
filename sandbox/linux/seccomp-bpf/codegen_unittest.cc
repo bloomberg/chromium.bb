@@ -46,30 +46,28 @@ enum { NO_FLAGS = 0x0000, HAS_MERGEABLE_TAILS = 0x0001, };
 
 Instruction* SampleProgramOneInstruction(CodeGen* codegen, int* flags) {
   // Create the most basic valid BPF program:
-  //    RET ERR_ALLOWED
+  //    RET 0
   *flags = NO_FLAGS;
-  return codegen->MakeInstruction(BPF_RET + BPF_K,
-                                  ErrorCode(ErrorCode::ERR_ALLOWED));
+  return codegen->MakeInstruction(BPF_RET + BPF_K, 0);
 }
 
 Instruction* SampleProgramSimpleBranch(CodeGen* codegen, int* flags) {
   // Create a program with a single branch:
   //    JUMP if eq 42 then $0 else $1
-  // 0: RET EPERM
-  // 1: RET ERR_ALLOWED
+  // 0: RET 1
+  // 1: RET 0
   *flags = NO_FLAGS;
   return codegen->MakeInstruction(
       BPF_JMP + BPF_JEQ + BPF_K,
       42,
-      codegen->MakeInstruction(BPF_RET + BPF_K, ErrorCode(EPERM)),
-      codegen->MakeInstruction(BPF_RET + BPF_K,
-                               ErrorCode(ErrorCode::ERR_ALLOWED)));
+      codegen->MakeInstruction(BPF_RET + BPF_K, 1),
+      codegen->MakeInstruction(BPF_RET + BPF_K, 0));
 }
 
 Instruction* SampleProgramAtypicalBranch(CodeGen* codegen, int* flags) {
   // Create a program with a single branch:
   //    JUMP if eq 42 then $0 else $0
-  // 0: RET ERR_ALLOWED
+  // 0: RET 0
 
   // N.B.: As the instructions in both sides of the branch are already
   //       the same object, we do not actually have any "mergeable" branches.
@@ -77,7 +75,7 @@ Instruction* SampleProgramAtypicalBranch(CodeGen* codegen, int* flags) {
   *flags = NO_FLAGS;
 
   Instruction* ret = codegen->MakeInstruction(
-      BPF_RET + BPF_K, ErrorCode(ErrorCode::ERR_ALLOWED));
+      BPF_RET + BPF_K, 0);
   return codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, ret, ret);
 }
 
@@ -88,9 +86,9 @@ Instruction* SampleProgramComplex(CodeGen* codegen, int* flags) {
   // 1: JUMP if eq 42 then $2 else $4    (insn4)
   // 2: JUMP to $3                       (insn1)
   // 3: LD 42                            (insn0)
-  //    RET ErrorCode(42)                (insn2)
+  //    RET 42                           (insn2)
   // 4: LD 42                            (insn3)
-  //    RET ErrorCode(42)                (insn3+)
+  //    RET 42                           (insn3+)
   *flags = HAS_MERGEABLE_TAILS;
 
   Instruction* insn0 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42);
@@ -104,7 +102,7 @@ Instruction* SampleProgramComplex(CodeGen* codegen, int* flags) {
   SANDBOX_ASSERT(insn1->code == BPF_JMP + BPF_JA);
   SANDBOX_ASSERT(insn1->jt_ptr == insn0);
 
-  Instruction* insn2 = codegen->MakeInstruction(BPF_RET + BPF_K, ErrorCode(42));
+  Instruction* insn2 = codegen->MakeInstruction(BPF_RET + BPF_K, 42);
   SANDBOX_ASSERT(insn2);
   SANDBOX_ASSERT(insn2->code == BPF_RET + BPF_K);
   SANDBOX_ASSERT(insn2->next == NULL);
@@ -114,7 +112,7 @@ Instruction* SampleProgramComplex(CodeGen* codegen, int* flags) {
   Instruction* insn3 = codegen->MakeInstruction(
       BPF_LD + BPF_W + BPF_ABS,
       42,
-      codegen->MakeInstruction(BPF_RET + BPF_K, ErrorCode(42)));
+      codegen->MakeInstruction(BPF_RET + BPF_K, 42));
 
   Instruction* insn4 =
       codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, insn1, insn3);
@@ -162,12 +160,12 @@ Instruction* SampleProgramConfusingTails(CodeGen* codegen, int* flags) {
   //  3) if A == 0x2; then JMP 4 else JMP 5
   //  4) LOAD 0  // System call number
   //  5) if A == 0x1; then JMP 6 else JMP 7
-  //  6) RET 0x50000  // errno = 0
-  //  7) RET 0x50001  // errno = 1
+  //  6) RET 0
+  //  7) RET 1
   *flags = NO_FLAGS;
 
-  Instruction* i7 = codegen->MakeInstruction(BPF_RET, ErrorCode(1));
-  Instruction* i6 = codegen->MakeInstruction(BPF_RET, ErrorCode(0));
+  Instruction* i7 = codegen->MakeInstruction(BPF_RET + BPF_K, 1);
+  Instruction* i6 = codegen->MakeInstruction(BPF_RET + BPF_K, 0);
   Instruction* i5 =
       codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
   Instruction* i4 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
@@ -191,10 +189,10 @@ Instruction* SampleProgramConfusingTailsBasic(CodeGen* codegen, int* flags) {
   // 2) LOAD 0  // System call number
   // 3) if A == 0x2; then JMP 4 else JMP 5
   // 4) LOAD 0  // System call number
-  // 5) RET 0x50001  // errno = 1
+  // 5) RET 1
   *flags = NO_FLAGS;
 
-  Instruction* i5 = codegen->MakeInstruction(BPF_RET, ErrorCode(1));
+  Instruction* i5 = codegen->MakeInstruction(BPF_RET + BPF_K, 1);
   Instruction* i4 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
   Instruction* i3 =
       codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
@@ -216,22 +214,22 @@ Instruction* SampleProgramConfusingTailsMergeable(CodeGen* codegen,
   //
   // 0) LOAD 1  // ???
   // 1) if A == 0x1; then JMP 2 else JMP 3
-  // 2) RET 0x5002a  // errno = 42
+  // 2) RET 42
   // 3) if A == 0x2; then JMP 4 else JMP 5
-  // 4) RET 0x5002a  // errno = 42
+  // 4) RET 42
   // 5) if A == 0x1; then JMP 6 else JMP 7
-  // 6) RET 0x50000  // errno = 0
-  // 7) RET 0x50001  // errno = 1
+  // 6) RET 0
+  // 7) RET 1
   *flags = HAS_MERGEABLE_TAILS;
 
-  Instruction* i7 = codegen->MakeInstruction(BPF_RET, ErrorCode(1));
-  Instruction* i6 = codegen->MakeInstruction(BPF_RET, ErrorCode(0));
+  Instruction* i7 = codegen->MakeInstruction(BPF_RET + BPF_K, 1);
+  Instruction* i6 = codegen->MakeInstruction(BPF_RET + BPF_K, 0);
   Instruction* i5 =
       codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
-  Instruction* i4 = codegen->MakeInstruction(BPF_RET, ErrorCode(42));
+  Instruction* i4 = codegen->MakeInstruction(BPF_RET + BPF_K, 42);
   Instruction* i3 =
       codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
-  Instruction* i2 = codegen->MakeInstruction(BPF_RET, ErrorCode(42));
+  Instruction* i2 = codegen->MakeInstruction(BPF_RET + BPF_K, 42);
   Instruction* i1 =
       codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
   Instruction* i0 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);

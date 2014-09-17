@@ -172,17 +172,6 @@ Instruction* CodeGen::MakeInstruction(uint16_t code,
   }
 }
 
-Instruction* CodeGen::MakeInstruction(uint16_t code, const ErrorCode& err) {
-  if (BPF_CLASS(code) != BPF_RET) {
-    SANDBOX_DIE("ErrorCodes can only be used in return expressions");
-  }
-  if (err.error_type_ != ErrorCode::ET_SIMPLE &&
-      err.error_type_ != ErrorCode::ET_TRAP) {
-    SANDBOX_DIE("ErrorCode is not suitable for returning from a BPF program");
-  }
-  return MakeInstruction(code, err.err_);
-}
-
 Instruction* CodeGen::MakeInstruction(uint16_t code,
                                       uint32_t k,
                                       Instruction* jt,

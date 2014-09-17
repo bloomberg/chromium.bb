@@ -13,7 +13,6 @@
 
 namespace sandbox {
 struct BasicBlock;
-class ErrorCode;
 struct Instruction;
 
 typedef std::vector<Instruction*> Instructions;
@@ -43,7 +42,8 @@ typedef std::map<const BasicBlock*, int> IncomingBranches;
 //     gen.MakeInstruction(BPF_JMP+BPF_EQ+BPF_K, __NR_getpid,
 //                         Trap(GetPidHandler, NULL), NULL);
 //   gen.JoinInstructions(branch,
-//     gen.MakeInstruction(BPF_RET+BPF_K, ErrorCode(ErrorCode::ERR_ALLOWED)));
+//     gen.MakeInstruction(BPF_RET+BPF_K,
+//                         ErrorCode(ErrorCode::ERR_ALLOWED).err()));
 //
 //   // Simplified code follows; in practice, it is important to avoid calling
 //   // any C++ destructors after starting the sandbox.
@@ -69,7 +69,6 @@ class SANDBOX_EXPORT CodeGen {
   Instruction* MakeInstruction(uint16_t code,
                                uint32_t k,
                                Instruction* next = NULL);
-  Instruction* MakeInstruction(uint16_t code, const ErrorCode& err);
   Instruction* MakeInstruction(uint16_t code,
                                uint32_t k,
                                Instruction* jt,

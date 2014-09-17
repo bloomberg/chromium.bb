@@ -888,10 +888,14 @@ Instruction* SandboxBPF::AssembleJumpTable(CodeGen* gen,
 }
 
 Instruction* SandboxBPF::RetExpression(CodeGen* gen, const ErrorCode& err) {
-  if (err.error_type_ == ErrorCode::ET_COND) {
-    return CondExpression(gen, err);
-  } else {
-    return gen->MakeInstruction(BPF_RET + BPF_K, err);
+  switch (err.error_type()) {
+    case ErrorCode::ET_COND:
+      return CondExpression(gen, err);
+    case ErrorCode::ET_SIMPLE:
+    case ErrorCode::ET_TRAP:
+      return gen->MakeInstruction(BPF_RET + BPF_K, err.err());
+    default:
+      SANDBOX_DIE("ErrorCode is not suitable for returning from a BPF program");
   }
 }
 
