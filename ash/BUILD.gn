@@ -291,7 +291,6 @@ test("ash_unittests") {
       "magnifier/magnification_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
-      "sticky_keys/sticky_keys_unittest.cc",
       "system/tray/media_security/multi_profile_media_tray_item_unittest.cc",
       "autoclick/autoclick_unittest.cc",
     ]
@@ -308,7 +307,6 @@ test("ash_unittests") {
     sources -= [
       "accelerators/magnifier_key_scroller_unittest.cc",
       "accelerators/spoken_feedback_toggler_unittest.cc",
-      "touch/touch_transformer_controller_unittest.cc",
     ]
   }
   if (is_chromeos) {
@@ -324,16 +322,19 @@ test("ash_unittests") {
   } else {
     sources -= [
       "display/resolution_notification_controller_unittest.cc",
-      "touch/touch_transformer_controller_unittest.cc",
       "touch/touchscreen_util_unittest.cc",
     ]
+  }
+
+  if (!use_x11 || !is_chromeos) {
+    sources -= [ "touch/touch_transformer_controller_unittest.cc", ]
   }
 
   # TODO(GYP) is this necessary?
   #['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
   # ldflags = "-rdynamic"
 
-  if (use_ozone) {
+  if (!is_chromeos || use_ozone) {
     sources -= [
       "sticky_keys/sticky_keys_unittest.cc",  # crbug.com/354035
     ]

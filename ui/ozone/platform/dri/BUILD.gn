@@ -88,6 +88,7 @@ if (ozone_platform_dri) {
   }
 
   source_set("dri_unittests") {
+    testonly = true
     sources = [
       "dri_surface_factory_unittest.cc",
       "dri_surface_unittest.cc",
