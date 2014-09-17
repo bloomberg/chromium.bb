@@ -540,11 +540,7 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
       # Why: Top search engine
       'http://www.bing.com/search?q=sloths',
       # Why: Good example of poor initial scrolling
-      'http://www.latimes.com',
-      # Why: Good example of poor initial scrolling
-      'http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans',
-      # Why: Good example of poor initial scrolling
-      'http://m.espn.go.com/nhl/rankings'
+      'http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans'
     ]
 
     for url in urls_list:

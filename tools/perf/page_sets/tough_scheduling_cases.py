@@ -9,6 +9,9 @@ class ToughSchedulingCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(ToughSchedulingCasesPage, self).__init__(url=url, page_set=page_set)
+    self.credentials_path = 'data/credentials.json'
+    self.user_agent_type = 'mobile'
+    self.archive_data_file = 'data/tough_scheduling_cases.json'
 
   def RunSmoothness(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
@@ -372,7 +375,11 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
   """ Tough scheduler latency test cases """
 
   def __init__(self):
-    super(ToughSchedulingCasesPageSet, self).__init__()
+    super(ToughSchedulingCasesPageSet, self).__init__(
+        credentials_path='data/credentials.json',
+        user_agent_type='mobile',
+        archive_data_file='data/tough_scheduling_cases.json',
+        bucket=page_set_module.INTERNAL_BUCKET)
 
     # Why: Simple scrolling baseline
     self.AddPage(ToughSchedulingCasesPage(
@@ -469,3 +476,10 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
       page_set=self))
     # Why: For measuring the latency of scroll-synchronized effects.
     self.AddPage(SynchronizedScrollOffsetPage(page_set=self))
+    # Why: Good examples of poor initial scrolling
+    self.AddPage(ToughSchedulingCasesPage(
+      'http://www.latimes.com',
+      self))
+    self.AddPage(ToughSchedulingCasesPage(
+      'http://m.espn.go.com/nhl/rankings',
+       self))
