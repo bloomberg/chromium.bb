@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/importer/profile_import_process_messages.h"
+// Multiply-included message file, hence no include guard.
+#include "chrome/common/importer/profile_import_process_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START FirefoxImporterUnittestMsgStart

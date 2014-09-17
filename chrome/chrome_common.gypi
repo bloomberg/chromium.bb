@@ -242,6 +242,7 @@
       'common/importer/importer_url_row.h',
       'common/importer/profile_import_process_messages.cc',
       'common/importer/profile_import_process_messages.h',
+      'common/importer/profile_import_process_param_traits_macros.h',
       'common/importer/safari_importer_utils.h',
       'common/importer/safari_importer_utils.mm',
     ],
