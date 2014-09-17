@@ -16,10 +16,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
@@ -35,7 +31,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/suggest_permission_util.h"
 #include "extensions/browser/view_type_utils.h"
@@ -312,21 +307,7 @@ void AppWindow::Init(const GURL& url,
 
   OnNativeWindowChanged();
 
-  // When the render view host is changed, the native window needs to know
-  // about it in case it has any setup to do to make the renderer appear
-  // properly. In particular, on Windows, the view's clickthrough region needs
-  // to be set.
-  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
-  registrar_.Add(this,
-                 NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<content::BrowserContext>(
-                     client->GetOriginalContext(browser_context_)));
-  // Update the app menu if an ephemeral app becomes installed.
-  registrar_.Add(
-      this,
-      NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::Source<content::BrowserContext>(
-          client->GetOriginalContext(browser_context_)));
+  ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 
   // Close when the browser process is exiting.
   app_delegate_->SetTerminatingCallback(
@@ -350,6 +331,8 @@ void AppWindow::Init(const GURL& url,
 AppWindow::~AppWindow() {
   // Unregister now to prevent getting notified if we're the last window open.
   app_delegate_->SetTerminatingCallback(base::Closure());
+
+  ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
 
   // Remove shutdown prevention.
   AppsClient::Get()->DecrementKeepAliveCount();
@@ -935,28 +918,22 @@ bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
   return IsHtmlApiFullscreen();
 }
 
-void AppWindow::Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) {
-  switch (type) {
-    case NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* unloaded_extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      if (extension_id_ == unloaded_extension->id())
-        native_app_window_->Close();
-      break;
-    }
-    case NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
-      const Extension* installed_extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      DCHECK(installed_extension);
-      if (installed_extension->id() == extension_id())
-        native_app_window_->UpdateShelfMenu();
-      break;
-    }
-    default:
-      NOTREACHED() << "Received unexpected notification";
-  }
+void AppWindow::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                    const Extension* extension,
+                                    UnloadedExtensionInfo::Reason reason) {
+  if (extension_id_ == extension->id())
+    native_app_window_->Close();
+}
+
+void AppWindow::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
+  // Update the app menu if an ephemeral app becomes installed.
+  if (extension_id_ == extension->id())
+    native_app_window_->UpdateShelfMenu();
 }
 
 void AppWindow::SetWebContentsBlocked(content::WebContents* web_contents,

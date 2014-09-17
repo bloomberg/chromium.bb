@@ -13,11 +13,10 @@
 #include "components/sessions/session_id.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_icon_image.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/ui_base_types.h"  // WindowShowState
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -43,6 +42,7 @@ namespace extensions {
 class AppDelegate;
 class AppWebContentsHelper;
 class Extension;
+class ExtensionRegistry;
 class NativeAppWindow;
 class PlatformAppBrowserTest;
 class WindowController;
@@ -82,11 +82,11 @@ class AppWindowContents {
 
 // AppWindow is the type of window used by platform apps. App windows
 // have a WebContents but none of the chrome of normal browser windows.
-class AppWindow : public content::NotificationObserver,
-                  public content::WebContentsDelegate,
+class AppWindow : public content::WebContentsDelegate,
                   public content::WebContentsObserver,
                   public web_modal::WebContentsModalDialogManagerDelegate,
-                  public IconImage::Observer {
+                  public IconImage::Observer,
+                  public ExtensionRegistryObserver {
  public:
   enum WindowType {
     WINDOW_TYPE_DEFAULT = 1 << 0,   // Default app window.
@@ -408,10 +408,17 @@ class AppWindow : public content::NotificationObserver,
   // content::WebContentsObserver implementation.
   virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
 
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
@@ -481,7 +488,6 @@ class AppWindow : public content::NotificationObserver,
 
   const SessionID session_id_;
   WindowType window_type_;
-  content::NotificationRegistrar registrar_;
 
   // Icon shown in the task bar.
   gfx::Image app_icon_;
