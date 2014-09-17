@@ -5,9 +5,10 @@ project(FindBadConstructs)
 # It expects LLVM_SRC_DIR and LLVM_BUILD_DIR to be set.
 # For example:
 #
-# cmake -GNinja -DLLVM_BUILD_DIR=$CHROMIUM_SRC_DIR/third_party/llvm-build \
-#               -DLLVM_SRC_DIR=$CHROMIUM_SRC_DIR/third_party/llvm \
-#               $CHROMIUM_SRC_DIR/tools/clang/blink_gc_plugin/
+# cmake -GNinja \
+#   -DLLVM_BUILD_DIR=$CHROMIUM_SRC_DIR/third_party/llvm-build/Release+Asserts \
+#   -DLLVM_SRC_DIR=$CHROMIUM_SRC_DIR/third_party/llvm \
+#   $CHROMIUM_SRC_DIR/tools/clang/plugins/
 # ninja
 
 

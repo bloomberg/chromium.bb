@@ -25,15 +25,15 @@ class InterimClass : public BaseClass {
   virtual void SomeMethod() = 0;
 };
 
-namespace WebKit {
+namespace blink {
 class WebKitObserver {
  public:
   virtual void WebKitModifiedSomething() {};
 };
-}  // namespace WebKit
+}  // namespace blink
 
 namespace webkit_glue {
-class WebKitObserverImpl : WebKit::WebKitObserver {
+class WebKitObserverImpl : blink::WebKitObserver {
  public:
   virtual void WebKitModifiedSomething() {};
 };
@@ -50,7 +50,7 @@ class DerivedClass : public InterimClass,
   virtual void SomeOtherMethod() override;
   // Should warn for inline implementations.
   virtual void SomeInlineMethod() {}
-  // Should not warn if overriding a method whose origin is WebKit.
+  // Should not warn if overriding a method whose origin is blink.
   virtual void WebKitModifiedSomething();
   // Should warn with the insertion point after the const.
   virtual void SomeConstMethod() const {}
