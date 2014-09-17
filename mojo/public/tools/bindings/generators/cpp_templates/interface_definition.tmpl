@@ -184,7 +184,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
         responder_(responder) {
   }
 
-  virtual void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const;
+  virtual void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const MOJO_OVERRIDE;
 
  private:
   uint64_t request_id_;
