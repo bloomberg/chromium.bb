@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -32,7 +33,6 @@ const unsigned MDnsTransactionTimeoutSeconds = 3;
 // the original TTL.
 const double kListenerRefreshRatio1 = 0.85;
 const double kListenerRefreshRatio2 = 0.95;
-const unsigned kMillisecondsPerSecond = 1000;
 
 }  // namespace
 
@@ -538,11 +538,11 @@ void MDnsListenerImpl::ScheduleNextRefresh() {
   // be canceled and rescheduled if the record's TTL is updated due to a
   // response being received.
   base::Time next_refresh1 = last_update_ + base::TimeDelta::FromMilliseconds(
-      static_cast<int>(kMillisecondsPerSecond *
+      static_cast<int>(base::Time::kMillisecondsPerSecond *
                        kListenerRefreshRatio1 * ttl_));
 
   base::Time next_refresh2 = last_update_ + base::TimeDelta::FromMilliseconds(
-      static_cast<int>(kMillisecondsPerSecond *
+      static_cast<int>(base::Time::kMillisecondsPerSecond *
                        kListenerRefreshRatio2 * ttl_));
 
   base::MessageLoop::current()->PostDelayedTask(
