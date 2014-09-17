@@ -883,6 +883,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
   // Send the first input chunk and verify that decoder will be created.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_TRUE(GetMediaCodecBridge(false));
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
@@ -942,6 +943,7 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
   // was not a browser seek request.
   EXPECT_EQ(1, demuxer_->num_seek_requests());
   EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
@@ -982,6 +984,7 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
 
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_TRUE(GetMediaCodecBridge(false));
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
@@ -1014,6 +1017,7 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
   // Playback resumes once a non-empty surface is passed.
   CreateNextTextureAndSetVideoSurface();
   EXPECT_EQ(1, demuxer_->num_browser_seek_requests());
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
@@ -1096,6 +1100,7 @@ TEST_F(MediaSourcePlayerTest, VideoOnlyStartAfterSeekFinish) {
   // Decoder is created after data is received.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_TRUE(GetMediaCodecBridge(false));
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
@@ -1154,6 +1159,7 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
 
   // No seeks should have occurred.
   EXPECT_EQ(0, demuxer_->num_seek_requests());
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
@@ -1460,6 +1466,7 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_RegularSeekPendsBrowserSeekDone) {
   EXPECT_EQ(2, demuxer_->num_seek_requests());
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_TRUE(GetMediaCodecBridge(false));
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_InitialReleaseAndStart) {
@@ -1484,6 +1491,7 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_InitialReleaseAndStart) {
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
   EXPECT_EQ(2, demuxer_->num_data_requests());
+  WaitForVideoDecodeDone();
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_MidStreamReleaseAndStart) {
@@ -2132,8 +2140,8 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenStart) {
 
   // Decoder will be created once data is received.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
-  while (!GetMediaCodecBridge(false))
-    message_loop_.RunUntilIdle();
+  EXPECT_TRUE(GetMediaCodecBridge(false));
+  WaitForVideoDecodeDone();
 }
 
 // TODO(xhwang): Once we add tests to cover DrmBridge, update this test to
