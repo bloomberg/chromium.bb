@@ -1291,6 +1291,8 @@ chrome_pfq.add_config('falco-chrome-pfq',
 chrome_pfq.add_config('link_freon-chrome-pfq',
   boards=['link_freon'],
   hw_tests=[],
+  # This build can't run vm_tests, bug 387507
+  vm_tests=[],
   important=False,
   usepkg_toolchain=False,
   usepkg_build_packages=False,
@@ -1995,6 +1997,9 @@ internal_paladin.add_config('x86-zgb-paladin',
 
 internal_paladin.add_config('link_freon-paladin',
   boards=['link_freon'],
+  hw_tests=[],
+  # This build can't run vm_tests, bug 387507
+  vm_tests=[],
   important=False,
   paladin_builder_name='link_freon paladin',
   usepkg_build_packages=False,
