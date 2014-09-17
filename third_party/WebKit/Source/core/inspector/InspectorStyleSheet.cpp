@@ -668,7 +668,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
     HashSet<String> foundShorthands;
     OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
 
     WillBeHeapVector<InspectorStyleProperty> properties;
     populateAllProperties(properties);
@@ -692,10 +691,8 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
             property->setImportant(true);
         if (it->hasSource) {
             property->setRange(buildSourceRangeObject(propertyEntry.range, lineEndings.get()));
-            if (!propertyEntry.disabled) {
-                ASSERT(sourceData);
+            if (!propertyEntry.disabled)
                 property->setImplicit(false);
-            }
             property->setDisabled(propertyEntry.disabled);
         } else if (!propertyEntry.disabled) {
             bool implicit = m_style->isPropertyImplicit(name);
