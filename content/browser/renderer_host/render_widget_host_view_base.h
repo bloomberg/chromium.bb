@@ -59,6 +59,12 @@ struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 struct WebPluginGeometry;
 
+// TODO(Sikugu): Though we have the return status of the result here,
+// we should add the reason for failure as a new parameter to handle cases
+// efficiently.
+typedef const base::Callback<void(bool, const SkBitmap&)>
+    CopyFromCompositingSurfaceCallback;
+
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                 public IPC::Listener {
@@ -258,7 +264,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      CopyFromCompositingSurfaceCallback& callback,
       const SkColorType color_type) = 0;
 
   // Copies the contents of the compositing surface, populating the given

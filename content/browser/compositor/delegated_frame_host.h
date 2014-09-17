@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -97,11 +98,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   gfx::Size GetRequestedRendererSize() const;
   void AddedToWindow();
   void RemovingFromWindow();
-  void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& output_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkColorType color_type);
+  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                  const gfx::Size& output_size,
+                                  CopyFromCompositingSurfaceCallback& callback,
+                                  const SkColorType color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,

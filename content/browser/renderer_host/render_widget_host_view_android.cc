@@ -389,7 +389,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
     SkColorType color_type,
     gfx::Rect src_subrect,
-    const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
+    CopyFromCompositingSurfaceCallback& result_callback) {
   if (!host_ || host_->is_hidden()) {
     result_callback.Run(false, SkBitmap());
     return;
@@ -851,7 +851,7 @@ void RenderWidgetHostViewAndroid::SetBackgroundOpaque(bool opaque) {
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    CopyFromCompositingSurfaceCallback& callback,
     const SkColorType color_type) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
   if ((!host_ || host_->is_hidden()) ||

@@ -143,7 +143,7 @@ void DelegatedFrameHost::RequestCopyOfOutput(
 void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    CopyFromCompositingSurfaceCallback& callback,
     const SkColorType color_type) {
   // Only ARGB888 and RGB565 supported as of now.
   bool format_support = ((color_type == kAlpha_8_SkColorType) ||
