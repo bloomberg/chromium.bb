@@ -301,12 +301,14 @@ TEST_F(WidgetTestInteractive, ResetCaptureOnGestureEnd) {
                             15,
                             0,
                             base::TimeDelta(),
-                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN,
+                                                    0,
+                                                    0));
   ui::GestureEvent end(15,
                        15,
                        0,
                        base::TimeDelta(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_END));
+                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
   toplevel->OnGestureEvent(&tap_down);
 
   // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|

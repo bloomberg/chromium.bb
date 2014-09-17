@@ -246,8 +246,7 @@ class GestureProvider::GestureListenerImpl
                                  : 1.0f - kDoubleTapDragZoomSpeed,
                        std::abs(dy));
     }
-    GestureEventDetails pinch_details(ET_GESTURE_PINCH_UPDATE);
-    pinch_details.set_scale(scale);
+    GestureEventDetails pinch_details(ET_GESTURE_PINCH_UPDATE, scale, 0);
     Send(CreateGesture(pinch_details,
                        e.GetId(),
                        e.GetToolType(),
@@ -264,7 +263,7 @@ class GestureProvider::GestureListenerImpl
 
   // GestureDetector::GestureListener implementation.
   virtual bool OnDown(const MotionEvent& e) OVERRIDE {
-    GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN);
+    GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN, 0, 0);
     Send(CreateGesture(tap_details, e));
 
     // Return true to indicate that we want to handle touch.
@@ -404,7 +403,7 @@ class GestureProvider::GestureListenerImpl
   }
 
   virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
-    GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS);
+    GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS, 0, 0);
     show_press_event_sent_ = true;
     Send(CreateGesture(show_press_details, e));
   }
@@ -434,7 +433,7 @@ class GestureProvider::GestureListenerImpl
     if (e.GetAction() == MotionEvent::ACTION_UP &&
         !current_longpress_time_.is_null() &&
         !IsScaleGestureDetectionInProgress()) {
-      GestureEventDetails long_tap_details(ET_GESTURE_LONG_TAP);
+      GestureEventDetails long_tap_details(ET_GESTURE_LONG_TAP, 0, 0);
       Send(CreateGesture(long_tap_details, e));
       return true;
     }
@@ -483,7 +482,7 @@ class GestureProvider::GestureListenerImpl
   virtual void OnLongPress(const MotionEvent& e) OVERRIDE {
     DCHECK(!IsDoubleTapInProgress());
     SetIgnoreSingleTap(true);
-    GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS);
+    GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS, 0, 0);
     Send(CreateGesture(long_press_details, e));
   }
 
@@ -522,7 +521,7 @@ class GestureProvider::GestureListenerImpl
                                  size_t touch_point_count,
                                  const gfx::RectF& bounding_box,
                                  int flags) {
-    return GestureEventData(GestureEventDetails(type),
+    return GestureEventData(GestureEventDetails(type, 0, 0),
                             motion_event_id,
                             primary_tool_type,
                             time,
@@ -551,16 +550,14 @@ class GestureProvider::GestureListenerImpl
   }
 
   GestureEventData CreateGesture(EventType type, const MotionEvent& event) {
-    return CreateGesture(GestureEventDetails(type), event);
+    return CreateGesture(GestureEventDetails(type, 0, 0), event);
   }
 
   GestureEventData CreateTapGesture(EventType type, const MotionEvent& event) {
     // Set the tap count to 1 even for ET_GESTURE_DOUBLE_TAP, in order to be
     // consistent with double tap behavior on a mobile viewport. See
     // crbug.com/234986 for context.
-    GestureEventDetails details(type);
-    details.set_tap_count(1);
-    return CreateGesture(details, event);
+    return CreateGesture(GestureEventDetails(type, 1, 0), event);
   }
 
   gfx::RectF GetBoundingBox(const MotionEvent& event, EventType type) {

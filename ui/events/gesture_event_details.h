@@ -16,7 +16,6 @@ namespace ui {
 struct EVENTS_BASE_EXPORT GestureEventDetails {
  public:
   GestureEventDetails();
-  explicit GestureEventDetails(EventType type);
   GestureEventDetails(EventType type, float delta_x, float delta_y);
 
   EventType type() const { return type_; }
@@ -122,12 +121,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
            type_ == ET_GESTURE_TAP_UNCONFIRMED ||
            type_ == ET_GESTURE_DOUBLE_TAP);
     data.tap_count = tap_count;
-  }
-
-  void set_scale(float scale) {
-    DCHECK_GE(scale, 0.0f);
-    DCHECK_EQ(type_, ET_GESTURE_PINCH_UPDATE);
-    data.scale = scale;
   }
 
  private:

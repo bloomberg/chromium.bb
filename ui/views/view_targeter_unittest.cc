@@ -231,7 +231,7 @@ class GestureEventForTest : public ui::GestureEvent {
                      y,
                      0,
                      base::TimeDelta(),
-                     ui::GestureEventDetails(type)) {}
+                     ui::GestureEventDetails(type, 0.0f, 0.0f)) {}
 
   GestureEventForTest(ui::GestureEventDetails details, int x, int y)
       : GestureEvent(x, y, 0, base::TimeDelta(), details) {}
@@ -266,13 +266,13 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // Define some gesture events for testing.
   gfx::Rect bounding_box(gfx::Point(46, 46), gfx::Size(8, 8));
   gfx::Point center_point(bounding_box.CenterPoint());
-  ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   GestureEventForTest tap(details, center_point.x(), center_point.y());
-  details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN);
+  details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   GestureEventForTest scroll_begin(details, center_point.x(), center_point.y());
-  details = ui::GestureEventDetails(ui::ET_GESTURE_END);
+  details = ui::GestureEventDetails(ui::ET_GESTURE_END, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   GestureEventForTest end(details, center_point.x(), center_point.y());
 
@@ -324,14 +324,14 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // again (calls to FindTargetForEvent() and FindNextBestTarget()
   // mutate the location of the gesture events to be in the coordinate
   // space of the returned view).
-  details = ui::GestureEventDetails(ui::ET_GESTURE_TAP);
+  details = ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   tap = GestureEventForTest(details, center_point.x(), center_point.y());
-  details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN);
+  details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   scroll_begin =
       GestureEventForTest(details, center_point.x(), center_point.y());
-  details = ui::GestureEventDetails(ui::ET_GESTURE_END);
+  details = ui::GestureEventDetails(ui::ET_GESTURE_END, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   end = GestureEventForTest(details, center_point.x(), center_point.y());
 
@@ -381,7 +381,7 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
   // in root view coordinates with width and height of 4.
   gfx::Rect bounding_box(gfx::Point(58, 58), gfx::Size(4, 4));
   gfx::Point center_point(bounding_box.CenterPoint());
-  ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP, 0.0f, 0.0f);
   details.set_bounding_box(bounding_box);
   GestureEventForTest tap(details, center_point.x(), center_point.y());
 

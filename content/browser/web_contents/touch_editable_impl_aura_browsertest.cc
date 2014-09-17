@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       10,
       0,
       ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&long_press);
   touch_editable->WaitForSelectionChangeCallback();
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       10,
       0,
       ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
   rwhva->OnGestureEvent(&scroll_begin);
   EXPECT_FALSE(GetTouchSelectionController(touch_editable));
 
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       10,
       0,
       ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0));
   rwhva->OnGestureEvent(&scroll_end);
   EXPECT_TRUE(GetTouchSelectionController(touch_editable));
 }
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       10,
       0,
       ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&long_press);
   touch_editable->WaitForSelectionChangeCallback();
@@ -370,9 +370,12 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
 
   // Double-tap to select word.
-  ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
-  details.set_tap_count(2);
-  ui::GestureEvent double_tap(10, 10, 0, ui::EventTimeForNow(), details);
+  ui::GestureEvent double_tap(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 2, 0));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&double_tap);
   touch_editable->WaitForSelectionChangeCallback();
