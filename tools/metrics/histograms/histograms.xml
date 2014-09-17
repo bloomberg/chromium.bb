@@ -10453,6 +10453,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.malware.decision" enum="SB3InterstitialDecision">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User decision when presented with a Safe Browsing malware interstitial.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.malware.decision.repeat_visit"
+    enum="SB3InterstitialDecision">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User decision when presented with a Safe Browsing malware interstitial for a
+    website that the user has visited before.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.malware.interaction"
+    enum="SB3InterstitialInteraction">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User interactions with a Safe Browsing malware interstitial.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.phishing.decision" enum="SB3InterstitialDecision">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User decision when presented with a Safe Browsing phishing interstitial.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.phishing.interaction"
+    enum="SB3InterstitialInteraction">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User interactions with a Safe Browsing phishing interstitial.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl" enum="SSLResponseTypesV2">
   <owner>felt@chromium.org</owner>
   <summary>
@@ -27537,6 +27576,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.InterstitialAction" enum="SB2InterstitialAction">
+  <obsolete>
+    Deprecated, replaced by: interstitial.malware.* and interstitial.phishing.*.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     Track number of times Safe Browsing interstitials have been shown, and how
@@ -27546,6 +27588,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.InterstitialActionDetails"
     enum="SB2InterstitialActionDetails">
+  <obsolete>
+    Deprecated, replaced by: interstitial.malware.* and interstitial.phishing.*.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     Tracks the click-through rate for specific cases of the interstitial.
@@ -49410,6 +49455,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SB2InterstitialAction" type="int">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <int value="0" label="MALWARE_SHOW"/>
   <int value="1" label="MALWARE_DONT_PROCEED"/>
   <int value="2" label="MALWARE_FORCED_DONT_PROCEED"/>
@@ -49428,6 +49476,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SB2InterstitialActionDetails" type="int">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <int value="0" label="MALWARE_SHOW_NEW_SITE"/>
   <int value="1" label="MALWARE_PROCEED_NEW_SITE"/>
   <int value="2" label="MALWARE_SHOW_CROSS_SITE"/>
@@ -49478,6 +49529,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="BACKUP_HTTP_SUCCESS"/>
   <int value="6" label="BACKUP_NETWORK_FAIL"/>
   <int value="7" label="BACKUP_NETWORK_SUCCESS"/>
+</enum>
+
+<enum name="SB3InterstitialDecision" type="int">
+  <int value="0" label="SHOW"/>
+  <int value="1" label="PROCEED"/>
+  <int value="2" label="DONT_PROCEED"/>
+  <int value="3" label="PROCEEDING_DISABLED"/>
+</enum>
+
+<enum name="SB3InterstitialInteraction" type="int">
+  <int value="0" label="TOTAL_VISITS"/>
+  <int value="1" label="SHOW_ADVANCED"/>
+  <int value="2" label="SHOW_PRIVACY"/>
+  <int value="3" label="SHOW_DIAGNOSTIC"/>
+  <int value="4" label="SHOW_LEARN_MORE"/>
 </enum>
 
 <enum name="SBClientDetectionPreClassificationCheckFail" type="int">

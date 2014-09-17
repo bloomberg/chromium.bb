@@ -125,16 +125,27 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsToggling);
 
-  enum BlockingPageEvent {
+  // These enums are used for histograms.  Don't reorder, delete, or insert
+  // elements.  New elements should be added before MAX_ACTION only.
+  enum Decision {
     SHOW,
     PROCEED,
     DONT_PROCEED,
+    PROCEEDING_DISABLED,
+    MAX_DECISION
+  };
+  enum Interaction {
+    TOTAL_VISITS,
     SHOW_ADVANCED,
+    SHOW_PRIVACY_POLICY,
+    SHOW_DIAGNOSTIC,
+    SHOW_LEARN_MORE,
+    MAX_INTERACTION
   };
 
-  // Records a user action for this interstitial, using the form
-  // SBInterstitial[Phishing|Malware|Multiple][Show|Proceed|DontProceed].
-  void RecordUserAction(BlockingPageEvent event);
+  // Record a user decision or interaction to the appropriate UMA histogram.
+  void RecordUserDecision(Decision decision);
+  void RecordUserInteraction(Interaction interaction);
 
   // Used to query the HistoryService to see if the URL is in history. For UMA.
   void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
