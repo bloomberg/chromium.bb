@@ -9,7 +9,6 @@
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -616,15 +615,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // Currently, the UI only works on Windows so we don't even bother with
     // pinging the server if we're not on Windows.
     // TODO(noelutz): change this code once the UI is done for Linux and Mac.
-#if defined(OS_MACOSX)
-  // TODO(mattm): remove this (see crbug.com/414834).
-  if (base::FieldTrialList::FindFullName("SafeBrowsingOSXClientDownloadPings")
-      != "Enabled") {
-    PostFinishTask(UNKNOWN, REASON_OS_NOT_SUPPORTED);
-    return;
-  }
-#endif
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
     // The URLFetcher is owned by the UI thread, so post a message to
     // start the pingback.
     BrowserThread::PostTask(
@@ -789,13 +780,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
       UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
                                 reason,
                                 REASON_MAX);
-#if defined(OS_MACOSX)
-      // OSX is currently sending pings only for evaluation purposes, ignore
-      // the result for now.
-      // TODO(mattm): remove this and update the ifdef in
-      // DownloadItemImpl::IsDangerous (see crbug.com/413968).
-      result = UNKNOWN;
-#endif
       callback_.Run(result);
       item_->RemoveObserver(this);
       item_ = NULL;
@@ -945,17 +929,18 @@ void DownloadProtectionService::CheckDownloadUrl(
 bool DownloadProtectionService::IsSupportedDownload(
     const content::DownloadItem& item,
     const base::FilePath& target_path) const {
-  // Currently, the UI is only enabled on Windows.  On Mac we send the ping but
-  // ignore the result (see ifdef in FinishRequest).  On Linux we still
+  // Currently, the UI only works on Windows.  On Linux and Mac we still
   // want to show the dangerous file type warning if the file is possibly
   // dangerous which means we have to always return false here.
 #if defined(OS_WIN)
   DownloadCheckResultReason reason = REASON_MAX;
   ClientDownloadRequest::DownloadType type =
       ClientDownloadRequest::WIN_EXECUTABLE;
-  return (CheckClientDownloadRequest::IsSupportedDownload(
-              item, target_path, &reason, &type) &&
-          (ClientDownloadRequest::CHROME_EXTENSION != type));
+  return (CheckClientDownloadRequest::IsSupportedDownload(item, target_path,
+                                                          &reason, &type) &&
+          (ClientDownloadRequest::ANDROID_APK == type ||
+           ClientDownloadRequest::WIN_EXECUTABLE == type ||
+           ClientDownloadRequest::ZIPPED_EXECUTABLE == type));
 #else
   return false;
 #endif
