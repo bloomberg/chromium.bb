@@ -342,11 +342,7 @@ bool NavigatorImpl::NavigateToEntry(
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
-  // Create the navigation parameters.
   FrameMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(
-      entry, *controller_, reload_type, navigation_start, &navigate_params);
-
   RenderFrameHostManager* manager =
       render_frame_host->frame_tree_node()->render_manager();
 
@@ -355,6 +351,9 @@ bool NavigatorImpl::NavigateToEntry(
   // node.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation)) {
+    // Create the navigation parameters.
+    MakeNavigateParams(
+        entry, *controller_, reload_type, navigation_start, &navigate_params);
     return manager->RequestNavigation(entry, navigate_params);
   }
 
@@ -373,6 +372,12 @@ bool NavigatorImpl::NavigateToEntry(
   // Notify observers that we will navigate in this RenderFrame.
   if (delegate_)
     delegate_->AboutToNavigateRenderFrame(dest_render_frame_host);
+
+  // Create the navigation parameters.
+  // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once
+  // http://crbug.com/408684 is fixed.
+  MakeNavigateParams(
+      entry, *controller_, reload_type, navigation_start, &navigate_params);
 
   // Navigate in the desired RenderFrameHost.
   // We can skip this step in the rare case that this is a transfer navigation
