@@ -47,6 +47,20 @@ class ExtensionCommandsGlobalRegistry
   explicit ExtensionCommandsGlobalRegistry(content::BrowserContext* context);
   virtual ~ExtensionCommandsGlobalRegistry();
 
+  // Returns which non-global command registry is active (belonging to the
+  // currently active window).
+  ExtensionKeybindingRegistry* registry_for_active_window() {
+    return registry_for_active_window_;
+  }
+
+  void set_registry_for_active_window(ExtensionKeybindingRegistry* registry) {
+    registry_for_active_window_ = registry;
+  }
+
+  // Returns whether |accelerator| is registered on the registry for the active
+  // window or on the global registry.
+  bool IsRegistered(const ui::Accelerator& accelerator);
+
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry>;
 
@@ -69,6 +83,13 @@ class ExtensionCommandsGlobalRegistry
 
   // Weak pointer to our browser context. Not owned by us.
   content::BrowserContext* browser_context_;
+
+  // The global commands registry not only keeps track of global commands
+  // registered, but also of which non-global command registry is active
+  // (belonging to the currently active window). Only valid for TOOLKIT_VIEWS
+  // and
+  // NULL otherwise.
+  ExtensionKeybindingRegistry* registry_for_active_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCommandsGlobalRegistry);
 };

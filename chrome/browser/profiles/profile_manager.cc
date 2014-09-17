@@ -334,6 +334,9 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
 Profile* ProfileManager::GetActiveUserProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 #if defined(OS_CHROMEOS)
+  if (!profile_manager)
+    return NULL;
+
   if (!profile_manager->IsLoggedIn() ||
       !user_manager::UserManager::IsInitialized()) {
     return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(

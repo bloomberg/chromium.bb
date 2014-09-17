@@ -16,7 +16,8 @@ ExtensionCommandsGlobalRegistry::ExtensionCommandsGlobalRegistry(
     : ExtensionKeybindingRegistry(context,
                                   ExtensionKeybindingRegistry::ALL_EXTENSIONS,
                                   NULL),
-      browser_context_(context) {
+      browser_context_(context),
+      registry_for_active_window_(NULL) {
   Init();
 }
 
@@ -56,6 +57,13 @@ void ExtensionCommandsGlobalRegistry::SetShortcutHandlingSuspended(
     bool suspended) {
   GlobalShortcutListener::GetInstance()->SetShortcutHandlingSuspended(
       suspended);
+}
+
+bool ExtensionCommandsGlobalRegistry::IsRegistered(
+    const ui::Accelerator& accelerator) {
+  return (registry_for_active_window() &&
+          registry_for_active_window()->IsAcceleratorRegistered(accelerator)) ||
+         IsAcceleratorRegistered(accelerator);
 }
 
 void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
