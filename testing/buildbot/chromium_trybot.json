@@ -30,6 +30,7 @@
       "test": "chrome_elf_unittests",
       "platforms": ["win"]
     },
+    "components_browsertests",
     "components_unittests",
     {
       "test": "compositor_unittests",
