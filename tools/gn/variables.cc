@@ -370,7 +370,7 @@ const char kCheckIncludes_Help[] =
 
 const char kCompleteStaticLib[] = "complete_static_lib";
 const char kCompleteStaticLib_HelpShort[] =
-    "complete_static_lib: [boolean] Links all deps into a static library.\n";
+    "complete_static_lib: [boolean] Links all deps into a static library.";
 const char kCompleteStaticLib_Help[] =
     "complete_static_lib: [boolean] Links all deps into a static library.\n"
     "\n"
@@ -813,7 +813,7 @@ const char kPublicConfigs_Help[] =
 
 const char kPublicDeps[] = "public_deps";
 const char kPublicDeps_HelpShort[] =
-    "public: [label list] Declare public dependencies.";
+    "public_deps: [label list] Declare public dependencies.";
 const char kPublicDeps_Help[] =
     "public_deps: Declare public dependencies.\n"
     "\n"

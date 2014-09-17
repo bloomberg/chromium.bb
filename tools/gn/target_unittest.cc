@@ -376,3 +376,57 @@ TEST(Target, Testonly) {
   product.SetToolchain(setup.toolchain());
   ASSERT_FALSE(product.OnResolved(&err));
 }
+
+TEST(Target, PublicConfigs) {
+  TestWithScope setup;
+  Err err;
+
+  Label pub_config_label(SourceDir("//a/"), "pubconfig");
+  Config pub_config(setup.settings(), pub_config_label);
+
+  // This is the destination target that has a public config.
+  Target dest(setup.settings(), Label(SourceDir("//a/"), "a"));
+  dest.set_output_type(Target::SOURCE_SET);
+  dest.visibility().SetPublic();
+  dest.SetToolchain(setup.toolchain());
+  dest.public_configs().push_back(LabelConfigPair(&pub_config));
+  ASSERT_TRUE(dest.OnResolved(&err));
+
+  // This target has a public dependency on dest.
+  Target pub(setup.settings(), Label(SourceDir("//a/"), "pub"));
+  pub.set_output_type(Target::SOURCE_SET);
+  pub.visibility().SetPublic();
+  pub.SetToolchain(setup.toolchain());
+  pub.public_deps().push_back(LabelTargetPair(&dest));
+  ASSERT_TRUE(pub.OnResolved(&err));
+
+  // Depending on the target with the public dependency should forward dest's
+  // to the current target.
+  Target dep_on_pub(setup.settings(), Label(SourceDir("//a/"), "dop"));
+  dep_on_pub.set_output_type(Target::SOURCE_SET);
+  dep_on_pub.visibility().SetPublic();
+  dep_on_pub.SetToolchain(setup.toolchain());
+  dep_on_pub.private_deps().push_back(LabelTargetPair(&pub));
+  ASSERT_TRUE(dep_on_pub.OnResolved(&err));
+  ASSERT_EQ(1u, dep_on_pub.configs().size());
+  EXPECT_EQ(&pub_config, dep_on_pub.configs()[0].ptr);
+
+  // This target has a private dependency on dest for forwards configs.
+  Target forward(setup.settings(), Label(SourceDir("//a/"), "f"));
+  forward.set_output_type(Target::SOURCE_SET);
+  forward.visibility().SetPublic();
+  forward.SetToolchain(setup.toolchain());
+  forward.private_deps().push_back(LabelTargetPair(&dest));
+  forward.forward_dependent_configs().push_back(LabelTargetPair(&dest));
+  ASSERT_TRUE(forward.OnResolved(&err));
+
+  // Depending on the forward target should apply the config.
+  Target dep_on_forward(setup.settings(), Label(SourceDir("//a/"), "dof"));
+  dep_on_forward.set_output_type(Target::SOURCE_SET);
+  dep_on_forward.visibility().SetPublic();
+  dep_on_forward.SetToolchain(setup.toolchain());
+  dep_on_forward.private_deps().push_back(LabelTargetPair(&forward));
+  ASSERT_TRUE(dep_on_forward.OnResolved(&err));
+  ASSERT_EQ(1u, dep_on_forward.configs().size());
+  EXPECT_EQ(&pub_config, dep_on_forward.configs()[0].ptr);
+}

@@ -21,8 +21,7 @@ typedef std::set<const Config*> ConfigSet;
 void MergePublicConfigsFrom(const Target* from_target,
                             UniqueVector<LabelConfigPair>* dest) {
   const UniqueVector<LabelConfigPair>& pub = from_target->public_configs();
-  for (size_t i = 0; i < pub.size(); i++)
-    dest->push_back(pub[i]);
+  dest->Append(pub.begin(), pub.end());
 }
 
 // Like MergePublicConfigsFrom above except does the "all dependent" ones. This
@@ -106,7 +105,7 @@ bool Target::OnResolved(Err* err) {
 
   // Copy our own dependent configs to the list of configs applying to us.
   configs_.Append(all_dependent_configs_.begin(), all_dependent_configs_.end());
-  configs_.Append(public_configs_.begin(), public_configs_.end());
+  MergePublicConfigsFrom(this, &configs_);
 
   // Copy our own libs and lib_dirs to the final set. This will be from our
   // target and all of our configs. We do this specially since these must be
@@ -117,14 +116,7 @@ bool Target::OnResolved(Err* err) {
     all_libs_.append(cur.libs().begin(), cur.libs().end());
   }
 
-  if (output_type_ != GROUP) {
-    // Don't pull target info like libraries and configs from dependencies into
-    // a group target. When A depends on a group G, the G's dependents will
-    // be treated as direct dependencies of A, so this is unnecessary and will
-    // actually result in duplicated settings (since settings will also be
-    // pulled from G to A in case G has configs directly on it).
-    PullDependentTargetInfo();
-  }
+  PullDependentTargetInfo();
   PullForwardedDependentConfigs();
   PullRecursiveHardDeps();
 
