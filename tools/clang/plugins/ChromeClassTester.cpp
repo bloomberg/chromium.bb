@@ -149,10 +149,8 @@ void ChromeClassTester::BuildBannedLists() {
   banned_namespaces_.push_back("std");
   banned_namespaces_.push_back("__gnu_cxx");
 
-  // We're in the process of renaming WebKit to blink.
-  // TODO(abarth): Remove WebKit once the rename is complete.
-  banned_namespaces_.push_back("WebKit");
   banned_namespaces_.push_back("blink");
+  banned_namespaces_.push_back("WTF");
 
   banned_directories_.push_back("third_party/");
   banned_directories_.push_back("native_client/");
