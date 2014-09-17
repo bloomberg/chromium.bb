@@ -48,6 +48,7 @@
       and keysym. The text input can then ignore events from the input method
       which are based on an outdated state (for example after a reset).
     </description>
+
     <request name="activate">
       <description summary="request activation">
         Requests the text-input object to be activated (typically when the 
@@ -60,6 +61,7 @@
       <arg name="seat" type="object" interface="wl_seat"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
+
     <request name="deactivate">
       <description summary="request deactivation">
         Requests the text-input object to be deactivated (typically when the
@@ -68,16 +70,19 @@
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
+
     <request name="show_input_panel">
       <description summary="show input panels">
         Requests input panels (virtual keyboard) to show.
       </description>
     </request>
+
     <request name="hide_input_panel">
       <description summary="hide input panels">
         Requests input panels (virtual keyboard) to hide.
       </description>
     </request>
+
     <request name="reset">
       <description summary="reset">
         Should be called by an editor widget when the input state should be
@@ -85,6 +90,7 @@
         input method flow.
       </description>
     </request>
+
     <request name="set_surrounding_text">
       <description summary="sets the surrounding text">
         Sets the plain surrounding text around the input position. Text is
@@ -97,6 +103,7 @@
       <arg name="cursor" type="uint"/>
       <arg name="anchor" type="uint"/>
     </request>
+
     <enum name="content_hint">
       <description summary="content hint">
         Content hint is a bitmask to allow to modify the behavior of the text
@@ -116,6 +123,7 @@
       <entry name="latin" value="0x100" summary="just latin characters should be entered"/>
       <entry name="multiline" value="0x200" summary="the text input is multiline"/>
     </enum>
+
     <enum name="content_purpose">
       <description summary="content purpose">
         The content purpose allows to specify the primary purpose of a text
@@ -138,6 +146,7 @@
       <entry name="datetime" value="11" summary="input a date and time"/>
       <entry name="terminal" value="12" summary="input for a terminal"/>
     </enum>
+
     <request name="set_content_type">
       <description summary="set content purpose and hint">
         Sets the content purpose and content hint. While the purpose is the
@@ -151,12 +160,14 @@
       <arg name="hint" type="uint"/>
       <arg name="purpose" type="uint"/>
     </request>
+
     <request name="set_cursor_rectangle">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>
+
     <request name="set_preferred_language">
       <description summary="sets preferred language">
         Sets a specific language. This allows for example a virtual keyboard to
@@ -169,13 +180,16 @@
       </description>
       <arg name="language" type="string"/>
     </request>
+
     <request name="commit_state">
       <arg name="serial" type="uint" summary="used to identify the known state"/>
     </request>
+
     <request name="invoke_action">
       <arg name="button" type="uint"/>
       <arg name="index" type="uint"/>
     </request>
+
     <event name="enter">
       <description summary="enter event">
         Notify the text-input object when it received focus. Typically in
@@ -183,6 +197,7 @@
       </description>
       <arg name="surface" type="object" interface="wl_surface"/>
     </event>
+
     <event name="leave">
       <description summary="leave event">
         Notify the text-input object when it lost focus. Either in response
@@ -190,6 +205,7 @@
         destroyed.
       </description>
     </event>
+
     <event name="modifiers_map">
       <description summary="modifiers map">
         Transfer an array of 0-terminated modifiers names. The position in
@@ -198,12 +214,14 @@
       </description>
       <arg name="map" type="array"/>
     </event>
+
     <event name="input_panel_state">
       <description summary="state of the input panel">
         Notify when the visibility state of the input panel changed.
       </description>
       <arg name="state" type="uint"/>
     </event>
+
     <event name="preedit_string">
       <description summary="pre-edit">
         Notify when a new composing text (pre-edit) should be set around the
@@ -220,6 +238,7 @@
       <arg name="text" type="string"/>
       <arg name="commit" type="string"/>
     </event>
+
     <enum name="preedit_style">
       <entry name="default" value="0" summary="default style for composing text"/>
       <entry name="none" value="1" summary="style should be the same as in non-composing text"/>
@@ -230,6 +249,7 @@
       <entry name="selection" value="6"/>
       <entry name="incorrect" value="7"/>
     </enum>
+
     <event name="preedit_styling">
       <description summary="pre-edit styling">
         Sets styling information on composing text. The style is applied for
@@ -244,6 +264,7 @@
       <arg name="length" type="uint"/>
       <arg name="style" type="uint"/>
     </event>
+
     <event name="preedit_cursor">
       <description summary="pre-edit cursor">
         Sets the cursor position inside the composing text (as byte
@@ -254,6 +275,7 @@
       </description>
       <arg name="index" type="int"/>
     </event>
+
     <event name="commit_string">
       <description summary="commit">
         Notify when text should be inserted into the editor widget. The text to
@@ -267,6 +289,7 @@
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="text" type="string"/>
     </event>
+
     <event name="cursor_position">
       <description summary="set cursor to new position">
         Notify when the cursor or anchor position should be modified.
@@ -277,6 +300,7 @@
       <arg name="index" type="int"/>
       <arg name="anchor" type="int"/>
     </event>
+
     <event name="delete_surrounding_text">
       <description summary="delete surrounding text">
         Notify when the text around the current cursor position should be
@@ -291,6 +315,7 @@
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </event>
+
     <event name="keysym">
       <description summary="keysym">
         Notify when a key event was sent. Key events should not be used
@@ -306,6 +331,7 @@
       <arg name="state" type="uint"/>
       <arg name="modifiers" type="uint"/>
     </event>
+
     <event name="language">
       <description summary="language">
         Sets the language of the input text. The "language" argument is a RFC-3066 
@@ -314,11 +340,13 @@
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="language" type="string"/>
     </event>
+
     <enum name="text_direction">
       <entry name="auto" value="0" summary="automatic text direction based on text and language"/>
       <entry name="ltr" value="1" summary="left-to-right"/>
       <entry name="rtl" value="2" summary="right-to-left"/>
     </enum>
+
     <event name="text_direction">
       <description summary="text direction">
         Sets the text direction of input text.
@@ -336,6 +364,7 @@
     <description summary="text input manager">
       A factory for text-input objects. This object is a global singleton.
     </description>
+
     <request name="create_text_input">
       <description summary="create text input">
         Creates a new text-input object.
@@ -343,4 +372,5 @@
       <arg name="id" type="new_id" interface="wl_text_input"/>
     </request>
   </interface>
+
 </protocol>
