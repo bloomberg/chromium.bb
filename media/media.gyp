@@ -1005,8 +1005,6 @@
           'sources/': [
             # Pull in specific Mac files for iOS (which have been filtered out
             # by file name rules).
-            ['include', '^base/mac/avfoundation_glue\\.h$'],
-            ['include', '^base/mac/avfoundation_glue\\.mm$'],
             ['include', '^base/mac/coremedia_glue\\.h$'],
             ['include', '^base/mac/coremedia_glue\\.mm$'],
             ['include', '^base/mac/corevideo_glue\\.h$'],
