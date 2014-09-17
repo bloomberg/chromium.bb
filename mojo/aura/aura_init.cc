@@ -11,7 +11,7 @@
 namespace mojo {
 
 AuraInit::AuraInit() {
-  aura::Env::CreateInstance(true);
+  aura::Env::CreateInstance(false);
 
   context_factory_.reset(new ContextFactoryMojo);
   aura::Env::GetInstance()->set_context_factory(context_factory_.get());
