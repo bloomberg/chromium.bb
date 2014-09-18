@@ -28,6 +28,10 @@ ARCH_MAP = {
     }
 
 
+def RunningOnBuildbot():
+  return os.environ.get('BUILDBOT_SLAVE_TYPE') is not None
+
+
 def GetHostPlatform():
   sys_platform = sys.platform.lower()
   if sys_platform.startswith('linux'):
@@ -116,7 +120,7 @@ def SetupWindowsEnvironment(context):
 
 def SetupGyp(context, extra_vars=[]):
   context.SetEnv('GYP_GENERATORS', 'ninja')
-  if os.environ.get('BUILDBOT_BUILDERNAME'):
+  if RunningOnBuildbot():
     goma_opts = [
         'use_goma=1',
         'gomadir=/b/build/goma',

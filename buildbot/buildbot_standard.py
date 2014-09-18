@@ -17,7 +17,7 @@ from buildbot_lib import (
     ParseStandardCommandLine, RemoveDirectory, RemoveGypBuildDirectories,
     RemoveSconsBuildDirectories, RunBuild, SCons, SetupLinuxEnvironment,
     SetupMacEnvironment, SetupWindowsEnvironment, SetupAndroidEnvironment,
-    Step, StepLink, StepText, TryToCleanContents)
+    Step, StepLink, StepText, TryToCleanContents, RunningOnBuildbot)
 
 
 def SetupContextVars(context):
@@ -76,8 +76,16 @@ def ArchiveCoverage(context):
 
 
 def CommandGypBuild(context):
-  Command(context, cmd=[
-      'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
+  if RunningOnBuildbot():
+    Command(context, cmd=[
+        sys.executable, '/b/build/goma/goma_ctl.py', 'restart'])
+  try:
+    Command(context, cmd=[
+        'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
+  finally:
+    if RunningOnBuildbot():
+      Command(context, cmd=[
+          sys.executable, '/b/build/goma/goma_ctl.py', 'stop'])
 
 
 def CommandGypGenerate(context):
