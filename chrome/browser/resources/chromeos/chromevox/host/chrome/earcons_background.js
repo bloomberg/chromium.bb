@@ -59,8 +59,8 @@ cvox.EarconsBackground.prototype.playEarcon = function(earcon) {
 
   this.currentAudio = this.audioMap[earcon];
   if (!this.currentAudio) {
-    this.currentAudio = new Audio(this.getBaseUrl() +
-        this.getEarconFilename(earcon));
+    this.currentAudio = new Audio(chrome.extension.getURL(this.getBaseUrl() +
+        this.getEarconFilename(earcon)));
     this.audioMap[earcon] = this.currentAudio;
   }
   try {
@@ -78,4 +78,4 @@ cvox.EarconsBackground.prototype.playEarcon = function(earcon) {
  * The base URL for  loading eracons.
  * @type {string}
  */
-cvox.EarconsBackground.BASE_URL = 'earcons/';
+cvox.EarconsBackground.BASE_URL = 'chromevox/background/earcons/';
