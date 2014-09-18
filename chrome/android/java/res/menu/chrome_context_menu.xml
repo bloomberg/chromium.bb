@@ -12,6 +12,8 @@
             android:title="@string/contextmenu_open_in_incognito_tab"/>
         <item android:id="@+id/contextmenu_copy_link_address_text"
             android:title="@string/contextmenu_copy_link_address"/>
+        <item android:id="@+id/contextmenu_copy_email_address"
+            android:title="@string/contextmenu_copy_email_address"/>
         <item android:id="@+id/contextmenu_copy_link_text"
             android:title="@string/contextmenu_copy_link_text"/>
         <item android:id="@+id/contextmenu_save_link_as"

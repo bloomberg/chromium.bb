@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
+import android.net.MailTo;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.ContextMenu;
@@ -56,6 +57,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         if (params.getLinkText().trim().isEmpty()) {
             menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
+        }
+
+        if (MailTo.isMailTo(params.getLinkUrl())) {
+            menu.findItem(R.id.contextmenu_copy_link_address_text).setVisible(false);
+        } else {
+            menu.findItem(R.id.contextmenu_copy_email_address).setVisible(false);
         }
 
         menu.findItem(R.id.contextmenu_save_link_as).setVisible(
@@ -111,6 +118,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_copy_link_address_text) {
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(), true);
+        } else if (itemId == R.id.contextmenu_copy_email_address) {
+            mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(), false);
         } else if (itemId == R.id.contextmenu_copy_link_text) {
             mDelegate.onSaveToClipboard(params.getLinkText(), false);
         } else if (itemId == R.id.contextmenu_save_image ||
