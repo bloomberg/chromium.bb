@@ -2101,11 +2101,11 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return presentationModeController_.get() != nil;
 }
 
-- (void)enterPresentationModeForURL:(const GURL&)url
-                         bubbleType:(FullscreenExitBubbleType)bubbleType {
-  DCHECK(chrome::mac::SupportsSystemFullscreen());
-  fullscreenUrl_ = url;
-  fullscreenBubbleType_ = bubbleType;
+- (void)enterPresentationMode {
+  if (!chrome::mac::SupportsSystemFullscreen()) {
+    [self enterImmersiveFullscreen];
+    return;
+  }
 
   if ([self isInAppKitFullscreen]) {
     // Already in AppKit Fullscreen. Adjust the UI to use Presentation Mode.
@@ -2119,8 +2119,21 @@ willAnimateFromState:(BookmarkBar::State)oldState
   }
 }
 
-- (void)enterHTML5FullscreenForURL:(const GURL&)url
-                        bubbleType:(FullscreenExitBubbleType)bubbleType {
+- (void)enterExtensionFullscreenForURL:(const GURL&)url
+                            bubbleType:(FullscreenExitBubbleType)bubbleType {
+  if (chrome::mac::SupportsSystemFullscreen()) {
+    fullscreenUrl_ = url;
+    fullscreenBubbleType_ = bubbleType;
+    [self enterPresentationMode];
+  } else {
+    [self enterImmersiveFullscreen];
+    DCHECK(!url.is_empty());
+    [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
+  }
+}
+
+- (void)enterWebContentFullscreenForURL:(const GURL&)url
+                             bubbleType:(FullscreenExitBubbleType)bubbleType {
   [self enterImmersiveFullscreen];
   if (!url.is_empty())
     [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
