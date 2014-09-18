@@ -766,8 +766,6 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     // https://bugs.freedesktop.org/show_bug.cgi?id=5783
     // In Chrome, we map these X key symbols back to F13-18 since we don't have
     // VKEYs for these XF86XK symbols.
-    case XF86XK_Tools:
-      return VKEY_F13;
     case XF86XK_Launch5:
       return VKEY_F14;
     case XF86XK_Launch6:
@@ -815,6 +813,13 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XF86XK_LaunchB:  // F4 on an Apple keyboard.
     case XF86XK_Calculator:
       return VKEY_MEDIA_LAUNCH_APP2;
+
+    // XF86XK_Tools is generated from HID Usage AL_CONSUMER_CONTROL_CONFIG
+    // (Usage 0x0183, Page 0x0C) and most commonly launches the OS default
+    // media player (see crbug.com/398345).
+    case XF86XK_Tools:
+      return VKEY_MEDIA_LAUNCH_MEDIA_SELECT;
+
     case XF86XK_WLAN:
       return VKEY_WLAN;
     case XF86XK_PowerOff:
