@@ -22,27 +22,37 @@
 IPC_ENUM_TRAITS(media::MediaKeys::KeyError)
 IPC_ENUM_TRAITS(CdmHostMsg_CreateSession_ContentType)
 
-IPC_MESSAGE_ROUTED3(CdmHostMsg_InitializeCdm,
-                    int /* cdm_id */,
-                    std::string /* key_system */,
-                    GURL /* security_origin */)
+// Messages from render to browser.
 
-IPC_MESSAGE_ROUTED4(CdmHostMsg_CreateSession,
-                    int /* cdm_id */,
-                    uint32_t /* session_id */,
-                    CdmHostMsg_CreateSession_ContentType /* content_type */,
-                    std::vector<uint8> /* init_data */)
+IPC_MESSAGE_CONTROL4(CdmHostMsg_InitializeCdm,
+                     int /* render_frame_id */,
+                     int /* cdm_id */,
+                     std::string /* key_system */,
+                     GURL /* security_origin */)
 
-IPC_MESSAGE_ROUTED3(CdmHostMsg_UpdateSession,
-                    int /* cdm_id */,
-                    uint32_t /* session_id */,
-                    std::vector<uint8> /* response */)
+IPC_MESSAGE_CONTROL5(CdmHostMsg_CreateSession,
+                     int /* render_frame_id */,
+                     int /* cdm_id */,
+                     uint32_t /* session_id */,
+                     CdmHostMsg_CreateSession_ContentType /* content_type */,
+                     std::vector<uint8> /* init_data */)
 
-IPC_MESSAGE_ROUTED2(CdmHostMsg_ReleaseSession,
-                    int /* cdm_id */,
-                    uint32_t /* session_id */)
+IPC_MESSAGE_CONTROL4(CdmHostMsg_UpdateSession,
+                     int /* render_frame_id */,
+                     int /* cdm_id */,
+                     uint32_t /* session_id */,
+                     std::vector<uint8> /* response */)
 
-IPC_MESSAGE_ROUTED1(CdmHostMsg_DestroyCdm, int /* cdm_id */)
+IPC_MESSAGE_CONTROL3(CdmHostMsg_ReleaseSession,
+                     int /* render_frame_id */,
+                     int /* cdm_id */,
+                     uint32_t /* session_id */)
+
+IPC_MESSAGE_CONTROL2(CdmHostMsg_DestroyCdm,
+                     int /* render_frame_id */,
+                     int /* cdm_id */)
+
+// Messages from browser to render.
 
 IPC_MESSAGE_ROUTED3(CdmMsg_SessionCreated,
                     int /* cdm_id */,

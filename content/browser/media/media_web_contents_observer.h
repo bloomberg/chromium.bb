@@ -13,9 +13,7 @@
 namespace content {
 
 class BrowserCdmManager;
-#if defined(OS_ANDROID)
 class BrowserMediaPlayerManager;
-#endif  // defined(OS_ANDROID)
 class RenderViewHost;
 
 // This class manages all RenderFrame based media related managers at the
@@ -29,19 +27,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
 
   // WebContentsObserver implementations.
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
+
+#if defined(OS_ANDROID)
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
 
-  // Helper function to handle CDM IPC messages. Returns whether the |message|
-  // is handled in the function.
-  bool OnCdmMessageReceived(const IPC::Message& message,
-                            RenderFrameHost* render_frame_host);
-
-  // Gets the CDM manager associated with |render_frame_host|. Creates
-  // a new one if it doesn't exist. The caller doesn't own the returned pointer.
-  BrowserCdmManager* GetCdmManager(RenderFrameHost* render_frame_host);
-
-#if defined(OS_ANDROID)
   // Helper functions to handle media player IPC messages. Returns whether the
   // |message| is handled in the function.
   bool OnMediaPlayerMessageReceived(const IPC::Message& message,
@@ -63,20 +53,14 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
 
-#endif  // defined(OS_ANDROID)
-
  private:
-  // Map from RenderFrameHost* to BrowserCdmManager.
-  typedef base::ScopedPtrHashMap<uintptr_t, BrowserCdmManager> CdmManagerMap;
-  CdmManagerMap cdm_managers_;
-
-#if defined(OS_ANDROID)
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.
   typedef base::ScopedPtrHashMap<uintptr_t, BrowserMediaPlayerManager>
       MediaPlayerManagerMap;
   MediaPlayerManagerMap media_player_managers_;
 #endif  // defined(OS_ANDROID)
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserver);
 };
 

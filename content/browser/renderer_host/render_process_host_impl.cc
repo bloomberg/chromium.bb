@@ -159,6 +159,10 @@
 #include "ui/gfx/win/dpi.h"
 #endif
 
+#if defined(ENABLE_BROWSER_CDMS)
+#include "content/browser/media/cdm/browser_cdm_manager.h"
+#endif
+
 #if defined(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
 #endif
@@ -782,6 +786,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #elif defined(OS_ANDROID)
   browser_demuxer_android_ = new BrowserDemuxerAndroid();
   AddFilter(browser_demuxer_android_);
+#endif
+#if defined(ENABLE_BROWSER_CDMS)
+  browser_cdm_manager_ = new BrowserCdmManager(GetID(), NULL);
+  AddFilter(browser_cdm_manager_);
 #endif
 
   SocketStreamDispatcherHost::GetRequestContextCallback

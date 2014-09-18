@@ -36,6 +36,7 @@ class Size;
 
 namespace content {
 class AudioRendererHost;
+class BrowserCdmManager;
 class BrowserDemuxerAndroid;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
@@ -227,6 +228,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   }
 #endif
 
+#if defined(ENABLE_BROWSER_CDMS)
+  const scoped_refptr<BrowserCdmManager>& browser_cdm_manager() {
+    return browser_cdm_manager_;
+  }
+#endif
+
   MessagePortMessageFilter* message_port_message_filter() const {
     return message_port_message_filter_.get();
   }
@@ -413,6 +420,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
 #if defined(OS_ANDROID)
   scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;
+#endif
+
+#if defined(ENABLE_BROWSER_CDMS)
+  scoped_refptr<BrowserCdmManager> browser_cdm_manager_;
 #endif
 
 #if defined(ENABLE_WEBRTC)

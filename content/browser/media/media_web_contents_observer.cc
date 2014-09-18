@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/media/cdm/browser_cdm_manager.h"
-#include "content/common/media/cdm_messages.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -36,64 +36,31 @@ void MediaWebContentsObserver::RenderFrameDeleted(
 #if defined(OS_ANDROID)
   media_player_managers_.erase(key);
 #endif
-  cdm_managers_.erase(key);
+  // TODO(xhwang): Currently MediaWebContentsObserver, BrowserMediaPlayerManager
+  // and BrowserCdmManager all run on browser UI thread. So this call is okay.
+  // In the future we need to support the case where MediaWebContentsObserver
+  // get notified on browser UI thread, but BrowserMediaPlayerManager and
+  // BrowserCdmManager run on a different thread.
+  BrowserCdmManager* browser_cdm_manager =
+      BrowserCdmManager::FromProcess(render_frame_host->GetProcess()->GetID());
+  if (browser_cdm_manager)
+    browser_cdm_manager->RenderFrameDeleted(render_frame_host->GetRoutingID());
 }
+
+#if defined(OS_ANDROID)
 
 bool MediaWebContentsObserver::OnMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID)
-  // Handles MediaPlayer messages first because MediaPlayers messages are much
-  // more frequent than CDM messages.
   if (OnMediaPlayerMessageReceived(msg, render_frame_host))
     return true;
 
   if (OnMediaPlayerSetCdmMessageReceived(msg, render_frame_host))
     return true;
-#endif  // defined(OS_ANDROID)
-
-  if (OnCdmMessageReceived(msg, render_frame_host))
-    return true;
 
   return false;
 }
 
-bool MediaWebContentsObserver::OnCdmMessageReceived(
-    const IPC::Message& msg,
-    RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserver, msg)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_InitializeCdm,
-                        GetCdmManager(render_frame_host),
-                        BrowserCdmManager::OnInitializeCdm)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_CreateSession,
-                        GetCdmManager(render_frame_host),
-                        BrowserCdmManager::OnCreateSession)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_UpdateSession,
-                        GetCdmManager(render_frame_host),
-                        BrowserCdmManager::OnUpdateSession)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_ReleaseSession,
-                        GetCdmManager(render_frame_host),
-                        BrowserCdmManager::OnReleaseSession)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_DestroyCdm,
-                        GetCdmManager(render_frame_host),
-                        BrowserCdmManager::OnDestroyCdm)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-BrowserCdmManager* MediaWebContentsObserver::GetCdmManager(
-    RenderFrameHost* render_frame_host) {
-  uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
-  if (!cdm_managers_.contains(key)) {
-    cdm_managers_.set(
-        key, make_scoped_ptr(BrowserCdmManager::Create(render_frame_host)));
-  }
-  return cdm_managers_.get(key);
-}
-
-#if defined(OS_ANDROID)
 bool MediaWebContentsObserver::OnMediaPlayerMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
@@ -168,7 +135,16 @@ void MediaWebContentsObserver::OnSetCdm(RenderFrameHost* render_frame_host,
     return;
   }
 
-  media::BrowserCdm* cdm = GetCdmManager(render_frame_host)->GetCdm(cdm_id);
+  // MediaPlayerAndroid runs on the same thread as BrowserCdmManager.
+  BrowserCdmManager* browser_cdm_manager =
+      BrowserCdmManager::FromProcess(render_frame_host->GetProcess()->GetID());
+  if (!browser_cdm_manager) {
+    NOTREACHED() << "OnSetCdm: CDM not found for " << cdm_id;
+    return;
+  }
+
+  media::BrowserCdm* cdm =
+      browser_cdm_manager->GetCdm(render_frame_host->GetRoutingID(), cdm_id);
   if (!cdm) {
     NOTREACHED() << "OnSetCdm: CDM not found for " << cdm_id;
     return;
