@@ -39,8 +39,8 @@ LOCAL_SRC_FILES += \
 # Java files generated from .template rules. This list should match list of java dependencies in
 # android_webview/android_webview.gyp
 LOCAL_GENERATED_SOURCES := \
-$(call intermediates-dir-for,GYP,shared)/enums/org/chromium/ui/WindowOpenDisposition.java \
-$(call intermediates-dir-for,GYP,shared)/enums/org/chromium/ui/gfx/BitmapFormat.java \
+$(call intermediates-dir-for,GYP,shared)/enums/window_open_disposition_java/org/chromium/ui/WindowOpenDisposition.java \
+$(call intermediates-dir-for,GYP,shared)/enums/bitmap_format_java/org/chromium/ui/gfx/BitmapFormat.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ApplicationState.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/GestureEventType.java \
