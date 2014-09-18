@@ -427,7 +427,7 @@ source_set("browser") {
       "//device/hid",
       "//device/serial",
       "//device/usb",
-      "//extensions/common/api/cast_channel:cast_channel_proto",
+      "//extensions/browser/api/cast_channel:cast_channel_proto",
     ]
 
     if (use_openssl) {

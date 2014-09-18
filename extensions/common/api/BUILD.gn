@@ -20,7 +20,6 @@ generated_extensions_api("api_registration") {
   if (!is_android) {
     deps += [
       "//device/serial",
-      "//extensions/common/api/cast_channel:cast_channel_proto",
       "//skia",
     ]
   }
