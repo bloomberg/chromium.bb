@@ -15,9 +15,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/gcm_driver/gcm_driver.h"
+
+class PrefService;
 
 namespace base {
 class FilePath;
@@ -44,6 +47,7 @@ class GCMDriverDesktop : public GCMDriver {
   GCMDriverDesktop(
       scoped_ptr<GCMClientFactory> gcm_client_factory,
       const GCMClient::ChromeBuildInfo& chrome_build_info,
+      PrefService* prefs,
       const base::FilePath& store_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
@@ -83,6 +87,12 @@ class GCMDriverDesktop : public GCMDriver {
   //     to ensure that association between device and account is removed.
   void SetAccountsForCheckin(
       const std::map<std::string, std::string>& account_tokens);
+
+  // Exposed for testing purpose.
+  bool gcm_enabled() const { return gcm_enabled_; }
+  GCMChannelStatusSyncer* gcm_channel_status_syncer_for_testing() {
+    return &gcm_channel_status_syncer_;
+  }
 
  protected:
   // GCMDriver implementation:
@@ -125,6 +135,8 @@ class GCMDriverDesktop : public GCMDriver {
 
   void GetGCMStatisticsFinished(const GCMClient::GCMStatistics& stats);
 
+  GCMChannelStatusSyncer gcm_channel_status_syncer_;
+
   // Flag to indicate whether the user is signed in to a GAIA account.
   // TODO(jianli): To be removed when sign-in enforcement is dropped.
   bool signed_in_;
@@ -133,6 +145,7 @@ class GCMDriverDesktop : public GCMDriver {
   bool gcm_started_;
 
   // Flag to indicate if GCM is enabled.
+  // TODO(jianli): Removed when we switch completely to support all users.
   bool gcm_enabled_;
 
   // Flag to indicate the last known state of the GCM client. Because this

@@ -73,6 +73,7 @@ GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
 
 scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
+    PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context) {
   scoped_refptr<base::SequencedWorkerPool> worker_pool(
@@ -84,6 +85,7 @@ scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
   return scoped_ptr<GCMDriver>(new GCMDriverDesktop(
       gcm_client_factory.Pass(),
       GetChromeBuildInfo(),
+      prefs,
       store_path,
       request_context,
       content::BrowserThread::GetMessageLoopProxyForThread(
