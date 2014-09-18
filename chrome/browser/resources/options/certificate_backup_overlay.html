@@ -4,23 +4,19 @@
   <div class="content-area">
     <table>
       <tr>
+        <td id="certificate-backup-password-label"
+            i18n-content="certificatePasswordLabel"></td>
         <td>
-          <label for="certificateBackupPassword">
-            <span i18n-content="certificatePasswordLabel"></span>
-          </label>
-        </td>
-        <td>
-          <input id="certificateBackupPassword" type="password">
+          <input id="certificateBackupPassword" type="password"
+              aria-labelledby="certificate-backup-password-label">
         </td>
       </tr>
       <tr>
+        <td id="certificate-backup-password-2-label"
+            i18n-content="certificateConfirmPasswordLabel"></td>
         <td>
-          <label for="certificateBackupPassword2">
-            <span i18n-content="certificateConfirmPasswordLabel"></span>
-          </label>
-        </td>
-        <td>
-          <input id="certificateBackupPassword2" type="password">
+          <input id="certificateBackupPassword2" type="password"
+              aria-labelledby="certificate-backup-password-2-label">
         </td>
       </tr>
     </table>
