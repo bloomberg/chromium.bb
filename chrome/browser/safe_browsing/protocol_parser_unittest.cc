@@ -508,6 +508,28 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
   EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[1].list_id);
 }
 
+TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
+  std::vector<SBFullHashResult> full_hashes;
+  base::TimeDelta cache_lifetime;
+  // Test skipping over a hashentry with an unrecognized listname that also has
+  // metadata.
+  const std::string get_hash3(base::StringPrintf(
+      "600\n"
+      "BADLISTNAME:32:1:m\n"
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      "8\nMETADATA"
+      "%s:32:1\n"
+      "0123456789hashhashhashhashhashha",
+      kDefaultMalwareList));
+  EXPECT_TRUE(safe_browsing::ParseGetHash(get_hash3.data(), get_hash3.length(),
+                                          &cache_lifetime, &full_hashes));
+  ASSERT_EQ(1U, full_hashes.size());
+  EXPECT_EQ(memcmp(&full_hashes[0].hash,
+                   "0123456789hashhashhashhashhashha",
+                   sizeof(SBFullHash)), 0);
+  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[0].list_id);
+}
+
 TEST(SafeBrowsingProtocolParsingTest, TestFormatHash) {
   std::vector<SBPrefix> prefixes;
   prefixes.push_back(0x34333231);

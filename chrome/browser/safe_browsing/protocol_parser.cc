@@ -131,6 +131,23 @@ class BufferReader {
   DISALLOW_COPY_AND_ASSIGN(BufferReader);
 };
 
+bool ParseGetHashMetadata(size_t hash_count, BufferReader* reader) {
+  for (size_t i = 0; i < hash_count; ++i) {
+    base::StringPiece line;
+    if (!reader->GetLine(&line))
+      return false;
+
+    size_t meta_data_len;
+    if (!base::StringToSizeT(line, &meta_data_len))
+      return false;
+
+    const void* meta_data;
+    if (!reader->RefData(&meta_data, meta_data_len))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -206,6 +223,8 @@ bool ParseGetHash(const char* chunk_data,
     // Ignore hash results from lists we don't recognize.
     if (full_hash.list_id < 0) {
       reader.Advance(hash_len * hash_count);
+      if (has_metadata && !ParseGetHashMetadata(hash_count, &reader))
+        return false;
       continue;
     }
 
@@ -216,21 +235,9 @@ bool ParseGetHash(const char* chunk_data,
     }
 
     // Discard the metadata for now.
-    if (has_metadata) {
-      for (size_t i = 0; i < hash_count; ++i) {
-        base::StringPiece line;
-        if (!reader.GetLine(&line))
-          return false;
-
-        size_t meta_data_len;
-        if (!base::StringToSizeT(line, &meta_data_len))
-          return false;
-
-        const void* meta_data;
-        if (!reader.RefData(&meta_data, meta_data_len))
-          return false;
-      }
-    }
+    // TODO(mattm): handle the metadata (see crbug.com/176648).
+    if (has_metadata && !ParseGetHashMetadata(hash_count, &reader))
+      return false;
   }
 
   return reader.empty();
