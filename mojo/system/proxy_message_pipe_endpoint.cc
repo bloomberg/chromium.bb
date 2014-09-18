@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 
@@ -81,14 +82,17 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
   }
 }
 
-void ProxyMessagePipeEndpoint::Attach(scoped_refptr<Channel> channel,
+void ProxyMessagePipeEndpoint::Attach(ChannelEndpoint* channel_endpoint,
+                                      Channel* channel,
                                       MessageInTransit::EndpointId local_id) {
-  DCHECK(channel.get());
+  DCHECK(channel_endpoint);
+  DCHECK(channel);
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
   DCHECK(!is_attached());
 
   AssertConsistentState();
+  channel_endpoint_ = channel_endpoint;
   channel_ = channel;
   local_id_ = local_id;
   AssertConsistentState();
@@ -127,6 +131,8 @@ void ProxyMessagePipeEndpoint::Detach() {
   AssertConsistentState();
   channel_->DetachMessagePipeEndpoint(local_id_, remote_id_);
   channel_ = NULL;
+  // TODO(vtl): Inform |channel_endpoint_| that we were detached.
+  channel_endpoint_ = NULL;
   local_id_ = MessageInTransit::kInvalidEndpointId;
   remote_id_ = MessageInTransit::kInvalidEndpointId;
   paused_message_queue_.Clear();

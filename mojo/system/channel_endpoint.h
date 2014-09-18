@@ -114,10 +114,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // |Channel::AttachMessagePipeEndpoint()| to a |Channel::AttachEndpoint()|
   // that takes a |ChannelEndpoint|, and move |ChannelEndpoint| creation out of
   // |Channel|.)
-  ChannelEndpoint(MessagePipe* message_pipe,
-                  unsigned port,
-                  Channel* channel,
-                  MessageInTransit::EndpointId local_id);
+  ChannelEndpoint(MessagePipe* message_pipe, unsigned port);
+
+  void AttachToChannel(Channel* channel, MessageInTransit::EndpointId local_id);
+  void Run(MessageInTransit::EndpointId remote_id);
 
   // Called by |Channel| before it gives up its reference to this object.
   void DetachFromChannel();
@@ -142,6 +142,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   ~ChannelEndpoint();
 
   State state_;
+  // TODO(vtl): When moved under lock, this can/should be made a raw pointer.
   scoped_refptr<MessagePipe> message_pipe_;
   unsigned port_;
 
@@ -149,12 +150,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // Protects the members below.
   base::Lock lock_;
 
-  // |channel_| must be alive whenever this is nonnull. Before the |channel_|
+  // |channel_| must be alive whenever this is non-null. Before the |channel_|
   // gives up its reference to this object, it will call |DetachFromChannel()|.
   Channel* channel_;
   MessageInTransit::EndpointId local_id_;
-  // TODO(vtl):
-  // MessageInTransit::EndpointId remote_id_;
+  MessageInTransit::EndpointId remote_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelEndpoint);
 };

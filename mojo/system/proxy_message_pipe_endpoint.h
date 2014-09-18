@@ -19,6 +19,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class ChannelEndpoint;
 class LocalMessagePipeEndpoint;
 class MessagePipe;
 
@@ -54,7 +55,8 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   virtual Type GetType() const OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
-  virtual void Attach(scoped_refptr<Channel> channel,
+  virtual void Attach(ChannelEndpoint* channel_endpoint,
+                      Channel* channel,
                       MessageInTransit::EndpointId local_id) OVERRIDE;
   virtual bool Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
   virtual void OnRemove() OVERRIDE;
@@ -74,6 +76,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     return remote_id_ != MessageInTransit::kInvalidEndpointId;
   }
 
+  // This should only be set if we're attached.
+  scoped_refptr<ChannelEndpoint> channel_endpoint_;
+
+  // TODO(vtl): Remove this, local_id_, and remote_id_.
   // This should only be set if we're attached.
   scoped_refptr<Channel> channel_;
 

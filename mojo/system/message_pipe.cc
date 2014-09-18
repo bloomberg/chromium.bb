@@ -5,7 +5,6 @@
 #include "mojo/system/message_pipe.h"
 
 #include "base/logging.h"
-#include "mojo/system/channel.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_dispatcher.h"
@@ -178,10 +177,12 @@ MojoResult MessagePipe::EnqueueMessage(unsigned port,
 }
 
 bool MessagePipe::Attach(unsigned port,
-                         scoped_refptr<Channel> channel,
+                         ChannelEndpoint* channel_endpoint,
+                         Channel* channel,
                          MessageInTransit::EndpointId local_id) {
   DCHECK(port == 0 || port == 1);
-  DCHECK(channel.get());
+  DCHECK(channel_endpoint);
+  DCHECK(channel);
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);
@@ -189,7 +190,7 @@ bool MessagePipe::Attach(unsigned port,
     return false;
 
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeProxy);
-  endpoints_[port]->Attach(channel, local_id);
+  endpoints_[port]->Attach(channel_endpoint, channel, local_id);
   return true;
 }
 

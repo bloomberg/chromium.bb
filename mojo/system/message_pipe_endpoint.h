@@ -23,6 +23,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class ChannelEndpoint;
 class Waiter;
 
 // This is an interface to one of the ends of a message pipe, and is used by
@@ -74,7 +75,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // Implementations must override these if they represent a proxy endpoint. An
   // implementation for a local endpoint needs not override these methods, since
   // they should never be called.
-  virtual void Attach(scoped_refptr<Channel> channel,
+  virtual void Attach(ChannelEndpoint* channel_endpoint,
+                      Channel* channel,
                       MessageInTransit::EndpointId local_id);
   // Returns false if the endpoint should be closed and destroyed, else true.
   virtual bool Run(MessageInTransit::EndpointId remote_id);

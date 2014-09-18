@@ -26,6 +26,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class ChannelEndpoint;
 class Waiter;
 
 // |MessagePipe| is the secondary object implementing a message pipe (see the
@@ -96,7 +97,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
 
   // These are used by |Channel|.
   bool Attach(unsigned port,
-              scoped_refptr<Channel> channel,
+              ChannelEndpoint* channel_endpoint,
+              Channel* channel,
               MessageInTransit::EndpointId local_id);
   void Run(unsigned port, MessageInTransit::EndpointId remote_id);
   void OnRemove(unsigned port);

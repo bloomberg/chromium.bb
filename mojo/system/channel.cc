@@ -113,12 +113,13 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
 
     local_id = next_local_id_;
     next_local_id_++;
-    endpoint = new ChannelEndpoint(message_pipe.get(), port, this, local_id);
+    endpoint = new ChannelEndpoint(message_pipe.get(), port);
     local_id_to_endpoint_map_[local_id] = endpoint;
   }
 
+  endpoint->AttachToChannel(this, local_id);
   // This might fail if that port got an |OnPeerClose()| before attaching.
-  if (message_pipe->Attach(port, scoped_refptr<Channel>(this), local_id))
+  if (message_pipe->Attach(port, endpoint.get(), this, local_id))
     return local_id;
 
   // Note: If it failed, quite possibly the endpoint info was removed from that
@@ -147,6 +148,7 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
 
 bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                      MessageInTransit::EndpointId remote_id) {
+  scoped_refptr<ChannelEndpoint> endpoint;
   ChannelEndpoint::State state;
   scoped_refptr<MessagePipe> message_pipe;
   unsigned port;
@@ -160,6 +162,7 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
         local_id_to_endpoint_map_.find(local_id);
     if (it == local_id_to_endpoint_map_.end())
       return false;
+    endpoint = it->second;
     state = it->second->state_;
     message_pipe = it->second->message_pipe_;
     port = it->second->port_;
@@ -175,6 +178,8 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
 
   // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
   // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
+  endpoint->Run(remote_id);
+  // TODO(vtl): Get rid of this.
   message_pipe->Run(port, remote_id);
   return true;
 }
