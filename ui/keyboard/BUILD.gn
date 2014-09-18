@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/grit_rule.gni")
 
 component("keyboard") {
@@ -22,15 +23,25 @@ component("keyboard") {
     "keyboard_switches.h",
     "keyboard_util.cc",
     "keyboard_util.h",
+    "webui/vk_mojo_handler.cc",
+    "webui/vk_mojo_handler.h",
+    "webui/vk_webui_controller.cc",
+    "webui/vk_webui_controller.h",
   ]
 
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
 
   deps = [
+    ":keyboard_mojom_bindings",
     ":resources",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
+    "//content/public/common",
+    "//mojo/public/cpp/bindings",
+    "//mojo/environment:chromium",
+    "//mojo/bindings/js",
+    "//mojo/system",
     "//url",
     "//ui/aura",
     "//ui/base",
@@ -38,13 +49,15 @@ component("keyboard") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/keyboard/webui",
     "//ui/wm",
   ]
+}
 
-  # http://crbug.com/408651 Include cycle between this target and the "webui"
-  # sub-target.
-  allow_circular_includes_from = [ "//ui/keyboard/webui" ]
+# GYP version: ui/keyboard/keyboard.gyp:keyboard_mojom_bindings
+mojom("keyboard_mojom_bindings") {
+  sources = [
+    "webui/keyboard.mojom",
+  ]
 }
 
 grit("resources_grit") {
@@ -63,7 +76,7 @@ grit("resources_grit") {
   ]
 
   deps = [
-    "webui:mojo_bindings"
+    ":keyboard_mojom_bindings",
   ]
 }
 
