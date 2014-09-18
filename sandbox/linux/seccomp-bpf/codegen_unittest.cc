@@ -84,28 +84,29 @@ Instruction* SampleProgramComplex(CodeGen* codegen, int* flags) {
   //    JUMP if eq 42 the $0 else $1     (insn6)
   // 0: LD 23                            (insn5)
   // 1: JUMP if eq 42 then $2 else $4    (insn4)
-  // 2: JUMP to $3                       (insn1)
-  // 3: LD 42                            (insn0)
-  //    RET 42                           (insn2)
+  // 2: JUMP to $3                       (insn2)
+  // 3: LD 42                            (insn1)
+  //    RET 42                           (insn0)
   // 4: LD 42                            (insn3)
   //    RET 42                           (insn3+)
   *flags = HAS_MERGEABLE_TAILS;
 
-  Instruction* insn0 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42);
+  Instruction* insn0 = codegen->MakeInstruction(BPF_RET + BPF_K, 42);
   SANDBOX_ASSERT(insn0);
-  SANDBOX_ASSERT(insn0->code == BPF_LD + BPF_W + BPF_ABS);
-  SANDBOX_ASSERT(insn0->k == 42);
+  SANDBOX_ASSERT(insn0->code == BPF_RET + BPF_K);
   SANDBOX_ASSERT(insn0->next == NULL);
 
-  Instruction* insn1 = codegen->MakeInstruction(BPF_JMP + BPF_JA, 0, insn0);
+  Instruction* insn1 =
+      codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42, insn0);
   SANDBOX_ASSERT(insn1);
-  SANDBOX_ASSERT(insn1->code == BPF_JMP + BPF_JA);
-  SANDBOX_ASSERT(insn1->jt_ptr == insn0);
+  SANDBOX_ASSERT(insn1->code == BPF_LD + BPF_W + BPF_ABS);
+  SANDBOX_ASSERT(insn1->k == 42);
+  SANDBOX_ASSERT(insn1->next == insn0);
 
-  Instruction* insn2 = codegen->MakeInstruction(BPF_RET + BPF_K, 42);
+  Instruction* insn2 = codegen->MakeInstruction(BPF_JMP + BPF_JA, 0, insn1);
   SANDBOX_ASSERT(insn2);
-  SANDBOX_ASSERT(insn2->code == BPF_RET + BPF_K);
-  SANDBOX_ASSERT(insn2->next == NULL);
+  SANDBOX_ASSERT(insn2->code == BPF_JMP + BPF_JA);
+  SANDBOX_ASSERT(insn2->jt_ptr == insn1);
 
   // We explicitly duplicate instructions so that MergeTails() can coalesce
   // them later.
@@ -115,15 +116,12 @@ Instruction* SampleProgramComplex(CodeGen* codegen, int* flags) {
       codegen->MakeInstruction(BPF_RET + BPF_K, 42));
 
   Instruction* insn4 =
-      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, insn1, insn3);
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, insn2, insn3);
   SANDBOX_ASSERT(insn4);
   SANDBOX_ASSERT(insn4->code == BPF_JMP + BPF_JEQ + BPF_K);
   SANDBOX_ASSERT(insn4->k == 42);
-  SANDBOX_ASSERT(insn4->jt_ptr == insn1);
+  SANDBOX_ASSERT(insn4->jt_ptr == insn2);
   SANDBOX_ASSERT(insn4->jf_ptr == insn3);
-
-  codegen->JoinInstructions(insn0, insn2);
-  SANDBOX_ASSERT(insn0->next == insn2);
 
   Instruction* insn5 =
       codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 23, insn4);

@@ -181,43 +181,12 @@ Instruction* CodeGen::MakeInstruction(uint16_t code,
   if (BPF_CLASS(code) != BPF_JMP || BPF_OP(code) == BPF_JA) {
     SANDBOX_DIE("Expected a BPF_JMP instruction");
   }
-  if (!jt && !jf) {
-    // We allow callers to defer specifying exactly one of the branch
-    // targets. It must then be set later by calling "JoinInstructions".
+  if (!jt || !jf) {
     SANDBOX_DIE("Branches must jump to a valid instruction");
   }
   Instruction* insn = new Instruction(code, k, jt, jf);
   instructions_.push_back(insn);
   return insn;
-}
-
-void CodeGen::JoinInstructions(Instruction* head, Instruction* tail) {
-  // Merge two instructions, or set the branch target for an "always" jump.
-  // This function should be called, if the caller didn't initially provide
-  // a value for "next" when creating the instruction.
-  if (BPF_CLASS(head->code) == BPF_JMP) {
-    if (BPF_OP(head->code) == BPF_JA) {
-      if (head->jt_ptr) {
-        SANDBOX_DIE("Cannot append instructions in the middle of a sequence");
-      }
-      head->jt_ptr = tail;
-    } else {
-      if (!head->jt_ptr && head->jf_ptr) {
-        head->jt_ptr = tail;
-      } else if (!head->jf_ptr && head->jt_ptr) {
-        head->jf_ptr = tail;
-      } else {
-        SANDBOX_DIE("Cannot append instructions after a jump");
-      }
-    }
-  } else if (BPF_CLASS(head->code) == BPF_RET) {
-    SANDBOX_DIE("Cannot append instructions after a return statement");
-  } else if (head->next) {
-    SANDBOX_DIE("Cannot append instructions in the middle of a sequence");
-  } else {
-    head->next = tail;
-  }
-  return;
 }
 
 void CodeGen::Traverse(Instruction* instruction,

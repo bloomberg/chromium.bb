@@ -30,20 +30,18 @@ typedef std::map<const BasicBlock*, int> IncomingBranches;
 // build a DAG of Instructions. They'll eventually call Compile() to convert
 // this DAG to a SandboxBPF::Program.
 //
-// Instructions can be chained at the time when they are created, or they
-// can be joined later by calling JoinInstructions().
-//
 //   CodeGen gen;
-//   Instruction *dag, *branch;
-//   dag =
-//     gen.MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-//                         offsetof(struct arch_seccomp_data, nr),
-//   branch =
-//     gen.MakeInstruction(BPF_JMP+BPF_EQ+BPF_K, __NR_getpid,
-//                         Trap(GetPidHandler, NULL), NULL);
-//   gen.JoinInstructions(branch,
+//   Instruction *allow, *branch, *dag;
+//
+//   allow =
 //     gen.MakeInstruction(BPF_RET+BPF_K,
 //                         ErrorCode(ErrorCode::ERR_ALLOWED).err()));
+//   branch =
+//     gen.MakeInstruction(BPF_JMP+BPF_EQ+BPF_K, __NR_getpid,
+//                         Trap(GetPidHandler, NULL), allow);
+//   dag =
+//     gen.MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+//                         offsetof(struct arch_seccomp_data, nr), branch);
 //
 //   // Simplified code follows; in practice, it is important to avoid calling
 //   // any C++ destructors after starting the sandbox.
@@ -73,11 +71,6 @@ class SANDBOX_EXPORT CodeGen {
                                uint32_t k,
                                Instruction* jt,
                                Instruction* jf);
-
-  // Join two (sequences of) instructions. This is useful, if the "next"
-  // parameter had not originally been given in the call to MakeInstruction(),
-  // or if a (conditional) jump still has an unsatisfied target.
-  void JoinInstructions(Instruction* head, Instruction* tail);
 
   // Traverse the graph of instructions and visit each instruction once.
   // Traversal order is implementation-defined. It is acceptable to make
