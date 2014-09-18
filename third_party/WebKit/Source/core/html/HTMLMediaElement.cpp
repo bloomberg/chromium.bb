@@ -323,6 +323,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_previousProgressTime(std::numeric_limits<double>::max())
     , m_duration(std::numeric_limits<double>::quiet_NaN())
     , m_lastTimeUpdateEventWallTime(0)
+    , m_lastTimeUpdateEventMovieTime(std::numeric_limits<double>::max())
     , m_defaultPlaybackStartPosition(0)
     , m_loadState(WaitingForSource)
     , m_deferredLoadState(NotDeferred)
@@ -2452,14 +2453,19 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
 void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
 {
     double now = WTF::currentTime();
-    double timedelta = now - m_lastTimeUpdateEventWallTime;
+    double movieTime = currentTime();
 
-    // throttle the periodic events
-    if (periodicEvent && timedelta < maxTimeupdateEventFrequency)
-        return;
+    bool haveNotRecentlyFiredTimeupdate = (now - m_lastTimeUpdateEventWallTime) >= maxTimeupdateEventFrequency;
+    bool movieTimeHasProgressed = movieTime != m_lastTimeUpdateEventMovieTime;
 
-    scheduleEvent(EventTypeNames::timeupdate);
-    m_lastTimeUpdateEventWallTime = now;
+    // Non-periodic timeupdate events must always fire as mandated by the spec,
+    // otherwise we shouldn't fire duplicate periodic timeupdate events when the
+    // movie time hasn't changed.
+    if (!periodicEvent || (haveNotRecentlyFiredTimeupdate && movieTimeHasProgressed)) {
+        scheduleEvent(EventTypeNames::timeupdate);
+        m_lastTimeUpdateEventWallTime = now;
+        m_lastTimeUpdateEventMovieTime = movieTime;
+    }
 }
 
 bool HTMLMediaElement::togglePlayStateWillPlay() const
