@@ -57,8 +57,6 @@ TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset([
                                             # InspectorResourceAgent needs to update mime-type.
                                             "Network.Response"])
 
-EXACTLY_INT_SUPPORTED = False
-
 cmdline_parser = optparse.OptionParser()
 cmdline_parser.add_option("--output_dir")
 
@@ -602,23 +600,10 @@ class TypeModel:
             def get_event_setter_expression_pattern():
                 return "*%s"
 
-    class ExactlyInt(ValueType):
-        def __init__(self):
-            TypeModel.ValueType.__init__(self, "int", False)
-
-        def get_input_param_type_text(self):
-            return "TypeBuilder::ExactlyInt"
-
-        def get_opt_output_type_(self):
-            return "TypeBuilder::ExactlyInt"
-
     @classmethod
     def init_class(cls):
         cls.Bool = cls.ValueType("bool", False)
-        if EXACTLY_INT_SUPPORTED:
-            cls.Int = cls.ExactlyInt()
-        else:
-            cls.Int = cls.ValueType("int", False)
+        cls.Int = cls.ValueType("int", False)
         cls.Number = cls.ValueType("double", False)
         cls.String = cls.ValueType("String", True,)
         cls.Object = cls.RefPtrBased("JSONObject")
@@ -2167,40 +2152,8 @@ def flatten_list(input):
     fill_recursive(input)
     return res
 
-
-# A writer that only updates file if it actually changed to better support incremental build.
-class SmartOutput:
-    def __init__(self, file_name):
-        self.file_name_ = file_name
-        self.output_ = ""
-
-    def write(self, text):
-        self.output_ += text
-
-    def close(self):
-        text_changed = True
-
-        try:
-            read_file = open(self.file_name_, "r")
-            old_text = read_file.read()
-            read_file.close()
-            text_changed = old_text != self.output_
-        except:
-            # Ignore, just overwrite by default
-            pass
-
-        if text_changed:
-            out_file = open(self.file_name_, "w")
-            out_file.write(self.output_)
-            out_file.close()
-
-
 def output_file(file_name):
-    # For now, disable the incremental build optimisation in all cases.
-    if False:
-        return SmartOutput(file_name)
-    else:
-        return open(file_name, "w")
+    return open(file_name, "w")
 
 
 Generator.go()

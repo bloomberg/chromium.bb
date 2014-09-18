@@ -584,30 +584,6 @@ private:
     WTF_MAKE_NONCOPYABLE(OptOutput);
 };
 
-
-// A small transient wrapper around int type, that can be used as a funciton parameter type
-// cleverly disallowing C++ implicit casts from float or double.
-class ExactlyInt {
-public:
-    template<typename T>
-    ExactlyInt(T t) : m_value(cast_to_int<T>(t)) {}
-
-    ExactlyInt() {}
-
-    operator int() { return m_value; }
-private:
-    int m_value;
-
-    template<typename T>
-    static int cast_to_int(T) { return T::default_case_cast_is_not_supported(); }
-};
-
-template<>
-inline int ExactlyInt::cast_to_int<int>(int i) { return i; }
-
-template<>
-inline int ExactlyInt::cast_to_int<unsigned int>(unsigned int i) { return i; }
-
 class RuntimeCastHelper {
 public:
 #if $validatorIfdefName
