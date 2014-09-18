@@ -3,9 +3,8 @@ caitkp@chromium.org
 erikwright@chromium.org
 jochen@chromium.org
 
-per-file autofill*=dhollowa@chromium.org
+per-file autofill*=estade@chromium.org
 per-file autofill*=isherman@chromium.org
-per-file autofill*=kaiwang@chromium.org
 
 per-file bookmarks.gypi=sky@chromium.org
 
