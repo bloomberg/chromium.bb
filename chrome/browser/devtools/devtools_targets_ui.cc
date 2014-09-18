@@ -156,6 +156,9 @@ class LocalTargetsUIHandler
   explicit LocalTargetsUIHandler(const Callback& callback);
   virtual ~LocalTargetsUIHandler();
 
+  // DevToolsTargetsUIHandler overrides.
+  virtual void ForceUpdate() OVERRIDE;
+
 private:
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
@@ -203,6 +206,10 @@ void LocalTargetsUIHandler::Observe(
   ScheduleUpdate();
 }
 
+void LocalTargetsUIHandler::ForceUpdate() {
+  ScheduleUpdate();
+}
+
 void LocalTargetsUIHandler::ScheduleUpdate() {
   const int kUpdateDelay = 100;
   timer_.reset(
@@ -227,18 +234,13 @@ void LocalTargetsUIHandler::SendTargets(
   for (DevToolsTargetImpl::List::const_iterator it = targets.begin();
       it != targets.end(); ++it) {
     DevToolsTargetImpl* target = *it;
-    if (target->GetType() == DevToolsTargetImpl::kTargetTypeServiceWorker)
-      continue;
     targets_[target->GetId()] = target;
     id_to_descriptor[target->GetId()] = Serialize(*target);
   }
 
   for (TargetMap::iterator it(targets_.begin()); it != targets_.end(); ++it) {
     DevToolsTargetImpl* target = it->second;
-    if (target->GetType() == DevToolsTargetImpl::kTargetTypeServiceWorker)
-      continue;
     base::DictionaryValue* descriptor = id_to_descriptor[target->GetId()];
-
     std::string parent_id = target->GetParentId();
     if (parent_id.empty() || id_to_descriptor.count(parent_id) == 0) {
       list_value.Append(descriptor);
@@ -473,6 +475,9 @@ base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
 void DevToolsTargetsUIHandler::SendSerializedTargets(
     const base::ListValue& list) {
   callback_.Run(source_id_, list);
+}
+
+void DevToolsTargetsUIHandler::ForceUpdate() {
 }
 
 // PortForwardingStatusSerializer ---------------------------------------------

@@ -68,7 +68,13 @@ DevToolsAgentHost::Type EmbeddedWorkerDevToolsAgentHost::GetType() {
 }
 
 std::string EmbeddedWorkerDevToolsAgentHost::GetTitle() {
-  return shared_worker_ ? base::UTF16ToUTF8(shared_worker_->name()) : "";
+  if (shared_worker_ && shared_worker_->name().length())
+    return base::UTF16ToUTF8(shared_worker_->name());
+  if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
+    return base::StringPrintf("Worker pid:%d",
+                              base::GetProcId(host->GetHandle()));
+  }
+  return "";
 }
 
 GURL EmbeddedWorkerDevToolsAgentHost::GetURL() {

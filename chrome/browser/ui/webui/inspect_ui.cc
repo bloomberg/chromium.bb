@@ -275,29 +275,41 @@ void InspectUI::InitUI() {
 void InspectUI::Inspect(const std::string& source_id,
                         const std::string& target_id) {
   DevToolsTargetImpl* target = FindTarget(source_id, target_id);
-  if (target)
+  if (target) {
+    const std::string target_type = target->GetType();
     target->Inspect(Profile::FromWebUI(web_ui()));
+    ForceUpdateIfNeeded(source_id, target_type);
+  }
 }
 
 void InspectUI::Activate(const std::string& source_id,
                          const std::string& target_id) {
   DevToolsTargetImpl* target = FindTarget(source_id, target_id);
-  if (target)
+  if (target) {
+    const std::string target_type = target->GetType();
     target->Activate();
+    ForceUpdateIfNeeded(source_id, target_type);
+  }
 }
 
 void InspectUI::Close(const std::string& source_id,
                       const std::string& target_id) {
   DevToolsTargetImpl* target = FindTarget(source_id, target_id);
-  if (target)
+  if (target) {
+    const std::string target_type = target->GetType();
     target->Close();
+    ForceUpdateIfNeeded(source_id, target_type);
+  }
 }
 
 void InspectUI::Reload(const std::string& source_id,
                        const std::string& target_id) {
   DevToolsTargetImpl* target = FindTarget(source_id, target_id);
-  if (target)
+  if (target) {
+    const std::string target_type = target->GetType();
     target->Reload();
+    ForceUpdateIfNeeded(source_id, target_type);
+  }
 }
 
 static void NoOp(DevToolsTargetImpl*) {}
@@ -526,6 +538,17 @@ void InspectUI::PopulateTargets(const std::string& source,
   web_ui()->CallJavascriptFunction("populateTargets",
                                    base::StringValue(source),
                                    targets);
+}
+
+void InspectUI::ForceUpdateIfNeeded(const std::string& source_id,
+                                    const std::string& target_type) {
+  // TODO(dgozman): remove this after moving discovery to protocol.
+  // See crbug.com/398049.
+  if (target_type != DevToolsTargetImpl::kTargetTypeServiceWorker)
+    return;
+  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
+  if (handler)
+    handler->ForceUpdate();
 }
 
 void InspectUI::PopulatePortStatus(const base::Value& status) {

@@ -46,6 +46,8 @@ class DevToolsTargetsUIHandler {
   virtual scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       const std::string& browser_id);
 
+  virtual void ForceUpdate();
+
  protected:
   base::DictionaryValue* Serialize(const DevToolsTargetImpl& target);
   void SendSerializedTargets(const base::ListValue& list);

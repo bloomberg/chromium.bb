@@ -6,18 +6,7 @@ cr.define('serviceworker', function() {
   'use strict';
 
   function initialize() {
-    if (window.location.hash == "#iframe") {
-      // This page is loaded from chrome://inspect.
-      window.addEventListener('message', onMessage.bind(this), false);
-    }
     update();
-  }
-
-  function onMessage(event) {
-    if (event.origin != 'chrome://inspect') {
-      return;
-    }
-    sendCommand(event.data.action, event.data.worker);
   }
 
   function update() {
@@ -85,31 +74,6 @@ cr.define('serviceworker', function() {
     update();
   }
 
-  // Send the active ServiceWorker information to chrome://inspect.
-  function sendToInspectPage(live_registrations,
-                 partition_id) {
-    var workers = [];
-    live_registrations.forEach(function(registration) {
-      [registration.active, registration.waiting].forEach(function(version) {
-        if (!version || version.running_status != 'RUNNING') {
-          return;
-        }
-        workers.push({
-          'scope': registration.scope,
-          'url': version.script_url,
-          'partition_id': partition_id,
-          'version_id': version.version_id,
-          'process_id': version.process_id,
-          'devtools_agent_route_id':
-            version.devtools_agent_route_id
-        });
-      });
-    });
-    window.parent.postMessage(
-        {'partition_id': partition_id, 'workers': workers},
-        'chrome://inspect');
-  }
-
   var allLogMessages = {};
   // Set log for a worker version.
   function fillLogForVersion(partition_id, version) {
@@ -171,11 +135,6 @@ cr.define('serviceworker', function() {
                            stored_registrations,
                            partition_id,
                            partition_path) {
-    if (window.location.hash == "#iframe") {
-      // This page is loaded from chrome://inspect.
-      sendToInspectPage(live_registrations, partition_id);
-      return;
-    }
     var unregistered_registrations = [];
     var unregistered_versions = [];
     getUnregisteredWorkers(stored_registrations,

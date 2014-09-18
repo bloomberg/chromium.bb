@@ -29,13 +29,6 @@ function sendTargetCommand(command, target) {
   sendCommand(command, target.source, target.id);
 }
 
-function sendServiceWorkerCommand(action, worker) {
-  $('serviceworker-internals').contentWindow.postMessage({
-    'action': action,
-    'worker': worker
-  },'chrome://serviceworker-internals');
-}
-
 function removeChildren(element_id) {
   var element = $(element_id);
   element.textContent = '';
@@ -58,15 +51,6 @@ function onload() {
   onHashChange();
   initSettings();
   sendCommand('init-ui');
-  window.addEventListener('message', onMessage.bind(this), false);
-}
-
-function onMessage(event) {
-  if (event.origin != 'chrome://serviceworker-internals') {
-    return;
-  }
-  populateServiceWorkers(event.data.partition_id,
-                         event.data.workers);
 }
 
 function onHashChange() {
@@ -103,39 +87,6 @@ function selectTab(id) {
   return true;
 }
 
-function populateServiceWorkers(partition_id, workers) {
-  var list = $('service-workers-list-' + partition_id);
-  if (workers.length == 0) {
-    if (list) {
-        list.parentNode.removeChild(list);
-    }
-    return;
-  }
-  if (list) {
-    list.textContent = '';
-  } else {
-    list = document.createElement('div');
-    list.id = 'service-workers-list-' + partition_id;
-    list.className = 'list';
-    $('service-workers-list').appendChild(list);
-  }
-  for (var i = 0; i < workers.length; i++) {
-    var worker = workers[i];
-    worker.hasCustomInspectAction = true;
-    var row = addTargetToList(worker, list, ['scope', 'url']);
-    addActionLink(
-        row,
-        'inspect',
-        sendServiceWorkerCommand.bind(null, 'inspect', worker),
-        false);
-    addActionLink(
-        row,
-        'terminate',
-        sendServiceWorkerCommand.bind(null, 'stop', worker),
-        false);
-  }
-}
-
 function populateTargets(source, data) {
   if (source == 'local')
     populateLocalTargets(data);
@@ -151,8 +102,9 @@ function populateLocalTargets(data) {
   removeChildren('apps-list');
   removeChildren('others-list');
   removeChildren('workers-list');
+  removeChildren('service-workers-list');
 
-  for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < data.length; i++) {
     if (data[i].type === 'page')
       addToPagesList(data[i]);
     else if (data[i].type === 'background_page')
@@ -161,6 +113,8 @@ function populateLocalTargets(data) {
       addToAppsList(data[i]);
     else if (data[i].type === 'worker')
       addToWorkersList(data[i]);
+    else if (data[i].type === 'service_worker')
+      addToServiceWorkersList(data[i]);
     else
       addToOthersList(data[i]);
   }
@@ -420,6 +374,13 @@ function addToWorkersList(data) {
       addTargetToList(data, $('workers-list'), ['name', 'description', 'url']);
   addActionLink(row, 'terminate',
       sendTargetCommand.bind(null, 'close', data), false);
+}
+
+function addToServiceWorkersList(data) {
+    var row = addTargetToList(
+        data, $('service-workers-list'), ['name', 'description', 'url']);
+    addActionLink(row, 'terminate',
+        sendTargetCommand.bind(null, 'close', data), false);
 }
 
 function addToOthersList(data) {
