@@ -97,6 +97,14 @@ void WebCompositorAnimationImpl::setIterations(int n) {
 }
 #endif
 
+double WebCompositorAnimationImpl::iterationStart() const {
+  return animation_->iteration_start();
+}
+
+void WebCompositorAnimationImpl::setIterationStart(double iteration_start) {
+  animation_->set_iteration_start(iteration_start);
+}
+
 double WebCompositorAnimationImpl::startTime() const {
   return (animation_->start_time() - base::TimeTicks()).InSecondsF();
 }

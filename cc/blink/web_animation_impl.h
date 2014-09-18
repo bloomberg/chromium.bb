@@ -38,6 +38,8 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
   virtual int iterations() const;
   virtual void setIterations(int iterations);
 #endif
+  virtual double iterationStart() const;
+  virtual void setIterationStart(double iteration_start);
   virtual double startTime() const;
   virtual void setStartTime(double monotonic_time);
   virtual double timeOffset() const;

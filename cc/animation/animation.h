@@ -71,6 +71,11 @@ class CC_EXPORT Animation {
   double iterations() const { return iterations_; }
   void set_iterations(double n) { iterations_ = n; }
 
+  double iteration_start() const { return iteration_start_; }
+  void set_iteration_start(double iteration_start) {
+    iteration_start_ = iteration_start;
+  }
+
   base::TimeTicks start_time() const { return start_time_; }
 
   void set_start_time(base::TimeTicks monotonic_time) {
@@ -167,6 +172,7 @@ class CC_EXPORT Animation {
   TargetProperty target_property_;
   RunState run_state_;
   double iterations_;
+  double iteration_start_;
   base::TimeTicks start_time_;
   Direction direction_;
   double playback_rate_;
