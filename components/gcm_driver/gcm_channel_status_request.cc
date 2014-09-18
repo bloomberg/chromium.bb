@@ -41,12 +41,12 @@ GCMChannelStatusRequest::~GCMChannelStatusRequest() {
 }
 
 // static
-int GCMChannelStatusRequest::default_poll_interval_seconds() {
+int GCMChannelStatusRequest::default_poll_interval_seconds_for_testing() {
   return kDefaultPollIntervalSeconds;
 }
 
 // static
-int GCMChannelStatusRequest::min_poll_interval_seconds() {
+int GCMChannelStatusRequest::min_poll_interval_seconds_for_testing() {
   return kMinPollIntervalSeconds;
 }
 

@@ -1135,7 +1135,6 @@ void BrowserProcessImpl::CreateGCMDriver() {
   CHECK(PathService::Get(chrome::DIR_GLOBAL_GCM_STORE, &store_path));
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       make_scoped_ptr(new gcm::GCMClientFactory),
-      local_state(),
       store_path,
       system_request_context());
   // Sign-in is not required for device-level GCM usage. So we just call

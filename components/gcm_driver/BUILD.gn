@@ -17,8 +17,6 @@ static_library("gcm_driver") {
     "gcm_backoff_policy.h",
     "gcm_channel_status_request.cc",
     "gcm_channel_status_request.h",
-    "gcm_channel_status_syncer.cc",
-    "gcm_channel_status_syncer.h",
     "gcm_client.cc",
     "gcm_client.h",
     "gcm_client_factory.cc",
@@ -53,8 +51,6 @@ static_library("gcm_driver") {
     sources -= [
       "gcm_channel_status_request.cc",
       "gcm_channel_status_request.h",
-      "gcm_channel_status_syncer.cc",
-      "gcm_channel_status_syncer.h",
       "gcm_client_factory.cc",
       "gcm_client_factory.h",
       "gcm_client_impl.cc",

@@ -36,8 +36,9 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
 
   void Start();
 
-  static int default_poll_interval_seconds();
-  static int min_poll_interval_seconds();
+  // Exposed for testing purpose.
+  static int default_poll_interval_seconds_for_testing();
+  static int min_poll_interval_seconds_for_testing();
 
  private:
   // Overridden from URLFetcherDelegate:

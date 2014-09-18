@@ -14,7 +14,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_app_handler.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
 #include "components/gcm_driver/system_encryptor.h"
@@ -330,22 +329,18 @@ void GCMDriverDesktop::IOWorker::RemoveAccountMapping(
 GCMDriverDesktop::GCMDriverDesktop(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
     const GCMClient::ChromeBuildInfo& chrome_build_info,
-    PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : gcm_channel_status_syncer_(this, prefs, request_context),
-      signed_in_(false),
+    : signed_in_(false),
       gcm_started_(false),
       gcm_enabled_(true),
       connected_(false),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
       weak_ptr_factory_(this) {
-  gcm_enabled_ = gcm_channel_status_syncer_.gcm_enabled();
-
   // Create and initialize the GCMClient. Note that this does not initiate the
   // GCM check-in.
   io_worker_.reset(new IOWorker(ui_thread, io_thread));
@@ -446,8 +441,6 @@ void GCMDriverDesktop::Stop() {
   // No need to stop GCM service if not started yet.
   if (!gcm_started_)
     return;
-
-  gcm_channel_status_syncer_.Stop();
 
   RemoveCachedData();
 
@@ -633,11 +626,6 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
 
   DCHECK(!delayed_task_controller_);
   delayed_task_controller_.reset(new GCMDelayedTaskController);
-
-  // Polling for channel status is only needed when GCM is supported for all
-  // users.
-  if (GCMDriver::IsAllowedForAllUsers())
-    gcm_channel_status_syncer_.EnsureStarted();
 
   // Note that we need to pass weak pointer again since the existing weak
   // pointer in IOWorker might have been invalidated when check-out occurs.
