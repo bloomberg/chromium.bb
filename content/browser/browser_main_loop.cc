@@ -715,7 +715,9 @@ int BrowserMainLoop::CreateThreads() {
 
     if (thread_to_start) {
       (*thread_to_start).reset(new BrowserProcessSubThread(id));
-      (*thread_to_start)->StartWithOptions(options);
+      if (!(*thread_to_start)->StartWithOptions(options)) {
+        LOG(FATAL) << "Failed to start the browser thread: id == " << id;
+      }
     } else {
       NOTREACHED();
     }
