@@ -74,11 +74,6 @@ class Notification : public message_center::Notification {
   // Id of the delegate embedded inside this instance.
   std::string delegate_id() const { return delegate()->id(); }
 
-  content::WebContents* GetWebContents() const {
-    return delegate()->GetWebContents();
-  }
-  void DoneRendering() { delegate()->ReleaseRenderViewHost(); }
-
   NotificationDelegate* delegate() const { return delegate_.get(); }
 
  private:
@@ -95,9 +90,6 @@ class Notification : public message_center::Notification {
 
   // The URL of a large image to be displayed for a a rich notification.
   GURL image_url_;
-
-  // The URL of a small image to be displayed for a a rich notification.
-  GURL small_image_url_;
 
   // The user-supplied replace ID for the notification.
   base::string16 replace_id_;

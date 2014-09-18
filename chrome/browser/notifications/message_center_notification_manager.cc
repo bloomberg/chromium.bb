@@ -408,7 +408,7 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
   if (url.is_empty())
     return;
 
-  content::WebContents* contents = notification.GetWebContents();
+  content::WebContents* contents = notification.delegate()->GetWebContents();
   if (!contents) {
     LOG(WARNING) << "Notification needs an image but has no WebContents";
     return;
@@ -479,7 +479,7 @@ void MessageCenterNotificationManager::ProfileNotification::StartDownloads() {
 
 void
 MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
-  notification_.DoneRendering();
+  notification_.delegate()->ReleaseRenderViewHost();
 }
 
 void
