@@ -127,9 +127,9 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(transformer.Pass());
 
-  DisplayMode mode;
-  if (GetDisplayManager()->GetSelectedModeForDisplayId(display.id(), &mode) &&
-      mode.refresh_rate > 0.0f) {
+  DisplayMode mode =
+      GetDisplayManager()->GetActiveModeForDisplayId(display.id());
+  if (mode.refresh_rate > 0.0f) {
     host->compositor()->vsync_manager()->SetAuthoritativeVSyncInterval(
         base::TimeDelta::FromMicroseconds(
             base::Time::kMicrosecondsPerSecond / mode.refresh_rate));
