@@ -37,9 +37,6 @@ const char kDisableBootAnimation[] = "disable-boot-animation";
 // Disables the ChromeOS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
 
-// Disable Genius App and use the original Help App instead.
-const char kDisableGeniusApp[] = "disable-genius-app";
-
 // Disable HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 

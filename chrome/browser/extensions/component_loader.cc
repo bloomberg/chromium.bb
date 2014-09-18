@@ -503,13 +503,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   // Since this is a v2 app it has a background page.
-  if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
-    AddWithNameAndDescription(IDR_GENIUS_APP_MANIFEST,
-                              base::FilePath(FILE_PATH_LITERAL(
-                                  "/usr/share/chromeos-assets/genius_app")),
-                              IDS_GENIUS_APP_NAME,
-                              IDS_GENIUS_APP_DESCRIPTION);
-  }
+  AddWithNameAndDescription(IDR_GENIUS_APP_MANIFEST,
+                            base::FilePath(FILE_PATH_LITERAL(
+                                "/usr/share/chromeos-assets/genius_app")),
+                            IDS_GENIUS_APP_NAME,
+                            IDS_GENIUS_APP_DESCRIPTION);
 #endif
 
   if (!skip_session_components) {
