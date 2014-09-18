@@ -63,6 +63,20 @@ class PaygenPayloadLibTest(mox.MoxTestBase):
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.1_x86-alex_recovery_nplusone-channel_mp-v3.bin'))
 
+    self.old_test_image = gspaths.UnsignedImageArchive(
+        channel='dev-channel',
+        board='x86-alex',
+        version='1620.0.0',
+        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
+             'chromeos_1620.0.0_x86-alex_recovery_dev-channel_test.bin'))
+
+    self.new_test_image = gspaths.Image(
+        channel='dev-channel',
+        board='x86-alex',
+        version='4171.0.0',
+        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
+             'chromeos_4171.0.0_x86-alex_recovery_dev-channel_test.bin'))
+
     self.full_payload = gspaths.Payload(tgt_image=self.old_image,
                                         src_image=None,
                                         uri='gs://full_old_foo/boo')
@@ -74,6 +88,14 @@ class PaygenPayloadLibTest(mox.MoxTestBase):
     self.nplusone_payload = gspaths.Payload(tgt_image=self.new_nplusone_image,
                                             src_image=self.new_image,
                                             uri='gs://delta_npo_new/boo')
+
+    self.full_test_payload = gspaths.Payload(tgt_image=self.old_test_image,
+                                             src_image=None,
+                                             uri='gs://full_old_foo/boo-test')
+
+    self.delta_test_payload = gspaths.Payload(tgt_image=self.new_test_image,
+                                              src_image=self.old_test_image,
+                                              uri='gs://delta_new_old/boo-test')
 
   @classmethod
   def setUpClass(cls):
@@ -366,6 +388,69 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_board', 'x86-alex',
            '--src_version', '1620.0.0',
            '--src_key', 'mp-v3',
+           '--src_build_channel', 'dev-channel',
+           '--src_build_version', '1620.0.0',
+           ]
+    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
+    gen._StoreDeltaLog('log contents')
+
+    # Run the test.
+    self.mox.ReplayAll()
+    gen._GenerateUnsignedPayload()
+
+  def testGenerateUnsignedTestPayloadFull(self):
+    """Test _GenerateUnsignedPayload with full test payload."""
+    gen = self._GetStdGenerator(payload=self.full_test_payload,
+                                work_dir='/work')
+
+    # Stub out the required functions.
+    self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
+    self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
+
+    # Record the expected function calls.
+    cmd = ['cros_generate_update_payload',
+           '--outside_chroot',
+           '--output', gen.payload_file,
+           '--image', gen.tgt_image_file,
+           '--channel', 'dev-channel',
+           '--board', 'x86-alex',
+           '--version', '1620.0.0',
+           '--key', 'test',
+           '--build_channel', 'dev-channel',
+           '--build_version', '1620.0.0',
+           ]
+    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
+    gen._StoreDeltaLog('log contents')
+
+    # Run the test.
+    self.mox.ReplayAll()
+    gen._GenerateUnsignedPayload()
+
+  def testGenerateUnsignedTestPayloadDelta(self):
+    """Test _GenerateUnsignedPayload with delta payload."""
+    gen = self._GetStdGenerator(payload=self.delta_test_payload,
+                                work_dir='/work')
+
+    # Stub out the required functions.
+    self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
+    self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
+
+    # Record the expected function calls.
+    cmd = ['cros_generate_update_payload',
+           '--outside_chroot',
+           '--output', gen.payload_file,
+           '--image', gen.tgt_image_file,
+           '--channel', 'dev-channel',
+           '--board', 'x86-alex',
+           '--version', '4171.0.0',
+           '--key', 'test',
+           '--build_channel', 'dev-channel',
+           '--build_version', '4171.0.0',
+           '--src_image', gen.src_image_file,
+           '--src_channel', 'dev-channel',
+           '--src_board', 'x86-alex',
+           '--src_version', '1620.0.0',
+           '--src_key', 'test',
            '--src_build_channel', 'dev-channel',
            '--src_build_version', '1620.0.0',
            ]
