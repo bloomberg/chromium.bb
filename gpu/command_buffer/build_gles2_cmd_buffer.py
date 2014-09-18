@@ -8627,8 +8627,6 @@ def main(argv):
       mojo_gles2_prefix + "_autogen.h",
       mojo_gles2_prefix + "_chromium_texture_mailbox_autogen.h",
       mojo_gles2_prefix + "_chromium_sync_point_autogen.h",
-      "ppapi/c/dev/ppb_opengles2ext_dev.h",
-      "ppapi/c/ppb_opengles2.h",
       "ppapi/lib/gl/gles2/gles2.c",
       "ppapi/shared_impl/ppb_opengles2_shared.cc"])
 
