@@ -65,6 +65,21 @@ function normalizeURL(url) {
   return new URL(url, document.location).toString().replace(/#.*$/, '');
 }
 
+function get_newest_worker(registration) {
+  if (!registration) {
+    return Promise.reject(new Error(
+        'get_newest_worker must be passed a ServiceWorkerRegistration'));
+  }
+  if (registration.installing)
+    return Promise.resolve(registration.installing);
+  if (registration.waiting)
+    return Promise.resolve(registration.waiting);
+  if (registration.active)
+    return Promise.resolve(registration.active);
+  return Promise.reject(new Error(
+      'registration must have at least one version'));
+}
+
 function wait_for_update(test, registration) {
   if (!registration || registration.unregister == undefined) {
     return Promise.reject(new Error(

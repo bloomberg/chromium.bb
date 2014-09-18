@@ -10,29 +10,20 @@
 // FIXME: Remove after the cause of timeout is fixed.
 var properties = {timeout: 5500};
 
-// FIXME: Use the test-helpers.js version once it can handle workers that
-// don't install successfully.
-function unregisterAndRegister(test, script, scope) {
-  var empty_worker = 'resources/empty-worker.js';
-  return navigator.serviceWorker.register(empty_worker, {scope: scope})
+function runTest(test, scope, onRegister) {
+  var script = 'resources/install-phase-event-waituntil.js';
+  navigator.serviceWorker.getRegistration(scope)
     .then(function(registration) {
-        return registration.unregister();
+        if (registration)
+          return registration.unregister();
       })
     .then(function() {
         return navigator.serviceWorker.register(script, {scope: scope});
       })
-    .catch(unreached_rejection(test));
-}
-
-function runTest(test, scope, onRegister) {
-  var script = 'resources/install-phase-event-waituntil.js';
-  test.step(function() {
-      unregisterAndRegister(test, script, scope)
-        .then(function(registration) {
-            return wait_for_update(test, registration);
-          })
-        .then(test.step_func(onRegister));
-    });
+    .then(function(registration) {
+        return get_newest_worker(registration);
+      })
+    .then(test.step_func(onRegister));
 }
 
 function syncWorker(test, worker, obj) {
@@ -52,18 +43,15 @@ async_test(function(t) {
     var scope = 'install-fulfilled';
     var onRegister = function(worker) {
         var obj = {};
-        assert_equals(worker.state,
-                      'installing',
-                      'Should be in the "installing" state upon updatefound');
-        worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'installed') {
+        wait_for_state(t, worker, 'installed')
+          .then(function() {
               assert_true(
-                  obj.synced,
-                  'state should be "installed" after the waitUntil promise ' +
-                      'for "oninstall" is fulfilled.');
+                obj.synced,
+                'state should be "installed" after the waitUntil promise ' +
+                    'for "oninstall" is fulfilled.');
               service_worker_unregister_and_done(t, scope);
-            }
-          });
+            })
+          .catch(unreached_rejection(t));
         syncWorker(t, worker, obj);
       };
     runTest(t, scope, onRegister);
@@ -73,17 +61,19 @@ async_test(function(t) {
     var scope = 'activate-fulfilled';
     var onRegister = function(worker) {
         var obj = {};
-        worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'activating') {
+        wait_for_state(t, worker, 'activating')
+          .then(function() {
               syncWorker(t, worker, obj);
-            } else if (worker.state == 'activated') {
+              return wait_for_state(t, worker, 'activated');
+            })
+          .then(function() {
               assert_true(
-                  obj.synced,
-                  'state should be "activated" after the waitUntil promise ' +
-                      'for "onactivate" is fulfilled.');
+                obj.synced,
+                'state should be "activated" after the waitUntil promise ' +
+                    'for "onactivate" is fulfilled.');
               service_worker_unregister_and_done(t, scope);
-            }
-          });
+            })
+          .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
   }, 'Test activate event waitUntil fulfilled', properties);
@@ -91,10 +81,11 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'install-rejected';
     var onRegister = function(worker) {
-        worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'redundant')
+        wait_for_state(t, worker, 'redundant')
+          .then(function() {
               service_worker_unregister_and_done(t, scope);
-          });
+            })
+          .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
   }, 'Test install event waitUntil rejected', properties);
@@ -102,10 +93,11 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'activate-rejected';
     var onRegister = function(worker) {
-        worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'redundant')
+        wait_for_state(t, worker, 'redundant')
+          .then(function() {
               service_worker_unregister_and_done(t, scope);
-          });
+            })
+          .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
   }, 'Test activate event waitUntil rejected.', properties);
@@ -115,18 +107,20 @@ async_test(function(t) {
     var onRegister = function(worker) {
         var obj1 = {};
         var obj2 = {};
-        worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'activating') {
+        wait_for_state(t, worker, 'activating')
+          .then(function() {
               syncWorker(t, worker, obj1);
               syncWorker(t, worker, obj2);
-            } else if (worker.state == 'activated') {
+              return wait_for_state(t, worker, 'activated');
+            })
+          .then(function() {
               assert_true(
-                  obj1.synced && obj2.synced,
-                  'state should be "activated" after all waitUntil promises ' +
-                      'for "onactivate" are fulfilled.');
+                obj1.synced && obj2.synced,
+                'state should be "activated" after all waitUntil promises ' +
+                    'for "onactivate" are fulfilled.');
               service_worker_unregister_and_done(t, scope);
-            }
-          });
+            })
+          .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
   }, 'Test InstallPhaseEvent multiple waitUntil fulfilled.', properties);
@@ -134,10 +128,11 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'activate-reject-precedence';
     var onRegister = function(worker) {
-        worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'redundant')
+        wait_for_state(t, worker, 'redundant')
+          .then(function() {
               service_worker_unregister_and_done(t, scope);
-          });
+            })
+          .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
   }, 'Test InstallPhaseEvent waitUntil reject precedence.', properties);
