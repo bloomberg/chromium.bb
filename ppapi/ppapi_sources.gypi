@@ -197,6 +197,7 @@
       'cpp/media_stream_audio_track.h',
       'cpp/media_stream_video_track.cc',
       'cpp/media_stream_video_track.h',
+      'cpp/message_handler.h',
       'cpp/message_loop.cc',
       'cpp/message_loop.h',
       'cpp/module.cc',

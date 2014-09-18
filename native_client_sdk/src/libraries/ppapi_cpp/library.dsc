@@ -114,6 +114,7 @@
         'logging.h',
         'media_stream_audio_track.h',
         'media_stream_video_track.h',
+        'message_handler.h',
         'message_loop.h',
         'module_embedder.h',
         'module.h',

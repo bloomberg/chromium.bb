@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_message_handler.idl modified Wed Sep 10 17:04:21 2014. */
+/* From ppp_message_handler.idl modified Wed Sep 17 16:54:35 2014. */
 
 #ifndef PPAPI_C_PPP_MESSAGE_HANDLER_H_
 #define PPAPI_C_PPP_MESSAGE_HANDLER_H_
@@ -44,7 +44,7 @@ struct PPP_MessageHandler_0_2 { /* dev */
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] user_data is the same pointer which was provided by a call to
-   * RegisterMessageHandler.
+   * RegisterMessageHandler().
    * @param[in] message A copy of the parameter that JavaScript provided to
    * postMessage().
    */
@@ -55,14 +55,19 @@ struct PPP_MessageHandler_0_2 { /* dev */
    * Invoked as a result of JavaScript invoking postMessageAndAwaitResponse()
    * on the plugin's DOM element.
    *
+   * NOTE: JavaScript execution is blocked during the duration of this call.
+   * Hence, the plugin should respond as quickly as possible. For this reason,
+   * blocking completion callbacks are disallowed while handling a blocking
+   * message.
+   *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] user_data is the same pointer which was provided by a call to
-   * RegisterMessageHandler.
+   * RegisterMessageHandler().
    * @param[in] message is a copy of the parameter that JavaScript provided
-   * to postMessageAndAwaitResponse.
+   * to postMessageAndAwaitResponse().
    * @param[out] response will be copied to a JavaScript object which is
-   * returned as the result of postMessageAndAwaitResponse to the invoking
+   * returned as the result of postMessageAndAwaitResponse() to the invoking
    *
    */
   void (*HandleBlockingMessage)(PP_Instance instance,

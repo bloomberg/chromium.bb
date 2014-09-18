@@ -32,7 +32,7 @@ interface PPP_MessageHandler {
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] user_data is the same pointer which was provided by a call to
-   * RegisterMessageHandler.
+   * RegisterMessageHandler().
    * @param[in] message A copy of the parameter that JavaScript provided to
    * postMessage().
    */
@@ -43,14 +43,19 @@ interface PPP_MessageHandler {
    * Invoked as a result of JavaScript invoking postMessageAndAwaitResponse()
    * on the plugin's DOM element.
    *
+   * NOTE: JavaScript execution is blocked during the duration of this call.
+   * Hence, the plugin should respond as quickly as possible. For this reason,
+   * blocking completion callbacks are disallowed while handling a blocking
+   * message.
+   *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] user_data is the same pointer which was provided by a call to
-   * RegisterMessageHandler.
+   * RegisterMessageHandler().
    * @param[in] message is a copy of the parameter that JavaScript provided
-   * to postMessageAndAwaitResponse.
+   * to postMessageAndAwaitResponse().
    * @param[out] response will be copied to a JavaScript object which is
-   * returned as the result of postMessageAndAwaitResponse to the invoking
+   * returned as the result of postMessageAndAwaitResponse() to the invoking
      JavaScript.
    */
   void HandleBlockingMessage([in] PP_Instance instance,

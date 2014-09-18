@@ -9,12 +9,15 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppp_message_handler.h"
 #include "ppapi/cpp/compositor.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/logging.h"
+#include "ppapi/cpp/message_handler.h"
+#include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
@@ -41,6 +44,38 @@ template <> const char* interface_name<PPB_Instance_1_0>() {
 template <> const char* interface_name<PPB_Messaging_1_0>() {
   return PPB_MESSAGING_INTERFACE_1_0;
 }
+
+template <> const char* interface_name<PPB_Messaging_1_2>() {
+  return PPB_MESSAGING_INTERFACE_1_2;
+}
+
+// PPP_MessageHandler implementation -------------------------------------------
+void HandleMessage(PP_Instance pp_instance,
+                   void* user_data,
+                   const PP_Var* var) {
+  MessageHandler* message_handler = static_cast<MessageHandler*>(user_data);
+  message_handler->HandleMessage(InstanceHandle(pp_instance), Var(*var));
+}
+
+void HandleBlockingMessage(PP_Instance pp_instance,
+                           void* user_data,
+                           const PP_Var* var,
+                           PP_Var* result) {
+  MessageHandler* message_handler = static_cast<MessageHandler*>(user_data);
+  pp::Var result_var =
+      message_handler->HandleBlockingMessage(InstanceHandle(pp_instance),
+                                             Var(*var));
+  *result = result_var.Detach();
+}
+
+void Destroy(PP_Instance pp_instance, void* user_data) {
+  MessageHandler* message_handler = static_cast<MessageHandler*>(user_data);
+  message_handler->WasUnregistered(InstanceHandle(pp_instance));
+}
+
+static PPP_MessageHandler_0_2 message_handler_if = {
+  &HandleMessage, &HandleBlockingMessage, &Destroy
+};
 
 }  // namespace
 
@@ -130,10 +165,30 @@ void Instance::ClearInputEventRequest(uint32_t event_classes) {
 }
 
 void Instance::PostMessage(const Var& message) {
-  if (!has_interface<PPB_Messaging_1_0>())
+  if (has_interface<PPB_Messaging_1_2>()) {
+    get_interface<PPB_Messaging_1_2>()->PostMessage(pp_instance(),
+                                                    message.pp_var());
+  } else if (has_interface<PPB_Messaging_1_0>()) {
+    get_interface<PPB_Messaging_1_0>()->PostMessage(pp_instance(),
+                                                    message.pp_var());
+  }
+}
+
+int32_t Instance::RegisterMessageHandler(MessageHandler* message_handler,
+                                         const MessageLoop& message_loop) {
+  if (!has_interface<PPB_Messaging_1_2>())
+    return PP_ERROR_NOTSUPPORTED;
+  return get_interface<PPB_Messaging_1_2>()->RegisterMessageHandler(
+      pp_instance(),
+      message_handler,
+      &message_handler_if,
+      message_loop.pp_resource());
+}
+
+void Instance::UnregisterMessageHandler() {
+  if (!has_interface<PPB_Messaging_1_2>())
     return;
-  get_interface<PPB_Messaging_1_0>()->PostMessage(pp_instance(),
-                                              message.pp_var());
+  get_interface<PPB_Messaging_1_2>()->UnregisterMessageHandler(pp_instance());
 }
 
 void Instance::LogToConsole(PP_LogLevel level, const Var& value) {

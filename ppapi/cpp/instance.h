@@ -33,6 +33,8 @@ class Graphics2D;
 class Graphics3D;
 class InputEvent;
 class InstanceHandle;
+class MessageHandler;
+class MessageLoop;
 class Rect;
 class URLLoader;
 class Var;
@@ -494,6 +496,55 @@ class Instance {
   /// Array/Dictionary types are supported from Chrome M29 onward.
   /// All var types are copied when passing them to JavaScript.
   void PostMessage(const Var& message);
+
+  /// Dev-Channel Only
+  ///
+  /// Registers a handler for receiving messages from JavaScript. If a handler
+  /// is registered this way, it will replace the Instance's HandleMessage
+  /// method, and all messages sent from JavaScript via postMessage and
+  /// postMessageAndAwaitResponse will be dispatched to
+  /// <code>message_handler</code>.
+  ///
+  /// The function calls will be dispatched via <code>message_loop</code>. This
+  /// means that the functions will be invoked on the thread to which
+  /// <code>message_loop</code> is attached, when <code>message_loop</code> is
+  /// run. It is illegal to pass the main thread message loop;
+  /// RegisterMessageHandler will return PP_ERROR_WRONG_THREAD in that case.
+  /// If you quit <code>message_loop</code> before calling Unregister(),
+  /// the browser will not be able to call functions in the plugin's message
+  /// handler any more. That could mean missing some messages or could cause a
+  /// leak if you depend on Destroy() to free hander data. So you should,
+  /// whenever possible, Unregister() the handler prior to quitting its event
+  /// loop.
+  ///
+  /// Attempting to register a message handler when one is already registered
+  /// will cause the current MessageHandler to be unregistered and replaced. In
+  /// that case, no messages will be sent to the "default" message handler
+  /// (pp::Instance::HandleMessage()). Messages will stop arriving at the prior
+  /// message handler and will begin to be dispatched at the new message
+  /// handler.
+  ///
+  /// @param[in] message_handler The plugin-provided object for handling
+  /// messages. The instance does not take ownership of the pointer; it is up
+  /// to the plugin to ensure that |message_handler| lives until its
+  /// WasUnregistered() function is invoked.
+  /// @param[in] message_loop Represents the message loop on which
+  /// MessageHandler's functions should be invoked.
+  /// @return PP_OK on success, or an error from pp_errors.h.
+  int32_t RegisterMessageHandler(MessageHandler* message_handler,
+                                 const MessageLoop& message_loop);
+
+  /// Unregisters the current message handler for this instance if one is
+  /// registered. After this call, the message handler (if one was
+  /// registered) will have "WasUnregistered" called on it and will receive no
+  /// further messages. After that point, all messages sent from JavaScript
+  /// using postMessage() will be dispatched to pp::Instance::HandleMessage()
+  /// on the main thread. Attempts to call postMessageAndAwaitResponse() from
+  /// JavaScript after that point will fail.
+  ///
+  /// Attempting to unregister a message handler when none is registered has no
+  /// effect.
+  void UnregisterMessageHandler();
 
   /// @}
 

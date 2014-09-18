@@ -17,6 +17,7 @@
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/message_handler.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array.h"
@@ -38,32 +39,22 @@ namespace {
 // Created and destroyed on the main thread. All public methods should be called
 // on the main thread. Most data members are only accessed on the main thread.
 // (Though it handles messages on the background thread).
-class EchoingMessageHandler {
+class EchoingMessageHandler : public pp::MessageHandler {
  public:
-  explicit EchoingMessageHandler(PP_Instance instance,
+  explicit EchoingMessageHandler(TestingInstance* instance,
                                  const pp::MessageLoop& loop)
-      : pp_instance_(instance),
+      : testing_instance_(instance),
         message_handler_loop_(loop),
-        ppb_messaging_if_(static_cast<const PPB_Messaging_1_2*>(
-            pp::Module::Get()->GetBrowserInterface(
-                PPB_MESSAGING_INTERFACE_1_2))),
-        ppp_message_handler_if_(),
         is_registered_(false),
-        test_finished_event_(instance),
-        destroy_event_(instance) {
+        test_finished_event_(instance->pp_instance()),
+        destroy_event_(instance->pp_instance()) {
     AssertOnMainThread();
-    ppp_message_handler_if_.HandleMessage = &HandleMessage;
-    ppp_message_handler_if_.HandleBlockingMessage = &HandleBlockingMessage;
-    ppp_message_handler_if_.Destroy = &Destroy;
   }
   void Register() {
     AssertOnMainThread();
     assert(!is_registered_);
-    int32_t result = ppb_messaging_if_->RegisterMessageHandler(
-        pp_instance_,
-        this,
-        &ppp_message_handler_if_,
-        message_handler_loop_.pp_resource());
+    int32_t result =
+        testing_instance_->RegisterMessageHandler(this, message_handler_loop_);
     if (result == PP_OK) {
       is_registered_ = true;
     } else {
@@ -78,7 +69,7 @@ class EchoingMessageHandler {
   void Unregister() {
     AssertOnMainThread();
     assert(is_registered_);
-    ppb_messaging_if_->UnregisterMessageHandler(pp_instance_);
+    testing_instance_->UnregisterMessageHandler();
     is_registered_ = false;
   }
   void WaitForTestFinishedMessage() {
@@ -113,63 +104,42 @@ class EchoingMessageHandler {
       errors_ += error;
     }
   }
-  static void HandleMessage(PP_Instance instance,
-                            void* user_data,
-                            const PP_Var* message_data) {
-    EchoingMessageHandler* thiz =
-        static_cast<EchoingMessageHandler*>(user_data);
-    if (pp::MessageLoop::GetCurrent() != thiz->message_handler_loop_)
-      thiz->AddError("HandleMessage was called on the wrong thread!");
-    if (instance != thiz->pp_instance_)
-      thiz->AddError("HandleMessage was passed the wrong instance!");
-    pp::Var var(*message_data);
+  virtual void HandleMessage(pp::InstanceHandle instance, const pp::Var& var) {
+    if (pp::MessageLoop::GetCurrent() != message_handler_loop_)
+      AddError("HandleMessage was called on the wrong thread!");
+    if (instance.pp_instance() != testing_instance_->pp_instance())
+      AddError("HandleMessage was passed the wrong instance!");
     if (var.is_string() && var.AsString() == "FINISHED_TEST")
-      thiz->test_finished_event_.Signal();
+      test_finished_event_.Signal();
     else
-      thiz->ppb_messaging_if_->PostMessage(instance, *message_data);
+      testing_instance_->PostMessage(var);
   }
 
-  static void HandleBlockingMessage(PP_Instance instance,
-                                    void* user_data,
-                                    const PP_Var* message_data,
-                                    PP_Var* result) {
-    EchoingMessageHandler* thiz =
-        static_cast<EchoingMessageHandler*>(user_data);
-    if (pp::MessageLoop::GetCurrent() != thiz->message_handler_loop_)
-      thiz->AddError("HandleBlockingMessage was called on the wrong thread!");
-    if (instance != thiz->pp_instance_)
-      thiz->AddError("HandleBlockingMessage was passed the wrong instance!");
+  virtual pp::Var HandleBlockingMessage(pp::InstanceHandle instance,
+                                        const pp::Var& var) {
+    if (pp::MessageLoop::GetCurrent() != message_handler_loop_)
+      AddError("HandleBlockingMessage was called on the wrong thread!");
+    if (instance.pp_instance() != testing_instance_->pp_instance())
+      AddError("HandleBlockingMessage was passed the wrong instance!");
 
-    // The PP_Var we are passed is an in-parameter, so the browser is not
-    // giving us a ref-count. The ref-count it has will be decremented after we
-    // return. But we need to add a ref when returning a PP_Var, to pass to the
-    // caller.
-    pp::Var take_ref(*message_data);
-    take_ref.Detach();
-    *result = *message_data;
+    return var;
   }
 
-  static void Destroy(PP_Instance instance, void* user_data) {
-    EchoingMessageHandler* thiz =
-        static_cast<EchoingMessageHandler*>(user_data);
-    if (pp::MessageLoop::GetCurrent() != thiz->message_handler_loop_)
-      thiz->AddError("Destroy was called on the wrong thread!");
-    if (instance != thiz->pp_instance_)
-      thiz->AddError("Destroy was passed the wrong instance!");
-    thiz->destroy_event_.Signal();
+  virtual void WasUnregistered(pp::InstanceHandle instance) {
+    if (pp::MessageLoop::GetCurrent() != message_handler_loop_)
+      AddError("Destroy was called on the wrong thread!");
+    if (instance.pp_instance() != testing_instance_->pp_instance())
+      AddError("Destroy was passed the wrong instance!");
+    destroy_event_.Signal();
   }
 
   // These data members are initialized on the main thread, but don't change for
   // the life of the object, so are safe to access on the background thread,
   // because there will be a memory barrier before the the MessageHandler calls
   // are invoked.
-  const PP_Instance pp_instance_;
+  TestingInstance* const testing_instance_;
   const pp::MessageLoop message_handler_loop_;
   const pp::MessageLoop main_loop_;
-  const PPB_Messaging_1_2* const ppb_messaging_if_;
-  // Spiritually, this member is const, but we can't initialize it in C++03,
-  // so it has to be non-const to be set in the constructor body.
-  PPP_MessageHandler_0_2 ppp_message_handler_if_;
 
   // is_registered_ is only read/written on the main thread.
   bool is_registered_;
@@ -258,7 +228,7 @@ std::string TestMessageHandler::TestRegisterErrorConditions() {
 }
 
 std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
-  EchoingMessageHandler handler(instance()->pp_instance(),
+  EchoingMessageHandler handler(instance(),
                                 handler_thread_.message_loop());
   handler.Register();
   std::string js_code("var plugin = document.getElementById('plugin');\n");
