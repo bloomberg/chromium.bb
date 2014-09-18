@@ -8,6 +8,7 @@
 #include "athena/resource_manager/memory_pressure_notifier.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/test/athena_test_base.h"
+#include "athena/test/sample_activity.h"
 #include "athena/wm/public/window_manager.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
@@ -20,14 +21,12 @@ namespace test {
 namespace {
 
 // A dummy test app activity which works without content / ShellAppWindow.
-class TestActivity : public Activity,
-                     public ActivityViewModel {
+class TestActivity : public SampleActivity {
  public:
-  TestActivity(std::string title) : title_(base::UTF8ToUTF16(title)),
-                                    view_(new views::View()),
-                                    current_state_(ACTIVITY_UNLOADED),
-                                    media_state_(ACTIVITY_MEDIA_STATE_NONE),
-                                    is_visible_(false) {};
+  explicit TestActivity(const std::string& title)
+      : SampleActivity(0, 0, base::UTF8ToUTF16(title)),
+        media_state_(ACTIVITY_MEDIA_STATE_NONE),
+        is_visible_(false) {}
   virtual ~TestActivity() {}
 
   void set_media_state(ActivityMediaState media_state) {
@@ -36,42 +35,10 @@ class TestActivity : public Activity,
   void set_visible(bool visible) { is_visible_ = visible; }
 
   // Activity overrides:
-  virtual ActivityViewModel* GetActivityViewModel() OVERRIDE { return this; }
-  virtual void SetCurrentState(ActivityState state) OVERRIDE {
-    current_state_ = state;
-  }
-  virtual ActivityState GetCurrentState() OVERRIDE { return current_state_; }
   virtual bool IsVisible() OVERRIDE { return is_visible_; }
   virtual ActivityMediaState GetMediaState() OVERRIDE { return media_state_; }
-  virtual aura::Window* GetWindow() OVERRIDE {
-    return view_->GetWidget()->GetNativeWindow();
-  }
-
-  // ActivityViewModel overrides:
-  virtual void Init() OVERRIDE {}
-  virtual SkColor GetRepresentativeColor() const OVERRIDE { return 0; }
-  virtual base::string16 GetTitle() const OVERRIDE { return title_; }
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE { return gfx::ImageSkia(); }
-  virtual bool UsesFrame() const OVERRIDE { return true; }
-  virtual views::View* GetContentsView() OVERRIDE { return view_; }
-  virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }
-  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE {
-    return gfx::ImageSkia();
-  }
-  virtual void PrepareContentsForOverview() OVERRIDE {}
-  virtual void ResetContentsView() OVERRIDE {}
 
  private:
-  // The presentation values.
-  const base::string16 title_;
-  gfx::ImageSkia image_;
-
-  // The associated view.
-  views::View* view_;
-
-  // The current state.
-  ActivityState current_state_;
-
   // The current media state.
   ActivityMediaState media_state_;
 

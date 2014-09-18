@@ -20,7 +20,6 @@ class SampleActivity : public Activity,
                  const base::string16& title);
   virtual ~SampleActivity();
 
- private:
   // athena::Activity:
   virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
   virtual void SetCurrentState(Activity::ActivityState state) OVERRIDE;
@@ -41,6 +40,7 @@ class SampleActivity : public Activity,
   virtual void PrepareContentsForOverview() OVERRIDE;
   virtual void ResetContentsView() OVERRIDE;
 
+ private:
   SkColor color_;
   SkColor contents_color_;
   base::string16 title_;
