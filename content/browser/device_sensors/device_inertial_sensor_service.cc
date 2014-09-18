@@ -86,12 +86,17 @@ DeviceInertialSensorService::GetSharedMemoryHandleForProcess(
 }
 
 void DeviceInertialSensorService::Shutdown() {
-  data_fetcher_.reset();
+  if (data_fetcher_) {
+    data_fetcher_->StopFetchingAllDeviceData();
+    data_fetcher_.reset();
+  }
   is_shutdown_ = true;
 }
 
 void DeviceInertialSensorService::SetDataFetcherForTesting(
     DataFetcherSharedMemory* test_data_fetcher) {
+  if (data_fetcher_)
+    data_fetcher_->StopFetchingAllDeviceData();
   data_fetcher_.reset(test_data_fetcher);
 }
 

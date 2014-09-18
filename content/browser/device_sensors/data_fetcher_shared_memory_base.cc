@@ -104,8 +104,7 @@ DataFetcherSharedMemoryBase::DataFetcherSharedMemoryBase()
 }
 
 DataFetcherSharedMemoryBase::~DataFetcherSharedMemoryBase() {
-  StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
-  StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  DCHECK_EQ(0u, started_consumers_);
 
   // make sure polling thread stops asap.
   if (polling_thread_)
@@ -161,6 +160,11 @@ bool DataFetcherSharedMemoryBase::StopFetchingDeviceData(
   started_consumers_ ^= consumer_type;
 
   return true;
+}
+
+void DataFetcherSharedMemoryBase::StopFetchingAllDeviceData() {
+  StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
+  StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
 }
 
 base::SharedMemoryHandle
@@ -239,6 +243,5 @@ base::MessageLoop* DataFetcherSharedMemoryBase::GetPollingMessageLoop() const {
 bool DataFetcherSharedMemoryBase::IsPollingTimerRunningForTesting() const {
   return polling_thread_ ? polling_thread_->IsTimerRunning() : false;
 }
-
 
 }  // namespace content

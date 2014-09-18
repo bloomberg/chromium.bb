@@ -31,6 +31,10 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
   // relevant sensors could be successfully deactivated.
   bool StopFetchingDeviceData(ConsumerType consumer_type);
 
+  // Should be called before destruction to make sure all active
+  // sensors are unregistered.
+  void StopFetchingAllDeviceData();
+
   // Returns the shared memory handle of the device sensor data
   // duplicated into the given process. This method should only be
   // called after a call to StartFetchingDeviceData method with
