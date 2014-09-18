@@ -21,23 +21,27 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/services/native_viewport/gpu_impl.h"
+#include "mojo/services/native_viewport/native_viewport_impl.h"
 #include "mojo/shell/dynamic_application_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
 #include "mojo/shell/ui_application_loader_android.h"
 #include "mojo/spy/spy.h"
+#include "ui/gl/gl_share_group.h"
 
 #if defined(OS_LINUX)
 #include "mojo/shell/dbus_application_loader_linux.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
-#include "mojo/services/native_viewport/gpu_impl.h"
-#include "mojo/services/native_viewport/native_viewport_impl.h"
 #include "mojo/shell/network_application_loader.h"
-#include "ui/gl/gl_share_group.h"
 #endif  // defined(OS_ANDROID)
+
+#if defined(USE_AURA)
+#include "mojo/shell/view_manager_loader.h"
+#endif
 
 namespace mojo {
 namespace shell {
@@ -107,7 +111,6 @@ class EmptyServiceProvider : public InterfaceImpl<ServiceProvider> {
 
 }  // namespace
 
-#if defined(OS_ANDROID)
 class Context::NativeViewportApplicationLoader
     : public ApplicationLoader,
       public ApplicationDelegate,
@@ -158,7 +161,6 @@ class Context::NativeViewportApplicationLoader
   scoped_ptr<ApplicationImpl> app_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewportApplicationLoader);
 };
-#endif
 
 Context::Context() {
   DCHECK(!base::MessageLoop::current());
@@ -199,6 +201,24 @@ void Context::Init() {
           scoped_ptr<ApplicationLoader>(new NativeViewportApplicationLoader()),
           this)),
       GURL("mojo:mojo_native_viewport_service"));
+#else
+  {
+    scoped_ptr<BackgroundShellApplicationLoader> loader(
+        new BackgroundShellApplicationLoader(
+            scoped_ptr<ApplicationLoader>(
+                new NativeViewportApplicationLoader()),
+            "native_viewport",
+            base::MessageLoop::TYPE_UI));
+    application_manager_.SetLoaderForURL(
+        loader.PassAs<ApplicationLoader>(),
+        GURL("mojo:mojo_native_viewport_service"));
+  }
+#endif
+#if defined(USE_AURA)
+  // TODO(sky): need a better way to find this. It shouldn't be linked in.
+  application_manager_.SetLoaderForURL(
+      scoped_ptr<ApplicationLoader>(new ViewManagerLoader()),
+      GURL("mojo:mojo_view_manager"));
 #endif
 
 #if defined(OS_LINUX)

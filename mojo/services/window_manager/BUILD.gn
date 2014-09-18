@@ -38,7 +38,6 @@ source_set("lib") {
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/window_manager",
     "//ui/base",
-    "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/wm",
@@ -66,6 +65,12 @@ test("mojo_core_window_manager_unittests") {
     "//testing/gtest",
     "//ui/gl",
   ]
+  if (is_linux) {
+    deps += [
+      "//third_party/mesa:osmesa",
+      "//mojo/services/native_viewport",
+    ]
+  }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }

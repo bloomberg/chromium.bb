@@ -112,9 +112,8 @@ void InProcessDynamicServiceRunner::Run() {
 #if !defined(COMPONENT_BUILD)
         // Warn on this really weird case: The library requires the GLES2
         // control functions, but doesn't require the GLES2 implementation.
-        LOG(WARNING) << app_path_.value()
-                     << " has MojoSetGLES2ControlThunks, "
-                        "but doesn't have MojoSetGLES2ImplThunks.";
+        LOG(WARNING) << "App library has MojoSetGLES2ControlThunks, but "
+                        "doesn't have MojoSetGLES2ImplThunks.";
 #endif
       }
 
@@ -145,8 +144,9 @@ void InProcessDynamicServiceRunner::Run() {
       LOG(ERROR) << "MojoMain returned an error: " << result;
   } while (false);
 
-  app_completed_callback_runner_.Run();
+  bool success = app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();
+  LOG_IF(ERROR, !success) << "Failed post run app_completed_callback";
 }
 
 }  // namespace shell

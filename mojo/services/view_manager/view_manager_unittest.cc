@@ -31,10 +31,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_WIN)
-#include "ui/gfx/win/window_impl.h"
-#endif
-
 namespace mojo {
 namespace service {
 
@@ -459,13 +455,8 @@ class ViewManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(ViewManagerProxy::IsInInitialState());
-    test_helper_.Init();
 
-#if defined(OS_WIN)
-    // As we unload the wndproc of window classes we need to be sure to
-    // unregister them.
-    gfx::WindowImpl::UnregisterClassesAtExit();
-#endif
+    test_helper_.Init();
 
     test_helper_.SetLoaderForURL(
         scoped_ptr<ApplicationLoader>(new EmbedApplicationLoader()),
@@ -565,8 +556,13 @@ TEST_F(ViewManagerTest, MultipleEmbedRootsBeforeWTHReady) {
 }
 
 // Verifies client gets a valid id.
+#if defined(OS_LINUX)
 // http://crbug.com/396492
-TEST_F(ViewManagerTest, DISABLED_ValidId) {
+#define MAYBE_ValidId DISABLED_ValidId
+#else
+#define MAYBE_ValidId ValidId
+#endif
+TEST_F(ViewManagerTest, MAYBE_ValidId) {
   // TODO(beng): this should really have the URL of the application that
   //             connected to ViewManagerInit.
   EXPECT_EQ("OnEmbed creator=",
