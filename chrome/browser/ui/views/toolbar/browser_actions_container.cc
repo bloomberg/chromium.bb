@@ -1026,7 +1026,6 @@ void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
 
 void BrowserActionsContainer::ShowDropFolder() {
   DCHECK(!overflow_menu_);
-  drop_position_.reset();
   overflow_menu_ =
       new BrowserActionOverflowMenuController(this,
                                               browser_,
