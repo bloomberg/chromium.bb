@@ -783,22 +783,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
       ExecuteJavaScript(ASCIIToUTF16("onbeforeunload=null;"));
 }
 
-// Crashy on mac.  http://crbug.com/38522  Crashy on win too (after 3 years).
-// Flaky timeouts on a MemorySanitizer bot. http://crbug.com/410891
-#if defined(OS_MACOSX) || \
-    defined(OS_WIN) || \
-    defined(MEMORY_SANITIZER) || \
-    defined(ADDRESS_SANITIZER)
-#define MAYBE_SingleBeforeUnloadAfterWindowClose \
-        DISABLED_SingleBeforeUnloadAfterWindowClose
-#else
-#define MAYBE_SingleBeforeUnloadAfterWindowClose \
-        SingleBeforeUnloadAfterWindowClose
-#endif
-
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
+// http://crbug.com/410891
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       DISABLED_SingleBeforeUnloadAfterWindowClose) {
   browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
       ExecuteJavaScriptForTests(ASCIIToUTF16(kOpenNewBeforeUnloadPage));
 
