@@ -253,10 +253,6 @@ namespace WTF {
     struct KeyValuePair {
         typedef KeyTypeArg KeyType;
 
-        KeyValuePair()
-        {
-        }
-
         KeyValuePair(const KeyTypeArg& _key, const ValueTypeArg& _value)
             : key(_key)
             , value(_value)
