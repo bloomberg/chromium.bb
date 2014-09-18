@@ -173,6 +173,8 @@
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
     'libchromium_android_linker': 'libchromium_android_linker.>(android_product_extension)',
     'extra_native_libs': [],
+    'native_lib_placeholder_stamp': '<(apk_package_native_libs_dir)/<(android_app_abi)/native_lib_placeholder.stamp',
+    'native_lib_placeholders': [],
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -384,15 +386,35 @@
           },
           'includes': ['../build/android/strip_native_libraries.gypi'],
         },
+        {
+          'action_name': 'Create native lib placeholder files for previous releases',
+          'variables': {
+            'placeholders': ['<@(native_lib_placeholders)'],
+            'conditions': [
+              ['gyp_managed_install == 1', {
+                # This "library" just needs to be put in the .apk. It is not loaded
+                # at runtime.
+                'placeholders': ['libfix.crbug.384638.so'],
+              }]
+            ],
+          },
+          'inputs': [
+            '<(DEPTH)/build/android/gyp/create_placeholder_files.py',
+          ],
+          'outputs': [
+            '<(native_lib_placeholder_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/create_placeholder_files.py',
+            '--dest-lib-dir=<(apk_package_native_libs_dir)/<(android_app_abi)/',
+            '--stamp=<(native_lib_placeholder_stamp)',
+            '<@(placeholders)',
+          ],
+        },
       ],
       'conditions': [
         ['gyp_managed_install == 1', {
           'variables': {
-            # This "library" just needs to be put in the .apk. It is not loaded
-            # at runtime.
-            'placeholder_native_library_path':
-              '<(apk_package_native_libs_dir)/<(android_app_abi)/libfix.crbug.384638.so',
-            'package_input_paths': [ '<(placeholder_native_library_path)' ],
             'libraries_top_dir': '<(intermediate_dir)/lib.stripped',
             'libraries_source_dir': '<(libraries_top_dir)/lib/<(android_app_abi)',
             'device_library_dir': '<(device_intermediate_dir)/lib.stripped',
@@ -404,19 +426,6 @@
           'actions': [
             {
               'includes': ['../build/android/push_libraries.gypi'],
-            },
-            {
-              'action_name': 'create placeholder lib',
-              'inputs': [
-                '<(DEPTH)/build/android/gyp/touch.py',
-              ],
-              'outputs': [
-                '<(placeholder_native_library_path)',
-              ],
-              'action' : [
-                'python', '<(DEPTH)/build/android/gyp/touch.py',
-                '<@(_outputs)',
-              ],
             },
             {
               'action_name': 'create device library symlinks',
@@ -866,6 +875,11 @@
       ],
       'outputs': [
         '<(unsigned_apk_path)',
+      ],
+      'conditions': [
+        ['native_lib_target != ""', {
+          'inputs': ['<(native_lib_placeholder_stamp)'],
+        }],
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/ant.py',
