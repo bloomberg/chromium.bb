@@ -240,7 +240,7 @@ extern const uint8_t kX86FlagBits[5];
         #def_func ":\n" \
         /* Push most of "struct NaClSignalContext" in reverse order. */ \
         "push $0\n"  /* Leave space for flags */ \
-        "push $" #def_func "\n"  /* Fill out prog_ctr with known value */ \
+        "push $0\n"  /* Leave space for prog_ctr */ \
         "push %edi\n" \
         "push %esi\n" \
         "push %ebp\n" \
@@ -252,6 +252,12 @@ extern const uint8_t kX86FlagBits[5];
         /* Save flags. */ \
         SAVE_X86_FLAGS_INTO_REG("%eax") \
         "movl %eax, 0x24(%esp)\n" \
+        /* Obtain def_func from GOT to fill prog_ctr with known value. */ \
+        "call 0f\n" \
+        "0: popl %eax\n" \
+        "1: addl $_GLOBAL_OFFSET_TABLE_ + (1b - 0b), %eax\n" \
+        "movl " #def_func "@GOT(%eax), %eax\n" \
+        "movl %eax, 0x20(%esp)\n" \
         /* Adjust saved %esp value to account for preceding pushes. */ \
         "addl $5 * 4, 0x10(%esp)\n" \
         /* Save argument to callee_func() temporarily. */ \
