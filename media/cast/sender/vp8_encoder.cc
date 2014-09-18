@@ -134,7 +134,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   raw_image_->stride[VPX_PLANE_U] = video_frame->stride(VideoFrame::kUPlane);
   raw_image_->stride[VPX_PLANE_V] = video_frame->stride(VideoFrame::kVPlane);
 
-  uint8 latest_frame_id_to_reference;
+  uint32 latest_frame_id_to_reference;
   Vp8Buffers buffer_to_update;
   vpx_codec_flags_t flags = 0;
   if (key_frame_requested_) {
@@ -228,7 +228,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
 
 uint32 Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
   if (!use_multiple_video_buffers_)
-    return last_encoded_frame_id_ + 1;
+    return last_encoded_frame_id_;
 
   const uint32 kMagicFrameOffset = 512;
   // We set latest_frame_to_reference to an old frame so that

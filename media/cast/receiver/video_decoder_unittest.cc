@@ -12,6 +12,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/receiver/video_decoder.h"
 #include "media/cast/sender/vp8_encoder.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +27,7 @@ const int kHeight = 240;
 const int kFrameRate = 10;
 
 VideoSenderConfig GetVideoSenderConfigForTest() {
-  VideoSenderConfig config;
+  VideoSenderConfig config = GetDefaultVideoSenderConfig();
   config.width = kWidth;
   config.height = kHeight;
   config.max_frame_rate = kFrameRate;
@@ -83,7 +84,12 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     // Test only supports VP8, currently.
     CHECK_EQ(CODEC_VIDEO_VP8, GetParam());
     vp8_encoder_.Encode(video_frame, encoded_frame.get());
+    // Rewrite frame IDs for testing purposes.
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
+    if (last_frame_id_ == 0)
+      encoded_frame->referenced_frame_id = encoded_frame->frame_id;
+    else
+      encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
     last_frame_id_ = encoded_frame->frame_id;
 
     {
