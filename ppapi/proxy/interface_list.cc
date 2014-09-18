@@ -320,6 +320,8 @@ InterfaceList::~InterfaceList() {
 
 // static
 InterfaceList* InterfaceList::GetInstance() {
+  // CAUTION: This function is called without the ProxyLock to avoid excessive
+  // excessive locking from C++ wrappers. (See also GetBrowserInterface.)
   return Singleton<InterfaceList>::get();
 }
 
@@ -338,20 +340,19 @@ InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
 }
 
 const void* InterfaceList::GetInterfaceForPPB(const std::string& name) {
+  // CAUTION: This function is called without the ProxyLock to avoid excessive
+  // excessive locking from C++ wrappers. (See also GetBrowserInterface.)
   NameToInterfaceInfoMap::iterator found =
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
     return NULL;
 
   if (g_process_global_permissions.Get().HasPermission(
-          found->second.required_permission)) {
+          found->second->required_permission())) {
     // Only log interface use once per plugin.
-    if (!found->second.interface_logged) {
-      PluginGlobals::Get()->GetBrowserSender()->Send(
-          new PpapiHostMsg_LogInterfaceUsage(HashInterfaceName(name)));
-      found->second.interface_logged = true;
-    }
-    return found->second.iface;
+    found->second->LogWithUmaOnce(
+        PluginGlobals::Get()->GetBrowserSender(), name);
+    return found->second->iface();
   }
   return NULL;
 }
@@ -361,7 +362,20 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
       name_to_plugin_info_.find(name);
   if (found == name_to_plugin_info_.end())
     return NULL;
-  return found->second.iface;
+  return found->second->iface();
+}
+
+void InterfaceList::InterfaceInfo::LogWithUmaOnce(
+    IPC::Sender* sender, const std::string& name) {
+  {
+    base::AutoLock acquire(sent_to_uma_lock_);
+    if (sent_to_uma_)
+      return;
+    sent_to_uma_ = true;
+  }
+  int hash = InterfaceList::HashInterfaceName(name);
+  PluginGlobals::Get()->GetBrowserSender()->Send(
+      new PpapiHostMsg_LogInterfaceUsage(hash));
 }
 
 void InterfaceList::AddProxy(ApiID id,
@@ -384,16 +398,18 @@ void InterfaceList::AddPPB(const char* name,
                            const void* iface,
                            Permission perm) {
   DCHECK(name_to_browser_info_.find(name) == name_to_browser_info_.end());
-  name_to_browser_info_[name] = InterfaceInfo(iface, perm);
+  name_to_browser_info_.add(
+      name, scoped_ptr<InterfaceInfo>(new InterfaceInfo(iface, perm)));
 }
 
 void InterfaceList::AddPPP(const char* name,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
-  name_to_plugin_info_[name] = InterfaceInfo(iface, PERMISSION_NONE);
+  name_to_plugin_info_.add(
+      name,
+      scoped_ptr<InterfaceInfo>(new InterfaceInfo(iface, PERMISSION_NONE)));
 }
 
-// static
 int InterfaceList::HashInterfaceName(const std::string& name) {
   uint32 data = base::Hash(name.c_str(), name.size());
   // Strip off the signed bit because UMA doesn't support negative values,

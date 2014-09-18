@@ -52,7 +52,7 @@ int PpapiPluginMain() {
       ppapi::GetShutdownEvent(),
       ppapi::GetBrowserIPCFileDescriptor(),
       ppapi::GetRendererIPCFileDescriptor());
-  plugin_globals.set_plugin_proxy_delegate(&ppapi_dispatcher);
+  plugin_globals.SetPluginProxyDelegate(&ppapi_dispatcher);
 
   loop.Run();
 

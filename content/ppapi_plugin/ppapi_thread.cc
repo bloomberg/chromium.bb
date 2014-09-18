@@ -107,7 +107,7 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
   ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
-  globals->set_plugin_proxy_delegate(this);
+  globals->SetPluginProxyDelegate(this);
   globals->set_command_line(
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
 
@@ -127,7 +127,7 @@ PpapiThread::~PpapiThread() {
 void PpapiThread::Shutdown() {
   ChildThread::Shutdown();
 
-  ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(NULL);
+  ppapi::proxy::PluginGlobals::Get()->ResetPluginProxyDelegate();
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();
   webkit_platform_support_->Shutdown();

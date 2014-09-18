@@ -192,11 +192,13 @@ void PluginGlobals::MarkPluginIsActive() {
 }
 
 IPC::Sender* PluginGlobals::GetBrowserSender() {
-  if (!browser_sender_.get()) {
-    browser_sender_.reset(
-        new BrowserSender(plugin_proxy_delegate_->GetBrowserSender()));
-  }
-
+  // CAUTION: This function is called without the ProxyLock. See also
+  // InterfaceList::GetInterfaceForPPB.
+  //
+  // See also SetPluginProxyDelegate. That initializes browser_sender_ before
+  // the plugin can start threads, and it may be cleared after the
+  // plugin has torn down threads. So this pointer is expected to remain valid
+  // during the lifetime of the plugin.
   return browser_sender_.get();
 }
 
@@ -215,6 +217,19 @@ PP_Resource PluginGlobals::CreateBrowserFont(
     const ppapi::Preferences& prefs) {
   return plugin_proxy_delegate_->CreateBrowserFont(
       connection, instance, desc, prefs);
+}
+
+void PluginGlobals::SetPluginProxyDelegate(PluginProxyDelegate* delegate) {
+  DCHECK(delegate && !plugin_proxy_delegate_);
+  plugin_proxy_delegate_ = delegate;
+  browser_sender_.reset(
+      new BrowserSender(plugin_proxy_delegate_->GetBrowserSender()));
+}
+
+void PluginGlobals::ResetPluginProxyDelegate() {
+  DCHECK(plugin_proxy_delegate_);
+  plugin_proxy_delegate_ = NULL;
+  browser_sender_.reset();
 }
 
 MessageLoopResource* PluginGlobals::loop_for_main_thread() {

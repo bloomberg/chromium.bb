@@ -99,10 +99,12 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
     return &plugin_var_tracker_;
   }
 
-  // The embedder should call set_proxy_delegate during startup.
-  void set_plugin_proxy_delegate(PluginProxyDelegate* d) {
-    plugin_proxy_delegate_ = d;
-  }
+  // The embedder should call SetPluginProxyDelegate during startup.
+  void SetPluginProxyDelegate(PluginProxyDelegate* d);
+  // The embedder may choose to call ResetPluginProxyDelegate during shutdown.
+  // After that point, it's unsafe to call most members of PluginGlobals,
+  // and GetBrowserSender will return NULL.
+  void ResetPluginProxyDelegate();
 
   // Returns the TLS slot that holds the message loop TLS.
   //
