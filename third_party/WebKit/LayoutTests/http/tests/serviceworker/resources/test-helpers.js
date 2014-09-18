@@ -83,6 +83,46 @@ function wait_for_state(test, worker, state) {
     return Promise.reject(new Error(
         'wait_for_state must be passed a ServiceWorker'));
   }
+  if (worker.state === state)
+    return Promise.resolve(state);
+
+  if (state === 'installing') {
+    switch (worker.state) {
+    case 'installed':
+    case 'activating':
+    case 'activated':
+    case 'redundant':
+      return Promise.reject(new Error(
+          'worker is ' + worker.state + ' but waiting for ' + state));
+    }
+  }
+
+  if (state === 'installed') {
+    switch (worker.state) {
+    case 'activating':
+    case 'activated':
+    case 'redundant':
+      return Promise.reject(new Error(
+          'worker is ' + worker.state + ' but waiting for ' + state));
+    }
+  }
+
+  if (state === 'activating') {
+    switch (worker.state) {
+    case 'activated':
+    case 'redundant':
+      return Promise.reject(new Error(
+          'worker is ' + worker.state + ' but waiting for ' + state));
+    }
+  }
+
+  if (state === 'activated') {
+    switch (worker.state) {
+    case 'redundant':
+      return Promise.reject(new Error(
+          'worker is ' + worker.state + ' but waiting for ' + state));
+    }
+  }
 
   return new Promise(test.step_func(function(resolve) {
       worker.addEventListener('statechange', test.step_func(function() {
@@ -94,12 +134,8 @@ function wait_for_state(test, worker, state) {
 
 function wait_for_activated(test, registration) {
   var expected_state = 'activated';
-  if (registration.active) {
-    if (registration.active.state === expected_state)
-      return Promise.resolve(registration.active);
-    else
-      return wait_for_state(test, registration.active, expected_state);
-  }
+  if (registration.active)
+    return wait_for_state(test, registration.active, expected_state);
   if (registration.waiting)
     return wait_for_state(test, registration.waiting, expected_state);
   if (registration.installing)
