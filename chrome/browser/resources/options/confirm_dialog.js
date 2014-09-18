@@ -14,8 +14,8 @@ cr.define('options', function() {
    * @param {string} name See Page constructor.
    * @param {string} title See Page constructor.
    * @param {string} pageDivName See Page constructor.
-   * @param {HTMLInputElement} okButton The confirmation button element.
-   * @param {HTMLInputElement} cancelButton The cancellation button element.
+   * @param {HTMLButtonElement} okButton The confirmation button element.
+   * @param {HTMLButtonElement} cancelButton The cancellation button element.
    * @param {string} pref The pref that requires confirmation.
    * @param {string} metric User metrics identifier.
    * @param {string=} opt_confirmedPref A pref used to remember whether the

@@ -37,6 +37,11 @@ cr.define('options', function() {
 
       // Create the language list with which users can add a language.
       var addLanguageList = $('add-language-overlay-language-list');
+      /**
+       * @type {Array.<{code: string, displayName: string,
+       *                textDirection: string, nativeDisplayName: string}>}
+       * @see chrome/browser/ui/webui/options/language_options_handler.cc
+       */
       var languageListData = loadTimeData.getValue('languageList');
       for (var i = 0; i < languageListData.length; i++) {
         var language = languageListData[i];

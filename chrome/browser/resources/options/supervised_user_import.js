@@ -175,15 +175,9 @@ cr.define('options', function() {
 
     /**
      * Sets the data model of the supervised user list to |supervisedUsers|.
-     * @param {Array.<Object>} supervisedUsers Array of supervised user objects.
-     *     Each object is of the form:
-     *       supervisedUser = {
-     *         id: "Supervised User ID",
-     *         name: "Supervised User Name",
-     *         iconURL: "chrome://path/to/icon/image",
-     *         onCurrentDevice: true or false,
-     *         needAvatar: true or false
-     *       }
+     * @param {Array.<{id: string, name: string, iconURL: string,
+     *     onCurrentDevice: boolean, needAvatar: boolean}>} supervisedUsers
+     *     Array of supervised user objects.
      * @private
      */
     receiveExistingSupervisedUsers_: function(supervisedUsers) {

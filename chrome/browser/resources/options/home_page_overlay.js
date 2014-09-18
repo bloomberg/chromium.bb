@@ -14,9 +14,10 @@ cr.define('options', function() {
    */
   function HomePageOverlay() {
     SettingsDialog.call(this, 'homePageOverlay',
-                        loadTimeData.getString('homePageOverlayTabTitle'),
-                        'home-page-overlay',
-                        $('home-page-confirm'), $('home-page-cancel'));
+        loadTimeData.getString('homePageOverlayTabTitle'),
+        'home-page-overlay',
+        assertInstanceof($('home-page-confirm'), HTMLButtonElement),
+        assertInstanceof($('home-page-cancel'), HTMLButtonElement));
   }
 
   cr.addSingletonGetter(HomePageOverlay);

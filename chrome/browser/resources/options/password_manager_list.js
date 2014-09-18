@@ -247,7 +247,7 @@ cr.define('options.passwordManager', function() {
   /**
    * Create a new passwords list.
    * @constructor
-   * @extends {cr.ui.List}
+   * @extends {options.DeletableItemList}
    */
   var PasswordsList = cr.ui.define('list');
 
@@ -279,7 +279,10 @@ cr.define('options.passwordManager', function() {
       this.redraw();
     },
 
-    /** @override */
+    /**
+     * @override
+     * @param {Array} entry
+     */
     createItem: function(entry) {
       var showPasswords = this.showPasswords_;
 
@@ -317,7 +320,10 @@ cr.define('options.passwordManager', function() {
   PasswordExceptionsList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    /** @override */
+    /**
+     * @override
+     * @param {Array} entry
+     */
     createItem: function(entry) {
       return new PasswordExceptionsListItem(entry);
     },

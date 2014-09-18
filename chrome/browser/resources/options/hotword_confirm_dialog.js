@@ -19,13 +19,13 @@ cr.define('options', function() {
    */
   function HotwordConfirmDialog() {
     ConfirmDialog.call(this,
-                       'hotwordConfim',  // name
-                       loadTimeData.getString('hotwordConfirmOverlayTabTitle'),
-                       'hotword-confirm-overlay',  // pageDivName
-                       $('hotword-confirm-ok'),  // okButton
-                       $('hotword-confirm-cancel'),  // cancelButton
-                       $('hotword-search-enable')['pref'], // pref
-                       $('hotword-search-enable')['metric']); // metric
+        'hotwordConfim',  // name
+        loadTimeData.getString('hotwordConfirmOverlayTabTitle'),
+        'hotword-confirm-overlay',  // pageDivName
+        assertInstanceof($('hotword-confirm-ok'), HTMLButtonElement),
+        assertInstanceof($('hotword-confirm-cancel'), HTMLButtonElement),
+        $('hotword-search-enable')['pref'], // pref
+        $('hotword-search-enable')['metric']); // metric
 
     this.indicator = $('hotword-search-setting-indicator');
   }

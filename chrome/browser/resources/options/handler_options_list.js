@@ -17,7 +17,7 @@ cr.define('options', function() {
    * @param {Object} entry A dictionary describing the handlers for a given
    *     protocol.
    * @constructor
-   * @extends {options.DeletableItemList}
+   * @extends {options.DeletableItem}
    */
   function IgnoredHandlersListItem(entry) {
     var el = cr.doc.createElement('div');
@@ -49,7 +49,10 @@ cr.define('options', function() {
     },
   };
 
-
+  /**
+   * @constructor
+   * @extends {options.DeletableItemList}
+   */
   var IgnoredHandlersList = cr.ui.define('list');
 
   IgnoredHandlersList.prototype = {
@@ -82,8 +85,6 @@ cr.define('options', function() {
     },
   };
 
-
-
   /**
    * Creates a new protocol / content handler list item.
    *
@@ -110,6 +111,11 @@ cr.define('options', function() {
   HandlerListItem.prototype = {
     __proto__: ListItem.prototype,
 
+    /**
+     * @param {Handlers} data
+     * @param {{removeHandler: Function, setDefault: Function,
+     *          clearDefault: Function}} delegate
+     */
     buildWidget_: function(data, delegate) {
       // Protocol.
       var protocolElement = document.createElement('div');
@@ -223,7 +229,10 @@ cr.define('options', function() {
   HandlersList.prototype = {
     __proto__: List.prototype,
 
-    /** @override */
+    /**
+     * @override
+     * @param {Object} entry
+     */
     createItem: function(entry) {
       return new HandlerListItem(entry);
     },
@@ -239,7 +248,7 @@ cr.define('options', function() {
      * Set the protocol handlers displayed by this list.
      * See HandlerListItem for an example of the format the list should take.
      *
-     * @param {Object} list A list of protocols with their registered handlers.
+     * @param {!Array} list A list of protocols with their registered handlers.
      */
     setHandlers: function(list) {
       this.dataModel = new ArrayDataModel(list);

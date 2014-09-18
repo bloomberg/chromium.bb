@@ -155,7 +155,11 @@ cr.define('options', function() {
   /////////////////////////////////////////////////////////////////////////////
   // PrefCheckbox class:
 
-  // Define a constructor that uses an input element as its underlying element.
+  /**
+   * Define a constructor that uses an input element as its underlying element.
+   * @constructor
+   * @extends {options.PrefInputElement}
+   */
   var PrefCheckbox = cr.ui.define('input');
 
   PrefCheckbox.prototype = {
@@ -281,7 +285,11 @@ cr.define('options', function() {
   /////////////////////////////////////////////////////////////////////////////
   // PrefRange class:
 
-  // Define a constructor that uses an input element as its underlying element.
+  /**
+   * Define a constructor that uses an input element as its underlying element.
+   * @constructor
+   * @extends {options.PrefInputElement}
+   */
   var PrefRange = cr.ui.define('input');
 
   PrefRange.prototype = {

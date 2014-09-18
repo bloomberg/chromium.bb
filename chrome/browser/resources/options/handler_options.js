@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *     default_handler: number,
+ *     handlers: Array,
+ *     has_policy_recommendations: boolean,
+ *     is_default_handler_set_by_user: boolean,
+ *     protocol: string
+ * }}
+ * @see chrome/browser/ui/webui/options/handler_options_handler.cc
+ */
+var Handlers;
+
 cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
@@ -12,6 +24,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of handler options page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function HandlerOptions() {
     this.activeNavTab = null;
@@ -48,19 +61,22 @@ cr.define('options', function() {
      * @private
      */
     createHandlersList_: function() {
-      this.handlersList_ = $('handlers-list');
-      options.HandlersList.decorate(this.handlersList_);
+      var handlersList = $('handlers-list');
+      options.HandlersList.decorate(handlersList);
+      this.handlersList_ = assertInstanceof(handlersList, options.HandlersList);
       this.handlersList_.autoExpands = true;
 
-      this.ignoredHandlersList_ = $('ignored-handlers-list');
-      options.IgnoredHandlersList.decorate(this.ignoredHandlersList_);
+      var ignoredHandlersList = $('ignored-handlers-list');
+      options.IgnoredHandlersList.decorate(ignoredHandlersList);
+      this.ignoredHandlersList_ = assertInstanceof(ignoredHandlersList,
+          options.IgnoredHandlersList);
       this.ignoredHandlersList_.autoExpands = true;
     },
   };
 
   /**
    * Sets the list of handlers shown by the view.
-   * @param {Array} handlers Handlers to be shown in the view.
+   * @param {Array.<Handlers>} handlers Handlers to be shown in the view.
    */
   HandlerOptions.setHandlers = function(handlers) {
     $('handlers-list').setHandlers(handlers);

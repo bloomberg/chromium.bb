@@ -116,7 +116,7 @@ cr.define('options', function() {
 
     /**
      * Updates the startup pages list with the given entries.
-     * @param {Array} pages List of startup pages.
+     * @param {!Array} pages List of startup pages.
      * @private
      */
     updateStartupPages_: function(pages) {
