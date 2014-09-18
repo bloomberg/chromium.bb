@@ -217,10 +217,23 @@ CastVideoElement.prototype = {
 
   /**
    * Plays the video.
+   * @param {boolean=} opt_seeking True when seeking. False otherwise.
    */
-  play: function() {
+  play: function(opt_seeking) {
+    if (this.playInProgress_)
+      return;
+
     var play = function() {
-      this.castMedia_.play(null,
+      if (this.castMedia_.playerState ===
+              chrome.cast.media.PlayerState.PLAYING) {
+        return;
+      }
+
+      var playRequest = new chrome.cast.media.PlayRequest();
+      playRequest.customData = {seeking: !!opt_seeking};
+
+      this.castMedia_.play(
+          playRequest,
           function() {
             this.playInProgress_ = false;
           }.wrap(this),
@@ -240,13 +253,23 @@ CastVideoElement.prototype = {
 
   /**
    * Pauses the video.
+   * @param {boolean=} opt_seeking True when seeking. False otherwise.
    */
-  pause: function() {
+  pause: function(opt_seeking) {
     if (!this.castMedia_)
       return;
 
+    if (this.pauseInProgress_ ||
+        this.castMedia_.playerState === chrome.cast.media.PlayerState.PAUSED) {
+      return;
+    }
+
+    var pauseRequest = new chrome.cast.media.PauseRequest();
+    pauseRequest.customData = {seeking: !!opt_seeking};
+
     this.pauseInProgress_ = true;
-    this.castMedia_.pause(null,
+    this.castMedia_.pause(
+        pauseRequest,
         function() {
           this.pauseInProgress_ = false;
         }.wrap(this),

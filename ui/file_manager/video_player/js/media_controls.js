@@ -261,13 +261,13 @@ MediaControls.prototype.onProgressDrag_ = function(on) {
 
   if (on) {
     this.resumeAfterDrag_ = this.isPlaying();
-    this.media_.pause();
+    this.media_.pause(true /* seeking */);
   } else {
     if (this.resumeAfterDrag_) {
       if (this.media_.ended)
         this.onMediaPlay_(false);
       else
-        this.media_.play();
+        this.media_.play(true /* seeking */);
     }
     this.updatePlayButtonState_(this.isPlaying());
   }
