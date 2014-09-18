@@ -159,9 +159,14 @@ std::string GetJavaProperty(const std::string& property) {
       std::string() : ConvertJavaStringToUTF8(env, result.obj());
 }
 
-void CreateStaticProxyConfig(const std::string& host, int port,
+void CreateStaticProxyConfig(const std::string& host,
+                             int port,
+                             const std::string& pac_url,
                              ProxyConfig* config) {
-  if (port != 0) {
+  if (!pac_url.empty()) {
+    config->set_pac_url(GURL(pac_url));
+    config->set_pac_mandatory(false);
+  } else if (port != 0) {
     std::string rules = base::StringPrintf("%s:%d", host.c_str(), port);
     config->proxy_rules().ParseFromString(rules);
   } else {
@@ -248,10 +253,12 @@ class ProxyConfigServiceAndroid::Delegate
   }
 
   // Called on the JNI thread.
-  void ProxySettingsChangedTo(const std::string& host, int port) {
+  void ProxySettingsChangedTo(const std::string& host,
+                              int port,
+                              const std::string& pac_url) {
     DCHECK(OnJNIThread());
     ProxyConfig proxy_config;
-    CreateStaticProxyConfig(host, port, &proxy_config);
+    CreateStaticProxyConfig(host, port, pac_url, &proxy_config);
     network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
@@ -266,10 +273,16 @@ class ProxyConfigServiceAndroid::Delegate
     explicit JNIDelegateImpl(Delegate* delegate) : delegate_(delegate) {}
 
     // ProxyConfigServiceAndroid::JNIDelegate overrides.
-    virtual void ProxySettingsChangedTo(JNIEnv* env, jobject jself,
-                                      jstring jhost, jint jport) OVERRIDE {
+    virtual void ProxySettingsChangedTo(JNIEnv* env,
+                                        jobject jself,
+                                        jstring jhost,
+                                        jint jport,
+                                        jstring jpac_url) OVERRIDE {
       std::string host = ConvertJavaStringToUTF8(env, jhost);
-      delegate_->ProxySettingsChangedTo(host, jport);
+      std::string pac_url;
+      if (jpac_url)
+        ConvertJavaStringToUTF8(env, jpac_url, &pac_url);
+      delegate_->ProxySettingsChangedTo(host, jport, pac_url);
     }
 
     virtual void ProxySettingsChanged(JNIEnv* env, jobject self) OVERRIDE {

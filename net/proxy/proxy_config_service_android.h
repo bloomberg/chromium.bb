@@ -41,7 +41,12 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
     // Called from Java (on JNI thread) to signal that the proxy settings have
     // changed. The string and int arguments (the host/port pair for the proxy)
     // are either a host/port pair or ("", 0) to indicate "no proxy".
-    virtual void ProxySettingsChangedTo(JNIEnv*, jobject, jstring, jint) = 0;
+    // The third argument indicates the PAC url.
+    virtual void ProxySettingsChangedTo(JNIEnv*,
+                                        jobject,
+                                        jstring,
+                                        jint,
+                                        jstring) = 0;
 
     // Called from Java (on JNI thread) to signal that the proxy settings have
     // changed. New proxy settings are fetched from the system property store.
