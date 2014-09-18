@@ -1938,76 +1938,12 @@
    fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
 }
 {
-   bug_101151
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink23v8StringToblinkStringIN3WTF*StringEEET_*
-   fun:_ZN5blink15V8ParameterBase8toStringIN3WTF*StringEEET_*
-   fun:_ZN5blink15V8ParameterBasecvN3WTF*StringEEv
-   ...
-   fun:_ZN2v88internalL*HandleApiCall*
-   obj:*
-}
-{
-   bug_101159
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink15NPObjectWrapper10NPAllocateEP4_NPPP7NPClass
-   fun:_NPN_CreateObject
-   fun:_ZN5blink15NPObjectWrapper6createEP8NPObject
-   fun:_ZN5blink16ScriptController20windowScriptNPObjectEv
-   fun:_ZNK6WebKit12WebFrameImpl12windowObjectEv
-   fun:_ZN6webkit5npapi13WebPluginImpl23GetWindowScriptNPObjectEv
-   fun:NPN_GetValue
-}
-{
-   bug_101345
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN22WebPluginDelegateProxy20CreateResourceClientEmRK4GURLi
-   fun:_ZN6webkit5npapi13WebPluginImpl24HandleURLRequestInternalEPKcS3_S3_S3_jibNS1_8ReferrerEbb
-}
-{
-   bug_101347
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2pp25CompletionCallbackFactoryIN5ppapi5proxy20PPB_Graphics2D_ProxyENS2_26ProxyNonThreadSafeRefCountEE17NewCallbackHelperINS5_11Dispatcher1IMS3_FviRKNS1_12HostResourceEES8_EEEENS_18CompletionCallbackERKT_
-   fun:_ZN2pp25CompletionCallbackFactoryIN5ppapi5proxy20PPB_Graphics2D_ProxyENS2_26ProxyNonThreadSafeRefCountEE11NewCallbackIMS3_FviRKNS1_12HostResourceEES7_EENS_18CompletionCallbackET_RKT0_
-   fun:_ZN2pp25CompletionCallbackFactoryIN5ppapi5proxy20PPB_Graphics2D_ProxyENS2_26ProxyNonThreadSafeRefCountEE19NewOptionalCallbackIMS3_FviRKNS1_12HostResourceEES7_EENS_18CompletionCallbackET_RKT0_
-   fun:_ZN5ppapi5proxy38EnterHostFromHostResourceForceCallbackINS_5thunk18PPB_Graphics2D_APIEEC1IN2pp25CompletionCallbackFactoryINS0_20PPB_Graphics2D_ProxyENS0_26ProxyNonThreadSafeRefCountEEEMS8_FviRKNS_12HostResourceEESB_EESD_RT_T0_RKT1_
-   fun:_ZN5ppapi5proxy20PPB_Graphics2D_Proxy10OnMsgFlushERKNS_12HostResourceE
-}
-{
    bug_101750
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocEj
    fun:_ZN3WTF7HashSetIPN7blink16SVGStyledElementENS_7PtrHashIS3_EENS_10HashTraitsIS3_EEEnwEj
    fun:_ZN5blink21SVGDocumentExtensions18addPendingResourceERKN3WTF12AtomicStringEPNS_16SVGStyledElementE
-}
-{
-   bug_101751
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink14SVGFontElement6createERKNS_13QualifiedNameEPNS_8DocumentE
-   fun:_ZN5blinkL15fontConstructorERKNS_13QualifiedNameEPNS_8DocumentEb
-   fun:_ZN5blink17SVGElementFactory16createSVGElementERKNS_13QualifiedNameEPNS_8DocumentEb
-   fun:_ZN5blink8Document13createElementERKNS_13QualifiedNameEb
-}
-{
-   bug_101781
-   Memcheck:Uninitialized
-   fun:encode_one_block
-   fun:encode_mcu_huff
-   fun:compress_data
-   fun:process_data_simple_main
-   fun:chromium_jpeg_write_scanlines
-   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
-   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageE?PSt6vectorIhSaIhEE
-   fun:_ZN7history8TopSites12EncodeBitmapE*N3gfx5ImageEP13scoped_refptrIN4base15RefCountedBytesEE
-   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURL*N3gfx5ImageERK14ThumbnailScore
-   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
-   fun:_ZN7history*ExpireHistoryTest_*
 }
 {
    bug_101781_d
