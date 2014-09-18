@@ -10,7 +10,6 @@ import re
 import sys
 import time
 
-from pylib import android_commands
 from pylib import constants
 from pylib import flag_changer
 from pylib import valgrind_tools
@@ -20,8 +19,7 @@ from pylib.device import device_errors
 from pylib.instrumentation import json_perf_parser
 from pylib.instrumentation import test_result
 
-sys.path.append(os.path.join(sys.path[0],
-                             os.pardir, os.pardir, 'build', 'util', 'lib',
+sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
                              'common'))
 import perf_tests_results_helper # pylint: disable=F0401
 
@@ -219,7 +217,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         'shell rm ' + TestRunner._DEVICE_PERF_OUTPUT_SEARCH_PREFIX)
     self.device.old_interface.StartMonitoringLogcat()
 
-  def TestTeardown(self, test, raw_result):
+  def TestTeardown(self, test, result):
     """Cleans up the test harness after running a particular test.
 
     Depending on the options of this TestRunner this might handle performance
@@ -227,13 +225,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     Args:
       test: The name of the test that was just run.
-      raw_result: result for this test.
+      result: result for this test.
     """
 
     self.tool.CleanUpEnvironment()
 
     # The logic below relies on the test passing.
-    if not raw_result or raw_result.GetStatusCode():
+    if not result or not result.DidRunPass():
       return
 
     self.TearDownPerfMonitoring(test)
@@ -351,54 +349,139 @@ class TestRunner(base_test_runner.BaseTestRunner):
       timeout: Timeout time in seconds.
 
     Returns:
-      An instance of am_instrument_parser.TestResult object.
+      An instance of InstrumentationTestResult
     """
+    # Build the 'am instrument' command
     instrumentation_path = (
         '%s/%s' % (test_package, self.options.test_runner))
-    args_with_filter = dict(instr_args)
-    args_with_filter['class'] = test
-    logging.info(args_with_filter)
-    (raw_results, _) = self.device.old_interface.Adb().StartInstrumentation(
-        instrumentation_path=instrumentation_path,
-        instrumentation_args=args_with_filter,
-        timeout_time=timeout)
-    assert len(raw_results) == 1
-    return raw_results[0]
 
+    cmd = ['am', 'instrument', '-r']
+    for k, v in instr_args.iteritems():
+      cmd.extend(['-e', k, "'%s'" % v])
+    cmd.extend(['-e', 'class', "'%s'" % test])
+    cmd.extend(['-w', instrumentation_path])
 
-  def _RunTest(self, test, timeout):
+    time_ms = lambda: int(time.time() * 1000)
+
+    # Run the test.
+    start_ms = time_ms()
     try:
-      return self.RunInstrumentationTest(
-          test, self.test_pkg.GetPackageName(),
-          self._GetInstrumentationArgs(), timeout)
-    except (device_errors.CommandTimeoutError,
-            # TODO(jbudorick) Remove this once the underlying implementations
-            #                 for the above are switched or wrapped.
-            android_commands.errors.WaitForResponseTimedOutError):
-      logging.info('Ran the test with timeout of %ds.' % timeout)
-      raise
+      instr_output = self.device.RunShellCommand(
+          cmd, timeout=timeout, retries=0)
+    except device_errors.CommandTimeoutError:
+      return test_result.InstrumentationTestResult(
+          test, base_test_result.ResultType.TIMEOUT, start_ms,
+          time_ms() - start_ms)
+    duration_ms = time_ms() - start_ms
 
-  #override
-  def RunTest(self, test):
-    raw_result = None
-    start_date_ms = None
-    results = base_test_result.TestRunResults()
-    timeout = (self._GetIndividualTestTimeoutSecs(test) *
-               self._GetIndividualTestTimeoutScale(test) *
-               self.tool.GetTimeoutScale())
-    try:
-      self.TestSetup(test)
-      start_date_ms = int(time.time()) * 1000
-      raw_result = self._RunTest(test, timeout)
-      duration_ms = int(time.time()) * 1000 - start_date_ms
-      status_code = raw_result.GetStatusCode()
-      if status_code:
-        if self.options.screenshot_failures:
-          self._TakeScreenshot(test)
-        log = raw_result.GetFailureReason()
-        if not log:
-          log = 'No information.'
+    # Parse the test output
+    _, _, statuses = self._ParseAmInstrumentRawOutput(instr_output)
+    return self._GenerateTestResult(test, statuses, start_ms, duration_ms)
+
+  @staticmethod
+  def _ParseAmInstrumentRawOutput(raw_output):
+    """Parses the output of an |am instrument -r| call.
+
+    Args:
+      raw_output: the output of an |am instrument -r| call as a list of lines
+    Returns:
+      A 3-tuple containing:
+        - the instrumentation code as an integer
+        - the instrumentation result as a list of lines
+        - the instrumentation statuses received as a list of 2-tuples
+          containing:
+          - the status code as an integer
+          - the bundle dump as a dict mapping string keys to a list of
+            strings, one for each line.
+    """
+    INSTR_STATUS = 'INSTRUMENTATION_STATUS: '
+    INSTR_STATUS_CODE = 'INSTRUMENTATION_STATUS_CODE: '
+    INSTR_RESULT = 'INSTRUMENTATION_RESULT: '
+    INSTR_CODE = 'INSTRUMENTATION_CODE: '
+
+    last = None
+    instr_code = None
+    instr_result = []
+    instr_statuses = []
+    bundle = {}
+    for line in raw_output:
+      if line.startswith(INSTR_STATUS):
+        instr_var = line[len(INSTR_STATUS):]
+        if '=' in instr_var:
+          k, v = instr_var.split('=', 1)
+          bundle[k] = [v]
+          last = INSTR_STATUS
+          last_key = k
+        else:
+          logging.debug('Unknown "%s" line: %s' % (INSTR_STATUS, line))
+
+      elif line.startswith(INSTR_STATUS_CODE):
+        instr_status = line[len(INSTR_STATUS_CODE):]
+        instr_statuses.append((int(instr_status), bundle))
+        bundle = {}
+        last = INSTR_STATUS_CODE
+
+      elif line.startswith(INSTR_RESULT):
+        instr_result.append(line[len(INSTR_RESULT):])
+        last = INSTR_RESULT
+
+      elif line.startswith(INSTR_CODE):
+        instr_code = int(line[len(INSTR_CODE):])
+        last = INSTR_CODE
+
+      elif last == INSTR_STATUS:
+        bundle[last_key].append(line)
+
+      elif last == INSTR_RESULT:
+        instr_result.append(line)
+
+    return (instr_code, instr_result, instr_statuses)
+
+  def _GenerateTestResult(self, test, instr_statuses, start_ms, duration_ms):
+    """Generate the result of |test| from |instr_statuses|.
+
+    Args:
+      instr_statuses: A list of 2-tuples containing:
+        - the status code as an integer
+        - the bundle dump as a dict mapping string keys to string values
+        Note that this is the same as the third item in the 3-tuple returned by
+        |_ParseAmInstrumentRawOutput|.
+      start_ms: The start time of the test in milliseconds.
+      duration_ms: The duration of the test in milliseconds.
+    Returns:
+      An InstrumentationTestResult object.
+    """
+    INSTR_STATUS_CODE_START = 1
+    INSTR_STATUS_CODE_OK = 0
+    INSTR_STATUS_CODE_ERROR = -1
+    INSTR_STATUS_CODE_FAIL = -2
+
+    log = ''
+    result_type = base_test_result.ResultType.UNKNOWN
+
+    for status_code, bundle in instr_statuses:
+      if status_code == INSTR_STATUS_CODE_START:
+        pass
+      elif status_code == INSTR_STATUS_CODE_OK:
+        bundle_test = '%s#%s' % (
+            ''.join(bundle.get('class', [''])),
+            ''.join(bundle.get('test', [''])))
+        skipped = ''.join(bundle.get('test_skipped', ['']))
+
+        if (test == bundle_test and
+            result_type == base_test_result.ResultType.UNKNOWN):
+          result_type = base_test_result.ResultType.PASS
+        elif skipped.lower() in ('true', '1', 'yes'):
+          result_type = base_test_result.ResultType.SKIP
+          logging.info('Skipped ' + test)
+      else:
+        if status_code not in (INSTR_STATUS_CODE_ERROR,
+                               INSTR_STATUS_CODE_FAIL):
+          logging.info('Unrecognized status code %d. Handling as an error.',
+                       status_code)
         result_type = base_test_result.ResultType.FAIL
+        if 'stack' in bundle:
+          log = '\n'.join(bundle['stack'])
         # Dismiss any error dialogs. Limit the number in case we have an error
         # loop or we are failing to dismiss.
         for _ in xrange(10):
@@ -409,32 +492,29 @@ class TestRunner(base_test_runner.BaseTestRunner):
           if package in self.test_pkg.GetPackageName():
             result_type = base_test_result.ResultType.CRASH
             break
-        result = test_result.InstrumentationTestResult(
-            test, result_type, start_date_ms, duration_ms, log=log)
-      else:
-        result = test_result.InstrumentationTestResult(
-            test, base_test_result.ResultType.PASS, start_date_ms, duration_ms)
+
+    return test_result.InstrumentationTestResult(
+        test, result_type, start_ms, duration_ms, log=log)
+
+  #override
+  def RunTest(self, test):
+    results = base_test_result.TestRunResults()
+    timeout = (self._GetIndividualTestTimeoutSecs(test) *
+               self._GetIndividualTestTimeoutScale(test) *
+               self.tool.GetTimeoutScale())
+    try:
+      self.TestSetup(test)
+      result = self.RunInstrumentationTest(
+          test, self.test_pkg.GetPackageName(), self._GetInstrumentationArgs(),
+          timeout)
       results.AddResult(result)
-    # Catch exceptions thrown by StartInstrumentation().
-    # See ../../third_party/android/testrunner/adb_interface.py
     except (device_errors.CommandTimeoutError,
-            device_errors.DeviceUnreachableError,
-            # TODO(jbudorick) Remove these once the underlying implementations
-            #                 for the above are switched or wrapped.
-            android_commands.errors.WaitForResponseTimedOutError,
-            android_commands.errors.DeviceUnresponsiveError,
-            android_commands.errors.InstrumentationError), e:
-      if start_date_ms:
-        duration_ms = int(time.time()) * 1000 - start_date_ms
-      else:
-        start_date_ms = int(time.time()) * 1000
-        duration_ms = 0
+            device_errors.DeviceUnreachableError) as e:
       message = str(e)
       if not message:
         message = 'No information.'
       results.AddResult(test_result.InstrumentationTestResult(
-          test, base_test_result.ResultType.CRASH, start_date_ms, duration_ms,
+          test, base_test_result.ResultType.CRASH, int(time.time() * 1000), 0,
           log=message))
-      raw_result = None
-    self.TestTeardown(test, raw_result)
+    self.TestTeardown(test, results)
     return (results, None if results.DidRunPass() else test)

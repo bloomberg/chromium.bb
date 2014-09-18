@@ -175,21 +175,21 @@ def AddJavaTestOptions(option_parser):
       '-E', '--exclude-annotation', dest='exclude_annotation_str',
       help=('Comma-separated list of annotations. Exclude tests with these '
             'annotations.'))
-  option_parser.add_option('--screenshot', dest='screenshot_failures',
-                           action='store_true',
-                           help='Capture screenshots of test failures')
-  option_parser.add_option('--save-perf-json', action='store_true',
-                           help='Saves the JSON file for each UI Perf test.')
-  option_parser.add_option('--official-build', action='store_true',
-                           help='Run official build tests.')
-  option_parser.add_option('--test_data', action='append', default=[],
-                           help=('Each instance defines a directory of test '
-                                 'data that should be copied to the target(s) '
-                                 'before running the tests. The argument '
-                                 'should be of the form <target>:<source>, '
-                                 '<target> is relative to the device data'
-                                 'directory, and <source> is relative to the '
-                                 'chromium build directory.'))
+  option_parser.add_option(
+      '--screenshot', dest='screenshot_failures', action='store_true',
+      help='Capture screenshots of test failures')
+  option_parser.add_option(
+      '--save-perf-json', action='store_true',
+      help='Saves the JSON file for each UI Perf test.')
+  option_parser.add_option(
+      '--official-build', action='store_true', help='Run official build tests.')
+  option_parser.add_option(
+      '--test_data', '--test-data', action='append', default=[],
+      help=('Each instance defines a directory of test data that should be '
+            'copied to the target(s) before running the tests. The argument '
+            'should be of the form <target>:<source>, <target> is relative to '
+            'the device data directory, and <source> is relative to the '
+            'chromium build directory.'))
 
 
 def ProcessJavaTestOptions(options):

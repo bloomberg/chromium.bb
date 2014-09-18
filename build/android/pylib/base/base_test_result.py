@@ -7,6 +7,7 @@
 class ResultType(object):
   """Class enumerating test types."""
   PASS = 'PASS'
+  SKIP = 'SKIP'
   FAIL = 'FAIL'
   CRASH = 'CRASH'
   TIMEOUT = 'TIMEOUT'
@@ -15,8 +16,8 @@ class ResultType(object):
   @staticmethod
   def GetTypes():
     """Get a list of all test types."""
-    return [ResultType.PASS, ResultType.FAIL, ResultType.CRASH,
-            ResultType.TIMEOUT, ResultType.UNKNOWN]
+    return [ResultType.PASS, ResultType.SKIP, ResultType.FAIL,
+            ResultType.CRASH, ResultType.TIMEOUT, ResultType.UNKNOWN]
 
 
 class BaseTestResult(object):
@@ -97,19 +98,26 @@ class TestRunResults(object):
     s.append('[==========] %s ran.' % (tests(len(self.GetAll()))))
     s.append('[  PASSED  ] %s.' % (tests(len(self.GetPass()))))
 
-    not_passed = self.GetNotPass()
-    if len(not_passed) > 0:
-      s.append('[  FAILED  ] %s, listed below:' % tests(len(self.GetNotPass())))
-      for t in self.GetFail():
+    skipped = self.GetSkip()
+    if skipped:
+      s.append('[  SKIPPED ] Skipped %s, listed below:' % tests(len(skipped)))
+      for t in sorted(skipped):
+        s.append('[  SKIPPED ] %s' % str(t))
+
+    all_failures = self.GetFail().union(self.GetCrash(), self.GetTimeout(),
+        self.GetUnknown())
+    if all_failures:
+      s.append('[  FAILED  ] %s, listed below:' % tests(len(all_failures)))
+      for t in sorted(self.GetFail()):
         s.append('[  FAILED  ] %s' % str(t))
-      for t in self.GetCrash():
+      for t in sorted(self.GetCrash()):
         s.append('[  FAILED  ] %s (CRASHED)' % str(t))
-      for t in self.GetTimeout():
+      for t in sorted(self.GetTimeout()):
         s.append('[  FAILED  ] %s (TIMEOUT)' % str(t))
-      for t in self.GetUnknown():
+      for t in sorted(self.GetUnknown()):
         s.append('[  FAILED  ] %s (UNKNOWN)' % str(t))
       s.append('')
-      s.append(plural(len(not_passed), 'FAILED TEST', 'FAILED TESTS'))
+      s.append(plural(len(all_failures), 'FAILED TEST', 'FAILED TESTS'))
     return '\n'.join(s)
 
   def GetShortForm(self):
@@ -163,6 +171,10 @@ class TestRunResults(object):
     """Get the set of all passed test results."""
     return self._GetType(ResultType.PASS)
 
+  def GetSkip(self):
+    """Get the set of all skipped test results."""
+    return self._GetType(ResultType.SKIP)
+
   def GetFail(self):
     """Get the set of all failed test results."""
     return self._GetType(ResultType.FAIL)
@@ -185,4 +197,5 @@ class TestRunResults(object):
 
   def DidRunPass(self):
     """Return whether the test run was successful."""
-    return not self.GetNotPass()
+    return not (self.GetNotPass() - self.GetSkip())
+

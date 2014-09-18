@@ -63,6 +63,7 @@ def CommonChecks(input_api, output_api):
       unit_tests=[
           J('pylib', 'device', 'device_utils_test.py'),
           J('pylib', 'gtest', 'test_package_test.py'),
+          J('pylib', 'instrumentation', 'test_runner_test.py'),
       ],
       env=pylib_test_env))
   output.extend(_CheckDeletionsOnlyFiles(input_api, output_api))
