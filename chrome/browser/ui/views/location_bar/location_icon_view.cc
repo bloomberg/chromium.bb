@@ -6,11 +6,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 LocationIconView::LocationIconView(LocationBarView* location_bar)
-    : page_info_helper_(this, location_bar) {
+    : suppress_mouse_released_action_(false),
+      page_info_helper_(this, location_bar) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
 }
 
@@ -30,13 +32,22 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
       model->PasteAndGo(text);
   }
 
-  // Showing the bubble on mouse release is standard button behavior.
+  suppress_mouse_released_action_ = WebsiteSettingsPopupView::IsPopupShowing();
   return true;
 }
 
 void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton())
     return;
+
+  // If this is the second click on this view then the bubble was showing on
+  // the mouse pressed event and is hidden now. Prevent the bubble from
+  // reshowing by doing nothing here.
+  if (suppress_mouse_released_action_) {
+    suppress_mouse_released_action_ = false;
+    return;
+  }
+
   OnClickOrTap(event);
 }
 
