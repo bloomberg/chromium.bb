@@ -613,7 +613,6 @@
         'browser/guest_view/web_view/web_view_find_helper.h',
         'browser/guest_view/web_view/web_view_guest.cc',
         'browser/guest_view/web_view/web_view_guest.h',
-        'browser/guest_view/web_view/web_view_guest_delegate.cc',
         'browser/guest_view/web_view/web_view_guest_delegate.h',
         'browser/guest_view/web_view/web_view_permission_types.h',
         'browser/guest_view/web_view/web_view_permission_helper.cc',

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 
 #include "chrome/browser/extensions/api/web_view/chrome_web_view_internal_api.h"
-#include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 
@@ -27,17 +26,6 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   virtual ~ChromeWebViewGuestDelegate();
 
   // WebViewGuestDelegate implementation.
-  virtual void Find(
-      const base::string16& search_text,
-      const blink::WebFindOptions& options,
-      extensions::WebViewInternalFindFunction* find_function)
-          OVERRIDE;
-  virtual void FindReply(content::WebContents* source,
-                         int request_id,
-                         int number_of_matches,
-                         const gfx::Rect& selection_rect,
-                         int active_match_ordinal,
-                         bool final_update) OVERRIDE;
   virtual double GetZoom() OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
@@ -48,18 +36,14 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   virtual void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void OnGuestDestroyed() OVERRIDE;
-  virtual void OnRenderProcessGone() OVERRIDE;
   virtual void OnSetZoom(double zoom_factor) OVERRIDE;
   virtual void OnShowContextMenu(
       int request_id,
       const MenuItemVector* items) OVERRIDE;
-  virtual void StopFinding(content::StopFindAction) OVERRIDE;
+
+  extensions::WebViewGuest* web_view_guest() const { return web_view_guest_; }
 
  private:
-  friend void extensions::WebViewFindHelper::DispatchFindUpdateEvent(
-      bool canceled,
-      bool final_update);
-
   content::WebContents* guest_web_contents() const {
     return web_view_guest()->web_contents();
   }
@@ -75,9 +59,6 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& details);
 #endif
-
-  // Handles find requests and replies for the webview find API.
-  extensions::WebViewFindHelper find_helper_;
 
   // A counter to generate a unique request id for a context menu request.
   // We only need the ids to be unique for a given WebViewGuest.
@@ -98,6 +79,8 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   scoped_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_subscription_;
 #endif
+
+  extensions::WebViewGuest* const web_view_guest_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewGuestDelegate);
 };

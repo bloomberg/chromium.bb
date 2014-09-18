@@ -41,36 +41,13 @@ void RemoveWebViewEventListenersOnIOThread(
 
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     extensions::WebViewGuest* web_view_guest)
-  : WebViewGuestDelegate(web_view_guest),
-    find_helper_(web_view_guest),
-    pending_context_menu_request_id_(0),
-    chromevox_injected_(false),
-    current_zoom_factor_(1.0) {
+    : pending_context_menu_request_id_(0),
+      chromevox_injected_(false),
+      current_zoom_factor_(1.0),
+      web_view_guest_(web_view_guest) {
 }
 
 ChromeWebViewGuestDelegate::~ChromeWebViewGuestDelegate() {
-}
-
-void ChromeWebViewGuestDelegate::Find(
-    const base::string16& search_text,
-    const blink::WebFindOptions& options,
-    extensions::WebViewInternalFindFunction* find_function) {
-  find_helper_.Find(guest_web_contents(), search_text, options, find_function);
-}
-
-void ChromeWebViewGuestDelegate::FindReply(content::WebContents* source,
-                                           int request_id,
-                                           int number_of_matches,
-                                           const gfx::Rect& selection_rect,
-                                           int active_match_ordinal,
-                                           bool final_update) {
-  find_helper_.FindReply(request_id, number_of_matches, selection_rect,
-                         active_match_ordinal, final_update);
-}
-
-void ChromeWebViewGuestDelegate::StopFinding(content::StopFindAction action) {
-  find_helper_.CancelAllFindSessions();
-  guest_web_contents()->StopFinding(action);
 }
 
 double ChromeWebViewGuestDelegate::GetZoom() {
@@ -148,8 +125,6 @@ void ChromeWebViewGuestDelegate::OnEmbedderDestroyed() {
 
 void ChromeWebViewGuestDelegate::OnDidCommitProvisionalLoadForFrame(
     bool is_main_frame) {
-  find_helper_.CancelAllFindSessions();
-
   // Update the current zoom factor for the new page.
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(guest_web_contents());
@@ -199,11 +174,6 @@ scoped_ptr<base::ListValue> ChromeWebViewGuestDelegate::MenuModelToValue(
     items->Append(item_value);
   }
   return items.Pass();
-}
-
-void ChromeWebViewGuestDelegate::OnRenderProcessGone() {
-  // Cancel all find sessions in progress.
-  find_helper_.CancelAllFindSessions();
 }
 
 void ChromeWebViewGuestDelegate::OnSetZoom(double zoom_factor) {

@@ -36,11 +36,10 @@ class WebViewFindHelper {
   void EndFindSession(int session_request_id, bool canceled);
 
   // Helper function for WebViewGuest::Find().
-  void Find(
-      content::WebContents* guest_web_contents,
-      const base::string16& search_text,
-      const blink::WebFindOptions& options,
-      scoped_refptr<WebViewInternalFindFunction> find_function);
+  void Find(content::WebContents* guest_web_contents,
+            const base::string16& search_text,
+            const blink::WebFindOptions& options,
+            scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Helper function for WeViewGuest:FindReply().
   void FindReply(int request_id,
@@ -101,11 +100,10 @@ class WebViewFindHelper {
   // Handles all information about a find request and its results.
   class FindInfo {
    public:
-    FindInfo(
-        int request_id,
-        const base::string16& search_text,
-        const blink::WebFindOptions& options,
-        scoped_refptr<WebViewInternalFindFunction> find_function);
+    FindInfo(int request_id,
+             const base::string16& search_text,
+             const blink::WebFindOptions& options,
+             scoped_refptr<WebViewInternalFindFunction> find_function);
     ~FindInfo();
 
     // Add another request to |find_next_requests_|.
@@ -158,7 +156,6 @@ class WebViewFindHelper {
     friend void WebViewFindHelper::EndFindSession(int session_request_id,
                                                   bool canceled);
 
-// Weak pointer used to access the find info of fin.
     base::WeakPtrFactory<FindInfo> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(FindInfo);

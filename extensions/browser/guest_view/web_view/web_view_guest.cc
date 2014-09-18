@@ -30,6 +30,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_view/web_view_internal_api.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
@@ -389,11 +390,11 @@ void WebViewGuest::FindReply(WebContents* source,
                              const gfx::Rect& selection_rect,
                              int active_match_ordinal,
                              bool final_update) {
-  if (web_view_guest_delegate_) {
-    web_view_guest_delegate_->FindReply(
-        source, request_id, number_of_matches,
-        selection_rect, active_match_ordinal, final_update);
-  }
+  find_helper_.FindReply(request_id,
+                         number_of_matches,
+                         selection_rect,
+                         active_match_ordinal,
+                         final_update);
 }
 
 bool WebViewGuest::HandleContextMenu(
@@ -546,14 +547,13 @@ double WebViewGuest::GetZoom() {
 void WebViewGuest::Find(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
-    WebViewInternalFindFunction* find_function) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->Find(search_text, options, find_function);
+    scoped_refptr<WebViewInternalFindFunction> find_function) {
+  find_helper_.Find(web_contents(), search_text, options, find_function);
 }
 
 void WebViewGuest::StopFinding(content::StopFindAction action) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->StopFinding(action);
+  find_helper_.CancelAllFindSessions();
+  web_contents()->StopFinding(action);
 }
 
 void WebViewGuest::Go(int relative_index) {
@@ -616,6 +616,7 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
 WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
                            int guest_instance_id)
     : GuestView<WebViewGuest>(browser_context, guest_instance_id),
+      find_helper_(this),
       is_overriding_user_agent_(false),
       javascript_dialog_helper_(this) {
   web_view_guest_delegate_.reset(
@@ -640,6 +641,8 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
                    web_contents()->GetRenderProcessHost()->GetID());
   DispatchEventToEmbedder(
       new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
+
+  find_helper_.CancelAllFindSessions();
   if (web_view_guest_delegate_) {
     web_view_guest_delegate_->OnDidCommitProvisionalLoadForFrame(
         !render_frame_host->GetParent());
@@ -684,8 +687,8 @@ bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnRenderProcessGone();
+  // Cancel all find sessions in progress.
+  find_helper_.CancelAllFindSessions();
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,

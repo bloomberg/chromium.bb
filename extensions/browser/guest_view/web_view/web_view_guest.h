@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/guest_view/guest_view.h"
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
@@ -166,10 +167,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   double GetZoom();
 
   // Begin or continue a find request.
-  void Find(
-      const base::string16& search_text,
-      const blink::WebFindOptions& options,
-      WebViewInternalFindFunction* find_function);
+  void Find(const base::string16& search_text,
+            const blink::WebFindOptions& options,
+            scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Conclude a find request to clear highlighting.
   void StopFinding(content::StopFindAction);
@@ -315,6 +315,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
 
   void SetUpAutoSize();
+
+  // Handles find requests and replies for the webview find API.
+  WebViewFindHelper find_helper_;
 
   ObserverList<ScriptExecutionObserver> script_observers_;
   scoped_ptr<ScriptExecutor> script_executor_;
