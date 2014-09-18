@@ -370,28 +370,6 @@ Running: testWikiParser
         _type : "Block"
     }
 }
-"{{Table|there is a table {{{!}}
-}}" is parsed
-{
-    Table : {
-        _children : [
-            {
-                _children : [
-                    {
-                        _isHighlighted : false
-                        _isItalic : false
-                        _text : "there is a table {{{!}}"
-                        _type : "PlainText"
-                    }
-                ]
-                _hasBullet : false
-                _type : "Block"
-            }
-        ]
-        _hasBullet : false
-        _type : "Block"
-    }
-}
 "{{Notes_Section
 |Notes=Do not specify the ''refChild'' parameter when inserting the first child node. If children already exist and you do not specify the ''refChild'' parameter, the ''newChild'' becomes the last child of the parent object.
 This method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render.
@@ -1319,5 +1297,200 @@ Running: testEmptyParameters
     ]
     remarks : null
     summary : undefined
+}
+
+Running: testTable
+{
+    Table : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _isItalic : false
+                        _text : "there is a table "
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            {
+                _columnNames : [
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _isItalic : false
+                                        _text : " A"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _isItalic : false
+                                        _text : " B"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _isItalic : false
+                                        _text : " C"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                ]
+                _rows : [
+                    [
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _isItalic : false
+                                            _text : " 1"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _hasBullet : false
+                                    _type : "Block"
+                                }
+                            ]
+                            _hasBullet : false
+                            _type : "Block"
+                        }
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _isItalic : false
+                                            _text : " 2"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _hasBullet : false
+                                    _type : "Block"
+                                }
+                            ]
+                            _hasBullet : false
+                            _type : "Block"
+                        }
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _isItalic : false
+                                            _text : " 3"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _hasBullet : false
+                                    _type : "Block"
+                                }
+                            ]
+                            _hasBullet : false
+                            _type : "Block"
+                        }
+                    ]
+                    [
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _isItalic : false
+                                            _text : " 4"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _hasBullet : false
+                                    _type : "Block"
+                                }
+                            ]
+                            _hasBullet : false
+                            _type : "Block"
+                        }
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _isItalic : false
+                                            _text : " 5"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _hasBullet : false
+                                    _type : "Block"
+                                }
+                            ]
+                            _hasBullet : false
+                            _type : "Block"
+                        }
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _isItalic : false
+                                            _text : " 6"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _hasBullet : false
+                                    _type : "Block"
+                                }
+                            ]
+                            _hasBullet : false
+                            _type : "Block"
+                        }
+                    ]
+                ]
+                _type : "Table"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
 }
 

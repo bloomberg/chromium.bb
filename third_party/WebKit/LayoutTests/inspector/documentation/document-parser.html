@@ -21,10 +21,10 @@ function test()
                 "{{A}}",
                 "{{A|B= [[http://google.com{{!}}Google]]}}",
                 "{{AbC|xyz \n\t \r}}",
-                "{{Table|there is a table {{{!}}\n}}",
                 "{{Notes_Section\n|Notes=Do not specify the ''refChild'' parameter when inserting the first child node. If children already exist and you do not specify the ''refChild'' parameter, the ''newChild'' becomes the last child of the parent object.\nThis method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render.\n}}",
                 "{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}",
-                "{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}\n}}"];
+                "{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}\n}}"
+            ];
             for (var i = 0; i < testCases.length; i++) {
                 var wikiParser = new WebInspector.WikiParser(testCases[i]);
                 InspectorTest.addResult("\"" + testCases[i].replace("\r", "\\r") + "\" is parsed");
@@ -146,6 +146,14 @@ function test()
             var emptyParameterTest = "{{API_Object_Method\n|Parameters=\n|Method_applies_to=dom/shadowdom/ShadowRoot\n|Javascript_data_type=DOM Node\n|Return_value_description=Returns the DOM node specified by the given ID. Case matters, and if there is more than one node with the given ID, which node is returned is uncertain.\n}}";
             var article = WebInspector.JSArticle.parse(emptyParameterTest);
             InspectorTest.addObject(article);
+            next();
+        },
+
+        function testTable(next)
+        {
+            var tableTest = "{{Table|there is a table \n{{{!}} class='wikitable' \n{{!}}-\n! A\n! B\n! C\n{{!}}-\n{{!}} 1\n{{!}} 2\n{{!}} 3\n{{!}}-\n{{!}} 4\n{{!}} 5\n{{!}} 6\n{{!}}}\n}}";
+            var wikiParser = new WebInspector.WikiParser(tableTest);
+            InspectorTest.addObject(wikiParser.document());
             next();
         }
     ]);
