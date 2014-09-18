@@ -15,6 +15,14 @@ namespace content {
 // described in the "Manifest for Web Application" document:
 // http://w3c.github.io/manifest/
 struct CONTENT_EXPORT Manifest {
+  enum DisplayMode {
+    DISPLAY_MODE_UNSPECIFIED,
+    DISPLAY_MODE_FULLSCREEN,
+    DISPLAY_MODE_STANDALONE,
+    DISPLAY_MODE_MINIMAL_UI,
+    DISPLAY_MODE_BROWSER
+  };
+
   Manifest();
   ~Manifest();
 
@@ -30,6 +38,10 @@ struct CONTENT_EXPORT Manifest {
 
   // Empty if the parsing failed or the field was not present.
   GURL start_url;
+
+  // Set to DISPLAY_MODE_UNSPECIFIED if the parsing failed or the field was not
+  // present.
+  DisplayMode display;
 
   // Maximum length for all the strings inside the Manifest when it is sent over
   // IPC. The renderer process should truncate the strings before sending the

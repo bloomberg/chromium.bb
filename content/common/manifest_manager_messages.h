@@ -14,10 +14,14 @@
 
 #define IPC_MESSAGE_START ManifestManagerMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::Manifest::DisplayMode,
+                          content::Manifest::DISPLAY_MODE_BROWSER)
+
 IPC_STRUCT_TRAITS_BEGIN(content::Manifest)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(short_name)
   IPC_STRUCT_TRAITS_MEMBER(start_url)
+  IPC_STRUCT_TRAITS_MEMBER(display)
 IPC_STRUCT_TRAITS_END()
 
 // The browser process requests for the manifest linked with the associated

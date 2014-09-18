@@ -8,14 +8,18 @@ namespace content {
 
 const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
 
-Manifest::Manifest() {
+Manifest::Manifest()
+    : display(DISPLAY_MODE_UNSPECIFIED) {
 }
 
 Manifest::~Manifest() {
 }
 
 bool Manifest::IsEmpty() const {
-  return name.is_null() && short_name.is_null();
+  return name.is_null() &&
+         short_name.is_null() &&
+         start_url.is_empty() &&
+         display == DISPLAY_MODE_UNSPECIFIED;
 }
 
 } // namespace content

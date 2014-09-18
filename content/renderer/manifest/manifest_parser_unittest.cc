@@ -41,6 +41,7 @@ TEST_F(ManifestParserTest, EmptyStringNull) {
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
+  ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
 }
 
 TEST_F(ManifestParserTest, ValidNoContentParses) {
@@ -51,6 +52,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
+  ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
 }
 
 TEST_F(ManifestParserTest, NameParseRules) {
@@ -58,6 +60,7 @@ TEST_F(ManifestParserTest, NameParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"name\": \"foo\" }");
     ASSERT_TRUE(EqualsASCII(manifest.name.string(), "foo"));
+    ASSERT_FALSE(manifest.IsEmpty());
   }
 
   // Trim whitespaces.
@@ -84,6 +87,7 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"short_name\": \"foo\" }");
     ASSERT_TRUE(EqualsASCII(manifest.short_name.string(), "foo"));
+    ASSERT_FALSE(manifest.IsEmpty());
   }
 
   // Trim whitespaces.
@@ -111,6 +115,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
     Manifest manifest = ParseManifest("{ \"start_url\": \"land.html\" }");
     ASSERT_EQ(manifest.start_url.spec(),
               default_document_url.Resolve("land.html").spec());
+    ASSERT_FALSE(manifest.IsEmpty());
   }
 
   // Whitespaces.
@@ -157,6 +162,69 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
                       GURL("http://foo.com/landing/manifest.json"),
                       GURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest.start_url.spec(), "http://foo.com/landing/land.html");
+  }
+}
+
+TEST_F(ManifestParserTest, DisplayParserRules) {
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"browser\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+    EXPECT_FALSE(manifest.IsEmpty());
+  }
+
+  // Trim whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"  browser  \" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": {} }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": 42 }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  }
+
+  // Parse fails if string isn't known.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"browser_something\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  }
+
+  // Accept 'fullscreen'.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"fullscreen\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_FULLSCREEN);
+  }
+
+  // Accept 'fullscreen'.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"standalone\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_STANDALONE);
+  }
+
+  // Accept 'minimal-ui'.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"minimal-ui\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_MINIMAL_UI);
+  }
+
+  // Accept 'browser'.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"browser\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+  }
+
+  // Case insensitive.
+  {
+    Manifest manifest = ParseManifest("{ \"display\": \"BROWSER\" }");
+    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
   }
 }
 
