@@ -119,6 +119,22 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 
 }
 
+void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type, const String& description)
+{
+    // Use a TextIterator to visit the potentially multiple nodes the range covers.
+    for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance()) {
+        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset(), description));
+    }
+}
+
+void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type)
+{
+    // Use a TextIterator to visit the potentially multiple nodes the range covers.
+    for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance()) {
+        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset()));
+    }
+}
+
 void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activeMatch)
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.

@@ -51,6 +51,7 @@ enum TextIteratorBehavior {
 typedef unsigned TextIteratorBehaviorFlags;
 
 String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
 void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
 
@@ -124,7 +125,9 @@ public:
     // also emits spaces for other non-text nodes using the
     // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
     static int rangeLength(const Range*, bool forSelectionPreservation = false);
+    static int rangeLength(const Position& start, const Position& end, bool forSelectionPreservation = false);
     static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
+    static void subrange(Position& start, Position& end, int characterOffset, int characterCount);
 
 private:
     enum IterationProgress {
@@ -381,7 +384,7 @@ private:
 class WordAwareIterator {
     STACK_ALLOCATED();
 public:
-    explicit WordAwareIterator(const Range*);
+    explicit WordAwareIterator(const Position& start, const Position& end);
     ~WordAwareIterator();
 
     bool atEnd() const { return !m_didLookAhead && m_textIterator.atEnd(); }

@@ -219,11 +219,11 @@ int TextCheckingParagraph::checkingLength() const
     return m_checkingLength;
 }
 
-TextCheckingHelper::TextCheckingHelper(SpellCheckerClient& client, PassRefPtrWillBeRawPtr<Range> range)
+TextCheckingHelper::TextCheckingHelper(SpellCheckerClient& client, const Position& start, const Position& end)
     : m_client(&client)
-    , m_range(range)
+    , m_start(start)
+    , m_end(end)
 {
-    ASSERT_ARG(m_range, m_range);
 }
 
 TextCheckingHelper::~TextCheckingHelper()
@@ -232,7 +232,7 @@ TextCheckingHelper::~TextCheckingHelper()
 
 String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, bool markAll, RefPtrWillBeRawPtr<Range>& firstMisspellingRange)
 {
-    WordAwareIterator it(m_range.get());
+    WordAwareIterator it(m_start, m_end);
     firstMisspellingOffset = 0;
 
     String firstMisspelling;
@@ -261,17 +261,19 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
             if (misspellingLocation >= 0 && misspellingLength > 0 && misspellingLocation < length && misspellingLength <= length && misspellingLocation + misspellingLength <= length) {
 
                 // Compute range of misspelled word
-                RefPtrWillBeRawPtr<Range> misspellingRange = TextIterator::subrange(m_range.get(), currentChunkOffset + misspellingLocation, misspellingLength);
+                Position misspellingStart = m_start;
+                Position misspellingEnd = m_end;
+                TextIterator::subrange(misspellingStart, misspellingEnd, currentChunkOffset + misspellingLocation, misspellingLength);
 
                 // Remember first-encountered misspelling and its offset.
                 if (!firstMisspelling) {
                     firstMisspellingOffset = currentChunkOffset + misspellingLocation;
                     firstMisspelling = it.substring(misspellingLocation, misspellingLength);
-                    firstMisspellingRange = misspellingRange;
+                    firstMisspellingRange = Range::create(misspellingStart.containerNode()->document(), m_start, m_end);
                 }
 
                 // Store marker for misspelled word.
-                misspellingRange->startContainer()->document().markers().addMarker(misspellingRange.get(), DocumentMarker::Spelling);
+                misspellingStart.containerNode()->document().markers().addMarker(misspellingStart, misspellingEnd, DocumentMarker::Spelling);
 
                 // Bail out if we're marking only the first misspelling, and not all instances.
                 if (!markAll)
@@ -306,31 +308,29 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    RefPtrWillBeRawPtr<Range> paragraphRange = m_range->cloneRange();
-    setStart(paragraphRange.get(), startOfParagraph(VisiblePosition(m_range->startPosition())));
-    int totalRangeLength = TextIterator::rangeLength(paragraphRange.get());
-    setEnd(paragraphRange.get(), endOfParagraph(VisiblePosition(m_range->startPosition())));
+    Position paragraphStart = startOfParagraph(VisiblePosition(m_start)).toParentAnchoredPosition();
+    Position paragraphEnd = m_end;
+    int totalRangeLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
+    paragraphEnd = endOfParagraph(VisiblePosition(m_start)).toParentAnchoredPosition();
 
-    RefPtrWillBeRawPtr<Range> offsetAsRange = Range::create(paragraphRange->startContainer()->document(), paragraphRange->startPosition(), m_range->startPosition());
-    int rangeStartOffset = TextIterator::rangeLength(offsetAsRange.get());
+    int rangeStartOffset = TextIterator::rangeLength(paragraphStart, m_start);
     int totalLengthProcessed = 0;
 
     bool firstIteration = true;
     bool lastIteration = false;
     while (totalLengthProcessed < totalRangeLength) {
         // Iterate through the search range by paragraphs, checking each one for spelling and grammar.
-        int currentLength = TextIterator::rangeLength(paragraphRange.get());
+        int currentLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
         int currentStartOffset = firstIteration ? rangeStartOffset : 0;
         int currentEndOffset = currentLength;
-        if (inSameParagraph(VisiblePosition(paragraphRange->startPosition()), VisiblePosition(m_range->endPosition()))) {
+        if (inSameParagraph(VisiblePosition(paragraphStart), VisiblePosition(m_end))) {
             // Determine the character offset from the end of the original search range to the end of the paragraph,
             // since we will want to ignore results in this area.
-            RefPtrWillBeRawPtr<Range> endOffsetAsRange = Range::create(paragraphRange->startContainer()->document(), paragraphRange->startPosition(), m_range->endPosition());
-            currentEndOffset = TextIterator::rangeLength(endOffsetAsRange.get());
+            currentEndOffset = TextIterator::rangeLength(paragraphStart, m_end);
             lastIteration = true;
         }
         if (currentStartOffset < currentEndOffset) {
-            String paragraphString = plainText(paragraphRange.get());
+            String paragraphString = plainText(paragraphStart, paragraphEnd);
             if (paragraphString.length() > 0) {
                 bool foundGrammar = false;
                 int spellingLocation = 0;
@@ -377,10 +377,8 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
 
                 if (!misspelledWord.isEmpty() && (!checkGrammar || badGrammarPhrase.isEmpty() || spellingLocation <= grammarDetailLocation)) {
                     int spellingOffset = spellingLocation - currentStartOffset;
-                    if (!firstIteration) {
-                        RefPtrWillBeRawPtr<Range> paragraphOffsetAsRange = Range::create(paragraphRange->startContainer()->document(), m_range->startPosition(), paragraphRange->startPosition());
-                        spellingOffset += TextIterator::rangeLength(paragraphOffsetAsRange.get());
-                    }
+                    if (!firstIteration)
+                        spellingOffset += TextIterator::rangeLength(m_start, paragraphStart);
                     outIsSpelling = true;
                     outFirstFoundOffset = spellingOffset;
                     firstFoundItem = misspelledWord;
@@ -388,10 +386,8 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
                 }
                 if (checkGrammar && !badGrammarPhrase.isEmpty()) {
                     int grammarPhraseOffset = grammarPhraseLocation - currentStartOffset;
-                    if (!firstIteration) {
-                        RefPtrWillBeRawPtr<Range> paragraphOffsetAsRange = Range::create(paragraphRange->startContainer()->document(), m_range->startPosition(), paragraphRange->startPosition());
-                        grammarPhraseOffset += TextIterator::rangeLength(paragraphOffsetAsRange.get());
-                    }
+                    if (!firstIteration)
+                        grammarPhraseOffset += TextIterator::rangeLength(m_start, paragraphStart);
                     outIsSpelling = false;
                     outFirstFoundOffset = grammarPhraseOffset;
                     firstFoundItem = badGrammarPhrase;
@@ -401,9 +397,9 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
         }
         if (lastIteration || totalLengthProcessed + currentLength >= totalRangeLength)
             break;
-        VisiblePosition newParagraphStart = startOfNextParagraph(VisiblePosition(paragraphRange->endPosition()));
-        setStart(paragraphRange.get(), newParagraphStart);
-        setEnd(paragraphRange.get(), endOfParagraph(newParagraphStart));
+        VisiblePosition newParagraphStart = startOfNextParagraph(VisiblePosition(paragraphEnd));
+        paragraphStart = newParagraphStart.toParentAnchoredPosition();
+        paragraphEnd = endOfParagraph(newParagraphStart).toParentAnchoredPosition();
         firstIteration = false;
         totalLengthProcessed += currentLength;
     }
@@ -431,8 +427,10 @@ int TextCheckingHelper::findFirstGrammarDetail(const Vector<GrammarDetail>& gram
             continue;
 
         if (markAll) {
-            RefPtrWillBeRawPtr<Range> badGrammarRange = TextIterator::subrange(m_range.get(), badGrammarPhraseLocation - startOffset + detail->location, detail->length);
-            badGrammarRange->startContainer()->document().markers().addMarker(badGrammarRange.get(), DocumentMarker::Grammar, detail->userDescription);
+            Position badGrammarStart = m_start;
+            Position badGrammarEnd = m_end;
+            TextIterator::subrange(badGrammarStart, badGrammarEnd, badGrammarPhraseLocation - startOffset + detail->location, detail->length);
+            badGrammarStart.containerNode()->document().markers().addMarker(badGrammarStart, badGrammarEnd, DocumentMarker::Grammar, detail->userDescription);
         }
 
         // Remember this detail only if it's earlier than our current candidate (the details aren't in a guaranteed order)
@@ -459,7 +457,7 @@ String TextCheckingHelper::findFirstBadGrammar(GrammarDetail& outGrammarDetail, 
     // Expand the search range to encompass entire paragraphs, since grammar checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    TextCheckingParagraph paragraph(m_range);
+    TextCheckingParagraph paragraph(Range::create(m_start.containerNode()->document(), m_start, m_end));
 
     // Start checking from beginning of paragraph, but skip past results that occur before the start of the original search range.
     int startOffset = 0;
@@ -523,10 +521,8 @@ void TextCheckingHelper::markAllBadGrammar()
 
 bool TextCheckingHelper::unifiedTextCheckerEnabled() const
 {
-    if (!m_range)
-        return false;
-
-    Document& doc = m_range->ownerDocument();
+    ASSERT(m_start.isNotNull());
+    Document& doc = m_start.containerNode()->document();
     return blink::unifiedTextCheckerEnabled(doc.frame());
 }
 

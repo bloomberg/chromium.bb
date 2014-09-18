@@ -505,7 +505,10 @@ String DOMSelection::toString()
     if (!m_frame)
         return String();
 
-    return plainText(m_frame->selection().selection().toNormalizedRange().get());
+    Position start, end;
+    if (m_frame->selection().selection().toNormalizedPositions(start, end))
+        return plainText(start, end);
+    return emptyString();
 }
 
 Node* DOMSelection::shadowAdjustedNode(const Position& position) const

@@ -168,7 +168,8 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // Start at the end of the selection, search to edge of document. Starting at the selection end makes
     // repeated "check spelling" commands work.
     VisibleSelection selection(m_frame.selection().selection());
-    RefPtrWillBeRawPtr<Range> spellingSearchRange(rangeOfContents(m_frame.document()));
+    Position spellingSearchStart, spellingSearchEnd;
+    Range::selectNodeContents(m_frame.document(), spellingSearchStart, spellingSearchEnd);
 
     bool startedWithSelection = false;
     if (selection.start().deprecatedNode()) {
@@ -177,13 +178,13 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
             VisiblePosition start(selection.visibleStart());
             // We match AppKit's rule: Start 1 character before the selection.
             VisiblePosition oneBeforeStart = start.previous();
-            setStart(spellingSearchRange.get(), oneBeforeStart.isNotNull() ? oneBeforeStart : start);
+            spellingSearchStart = (oneBeforeStart.isNotNull() ? oneBeforeStart : start).toParentAnchoredPosition();
         } else {
-            setStart(spellingSearchRange.get(), selection.visibleEnd());
+            spellingSearchStart = selection.visibleEnd().toParentAnchoredPosition();
         }
     }
 
-    Position position = spellingSearchRange->startPosition();
+    Position position = spellingSearchStart;
     if (!isEditablePosition(position)) {
         // This shouldn't happen in very often because the Spelling menu items aren't enabled unless the
         // selection is editable.
@@ -195,38 +196,37 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         if (position.isNull())
             return;
 
-        Position rangeCompliantPosition = position.parentAnchoredEquivalent();
-        spellingSearchRange->setStart(rangeCompliantPosition.deprecatedNode(), rangeCompliantPosition.deprecatedEditingOffset(), IGNORE_EXCEPTION);
+        spellingSearchStart = position.parentAnchoredEquivalent();
         startedWithSelection = false; // won't need to wrap
     }
 
     // topNode defines the whole range we want to operate on
     ContainerNode* topNode = highestEditableRoot(position);
     // FIXME: lastOffsetForEditing() is wrong here if editingIgnoresContent(highestEditableRoot()) returns true (e.g. a <table>)
-    spellingSearchRange->setEnd(topNode, lastOffsetForEditing(topNode), IGNORE_EXCEPTION);
+    spellingSearchEnd = createLegacyEditingPosition(topNode, lastOffsetForEditing(topNode));
 
     // If spellingSearchRange starts in the middle of a word, advance to the next word so we start checking
     // at a word boundary. Going back by one char and then forward by a word does the trick.
     if (startedWithSelection) {
-        VisiblePosition oneBeforeStart = startVisiblePosition(spellingSearchRange.get(), DOWNSTREAM).previous();
+    VisiblePosition oneBeforeStart = VisiblePosition(spellingSearchStart, DOWNSTREAM).previous();
         if (oneBeforeStart.isNotNull())
-            setStart(spellingSearchRange.get(), endOfWord(oneBeforeStart));
+            spellingSearchStart = endOfWord(oneBeforeStart).toParentAnchoredPosition();
         // else we were already at the start of the editable node
     }
 
-    if (spellingSearchRange->collapsed())
+    if (spellingSearchStart == spellingSearchEnd)
         return; // nothing to search in
 
     // We go to the end of our first range instead of the start of it, just to be sure
     // we don't get foiled by any word boundary problems at the start. It means we might
     // do a tiny bit more searching.
-    Node* searchEndNodeAfterWrap = spellingSearchRange->endContainer();
-    int searchEndOffsetAfterWrap = spellingSearchRange->endOffset();
+    Node* searchEndNodeAfterWrap = spellingSearchEnd.containerNode();
+    int searchEndOffsetAfterWrap = spellingSearchEnd.offsetInContainerNode();
 
     int misspellingOffset = 0;
     GrammarDetail grammarDetail;
     int grammarPhraseOffset = 0;
-    RefPtrWillBeRawPtr<Range> grammarSearchRange = nullptr;
+    Position grammarSearchStart, grammarSearchEnd;
     String badGrammarPhrase;
     String misspelledWord;
 
@@ -235,8 +235,9 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     String foundItem;
     RefPtrWillBeRawPtr<Range> firstMisspellingRange = nullptr;
     if (unifiedTextCheckerEnabled()) {
-        grammarSearchRange = spellingSearchRange->cloneRange();
-        foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
+        grammarSearchStart = spellingSearchStart;
+        grammarSearchEnd = spellingSearchEnd;
+        foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
         if (isSpelling) {
             misspelledWord = foundItem;
             misspellingOffset = foundOffset;
@@ -245,29 +246,31 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
             grammarPhraseOffset = foundOffset;
         }
     } else {
-        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
-        grammarSearchRange = spellingSearchRange->cloneRange();
+        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
+        grammarSearchStart = spellingSearchStart;
+        grammarSearchEnd = spellingSearchEnd;
         if (!misspelledWord.isEmpty()) {
             // Stop looking at start of next misspelled word
-            CharacterIterator chars(grammarSearchRange.get());
+            CharacterIterator chars(grammarSearchStart, grammarSearchEnd);
             chars.advance(misspellingOffset);
-            grammarSearchRange->setEnd(chars.startContainer(), chars.startOffset(), IGNORE_EXCEPTION);
+            grammarSearchEnd = chars.startPosition();
         }
 
         if (isGrammarCheckingEnabled())
-            badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
+            badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchStart, grammarSearchEnd).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
     }
 
     // If we found neither bad grammar nor a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
     // block rather than at a selection).
     if (startedWithSelection && !misspelledWord && !badGrammarPhrase) {
-        spellingSearchRange->setStart(topNode, 0, IGNORE_EXCEPTION);
+        spellingSearchStart = createLegacyEditingPosition(topNode, 0);
         // going until the end of the very first chunk we tested is far enough
-        spellingSearchRange->setEnd(searchEndNodeAfterWrap, searchEndOffsetAfterWrap, IGNORE_EXCEPTION);
+        spellingSearchEnd = createLegacyEditingPosition(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
 
         if (unifiedTextCheckerEnabled()) {
-            grammarSearchRange = spellingSearchRange->cloneRange();
-            foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
+            grammarSearchStart = spellingSearchStart;
+            grammarSearchEnd = spellingSearchEnd;
+            foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
             if (isSpelling) {
                 misspelledWord = foundItem;
                 misspellingOffset = foundOffset;
@@ -276,17 +279,18 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
                 grammarPhraseOffset = foundOffset;
             }
         } else {
-            misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
-            grammarSearchRange = spellingSearchRange->cloneRange();
+            misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
+            grammarSearchStart = spellingSearchStart;
+            grammarSearchEnd = spellingSearchEnd;
             if (!misspelledWord.isEmpty()) {
                 // Stop looking at start of next misspelled word
-                CharacterIterator chars(grammarSearchRange.get());
+                CharacterIterator chars(grammarSearchStart, grammarSearchEnd);
                 chars.advance(misspellingOffset);
-                grammarSearchRange->setEnd(chars.startContainer(), chars.startOffset(), IGNORE_EXCEPTION);
+                grammarSearchEnd = chars.startPosition();
             }
 
             if (isGrammarCheckingEnabled())
-                badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
+                badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchStart, grammarSearchEnd).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
         }
     }
 
@@ -299,21 +303,25 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         ASSERT(grammarDetail.location != -1 && grammarDetail.length > 0);
 
         // FIXME 4859190: This gets confused with doubled punctuation at the end of a paragraph
-        RefPtrWillBeRawPtr<Range> badGrammarRange = TextIterator::subrange(grammarSearchRange.get(), grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
-        m_frame.selection().setSelection(VisibleSelection(badGrammarRange.get(), SEL_DEFAULT_AFFINITY));
+        Position badGrammarStart = grammarSearchStart;
+        Position badGrammarEnd = grammarSearchEnd;
+        TextIterator::subrange(badGrammarStart, badGrammarEnd, grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
+        m_frame.selection().setSelection(VisibleSelection(badGrammarStart, badGrammarEnd));
         m_frame.selection().revealSelection();
 
-        m_frame.document()->markers().addMarker(badGrammarRange.get(), DocumentMarker::Grammar, grammarDetail.userDescription);
+        m_frame.document()->markers().addMarker(badGrammarStart, badGrammarEnd, DocumentMarker::Grammar, grammarDetail.userDescription);
     } else if (!misspelledWord.isEmpty()) {
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
         // a marker so we draw the red squiggle later.
 
-        RefPtrWillBeRawPtr<Range> misspellingRange = TextIterator::subrange(spellingSearchRange.get(), misspellingOffset, misspelledWord.length());
-        m_frame.selection().setSelection(VisibleSelection(misspellingRange.get(), DOWNSTREAM));
+        Position misspellingStart = spellingSearchStart;
+        Position misspellingEnd = spellingSearchEnd;
+        TextIterator::subrange(misspellingStart, misspellingEnd, misspellingOffset, misspelledWord.length());
+        m_frame.selection().setSelection(VisibleSelection(misspellingStart, misspellingEnd, DOWNSTREAM));
         m_frame.selection().revealSelection();
 
         spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);
-        m_frame.document()->markers().addMarker(misspellingRange.get(), DocumentMarker::Spelling);
+        m_frame.document()->markers().addMarker(misspellingStart, misspellingEnd, DocumentMarker::Spelling);
     }
 }
 
@@ -359,7 +367,7 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
             textCheckingOptions, wordSelection.toNormalizedRange().get(),
             wholeParagraph.toNormalizedRange().get());
     } else {
-        RefPtrWillBeRawPtr<Range> misspellingRange = wordSelection.firstRange();
+        RefPtrWillBeRawPtr<Range> misspellingRange = nullptr;
         markMisspellings(wordSelection, misspellingRange);
     }
 }
@@ -434,19 +442,19 @@ void SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selectio
     if (!isContinuousSpellCheckingEnabled())
         return;
 
-    RefPtrWillBeRawPtr<Range> searchRange(selection.toNormalizedRange());
-    if (!searchRange)
+    Position start, end;
+    if (!selection.toNormalizedPositions(start, end))
         return;
 
     // If we're not in an editable node, bail.
-    Node* editableNode = searchRange->startContainer();
+    Node* editableNode = start.containerNode();
     if (!editableNode || !editableNode->hasEditableStyle())
         return;
 
     if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
-    TextCheckingHelper checker(spellCheckerClient(), searchRange);
+    TextCheckingHelper checker(spellCheckerClient(), start, end);
     if (checkSpelling)
         checker.markAllMisspellings(firstMisspellingRange);
     else if (isGrammarCheckingEnabled())
@@ -727,7 +735,6 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     Document* document = m_frame.document();
     ASSERT(document);
     RefPtrWillBeRawPtr<Range> wordRange = Range::create(*document, startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
-
     document->markers().removeMarkers(wordRange.get(), DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }
 

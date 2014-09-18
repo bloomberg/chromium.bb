@@ -1849,9 +1849,9 @@ void BackwardsCharacterIterator::advance(int count)
 
 // --------
 
-WordAwareIterator::WordAwareIterator(const Range* range)
+WordAwareIterator::WordAwareIterator(const Position& start, const Position& end)
     : m_didLookAhead(true) // So we consider the first chunk from the text iterator.
-    , m_textIterator(range)
+    , m_textIterator(start, end)
 {
     advance(); // Get in position over the first chunk of text.
 }
@@ -2242,6 +2242,18 @@ int TextIterator::rangeLength(const Range* r, bool forSelectionPreservation)
     return length;
 }
 
+int TextIterator::rangeLength(const Position& start, const Position& end, bool forSelectionPreservation)
+{
+    int length = 0;
+    TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
+    if (forSelectionPreservation)
+        behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
+    for (TextIterator it(start, end, behaviorFlags); !it.atEnd(); it.advance())
+        length += it.length();
+
+    return length;
+}
+
 PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(entireRange);
@@ -2251,9 +2263,15 @@ PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int cha
     return Range::create(entireRange->ownerDocument(), start, end);
 }
 
+void TextIterator::subrange(Position& start, Position& end, int characterOffset, int characterCount)
+{
+    CharacterIterator entireRangeIterator(start, end);
+    calculateCharacterSubrange(entireRangeIterator, characterOffset, characterCount, start, end);
+}
+
 // --------
 
-String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
+static String createPlainText(TextIterator& it)
 {
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
     static const unsigned initialCapacity = 1 << 15;
@@ -2262,7 +2280,7 @@ String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
     StringBuilder builder;
     builder.reserveCapacity(initialCapacity);
 
-    for (TextIterator it(r, behavior); !it.atEnd(); it.advance()) {
+    for (; !it.atEnd(); it.advance()) {
         it.appendTextToStringBuilder(builder);
         bufferLength += it.length();
     }
@@ -2271,6 +2289,18 @@ String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
         return emptyString();
 
     return builder.toString();
+}
+
+String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
+{
+    TextIterator it(r, behavior);
+    return createPlainText(it);
+}
+
+String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+{
+    TextIterator it(start, end, behavior);
+    return createPlainText(it);
 }
 
 static PassRefPtrWillBeRawPtr<Range> collapsedToBoundary(const Range* range, bool forward)

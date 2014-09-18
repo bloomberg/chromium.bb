@@ -1187,16 +1187,12 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
             bool endInParagraph = comparePositions(visibleEnd, endOfParagraphToMove) <= 0;
 
             startIndex = 0;
-            if (startInParagraph) {
-                RefPtrWillBeRawPtr<Range> startRange = Range::create(document(), startOfParagraphToMove.deepEquivalent().parentAnchoredEquivalent(), visibleStart.deepEquivalent().parentAnchoredEquivalent());
-                startIndex = TextIterator::rangeLength(startRange.get(), true);
-            }
+            if (startInParagraph)
+                startIndex = TextIterator::rangeLength(startOfParagraphToMove.toParentAnchoredPosition(), visibleStart.toParentAnchoredPosition(), true);
 
             endIndex = 0;
-            if (endInParagraph) {
-                RefPtrWillBeRawPtr<Range> endRange = Range::create(document(), startOfParagraphToMove.deepEquivalent().parentAnchoredEquivalent(), visibleEnd.deepEquivalent().parentAnchoredEquivalent());
-                endIndex = TextIterator::rangeLength(endRange.get(), true);
-            }
+            if (endInParagraph)
+                endIndex = TextIterator::rangeLength(startOfParagraphToMove.toParentAnchoredPosition(), visibleEnd.toParentAnchoredPosition(), true);
         }
     }
 
@@ -1255,8 +1251,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         document().updateLayoutIgnorePendingStylesheets();
     }
 
-    RefPtrWillBeRawPtr<Range> startToDestinationRange(Range::create(document(), firstPositionInNode(document().documentElement()), destination.deepEquivalent().parentAnchoredEquivalent()));
-    destinationIndex = TextIterator::rangeLength(startToDestinationRange.get(), true);
+    destinationIndex = TextIterator::rangeLength(firstPositionInNode(document().documentElement()), destination.toParentAnchoredPosition(), true);
 
     setEndingSelection(VisibleSelection(destination, originalIsDirectional));
     ASSERT(endingSelection().isCaretOrRange());
