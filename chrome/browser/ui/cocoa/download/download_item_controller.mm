@@ -85,7 +85,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 @interface DownloadItemController (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
 - (void)updateTheme:(ui::ThemeProvider*)themeProvider;
-- (void)setState:(DownoadItemState)state;
+- (void)setState:(DownloadItemState)state;
+- (void)initExperienceSamplingEvent:(const char*)event;
+- (void)updateExperienceSamplingEvent:(const char*)event;
 @end
 
 // Implementation of DownloadItemController
@@ -118,8 +120,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)dealloc {
-  if (sampling_event_.get())
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kIgnore);
+  [self updateExperienceSamplingEvent:ExperienceSamplingEvent::kIgnore];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [progressView_ setController:nil];
   [[self view] removeFromSuperview];
@@ -149,14 +150,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
   // ExperienceSampling: Dangerous or malicious download warning is being shown
   // to the user, so we start a new SamplingEvent and track it.
-  std::string event_name = downloadModel->MightBeMalicious()
+  const char* event_name = downloadModel->MightBeMalicious()
                                ? ExperienceSamplingEvent::kMaliciousDownload
                                : ExperienceSamplingEvent::kDangerousDownload;
-  sampling_event_.reset(new ExperienceSamplingEvent(
-      event_name,
-      downloadModel->download()->GetURL(),
-      downloadModel->download()->GetReferrerUrl(),
-      downloadModel->download()->GetBrowserContext()));
+  [self updateExperienceSamplingEvent:event_name];
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSImage* alertIcon;
@@ -210,9 +207,8 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DCHECK(alertIcon);
   [image_ setImage:alertIcon];
 
-  // Grow the parent views
-  WidenView([self view], labelWidthChange + buttonWidthChange);
   WidenView(dangerousDownloadView_, labelWidthChange + buttonWidthChange);
+  [shelf_ layoutItems];
 }
 
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
@@ -237,6 +233,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)remove {
   // We are deleted after this!
+  // If the download is destroyed before DownloadItemController, then we'd end
+  // up here. Reset the bridege_ so  that it can clean up after itself before
+  // the DownloadItemController is deallocd.
+  bridge_.reset();
   [shelf_ remove:self];
 }
 
@@ -297,7 +297,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   return state_ == kDangerous;
 }
 
-- (void)setState:(DownoadItemState)state {
+- (void)setState:(DownloadItemState)state {
   if (state_ == state)
     return;
   state_ = state;
@@ -329,16 +329,28 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   [dangerousDownloadLabel_ setTextColor:color];
 }
 
+- (void)initExperienceSamplingEvent:(const char*)event {
+  sampling_event_.reset(new ExperienceSamplingEvent(
+      event,
+      bridge_->download_model()->download()->GetURL(),
+      bridge_->download_model()->download()->GetReferrerUrl(),
+      bridge_->download_model()->download()->GetBrowserContext()));
+}
+
+- (void)updateExperienceSamplingEvent:(const char*)event {
+  if (sampling_event_.get()) {
+    sampling_event_->CreateUserDecisionEvent(event);
+    sampling_event_.reset(NULL);
+  }
+}
+
 - (IBAction)saveDownload:(id)sender {
   // The user has confirmed a dangerous download.  We record how quickly the
   // user did this to detect whether we're being clickjacked.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                            base::Time::Now() - creationTime_);
   // ExperienceSampling: User chose to proceed with dangerous download.
-  if (sampling_event_.get()) {
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
-    sampling_event_.reset(NULL);
-  }
+  [self updateExperienceSamplingEvent:ExperienceSamplingEvent::kProceed];
   // This will change the state and notify us.
   bridge_->download_model()->download()->ValidateDangerousDownload();
 }
@@ -353,10 +365,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (IBAction)dismissMaliciousDownload:(id)sender {
   // ExperienceSampling: User dismissed the dangerous download.
-  if (sampling_event_.get()) {
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
-    sampling_event_.reset(NULL);
-  }
+  [self updateExperienceSamplingEvent:ExperienceSamplingEvent::kDeny];
   [self remove];
   // WARNING: we are deleted at this point.
 }

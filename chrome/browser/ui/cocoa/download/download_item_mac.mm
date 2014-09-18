@@ -73,10 +73,8 @@ void DownloadItemMac::OnDownloadOpened(content::DownloadItem* download) {
 
 void DownloadItemMac::LoadIcon() {
   IconManager* icon_manager = g_browser_process->icon_manager();
-  if (!icon_manager) {
-    NOTREACHED();
+  if (!icon_manager)
     return;
-  }
 
   // We may already have this particular image cached.
   base::FilePath file = download_model_.download()->GetTargetFilePath();
