@@ -259,7 +259,7 @@ class AndroidCommands(object):
         # We limit the length to avoid outputting too verbose commands, such as "adb logcat".
         # Also make sure that the output is ascii-encoded to avoid confusing other parts of
         # the system.
-        self._log_debug('Run adb result: ' + result[:80].decode('ascii', errors='replace'))
+        self._log_debug('Run adb result: ' + result[:80].encode('ascii', errors='replace'))
         return result
 
     def get_serial(self):
