@@ -26,15 +26,6 @@ from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
-# If we are a bootstrap environment, this import will fail.
-# We quietly ignore the failure, but leave bombs around that will
-# explode if people try to really use this library.
-try:
-  from dev.host.lib import update_payload
-except ImportError:
-  update_payload = None
-  logging.exception('update_payload import failed. Normal during bootstrap.')
-
 
 class Error(Exception):
   """Base class for payload generation errors."""
@@ -108,10 +99,11 @@ class _PaygenPayload(object):
 
     self.signer = None
 
-    if self._verify and update_payload is None:
-      # TODO(dgarrett): Change to a hard failure after crbug.com/415027 fixed.
-      logging.error('Verification disabled because update_payload unavailable.')
-      self._verify = False
+    # If we are a bootstrap environment, this import will fail, so don't
+    # perform it until we need it.
+    from dev.host.lib import update_payload
+
+    self._update_payload = update_payload
 
     if sign:
       self.signed_payload_file = self.payload_file + '.signed'
@@ -547,7 +539,7 @@ class _PaygenPayload(object):
                       rootfs_part_size=self._DEFAULT_ROOTFS_PART_SIZE,
                       kernel_part_size=self._DEFAULT_KERNEL_PART_SIZE,
                       disabled_tests=['move-same-src-dst-block'])
-      except update_payload.PayloadError as e:
+      except self._update_payload.PayloadError as e:
         raise PayloadVerificationError(
             'Payload integrity check failed: %s' % e)
 
@@ -601,7 +593,7 @@ class _PaygenPayload(object):
     bspatch_path = os.path.join(self.generator_dir, 'bspatch')
     try:
       payload.Apply(bspatch_path=bspatch_path, **part_files)
-    except update_payload.PayloadError as e:
+    except self._update_payload.PayloadError as e:
       raise PayloadVerificationError('Payload failed to apply: %s' % e)
 
     # Prior to comparing, remove unused space past the filesystem boundary
@@ -631,7 +623,7 @@ class _PaygenPayload(object):
       metadata_sig_file_name = None
 
     with open(payload_file_name) as payload_file:
-      payload = update_payload.Payload(payload_file)
+      payload = self._update_payload.Payload(payload_file)
       is_delta = bool(self.payload.src_image)
       try:
         payload.Init()
@@ -642,7 +634,7 @@ class _PaygenPayload(object):
         # Second, try to apply the payload and check the result.
         self._ApplyPayload(payload, is_delta)
 
-      except update_payload.PayloadError as e:
+      except self._update_payload.PayloadError as e:
         raise PayloadVerificationError('Payload failed to verify: %s' % e)
 
   def _UploadResults(self):
