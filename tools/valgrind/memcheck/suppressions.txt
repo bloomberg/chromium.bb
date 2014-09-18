@@ -1856,14 +1856,6 @@
    fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
-   bug_100043
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIN6webkit13WebPluginInfoEE8allocateEjPKv
-   ...
-   fun:_ZNSt6vectorIN6webkit13WebPluginInfoESaIS1*
-}
-{
    bug_101125a
    Memcheck:Uninitialized
    ...
@@ -1903,46 +1895,6 @@
    fun:_ZNK7blink4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
    fun:_ZNK7blink4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
    fun:_ZN5blink15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
-}
-{
-   bug_100133
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z22RecoveryRegisterHelperP22ComponentUpdateServiceP11PrefService
-}
-{
-   bug_100330
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25TestingAutomationProvider42NavigateToURLBlockUntilNavigationsCompleteEiRK4GURLiPN3IPC7MessageE
-}
-{
-   bug_100647
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18WebResourceService19UpdateResourceCacheERKSs
-   fun:_ZN18WebResourceService18WebResourceFetcher18OnURLFetchCompleteEPK10URLFetcherRK4GURLRKN3net16URLRequestStatusEiRKSt6vectorISsSaISsEERKSs
-   fun:_ZN10URLFetcher8Delegate18OnURLFetchCompleteEPKS_
-   fun:_ZN10URLFetcher4Core29InformDelegateFetchIsCompleteEv
-   fun:_ZN10URLFetcher4Core21OnCompletedURLRequestEN4base9TimeDeltaE
-}
-{
-   bug_100777
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_119MakeContextDelegateI16CrxUpdateServiceNS1_13UpdateContextEEEPN7content18URLFetcherDelegateEPT_PT0_
-   fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
-}
-{
-   bug_100916
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink19WebWorkerClientImpl24createWorkerContextProxyEPN7blink6WorkerE
-   ...
-   fun:_ZN5blink6WorkerC1EPNS_22ScriptExecutionContextE
-   fun:_ZN5blink6Worker6createEPNS_22ScriptExecutionContextERKN3WTF6StringERi
-   fun:_ZN5blink8V8Worker19constructorCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
    bug_100982
