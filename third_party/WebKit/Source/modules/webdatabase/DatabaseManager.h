@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class AbstractDatabaseServer;
 class Database;
 class DatabaseBackend;
 class DatabaseCallback;
@@ -85,8 +84,6 @@ private:
         unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     static void logErrorMessage(ExecutionContext*, const String& message);
-
-    AbstractDatabaseServer* m_server;
 
     typedef WillBePersistentHeapHashMap<ExecutionContext*, RefPtrWillBeMember<DatabaseContext> > ContextMap;
     ContextMap m_contextMap;

@@ -33,14 +33,13 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Logging.h"
-#include "modules/webdatabase/AbstractDatabaseServer.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseServer.h"
 #include "modules/webdatabase/DatabaseTask.h"
+#include "modules/webdatabase/DatabaseTracker.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
@@ -59,8 +58,6 @@ DatabaseManager::DatabaseManager()
     , m_databaseContextInstanceCount(0)
 #endif
 {
-    m_server = new DatabaseServer;
-    ASSERT(m_server); // We should always have a server to work with.
 }
 
 DatabaseManager::~DatabaseManager()
@@ -168,28 +165,27 @@ PassRefPtrWillBeRawPtr<DatabaseBackend> DatabaseManager::openDatabaseBackend(Exe
 {
     ASSERT(error == DatabaseError::None);
 
-    RefPtrWillBeRawPtr<DatabaseBackend> backend = m_server->openDatabase(
-        databaseContextFor(context)->backend(), name, expectedVersion,
-        displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
-
-    if (!backend) {
-        ASSERT(error != DatabaseError::None);
-
-        switch (error) {
-        case DatabaseError::GenericSecurityError:
-            logOpenDatabaseError(context, name);
-            return nullptr;
-
-        case DatabaseError::InvalidDatabaseState:
-            logErrorMessage(context, errorMessage);
-            return nullptr;
-
-        default:
-            ASSERT_NOT_REACHED();
-        }
+    DatabaseContext* backendContext = databaseContextFor(context)->backend();
+    if (DatabaseTracker::tracker().canEstablishDatabase(backendContext, name, displayName, estimatedSize, error)) {
+        RefPtrWillBeRawPtr<DatabaseBackend> backend = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
+        if (backend->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
+            return backend.release();
     }
 
-    return backend.release();
+    ASSERT(error != DatabaseError::None);
+    switch (error) {
+    case DatabaseError::GenericSecurityError:
+        logOpenDatabaseError(context, name);
+        return nullptr;
+
+    case DatabaseError::InvalidDatabaseState:
+        logErrorMessage(context, errorMessage);
+        return nullptr;
+
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
@@ -221,7 +217,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
 
 String DatabaseManager::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)
 {
-    return m_server->fullPathForDatabase(origin, name, createIfDoesNotExist);
+    return DatabaseTracker::tracker().fullPathForDatabase(origin, name, createIfDoesNotExist);
 }
 
 void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& message)
