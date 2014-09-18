@@ -7,11 +7,11 @@ $|++;
 #
 # Copyright (C) 2010 by Swiss Library for the Blind, Visually Impaired and Print Disabled
 # Copyright (C) 2012-2013 Mesar Hameed <mhameed @ src.gnome.org>
-# 
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
-# notice and this notice are preserved.
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
 
 my $fail = 0;
 # some tables are quite big and take some time to check, so keep the timeout reasonably long
