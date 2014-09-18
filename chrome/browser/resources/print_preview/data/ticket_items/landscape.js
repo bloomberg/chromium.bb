@@ -57,9 +57,8 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     isCapabilityAvailable: function() {
       var cap = this.getPageOrientationCapability_();
-      if (!cap) {
+      if (!cap)
         return false;
-      }
       var hasAutoOrPortraitOption = false;
       var hasLandscapeOption = false;
       cap.option.forEach(function(option) {
@@ -107,6 +106,19 @@ cr.define('print_preview.ticket_items', function() {
           print_preview.ticket_items.MarginsType.Value.DEFAULT);
         this.customMargins_.updateValue(null);
       }
+    },
+
+    /**
+     * @return {boolean} Whether capability contains the |value|.
+     * @param {string} value Option to check.
+     */
+    hasOption: function(value) {
+      var cap = this.getPageOrientationCapability_();
+      if (!cap)
+        return false;
+      return cap.option.some(function(option) {
+        return option.type == value;
+      });
     },
 
     /**

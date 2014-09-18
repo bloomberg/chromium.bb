@@ -420,8 +420,13 @@ cr.define('print_preview', function() {
           vendor_id: value.vendor_id
         };
       }
-      if (this.landscape.isCapabilityAvailable() &&
-          this.landscape.isUserEdited()) {
+      if (!this.landscape.isCapabilityAvailable()) {
+        // In this case "orientation" option is hidden from user, so user can't
+        // adjust it for page content, see Landscape.isCapabilityAvailable().
+        // We can improve results if we set AUTO here.
+        if (this.landscape.hasOption('AUTO'))
+          cjt.print.page_orientation = { type: 'AUTO' };
+      } else if (this.landscape.isUserEdited()) {
         cjt.print.page_orientation =
             {type: this.landscape.getValue() ? 'LANDSCAPE' : 'PORTRAIT'};
       }
