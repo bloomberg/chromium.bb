@@ -591,7 +591,7 @@
       'test_isolation_outdir%': '',
       # True if isolate should fail if the isolate files refer to files
       # that are missing.
-      'test_isolation_fail_on_missing': 0,
+      'test_isolation_fail_on_missing': 1,
 
       'wix_path%': '<(DEPTH)/third_party/wix',
 

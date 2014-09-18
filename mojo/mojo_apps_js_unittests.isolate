@@ -30,7 +30,6 @@
     ['OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/mojo_system.dll',
           '<(PRODUCT_DIR)/mojo_test_support.dll',
         ],
       },
