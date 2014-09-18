@@ -28,10 +28,18 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
-#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#if !defined(__native_client__)
+/*
+ * TODO(dschuff): Remove this ifdef (and the #define nacl_abi_foo lines below
+ * that replace it) once the service runtime's stat.h is includable directly
+ * (as opposed to being part of toolchain) by untrusted code.
+ * see https://code.google.com/p/nativeclient/issues/detail?id=3909
+ */
+# include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+# include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+# include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
+#endif
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
-#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"

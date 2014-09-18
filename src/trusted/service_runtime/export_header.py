@@ -17,28 +17,40 @@ import sys
 
 def ProcessStream(instr, outstr):
   """Read internal version of header file from instr, write exported
-  version to outstr.  The two transformations are to remove nacl_abi_
-  prefixes (in its various incarnations), and to change include
-  directives from the Google coding style
-  "native_client/include/foo/bar.h" to <foo/bar.h>, and from
-  "native_client/src/trusted/service_runtime/include/baz/quux.h" to
-  <baz/quux.h>."""
+  version to outstr.  The transformations are:
+  1) remove nacl_abi_ prefixes (in its various incarnations)
+  2) change include directives from the Google coding style
+     "native_client/include/foo/bar.h" to <foo/bar.h>, and from
+     "native_client/src/trusted/service_runtime/include/baz/quux.h" to
+     <baz/quux.h>.
+  3) change include guards from
+     "#ifdef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_FOO_H" to
+     "#ifdef EXPORT_SRC_TRUSTED_SERVICE_RUNTIME_FOO_H"
+  """
 
-  pat = r'\b(?:nacl_abi_|NaClAbi|NACL_ABI_)([A-Za-z0-9_]*)'
-  cpat = re.compile(pat)
+  abi = r'\b(?:nacl_abi_|NaClAbi|NACL_ABI_)([A-Za-z0-9_]*)'
+  cabi = re.compile(abi)
 
   inc = (r'^#\s*include\s+"native_client(?:/src/trusted/service_runtime)?'+
          r'/include/([^"]*)"')
   cinc = re.compile(inc)
 
+  inc_guard = r'^#\s*(ifndef|define)\s+_?NATIVE_CLIENT[A-Z_]+_H'
+  cinc_guard = re.compile(inc_guard)
+  include_guard_found = False
+
   for line in instr:
     if cinc.search(line):
       print >>outstr, cinc.sub(r'#include <\1>', line)
+    elif cinc_guard.match(line):
+      include_guard_found = True
+      print >>outstr, re.sub('NATIVE_CLIENT', 'EXPORT', line),
     else:
-      print >>outstr, cpat.sub(r'\1', line),
-    # endif
-  # endfor
-# enddef
+      print >>outstr, cabi.sub(r'\1', line),
+
+  if not include_guard_found:
+    print >>sys.stderr, 'No include guard found in', instr.name
+    sys.exit(1)
 
 
 def ProcessDir(srcdir, dstdir):
