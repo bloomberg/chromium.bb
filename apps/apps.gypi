@@ -53,8 +53,6 @@
         'switches.h',
         'ui/views/app_window_frame_view.cc',
         'ui/views/app_window_frame_view.h',
-        'ui/views/native_app_window_views.cc',
-        'ui/views/native_app_window_views.h',
       ],
       'conditions': [
         ['chromeos==1',
@@ -76,6 +74,7 @@
         ],
         ['toolkit_views==1', {
           'dependencies': [
+            '../components/components.gyp:native_app_window',
             '../ui/strings/ui_strings.gyp:ui_strings',
             '../ui/views/views.gyp:views',
           ],

@@ -69,6 +69,7 @@ static_library("browser") {
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics/proto:proto",
+    "//components/native_app_window",
     "//components/navigation_metrics",
     "//components/network_time",
     "//components/omaha_query_params",
@@ -229,6 +230,9 @@ static_library("browser") {
     deps += [
       #"app_shim"  TODO(GYP)
     ]
+  }
+  if (!toolkit_views) {
+    deps -= [ "//components/native_app_window" ]
   }
   if (cld2_data_source == "component") {
     sources += [

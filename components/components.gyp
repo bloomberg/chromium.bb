@@ -112,6 +112,11 @@
         'invalidation.gypi',
       ],
     }],
+    ['toolkit_views==1', {
+      'includes': [
+        'native_app_window.gypi',
+      ],
+    }],
     ['enable_plugins==1', {
       'includes': [
         'pdf.gypi',

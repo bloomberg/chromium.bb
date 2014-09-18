@@ -1,0 +1,10 @@
+include_rules = [
+ "+base",
+ "+content/public/browser",
+ "+extensions/browser/app_window",
+ "+extensions/common",
+ "+ui/aura",
+ "+ui/gfx",
+ "+ui/views",
+ "+third_party/skia/include/core/SkRegion.h",
+]

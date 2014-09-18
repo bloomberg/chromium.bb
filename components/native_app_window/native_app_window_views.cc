@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/views/native_app_window_views.h"
+#include "components/native_app_window/native_app_window_views.h"
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/render_view_host.h"
@@ -22,14 +22,15 @@
 
 using extensions::AppWindow;
 
-namespace apps {
+namespace native_app_window {
 
 NativeAppWindowViews::NativeAppWindowViews()
     : app_window_(NULL),
       web_view_(NULL),
       widget_(NULL),
       frameless_(false),
-      resizable_(false) {}
+      resizable_(false) {
+}
 
 void NativeAppWindowViews::Init(AppWindow* app_window,
                                 const AppWindow::CreateParams& create_params) {
@@ -71,7 +72,9 @@ void NativeAppWindowViews::InitializeWindow(
 
 // ui::BaseWindow implementation.
 
-bool NativeAppWindowViews::IsActive() const { return widget_->IsActive(); }
+bool NativeAppWindowViews::IsActive() const {
+  return widget_->IsActive();
+}
 
 bool NativeAppWindowViews::IsMaximized() const {
   return widget_->IsMaximized();
@@ -121,19 +124,33 @@ void NativeAppWindowViews::ShowInactive() {
   widget_->ShowInactive();
 }
 
-void NativeAppWindowViews::Hide() { widget_->Hide(); }
+void NativeAppWindowViews::Hide() {
+  widget_->Hide();
+}
 
-void NativeAppWindowViews::Close() { widget_->Close(); }
+void NativeAppWindowViews::Close() {
+  widget_->Close();
+}
 
-void NativeAppWindowViews::Activate() { widget_->Activate(); }
+void NativeAppWindowViews::Activate() {
+  widget_->Activate();
+}
 
-void NativeAppWindowViews::Deactivate() { widget_->Deactivate(); }
+void NativeAppWindowViews::Deactivate() {
+  widget_->Deactivate();
+}
 
-void NativeAppWindowViews::Maximize() { widget_->Maximize(); }
+void NativeAppWindowViews::Maximize() {
+  widget_->Maximize();
+}
 
-void NativeAppWindowViews::Minimize() { widget_->Minimize(); }
+void NativeAppWindowViews::Minimize() {
+  widget_->Minimize();
+}
 
-void NativeAppWindowViews::Restore() { widget_->Restore(); }
+void NativeAppWindowViews::Restore() {
+  widget_->Restore();
+}
 
 void NativeAppWindowViews::SetBounds(const gfx::Rect& bounds) {
   widget_->SetBounds(bounds);
@@ -224,9 +241,13 @@ void NativeAppWindowViews::DeleteDelegate() {
   app_window_->OnNativeClose();
 }
 
-views::Widget* NativeAppWindowViews::GetWidget() { return widget_; }
+views::Widget* NativeAppWindowViews::GetWidget() {
+  return widget_;
+}
 
-const views::Widget* NativeAppWindowViews::GetWidget() const { return widget_; }
+const views::Widget* NativeAppWindowViews::GetWidget() const {
+  return widget_;
+}
 
 views::View* NativeAppWindowViews::GetContentsView() {
   return this;
@@ -319,9 +340,13 @@ bool NativeAppWindowViews::IsFullscreenOrPending() const {
   return widget_->IsFullscreen();
 }
 
-void NativeAppWindowViews::UpdateWindowIcon() { widget_->UpdateWindowIcon(); }
+void NativeAppWindowViews::UpdateWindowIcon() {
+  widget_->UpdateWindowIcon();
+}
 
-void NativeAppWindowViews::UpdateWindowTitle() { widget_->UpdateWindowTitle(); }
+void NativeAppWindowViews::UpdateWindowTitle() {
+  widget_->UpdateWindowTitle();
+}
 
 void NativeAppWindowViews::UpdateBadgeIcon() {
   // Stub implementation. See also ChromeNativeAppWindowViews.
@@ -351,9 +376,13 @@ void NativeAppWindowViews::HandleKeyboardEvent(
                                                         GetFocusManager());
 }
 
-bool NativeAppWindowViews::IsFrameless() const { return frameless_; }
+bool NativeAppWindowViews::IsFrameless() const {
+  return frameless_;
+}
 
-bool NativeAppWindowViews::HasFrameColor() const { return false; }
+bool NativeAppWindowViews::HasFrameColor() const {
+  return false;
+}
 
 SkColor NativeAppWindowViews::ActiveFrameColor() const {
   return SK_ColorBLACK;
@@ -378,11 +407,14 @@ gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   return window_bounds.InsetsFrom(client_bounds);
 }
 
-void NativeAppWindowViews::HideWithApp() {}
+void NativeAppWindowViews::HideWithApp() {
+}
 
-void NativeAppWindowViews::ShowWithApp() {}
+void NativeAppWindowViews::ShowWithApp() {
+}
 
-void NativeAppWindowViews::UpdateShelfMenu() {}
+void NativeAppWindowViews::UpdateShelfMenu() {
+}
 
 gfx::Size NativeAppWindowViews::GetContentMinimumSize() const {
   return size_constraints_.GetMinimumSize();
@@ -393,7 +425,8 @@ gfx::Size NativeAppWindowViews::GetContentMaximumSize() const {
 }
 
 void NativeAppWindowViews::SetContentSizeConstraints(
-    const gfx::Size& min_size, const gfx::Size& max_size) {
+    const gfx::Size& min_size,
+    const gfx::Size& max_size) {
   size_constraints_.set_minimum_size(min_size);
   size_constraints_.set_maximum_size(max_size);
   widget_->OnSizeConstraintsChanged();
@@ -407,4 +440,4 @@ void NativeAppWindowViews::SetVisibleOnAllWorkspaces(bool always_visible) {
   widget_->SetVisibleOnAllWorkspaces(always_visible);
 }
 
-}  // namespace apps
+}  // namespace native_app_window

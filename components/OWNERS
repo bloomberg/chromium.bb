@@ -96,6 +96,9 @@ per-file nacl*=mseaborn@chromium.org
 per-file nacl*=noelallen@chromium.org
 per-file nacl*=teravest@chromium.org
 
+per-file native_app_window*=benwells@chromium.org
+per-file native_app_window*=jamescook@chromium.org
+
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
 per-file network_time.gypi=zea@chromium.org

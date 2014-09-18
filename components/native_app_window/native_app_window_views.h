@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
-#define APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
+#ifndef COMPONENTS_NATIVE_APP_WINDOW_NATIVE_APP_WINDOW_VIEWS_H_
+#define COMPONENTS_NATIVE_APP_WINDOW_NATIVE_APP_WINDOW_VIEWS_H_
 
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,9 +37,7 @@ class MenuRunner;
 class WebView;
 }
 
-namespace apps {
-
-class AppWindowFrameView;
+namespace native_app_window {
 
 // A NativeAppWindow backed by a views::Widget. This class may be used alone
 // as a stub or subclassed (for example, ChromeNativeAppWindowViews).
@@ -193,6 +191,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };
 
-}  // namespace apps
+}  // namespace native_app_window
 
-#endif  // APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
+#endif  // COMPONENTS_NATIVE_APP_WINDOW_NATIVE_APP_WINDOW_VIEWS_H_

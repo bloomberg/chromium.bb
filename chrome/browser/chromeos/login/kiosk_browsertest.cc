@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/views/native_app_window_views.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
@@ -48,6 +47,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/native_app_window/native_app_window_views.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -643,8 +643,9 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
       "window.domAutomationController.send(window.innerWidth);",
       &original_width));
 
-  apps::NativeAppWindowViews* native_app_window_views =
-      static_cast<apps::NativeAppWindowViews*>(window->GetBaseWindow());
+  native_app_window::NativeAppWindowViews* native_app_window_views =
+      static_cast<native_app_window::NativeAppWindowViews*>(
+          window->GetBaseWindow());
   ui::AcceleratorTarget* accelerator_target =
       static_cast<ui::AcceleratorTarget*>(native_app_window_views);
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 
 # Collection of all components. You wouldn't link to this, but this is rather
 # to reference the files so they can be compiled by the build system.
@@ -50,6 +51,7 @@ group("all_components") {
     "//components/language_usage_metrics",
     "//components/leveldb_proto",
     "//components/metrics",
+    "//components/native_app_window",
     "//components/navigation_interception",
     "//components/navigation_metrics",
     "//components/network_time",
@@ -110,6 +112,9 @@ group("all_components") {
   }
   if (!is_chromeos) {
     deps -= [ "//components/pairing" ]
+  }
+  if (!toolkit_views) {
+    deps -= [ "//components/native_app_window" ]
   }
 
   if (is_ios) {

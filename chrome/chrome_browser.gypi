@@ -2992,6 +2992,11 @@
             'browser/metrics/signin_status_metrics_provider.h',
           ],
         }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../components/components.gyp:native_app_window',
+          ],
+        }],
         ['enable_extensions==1', {
           'dependencies': [
             'browser_extensions',

@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 
-#include "apps/ui/views/native_app_window_views.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/native_app_window/native_app_window_views.h"
 #include "ui/views/context_menu_controller.h"
+
+namespace apps {
+class AppWindowFrameView;
+}
 
 #if defined(USE_ASH)
 namespace ash {
@@ -21,8 +25,9 @@ namespace views {
 class MenuRunner;
 }
 
-class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
-                                   public views::ContextMenuController {
+class ChromeNativeAppWindowViews
+    : public native_app_window::NativeAppWindowViews,
+      public views::ContextMenuController {
  public:
   ChromeNativeAppWindowViews();
   virtual ~ChromeNativeAppWindowViews();
