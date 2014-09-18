@@ -423,11 +423,13 @@ RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
                                                bool threaded)
     : threaded_(threaded),
       widget_(widget),
-      send_v8_idle_notification_after_commit_(false) {
+      send_v8_idle_notification_after_commit_(true) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
-  if (cmd->HasSwitch(switches::kSendV8IdleNotificationAfterCommit))
+  if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
     send_v8_idle_notification_after_commit_ = true;
+  if (cmd->HasSwitch(switches::kDisableV8IdleNotificationAfterCommit))
+    send_v8_idle_notification_after_commit_ = false;
 }
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}

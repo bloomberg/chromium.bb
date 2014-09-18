@@ -250,6 +250,11 @@ const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
+// Disable V8 idle notification after commit.
+// Overrides kEnableV8IdleNotificationAfterCommit.
+const char kDisableV8IdleNotificationAfterCommit[] =
+    "disable-v8-idle-notification-after-commit";
+
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
@@ -454,6 +459,14 @@ const char kEnableUserMediaScreenCapturing[] =
 
 // Enables streaming scripts to V8 while loading.
 const char kEnableV8ScriptStreaming[] = "enable-v8-script-streaming";
+
+// Send a notification from RenderWidgetCompositor to V8 to do idle work
+// (e.g. garbage collection) after the commit until the beginning of the next
+// frame.  This moves the work off the critical path where compositor is waiting
+// for the main thread. The flag is experimental until the implementation of the
+// V8 idle handler is completed.
+const char kEnableV8IdleNotificationAfterCommit[] =
+    "enable-v8-idle-notification-after-commit";
 
 // Enables the use of the @viewport CSS rule, which allows
 // pages to control aspects of their own layout. This also turns on touch-screen
@@ -691,14 +704,6 @@ const char kSandboxIPCProcess[]             = "sandbox-ipc";
 // Set the value to '1' to enable the feature, and set to '0' to disable.
 // Defaults to disabled.
 const char kScrollEndEffect[] = "scroll-end-effect";
-
-// Send a notification from RenderWidgetCompositor to V8 to do idle work
-// (e.g. garbage collection) after the commit until the beginning of the next
-// frame.  This moves the work off the critical path where compositor is waiting
-// for the main thread. The flag is experimental until the implementation of the
-// V8 idle handler is completed.
-const char kSendV8IdleNotificationAfterCommit[] =
-    "send-v8-idle-notification-after-commit";
 
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
