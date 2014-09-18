@@ -3557,8 +3557,12 @@ CalendarTableView.prototype.updateCells = function() {
         dayCell.setSelected(day >= firstDayInSelection && day <= lastDayInSelection);
         var isHighlighted = day >= firstDayInHighlight && day <= lastDayInHighlight;
         dayCell.setHighlighted(isHighlighted);
-        if (isHighlighted && firstDayInHighlight == lastDayInHighlight)
-            activeCell = dayCell;
+        if (isHighlighted) {
+            if (firstDayInHighlight == lastDayInHighlight)
+                activeCell = dayCell;
+            else if (this.calendarPicker.type == "month" && day == firstDayInHighlight)
+                activeCell = dayCell;
+        }
         dayCell.setIsInCurrentMonth(day >= firstDayInCurrentMonth && day <= lastDayInCurrentMonth);
         dayCell.setDisabled(!this.calendarPicker.isValidDay(day));
     }
@@ -3590,6 +3594,8 @@ CalendarTableView.prototype.updateCells = function() {
 CalendarTableView.prototype.prepareNewDayCell = function(day) {
     var dayCell = DayCell.recycleOrCreate();
     dayCell.reset(day);
+    if (this.calendarPicker.type == "month")
+        dayCell.element.setAttribute("aria-label", Month.createFromDay(day).toLocaleString());
     this._dayCells[dayCell.day.toString()] = dayCell;
     return dayCell;
 };
