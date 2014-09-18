@@ -291,11 +291,7 @@ tc-test-bot() {
 
   # Build the un-sandboxed toolchain. The build script outputs its own buildbot
   # annotations.
-  # Build and use the 64-bit llvm build, to get 64-bit versions of the build
-  # tools such as fpcmp (used for llvm test suite). For some reason it matters
-  # that they match the build machine. TODO(dschuff): Is this still necessary?
-  ${TOOLCHAIN_BUILD} --verbose --sync --clobber --build-64bit-host \
-    --testsuite-sync \
+  ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync \
     --install toolchain/linux_x86/pnacl_newlib
 
   # Linking the tests require additional sdk libraries like libnacl.

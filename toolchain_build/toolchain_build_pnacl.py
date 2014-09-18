@@ -124,15 +124,9 @@ def CompilersForHost(host):
   }
   return compiler[host]
 
+
 def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
-
-# Return the host of the default toolchain to build target libraries with.
-def DefaultHostForTargetLibs():
-  tools = { 'win': 'i686-w64-mingw32',
-            'mac': 'x86_64-apple-darwin',
-            'linux': 'i686-linux' }
-  return tools[pynacl.platform.GetOS()]
 
 
 def ConfigureHostArchFlags(host, extra_cflags=[]):
@@ -153,7 +147,7 @@ def ConfigureHostArchFlags(host, extra_cflags=[]):
     else:
       configure_args.append('--host=' + host)
   if TripleIsLinux(host) and not TripleIsX8664(host):
-    # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
+    # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux.
     extra_cc_args = ['-m32']
 
   extra_cxx_args = list(extra_cc_args)
@@ -336,9 +330,6 @@ def HostToolsSources(GetGitSyncCmds):
   }
   return sources
 
-def HostSubdir(host):
-  return 'host_x86_64' if TripleIsX8664(host) else 'host_x86_32'
-
 def TestsuiteSources(GetGitSyncCmds):
   sources = {
       'llvm_testsuite_src': {
@@ -398,7 +389,6 @@ def HostLibs(host):
         H('libcxx'): {
             'dependencies': ['libcxx_src', 'libcxxabi_src'],
             'type': 'build',
-            'output_subdir': HostSubdir(host),
             'commands': [
                 command.SkipForIncrementalCommand([
                     'cmake', '-G', 'Unix Makefiles'] +
@@ -418,15 +408,10 @@ def HostLibs(host):
   return libs
 
 
-def HostSubdir(host):
-  return 'host_x86_64' if TripleIsX8664(host) else 'host_x86_32'
-
 def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
     return GSDJoin(component_name, host)
-  def BinSubdir(host):
-    return 'bin64' if host == 'x86_64-linux' else 'bin'
   # Return the file name with the appropriate suffix for an executable file.
   def Exe(file):
     if TripleIsWindows(host):
@@ -442,7 +427,6 @@ def HostTools(host, options):
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
           'type': 'build',
-          'output_subdir': HostSubdir(host),
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
@@ -469,7 +453,7 @@ def HostTools(host, options):
       },
       H('driver'): {
         'type': 'build',
-        'output_subdir': BinSubdir(host),
+        'output_subdir': 'bin',
         'inputs': { 'src': PNACL_DRIVER_DIR },
         'commands': [
             command.Runnable(
@@ -486,7 +470,6 @@ def HostTools(host, options):
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
           'type': 'build',
-          'output_subdir': HostSubdir(host),
           'commands': [
               command.SkipForIncrementalCommand([
                   'cmake', '-G', 'Ninja'] +
@@ -514,7 +497,6 @@ def HostTools(host, options):
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
                            'subzero_src'],
           'type': 'build',
-          'output_subdir': HostSubdir(host),
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
@@ -578,9 +560,7 @@ def TargetLibCompiler(host):
           'dependencies': [ H('binutils_pnacl'), H('llvm'), host_lib ],
           'inputs': { 'driver': PNACL_DRIVER_DIR },
           'commands': [
-              command.CopyRecursive(
-                  '%(' + t + ')s',
-                  os.path.join('%(output)s', HostSubdir(host)))
+              command.CopyRecursive('%(' + t + ')s', '%(output)s')
               for t in [H('llvm'), H('binutils_pnacl'), host_lib]] + [
               command.Runnable(
                   None, pnacl_commands.InstallDriverScripts,
@@ -711,7 +691,6 @@ def GetUploadPackageTargets():
   host_packages = {}
   for os_name, arch in (('win', 'x86-32'),
                         ('mac', 'x86-64'),
-                        ('linux', 'x86-32'),
                         ('linux', 'x86-64')):
     triple = pynacl.platform.PlatformTriple(os_name, arch)
     legal_triple = pynacl.gsd_storage.LegalizeName(triple)
@@ -744,9 +723,6 @@ if __name__ == '__main__':
   parser.add_argument('--legacy-repo-sync', action='store_true',
                       dest='legacy_repo_sync', default=False,
                       help='Sync the git repo directories used by build.sh')
-  parser.add_argument('--build-64bit-host', action='store_true',
-                      dest='build_64bit_host', default=False,
-                      help='Build 64-bit Linux host binaries in addition to 32')
   parser.add_argument('--disable-llvm-assertions', action='store_false',
                       dest='enable_llvm_assertions', default=True)
   parser.add_argument('--cmake', action='store_true', default=False,
@@ -787,18 +763,13 @@ if __name__ == '__main__':
     if args.testsuite_sync:
       packages.update(TestsuiteSources(GetGitSyncCmdsCallback(rev)))
 
-    if pynacl.platform.IsLinux64():
-      hosts = ['i686-linux']
-      if args.build_64bit_host:
-        hosts.append(pynacl.platform.PlatformTriple())
-    else:
-      hosts = [pynacl.platform.PlatformTriple()]
+    hosts = [pynacl.platform.PlatformTriple()]
     if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
       hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
     for host in hosts:
       packages.update(HostLibs(host))
       packages.update(HostTools(host, args))
-      packages.update(TargetLibCompiler(DefaultHostForTargetLibs()))
+    packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple()))
     # Don't build the target libs on Windows because of pathname issues.
     # Only the linux64 bot is canonical (i.e. it will upload its packages).
     # The other bots will use a 'work' target instead of a 'build' target for

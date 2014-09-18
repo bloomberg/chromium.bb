@@ -65,7 +65,7 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   # The path to the script is a relative path with forward slashes so it is
   # interpreted properly when it uses __file__ inside cygwin
   executable_args = ['toolchain_build/toolchain_build_pnacl.py',
-                     '--verbose', '--clobber', '--build-64bit-host',
+                     '--verbose', '--clobber',
                      '--install', toolchain_install_dir]
 
   if args.buildbot:

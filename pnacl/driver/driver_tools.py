@@ -230,11 +230,10 @@ def FindBaseHost(tool):
         return prefix
 
   base_pnacl = FindBasePNaCl()
-  base_host = pathtools.join(base_pnacl, 'host_' + env.getone('HOST_ARCH'))
-  if not pathtools.exists(pathtools.join(base_host, 'bin',
+  if not pathtools.exists(pathtools.join(base_pnacl, 'bin',
                           tool + env.getone('EXEC_EXT'))):
     Log.Fatal('Could not find PNaCl host directory for ' + tool)
-  return base_host
+  return base_pnacl
 
 def ReadConfig():
   # Mock out ReadConfig if running unittests.  Settings are applied directly

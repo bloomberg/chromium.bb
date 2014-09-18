@@ -147,7 +147,7 @@ readonly INSTALL_TRANSLATOR="${TOOLCHAIN_BASE}/pnacl_translator"
 # There are also tools-x86 and tools-arm which have host binaries which
 # are not part of the toolchain but might be useful in the SDK, e.g.
 # arm sel_ldr and x86-hosted arm/mips validators.
-readonly INSTALL_HOST="${INSTALL_ROOT}/host_${HOST_ARCH}"
+readonly INSTALL_HOST="${INSTALL_ROOT}"
 
 # Component installation directories
 readonly LLVM_INSTALL_DIR="${INSTALL_HOST}"
