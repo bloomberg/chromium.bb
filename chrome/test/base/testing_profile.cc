@@ -54,6 +54,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -105,6 +106,21 @@ using testing::NiceMock;
 using testing::Return;
 
 namespace {
+
+// Used to make sure TopSites has finished loading
+class WaitTopSitesLoadedObserver : public history::TopSitesObserver {
+ public:
+  explicit WaitTopSitesLoadedObserver(content::MessageLoopRunner* runner)
+      : runner_(runner) {}
+  virtual void TopSitesLoaded(history::TopSites* top_sites) OVERRIDE {
+    runner_->Quit();
+  }
+  virtual void TopSitesChanged(history::TopSites* top_sites) OVERRIDE {}
+
+ private:
+  // weak
+  content::MessageLoopRunner* runner_;
+};
 
 // Task used to make sure history has finished processing a request. Intended
 // for use with BlockUntilHistoryProcessesPendingRequests.
@@ -543,7 +559,9 @@ static KeyedService* BuildChromeBookmarkClient(
 static KeyedService* BuildChromeHistoryClient(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile));
+  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile),
+                                 profile,
+                                 profile->GetTopSites());
 }
 
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
@@ -589,10 +607,12 @@ void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
 
 // TODO(phajdan.jr): Doesn't this hang if Top Sites are already loaded?
 void TestingProfile::BlockUntilTopSitesLoaded() {
-  content::WindowedNotificationObserver top_sites_loaded_observer(
-      chrome::NOTIFICATION_TOP_SITES_LOADED,
-      content::NotificationService::AllSources());
-  top_sites_loaded_observer.Wait();
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  WaitTopSitesLoadedObserver observer(runner.get());
+  top_sites_->AddObserver(&observer);
+  runner->Run();
+  top_sites_->RemoveObserver(&observer);
 }
 
 void TestingProfile::SetGuestSession(bool guest) {

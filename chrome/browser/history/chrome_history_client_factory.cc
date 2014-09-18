@@ -35,8 +35,10 @@ ChromeHistoryClientFactory::~ChromeHistoryClientFactory() {
 
 KeyedService* ChromeHistoryClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new ChromeHistoryClient(
-      BookmarkModelFactory::GetForProfile(static_cast<Profile*>(context)));
+  Profile* profile = static_cast<Profile*>(context);
+  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile),
+                                 profile,
+                                 profile->GetTopSites());
 }
 
 content::BrowserContext* ChromeHistoryClientFactory::GetBrowserContextToUse(

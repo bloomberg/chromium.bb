@@ -17,6 +17,7 @@ static_library("browser") {
     "keyword_search_term.h",
     "page_usage_data.cc",
     "page_usage_data.h",
+    "top_sites_observer.h",
     "url_database.cc",
     "url_database.h",
     "url_row.cc",

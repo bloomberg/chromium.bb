@@ -874,10 +874,7 @@ void TopSitesImpl::MoveStateToLoaded() {
   for (size_t i = 0; i < pending_callbacks.size(); i++)
     pending_callbacks[i].Run(filtered_urls_all, filtered_urls_nonforced);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOP_SITES_LOADED,
-      content::Source<Profile>(profile_),
-      content::Details<TopSites>(this));
+  NotifyTopSitesLoaded();
 }
 
 void TopSitesImpl::ResetThreadSafeCache() {
@@ -890,13 +887,6 @@ void TopSitesImpl::ResetThreadSafeCache() {
 void TopSitesImpl::ResetThreadSafeImageCache() {
   base::AutoLock lock(lock_);
   thread_safe_cache_->SetThumbnails(cache_->images());
-}
-
-void TopSitesImpl::NotifyTopSitesChanged() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOP_SITES_CHANGED,
-      content::Source<TopSites>(this),
-      content::NotificationService::NoDetails());
 }
 
 void TopSitesImpl::RestartQueryForTopSitesTimer(base::TimeDelta delta) {

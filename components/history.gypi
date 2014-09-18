@@ -36,6 +36,7 @@
         'history/core/browser/keyword_search_term.h',
         'history/core/browser/page_usage_data.cc',
         'history/core/browser/page_usage_data.h',
+        'history/core/browser/top_sites_observer.h',
         'history/core/browser/url_database.cc',
         'history/core/browser/url_database.h',
         'history/core/browser/url_row.cc',
