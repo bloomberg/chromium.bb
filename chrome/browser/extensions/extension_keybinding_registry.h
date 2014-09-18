@@ -66,6 +66,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   void ExecuteCommand(const std::string& extension_id,
                       const ui::Accelerator& accelerator);
 
+  // Check whether the specified |accelerator| has been registered.
+  bool IsAcceleratorRegistered(const ui::Accelerator& accelerator) const;
+
  protected:
   // Add extension keybinding for the events defined by the |extension|.
   // |command_name| is optional, but if not blank then only the command
@@ -98,9 +101,6 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // Notifies appropriate parties that a command has been executed.
   void CommandExecuted(const std::string& extension_id,
                        const std::string& command);
-
-  // Check whether the specified |accelerator| has been registered.
-  bool IsAcceleratorRegistered(const ui::Accelerator& accelerator) const;
 
   // Add event target (extension_id, command name) to the target list of
   // |accelerator|. Note that only media keys can have more than one event

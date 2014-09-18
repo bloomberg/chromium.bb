@@ -54,6 +54,31 @@ class CommandsApiTest : public ExtensionApiTest {
     return extension->permissions_data()->HasAPIPermissionForTab(
         SessionTabHelper::IdForTab(web_contents), APIPermission::kTab);
   }
+
+#if defined(OS_CHROMEOS)
+  void RunChromeOSConversionTest(const std::string& extension_path) {
+    // Setup the environment.
+    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+    ASSERT_TRUE(RunExtensionTest(extension_path)) << message_;
+    ui_test_utils::NavigateToURL(
+        browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+
+    ResultCatcher catcher;
+
+    // Send all expected keys (Search+Shift+{Left, Up, Right, Down}).
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_LEFT, false, true, false, true));
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_UP, false, true, false, true));
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_RIGHT, false, true, false, true));
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_DOWN, false, true, false, true));
+
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+#endif  // OS_CHROMEOS
 };
 
 // Test the basic functionality of the Keybinding API:
@@ -739,5 +764,18 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ContinuePropagation) {
       browser(), ui::VKEY_F, true, true, false, false));
   ASSERT_TRUE(catcher.GetNextResult());
 }
+
+// Test is only applicable on Chrome OS.
+#if defined(OS_CHROMEOS)
+// http://crbug.com/410534
+#if defined(USE_OZONE)
+#define MAYBE_ChromeOSConversions DISABLED_ChromeOSConversions
+#else
+#define MAYBE_ChromeOSConversions ChromeOSConversions
+#endif
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ChromeOSConversions) {
+  RunChromeOSConversionTest("keybinding/chromeos_conversions");
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace extensions
