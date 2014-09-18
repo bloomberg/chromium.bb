@@ -30,7 +30,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/chrome.exe.pdb',
-          '<(PRODUCT_DIR)/chrome_child.dll.pdb',
         ],
       },
     }],
