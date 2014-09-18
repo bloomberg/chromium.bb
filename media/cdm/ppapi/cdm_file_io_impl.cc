@@ -13,7 +13,10 @@
 
 namespace media {
 
-const int kReadSize = 4 * 1024;  // Arbitrary choice.
+// Arbitrary choice based on the following heuristic ideas:
+// - not too big to avoid unnecessarily large memory allocation;
+// - not too small to avoid breaking most reads into multiple read operations.
+const int kReadSize = 8 * 1024;
 
 // Call func_call and check the result. If the result is not
 // PP_OK_COMPLETIONPENDING, print out logs, call OnError() and return.
@@ -23,6 +26,7 @@ const int kReadSize = 4 * 1024;  // Arbitrary choice.
     PP_DCHECK(result != PP_OK);                                         \
     if (result != PP_OK_COMPLETIONPENDING) {                            \
       CDM_DLOG() << #func_call << " failed with result: " << result;    \
+      state_ = STATE_ERROR;                                             \
       OnError(error_type);                                              \
       return;                                                           \
     }                                                                   \
@@ -59,37 +63,44 @@ CdmFileIOImpl::CdmFileIOImpl(
     cdm::FileIOClient* client,
     PP_Instance pp_instance,
     const pp::CompletionCallback& first_file_read_cb)
-    : state_(FILE_UNOPENED),
+    : state_(STATE_UNOPENED),
       client_(client),
       pp_instance_handle_(pp_instance),
-      callback_factory_(this),
       io_offset_(0),
       first_file_read_reported_(false),
-      first_file_read_cb_(first_file_read_cb) {
+      first_file_read_cb_(first_file_read_cb),
+      callback_factory_(this) {
   PP_DCHECK(IsMainThread());
   PP_DCHECK(pp_instance);  // 0 indicates a "NULL handle".
 }
 
 CdmFileIOImpl::~CdmFileIOImpl() {
-  PP_DCHECK(state_ == FILE_CLOSED);
+  // The destructor is private. |this| can only be destructed through Close().
+  PP_DCHECK(state_ == STATE_CLOSED);
 }
 
-// Call sequence: Open() -> OpenFileSystem() -> OpenFile() -> FILE_OPENED.
+// Call sequence: Open() -> OpenFileSystem() -> STATE_FILE_SYSTEM_OPENED.
+// Note: This only stores file name and opens the file system. The real file
+// open is deferred to when Read() or Write() is called.
 void CdmFileIOImpl::Open(const char* file_name, uint32_t file_name_size) {
   CDM_DLOG() << __FUNCTION__;
   PP_DCHECK(IsMainThread());
 
-  if (state_ != FILE_UNOPENED) {
+  if (state_ != STATE_UNOPENED) {
     CDM_DLOG() << "Open() called in an invalid state.";
     OnError(OPEN_ERROR);
     return;
   }
 
-  // File name should not contain any path separators.
+  // File name should not (1) be empty, (2) start with '_', or (3) contain any
+  // path separators.
   std::string file_name_str(file_name, file_name_size);
-  if (file_name_str.find('/') != std::string::npos ||
+  if (file_name_str.empty() ||
+      file_name_str[0] == '_' ||
+      file_name_str.find('/') != std::string::npos ||
       file_name_str.find('\\') != std::string::npos) {
     CDM_DLOG() << "Invalid file name.";
+    state_ = STATE_ERROR;
     OnError(OPEN_ERROR);
     return;
   }
@@ -103,59 +114,52 @@ void CdmFileIOImpl::Open(const char* file_name, uint32_t file_name_size) {
     return;
   }
 
-  state_ = OPENING_FILE_SYSTEM;
+  state_ = STATE_OPENING_FILE_SYSTEM;
   OpenFileSystem();
 }
 
 // Call sequence:
-//                                       finished
-// Read() -> ReadFile() -> OnFileRead() ----------> Done.
-//               ^              |
-//               | not finished |
-//               |--------------|
+// Read() -> OpenFileForRead() -> ReadFile() -> Done.
 void CdmFileIOImpl::Read() {
   CDM_DLOG() << __FUNCTION__;
   PP_DCHECK(IsMainThread());
 
-  if (state_ == READING_FILE || state_ == WRITING_FILE) {
+  if (state_ == STATE_READING || state_ == STATE_WRITING) {
     CDM_DLOG() << "Read() called during pending read/write.";
     OnError(READ_WHILE_IN_USE);
     return;
   }
 
-  if (state_ != FILE_OPENED) {
+  if (state_ != STATE_FILE_SYSTEM_OPENED) {
     CDM_DLOG() << "Read() called in an invalid state.";
     OnError(READ_ERROR);
     return;
   }
 
+  PP_DCHECK(io_offset_ == 0);
   PP_DCHECK(io_buffer_.empty());
   PP_DCHECK(cumulative_read_buffer_.empty());
-
   io_buffer_.resize(kReadSize);
   io_offset_ = 0;
 
-  state_ = READING_FILE;
-  ReadFile();
+  state_ = STATE_READING;
+  OpenFileForRead();
 }
 
 // Call sequence:
-//                                            finished
-// Write() -> WriteFile() -> OnFileWritten() ----------> Done.
-//                ^                  |
-//                |                  | not finished
-//                |------------------|
+// Write() -> OpenTempFileForWrite() -> WriteTempFile() -> RenameTempFile().
+// The file name of the temporary file is /_<requested_file_name>.
 void CdmFileIOImpl::Write(const uint8_t* data, uint32_t data_size) {
   CDM_DLOG() << __FUNCTION__;
   PP_DCHECK(IsMainThread());
 
-  if (state_ == READING_FILE || state_ == WRITING_FILE) {
+  if (state_ == STATE_READING || state_ == STATE_WRITING) {
     CDM_DLOG() << "Write() called during pending read/write.";
     OnError(WRITE_WHILE_IN_USE);
     return;
   }
 
-  if (state_ != FILE_OPENED) {
+  if (state_ != STATE_FILE_SYSTEM_OPENED) {
     CDM_DLOG() << "Write() called in an invalid state.";
     OnError(WRITE_ERROR);
     return;
@@ -168,17 +172,16 @@ void CdmFileIOImpl::Write(const uint8_t* data, uint32_t data_size) {
   else
     PP_DCHECK(!data);
 
-  state_ = WRITING_FILE;
-
-  // Always SetLength() in case |data_size| is less than the file size.
-  SetLength(data_size);
+  state_ = STATE_WRITING;
+  OpenTempFileForWrite();
 }
 
 void CdmFileIOImpl::Close() {
   CDM_DLOG() << __FUNCTION__;
   PP_DCHECK(IsMainThread());
-  PP_DCHECK(state_ != FILE_CLOSED);
-  CloseFile();
+  PP_DCHECK(state_ != STATE_CLOSED);
+  Reset();
+  state_ = STATE_CLOSED;
   ReleaseFileLock();
   // All pending callbacks are canceled since |callback_factory_| is destroyed.
   delete this;
@@ -237,7 +240,7 @@ void CdmFileIOImpl::ReleaseFileLock() {
 }
 
 void CdmFileIOImpl::OpenFileSystem() {
-  PP_DCHECK(state_ == OPENING_FILE_SYSTEM);
+  PP_DCHECK(state_ == STATE_OPENING_FILE_SYSTEM);
 
   pp::CompletionCallbackWithOutput<pp::FileSystem> cb =
       callback_factory_.NewCallbackWithOutput(
@@ -251,51 +254,71 @@ void CdmFileIOImpl::OpenFileSystem() {
 void CdmFileIOImpl::OnFileSystemOpened(int32_t result,
                                        pp::FileSystem file_system) {
   PP_DCHECK(IsMainThread());
-  PP_DCHECK(state_ == OPENING_FILE_SYSTEM);
+  PP_DCHECK(state_ == STATE_OPENING_FILE_SYSTEM);
 
   if (result != PP_OK) {
     CDM_DLOG() << "File system open failed asynchronously.";
     ReleaseFileLock();
+    state_ = STATE_ERROR;
     OnError(OPEN_ERROR);
     return;
   }
 
   file_system_ = file_system;
-  state_ = OPENING_FILE;
-  OpenFile();
+
+  state_ = STATE_FILE_SYSTEM_OPENED;
+  client_->OnOpenComplete(cdm::FileIOClient::kSuccess);
 }
 
-void CdmFileIOImpl::OpenFile() {
-  PP_DCHECK(state_ == OPENING_FILE);
+void CdmFileIOImpl::OpenFileForRead() {
+  PP_DCHECK(state_ == STATE_READING);
 
+  PP_DCHECK(file_io_.is_null());
+  PP_DCHECK(file_ref_.is_null());
   file_io_ = pp::FileIO(pp_instance_handle_);
   file_ref_ = pp::FileRef(file_system_, file_name_.c_str());
-  int32_t file_open_flag = PP_FILEOPENFLAG_READ |
-                           PP_FILEOPENFLAG_WRITE |
-                           PP_FILEOPENFLAG_CREATE;
+
+  // Open file for read. If file doesn't exist, PP_ERROR_FILENOTFOUND will be
+  // returned.
+  int32_t file_open_flag = PP_FILEOPENFLAG_READ;
+
   pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&CdmFileIOImpl::OnFileOpened);
+      callback_factory_.NewCallback(&CdmFileIOImpl::OnFileOpenedForRead);
   CHECK_PP_OK_COMPLETIONPENDING(file_io_.Open(file_ref_, file_open_flag, cb),
-                                OPEN_ERROR);
+                                READ_ERROR);
 }
 
-void CdmFileIOImpl::OnFileOpened(int32_t result) {
+void CdmFileIOImpl::OnFileOpenedForRead(int32_t result) {
+  CDM_DLOG() << __FUNCTION__ << ": " << result;
   PP_DCHECK(IsMainThread());
-  PP_DCHECK(state_ == OPENING_FILE);
+  PP_DCHECK(state_ == STATE_READING);
 
-  if (result != PP_OK) {
+  if (result != PP_OK && result != PP_ERROR_FILENOTFOUND) {
     CDM_DLOG() << "File open failed.";
-    ReleaseFileLock();
+    state_ = STATE_ERROR;
     OnError(OPEN_ERROR);
     return;
   }
 
-  state_ = FILE_OPENED;
-  client_->OnOpenComplete(cdm::FileIOClient::kSuccess);
+  // File doesn't exist.
+  if (result == PP_ERROR_FILENOTFOUND) {
+    Reset();
+    state_ = STATE_FILE_SYSTEM_OPENED;
+    client_->OnReadComplete(cdm::FileIOClient::kSuccess, NULL, 0);
+    return;
+  }
+
+  ReadFile();
 }
 
+// Call sequence:
+//                               fully read
+// ReadFile() ---> OnFileRead() ------------> Done.
+//     ^                |
+//     | partially read |
+//     |----------------|
 void CdmFileIOImpl::ReadFile() {
-  PP_DCHECK(state_ == READING_FILE);
+  PP_DCHECK(state_ == STATE_READING);
   PP_DCHECK(!io_buffer_.empty());
 
   pp::CompletionCallback cb =
@@ -308,11 +331,12 @@ void CdmFileIOImpl::ReadFile() {
 void CdmFileIOImpl::OnFileRead(int32_t bytes_read) {
   CDM_DLOG() << __FUNCTION__ << ": " << bytes_read;
   PP_DCHECK(IsMainThread());
-  PP_DCHECK(state_ == READING_FILE);
+  PP_DCHECK(state_ == STATE_READING);
 
   // 0 |bytes_read| indicates end-of-file reached.
   if (bytes_read < PP_OK) {
     CDM_DLOG() << "Read file failed.";
+    state_ = STATE_ERROR;
     OnError(READ_ERROR);
     return;
   }
@@ -324,21 +348,19 @@ void CdmFileIOImpl::OnFileRead(int32_t bytes_read) {
                                  io_buffer_.begin() + bytes_read);
   io_offset_ += bytes_read;
 
-  // Not received end-of-file yet.
+  // Not received end-of-file yet. Keep reading.
   if (bytes_read > 0) {
     ReadFile();
     return;
   }
 
   // We hit end-of-file. Return read data to the client.
-  io_buffer_.clear();
-  io_offset_ = 0;
+
   // Clear |cumulative_read_buffer_| in case OnReadComplete() calls Read() or
   // Write().
   std::vector<char> local_buffer;
   std::swap(cumulative_read_buffer_, local_buffer);
 
-  state_ = FILE_OPENED;
   const uint8_t* data = local_buffer.empty() ?
       NULL : reinterpret_cast<const uint8_t*>(&local_buffer[0]);
 
@@ -349,44 +371,75 @@ void CdmFileIOImpl::OnFileRead(int32_t bytes_read) {
     first_file_read_reported_ = true;
   }
 
+  Reset();
+
+  state_ = STATE_FILE_SYSTEM_OPENED;
   client_->OnReadComplete(
       cdm::FileIOClient::kSuccess, data, local_buffer.size());
 }
 
-void CdmFileIOImpl::SetLength(uint32_t length) {
-  PP_DCHECK(state_ == WRITING_FILE);
+void CdmFileIOImpl::OpenTempFileForWrite() {
+  PP_DCHECK(state_ == STATE_WRITING);
+
+  PP_DCHECK(file_name_.size() > 1 && file_name_[0] == '/');
+  // Temporary file name format: /_<requested_file_name>
+  std::string temp_file_name = "/_" + file_name_.substr(1);
+
+  PP_DCHECK(file_io_.is_null());
+  PP_DCHECK(file_ref_.is_null());
+  file_io_ = pp::FileIO(pp_instance_handle_);
+  file_ref_ = pp::FileRef(file_system_, temp_file_name.c_str());
+
+  // Create the file if it doesn't exist. Truncate the file to length 0 if it
+  // exists.
+  // TODO(xhwang): Find a good way to report to UMA cases where the temporary
+  // file already exists (due to previous interruption or failure).
+  int32_t file_open_flag = PP_FILEOPENFLAG_WRITE |
+                           PP_FILEOPENFLAG_TRUNCATE |
+                           PP_FILEOPENFLAG_CREATE;
 
   pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&CdmFileIOImpl::OnLengthSet);
-  CHECK_PP_OK_COMPLETIONPENDING(file_io_.SetLength(length, cb), WRITE_ERROR);
+      callback_factory_.NewCallback(&CdmFileIOImpl::OnTempFileOpenedForWrite);
+  CHECK_PP_OK_COMPLETIONPENDING(
+      file_io_.Open(file_ref_, file_open_flag, cb), WRITE_ERROR);
 }
 
-void CdmFileIOImpl::OnLengthSet(int32_t result) {
+void CdmFileIOImpl::OnTempFileOpenedForWrite(int32_t result) {
   CDM_DLOG() << __FUNCTION__ << ": " << result;
   PP_DCHECK(IsMainThread());
-  PP_DCHECK(state_ == WRITING_FILE);
+  PP_DCHECK(state_ == STATE_WRITING);
 
   if (result != PP_OK) {
-    CDM_DLOG() << "File SetLength failed.";
+    CDM_DLOG() << "Open temporary file failed.";
+    state_ = STATE_ERROR;
     OnError(WRITE_ERROR);
     return;
   }
 
+  // We were told to write 0 bytes (to clear the file). In this case, there's
+  // no need to write anything.
   if (io_buffer_.empty()) {
-    state_ = FILE_OPENED;
-    client_->OnWriteComplete(cdm::FileIOClient::kSuccess);
+    RenameTempFile();
     return;
   }
 
-  WriteFile();
+  PP_DCHECK(io_offset_ == 0);
+  io_offset_ = 0;
+  WriteTempFile();
 }
 
-void CdmFileIOImpl::WriteFile() {
-  PP_DCHECK(state_ == WRITING_FILE);
+// Call sequence:
+//                                         fully written
+// WriteTempFile() -> OnTempFileWritten() ---------------> RenameTempFile().
+//      ^                     |
+//      |  partially written  |
+//      |---------------------|
+void CdmFileIOImpl::WriteTempFile() {
+  PP_DCHECK(state_ == STATE_WRITING);
   PP_DCHECK(io_offset_ < io_buffer_.size());
 
   pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&CdmFileIOImpl::OnFileWritten);
+      callback_factory_.NewCallback(&CdmFileIOImpl::OnTempFileWritten);
   CHECK_PP_OK_COMPLETIONPENDING(file_io_.Write(io_offset_,
                                                &io_buffer_[io_offset_],
                                                io_buffer_.size() - io_offset_,
@@ -394,14 +447,15 @@ void CdmFileIOImpl::WriteFile() {
                                 WRITE_ERROR);
 }
 
-void CdmFileIOImpl::OnFileWritten(int32_t bytes_written) {
+void CdmFileIOImpl::OnTempFileWritten(int32_t bytes_written) {
   CDM_DLOG() << __FUNCTION__ << ": " << bytes_written;
   PP_DCHECK(IsMainThread());
-  PP_DCHECK(state_ == WRITING_FILE);
+  PP_DCHECK(state_ == STATE_WRITING);
 
   if (bytes_written <= PP_OK) {
-    CDM_DLOG() << "Write file failed.";
-    OnError(READ_ERROR);
+    CDM_DLOG() << "Write temporary file failed.";
+    state_ = STATE_ERROR;
+    OnError(WRITE_ERROR);
     return;
   }
 
@@ -409,35 +463,58 @@ void CdmFileIOImpl::OnFileWritten(int32_t bytes_written) {
   PP_DCHECK(io_offset_ <= io_buffer_.size());
 
   if (io_offset_ < io_buffer_.size()) {
-    WriteFile();
+    WriteTempFile();
     return;
   }
 
-  io_buffer_.clear();
-  io_offset_ = 0;
-  state_ = FILE_OPENED;
+  // All data written. Now rename the temporary file to the real file.
+  RenameTempFile();
+}
+
+void CdmFileIOImpl::RenameTempFile() {
+  PP_DCHECK(state_ == STATE_WRITING);
+
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&CdmFileIOImpl::OnTempFileRenamed);
+  CHECK_PP_OK_COMPLETIONPENDING(
+      file_ref_.Rename(pp::FileRef(file_system_, file_name_.c_str()), cb),
+      WRITE_ERROR);
+}
+
+void CdmFileIOImpl::OnTempFileRenamed(int32_t result) {
+  CDM_DLOG() << __FUNCTION__ << ": " << result;
+  PP_DCHECK(IsMainThread());
+  PP_DCHECK(state_ == STATE_WRITING);
+
+  if (result != PP_OK) {
+    CDM_DLOG() << "Rename temporary file failed.";
+    state_ = STATE_ERROR;
+    OnError(WRITE_ERROR);
+    return;
+  }
+
+  Reset();
+
+  state_ = STATE_FILE_SYSTEM_OPENED;
   client_->OnWriteComplete(cdm::FileIOClient::kSuccess);
 }
 
-void CdmFileIOImpl::CloseFile() {
+void CdmFileIOImpl::Reset() {
   PP_DCHECK(IsMainThread());
-
-  state_ = FILE_CLOSED;
-
-  file_io_.Close();
   io_buffer_.clear();
   io_offset_ = 0;
   cumulative_read_buffer_.clear();
+  file_io_.Close();
+  file_io_ = pp::FileIO();
+  file_ref_ = pp::FileRef();
 }
 
 void CdmFileIOImpl::OnError(ErrorType error_type) {
   // For *_WHILE_IN_USE errors, do not reset these values. Otherwise, the
   // existing read/write operation will fail.
-  if (error_type == READ_ERROR || error_type == WRITE_ERROR) {
-    io_buffer_.clear();
-    io_offset_ = 0;
-    cumulative_read_buffer_.clear();
-  }
+  if (error_type == READ_ERROR || error_type == WRITE_ERROR)
+    Reset();
+
   PostOnMain(callback_factory_.NewCallback(&CdmFileIOImpl::NotifyClientOfError,
                                            error_type));
 }

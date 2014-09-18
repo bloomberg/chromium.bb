@@ -22,6 +22,17 @@
 namespace media {
 
 // Due to PPAPI limitations, all functions must be called on the main thread.
+//
+// Implementation notes about states:
+// 1, When a method is called in an invalid state (e.g. Read() before Open() is
+//    called, Write() before Open() finishes or Open() after Open()), kError
+//    will be returned. The state of |this| will not change.
+// 2, When the file is opened by another CDM instance, or when we call Read()/
+//    Write() during a pending Read()/Write(), kInUse will be returned. The
+//    state of |this| will not change.
+// 3, When a pepper operation failed (either synchronously or asynchronously),
+//    kError will be returned. The state of |this| will be set to ERROR.
+// 4. Any operation in ERROR state will end up with kError.
 class CdmFileIOImpl : public cdm::FileIO {
  public:
   // A class that helps release |file_lock_map_|.
@@ -49,14 +60,15 @@ class CdmFileIOImpl : public cdm::FileIO {
   virtual void Close() OVERRIDE;
 
  private:
+  // TODO(xhwang): Introduce more detailed states for UMA logging if needed.
   enum State {
-    FILE_UNOPENED,
-    OPENING_FILE_SYSTEM,
-    OPENING_FILE,
-    FILE_OPENED,
-    READING_FILE,
-    WRITING_FILE,
-    FILE_CLOSED
+    STATE_UNOPENED,
+    STATE_OPENING_FILE_SYSTEM,
+    STATE_FILE_SYSTEM_OPENED,
+    STATE_READING,
+    STATE_WRITING,
+    STATE_CLOSED,
+    STATE_ERROR
   };
 
   enum ErrorType {
@@ -106,22 +118,41 @@ class CdmFileIOImpl : public cdm::FileIO {
   // objects.
   void ReleaseFileLock();
 
+  // Helper functions for Open().
   void OpenFileSystem();
   void OnFileSystemOpened(int32_t result, pp::FileSystem file_system);
-  void OpenFile();
-  void OnFileOpened(int32_t result);
+
+  // Helper functions for Read().
+  void OpenFileForRead();
+  void OnFileOpenedForRead(int32_t result);
   void ReadFile();
   void OnFileRead(int32_t bytes_read);
-  void SetLength(uint32_t length);
-  void OnLengthSet(int32_t result);
-  void WriteFile();
-  void OnFileWritten(int32_t bytes_written);
 
-  void CloseFile();
+  // Helper functions for Write(). We always write data to a temporary file,
+  // then rename the temporary file to the target file. This can prevent data
+  // corruption if |this| is Close()'ed while waiting for writing to complete.
+  // However, if Close() is called after OpenTempFileForWrite() but before
+  // RenameTempFile(), we may still end up with an empty, partially written or
+  // fully written temporary file in the file system. This temporary file will
+  // be truncated next time OpenTempFileForWrite() is called.
 
-  // Calls client_->OnXxxxComplete with kError asynchronously. In some cases we
-  // could actually call them synchronously, but since these errors shouldn't
-  // happen in normal cases, we are not optimizing such cases.
+  void OpenTempFileForWrite();
+  void OnTempFileOpenedForWrite(int32_t result);
+  void WriteTempFile();
+  void OnTempFileWritten(int32_t bytes_written);
+  // Note: pp::FileRef::Rename() actually does a "move": if the target file
+  // exists, Rename() will succeed and the target file will be overwritten.
+  // See PepperInternalFileRefBackend::Rename() for implementation detail.
+  void RenameTempFile();
+  void OnTempFileRenamed(int32_t result);
+
+  // Reset |this| to a clean state.
+  void Reset();
+
+  // For real open/read/write errors, Reset() and set the |state_| to ERROR.
+  // Calls client_->OnXxxxComplete with kError or kInUse asynchronously. In some
+  // cases we could actually call them synchronously, but since these errors
+  // shouldn't happen in normal cases, we are not optimizing such cases.
   void OnError(ErrorType error_type);
 
   // Callback to notify client of error asynchronously.
@@ -134,6 +165,7 @@ class CdmFileIOImpl : public cdm::FileIO {
 
   const pp::InstanceHandle pp_instance_handle_;
 
+  // Format: /<requested_file_name>
   std::string file_name_;
 
   // A string ID that uniquely identifies a file in the user's profile.
@@ -144,10 +176,12 @@ class CdmFileIOImpl : public cdm::FileIO {
 
   pp::IsolatedFileSystemPrivate isolated_file_system_;
   pp::FileSystem file_system_;
+
+  // Shared between read and write. During read, |file_ref_| refers to the real
+  // file to read data from. During write, it refers to the temporary file to
+  // write data into.
   pp::FileIO file_io_;
   pp::FileRef file_ref_;
-
-  pp::CompletionCallbackFactory<CdmFileIOImpl> callback_factory_;
 
   // A temporary buffer to hold (partial) data to write or the data that has
   // been read. The size of |io_buffer_| is always "bytes to write" or "bytes to
@@ -167,6 +201,8 @@ class CdmFileIOImpl : public cdm::FileIO {
 
   // Callback to report the file size in bytes after the first successful read.
   pp::CompletionCallback first_file_read_cb_;
+
+  pp::CompletionCallbackFactory<CdmFileIOImpl> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmFileIOImpl);
 };
