@@ -6,6 +6,7 @@
 #define CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "chromeos/chromeos_export.h"
 #include "components/onc/onc_constants.h"
 #include "net/cert/x509_certificate.h"
@@ -19,20 +20,25 @@ namespace onc {
 
 class CHROMEOS_EXPORT CertificateImporter {
  public:
+  typedef base::Callback<
+      void(bool success, const net::CertificateList& onc_trusted_certificates)>
+      DoneCallback;
+
   CertificateImporter() {}
   virtual ~CertificateImporter() {}
 
-  // Import the |certificates|, which must be a list of ONC Certificate objects.
-  // Certificates are only imported with web trust for user imports. If
-  // |onc_trusted_certificates| is not NULL, it will be filled with the list
-  // of certificates that requested the TrustBit "Web". If the "Remove" field of
-  // a certificate is enabled, then removes the certificate from the store
-  // instead of importing. Returns true if all certificates were imported
-  // successfully.
-  virtual bool ImportCertificates(
-      const base::ListValue& certificates,
-      ::onc::ONCSource source,
-      net::CertificateList* onc_trusted_certificates) = 0;
+  // Import |certificates|, which must be a list of ONC Certificate objects.
+  // Certificates are only imported with web trust for user imports. If the
+  // "Remove" field of a certificate is enabled, then removes the certificate
+  // from the store instead of importing.
+  // When the import is completed, |done_callback| will be called with |success|
+  // equal to true if all certificates were imported successfully.
+  // |onc_trusted_certificates| will contain the list of certificates that
+  // were imported and requested the TrustBit "Web".
+  // Never calls |done_callback| after this importer is destructed.
+  virtual void ImportCertificates(const base::ListValue& certificates,
+                                  ::onc::ONCSource source,
+                                  const DoneCallback& done_callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CertificateImporter);

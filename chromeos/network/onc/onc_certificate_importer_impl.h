@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "components/onc/onc_constants.h"
@@ -19,6 +20,8 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -31,34 +34,36 @@ namespace chromeos {
 namespace onc {
 
 // This class handles certificate imports from ONC (both policy and user
-// imports) into the certificate store. The GUID of Client certificates is
-// stored together with the certificate as Nickname. In contrast, Server and CA
+// imports) into a certificate store. The GUID of Client certificates is stored
+// together with the certificate as Nickname. In contrast, Server and CA
 // certificates are identified by their PEM and not by GUID.
 // TODO(pneubeck): Replace Nickname by PEM for Client
 // certificates. http://crbug.com/252119
 class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
  public:
-  typedef std::map<std::string, scoped_refptr<net::X509Certificate> >
-      CertsByGUID;
-
-  explicit CertificateImporterImpl(net::NSSCertDatabase* target_nssdb_);
+  // |io_task_runner| will be used for NSSCertDatabase accesses.
+  CertificateImporterImpl(
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      net::NSSCertDatabase* target_nssdb_);
+  virtual ~CertificateImporterImpl();
 
   // CertificateImporter overrides
-  virtual bool ImportCertificates(
-      const base::ListValue& certificates,
-      ::onc::ONCSource source,
-      net::CertificateList* onc_trusted_certificates) OVERRIDE;
-
-  // This implements ImportCertificates. Additionally, if
-  // |imported_server_and_ca_certs| is not NULL, it will be filled with the
-  // (GUID, Certificate) pairs of all succesfully imported Server and CA
-  // certificates.
-  bool ParseAndStoreCertificates(bool allow_trust_imports,
-                                 const base::ListValue& onc_certificates,
-                                 net::CertificateList* onc_trusted_certificates,
-                                 CertsByGUID* imported_server_and_ca_certs);
+  virtual void ImportCertificates(const base::ListValue& certificates,
+                                  ::onc::ONCSource source,
+                                  const DoneCallback& done_callback) OVERRIDE;
 
  private:
+  void RunDoneCallback(const CertificateImporter::DoneCallback& callback,
+                       bool success,
+                       const net::CertificateList& onc_trusted_certificates);
+
+  // This is the synchronous implementation of ImportCertificates. It is
+  // executed on the given |io_task_runner_|.
+  static void ParseAndStoreCertificates(::onc::ONCSource source,
+                                        const DoneCallback& done_callback,
+                                        base::ListValue* certificates,
+                                        net::NSSCertDatabase* nssdb);
+
   // Lists the certificates that have the string |label| as their certificate
   // nickname (exact match).
   static void ListCertsWithNickname(const std::string& label,
@@ -72,29 +77,35 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
 
   // Parses and stores/removes |certificate| in/from the certificate
   // store. Returns true if the operation succeeded.
-  bool ParseAndStoreCertificate(
+  static bool ParseAndStoreCertificate(
       bool allow_trust_imports,
       const base::DictionaryValue& certificate,
-      net::CertificateList* onc_trusted_certificates,
-      CertsByGUID* imported_server_and_ca_certs);
+      net::NSSCertDatabase* nssdb,
+      net::CertificateList* onc_trusted_certificates);
 
   // Imports the Server or CA certificate |certificate|. Web trust is only
   // applied if the certificate requests the TrustBits attribute "Web" and if
   // the |allow_trust_imports| permission is granted, otherwise the attribute is
   // ignored.
-  bool ParseServerOrCaCertificate(
+  static bool ParseServerOrCaCertificate(
       bool allow_trust_imports,
       const std::string& cert_type,
       const std::string& guid,
       const base::DictionaryValue& certificate,
-      net::CertificateList* onc_trusted_certificates,
-      CertsByGUID* imported_server_and_ca_certs);
+      net::NSSCertDatabase* nssdb,
+      net::CertificateList* onc_trusted_certificates);
 
-  bool ParseClientCertificate(const std::string& guid,
-                              const base::DictionaryValue& certificate);
+  static bool ParseClientCertificate(const std::string& guid,
+                                     const base::DictionaryValue& certificate,
+                                     net::NSSCertDatabase* nssdb);
+
+  // The task runner to use for NSSCertDatabase accesses.
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // The certificate database to which certificates are imported.
   net::NSSCertDatabase* target_nssdb_;
+
+  base::WeakPtrFactory<CertificateImporterImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateImporterImpl);
 };
