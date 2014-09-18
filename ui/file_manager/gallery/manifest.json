@@ -31,9 +31,6 @@
   ],
   "file_handlers": {
     "open": {
-      "types": [
-        "image/*"
-      ],
       "extensions": [
         "bmp",
         "gif",
