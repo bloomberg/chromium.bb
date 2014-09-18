@@ -9,9 +9,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -53,35 +55,48 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
   return IDS_EXTENSION_TASK_MANAGER_MIMEHANDLERVIEW_TAG_PREFIX;
 }
 
+// |embedder_extension_id| is empty for mime handler view.
 void MimeHandlerViewGuest::CreateWebContents(
     const std::string& embedder_extension_id,
     int embedder_render_process_id,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   std::string orig_mime_type;
-  bool success =
-      create_params.GetString(mime_handler_view::kMimeType, &orig_mime_type);
-  DCHECK(success && !orig_mime_type.empty());
-  std::string guest_site_str;
-  // Note that we put a prefix "mime-" before the mime type so that this
-  // can never collide with an extension ID.
-  guest_site_str = base::StringPrintf(
-      "%s://mime-%s", content::kGuestScheme, orig_mime_type.c_str());
-  GURL guest_site(guest_site_str);
+  create_params.GetString(mime_handler_view::kMimeType, &orig_mime_type);
+  DCHECK(!orig_mime_type.empty());
 
-  // If we already have a mime handler view for the same mime type, we should
-  // use the same SiteInstance so they go under same process.
-  GuestViewManager* guest_view_manager =
-      GuestViewManager::FromBrowserContext(browser_context());
-  content::SiteInstance* guest_site_instance =
-      guest_view_manager->GetGuestSiteInstance(guest_site);
-  if (!guest_site_instance) {
-    // Create the SiteInstance in a new BrowsingInstance, which will ensure
-    // that guests from different render process are not allowed to send
-    // messages to each other.
-    guest_site_instance =
-        content::SiteInstance::CreateForURL(browser_context(), guest_site);
+  std::string extension_src;
+  create_params.GetString(mime_handler_view::kSrc, &extension_src);
+  DCHECK(!extension_src.empty());
+
+  GURL mime_handler_extension_url(extension_src);
+  if (!mime_handler_extension_url.is_valid()) {
+    callback.Run(NULL);
+    return;
   }
+
+  const Extension* mime_handler_extension =
+      // TODO(lazyboy): Do we need handle the case where the extension is
+      // terminated (ExtensionRegistry::TERMINATED)?
+      ExtensionRegistry::Get(browser_context())->enabled_extensions().GetByID(
+          mime_handler_extension_url.host());
+  if (!mime_handler_extension) {
+    LOG(ERROR) << "Extension for mime_type not found, mime_type = "
+               << orig_mime_type;
+    callback.Run(NULL);
+    return;
+  }
+
+  ProcessManager* process_manager =
+      ExtensionSystem::Get(browser_context())->process_manager();
+  DCHECK(process_manager);
+
+  // Use the mime handler extension's SiteInstance to create the guest so it
+  // goes under the same process as the extension.
+  content::SiteInstance* guest_site_instance =
+      process_manager->GetSiteInstanceForURL(
+          Extension::GetBaseURLFromExtensionId(embedder_extension_id));
+
   WebContents::CreateParams params(browser_context(), guest_site_instance);
   params.guest_delegate = this;
   callback.Run(WebContents::Create(params));
