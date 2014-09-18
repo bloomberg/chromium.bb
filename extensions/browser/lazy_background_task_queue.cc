@@ -19,7 +19,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/view_type.h"
 

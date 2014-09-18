@@ -33,7 +33,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_util.h"

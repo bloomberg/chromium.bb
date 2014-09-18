@@ -7,7 +7,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/extensions_renderer_client.h"

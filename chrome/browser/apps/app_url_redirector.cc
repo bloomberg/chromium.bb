@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "net/url_request/url_request.h"
 

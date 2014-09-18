@@ -30,7 +30,6 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/search/search_switches.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/common/switches.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
@@ -61,6 +60,10 @@
 
 #if defined(ENABLE_APP_LIST)
 #include "ui/app_list/app_list_switches.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/switches.h"
 #endif
 
 using base::UserMetricsAction;
@@ -658,6 +661,7 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kNaClDebugMaskChoices)
   },
 #endif
+#if defined(ENABLE_EXTENSIONS)
   {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
@@ -672,6 +676,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)
   },
+#endif
   {
     "enable-fast-unload",
     IDS_FLAGS_ENABLE_FAST_UNLOAD_NAME,
@@ -679,6 +684,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableFastUnload)
   },
+#if defined(ENABLE_EXTENSIONS)
   {
     "enable-app-window-controls",
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME,
@@ -686,6 +692,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableAppWindowControls)
   },
+#endif
   {
     "disable-hyperlink-auditing",
     IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME,
@@ -1468,6 +1475,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppList)
   },
 #endif
+#if defined(ENABLE_EXTENSIONS)
   {
     "enable-app-view",
     IDS_FLAGS_ENABLE_APP_VIEW_NAME,
@@ -1475,6 +1483,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableAppView)
   },
+#endif
   {
     "disable-app-list-app-info",
     IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST,
@@ -1588,6 +1597,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(views::switches::kDisableViewsRectBasedTargeting)
   },
 #endif
+#if defined(ENABLE_EXTENSIONS)
   {
     "enable-apps-show-on-first-paint",
     IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_NAME,
@@ -1595,6 +1605,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableAppsShowOnFirstPaint)
   },
+#endif
   {
     "enhanced-bookmarks-experiment",
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
@@ -1811,6 +1822,7 @@ const Experiment kExperiments[] = {
                               switches::kDisableTextInputFocusManager)
   },
 #endif
+#if defined(ENABLE_EXTENSIONS)
   {
     "extension-active-script-permission",
     IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_NAME,
@@ -1818,6 +1830,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)
   },
+#endif
   {
     "harfbuzz-rendertext",
     IDS_FLAGS_HARFBUZZ_RENDERTEXT_NAME,
@@ -1853,6 +1866,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwording)
   },
+#if defined(ENABLE_EXTENSIONS)
   {
     "enable-embedded-extension-options",
     IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME,
@@ -1860,6 +1874,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)
   },
+#endif
   {
     "enable-website-settings-manager",
     IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME,
@@ -1881,6 +1896,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kEnableDropSyncCredentialChoices)
   },
+#if defined(ENABLE_EXTENSIONS)
   {
     "enable-extension-action-redesign",
     IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_NAME,
@@ -1888,6 +1904,7 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionActionRedesign)
   },
+#endif
   {
     "autofill-sync-credential",
     IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_NAME,

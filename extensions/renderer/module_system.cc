@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/extension_messages.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/safe_builtins.h"

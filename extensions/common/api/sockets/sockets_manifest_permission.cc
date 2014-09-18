@@ -11,7 +11,6 @@
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/api/sockets/sockets_manifest_data.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/extensions_strings.h"
 #include "ipc/ipc_message.h"

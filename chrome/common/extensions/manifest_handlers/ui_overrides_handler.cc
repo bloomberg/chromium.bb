@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/manifest_permission.h"

@@ -19,7 +19,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
