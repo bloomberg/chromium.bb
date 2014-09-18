@@ -49,6 +49,19 @@ Err MakeTestOnlyError(const Target* from, const Target* to) {
       "Either mark it test-only or don't do this dependency.");
 }
 
+Err MakeStaticLibDepsError(const Target* from, const Target* to) {
+  return Err(from->defined_from(),
+             "Complete static libraries can't depend on static libraries.",
+             from->label().GetUserVisibleName(false) +
+                 "\n"
+                 "which is a complete static library can't depend on\n" +
+                 to->label().GetUserVisibleName(false) +
+                 "\n"
+                 "which is a static library.\n"
+                 "\n"
+                 "Use source sets for intermediate targets instead.");
+}
+
 }  // namespace
 
 Target::Target(const Settings* settings, const Label& label)
@@ -125,6 +138,8 @@ bool Target::OnResolved(Err* err) {
   if (!CheckVisibility(err))
     return false;
   if (!CheckTestonly(err))
+    return false;
+  if (!CheckNoNestedStaticLibs(err))
     return false;
 
   return true;
@@ -326,7 +341,7 @@ bool Target::CheckVisibility(Err* err) const {
 }
 
 bool Target::CheckTestonly(Err* err) const {
-  // If there current target is marked testonly, it can include both testonly
+  // If the current target is marked testonly, it can include both testonly
   // and non-testonly targets, so there's nothing to check.
   if (testonly())
     return true;
@@ -339,5 +354,29 @@ bool Target::CheckTestonly(Err* err) const {
     }
   }
 
+  return true;
+}
+
+bool Target::CheckNoNestedStaticLibs(Err* err) const {
+  // If the current target is not a complete static library, it can depend on
+  // static library targets with no problem.
+  if (!(output_type() == Target::STATIC_LIBRARY && complete_static_lib()))
+    return true;
+
+  // Verify no deps are static libraries.
+  for (DepsIterator iter(this); !iter.done(); iter.Advance()) {
+    if (iter.target()->output_type() == Target::STATIC_LIBRARY) {
+      *err = MakeStaticLibDepsError(this, iter.target());
+      return false;
+    }
+  }
+
+  // Verify no inherited libraries are static libraries.
+  for (size_t i = 0; i < inherited_libraries().size(); ++i) {
+    if (inherited_libraries()[i]->output_type() == Target::STATIC_LIBRARY) {
+      *err = MakeStaticLibDepsError(this, inherited_libraries()[i]);
+      return false;
+    }
+  }
   return true;
 }

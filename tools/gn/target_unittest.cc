@@ -225,6 +225,55 @@ TEST(Target, InheritCompleteStaticLib) {
   EXPECT_TRUE(a_inherited.IndexOf(&b) != static_cast<size_t>(-1));
 }
 
+TEST(Target, InheritCompleteStaticLibNoDirectStaticLibDeps) {
+  TestWithScope setup;
+  Err err;
+
+  // Create a dependency chain:
+  //   A (complete static lib) -> B (static lib)
+  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
+  a.set_output_type(Target::STATIC_LIBRARY);
+  a.visibility().SetPublic();
+  a.set_complete_static_lib(true);
+  a.SetToolchain(setup.toolchain());
+  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
+  b.set_output_type(Target::STATIC_LIBRARY);
+  b.visibility().SetPublic();
+  b.SetToolchain(setup.toolchain());
+
+  a.public_deps().push_back(LabelTargetPair(&b));
+  ASSERT_TRUE(b.OnResolved(&err));
+  ASSERT_FALSE(a.OnResolved(&err));
+}
+
+TEST(Target, InheritCompleteStaticLibNoIheritedStaticLibDeps) {
+  TestWithScope setup;
+  Err err;
+
+  // Create a dependency chain:
+  //   A (complete static lib) -> B (source set) -> C (static lib)
+  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
+  a.set_output_type(Target::STATIC_LIBRARY);
+  a.visibility().SetPublic();
+  a.set_complete_static_lib(true);
+  a.SetToolchain(setup.toolchain());
+  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
+  b.set_output_type(Target::SOURCE_SET);
+  b.visibility().SetPublic();
+  b.SetToolchain(setup.toolchain());
+  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
+  c.set_output_type(Target::STATIC_LIBRARY);
+  c.visibility().SetPublic();
+  c.SetToolchain(setup.toolchain());
+
+  a.public_deps().push_back(LabelTargetPair(&b));
+  b.public_deps().push_back(LabelTargetPair(&c));
+
+  ASSERT_TRUE(c.OnResolved(&err));
+  ASSERT_TRUE(b.OnResolved(&err));
+  ASSERT_FALSE(a.OnResolved(&err));
+}
+
 TEST(Target, GetComputedOutputName) {
   TestWithScope setup;
   Err err;
