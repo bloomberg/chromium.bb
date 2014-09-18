@@ -11,9 +11,9 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_paths.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/extensions_strings.h"
@@ -116,12 +116,8 @@ TEST_F(FileUtilTest, InstallUninstallGarbageCollect) {
 
 TEST_F(FileUtilTest, LoadExtensionWithValidLocales) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("good")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                    .AppendASCII("1.0.0.0");
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_with_locales");
 
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
@@ -132,12 +128,8 @@ TEST_F(FileUtilTest, LoadExtensionWithValidLocales) {
 
 TEST_F(FileUtilTest, LoadExtensionWithoutLocalesFolder) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("good")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
-                    .AppendASCII("1.0");
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_without_locales");
 
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
@@ -192,12 +184,9 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
 
 TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("bad")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("dddddddddddddddddddddddddddddddd")
-                    .AppendASCII("1.0");
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir =
+      install_dir.AppendASCII("file_util").AppendASCII("missing_manifest");
 
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
@@ -209,12 +198,9 @@ TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
 
 TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("bad")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-                    .AppendASCII("1.0");
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir =
+      install_dir.AppendASCII("file_util").AppendASCII("bad_manifest");
 
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
@@ -224,23 +210,6 @@ TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
   ASSERT_STREQ(
       "Manifest is not valid JSON.  "
       "Line: 2, column: 16, Syntax error.",
-      error.c_str());
-}
-
-TEST_F(FileUtilTest, FailLoadingNonUTF8Scripts) {
-  base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("bad")
-                    .AppendASCII("bad_encoding");
-
-  std::string error;
-  scoped_refptr<Extension> extension(file_util::LoadExtension(
-      install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  ASSERT_TRUE(extension.get() == NULL);
-  ASSERT_STREQ(
-      "Could not load file 'bad_encoding.js' for content script. "
-      "It isn't UTF-8 encoded.",
       error.c_str());
 }
 
@@ -409,45 +378,19 @@ TEST_F(FileUtilTest, WarnOnPrivateKey) {
                   "extension includes the key file.*ext_root.a_key.pem"));
 }
 
-TEST_F(FileUtilTest, CheckZeroLengthImageFile) {
+TEST_F(FileUtilTest, CheckZeroLengthIconFile) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
 
   // Try to install an extension with a zero-length icon file.
-  base::FilePath ext_dir = install_dir.AppendASCII("extensions")
-                               .AppendASCII("bad")
-                               .AppendASCII("Extensions")
-                               .AppendASCII("ffffffffffffffffffffffffffffffff");
+  base::FilePath ext_dir =
+      install_dir.AppendASCII("file_util").AppendASCII("bad_icon");
 
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get() == NULL);
   EXPECT_STREQ("Could not load extension icon 'icon.png'.", error.c_str());
-
-  // Try to install an extension with a zero-length browser action icon file.
-  ext_dir = install_dir.AppendASCII("extensions")
-                .AppendASCII("bad")
-                .AppendASCII("Extensions")
-                .AppendASCII("gggggggggggggggggggggggggggggggg");
-
-  scoped_refptr<Extension> extension2(file_util::LoadExtension(
-      ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension2.get() == NULL);
-  EXPECT_STREQ("Could not load icon 'icon.png' for browser action.",
-               error.c_str());
-
-  // Try to install an extension with a zero-length page action icon file.
-  ext_dir = install_dir.AppendASCII("extensions")
-                .AppendASCII("bad")
-                .AppendASCII("Extensions")
-                .AppendASCII("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-
-  scoped_refptr<Extension> extension3(file_util::LoadExtension(
-      ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension3.get() == NULL);
-  EXPECT_STREQ("Could not load icon 'icon.png' for page action.",
-               error.c_str());
 }
 
 TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {

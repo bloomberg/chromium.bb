@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,6 +85,23 @@ TEST_F(ContentScriptsManifestTest, ContentScriptIds) {
   ASSERT_EQ(1u, user_scripts2.size());
   // The id of the content script should be one higher than the previous.
   EXPECT_EQ(id + 1, user_scripts2[0].id());
+}
+
+TEST_F(ContentScriptsManifestTest, FailLoadingNonUTF8Scripts) {
+  base::FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+                    .AppendASCII("bad")
+                    .AppendASCII("bad_encoding");
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get() == NULL);
+  ASSERT_STREQ(
+      "Could not load file 'bad_encoding.js' for content script. "
+      "It isn't UTF-8 encoded.",
+      error.c_str());
 }
 
 }  // namespace extensions

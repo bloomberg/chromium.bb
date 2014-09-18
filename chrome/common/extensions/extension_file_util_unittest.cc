@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 
 #include <set>
+#include <string>
 
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -36,6 +37,37 @@ TEST_F(ExtensionFileUtilTest, GetBrowserImagePaths) {
       extension_file_util::GetBrowserImagePaths(extension.get());
   ASSERT_EQ(1u, paths.size());
   EXPECT_EQ("icon.png", paths.begin()->BaseName().AsUTF8Unsafe());
+}
+
+// Test that extensions with zero-length action icons will not load.
+TEST_F(ExtensionFileUtilTest, CheckZeroLengthActionIconFiles) {
+  base::FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+
+  // Try to install an extension with a zero-length browser action icon file.
+  base::FilePath ext_dir = install_dir.AppendASCII("extensions")
+                               .AppendASCII("bad")
+                               .AppendASCII("Extensions")
+                               .AppendASCII("gggggggggggggggggggggggggggggggg");
+
+  std::string error;
+  scoped_refptr<Extension> extension2(file_util::LoadExtension(
+      ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+  EXPECT_FALSE(extension2.get());
+  EXPECT_STREQ("Could not load icon 'icon.png' for browser action.",
+               error.c_str());
+
+  // Try to install an extension with a zero-length page action icon file.
+  ext_dir = install_dir.AppendASCII("extensions")
+                .AppendASCII("bad")
+                .AppendASCII("Extensions")
+                .AppendASCII("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+
+  scoped_refptr<Extension> extension3(file_util::LoadExtension(
+      ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+  EXPECT_FALSE(extension3.get());
+  EXPECT_STREQ("Could not load icon 'icon.png' for page action.",
+               error.c_str());
 }
 
 }  // namespace extensions

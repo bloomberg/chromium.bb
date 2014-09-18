@@ -947,8 +947,6 @@
         'test/test_extensions_client.h',
         'test/test_permission_message_provider.cc',
         'test/test_permission_message_provider.h',
-        'test/test_permissions_provider.cc',
-        'test/test_permissions_provider.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -1004,10 +1002,6 @@
       ],
     },
     {
-      # TODO(tfarina): Many extension unit tests run as part of Chrome's
-      # unit_tests target. They should be moved here, which may require some
-      # refactoring (ExtensionsBrowserClient, TestingProfile, etc.).
-      # http://crbug.com/348066
       'target_name': 'extensions_unittests',
       'type': 'executable',
       'dependencies': [
@@ -1089,11 +1083,13 @@
         'common/api/sockets/sockets_manifest_permission_unittest.cc',
         'common/csp_validator_unittest.cc',
         'common/event_filter_unittest.cc',
+        'common/extension_l10n_util_unittest.cc',
         'common/extension_resource_unittest.cc',
         'common/extension_set_unittest.cc',
         'common/features/base_feature_provider_unittest.cc',
         'common/features/complex_feature_unittest.cc',
         'common/features/simple_feature_unittest.cc',
+        'common/file_util_unittest.cc',
         'common/manifest_handler_unittest.cc',
         'common/manifest_handlers/externally_connectable_unittest.cc',
         'common/manifest_handlers/file_handler_manifest_unittest.cc',

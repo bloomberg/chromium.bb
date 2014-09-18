@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/common/extension_l10n_util.h"
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -10,22 +12,19 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/message_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::kLocaleFolder;
-using extensions::kMessagesFilename;
-using extensions::MessageBundle;
+namespace extensions {
 
-namespace errors = extensions::manifest_errors;
-namespace keys = extensions::manifest_keys;
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
 
 namespace {
 
@@ -108,13 +107,9 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
 
 TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("good")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                    .AppendASCII("1.0.0.0")
-                    .Append(kLocaleFolder);
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir =
+      install_dir.AppendASCII("extension_with_locales").Append(kLocaleFolder);
 
   std::string error;
   std::set<std::string> locales;
@@ -128,13 +123,9 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-                    .AppendASCII("good")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                    .AppendASCII("1.0.0.0")
-                    .Append(kLocaleFolder);
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir =
+      install_dir.AppendASCII("extension_with_locales").Append(kLocaleFolder);
 
   std::string error;
   std::set<std::string> locales;
@@ -185,7 +176,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   std::string error;
   EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
                           src_path, "en_US", "sr", valid_locales, &error));
-  EXPECT_EQ(extensions::ErrorUtils::FormatErrorMessage(
+  EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                 errors::kLocalesInvalidLocale,
                 base::UTF16ToUTF8(messages_file.LossyDisplayName()),
                 "Line: 1, column: 10, Unexpected token."),
@@ -660,3 +651,4 @@ TEST(ExtensionL10nUtil, GetAllFallbackLocales) {
 }
 
 }  // namespace
+}  // namespace extensions

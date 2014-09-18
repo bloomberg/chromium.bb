@@ -11,12 +11,6 @@
       '../components/autofill/content/renderer/test_password_autofill_agent.h',
       '../components/autofill/content/renderer/test_password_generation_agent.cc',
       '../components/autofill/content/renderer/test_password_generation_agent.h',
-      # TODO(tfarina): Move these entries over to extensions_unittests target.
-      # http://crbug.com/348066. They are duplicated here because we haven't
-      # extensions_unittests running in the bots yet. Until that happens,
-      # they should be kept here.
-      '../extensions/common/extension_l10n_util_unittest.cc',
-      '../extensions/common/file_util_unittest.cc',
       # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
       # dependency is needed to make commit bots run unit_tests on
       # histograms.xml changes.
