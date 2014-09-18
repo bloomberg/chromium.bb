@@ -402,6 +402,7 @@ OperationID FileSystemOperationRunner::CopyInForeignFile(
     DidFinish(handle, callback, error);
     return handle.id;
   }
+  PrepareForWrite(handle.id, dest_url);
   operation->CopyInForeignFile(
       src_local_disk_path, dest_url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -462,6 +463,8 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
     DidFinish(handle, callback, error);
     return handle.id;
   }
+  PrepareForRead(handle.id, src_url);
+  PrepareForWrite(handle.id, dest_url);
   operation->CopyFileLocal(
       src_url, dest_url, option, progress_callback,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -483,6 +486,8 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
     DidFinish(handle, callback, error);
     return handle.id;
   }
+  PrepareForWrite(handle.id, src_url);
+  PrepareForWrite(handle.id, dest_url);
   operation->MoveFileLocal(
       src_url, dest_url, option,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
