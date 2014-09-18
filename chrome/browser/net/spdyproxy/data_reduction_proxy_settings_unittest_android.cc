@@ -76,6 +76,7 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
   EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
+  settings_->SetDataReductionProxyStatisticsPrefs(statistics_prefs_.get());
 }
 
 template <class C>

@@ -5,11 +5,10 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
@@ -192,16 +191,15 @@ void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
 // |kNumDaysInHistory| days.
 class DailyContentLengthUpdate {
  public:
-  DailyContentLengthUpdate(
-      const char* pref,
-      PrefService* pref_service)
-      : update_(pref_service, pref) {
+  DailyContentLengthUpdate(const char* pref,
+                           DataReductionProxyStatisticsPrefs* pref_service)
+      : update_(pref_service->GetList(pref)) {
   }
 
   void UpdateForDataChange(int days_since_last_update) {
     // New empty lists may have been created. Maintain the invariant that
     // there should be exactly |kNumDaysInHistory| days in the histories.
-    MaintainContentLengthPrefsWindow(update_.Get(), kNumDaysInHistory);
+    MaintainContentLengthPrefsWindow(update_, kNumDaysInHistory);
     if (days_since_last_update) {
       MaintainContentLengthPrefForDateChange(days_since_last_update);
     }
@@ -209,7 +207,7 @@ class DailyContentLengthUpdate {
 
   // Update the lengths for the current day.
   void Add(int content_length) {
-    AddInt64ToListPref(kNumDaysInHistory - 1, content_length, update_.Get());
+    AddInt64ToListPref(kNumDaysInHistory - 1, content_length, update_);
   }
 
   int64 GetListPrefValue(size_t index) {
@@ -248,10 +246,10 @@ class DailyContentLengthUpdate {
 
     // Entries for new days may have been appended. Maintain the invariant that
     // there should be exactly |kNumDaysInHistory| days in the histories.
-    MaintainContentLengthPrefsWindow(update_.Get(), kNumDaysInHistory);
+    MaintainContentLengthPrefsWindow(update_, kNumDaysInHistory);
   }
 
-  ListPrefUpdate update_;
+  base::ListValue* update_;
 };
 
 // DailyDataSavingUpdate maintains a pair of data saving prefs, original_update_
@@ -261,12 +259,11 @@ class DailyContentLengthUpdate {
 // content lengths.
 class DailyDataSavingUpdate {
  public:
-  DailyDataSavingUpdate(
-      const char* pref_original,
-      const char* pref_received,
-      PrefService* pref_service)
-      : original_(pref_original, pref_service),
-        received_(pref_received, pref_service) {
+  DailyDataSavingUpdate(const char* pref_original,
+                        const char* pref_received,
+                        DataReductionProxyStatisticsPrefs* prefs)
+      : original_(pref_original, prefs),
+        received_(pref_received, prefs) {
   }
 
   void UpdateForDataChange(int days_since_last_update) {
@@ -340,7 +337,8 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     int original_content_length,
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
-    base::Time now, PrefService* prefs) {
+    base::Time now,
+    DataReductionProxyStatisticsPrefs* prefs) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
   // year is reported as being between 1972 and 2970.
@@ -470,12 +468,11 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   }
 }
 
-void UpdateContentLengthPrefs(
-    int received_content_length,
-    int original_content_length,
-    bool with_data_reduction_proxy_enabled,
-    DataReductionProxyRequestType request_type,
-    PrefService* prefs) {
+void UpdateContentLengthPrefs(int received_content_length,
+                              int original_content_length,
+                              bool with_data_reduction_proxy_enabled,
+                              DataReductionProxyRequestType request_type,
+                              DataReductionProxyStatisticsPrefs* prefs) {
   int64 total_received = prefs->GetInt64(
       data_reduction_proxy::prefs::kHttpReceivedContentLength);
   int64 total_original = prefs->GetInt64(

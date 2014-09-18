@@ -34,6 +34,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,17 +117,14 @@ void UpdateContentLengthPrefs(
     int received_content_length,
     int original_content_length,
     data_reduction_proxy::DataReductionProxyRequestType request_type,
-    Profile* profile) {
+    Profile* profile,
+    data_reduction_proxy::DataReductionProxyStatisticsPrefs* statistics_prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
 
   // Can be NULL in a unit test.
   if (!g_browser_process)
-    return;
-
-  PrefService* prefs = g_browser_process->local_state();
-  if (!prefs)
     return;
 
   // Ignore off-the-record data.
@@ -144,21 +142,27 @@ void UpdateContentLengthPrefs(
   bool with_data_reduction_proxy_enabled = false;
 #endif
 
-  data_reduction_proxy::UpdateContentLengthPrefs(received_content_length,
-                                         original_content_length,
-                                         with_data_reduction_proxy_enabled,
-                                         request_type, prefs);
+  data_reduction_proxy::UpdateContentLengthPrefs(
+      received_content_length,
+      original_content_length,
+      with_data_reduction_proxy_enabled,
+      request_type,
+      statistics_prefs);
 }
 
 void StoreAccumulatedContentLength(
     int received_content_length,
     int original_content_length,
     data_reduction_proxy::DataReductionProxyRequestType request_type,
-    Profile* profile) {
+    Profile* profile,
+    data_reduction_proxy::DataReductionProxyStatisticsPrefs* statistics_prefs) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&UpdateContentLengthPrefs,
-                 received_content_length, original_content_length,
-                 request_type, profile));
+                 received_content_length,
+                 original_content_length,
+                 request_type,
+                 profile,
+                 statistics_prefs));
 }
 
 void RecordContentLengthHistograms(
@@ -260,7 +264,8 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       prerender_tracker_(NULL),
       data_reduction_proxy_params_(NULL),
       data_reduction_proxy_usage_stats_(NULL),
-      data_reduction_proxy_auth_request_handler_(NULL) {
+      data_reduction_proxy_auth_request_handler_(NULL),
+      data_reduction_proxy_statistics_prefs_(NULL) {
   DCHECK(enable_referrers);
   extensions_delegate_.reset(
       ChromeExtensionsNetworkDelegate::Create(event_router));
@@ -329,6 +334,8 @@ void ChromeNetworkDelegate::AllowAccessToAllFiles() {
 }
 
 // static
+// TODO(megjablon): Use data_reduction_proxy_delayed_pref_service to read prefs.
+// Until updated the pref values may be up to an hour behind on desktop.
 base::Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* prefs = g_browser_process->local_state();
@@ -833,10 +840,13 @@ void ChromeNetworkDelegate::AccumulateContentLength(
     data_reduction_proxy::DataReductionProxyRequestType request_type) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
-  StoreAccumulatedContentLength(received_content_length,
-                                original_content_length,
-                                request_type,
-                                reinterpret_cast<Profile*>(profile_));
+  if (data_reduction_proxy_statistics_prefs_) {
+    StoreAccumulatedContentLength(received_content_length,
+                                  original_content_length,
+                                  request_type,
+                                  reinterpret_cast<Profile*>(profile_),
+                                  data_reduction_proxy_statistics_prefs_);
+  }
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;
 }

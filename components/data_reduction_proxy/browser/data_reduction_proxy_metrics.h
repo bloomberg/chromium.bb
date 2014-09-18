@@ -11,9 +11,9 @@ namespace net {
 class URLRequest;
 }
 
-class PrefService;
-
 namespace data_reduction_proxy {
+
+class DataReductionProxyStatisticsPrefs;
 
 enum DataReductionProxyRequestType {
   VIA_DATA_REDUCTION_PROXY,  // A request served by the data reduction proxy.
@@ -46,7 +46,8 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     int original_content_length,
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
-    base::Time now, PrefService* prefs);
+    base::Time now,
+    DataReductionProxyStatisticsPrefs* prefs);
 
 // Records daily data savings statistics to prefs and reports data savings UMA.
 void UpdateContentLengthPrefs(
@@ -54,7 +55,7 @@ void UpdateContentLengthPrefs(
     int original_content_length,
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
-    PrefService* prefs);
+    DataReductionProxyStatisticsPrefs* prefs);
 
 }  // namespace data_reduction_proxy
 

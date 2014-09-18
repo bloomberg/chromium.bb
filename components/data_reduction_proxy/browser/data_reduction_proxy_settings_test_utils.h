@@ -22,6 +22,8 @@ class TestingPrefServiceSimple;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyStatisticsPrefs;
+
 class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
  public:
   TestDataReductionProxyConfig();
@@ -164,6 +166,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
   base::Time last_update_time_;
   bool proxy_enabled_;
+  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
 };
 
 // Test implementations should be subclasses of an instantiation of this

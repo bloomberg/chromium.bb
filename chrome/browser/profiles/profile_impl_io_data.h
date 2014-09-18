@@ -27,7 +27,8 @@ namespace data_reduction_proxy {
 class DataReductionProxyParams;
 class DataReductionProxyUsageStats;
 class DataReductionProxyAuthRequestHandler;
-}
+class DataReductionProxyStatisticsPrefs;
+}  // namespace data_reduction_proxy
 #endif
 
 namespace domain_reliability {
@@ -77,7 +78,9 @@ class ProfileImplIOData : public ProfileIOData {
         scoped_ptr<DataReductionProxyChromeConfigurator>
             data_reduction_proxy_chrome_configurator,
         scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-            data_reduction_proxy_params);
+            data_reduction_proxy_params,
+        scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
+            data_reduction_proxy_statistics_prefs);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the
@@ -258,6 +261,8 @@ class ProfileImplIOData : public ProfileIOData {
       data_reduction_proxy_chrome_configurator_;
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
       data_reduction_proxy_auth_request_handler_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
+      data_reduction_proxy_statistics_prefs_;
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImplIOData);

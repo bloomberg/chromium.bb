@@ -413,7 +413,6 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
   settings_->InitDataReductionProxySettings(
       &pref_service_,
-      &pref_service_,
       request_context.get());
   settings_->SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxySettingsTestBase::

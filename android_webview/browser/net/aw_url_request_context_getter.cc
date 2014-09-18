@@ -239,6 +239,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           data_reduction_proxy_settings->params(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
+  // Compression statistics are not gathered for WebView, so
+  // DataReductionProxyStatisticsPrefs is not instantiated and passed to the
+  // network delegate.
   aw_network_delegate->set_data_reduction_proxy_params(
       data_reduction_proxy_settings->params());
   aw_network_delegate->set_data_reduction_proxy_auth_request_handler(

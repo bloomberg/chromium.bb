@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -102,6 +103,10 @@ ProfileImplIOData::Handle::Handle(Profile* profile)
 
 ProfileImplIOData::Handle::~Handle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  io_data_->data_reduction_proxy_statistics_prefs_->WritePrefs();
+#endif
+
   if (io_data_->predictor_ != NULL) {
     // io_data_->predictor_ might be NULL if Init() was never called
     // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
@@ -142,7 +147,9 @@ void ProfileImplIOData::Handle::Init(
     scoped_ptr<DataReductionProxyChromeConfigurator>
         data_reduction_proxy_chrome_configurator,
     scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-        data_reduction_proxy_params) {
+        data_reduction_proxy_params,
+    scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
+        data_reduction_proxy_statistics_prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!io_data_->lazy_params_);
   DCHECK(predictor);
@@ -182,6 +189,8 @@ void ProfileImplIOData::Handle::Init(
       data_reduction_proxy_chrome_configurator.Pass();
   io_data_->data_reduction_proxy_params_ =
       data_reduction_proxy_params.Pass();
+  io_data_->data_reduction_proxy_statistics_prefs_ =
+      data_reduction_proxy_statistics_prefs.Pass();
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 }
 
@@ -452,6 +461,8 @@ void ProfileImplIOData::InitializeInternal(
       data_reduction_proxy_usage_stats_.get());
   network_delegate()->set_data_reduction_proxy_auth_request_handler(
       data_reduction_proxy_auth_request_handler_.get());
+  network_delegate()->set_data_reduction_proxy_statistics_prefs(
+      data_reduction_proxy_statistics_prefs_.get());
   network_delegate()->set_on_resolve_proxy_handler(
       base::Bind(data_reduction_proxy::OnResolveProxyHandler));
   network_delegate()->set_proxy_config_getter(

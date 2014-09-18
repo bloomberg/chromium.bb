@@ -38,6 +38,8 @@
         'data_reduction_proxy/browser/data_reduction_proxy_protocol.h',
         'data_reduction_proxy/browser/data_reduction_proxy_settings.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_settings.h',
+        'data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h',
         'data_reduction_proxy/browser/data_reduction_proxy_tamper_detection.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_tamper_detection.h',
         'data_reduction_proxy/browser/data_reduction_proxy_usage_stats.cc',

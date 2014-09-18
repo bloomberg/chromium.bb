@@ -93,7 +93,6 @@ DataReductionProxySettings::DataReductionProxySettings(
       disabled_on_vpn_(false),
       unreachable_(false),
       prefs_(NULL),
-      local_state_prefs_(NULL),
       url_request_context_getter_(NULL),
       configurator_(NULL) {
   DCHECK(params);
@@ -123,14 +122,11 @@ void DataReductionProxySettings::InitPrefMembers() {
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
-    PrefService* local_state_prefs,
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
-  DCHECK(local_state_prefs);
   DCHECK(url_request_context_getter);
   prefs_ = prefs;
-  local_state_prefs_ = local_state_prefs;
   url_request_context_getter_ = url_request_context_getter;
   InitPrefMembers();
   RecordDataReductionInit();
@@ -148,13 +144,16 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
-    PrefService* local_state_prefs,
     net::URLRequestContextGetter* url_request_context_getter,
     DataReductionProxyConfigurator* configurator) {
   InitDataReductionProxySettings(prefs,
-                                 local_state_prefs,
                                  url_request_context_getter);
   SetProxyConfigurator(configurator);
+}
+
+void DataReductionProxySettings::SetDataReductionProxyStatisticsPrefs(
+    DataReductionProxyStatisticsPrefs* statistics_prefs) {
+  statistics_prefs_ = statistics_prefs;
 }
 
 void DataReductionProxySettings::SetOnDataReductionEnabledCallback(
@@ -208,9 +207,9 @@ void DataReductionProxySettings::SetDataReductionProxyAlternativeEnabled(
 
 int64 DataReductionProxySettings::GetDataReductionLastUpdateTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  PrefService* local_state = GetLocalStatePrefs();
+  DCHECK(statistics_prefs_);
   int64 last_update_internal =
-      local_state->GetInt64(prefs::kDailyHttpContentLengthLastUpdateDate);
+      statistics_prefs_->GetInt64(prefs::kDailyHttpContentLengthLastUpdateDate);
   base::Time last_update = base::Time::FromInternalValue(last_update_internal);
   return static_cast<int64>(last_update.ToJsTime());
 }
@@ -300,11 +299,6 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
   return prefs_;
 }
 
-PrefService* DataReductionProxySettings::GetLocalStatePrefs() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return local_state_prefs_;
-}
-
 void DataReductionProxySettings::AddDefaultProxyBypassRules() {
   // localhost
   DCHECK(configurator_);
@@ -367,11 +361,11 @@ void DataReductionProxySettings::OnProxyAlternativeEnabledPrefChange() {
 
 void DataReductionProxySettings::ResetDataReductionStatistics() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  PrefService* prefs = GetLocalStatePrefs();
-  if (!prefs)
-    return;
-  ListPrefUpdate original_update(prefs, prefs::kDailyHttpOriginalContentLength);
-  ListPrefUpdate received_update(prefs, prefs::kDailyHttpReceivedContentLength);
+  DCHECK(statistics_prefs_);
+  base::ListValue* original_update =
+      statistics_prefs_->GetList(prefs::kDailyHttpOriginalContentLength);
+  base::ListValue* received_update =
+      statistics_prefs_->GetList(prefs::kDailyHttpReceivedContentLength);
   original_update->Clear();
   received_update->Clear();
   for (size_t i = 0; i < kNumDaysInHistory; ++i) {
@@ -475,7 +469,8 @@ DataReductionProxySettings::ContentLengthList
 DataReductionProxySettings::GetDailyContentLengths(const char* pref_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DataReductionProxySettings::ContentLengthList content_lengths;
-  const base::ListValue* list_value = GetLocalStatePrefs()->GetList(pref_name);
+  DCHECK(statistics_prefs_);
+  const base::ListValue* list_value = statistics_prefs_->GetList(pref_name);
   if (list_value->GetSize() == kNumDaysInHistory) {
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
       content_lengths.push_back(GetInt64PrefValue(*list_value, i));
@@ -491,18 +486,12 @@ void DataReductionProxySettings::GetContentLengths(
     int64* last_update_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LE(days, kNumDaysInHistory);
-  PrefService* local_state = GetLocalStatePrefs();
-  if (!local_state) {
-    *original_content_length = 0L;
-    *received_content_length = 0L;
-    *last_update_time = 0L;
-    return;
-  }
+  DCHECK(statistics_prefs_);
 
   const base::ListValue* original_list =
-      local_state->GetList(prefs::kDailyHttpOriginalContentLength);
+      statistics_prefs_->GetList(prefs::kDailyHttpOriginalContentLength);
   const base::ListValue* received_list =
-      local_state->GetList(prefs::kDailyHttpReceivedContentLength);
+      statistics_prefs_->GetList(prefs::kDailyHttpReceivedContentLength);
 
   if (original_list->GetSize() != kNumDaysInHistory ||
       received_list->GetSize() != kNumDaysInHistory) {
@@ -523,7 +512,7 @@ void DataReductionProxySettings::GetContentLengths(
   *original_content_length = orig;
   *received_content_length = recv;
   *last_update_time =
-      local_state->GetInt64(prefs::kDailyHttpContentLengthLastUpdateDate);
+      statistics_prefs_->GetInt64(prefs::kDailyHttpContentLengthLastUpdateDate);
 }
 
 net::URLFetcher* DataReductionProxySettings::GetBaseURLFetcher(

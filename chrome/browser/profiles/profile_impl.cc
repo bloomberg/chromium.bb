@@ -119,6 +119,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -650,6 +651,8 @@ void ProfileImpl::DoFinalInit() {
   scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
       data_reduction_proxy_params;
   scoped_ptr<DataReductionProxyChromeConfigurator> chrome_configurator;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
+      data_reduction_proxy_statistics_prefs;
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this);
@@ -671,7 +674,25 @@ void ProfileImpl::DoFinalInit() {
   // settings after ownership is passed.
   DataReductionProxyChromeConfigurator*
       data_reduction_proxy_chrome_configurator = chrome_configurator.get();
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // On mobile we write data reduction proxy prefs directly to the pref service.
+  // On desktop we store data reduction proxy prefs in memory, writing to disk
+  // every 60 minutes and on termination. Shutdown hooks must be added for
+  // Android and iOS in order for non-zero delays to be supported.
+  // (http://crbug.com/408264)
+  base::TimeDelta commit_delay = base::TimeDelta();
+#else
+  base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
 #endif
+  data_reduction_proxy_statistics_prefs =
+      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(
+          new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
+              g_browser_process->local_state(),
+              base::MessageLoopProxy::current(),
+              commit_delay));
+  data_reduction_proxy_chrome_settings->SetDataReductionProxyStatisticsPrefs(
+      data_reduction_proxy_statistics_prefs.get());
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
@@ -683,7 +704,8 @@ void ProfileImpl::DoFinalInit() {
                 CreateDomainReliabilityMonitor(local_state),
                 data_reduction_proxy_unavailable,
                 chrome_configurator.Pass(),
-                data_reduction_proxy_params.Pass());
+                data_reduction_proxy_params.Pass(),
+                data_reduction_proxy_statistics_prefs.Pass());
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(

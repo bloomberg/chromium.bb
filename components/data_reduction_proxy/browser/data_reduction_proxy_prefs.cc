@@ -36,6 +36,8 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
       data_reduction_proxy::prefs::kDataReductionProxyWasEnabledBefore, false);
 }
 
+// Add any new data reduction proxy prefs to the |pref_map_| or the
+// |list_pref_map_| in Init() of DataReductionProxyStatisticsPrefs.
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(
       prefs::kHttpReceivedContentLength, 0);
