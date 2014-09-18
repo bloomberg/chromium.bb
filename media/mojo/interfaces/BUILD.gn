@@ -5,9 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: media/media.gyp:mojo_media_bindings
-mojom("media") {
+mojom("interfaces") {
   sources = [
     "media_types.mojom",
     "media_renderer.mojom",
+    "demuxer_stream.mojom",
   ]
 }

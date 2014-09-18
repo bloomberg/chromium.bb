@@ -50,6 +50,7 @@ group("root") {
     "//media",
     "//media/blink",
     "//media/cast",
+    "//media/mojo",
     "//mojo",
     "//net",
     "//pdf",

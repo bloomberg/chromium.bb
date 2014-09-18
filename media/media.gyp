@@ -1016,11 +1016,12 @@
     },
     {
       # GN version: //media/mojo/interfaces
-      'target_name': 'mojo_media_bindings',
+      'target_name': 'media_mojo_bindings',
       'type': 'static_library',
       'sources': [
         'mojo/interfaces/media_types.mojom',
         'mojo/interfaces/media_renderer.mojom',
+        'mojo/interfaces/demuxer_stream.mojom',
       ],
       'includes': [ 
         '../mojo/public/tools/bindings/mojom_bindings_generator.gypi'
@@ -1033,33 +1034,57 @@
       ],
     },
     {
-      'target_name': 'mojo_media_lib',
+      'target_name': 'media_mojo_lib',
       'type': 'static_library',
       'includes': [
         '../mojo/mojo_variables.gypi',
       ],
       'dependencies': [
         'media',
-        'mojo_media_bindings',
+        'media_mojo_bindings',
         '../base/base.gyp:base',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
-        'mojo_media_bindings',
+        'media_mojo_bindings',
       ],
       'sources': [
         'mojo/services/media_type_converters.cc',
         'mojo/services/media_type_converters.h',
+        'mojo/services/mojo_demuxer_stream_impl.cc',
+        'mojo/services/mojo_demuxer_stream_impl.h',
+        'mojo/services/mojo_renderer_impl.cc',
+        'mojo/services/mojo_renderer_impl.h',
       ],
     },
     {
-      'target_name': 'mojo_media_lib_unittests',
+      'target_name': 'media_mojo_renderer_app',
+      'type': 'loadable_module',
+      'includes': [
+        '../mojo/mojo_variables.gypi',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../mojo/mojo_base.gyp:mojo_application_chromium',
+        '<(mojo_system_for_loadable_module)',
+        'media_mojo_lib',
+        'shared_memory_support',
+      ],
+      'sources': [
+        'mojo/services/mojo_demuxer_stream_adapter.cc',
+        'mojo/services/mojo_demuxer_stream_adapter.h',
+        'mojo/services/mojo_renderer_service.cc',
+        'mojo/services/mojo_renderer_service.h',
+      ],
+    },
+    {
+      'target_name': 'media_mojo_lib_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         'media',
-        'mojo_media_bindings',
-        'mojo_media_lib',
+        'media_mojo_bindings',
+        'media_mojo_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
@@ -1069,7 +1094,39 @@
       'sources': [
         'mojo/services/media_type_converters_unittest.cc',
       ],
+    },
+    {
+      'target_name': 'media_mojo_renderer_apptest',
+      'type': 'loadable_module',
+      'includes': [
+        '../mojo/mojo_variables.gypi',
+      ],
+      'dependencies': [
+        'media',
+        'media_mojo_bindings',
+        'media_mojo_lib',
+        'media_mojo_renderer_app',
+        'media_test_support',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        '../mojo/mojo_base.gyp:mojo_application_chromium',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'mojo/services/renderer_unittest.cc',
+      ],
     }, 
+    {
+      'target_name': 'media_mojo',
+      'type': 'none',
+      'dependencies': [
+        'media_mojo_lib',
+        'media_mojo_lib_unittests',
+        'media_mojo_renderer_app',
+        'media_mojo_renderer_apptest',
+      ]
+    },
     {
       # GN version: //media:media_unittests
       'target_name': 'media_unittests',

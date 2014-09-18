@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: media/media.gyp:mojo_media_lib
+# Things needed by multiple targets, like renderer_impl and renderer_app.
+# GYP version: media/media.gyp:media_mojo_lib
 source_set("lib") {
   deps = [
     "//base",
     "//media",
-    "//media/mojo/interfaces"
+    "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
@@ -19,15 +20,104 @@ source_set("lib") {
   ]
 }
 
-test("mojo_media_lib_unittests") {
+# mojo media::Renderer proxy (to a renderer_app) implementation.
+source_set("renderer_impl_lib") {
+  deps = [
+    "//base",
+    "//media",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+    ":lib",
+  ]
+
+  sources = [
+    "mojo_demuxer_stream_impl.cc",
+    "mojo_demuxer_stream_impl.h",
+    "mojo_renderer_impl.cc",
+    "mojo_renderer_impl.h",
+  ]
+}
+
+# mojo media::Renderer application.
+# GYP version: media/media.gyp:media_mojo_renderer_app
+shared_library("renderer_app") {
+  output_name = "media_mojo_renderer_app"
+
+  deps = [
+    "//base",
+    "//media",
+    "//media:shared_memory_support",
+    "//media/mojo/interfaces",
+    "//mojo/common",
+    "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
+    ":lib",
+  ]
+
+  sources = [
+    "mojo_demuxer_stream_adapter.cc",
+    "mojo_demuxer_stream_adapter.h",
+    "mojo_renderer_service.cc",
+    "mojo_renderer_service.h",
+  ]
+}
+
+test("media_mojo_lib_unittests") {
   sources = [
     "media_type_converters_unittest.cc",
   ]
 
   deps = [
+    "//base",
     "//base/test:test_support",
+    "//media",
+    "//media/mojo/interfaces",
+    "//mojo/common/test:run_all_unittests",
     "//mojo/environment:chromium",
+    "//mojo/system",
     "//testing/gtest",
     ":lib"
+  ]
+}
+
+# GYP version: media/media.gyp:media_mojo_renderer_apptest
+# Not a 'test' because this is loaded via mojo_shell as an app.
+shared_library("renderer_apptest") {
+  testonly = true
+  output_name = "media_mojo_renderer_apptest"
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media",
+    "//media/mojo/interfaces",
+    "//mojo/common",
+    "//mojo/application",
+    "//testing/gtest",
+    ":renderer_impl_lib",
+    ":renderer_app",
+    ":lib",
+    "//mojo/public/c/system:for_shared_library",
+  ]
+
+  sources = [
+    "renderer_unittest.cc",
+  ]
+}
+
+group("services") {
+  deps = [
+    ":lib",
+    ":renderer_impl_lib",
+    ":renderer_app",
+  ]
+}
+
+group("tests") {
+  testonly = true
+  deps = [
+    ":media_mojo_lib_unittests",
+    ":renderer_apptest",
   ]
 }

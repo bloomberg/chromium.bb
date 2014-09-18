@@ -9,6 +9,7 @@
 #include "media/mojo/interfaces/media_types.mojom.h"
 
 namespace media {
+class AudioDecoderConfig;
 class DecoderBuffer;
 }
 
@@ -25,6 +26,15 @@ struct TypeConverter<scoped_refptr<media::DecoderBuffer>,
                      MediaDecoderBufferPtr> {
   static scoped_refptr<media::DecoderBuffer> Convert(
       const MediaDecoderBufferPtr& input);
+};
+
+template <>
+struct TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig> {
+  static AudioDecoderConfigPtr Convert(const media::AudioDecoderConfig& input);
+};
+template <>
+struct TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr> {
+  static media::AudioDecoderConfig Convert(const AudioDecoderConfigPtr& input);
 };
 
 }  // namespace mojo

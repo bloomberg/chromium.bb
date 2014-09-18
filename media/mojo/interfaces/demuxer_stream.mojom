@@ -1,0 +1,54 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "media/mojo/interfaces/media_types.mojom"
+
+module mojo {
+
+// DemuxerStream is modeled after media::DemuxerStream using mojo in order to
+// enable proxying between a media::Pipeline and media::Renderer living in two
+// different applications.
+[Client=DemuxerStreamClient]
+interface DemuxerStream {
+  // See media::DemuxerStream for descriptions.
+  enum Type {
+    UNKNOWN,
+    AUDIO,
+    LAST_TYPE = AUDIO
+  };
+
+  // See media::DemuxerStream for descriptions.
+  enum Status {
+    OK = 0,
+    ABORTED,
+    CONFIG_CHANGED,
+  };
+
+  // Request a MediaDecoderBuffer from this stream for decoding and rendering.
+  // When available, the callback will be invoked with a Status and |response|
+  // buffer.  See media::DemuxerStream::ReadCB for explanation of fields.
+  //
+  // TODO(tim): Remove this method in favor of initializing the
+  // DemuxerStreamClient with a DataPipeConsumerHandle once we have a framed
+  // DataPipe that we can serialize [|status| | response|]* over directly.
+  Read() => (Status status, MediaDecoderBuffer response);
+};
+
+interface DemuxerStreamClient {
+  // Informs the client that the stream is ready for reading.  If |pipe| is
+  // present, it means the client should read
+  //
+  //     [ |DemuxerStream::Status| |MediaDecoderBuffer| ]
+  //
+  // payloads from the DataPipe directly.  If |pipe| is NULL, it means the
+  // client needs to use DemuxerStream::Read() directly to obtain buffers.
+  OnStreamReady(handle<data_pipe_consumer>? pipe);
+
+  // A new AudioDecoderConfig is available. Will be sent by the DemuxerStream
+  // whenever a DemuxerStream::STATUS_CONFIG_CHANGED is observed (either
+  // in a Read() callback or over the DataPipe).
+  OnAudioDecoderConfigChanged(AudioDecoderConfig config);
+};
+
+}  // module mojo
