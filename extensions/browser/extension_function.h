@@ -553,7 +553,7 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
   // Deprecated: Override UIThreadExtensionFunction and implement Run() instead.
   //
   // AsyncExtensionFunctions implement this method. Return true to indicate that
-  // nothing has gone wrong yet; SendResponse must be called later. Return true
+  // nothing has gone wrong yet; SendResponse must be called later. Return false
   // to respond immediately with an error.
   virtual bool RunAsync() = 0;
 
