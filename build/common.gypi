@@ -3665,11 +3665,6 @@
                   '-Wl,--warn-shared-textrel',
                 ],
               }],
-              ['clang==1', {
-                # TODO(thakis): Remove once http://llvm.org/PR20354 is fixed
-                # and the fix is in chromium.
-                'cflags': [ '-fno-slp-vectorize', ],
-              }],
               ['profiling==1', {
                 'cflags': [
                   '-fno-omit-frame-pointer',
@@ -4803,12 +4798,6 @@
                 # cfe-dev discussion.
                 '-Wno-selector-type-mismatch',
               ],
-              'OTHER_CFLAGS': [
-                # TODO(thakis): Remove once http://llvm.org/PR20354 is fixed
-                # and the fix is in chromium.
-                '-fno-slp-vectorize',
-              ],
-
               'conditions': [
                 ['clang_xcode==0', {
                   'CC': '$(SOURCE_ROOT)/<(clang_dir)/clang',
