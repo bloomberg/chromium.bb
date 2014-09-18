@@ -92,6 +92,7 @@
     drawer,
     editable_text,
     embedded_object,
+    figcaption,
     figure,
     footer,
     form,

@@ -503,6 +503,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityEm) {
   RunTest(FILE_PATH_LITERAL("em.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFigcaption) {
+  RunTest(FILE_PATH_LITERAL("figcaption.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFooter) {
   RunTest(FILE_PATH_LITERAL("footer.html"));
 }

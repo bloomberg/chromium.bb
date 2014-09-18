@@ -1,0 +1,6 @@
+AXWebArea
+    AXGroup
+        AXGroup
+            AXImage
+        AXGroup
+            AXStaticText AXValue='Fig.1 - A green Box'
