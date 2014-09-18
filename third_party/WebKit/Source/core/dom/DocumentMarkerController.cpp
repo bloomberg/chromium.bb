@@ -102,36 +102,11 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
     }
 }
 
-void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerType type, const String& description)
-{
-    // Use a TextIterator to visit the potentially multiple nodes the range covers.
-    for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset(), description));
-    }
-}
-
-void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerType type)
-{
-    // Use a TextIterator to visit the potentially multiple nodes the range covers.
-    for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset()));
-    }
-
-}
-
-void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type, const String& description)
+void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type, const String& description, uint32_t hash)
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance()) {
-        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset(), description));
-    }
-}
-
-void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type)
-{
-    // Use a TextIterator to visit the potentially multiple nodes the range covers.
-    for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance()) {
-        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset()));
+        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset(), description, hash));
     }
 }
 

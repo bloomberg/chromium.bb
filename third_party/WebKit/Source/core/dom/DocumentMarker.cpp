@@ -105,23 +105,6 @@ DocumentMarker::DocumentMarker()
 {
 }
 
-DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset)
-    : m_type(type)
-    , m_startOffset(startOffset)
-    , m_endOffset(endOffset)
-    , m_hash(0)
-{
-}
-
-DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset, const String& description)
-    : m_type(type)
-    , m_startOffset(startOffset)
-    , m_endOffset(endOffset)
-    , m_details(description.isEmpty() ? nullptr : DocumentMarkerDescription::create(description))
-    , m_hash(0)
-{
-}
-
 DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash)
     : m_type(type)
     , m_startOffset(startOffset)
