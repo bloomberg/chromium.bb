@@ -1192,11 +1192,16 @@ test("net_unittests") {
     #               functionality is ported to OpenSSL.
     sources -= [
       "cert/nss_cert_database_unittest.cc",
-      "cert/nss_cert_database_chromeos_unittest.cc",
-      "cert/nss_profile_filter_chromeos_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
       "quic/test_tools/crypto_test_utils_nss.cc",
     ]
+    if (is_chromeos) {
+      # These were already removed in the non-ChromeOS case.
+      sources -= [
+        "cert/nss_cert_database_chromeos_unittest.cc",
+        "cert/nss_profile_filter_chromeos_unittest.cc",
+      ]
+    }
   } else {
     sources -= [
       "cert/x509_util_openssl_unittest.cc",
