@@ -48,7 +48,7 @@ function fadeInElement(el, opt_justShow) {
   el.setAttribute('aria-hidden', 'false');
   el.style.height = 'auto';
   var height = el.offsetHeight;
-  if (opt_justShow && false) {
+  if (opt_justShow) {
     el.style.height = '';
     el.style.opacity = '';
   } else {
