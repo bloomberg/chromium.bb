@@ -8,13 +8,54 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/output/context_provider.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_gpu_raster.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace cc {
+namespace {
+
+class RasterBufferImpl : public RasterBuffer {
+ public:
+  RasterBufferImpl(ResourceProvider* resource_provider,
+                   const Resource* resource)
+      : resource_provider_(resource_provider),
+        resource_(resource),
+        surface_(resource_provider->LockForWriteToSkSurface(resource->id())) {}
+  virtual ~RasterBufferImpl() {
+    resource_provider_->UnlockForWriteToSkSurface(resource_->id());
+  }
+
+  // Overridden from RasterBuffer:
+  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
+    skia::RefPtr<SkCanvas> canvas = surface_
+                                        ? skia::SharePtr(surface_->getCanvas())
+                                        : skia::AdoptRef(SkCreateNullCanvas());
+
+    // Balanced with restore() call in ReleaseSkCanvas. save()/restore() calls
+    // are needed to ensure that canvas returns to its previous state after use.
+    canvas->save();
+    return canvas;
+  }
+  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {
+    // Balanced with save() call in AcquireSkCanvas.
+    canvas->restore();
+  }
+
+ private:
+  ResourceProvider* resource_provider_;
+  const Resource* resource_;
+  SkSurface* surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+};
+
+}  // namespace
 
 // static
 scoped_ptr<RasterWorkerPool> GpuRasterWorkerPool::Create(
@@ -140,12 +181,19 @@ void GpuRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-RasterBuffer* GpuRasterWorkerPool::AcquireBufferForRaster(RasterTask* task) {
-  return resource_provider_->AcquireGpuRasterBuffer(task->resource()->id());
+scoped_ptr<RasterBuffer> GpuRasterWorkerPool::AcquireBufferForRaster(
+    const Resource* resource) {
+  // RasterBuffer implementation depends on a SkSurface having been acquired for
+  // the resource.
+  resource_provider_->AcquireSkSurface(resource->id());
+
+  return make_scoped_ptr<RasterBuffer>(
+      new RasterBufferImpl(resource_provider_, resource));
 }
 
-void GpuRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
-  resource_provider_->ReleaseGpuRasterBuffer(task->resource()->id());
+void GpuRasterWorkerPool::ReleaseBufferForRaster(
+    scoped_ptr<RasterBuffer> buffer) {
+  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
 void GpuRasterWorkerPool::OnRasterFinished(TaskSet task_set) {

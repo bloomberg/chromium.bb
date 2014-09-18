@@ -17,6 +17,7 @@
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/tile.h"
 #include "skia/ext/paint_simplifier.h"
@@ -58,8 +59,7 @@ class RasterTaskImpl : public RasterTask {
         source_frame_number_(source_frame_number),
         analyze_picture_(analyze_picture),
         rendering_stats_(rendering_stats),
-        reply_(reply),
-        raster_buffer_(NULL) {}
+        reply_(reply) {}
 
   // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
@@ -80,11 +80,10 @@ class RasterTaskImpl : public RasterTask {
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     DCHECK(!raster_buffer_);
-    raster_buffer_ = client->AcquireBufferForRaster(this);
+    raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    raster_buffer_ = NULL;
-    client->ReleaseBufferForRaster(this);
+    client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
     DCHECK(!raster_buffer_);
@@ -177,7 +176,7 @@ class RasterTaskImpl : public RasterTask {
   bool analyze_picture_;
   RenderingStatsInstrumentation* rendering_stats_;
   const base::Callback<void(const PicturePileImpl::Analysis&, bool)> reply_;
-  RasterBuffer* raster_buffer_;
+  scoped_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };

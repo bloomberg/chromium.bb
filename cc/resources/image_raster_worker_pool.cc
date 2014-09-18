@@ -10,9 +10,59 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/traced_value.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
+#include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace cc {
+namespace {
+
+class RasterBufferImpl : public RasterBuffer {
+ public:
+  RasterBufferImpl(ResourceProvider* resource_provider,
+                   const Resource* resource)
+      : resource_provider_(resource_provider),
+        resource_(resource),
+        stride_(0),
+        buffer_(resource_provider->MapImage(resource->id(), &stride_)) {}
+
+  virtual ~RasterBufferImpl() {
+    resource_provider_->UnmapImage(resource_->id());
+
+    // This RasterBuffer implementation provides direct access to the memory
+    // used by the GPU. Read lock fences are required to ensure that we're not
+    // trying to map a resource that is currently in-use by the GPU.
+    resource_provider_->EnableReadLockFences(resource_->id());
+  }
+
+  // Overridden from RasterBuffer:
+  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
+    if (!buffer_)
+      return skia::AdoptRef(SkCreateNullCanvas());
+
+    RasterWorkerPool::AcquireBitmapForBuffer(
+        &bitmap_, buffer_, resource_->format(), resource_->size(), stride_);
+    return skia::AdoptRef(new SkCanvas(bitmap_));
+  }
+  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {
+    if (!buffer_)
+      return;
+
+    RasterWorkerPool::ReleaseBitmapForBuffer(
+        &bitmap_, buffer_, resource_->format());
+  }
+
+ private:
+  ResourceProvider* resource_provider_;
+  const Resource* resource_;
+  int stride_;
+  uint8_t* buffer_;
+  SkBitmap bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+};
+
+}  // namespace
 
 // static
 scoped_ptr<RasterWorkerPool> ImageRasterWorkerPool::Create(
@@ -134,17 +184,19 @@ void ImageRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-RasterBuffer* ImageRasterWorkerPool::AcquireBufferForRaster(RasterTask* task) {
-  return resource_provider_->AcquireImageRasterBuffer(task->resource()->id());
+scoped_ptr<RasterBuffer> ImageRasterWorkerPool::AcquireBufferForRaster(
+    const Resource* resource) {
+  // RasterBuffer implementation depends on an image having been acquired for
+  // the resource.
+  resource_provider_->AcquireImage(resource->id());
+
+  return make_scoped_ptr<RasterBuffer>(
+      new RasterBufferImpl(resource_provider_, resource));
 }
 
-void ImageRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
-  resource_provider_->ReleaseImageRasterBuffer(task->resource()->id());
-
-  // Acquire/ReleaseImageRasterBuffer provides direct access to the memory used
-  // by the GPU. Read lock fences are required to ensure that we're not trying
-  // to map a resource that is currently in-use by the GPU.
-  resource_provider_->EnableReadLockFences(task->resource()->id());
+void ImageRasterWorkerPool::ReleaseBufferForRaster(
+    scoped_ptr<RasterBuffer> buffer) {
+  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
 void ImageRasterWorkerPool::OnRasterFinished(TaskSet task_set) {

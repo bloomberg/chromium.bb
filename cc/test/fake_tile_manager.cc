@@ -7,6 +7,7 @@
 #include <deque>
 
 #include "base/lazy_instance.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/rasterizer.h"
 
 namespace cc {
@@ -48,10 +49,12 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
   }
 
   // Overridden from RasterizerTaskClient:
-  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) OVERRIDE {
-    return NULL;
+  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource) OVERRIDE {
+    return scoped_ptr<RasterBuffer>();
   }
-  virtual void ReleaseBufferForRaster(RasterTask* task) OVERRIDE {}
+  virtual void ReleaseBufferForRaster(
+      scoped_ptr<RasterBuffer> buffer) OVERRIDE {}
 
  private:
   RasterTask::Vector completed_tasks_;

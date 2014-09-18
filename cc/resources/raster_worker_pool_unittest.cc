@@ -14,6 +14,7 @@
 #include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
@@ -50,14 +51,19 @@ class TestRasterTaskImpl : public RasterTask {
       : RasterTask(resource, dependencies), reply_(reply) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {}
+  virtual void RunOnWorkerThread() OVERRIDE {
+    skia::RefPtr<SkCanvas> canvas = raster_buffer_->AcquireSkCanvas();
+    DCHECK(canvas);
+    canvas->drawColor(SK_ColorWHITE);
+    raster_buffer_->ReleaseSkCanvas(canvas);
+  }
 
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    client->AcquireBufferForRaster(this);
+    raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    client->ReleaseBufferForRaster(this);
+    client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
     reply_.Run(PicturePileImpl::Analysis(), !HasFinishedRunning());
@@ -68,6 +74,7 @@ class TestRasterTaskImpl : public RasterTask {
 
  private:
   const Reply reply_;
+  scoped_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRasterTaskImpl);
 };
@@ -117,6 +124,9 @@ class RasterWorkerPoolTest
         timed_out_(false) {
     output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
+
+    TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
+    context3d->set_support_sync_query(true);
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),

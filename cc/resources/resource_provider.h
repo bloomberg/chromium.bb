@@ -20,7 +20,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
-#include "cc/resources/raster_buffer.h"
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/return_callback.h"
@@ -319,33 +318,33 @@ class CC_EXPORT ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(Fence);
   };
 
-  // Returns a RasterBuffer for gpu rasterization.
-  // Call Release before the resource can be read or used for compositing.
-  // It is used for direct gpu rasterization.
-  RasterBuffer* AcquireGpuRasterBuffer(ResourceId id);
-  void ReleaseGpuRasterBuffer(ResourceId id);
-
-  // Returns a RasterBuffer backed by an image buffer. ReleaseImageRasterBuffer
-  // returns true if RasterBuffer was written to while acquired.
-  // Rasterizing to the RasterBuffer writes the content into the image buffer,
-  // which is internally bound to the underlying resource when read.
-  // Call Release before the resource can be read or used for compositing.
-  // It is used by ImageRasterWorkerPool.
-  RasterBuffer* AcquireImageRasterBuffer(ResourceId id);
-  bool ReleaseImageRasterBuffer(ResourceId id);
-
-  // Returns a RasterBuffer backed by pixel buffer. ReleasePixelRasterBuffer
-  // returns true if RasterBuffer was written to while acquired.
-  // The pixel buffer needs to be uploaded to the underlying resource
-  // using BeginSetPixels before the resouce can be used for compositing.
-  // It is used by PixelRasterWorkerPool.
-  RasterBuffer* AcquirePixelRasterBuffer(ResourceId id);
-  bool ReleasePixelRasterBuffer(ResourceId id);
-
+  // Acquire pixel buffer for resource. The pixel buffer can be used to
+  // set resource pixels without performing unnecessary copying.
+  void AcquirePixelBuffer(ResourceId resource);
+  void ReleasePixelBuffer(ResourceId resource);
+  // Map/unmap the acquired pixel buffer.
+  uint8_t* MapPixelBuffer(ResourceId id, int* stride);
+  void UnmapPixelBuffer(ResourceId id);
   // Asynchronously update pixels from acquired pixel buffer.
   void BeginSetPixels(ResourceId id);
   void ForceSetPixelsToComplete(ResourceId id);
   bool DidSetPixelsComplete(ResourceId id);
+
+  // Acquire and release an image. The image allows direct
+  // manipulation of texture memory.
+  void AcquireImage(ResourceId id);
+  void ReleaseImage(ResourceId id);
+  // Maps the acquired image so that its pixels could be modified.
+  // Unmap is called when all pixels are set.
+  uint8_t* MapImage(ResourceId id, int* stride);
+  void UnmapImage(ResourceId id);
+
+  // Acquire and release a SkSurface.
+  void AcquireSkSurface(ResourceId id);
+  void ReleaseSkSurface(ResourceId id);
+  // Lock/unlock resource for writing to SkSurface.
+  SkSurface* LockForWriteToSkSurface(ResourceId id);
+  void UnlockForWriteToSkSurface(ResourceId id);
 
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
@@ -362,7 +361,7 @@ class CC_EXPORT ResourceProvider {
   void SetReadLockFence(Fence* fence) { current_read_lock_fence_ = fence; }
 
   // Enable read lock fences for a specific resource.
-  void EnableReadLockFences(ResourceProvider::ResourceId id);
+  void EnableReadLockFences(ResourceId id);
 
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
@@ -375,10 +374,6 @@ class CC_EXPORT ResourceProvider {
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
  private:
-  class GpuRasterBuffer;
-  class ImageRasterBuffer;
-  class PixelRasterBuffer;
-
   struct Resource {
     enum Origin { Internal, External, Delegated };
 
@@ -445,75 +440,9 @@ class CC_EXPORT ResourceProvider {
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
-    linked_ptr<GpuRasterBuffer> gpu_raster_buffer;
-    linked_ptr<ImageRasterBuffer> image_raster_buffer;
-    linked_ptr<PixelRasterBuffer> pixel_raster_buffer;
+    skia::RefPtr<SkSurface> sk_surface;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
-
-  class GpuRasterBuffer : public RasterBuffer {
-   public:
-    GpuRasterBuffer(const Resource* resource,
-                    ResourceProvider* resource_provider,
-                    bool use_distance_field_text);
-    virtual ~GpuRasterBuffer();
-
-    virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE;
-    virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE;
-
-   private:
-    const Resource* resource_;
-    ResourceProvider* resource_provider_;
-    skia::RefPtr<SkSurface> surface_;
-
-    DISALLOW_COPY_AND_ASSIGN(GpuRasterBuffer);
-  };
-
-  class ImageRasterBuffer : public RasterBuffer {
-   public:
-    ImageRasterBuffer(const Resource* resource,
-                      ResourceProvider* resource_provider);
-    virtual ~ImageRasterBuffer();
-
-    void MapBuffer();
-    bool UnmapBuffer();
-
-    virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE;
-    virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE;
-
-   private:
-    const Resource* resource_;
-    ResourceProvider* resource_provider_;
-    uint8_t* mapped_buffer_;
-    SkBitmap raster_bitmap_;
-    bool raster_bitmap_changed_;
-    int stride_;
-
-    DISALLOW_COPY_AND_ASSIGN(ImageRasterBuffer);
-  };
-
-  class PixelRasterBuffer : public RasterBuffer {
-   public:
-    PixelRasterBuffer(const Resource* resource,
-                      ResourceProvider* resource_provider);
-    virtual ~PixelRasterBuffer();
-
-    void MapBuffer();
-    bool UnmapBuffer();
-
-    virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE;
-    virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE;
-
-   private:
-    const Resource* resource_;
-    ResourceProvider* resource_provider_;
-    uint8_t* mapped_buffer_;
-    SkBitmap raster_bitmap_;
-    bool raster_bitmap_changed_;
-    int stride_;
-
-    DISALLOW_COPY_AND_ASSIGN(PixelRasterBuffer);
-  };
 
   static bool CompareResourceMapIteratorsByChildId(
       const std::pair<ReturnedResource, ResourceMap::iterator>& a,
@@ -569,32 +498,11 @@ class CC_EXPORT ResourceProvider {
   void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
 
-  // TODO(alokp): Move the implementation to PixelRasterBuffer.
-  // Acquire pixel buffer for resource. The pixel buffer can be used to
-  // set resource pixels without performing unnecessary copying.
-  void AcquirePixelBuffer(Resource* resource);
-  void ReleasePixelBuffer(Resource* resource);
-  // Map/unmap the acquired pixel buffer.
-  uint8_t* MapPixelBuffer(const Resource* resource, int* stride);
-  void UnmapPixelBuffer(const Resource* resource);
-
-  // TODO(alokp): Move the implementation to ImageRasterBuffer.
-  // Acquire and release an image. The image allows direct
-  // manipulation of texture memory.
-  void AcquireImage(Resource* resource);
-  void ReleaseImage(Resource* resource);
-  // Maps the acquired image so that its pixels could be modified.
-  // Unmap is called when all pixels are set.
-  uint8_t* MapImage(const Resource* resource, int* stride);
-  void UnmapImage(const Resource* resource);
-
   void BindImageForSampling(Resource* resource);
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.
-  GLenum BindForSampling(ResourceProvider::ResourceId resource_id,
-                         GLenum unit,
-                         GLenum filter);
+  GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
 
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;

@@ -4,6 +4,7 @@
 
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -68,10 +69,12 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
   }
 
   // Overridden from RasterizerTaskClient:
-  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) OVERRIDE {
-    return NULL;
+  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource) OVERRIDE {
+    return scoped_ptr<RasterBuffer>();
   }
-  virtual void ReleaseBufferForRaster(RasterTask* task) OVERRIDE {}
+  virtual void ReleaseBufferForRaster(
+      scoped_ptr<RasterBuffer> buffer) OVERRIDE {}
 
  private:
   RasterTask::Vector completed_tasks_;

@@ -40,8 +40,9 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
   virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from RasterizerTaskClient:
-  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) OVERRIDE;
-  virtual void ReleaseBufferForRaster(RasterTask* task) OVERRIDE;
+  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource) OVERRIDE;
+  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) OVERRIDE;
 
  protected:
   ImageRasterWorkerPool(base::SequencedTaskRunner* task_runner,

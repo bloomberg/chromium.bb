@@ -20,8 +20,9 @@ class RasterBuffer;
 
 class CC_EXPORT RasterizerTaskClient {
  public:
-  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) = 0;
-  virtual void ReleaseBufferForRaster(RasterTask* task) = 0;
+  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource) = 0;
+  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) = 0;
 
  protected:
   virtual ~RasterizerTaskClient() {}

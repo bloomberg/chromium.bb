@@ -5,8 +5,6 @@
 #ifndef CC_RESOURCES_IMAGE_COPY_RASTER_WORKER_POOL_H_
 #define CC_RESOURCES_IMAGE_COPY_RASTER_WORKER_POOL_H_
 
-#include <vector>
-
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "cc/output/context_provider.h"
@@ -48,8 +46,9 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from RasterizerTaskClient:
-  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) OVERRIDE;
-  virtual void ReleaseBufferForRaster(RasterTask* task) OVERRIDE;
+  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource) OVERRIDE;
+  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) OVERRIDE;
 
  protected:
   ImageCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,
@@ -59,30 +58,7 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
                             ResourcePool* resource_pool);
 
  private:
-  struct RasterTaskState {
-    class TaskComparator {
-     public:
-      explicit TaskComparator(const RasterTask* task) : task_(task) {}
-
-      bool operator()(const RasterTaskState& state) const {
-        return state.task == task_;
-      }
-
-     private:
-      const RasterTask* task_;
-    };
-
-    typedef std::vector<RasterTaskState> Vector;
-
-    RasterTaskState(const RasterTask* task, ScopedResource* resource)
-        : task(task), resource(resource) {}
-
-    const RasterTask* task;
-    ScopedResource* resource;
-  };
-
   void OnRasterFinished(TaskSet task_set);
-  void FlushCopies();
   scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
   void StagingStateAsValueInto(base::debug::TracedValue* staging_state) const;
 
@@ -93,13 +69,7 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
-
-  RasterTaskState::Vector raster_task_states_;
-
-  bool has_performed_copy_since_last_flush_;
-
   TaskSetCollection raster_pending_;
-
   scoped_refptr<RasterizerTask> raster_finished_tasks_[kNumberOfTaskSets];
 
   // Task graph used when scheduling tasks and vector used to gather

@@ -10,11 +10,78 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/traced_value.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace cc {
+namespace {
+
+class RasterBufferImpl : public RasterBuffer {
+ public:
+  RasterBufferImpl(ResourceProvider* resource_provider,
+                   ResourcePool* resource_pool,
+                   const Resource* resource)
+      : resource_provider_(resource_provider),
+        resource_pool_(resource_pool),
+        resource_(resource),
+        raster_resource_(resource_pool->AcquireResource(resource->size())),
+        buffer_(NULL),
+        stride_(0) {
+    // Acquire and map image for raster resource.
+    resource_provider_->AcquireImage(raster_resource_->id());
+    buffer_ = resource_provider_->MapImage(raster_resource_->id(), &stride_);
+  }
+
+  virtual ~RasterBufferImpl() {
+    // First unmap image for raster resource.
+    resource_provider_->UnmapImage(raster_resource_->id());
+
+    // Copy contents of raster resource to |resource_|.
+    resource_provider_->CopyResource(raster_resource_->id(), resource_->id());
+
+    // This RasterBuffer implementation provides direct access to the memory
+    // used by the GPU. Read lock fences are required to ensure that we're not
+    // trying to map a resource that is currently in-use by the GPU.
+    resource_provider_->EnableReadLockFences(raster_resource_->id());
+
+    // Return raster resource to pool so it can be used by another RasterBuffer
+    // instance.
+    resource_pool_->ReleaseResource(raster_resource_.Pass());
+  }
+
+  // Overridden from RasterBuffer:
+  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
+    if (!buffer_)
+      return skia::AdoptRef(SkCreateNullCanvas());
+
+    RasterWorkerPool::AcquireBitmapForBuffer(
+        &bitmap_, buffer_, resource_->format(), resource_->size(), stride_);
+    return skia::AdoptRef(new SkCanvas(bitmap_));
+  }
+  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {
+    if (!buffer_)
+      return;
+
+    RasterWorkerPool::ReleaseBitmapForBuffer(
+        &bitmap_, buffer_, resource_->format());
+  }
+
+ private:
+  ResourceProvider* resource_provider_;
+  ResourcePool* resource_pool_;
+  const Resource* resource_;
+  scoped_ptr<ScopedResource> raster_resource_;
+  uint8_t* buffer_;
+  int stride_;
+  SkBitmap bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+};
+
+}  // namespace
 
 // static
 scoped_ptr<RasterWorkerPool> ImageCopyRasterWorkerPool::Create(
@@ -43,13 +110,11 @@ ImageCopyRasterWorkerPool::ImageCopyRasterWorkerPool(
       context_provider_(context_provider),
       resource_provider_(resource_provider),
       resource_pool_(resource_pool),
-      has_performed_copy_since_last_flush_(false),
       raster_finished_weak_ptr_factory_(this) {
   DCHECK(context_provider_);
 }
 
 ImageCopyRasterWorkerPool::~ImageCopyRasterWorkerPool() {
-  DCHECK_EQ(0u, raster_task_states_.size());
 }
 
 Rasterizer* ImageCopyRasterWorkerPool::AsRasterizer() { return this; }
@@ -154,46 +219,19 @@ void ImageCopyRasterWorkerPool::CheckForCompletedTasks() {
   }
   completed_tasks_.clear();
 
-  FlushCopies();
+  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
 }
 
-RasterBuffer* ImageCopyRasterWorkerPool::AcquireBufferForRaster(
-    RasterTask* task) {
-  DCHECK_EQ(task->resource()->format(), resource_pool_->resource_format());
-  scoped_ptr<ScopedResource> resource(
-      resource_pool_->AcquireResource(task->resource()->size()));
-  RasterBuffer* raster_buffer =
-      resource_provider_->AcquireImageRasterBuffer(resource->id());
-  DCHECK(std::find_if(raster_task_states_.begin(),
-                      raster_task_states_.end(),
-                      RasterTaskState::TaskComparator(task)) ==
-         raster_task_states_.end());
-  raster_task_states_.push_back(RasterTaskState(task, resource.release()));
-  return raster_buffer;
+scoped_ptr<RasterBuffer> ImageCopyRasterWorkerPool::AcquireBufferForRaster(
+    const Resource* resource) {
+  DCHECK_EQ(resource->format(), resource_pool_->resource_format());
+  return make_scoped_ptr<RasterBuffer>(
+      new RasterBufferImpl(resource_provider_, resource_pool_, resource));
 }
 
-void ImageCopyRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
-  RasterTaskState::Vector::iterator it =
-      std::find_if(raster_task_states_.begin(),
-                   raster_task_states_.end(),
-                   RasterTaskState::TaskComparator(task));
-  DCHECK(it != raster_task_states_.end());
-  scoped_ptr<ScopedResource> resource(it->resource);
-  std::swap(*it, raster_task_states_.back());
-  raster_task_states_.pop_back();
-
-  bool content_has_changed =
-      resource_provider_->ReleaseImageRasterBuffer(resource->id());
-
-  // |content_has_changed| can be false as result of task being canceled or
-  // task implementation deciding not to modify bitmap (ie. analysis of raster
-  // commands detected content as a solid color).
-  if (content_has_changed) {
-    resource_provider_->CopyResource(resource->id(), task->resource()->id());
-    has_performed_copy_since_last_flush_ = true;
-  }
-
-  resource_pool_->ReleaseResource(resource.Pass());
+void ImageCopyRasterWorkerPool::ReleaseBufferForRaster(
+    scoped_ptr<RasterBuffer> buffer) {
+  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
 void ImageCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
@@ -211,14 +249,6 @@ void ImageCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
     TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
   }
   client_->DidFinishRunningTasks(task_set);
-}
-
-void ImageCopyRasterWorkerPool::FlushCopies() {
-  if (!has_performed_copy_since_last_flush_)
-    return;
-
-  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
-  has_performed_copy_since_last_flush_ = false;
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>

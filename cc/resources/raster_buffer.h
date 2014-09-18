@@ -5,19 +5,20 @@
 #ifndef CC_RESOURCES_RASTER_BUFFER_H_
 #define CC_RESOURCES_RASTER_BUFFER_H_
 
+#include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
 
 class SkCanvas;
 
 namespace cc {
 
-class RasterBuffer {
+class CC_EXPORT RasterBuffer {
  public:
+  RasterBuffer();
+  virtual ~RasterBuffer();
+
   virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() = 0;
   virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) = 0;
-
- protected:
-  virtual ~RasterBuffer() {}
 };
 
 }  // namespace cc

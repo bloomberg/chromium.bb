@@ -197,4 +197,51 @@ void RasterWorkerPool::InsertNodesForRasterTask(
   InsertNodeForTask(graph, raster_task, priority, dependencies);
 }
 
+// static
+void RasterWorkerPool::AcquireBitmapForBuffer(SkBitmap* bitmap,
+                                              uint8_t* buffer,
+                                              ResourceFormat buffer_format,
+                                              const gfx::Size& size,
+                                              int stride) {
+  switch (buffer_format) {
+    case RGBA_4444:
+      bitmap->allocN32Pixels(size.width(), size.height());
+      break;
+    case RGBA_8888:
+    case BGRA_8888: {
+      SkImageInfo info =
+          SkImageInfo::MakeN32Premul(size.width(), size.height());
+      if (!stride)
+        stride = info.minRowBytes();
+      bitmap->installPixels(info, buffer, stride);
+      break;
+    }
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+      NOTREACHED();
+      break;
+  }
+}
+
+// static
+void RasterWorkerPool::ReleaseBitmapForBuffer(SkBitmap* bitmap,
+                                              uint8_t* buffer,
+                                              ResourceFormat buffer_format) {
+  SkColorType buffer_color_type = ResourceFormatToSkColorType(buffer_format);
+  if (buffer_color_type != bitmap->colorType()) {
+    SkImageInfo dst_info = bitmap->info();
+    dst_info.fColorType = buffer_color_type;
+    // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
+    // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
+    // is fixed.
+    const size_t dst_row_bytes = SkAlign4(dst_info.minRowBytes());
+    DCHECK_EQ(0u, dst_row_bytes % 4);
+    bool success = bitmap->readPixels(dst_info, buffer, dst_row_bytes, 0, 0);
+    DCHECK_EQ(true, success);
+  }
+  bitmap->reset();
+}
+
 }  // namespace cc

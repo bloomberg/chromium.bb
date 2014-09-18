@@ -633,8 +633,10 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
 
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  child_resource_provider_->AcquireImageRasterBuffer(id3);
-  child_resource_provider_->ReleaseImageRasterBuffer(id3);
+  child_resource_provider_->AcquireImage(id3);
+  int stride;
+  child_resource_provider_->MapImage(id3, &stride);
+  child_resource_provider_->UnmapImage(id3);
 
   GLuint external_texture_id = child_context_->createExternalTexture();
   child_context_->bindTexture(GL_TEXTURE_EXTERNAL_OES, external_texture_id);
@@ -980,15 +982,12 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
 
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
+  child_resource_provider_->AcquireImage(id3);
   uint8_t data3[4] = { 6, 7, 8, 9 };
-  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  RasterBuffer* raster_buffer =
-      child_resource_provider_->AcquireImageRasterBuffer(id3);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  canvas->writePixels(info, data3, info.minRowBytes(), 0, 0);
-  raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
-  child_resource_provider_->ReleaseImageRasterBuffer(id3);
+  int stride;
+  void* data = child_resource_provider_->MapImage(id3, &stride);
+  memcpy(data, data3, sizeof(data3));
+  child_resource_provider_->UnmapImage(id3);
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   shared_memory->CreateAndMapAnonymous(1);
@@ -3051,10 +3050,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   // Same for async version.
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  RasterBuffer* raster_buffer = resource_provider->AcquirePixelRasterBuffer(id);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
+  resource_provider->AcquirePixelBuffer(id);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3063,7 +3059,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   resource_provider->BeginSetPixels(id);
   ASSERT_TRUE(resource_provider->DidSetPixelsComplete(id));
 
-  resource_provider->ReleasePixelRasterBuffer(id);
+  resource_provider->ReleasePixelBuffer(id);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
@@ -3216,10 +3212,7 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  RasterBuffer* raster_buffer = resource_provider->AcquirePixelRasterBuffer(id);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
+  resource_provider->AcquirePixelBuffer(id);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3229,7 +3222,7 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
 
   EXPECT_TRUE(resource_provider->DidSetPixelsComplete(id));
 
-  resource_provider->ReleasePixelRasterBuffer(id);
+  resource_provider->ReleasePixelBuffer(id);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
@@ -3266,10 +3259,7 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  RasterBuffer* raster_buffer = resource_provider->AcquirePixelRasterBuffer(id);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
+  resource_provider->AcquirePixelBuffer(id);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3282,7 +3272,7 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
   resource_provider->ForceSetPixelsToComplete(id);
 
-  resource_provider->ReleasePixelRasterBuffer(id);
+  resource_provider->ReleasePixelBuffer(id);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
@@ -3321,11 +3311,11 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
   context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                                GL_INNOCENT_CONTEXT_RESET_ARB);
 
-  RasterBuffer* raster_buffer = resource_provider->AcquirePixelRasterBuffer(id);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  EXPECT_TRUE(canvas);
-  raster_buffer->ReleaseSkCanvas(canvas);
-  resource_provider->ReleasePixelRasterBuffer(id);
+  resource_provider->AcquirePixelBuffer(id);
+  int stride;
+  void* buffer = resource_provider->MapPixelBuffer(id, &stride);
+  EXPECT_FALSE(buffer);
+  resource_provider->UnmapPixelBuffer(id);
   Mock::VerifyAndClearExpectations(context);
 }
 
@@ -3369,6 +3359,8 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
       createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
+  resource_provider->AcquireImage(id);
+
   EXPECT_CALL(*context, getImageParameterivCHROMIUM(kImageId,
                                                     GL_IMAGE_ROWBYTES_CHROMIUM,
                                                     _))
@@ -3377,8 +3369,13 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
-  resource_provider->AcquireImageRasterBuffer(id);
-  resource_provider->ReleaseImageRasterBuffer(id);
+  int stride;
+  resource_provider->MapImage(id, &stride);
+
+  EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->UnmapImage(id);
 
   EXPECT_CALL(*context, NextTextureId())
       .WillOnce(Return(kTextureId))
@@ -3403,8 +3400,12 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
-  resource_provider->AcquireImageRasterBuffer(id);
-  resource_provider->ReleaseImageRasterBuffer(id);
+  resource_provider->MapImage(id, &stride);
+
+  EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->UnmapImage(id);
 
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
       .RetiresOnSaturation();
@@ -3453,17 +3454,13 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
+  resource_provider->AcquireImage(id);
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size.width(), size.height());
-  *(bitmap.getAddr32(0, 0)) = kBadBeef;
-  RasterBuffer* raster_buffer = resource_provider->AcquireImageRasterBuffer(id);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  ASSERT_TRUE(!!canvas);
-  canvas->writePixels(bitmap, 0, 0);
-  raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
-  resource_provider->ReleaseImageRasterBuffer(id);
+  int stride;
+  void* data = resource_provider->MapImage(id, &stride);
+  ASSERT_TRUE(!!data);
+  memcpy(data, &kBadBeef, sizeof(kBadBeef));
+  resource_provider->UnmapImage(id);
 
   {
     ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(), id);
@@ -3473,6 +3470,7 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
     EXPECT_EQ(*sk_bitmap->getAddr32(0, 0), kBadBeef);
   }
 
+  resource_provider->ReleaseImage(id);
   resource_provider->DeleteResource(id);
 }
 
@@ -3526,8 +3524,13 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
-  resource_provider->AcquireImageRasterBuffer(source_id);
-  resource_provider->ReleaseImageRasterBuffer(source_id);
+  resource_provider->AcquireImage(source_id);
+  int stride;
+  resource_provider->MapImage(source_id, &stride);
+  EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->UnmapImage(source_id);
   Mock::VerifyAndClearExpectations(context);
 
   dest_id = resource_provider->CreateResource(
@@ -3589,18 +3592,13 @@ TEST_P(ResourceProviderTest, CopyResource_Bitmap) {
 
   source_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
+  resource_provider->AcquireImage(source_id);
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size.width(), size.height());
-  *(bitmap.getAddr32(0, 0)) = kBadBeef;
-  RasterBuffer* raster_buffer =
-      resource_provider->AcquireImageRasterBuffer(source_id);
-  skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  ASSERT_TRUE(!!canvas);
-  canvas->writePixels(bitmap, 0, 0);
-  raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
-  resource_provider->ReleaseImageRasterBuffer(source_id);
+  int stride;
+  void* data = resource_provider->MapImage(source_id, &stride);
+  ASSERT_TRUE(!!data);
+  memcpy(data, &kBadBeef, sizeof(kBadBeef));
+  resource_provider->UnmapImage(source_id);
 
   dest_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);

@@ -11,11 +11,56 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/traced_value.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace cc {
 namespace {
+
+class RasterBufferImpl : public RasterBuffer {
+ public:
+  RasterBufferImpl(ResourceProvider* resource_provider,
+                   const Resource* resource)
+      : resource_provider_(resource_provider),
+        resource_(resource),
+        buffer_(NULL),
+        stride_(0) {
+    resource_provider_->AcquirePixelBuffer(resource_->id());
+    buffer_ = resource_provider_->MapPixelBuffer(resource_->id(), &stride_);
+  }
+
+  virtual ~RasterBufferImpl() {
+    resource_provider_->ReleasePixelBuffer(resource_->id());
+  }
+
+  // Overridden from RasterBuffer:
+  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
+    if (!buffer_)
+      return skia::AdoptRef(SkCreateNullCanvas());
+
+    RasterWorkerPool::AcquireBitmapForBuffer(
+        &bitmap_, buffer_, resource_->format(), resource_->size(), stride_);
+    return skia::AdoptRef(new SkCanvas(bitmap_));
+  }
+  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {
+    if (!buffer_)
+      return;
+
+    RasterWorkerPool::ReleaseBitmapForBuffer(
+        &bitmap_, buffer_, resource_->format());
+  }
+
+ private:
+  ResourceProvider* resource_provider_;
+  const Resource* resource_;
+  uint8_t* buffer_;
+  int stride_;
+  SkBitmap bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+};
 
 const int kCheckForCompletedRasterTasksDelayMs = 6;
 
@@ -278,21 +323,15 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
   completed_raster_tasks_.clear();
 }
 
-RasterBuffer* PixelBufferRasterWorkerPool::AcquireBufferForRaster(
-    RasterTask* task) {
-  DCHECK(std::find_if(raster_task_states_.begin(),
-                      raster_task_states_.end(),
-                      RasterTaskState::TaskComparator(task)) !=
-         raster_task_states_.end());
-  return resource_provider_->AcquirePixelRasterBuffer(task->resource()->id());
+scoped_ptr<RasterBuffer> PixelBufferRasterWorkerPool::AcquireBufferForRaster(
+    const Resource* resource) {
+  return make_scoped_ptr<RasterBuffer>(
+      new RasterBufferImpl(resource_provider_, resource));
 }
 
-void PixelBufferRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
-  DCHECK(std::find_if(raster_task_states_.begin(),
-                      raster_task_states_.end(),
-                      RasterTaskState::TaskComparator(task)) !=
-         raster_task_states_.end());
-  resource_provider_->ReleasePixelRasterBuffer(task->resource()->id());
+void PixelBufferRasterWorkerPool::ReleaseBufferForRaster(
+    scoped_ptr<RasterBuffer> buffer) {
+  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
 void PixelBufferRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
@@ -651,6 +690,8 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterizerTasks() {
 
     RasterTaskState& state = *state_it;
     DCHECK_EQ(RasterTaskState::SCHEDULED, state.type);
+
+    resource_provider_->UnmapPixelBuffer(raster_task->resource()->id());
 
     if (!raster_task->HasFinishedRunning()) {
       // When priorites change, a raster task can be canceled as a result of

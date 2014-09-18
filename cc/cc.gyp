@@ -394,6 +394,7 @@
         'resources/priority_calculator.h',
         'resources/rasterizer.cc',
         'resources/rasterizer.h',
+        'resources/raster_buffer.cc',
         'resources/raster_buffer.h',
         'resources/raster_mode.cc',
         'resources/raster_mode.h',
