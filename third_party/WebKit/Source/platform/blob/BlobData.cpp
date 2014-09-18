@@ -114,7 +114,7 @@ void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNativ
     m_items.append(BlobDataItem(data.release()));
 }
 
-void BlobData::appendBytes(const void* bytes, long long length)
+void BlobData::appendBytes(const void* bytes, size_t length)
 {
     RefPtr<RawData> data = RawData::create();
     Vector<char>* buffer = data->mutableData();

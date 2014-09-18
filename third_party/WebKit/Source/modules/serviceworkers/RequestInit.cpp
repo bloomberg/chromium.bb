@@ -55,9 +55,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
             const FormDataElement& element = httpBody->elements()[i];
             switch (element.m_type) {
             case FormDataElement::data: {
-                RefPtr<RawData> rawData = RawData::create();
-                rawData->mutableData()->append(element.m_data.data(), element.m_data.size());
-                blobData->appendData(rawData, 0, BlobDataItem::toEndOfFile);
+                blobData->appendBytes(element.m_data.data(), element.m_data.size());
                 break;
             }
             case FormDataElement::encodedFile:

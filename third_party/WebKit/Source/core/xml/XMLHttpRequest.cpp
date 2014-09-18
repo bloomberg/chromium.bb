@@ -290,10 +290,8 @@ Blob* XMLHttpRequest::responseBlob()
         } else {
             size_t size = 0;
             if (m_binaryResponseBuilder.get() && m_binaryResponseBuilder->size()) {
-                RefPtr<RawData> rawData = RawData::create();
                 size = m_binaryResponseBuilder->size();
-                rawData->mutableData()->append(m_binaryResponseBuilder->data(), size);
-                blobData->appendData(rawData, 0, BlobDataItem::toEndOfFile);
+                blobData->appendBytes(m_binaryResponseBuilder->data(), size);
                 blobData->setContentType(finalResponseMIMETypeWithFallback());
                 m_binaryResponseBuilder.clear();
             }

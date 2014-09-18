@@ -127,10 +127,8 @@ PassRefPtrWillBeRawPtr<Blob> DataObjectItem::getAsFile() const
         // into the renderer when it's actually read, not when the blob is
         // initially constructed).
         RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer> >(blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::BufferStandard));
-        RefPtr<RawData> rawData = RawData::create();
-        rawData->mutableData()->append(data->data(), data->size());
         OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendData(rawData, 0, -1);
+        blobData->appendBytes(data->data(), data->size());
         blobData->setContentType(mimeTypeImagePng);
         return Blob::create(BlobDataHandle::create(blobData.release(), data->size()));
     }
@@ -176,4 +174,3 @@ void DataObjectItem::trace(Visitor* visitor)
 }
 
 } // namespace blink
-

@@ -172,6 +172,7 @@ public:
     const BlobDataItemList& items() const { return m_items; }
     void swapItems(BlobDataItemList&);
 
+    void appendBytes(const void*, size_t length);
     void appendData(PassRefPtr<RawData>, long long offset, long long length);
     void appendFile(const String& path);
     void appendFile(const String& path, long long offset, long long length, double expectedModificationTime);
@@ -186,9 +187,6 @@ public:
     long long length() const;
 
 private:
-    // Used by appendArrayBuffer and appendArrayBufferView.
-    void appendBytes(const void*, long long length);
-
     BlobData() { }
 
     // Make this private so that the otherwise-generated implicit assignment
