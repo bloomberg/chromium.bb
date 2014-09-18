@@ -112,11 +112,11 @@ class VolumeMountWatcherWin {
   // thread.
   MountPointDeviceMetadataMap device_metadata_;
 
-  base::WeakPtrFactory<VolumeMountWatcherWin> weak_factory_;
-
   // The notifications object to use to signal newly attached volumes. Only
   // removable devices will be notified.
   StorageMonitor::Receiver* notifications_;
+
+  base::WeakPtrFactory<VolumeMountWatcherWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeMountWatcherWin);
 };

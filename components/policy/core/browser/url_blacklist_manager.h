@@ -196,9 +196,6 @@ class POLICY_EXPORT URLBlacklistManager {
   // UI thread
   // ---------
 
-  // Used to post update tasks to the UI thread.
-  base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_;
-
   // Used to track the policies and update the blacklist on changes.
   PrefChangeRegistrar pref_change_registrar_;
   PrefService* pref_service_;  // Weak.
@@ -219,14 +216,17 @@ class POLICY_EXPORT URLBlacklistManager {
   // IO thread
   // ---------
 
-  // Used to get |weak_ptr_| to self on the IO thread.
-  base::WeakPtrFactory<URLBlacklistManager> io_weak_ptr_factory_;
-
   // Used to post tasks to the UI thread.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // The current blacklist.
   scoped_ptr<URLBlacklist> blacklist_;
+
+  // Used to post update tasks to the UI thread.
+  base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_;
+
+  // Used to get |weak_ptr_| to self on the IO thread.
+  base::WeakPtrFactory<URLBlacklistManager> io_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLBlacklistManager);
 };

@@ -60,13 +60,13 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
   // on the background thread but is owned by |this|.
   AsyncPolicyLoader* loader_;
 
-  // Used to get a WeakPtr to |this| for the update callback given to the
-  // loader.
-  base::WeakPtrFactory<AsyncPolicyProvider> weak_factory_;
-
   // Callback used to synchronize RefreshPolicies() calls with the background
   // thread. See the implementation for the details.
   base::CancelableClosure refresh_callback_;
+
+  // Used to get a WeakPtr to |this| for the update callback given to the
+  // loader.
+  base::WeakPtrFactory<AsyncPolicyProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPolicyProvider);
 };

@@ -330,8 +330,8 @@ const char* kWorkerPoolNamePrefix = "DeviceInfoPool";
 VolumeMountWatcherWin::VolumeMountWatcherWin()
     : device_info_worker_pool_(new base::SequencedWorkerPool(
           kWorkerPoolNumThreads, kWorkerPoolNamePrefix)),
-      weak_factory_(this),
-      notifications_(NULL) {
+      notifications_(NULL),
+      weak_factory_(this) {
   task_runner_ =
       device_info_worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
           device_info_worker_pool_->GetSequenceToken(),

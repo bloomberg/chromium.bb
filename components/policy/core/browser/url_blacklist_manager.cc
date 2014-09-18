@@ -401,15 +401,15 @@ URLBlacklistManager::URLBlacklistManager(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     URLBlacklist::SegmentURLCallback segment_url,
     OverrideBlacklistCallback override_blacklist)
-    : ui_weak_ptr_factory_(this),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       background_task_runner_(background_task_runner),
       io_task_runner_(io_task_runner),
       segment_url_(segment_url),
       override_blacklist_(override_blacklist),
-      io_weak_ptr_factory_(this),
       ui_task_runner_(base::MessageLoopProxy::current()),
-      blacklist_(new URLBlacklist(segment_url)) {
+      blacklist_(new URLBlacklist(segment_url)),
+      ui_weak_ptr_factory_(this),
+      io_weak_ptr_factory_(this) {
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
                                       base::Unretained(this));
