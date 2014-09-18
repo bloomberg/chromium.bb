@@ -63,9 +63,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // BrowserPlugin accordingly.
   void ParseAllowTransparencyAttribute();
 
-  // Get the guest's DOMWindow proxy.
-  NPObject* GetContentWindow() const;
-
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
 
@@ -199,8 +196,6 @@ class CONTENT_EXPORT BrowserPlugin :
                                     int request_id,
                                     gfx::Rect source_rect,
                                     gfx::Size dest_size);
-  void OnGuestContentWindowReady(int instance_id,
-                                 int content_window_routing_id);
   void OnGuestGone(int instance_id);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);

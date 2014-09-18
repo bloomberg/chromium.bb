@@ -516,6 +516,12 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_CreateMimeHandlerViewGuestACK,
                      int /* element_instance_id */)
 
+// Once a RenderView proxy has been created for the guest in the embedder render
+// process, this IPC informs the embedder of the proxy's routing ID.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_GuestAttached,
+                    int /* element_instance_id */,
+                    int /* source_routing_id */)
+
 // Messages sent from the renderer to the browser.
 
 // A renderer sends this message when an extension process starts an API

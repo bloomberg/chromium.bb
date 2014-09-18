@@ -8,24 +8,11 @@ namespace content {
 
 namespace browser_plugin {
 
-// Internal method bindings.
-const char kMethodInternalAttach[] = "-internal-attach";
-
 // Attributes.
 const char kAttributeAllowTransparency[] = "allowtransparency";
-const char kAttributeContentWindow[] = "contentWindow";
-const char kAttributeSrc[] = "src";
-
-// Parameters/properties on events.
-const char kWindowID[] = "windowId";
-
-// Error messages.
-const char kErrorCannotRemovePartition[] =
-    "Cannot remove partition attribute after navigating.";
 
 // Other.
 const int kInstanceIDNone = 0;
-const int kInvalidPermissionRequestID = 0;
 
 }  // namespace browser_plugin
 

@@ -107,8 +107,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
                                 OnCompositorFrameSwapped(message))
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_CopyFromCompositingSurface,
                         OnCopyFromCompositingSurface)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
-                        OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
@@ -275,12 +273,6 @@ void BrowserPlugin::OnCopyFromCompositingSurface(int browser_plugin_instance_id,
                                                   dest_size);
 }
 
-void BrowserPlugin::OnGuestContentWindowReady(int browser_plugin_instance_id,
-                                              int content_window_routing_id) {
-  DCHECK(content_window_routing_id != MSG_ROUTING_NONE);
-  content_window_routing_id_ = content_window_routing_id;
-}
-
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
   guest_crashed_ = true;
 
@@ -325,17 +317,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
         accept ? WebPluginContainer::TouchEventRequestTypeRaw
                : WebPluginContainer::TouchEventRequestTypeNone);
   }
-}
-
-NPObject* BrowserPlugin::GetContentWindow() const {
-  if (content_window_routing_id_ == MSG_ROUTING_NONE)
-    return NULL;
-  RenderViewImpl* guest_render_view = RenderViewImpl::FromRoutingID(
-      content_window_routing_id_);
-  if (!guest_render_view)
-    return NULL;
-  blink::WebFrame* guest_frame = guest_render_view->GetWebView()->mainFrame();
-  return guest_frame->windowObject();
 }
 
 void BrowserPlugin::ShowSadGraphic() {
@@ -519,7 +500,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_BuffersSwapped::ID:
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_CopyFromCompositingSurface::ID:
-    case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:

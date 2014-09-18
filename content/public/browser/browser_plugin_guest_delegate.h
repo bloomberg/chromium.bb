@@ -27,14 +27,18 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual ~BrowserPluginGuestDelegate() {}
 
   // Notification that the embedder will begin attachment. This is called
-  // prior to resuming resource loads.
-  virtual void WillAttach(content::WebContents* embedder_web_contents) {}
+  // prior to resuming resource loads. |element_instance_id| uniquely identifies
+  // the element that will serve as a container for the guest.
+  virtual void WillAttach(content::WebContents* embedder_web_contents,
+                          int element_instance_id) {}
 
   virtual WebContents* CreateNewGuestWindow(
       const WebContents::CreateParams& create_params);
 
-  // Notification that the embedder has completed attachment.
-  virtual void DidAttach() {}
+  // Notification that the embedder has completed attachment. The
+  // |guest_proxy_routing_id| is the routing ID for the RenderView in the
+  // embedder that will serve as a contentWindow proxy for the guest.
+  virtual void DidAttach(int guest_proxy_routing_id) {}
 
   // Notification that the BrowserPlugin has resized.
   virtual void ElementSizeChanged(const gfx::Size& old_size,

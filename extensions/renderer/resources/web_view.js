@@ -94,6 +94,7 @@ function WebViewInternal(webviewNode) {
   this.elementAttached = false;
 
   this.beforeFirstNavigation = true;
+  this.contentWindow = null;
   this.validPartitionId = true;
   // Used to save some state upon deferred attachment.
   // If <object> bindings is not available, we defer attachment.
@@ -166,6 +167,7 @@ WebViewInternal.prototype.reset = function() {
     this.beforeFirstNavigation = true;
     this.validPartitionId = true;
     this.partition.validPartitionId = true;
+    this.contentWindow = null;
   }
   this.internalInstanceId = 0;
 };
@@ -419,10 +421,11 @@ WebViewInternal.prototype.setupWebviewNodeProperties = function() {
   // dynamic getter value.
   Object.defineProperty(this.webviewNode, 'contentWindow', {
     get: function() {
-      if (browserPluginNode.contentWindow)
-        return browserPluginNode.contentWindow;
+      if (this.contentWindow) {
+        return this.contentWindow;
+      }
       window.console.error(ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
-    },
+    }.bind(this),
     // No setter.
     enumerable: true
   });
@@ -575,7 +578,11 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
         guestViewInternalNatives.AttachGuest(
             this.internalInstanceId,
             this.guestInstanceId,
-            params);
+            params,
+            function(w) {
+              this.contentWindow = w;
+            }.bind(this)
+        );
       }.bind(this), 0);
     }
 
@@ -879,7 +886,10 @@ WebViewInternal.prototype.attachWindow = function(guestInstanceId,
   return guestViewInternalNatives.AttachGuest(
       this.internalInstanceId,
       this.guestInstanceId,
-      params);
+      params, function(w) {
+        this.contentWindow = w;
+      }.bind(this)
+  );
 };
 
 // Registers browser plugin <object> custom element.

@@ -238,12 +238,6 @@ void BrowserPluginGuest::Initialize(
 
   OnResizeGuest(browser_plugin_instance_id_, params.resize_guest_params);
 
-  // Create a swapped out RenderView for the guest in the embedder render
-  // process, so that the embedder can access the guest's window object.
-  int guest_routing_id =
-      GetWebContents()->CreateSwappedOutRenderView(
-          embedder_web_contents_->GetSiteInstance());
-
   // TODO(chrishtr): this code is wrong. The navigate_on_drag_drop field will
   // be reset again the next time preferences are updated.
   WebPreferences prefs =
@@ -262,9 +256,6 @@ void BrowserPluginGuest::Initialize(
   // Inform the embedder of the guest's attachment.
   SendMessageToEmbedder(
       new BrowserPluginMsg_Attach_ACK(browser_plugin_instance_id_));
-
-  SendMessageToEmbedder(new BrowserPluginMsg_GuestContentWindowReady(
-      browser_plugin_instance_id_, guest_routing_id));
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -558,7 +549,7 @@ void BrowserPluginGuest::Attach(
   if (attached())
     return;
 
-  delegate_->WillAttach(embedder_web_contents);
+  delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id);
 
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
@@ -575,7 +566,13 @@ void BrowserPluginGuest::Attach(
 
   SendQueuedMessages();
 
-  delegate_->DidAttach();
+  // Create a swapped out RenderView for the guest in the embedder render
+  // process, so that the embedder can access the guest's window object.
+  int guest_routing_id =
+      GetWebContents()->CreateSwappedOutRenderView(
+          embedder_web_contents_->GetSiteInstance());
+
+  delegate_->DidAttach(guest_routing_id);
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }

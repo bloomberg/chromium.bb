@@ -20,6 +20,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
@@ -105,6 +106,7 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       browser_context_(browser_context),
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
+      element_instance_id_(guestview::kInstanceIDNone),
       initialized_(false),
       auto_size_enabled_(false),
       weak_ptr_factory_(this) {
@@ -311,9 +313,15 @@ void GuestViewBase::Destroy() {
   delete web_contents();
 }
 
-void GuestViewBase::DidAttach() {
+void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
+
+  // Inform the associated GuestViewContainer that the contentWindow is ready.
+  embedder_web_contents()->Send(new ExtensionMsg_GuestAttached(
+      embedder_web_contents()->GetMainFrame()->GetRoutingID(),
+      element_instance_id_,
+      guest_proxy_routing_id));
 
   SendQueuedEvents();
 }
@@ -350,7 +358,8 @@ void GuestViewBase::RegisterDestructionCallback(
   destruction_callback_ = callback;
 }
 
-void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents) {
+void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
+                               int element_instance_id) {
   // After attachment, this GuestViewBase's lifetime is restricted to the
   // lifetime of its embedder WebContents. Observing the RenderProcessHost
   // of the embedder is no longer necessary.
@@ -358,6 +367,7 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents) {
   embedder_web_contents_ = embedder_web_contents;
   embedder_web_contents_observer_.reset(
       new EmbedderWebContentsObserver(this));
+  element_instance_id_ = element_instance_id;
 
   WillAttachToEmbedder();
 }

@@ -188,32 +188,6 @@ class BrowserPluginPropertyBindingAllowTransparency
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAllowTransparency);
 };
 
-class BrowserPluginPropertyBindingContentWindow
-    : public BrowserPluginPropertyBinding {
- public:
-  BrowserPluginPropertyBindingContentWindow()
-      : BrowserPluginPropertyBinding(browser_plugin::kAttributeContentWindow) {
-  }
-  virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPVariant* result) OVERRIDE {
-    NPObject* obj = bindings->instance()->GetContentWindow();
-    if (obj) {
-      result->type = NPVariantType_Object;
-      result->value.objectValue = WebBindings::retainObject(obj);
-    }
-    return true;
-  }
-  virtual bool SetProperty(BrowserPluginBindings* bindings,
-                           NPObject* np_obj,
-                           const NPVariant* variant) OVERRIDE {
-    return false;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {}
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingContentWindow);
-};
-
 
 // BrowserPluginBindings ------------------------------------------------------
 
@@ -235,7 +209,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
 
   property_bindings_.push_back(
       new BrowserPluginPropertyBindingAllowTransparency);
-  property_bindings_.push_back(new BrowserPluginPropertyBindingContentWindow);
 }
 
 BrowserPluginBindings::~BrowserPluginBindings() {

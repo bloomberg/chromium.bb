@@ -36,11 +36,6 @@ class BrowserPluginBindings {
 
   bool HasMethod(NPIdentifier name) const;
 
-  bool InvokeMethod(NPIdentifier name,
-                    const NPVariant* args,
-                    uint32 arg_count,
-                    NPVariant* result);
-
   bool HasProperty(NPIdentifier name) const;
   bool SetProperty(NPObject* np_obj,
                    NPIdentifier name,

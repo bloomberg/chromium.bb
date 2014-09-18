@@ -181,12 +181,6 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
 IPC_MESSAGE_CONTROL1(BrowserPluginMsg_Attach_ACK,
                      int /* browser_plugin_instance_id */)
 
-// Once the swapped out guest RenderView has been created in the embedder render
-// process, the browser process informs the embedder of its routing ID.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
-                     int /* browser_plugin_instance_id */,
-                     int /* source_routing_id */)
-
 // When the guest crashes, the browser process informs the embedder through this
 // message.
 IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestGone,
