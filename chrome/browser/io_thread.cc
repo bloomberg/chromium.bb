@@ -1326,6 +1326,9 @@ double IOThread::GetAlternateProtocolProbabilityThreshold(
       return value;
     }
   }
+  if (command_line.HasSwitch(switches::kEnableQuic)) {
+    return 0;
+  }
   if (base::StringToDouble(
           GetVariationParam(quic_trial_params,
                             "alternate_protocol_probability_threshold"),
