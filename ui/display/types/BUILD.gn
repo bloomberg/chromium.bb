@@ -5,14 +5,14 @@
 component("types") {
   output_name = "display_types"
   sources = [
-    "chromeos/display_mode.cc",
-    "chromeos/display_mode.h",
-    "chromeos/display_snapshot.cc",
-    "chromeos/display_snapshot.h",
-    "chromeos/native_display_delegate.h",
-    "chromeos/native_display_observer.h",
     "display_constants.h",
+    "display_mode.cc",
+    "display_mode.h",
+    "display_snapshot.cc",
+    "display_snapshot.h",
     "display_types_export.h",
+    "native_display_delegate.h",
+    "native_display_observer.h",
   ]
 
   defines = [ "DISPLAY_TYPES_IMPLEMENTATION" ]

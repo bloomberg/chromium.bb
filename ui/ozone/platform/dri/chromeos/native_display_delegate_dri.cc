@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/display/types/chromeos/native_display_observer.h"
+#include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"

@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_COMMON_CHROMEOS_DISPLAY_MODE_PROXY_H_
 #define UI_OZONE_COMMON_CHROMEOS_DISPLAY_MODE_PROXY_H_
 
-#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/display_mode.h"
 
 namespace ui {
 

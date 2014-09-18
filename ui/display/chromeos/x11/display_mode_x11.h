@@ -6,7 +6,7 @@
 #define UI_DISPLAY_CHROMEOS_X11_DISPLAY_MODE_X11_H_
 
 #include "ui/display/display_export.h"
-#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/display_mode.h"
 
 // Forward declare from Xlib and Xrandr.
 typedef unsigned long XID;

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 
 namespace ui {

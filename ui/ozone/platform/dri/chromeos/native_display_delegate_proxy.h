@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 

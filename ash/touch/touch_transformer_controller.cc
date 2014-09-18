@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/events/device_data_manager.h"
 #include "ui/events/x/device_data_manager_x11.h"
 

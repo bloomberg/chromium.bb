@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_MODE_H_
-#define UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_MODE_H_
+#ifndef UI_DISPLAY_TYPES_DISPLAY_MODE_H_
+#define UI_DISPLAY_TYPES_DISPLAY_MODE_H_
 
 #include <string>
 
@@ -36,4 +36,4 @@ class DISPLAY_TYPES_EXPORT DisplayMode {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_MODE_H_
+#endif  // UI_DISPLAY_TYPES_DISPLAY_MODE_H_

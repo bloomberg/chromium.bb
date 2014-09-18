@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_SNAPSHOT_DRI_H_
 #define UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_SNAPSHOT_DRI_H_
 
-#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 namespace ui {

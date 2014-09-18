@@ -12,9 +12,9 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "ui/display/display_switches.h"
-#include "ui/display/types/chromeos/display_mode.h"
-#include "ui/display/types/chromeos/display_snapshot.h"
-#include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot.h"
+#include "ui/display/types/native_display_delegate.h"
 
 namespace ui {
 

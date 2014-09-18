@@ -4,8 +4,8 @@
 
 #include "ui/ozone/common/chromeos/display_util.h"
 
-#include "ui/display/types/chromeos/display_mode.h"
-#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace ui {
 

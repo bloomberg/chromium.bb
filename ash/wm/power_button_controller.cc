@@ -13,7 +13,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 

@@ -4,7 +4,7 @@
 
 #include "ui/display/chromeos/display_configurator.h"
 
-#include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {

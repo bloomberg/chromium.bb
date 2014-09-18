@@ -19,8 +19,8 @@
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
-#include "ui/display/types/chromeos/display_mode.h"
-#include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/display/types/display_mode.h"
+#include "ui/display/types/native_display_delegate.h"
 
 namespace ui {
 

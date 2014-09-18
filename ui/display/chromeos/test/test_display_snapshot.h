@@ -6,7 +6,7 @@
 #define UI_DISPLAY_CHROMEOS_TEST_TEST_DISPLAY_SNAPSHOT_H_
 
 #include "ui/display/display_export.h"
-#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace ui {
 

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <xf86drmMode.h>
 
-#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/display_mode.h"
 
 namespace ui {
 

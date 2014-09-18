@@ -5,8 +5,8 @@
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_proxy.h"
 
 #include "base/logging.h"
-#include "ui/display/types/chromeos/display_snapshot.h"
-#include "ui/display/types/chromeos/native_display_observer.h"
+#include "ui/display/types/display_snapshot.h"
+#include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/common/chromeos/display_snapshot_proxy.h"

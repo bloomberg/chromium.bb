@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_SNAPSHOT_H_
-#define UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_SNAPSHOT_H_
+#ifndef UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_H_
+#define UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_H_
 
 #include <vector>
 
-#include "ui/display/types/chromeos/display_mode.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/display/types/display_mode.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -87,4 +87,4 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_SNAPSHOT_H_
+#endif  // UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_H_

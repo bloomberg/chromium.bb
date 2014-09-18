@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
-#define UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
+#ifndef UI_DISPLAY_TYPES_NATIVE_DISPLAY_OBSERVER_H_
+#define UI_DISPLAY_TYPES_NATIVE_DISPLAY_OBSERVER_H_
 
 #include "ui/display/types/display_types_export.h"
 
@@ -20,4 +20,4 @@ class DISPLAY_TYPES_EXPORT NativeDisplayObserver {
 
 }  //  namespace ui
 
-#endif  // UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
+#endif  // UI_DISPLAY_TYPES_NATIVE_DISPLAY_OBSERVER_H_

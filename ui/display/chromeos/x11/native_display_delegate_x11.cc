@@ -18,7 +18,7 @@
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/display/chromeos/x11/display_util_x11.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
-#include "ui/display/types/chromeos/native_display_observer.h"
+#include "ui/display/types/native_display_observer.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"

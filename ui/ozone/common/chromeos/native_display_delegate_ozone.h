@@ -6,7 +6,7 @@
 #define UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_
 
 #include "base/macros.h"
-#include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/display/types/native_display_delegate.h"
 
 namespace ui {
 

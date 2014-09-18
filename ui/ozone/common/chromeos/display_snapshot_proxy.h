@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_COMMON_CHROMEOS_DISPLAY_SNAPSHOT_PROXY_H_
 #define UI_OZONE_COMMON_CHROMEOS_DISPLAY_SNAPSHOT_PROXY_H_
 
-#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace ui {
 
