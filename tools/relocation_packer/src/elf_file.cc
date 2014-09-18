@@ -533,7 +533,7 @@ void SortOrderSensitiveProgramHeaders(ELF::Phdr* program_headers,
 // segments by offset, to give:
 //
 //   Type      Offset    VirtAddr   PhysAddr   FileSiz   MemSiz    Flg Align
-//   LOAD      0x000000  0x00000000 0x00000000 0x14ea4   0x212ea4  R E 0x1000
+//   LOAD      0x000000  0x00000000 0x00000000 0x14ea4   0x14ea4   R E 0x1000
 //   LOAD      0x014ea4  0x00212ea4 0x00212ea4 0x1cea164 0x1cea164 R E 0x1000
 //   DYNAMIC   0x1e60c50 0x0205fc50 0x0205fc50 0x00108   0x00108   RW  0x4
 //   LOAD      0x1cff008 0x01efe008 0x01efe008 0x17ec3c  0x1a0324  RW  0x1000
@@ -593,26 +593,29 @@ void SplitProgramHeadersForHole(Elf* elf,
   LOG_IF(FATAL, !end_section)
       << "No section follows the last section in the segment being split";
 
-  // Split the first portion of split_header into spliced_header.  Done
-  // by copying the entire split_header into spliced_header, then changing
-  // only the fields that set the segment sizes.
-  *spliced_header = *split_header;
+  // Split the first portion of split_header into spliced_header.
   const ELF::Shdr* split_section_header = ELF::getshdr(split_section);
+  spliced_header->p_type = split_header->p_type;
+  spliced_header->p_offset = split_header->p_offset;
+  spliced_header->p_vaddr = split_header->p_vaddr;
+  spliced_header->p_paddr = split_header->p_paddr;
+  CHECK(split_header->p_filesz == split_header->p_memsz);
   spliced_header->p_filesz = split_section_header->sh_offset;
-  spliced_header->p_memsz = split_section_header->sh_addr;
+  spliced_header->p_memsz = split_section_header->sh_offset;
+  spliced_header->p_flags = split_header->p_flags;
+  spliced_header->p_align = split_header->p_align;
 
   // Now rewrite split_header to remove the part we spliced from it.
   const ELF::Shdr* end_section_header = ELF::getshdr(end_section);
   split_header->p_offset = spliced_header->p_filesz;
-
   CHECK(split_header->p_vaddr == split_header->p_paddr);
-  split_header->p_vaddr = spliced_header->p_memsz;
-  split_header->p_paddr = split_header->p_vaddr;
-
+  split_header->p_vaddr = split_section_header->sh_addr;
+  split_header->p_paddr = split_section_header->sh_addr;
   CHECK(split_header->p_filesz == split_header->p_memsz);
   split_header->p_filesz =
       end_section_header->sh_offset - spliced_header->p_filesz;
-  split_header->p_memsz = split_header->p_filesz;
+  split_header->p_memsz =
+      end_section_header->sh_offset - spliced_header->p_filesz;
 
   // Adjust the offsets of all program headers that are not one of the pair
   // we just created by splitting.
@@ -666,11 +669,14 @@ void CoalesceProgramHeadersForHole(Elf* elf,
   // Rewrite the coalesced segment into split_header.
   const ELF::Shdr* last_section_header = ELF::getshdr(last_section);
   split_header->p_offset = spliced_header->p_offset;
+  CHECK(split_header->p_vaddr == split_header->p_paddr);
   split_header->p_vaddr = spliced_header->p_vaddr;
-  split_header->p_paddr = split_header->p_vaddr;
+  split_header->p_paddr = spliced_header->p_vaddr;
+  CHECK(split_header->p_filesz == split_header->p_memsz);
   split_header->p_filesz =
       last_section_header->sh_offset + last_section_header->sh_size;
-  split_header->p_memsz = split_header->p_filesz;
+  split_header->p_memsz =
+      last_section_header->sh_offset + last_section_header->sh_size;
 
   // Reconstruct the original GNU_STACK segment into spliced_header.
   spliced_header->p_type = PT_GNU_STACK;
