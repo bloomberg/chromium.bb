@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_MOCK_SETTINGS_OBSERVER_H_
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/content_settings/content_settings_observer.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

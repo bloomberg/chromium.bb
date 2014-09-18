@@ -264,7 +264,6 @@
       'browser/content_settings/content_settings_policy_provider_unittest.cc',
       'browser/content_settings/content_settings_pref_provider_unittest.cc',
       'browser/content_settings/content_settings_provider_unittest.cc',
-      'browser/content_settings/content_settings_rule_unittest.cc',
       'browser/content_settings/content_settings_usages_state_unittest.cc',
       'browser/content_settings/content_settings_utils_unittest.cc',
       'browser/content_settings/cookie_settings_unittest.cc',

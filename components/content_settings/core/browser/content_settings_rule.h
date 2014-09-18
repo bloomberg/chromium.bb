@@ -4,8 +4,8 @@
 
 // Interface for objects providing content setting rules.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_RULE_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_RULE_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_RULE_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_RULE_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
@@ -60,4 +60,4 @@ class ConcatenationIterator : public RuleIterator {
 
 }  // namespace content_settings
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_RULE_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_RULE_H_

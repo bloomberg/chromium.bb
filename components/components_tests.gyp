@@ -82,6 +82,7 @@
             'component_updater/test/request_sender_unittest.cc',
             'component_updater/test/update_checker_unittest.cc',
             'component_updater/test/update_response_unittest.cc',
+            'content_settings/core/browser/content_settings_rule_unittest.cc',
             'content_settings/core/common/content_settings_pattern_parser_unittest.cc',
             'content_settings/core/common/content_settings_pattern_unittest.cc',
             'crx_file/id_util_unittest.cc',
@@ -301,6 +302,7 @@
             '../third_party/libxml/libxml.gyp:libxml',
 
             # Dependencies of content_settings
+            'components.gyp:content_settings_core_browser',
             'components.gyp:content_settings_core_common',
 
             # Dependencies of crash

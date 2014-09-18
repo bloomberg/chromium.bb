@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "chrome/browser/content_settings/content_settings_observer.h"
-#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace content_settings {

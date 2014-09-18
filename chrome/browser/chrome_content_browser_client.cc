@@ -92,6 +92,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/google/core/browser/google_util.h"

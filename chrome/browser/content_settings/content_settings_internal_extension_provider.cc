@@ -4,10 +4,10 @@
 
 #include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 
-#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"

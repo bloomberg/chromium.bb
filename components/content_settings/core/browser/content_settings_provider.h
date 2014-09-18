@@ -4,13 +4,12 @@
 
 // Interface for objects providing content setting rules.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PROVIDER_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PROVIDER_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_
 
 #define NO_RESOURCE_IDENTIFIER std::string()
 
 #include <string>
-#include <vector>
 
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -73,4 +72,4 @@ class ProviderInterface {
 
 }  // namespace content_settings
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PROVIDER_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_

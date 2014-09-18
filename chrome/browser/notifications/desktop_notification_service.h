@@ -17,7 +17,6 @@
 #include "base/prefs/pref_member.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/permission_context_base.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -28,7 +27,6 @@
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
-class ContentSettingsPattern;
 class Notification;
 class NotificationDelegate;
 class NotificationUIManager;

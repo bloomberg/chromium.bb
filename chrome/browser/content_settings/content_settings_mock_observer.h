@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/content_settings/content_settings_observer.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content_settings {

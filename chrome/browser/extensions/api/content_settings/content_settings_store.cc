@@ -14,10 +14,10 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
-#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

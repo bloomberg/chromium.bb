@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/content_settings/content_settings_rule.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 
 namespace content_settings {
 

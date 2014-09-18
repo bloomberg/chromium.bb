@@ -5,6 +5,28 @@
 {
   'targets': [
     {
+      # GN version: //components/content_settings/core/browser
+      'target_name': 'content_settings_core_browser',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'content_settings_core_common',
+      ],
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'content_settings/core/browser/content_settings_details.cc',
+        'content_settings/core/browser/content_settings_details.h',
+        'content_settings/core/browser/content_settings_observer.h',
+        'content_settings/core/browser/content_settings_provider.h',
+        'content_settings/core/browser/content_settings_rule.cc',
+        'content_settings/core/browser/content_settings_rule.h',
+      ],
+    },
+    {
       # GN version: //components/content_settings/core/common
       'target_name': 'content_settings_core_common',
       'type': 'static_library',
