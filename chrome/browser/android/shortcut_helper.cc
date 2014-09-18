@@ -48,6 +48,7 @@ ShortcutHelper::ShortcutHelper(JNIEnv* env,
       java_ref_(env, obj),
       url_(web_contents->GetURL()),
       display_(content::Manifest::DISPLAY_MODE_BROWSER),
+      orientation_(blink::WebScreenOrientationLockDefault),
       weak_ptr_factory_(this) {
 }
 
@@ -118,6 +119,15 @@ void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
   if (manifest.display == content::Manifest::DISPLAY_MODE_MINIMAL_UI)
     display_ = content::Manifest::DISPLAY_MODE_BROWSER;
 
+  // Set the orientation based on the manifest value, if any.
+  if (manifest.orientation != blink::WebScreenOrientationLockDefault) {
+    // Ignore the orientation if the display mode is different from
+    // 'standalone'.
+    // TODO(mlamouri): send a message to the developer console about this.
+    if (display_ == content::Manifest::DISPLAY_MODE_STANDALONE)
+      orientation_ = manifest.orientation;
+  }
+
   // The ShortcutHelper is now able to notify its Java counterpart that it is
   // initialized. OnInitialized method is not conceptually part of getting the
   // manifest data but it happens that the initialization is finalized when
@@ -183,7 +193,8 @@ void ShortcutHelper::FinishAddingShortcut(
                  url_,
                  title_,
                  display_,
-                 icon_),
+                 icon_,
+                 orientation_),
       true);
 
   Destroy();
@@ -213,7 +224,8 @@ void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const base::string16& title,
     content::Manifest::DisplayMode display,
-    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result,
+    blink::WebScreenOrientationLockType orientation) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
   // Grab the average color from the bitmap.
@@ -249,5 +261,6 @@ void ShortcutHelper::AddShortcutInBackground(
       r_value,
       g_value,
       b_value,
-      display == content::Manifest::DISPLAY_MODE_STANDALONE);
+      display == content::Manifest::DISPLAY_MODE_STANDALONE,
+      orientation);
 }

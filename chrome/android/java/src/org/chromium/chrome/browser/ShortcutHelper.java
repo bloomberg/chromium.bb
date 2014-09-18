@@ -13,6 +13,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.content_public.common.ScreenOrientationConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class ShortcutHelper {
     public static final String EXTRA_MAC = "org.chromium.chrome.browser.webapp_mac";
     public static final String EXTRA_TITLE = "org.chromium.chrome.browser.webapp_title";
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
+    public static final String EXTRA_ORIENTATION = ScreenOrientationConstants.EXTRA_ORIENTATION;
 
     private static String sFullScreenAction;
 
@@ -121,7 +123,7 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(Context context, String url, String title, Bitmap favicon,
-            int red, int green, int blue, boolean isWebappCapable) {
+            int red, int green, int blue, boolean isWebappCapable, int orientation) {
         assert sFullScreenAction != null;
 
         Intent shortcutIntent;
@@ -142,6 +144,7 @@ public class ShortcutHelper {
             shortcutIntent.putExtra(EXTRA_ID, UUID.randomUUID().toString());
             shortcutIntent.putExtra(EXTRA_TITLE, title);
             shortcutIntent.putExtra(EXTRA_URL, url);
+            shortcutIntent.putExtra(EXTRA_ORIENTATION, orientation);
 
             // The only reason we convert to a String here is because Android inexplicably eats a
             // byte[] when adding the shortcut -- the Bundle received by the launched Activity even

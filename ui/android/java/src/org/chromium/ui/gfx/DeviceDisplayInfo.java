@@ -161,7 +161,7 @@ public class DeviceDisplayInfo {
      * for more information about Display.getRotation() behavior.
      */
     @CalledByNative
-    private int getRotationDegrees() {
+    public int getRotationDegrees() {
         switch (getDisplay().getRotation()) {
             case Surface.ROTATION_0:
                 return 0;

@@ -14,6 +14,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {
 class WebContents;
@@ -69,7 +70,8 @@ class ShortcutHelper : public content::WebContentsObserver {
       const GURL& url,
       const base::string16& title,
       content::Manifest::DisplayMode display,
-      const favicon_base::FaviconRawBitmapResult& bitmap_result);
+      const favicon_base::FaviconRawBitmapResult& bitmap_result,
+      blink::WebScreenOrientationLockType orientation);
 
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);
@@ -87,6 +89,7 @@ class ShortcutHelper : public content::WebContentsObserver {
   content::Manifest::DisplayMode display_;
   favicon_base::FaviconRawBitmapResult icon_;
   base::CancelableTaskTracker cancelable_task_tracker_;
+  blink::WebScreenOrientationLockType orientation_;
 
   base::WeakPtrFactory<ShortcutHelper> weak_ptr_factory_;
 
