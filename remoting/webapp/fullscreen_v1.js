@@ -79,5 +79,15 @@ remoting.FullscreenAppsV1.prototype.removeListener = function(callback) {
  * @private
  */
 remoting.FullscreenAppsV1.prototype.onFullscreenChanged_ = function() {
-  this.eventSource_.raiseEvent(this.kEventName_, this.isActive());
+  // Querying full-screen immediately after the webkitfullscreenchange
+  // event fires sometimes gives the wrong answer on Mac, perhaps due to
+  // the time taken to animate presentation mode. Since I haven't been able
+  // to isolate the exact repro steps, and we're not planning on using this
+  // API for much longer, this hack will suffice for now.
+  window.setTimeout(
+      /** @this {remoting.FullscreenAppsV1} */
+      function() {
+        this.eventSource_.raiseEvent(this.kEventName_, this.isActive());
+      }.bind(this),
+      500);
 };

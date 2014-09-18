@@ -4,7 +4,7 @@
  */
 
 .toolbar-container {
-  position: absolute;
+  position: fixed;
   top: -48px;
   width: 640px;
   -webkit-transition: top 0.15s ease;
