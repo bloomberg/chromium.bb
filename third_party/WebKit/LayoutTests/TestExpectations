@@ -1321,3 +1321,5 @@ crbug.com/415039 [ Android ] media/media-load-event.html [ Crash ]
 crbug.com/415039 [ Android ] media/video-autoplay.html [ Crash ]
 
 crbug.com/415089 http/tests/serviceworker/fetch-access-control.html  [ Pass Timeout ]
+
+crbug.com/400659 [ Mavericks ] media/gc-while-playing.html [ Failure ]
