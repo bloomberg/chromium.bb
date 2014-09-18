@@ -1146,6 +1146,7 @@ paladin.add_config('amd64-generic_freon-paladin',
   boards=['amd64-generic_freon'],
   paladin_builder_name='amd64-generic_freon paladin',
   important=False,
+  vm_tests=[],
 )
 
 paladin.add_config('x32-generic-paladin',
@@ -1256,6 +1257,13 @@ internal_chromium_pfq.add_config('daisy-chromium-pfq',
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   disk_layout='2gb-rootfs',
   boards=['amd64-generic'],
+)
+
+internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
+  disk_layout='2gb-rootfs',
+  boards=['amd64-generic_freon'],
+  important=False,
+  vm_tests=[],
 )
 
 chrome_pfq = internal_chromium_pfq.derive(
