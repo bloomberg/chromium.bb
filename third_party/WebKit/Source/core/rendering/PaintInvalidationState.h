@@ -10,12 +10,9 @@
 
 namespace blink {
 
-class RenderBox;
-class RenderInline;
 class RenderLayerModelObject;
 class RenderObject;
 class RenderView;
-class RenderSVGModelObject;
 
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);

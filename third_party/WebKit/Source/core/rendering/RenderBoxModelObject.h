@@ -48,7 +48,6 @@ enum ContentChangeType {
     CanvasContextChanged
 };
 
-struct BorderEdge;
 class RenderTextFragment;
 class BackgroundImageGeometry;
 

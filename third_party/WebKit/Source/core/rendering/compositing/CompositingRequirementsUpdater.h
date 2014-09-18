@@ -35,7 +35,6 @@ namespace blink {
 
 class CompositingReasonFinder;
 class RenderLayer;
-class RenderObject;
 class RenderView;
 
 class CompositingRequirementsUpdater {

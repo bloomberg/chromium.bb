@@ -50,7 +50,6 @@
 
 namespace blink {
 
-class RenderLayer;
 class RenderLayerModelObject;
 
 class RenderLayerRepainter {

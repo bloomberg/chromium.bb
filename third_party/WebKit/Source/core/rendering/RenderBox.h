@@ -31,7 +31,6 @@
 namespace blink {
 
 struct PaintInfo;
-class RenderLayerScrollableArea;
 
 enum SizeType { MainOrPreferredSize, MinSize, MaxSize };
 enum AvailableLogicalHeightType { ExcludeMarginBorderPadding, IncludeMarginBorderPadding };

@@ -39,7 +39,6 @@ class RenderLayerModelObject;
 class RenderObject;
 class RenderStyle;
 class RenderSVGRoot;
-class RenderSVGShape;
 class StrokeData;
 class TransformState;
 

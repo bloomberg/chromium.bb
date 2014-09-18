@@ -28,8 +28,6 @@
 
 namespace blink {
 
-class RenderSVGResource;
-
 class SVGInlineTextBox FINAL : public InlineTextBox {
 public:
     SVGInlineTextBox(RenderObject&);
