@@ -32,10 +32,22 @@ class RenderStyle;
 
 class PseudoStyleRequest {
 public:
+
+    enum RequestType { ForRenderer, ForComputedStyle };
+
     PseudoStyleRequest(PseudoId pseudoId, RenderScrollbar* scrollbar = 0, ScrollbarPart scrollbarPart = NoPart)
         : pseudoId(pseudoId)
+        , type(ForRenderer)
         , scrollbarPart(scrollbarPart)
         , scrollbar(scrollbar)
+    {
+    }
+
+    PseudoStyleRequest(PseudoId pseudoId, RequestType requestType)
+        : pseudoId(pseudoId)
+        , type(requestType)
+        , scrollbarPart(NoPart)
+        , scrollbar(0)
     {
     }
 
@@ -46,6 +58,7 @@ public:
     }
 
     PseudoId pseudoId;
+    RequestType type;
     ScrollbarPart scrollbarPart;
     RenderScrollbar* scrollbar;
 };

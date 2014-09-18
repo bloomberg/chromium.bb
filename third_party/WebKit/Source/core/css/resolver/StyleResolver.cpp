@@ -776,6 +776,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         state.setParentStyle(RenderStyle::clone(state.style()));
     }
 
+    state.style()->setStyleType(pseudoStyleRequest.pseudoId);
     state.fontBuilder().initForStyleResolve(state.document(), state.style());
 
     // Since we don't use pseudo-elements in any of our quirk/print
@@ -791,8 +792,6 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 
         if (collector.matchedResult().matchedProperties.isEmpty())
             return false;
-
-        state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
         applyMatchedProperties(state, collector.matchedResult());
         applyCallbackSelectors(state);
@@ -828,8 +827,11 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
         return nullptr;
 
     StyleResolverState state(document(), element, parentStyle);
-    if (!pseudoStyleForElementInternal(*element, pseudoStyleRequest, parentStyle, state))
-        return nullptr;
+    if (!pseudoStyleForElementInternal(*element, pseudoStyleRequest, parentStyle, state)) {
+        if (pseudoStyleRequest.type == PseudoStyleRequest::ForRenderer)
+            return nullptr;
+        return state.takeStyle();
+    }
 
     if (PseudoElement* pseudoElement = element->pseudoElement(pseudoStyleRequest.pseudoId))
         setAnimationUpdateIfNeeded(state, *pseudoElement);

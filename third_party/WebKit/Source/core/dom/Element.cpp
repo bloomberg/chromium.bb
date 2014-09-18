@@ -2398,26 +2398,32 @@ RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
     if (PseudoElement* element = pseudoElement(pseudoElementSpecifier))
         return element->computedStyle();
 
-    // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
-    // properties, which are only known by the renderer because it did the layout, will be correct and so that the
-    // values returned for the ":selection" pseudo-element will be correct.
-    if (RenderStyle* usedStyle = renderStyle()) {
-        if (pseudoElementSpecifier) {
-            RenderStyle* cachedPseudoStyle = usedStyle->getCachedPseudoStyle(pseudoElementSpecifier);
-            return cachedPseudoStyle ? cachedPseudoStyle : usedStyle;
-         } else
-            return usedStyle;
-    }
-
-    if (!inActiveDocument())
+    if (!inActiveDocument()) {
         // FIXME: Try to do better than this. Ensure that styleForElement() works for elements that are not in the
         // document tree and figure out when to destroy the computed style for such elements.
         return 0;
+    }
 
-    ElementRareData& rareData = ensureElementRareData();
-    if (!rareData.computedStyle())
-        rareData.setComputedStyle(document().styleForElementIgnoringPendingStylesheets(this));
-    return pseudoElementSpecifier ? rareData.computedStyle()->getCachedPseudoStyle(pseudoElementSpecifier) : rareData.computedStyle();
+    // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
+    // properties, which are only known by the renderer because it did the layout, will be correct and so that the
+    // values returned for the ":selection" pseudo-element will be correct.
+    RenderStyle* elementStyle = renderStyle();
+    if (!elementStyle) {
+        ElementRareData& rareData = ensureElementRareData();
+        if (!rareData.computedStyle())
+            rareData.setComputedStyle(document().styleForElementIgnoringPendingStylesheets(this));
+        elementStyle = rareData.computedStyle();
+    }
+
+    if (!pseudoElementSpecifier)
+        return elementStyle;
+
+    if (RenderStyle* pseudoElementStyle = elementStyle->getCachedPseudoStyle(pseudoElementSpecifier))
+        return pseudoElementStyle;
+
+    RefPtr<RenderStyle> result = document().ensureStyleResolver().pseudoStyleForElement(this, PseudoStyleRequest(pseudoElementSpecifier, PseudoStyleRequest::ForComputedStyle), elementStyle);
+    ASSERT(result);
+    return elementStyle->addCachedPseudoStyle(result.release());
 }
 
 AtomicString Element::computeInheritedLanguage() const
