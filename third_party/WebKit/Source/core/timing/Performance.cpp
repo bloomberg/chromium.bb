@@ -213,9 +213,7 @@ void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* in
     const Vector<ResourceResponse>& redirectChain = info.redirectChain();
     bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, initiatorDocument);
 
-    // ServiceWorker doesn't support TimingInfo.
-    // FIXME: Implement ServiceWorkerURLRequestJob::GetLoadTimingInfo().
-    if (!allowRedirectDetails && !finalResponse.wasFetchedViaServiceWorker()) {
+    if (!allowRedirectDetails) {
         ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
         ASSERT(finalTiming);
         if (finalTiming)

@@ -49,6 +49,9 @@ public:
         timing->dnsEnd = dnsEnd;
         timing->connectStart = connectStart;
         timing->connectEnd = connectEnd;
+        timing->serviceWorkerFetchStart = serviceWorkerFetchStart;
+        timing->serviceWorkerFetchReady = serviceWorkerFetchReady;
+        timing->serviceWorkerFetchEnd = serviceWorkerFetchEnd;
         timing->sendStart = sendStart;
         timing->sendEnd = sendEnd;
         timing->receiveHeadersEnd = receiveHeadersEnd;
@@ -66,6 +69,9 @@ public:
             && dnsEnd == other.dnsEnd
             && connectStart == other.connectStart
             && connectEnd == other.connectEnd
+            && serviceWorkerFetchStart == other.serviceWorkerFetchStart
+            && serviceWorkerFetchReady == other.serviceWorkerFetchReady
+            && serviceWorkerFetchEnd == other.serviceWorkerFetchEnd
             && sendStart == other.sendStart
             && sendEnd == other.sendEnd
             && receiveHeadersEnd == other.receiveHeadersEnd
@@ -90,6 +96,9 @@ public:
     double dnsEnd;
     double connectStart;
     double connectEnd;
+    double serviceWorkerFetchStart;
+    double serviceWorkerFetchReady;
+    double serviceWorkerFetchEnd;
     double sendStart;
     double sendEnd;
     double receiveHeadersEnd;
@@ -107,6 +116,9 @@ private:
         , dnsEnd(0)
         , connectStart(0)
         , connectEnd(0)
+        , serviceWorkerFetchStart(0)
+        , serviceWorkerFetchReady(0)
+        , serviceWorkerFetchEnd(0)
         , sendStart(0)
         , sendEnd(0)
         , receiveHeadersEnd(0)
