@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/md5.h"
@@ -666,6 +667,10 @@ void WebKitTestRunner::CaptureDumpPixels(const SkBitmap& snapshot) {
   DCHECK_NE(0, snapshot.info().fHeight);
 
   SkAutoLockPixels snapshot_lock(snapshot);
+  // The snapshot arrives from the GPU process via shared memory. Because MSan
+  // can't track initializedness across processes, we must assure it that the
+  // pixels are in fact initialized.
+  MSAN_UNPOISON(snapshot.getPixels(), snapshot.getSize());
   base::MD5Digest digest;
   base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
   std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
