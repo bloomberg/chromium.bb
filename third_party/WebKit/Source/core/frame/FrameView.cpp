@@ -2922,6 +2922,14 @@ bool FrameView::isFlippedDocument() const
     return renderView->style()->isFlippedBlocksWritingMode();
 }
 
+bool FrameView::scrollbarsDisabled() const
+{
+    if (!m_frame->settings() || !m_frame->settings()->pinchVirtualViewportEnabled())
+        return false;
+
+    return m_frame->isMainFrame() && ScrollbarTheme::theme()->usesOverlayScrollbars();
+}
+
 AXObjectCache* FrameView::axObjectCache() const
 {
     if (frame().document())

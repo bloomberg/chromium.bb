@@ -326,6 +326,10 @@ protected:
     virtual bool isVerticalDocument() const OVERRIDE;
     virtual bool isFlippedDocument() const OVERRIDE;
 
+    // Prevents creation of scrollbars. Used to prevent drawing two sets of
+    // overlay scrollbars in the case of the pinch viewport.
+    virtual bool scrollbarsDisabled() const OVERRIDE;
+
 private:
     explicit FrameView(LocalFrame*);
 

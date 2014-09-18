@@ -461,6 +461,11 @@ bool ScrollView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option
 
 void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 {
+    if (scrollbarsDisabled()) {
+        setScrollOffsetFromUpdateScrollbars(desiredOffset);
+        return;
+    }
+
     if (m_inUpdateScrollbars)
         return;
     InUpdateScrollbarsScope inUpdateScrollbarsScope(this);
@@ -495,9 +500,16 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     if (newVisibleSize.height() > oldVisibleSize.height())
         invalidateRect(IntRect(0, oldVisibleSize.height(), newVisibleSize.width(), newVisibleSize.height() - oldVisibleSize.height()));
 
-    IntPoint adjustedScrollPosition = IntPoint(desiredOffset);
+    setScrollOffsetFromUpdateScrollbars(desiredOffset);
+}
+
+void ScrollView::setScrollOffsetFromUpdateScrollbars(const IntSize& offset)
+{
+    IntPoint adjustedScrollPosition = IntPoint(offset);
+
     if (!isRubberBandInProgress())
         adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
+
     if (adjustedScrollPosition != scrollPosition() || scrollOriginChanged()) {
         ScrollableArea::scrollToOffsetWithoutAnimation(adjustedScrollPosition);
         resetScrollOriginChanged();

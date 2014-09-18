@@ -46,6 +46,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/scroll/Scrollbar.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
@@ -263,17 +264,6 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
 
     m_innerViewportScrollLayer->removeAllChildren();
     m_innerViewportScrollLayer->addChild(currentLayerTreeRoot);
-
-    // We only need to disable the existing (outer viewport) scrollbars
-    // if the existing ones are already overlay.
-    // FIXME: If we knew in advance before the overflowControlsHostLayer goes
-    // away, we would re-enable the drawing of these scrollbars.
-    // FIXME: This doesn't seem to work (at least on Android). Commenting out for now until
-    // I figure out how to access RenderLayerCompositor from here.
-    // if (GraphicsLayer* scrollbar = m_frameHost->compositor()->layerForHorizontalScrollbar())
-    //    scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
-    // if (GraphicsLayer* scrollbar = m_frameHost->compositor()->layerForVerticalScrollbar())
-    //    scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
 }
 
 void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
@@ -284,23 +274,31 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
         m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
-    const int overlayScrollbarThickness = m_frameHost.settings().pinchOverlayScrollbarThickness();
+    int thumbThickness = m_frameHost.settings().pinchOverlayScrollbarThickness();
+    int scrollbarThickness = thumbThickness;
+
+    // FIXME: Rather than manually creating scrollbar layers, we should create
+    // real scrollbars so we can reuse all the machinery from ScrollbarTheme.
+#if OS(ANDROID)
+    thumbThickness = ScrollbarTheme::theme()->thumbThickness(0);
+    scrollbarThickness = ScrollbarTheme::theme()->scrollbarThickness(RegularScrollbar);
+#endif
 
     if (!webScrollbarLayer) {
         ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
         ASSERT(coordinator);
         ScrollbarOrientation webcoreOrientation = isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
-        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, 0, false);
+        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, thumbThickness, 0, false);
 
         webScrollbarLayer->setClipLayer(m_innerViewportContainerLayer->platformLayer());
         scrollbarGraphicsLayer->setContentsToPlatformLayer(webScrollbarLayer->layer());
         scrollbarGraphicsLayer->setDrawsContent(false);
     }
 
-    int xPosition = isHorizontal ? 0 : m_innerViewportContainerLayer->size().width() - overlayScrollbarThickness;
-    int yPosition = isHorizontal ? m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness : 0;
-    int width = isHorizontal ? m_innerViewportContainerLayer->size().width() - overlayScrollbarThickness : overlayScrollbarThickness;
-    int height = isHorizontal ? overlayScrollbarThickness : m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness;
+    int xPosition = isHorizontal ? 0 : m_innerViewportContainerLayer->size().width() - scrollbarThickness;
+    int yPosition = isHorizontal ? m_innerViewportContainerLayer->size().height() - scrollbarThickness : 0;
+    int width = isHorizontal ? m_innerViewportContainerLayer->size().width() - scrollbarThickness : scrollbarThickness;
+    int height = isHorizontal ? scrollbarThickness : m_innerViewportContainerLayer->size().height() - scrollbarThickness;
 
     // Use the GraphicsLayer to position the scrollbars.
     scrollbarGraphicsLayer->setPosition(IntPoint(xPosition, yPosition));
