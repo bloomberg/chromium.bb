@@ -407,7 +407,7 @@ void HomeCardImpl::OnGestureProgressed(
 }
 
 void HomeCardImpl::OnOverviewModeEnter() {
-  if (state_ == VISIBLE_MINIMIZED)
+  if (state_ == HIDDEN || state_ == VISIBLE_MINIMIZED)
     SetState(VISIBLE_BOTTOM);
 }
 

@@ -18,6 +18,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
@@ -82,10 +83,21 @@ TEST_F(HomeCardTest, VirtualKeyboardTransition) {
 
   HomeCard::Get()->UpdateVirtualKeyboardBounds(gfx::Rect());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+}
 
-  // Overview mode has to finish before ending test, otherwise it crashes.
-  // TODO(mukai): fix this.
+TEST_F(HomeCardTest, ToggleOverviewWithVirtualKeyboard) {
+  // Minimized -> Hidden for virtual keyboard.
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  const gfx::Rect vk_bounds(0, 0, 100, 100);
+  HomeCard::Get()->UpdateVirtualKeyboardBounds(vk_bounds);
+  EXPECT_EQ(HomeCard::HIDDEN, HomeCard::Get()->GetState());
+
+  // Toogle overview revives the bottom home card. Home card also gets
+  /// activated which will close the virtual keyboard.
   WindowManager::GetInstance()->ToggleOverview();
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  aura::Window* home_card = GetHomeCardWindow();
+  EXPECT_TRUE(wm::IsActiveWindow(home_card));
 }
 
 // Verify if the home card is correctly minimized after app launch.
