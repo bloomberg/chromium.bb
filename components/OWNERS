@@ -7,7 +7,6 @@ per-file autofill*=dhollowa@chromium.org
 per-file autofill*=isherman@chromium.org
 per-file autofill*=kaiwang@chromium.org
 
-per-file bookmarks.gypi=brettw@chromium.org
 per-file bookmarks.gypi=sky@chromium.org
 
 per-file cloud_devices*=gene@chromium.org
@@ -64,7 +63,6 @@ per-file gcm*=zea@chromium.org
 per-file google*=isherman@chromium.org
 per-file google*=pkasting@chromium.org
 
-per-file history.gypi=brettw@chromium.org
 per-file history.gypi=sky@chromium.org
 # Temporary for the duration of the history componentization.
 per-file history.gypi=blundell@chromium.org
@@ -146,18 +144,15 @@ per-file proximity_auth*=tbarzic@chromium.org
 per-file proximity_auth*=tengs@chromium.org
 per-file proximity_auth*=xiyuan@chromium.org
 
-per-file query_parser.gypi=brettw@chromium.org
 per-file query_parser.gypi=sky@chromium.org
 
 per-file rappor*=asvitkine@chromium.org
 # OWNER-to-be: per-file rappor*=holte@chromium.org
 
 per-file renderer_context_menu*=avi@chromium.org
-per-file renderer_context_menu*=brettw@chromium.org
 per-file renderer_context_menu*=lazyboy@chromium.org
 
 per-file search.gypi=kmadhusu@chromium.org
-per-file search.gypi=brettw@chromium.org
 per-file search.gypi=jered@chromium.org
 per-file search.gypi=samarth@chromium.org
 
@@ -211,7 +206,6 @@ per-file user_manager.gypi=dzhioev@chromium.org
 per-file user_manager.gypi=nkostylev@chromium.org
 per-file user_manager.gypi=ygorshenin@chromium.org
 
-per-file url_fixer.gypi=brettw@chromium.org
 per-file url_fixer.gypi=pkasting@chromium.org
 
 per-file user_prefs.gypi=battre@chromium.org
