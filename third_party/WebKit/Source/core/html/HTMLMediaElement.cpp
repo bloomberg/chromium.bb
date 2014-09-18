@@ -3530,10 +3530,8 @@ void HTMLMediaElement::stop()
 bool HTMLMediaElement::hasPendingActivity() const
 {
     // After the document becomes inactive, no events can ever be fired.
-    if (!document().isActive()) {
-        ASSERT(!m_asyncEventQueue->hasPendingEvents());
+    if (!document().isActive())
         return false;
-    }
 
     // The delaying-the-load-event flag is set by resource selection algorithm when looking for a
     // resource to load, before networkState has reached to NETWORK_LOADING.
