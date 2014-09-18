@@ -134,9 +134,39 @@ void ImportPrivateKeyPKCS8ToSlot(const unsigned char* pkcs8_der,
 // the extension.
 const char kTestExtensionID[] = "aecpbnckhoppanpmefllkdkohionpmig";
 
-class EnterprisePlatformKeysTest : public ExtensionApiTest {
+enum SystemToken {
+  SYSTEM_TOKEN_EXISTS,
+  SYSTEM_TOKEN_NOT_EXISTS
+};
+
+enum DeviceStatus {
+  DEVICE_STATUS_ENROLLED,
+  DEVICE_STATUS_NOT_ENROLLED
+};
+
+enum UserAffiliation {
+  USER_AFFILIATION_ENROLLED_DOMAIN,
+  USER_AFFILIATION_UNRELATED
+};
+
+struct Params {
+  Params(SystemToken system_token,
+         DeviceStatus device_status,
+         UserAffiliation user_affiliation)
+      : system_token_(system_token),
+        device_status_(device_status),
+        user_affiliation_(user_affiliation) {}
+
+  SystemToken system_token_;
+  DeviceStatus device_status_;
+  UserAffiliation user_affiliation_;
+};
+
+class EnterprisePlatformKeysTest
+    : public ExtensionApiTest,
+      public ::testing::WithParamInterface<Params> {
  public:
-  EnterprisePlatformKeysTest() : nss_db_(NULL) {}
+  EnterprisePlatformKeysTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -145,18 +175,26 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
 
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::login::kStubUser);
+    std::string user_email = "someuser@anydomain.com";
+
+    // The command line flag kLoginUser determines the user's email and thus
+    // his affiliation to the domain that the device is enrolled to.
+    if (GetParam().user_affiliation_ == USER_AFFILIATION_ENROLLED_DOMAIN)
+      user_email = chromeos::login::kStubUser;
+
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser, user_email);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    device_policy_test_helper_.device_policy()->policy_data().set_username(
-        chromeos::login::kStubUser);
+    if (GetParam().device_status_ == DEVICE_STATUS_ENROLLED) {
+      device_policy_test_helper_.device_policy()->policy_data().set_username(
+          chromeos::login::kStubUser);
 
-    device_policy_test_helper_.device_policy()->Build();
-    device_policy_test_helper_.MarkAsEnterpriseOwned();
+      device_policy_test_helper_.device_policy()->Build();
+      device_policy_test_helper_.MarkAsEnterpriseOwned();
+    }
 
     EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
@@ -166,6 +204,18 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
+      base::RunLoop loop;
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&EnterprisePlatformKeysTest::SetUpTestSystemSlotOnIO,
+                     base::Unretained(this),
+                     browser()->profile()->GetResourceContext(),
+                     loop.QuitClosure()));
+      loop.Run();
+    }
+
     ExtensionApiTest::SetUpOnMainThread();
 
     // Enable the URLRequestMock, which is required for force-installing the
@@ -188,34 +238,24 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     SetPolicy();
   }
 
-  void SetUpTestSystemSlot() {
-    base::RunLoop loop;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&EnterprisePlatformKeysTest::SetUpTestSystemSlotOnIO,
-                   base::Unretained(this),
-                   browser()->profile()->GetResourceContext(),
-                   loop.QuitClosure()));
-    loop.Run();
-  }
+  virtual void TearDownOnMainThread() OVERRIDE {
+    ExtensionApiTest::TearDownOnMainThread();
 
-  void TearDownTestSystemSlot() {
-    base::RunLoop loop;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&EnterprisePlatformKeysTest::TearDownTestSystemSlotOnIO,
-                   base::Unretained(this),
-                   loop.QuitClosure()));
-    loop.Run();
+    if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
+      base::RunLoop loop;
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&EnterprisePlatformKeysTest::TearDownTestSystemSlotOnIO,
+                     base::Unretained(this),
+                     loop.QuitClosure()));
+      loop.Run();
+    }
   }
 
  private:
   void DidGetCertDatabase(const base::Closure& done_callback,
                           net::NSSCertDatabase* cert_db) {
-    nss_db_ = cert_db;
-
     // In order to use a prepared certificate, import a private key to the
     // user's token for which the Javscript test will import the certificate.
     ImportPrivateKeyPKCS8ToSlot(privateKeyPkcs8User,
@@ -225,7 +265,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
   }
 
   void SetUpTestSystemSlotOnIO(content::ResourceContext* context,
-                           const base::Closure& done_callback) {
+                               const base::Closure& done_callback) {
     test_system_slot_.reset(new crypto::ScopedTestSystemNSSKeySlot());
     ASSERT_TRUE(test_system_slot_->ConstructedSuccessfully());
 
@@ -274,7 +314,6 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     observer.Wait();
   }
 
-  net::NSSCertDatabase* nss_db_;
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
   scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
   policy::MockConfigurationPolicyProvider policy_provider_;
@@ -282,22 +321,45 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysTest, SystemTokenEnabled) {
-  SetUpTestSystemSlot();
+IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
+  // By default, the system token is disabled.
+  std::string system_token_availability = "";
+
+  // Only if the system token exists, and the current user is of the same domain
+  // as the device is enrolled to, the system token is available to the
+  // extension.
+  if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS &&
+      GetParam().device_status_ == DEVICE_STATUS_ENROLLED &&
+      GetParam().user_affiliation_ == USER_AFFILIATION_ENROLLED_DOMAIN) {
+    system_token_availability = "systemTokenEnabled";
+  }
+
   ASSERT_TRUE(RunExtensionSubtest(
       "",
-      base::StringPrintf("chrome-extension://%s/basic.html?systemTokenEnabled",
-                         kTestExtensionID)))
+      base::StringPrintf("chrome-extension://%s/basic.html?%s",
+                         kTestExtensionID,
+                         system_token_availability.c_str())))
       << message_;
-  TearDownTestSystemSlot();
 }
 
-IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysTest, SystemTokenDisabled) {
-  ASSERT_TRUE(RunExtensionSubtest(
-      "",
-      base::StringPrintf("chrome-extension://%s/basic.html", kTestExtensionID)))
-      << message_;
-}
+INSTANTIATE_TEST_CASE_P(
+    CheckSystemTokenAvailability,
+    EnterprisePlatformKeysTest,
+    ::testing::Values(Params(SYSTEM_TOKEN_EXISTS,
+                             DEVICE_STATUS_ENROLLED,
+                             USER_AFFILIATION_ENROLLED_DOMAIN),
+                      Params(SYSTEM_TOKEN_EXISTS,
+                             DEVICE_STATUS_ENROLLED,
+                             USER_AFFILIATION_UNRELATED),
+                      Params(SYSTEM_TOKEN_EXISTS,
+                             DEVICE_STATUS_NOT_ENROLLED,
+                             USER_AFFILIATION_UNRELATED),
+                      Params(SYSTEM_TOKEN_NOT_EXISTS,
+                             DEVICE_STATUS_ENROLLED,
+                             USER_AFFILIATION_ENROLLED_DOMAIN)));
+
+class EnterprisePlatformKeysTestNonPolicyInstalledExtension
+    : public EnterprisePlatformKeysTest {};
 
 // Ensure that extensions that are not pre-installed by policy throw an install
 // warning if they request the enterprise.platformKeys permission in the
@@ -311,8 +373,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_platform_keys");
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile())->extension_service();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
   const extensions::Extension* extension =
       GetExtensionByPath(service->extensions(), extension_path);
   ASSERT_FALSE(extension->install_warnings().empty());
