@@ -111,9 +111,9 @@ static String imageTitle(const String& filename, const IntSize& size)
     result.appendLiteral(" (");
     // FIXME: Localize numbers. Safari/OSX shows localized numbers with group
     // separaters. For example, "1,920x1,080".
-    result.append(String::number(size.width()));
+    result.appendNumber(size.width());
     result.append(static_cast<UChar>(0xD7)); // U+00D7 (multiplication sign)
-    result.append(String::number(size.height()));
+    result.appendNumber(size.height());
     result.append(')');
     return result.toString();
 }

@@ -52,7 +52,7 @@ String StyleKeyframe::keyText() const
         for (unsigned i = 0; i < m_keys->size(); ++i) {
             if (i)
                 keyText.append(',');
-            keyText.append(String::number(m_keys->at(i) * 100));
+            keyText.appendNumber(m_keys->at(i) * 100);
             keyText.append('%');
         }
         m_keyText = keyText.toString();

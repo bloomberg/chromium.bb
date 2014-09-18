@@ -110,13 +110,13 @@ void SVGRect::setValueAsString(const String& string, ExceptionState& exceptionSt
 String SVGRect::valueAsString() const
 {
     StringBuilder builder;
-    builder.append(String::number(x()));
+    builder.appendNumber(x());
     builder.append(' ');
-    builder.append(String::number(y()));
+    builder.appendNumber(y());
     builder.append(' ');
-    builder.append(String::number(width()));
+    builder.appendNumber(width());
     builder.append(' ');
-    builder.append(String::number(height()));
+    builder.appendNumber(height());
     return builder.toString();
 }
 

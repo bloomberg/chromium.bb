@@ -142,9 +142,9 @@ String FrameConsole::formatStackTraceString(const String& originalMessage, PassR
         stackTrace.appendLiteral(" (");
         stackTrace.append(frame.sourceURL());
         stackTrace.append(':');
-        stackTrace.append(String::number(frame.lineNumber()));
+        stackTrace.appendNumber(frame.lineNumber());
         stackTrace.append(':');
-        stackTrace.append(String::number(frame.columnNumber()));
+        stackTrace.appendNumber(frame.columnNumber());
         stackTrace.append(')');
     }
 

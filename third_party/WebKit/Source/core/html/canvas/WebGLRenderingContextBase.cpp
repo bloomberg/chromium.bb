@@ -2721,7 +2721,7 @@ WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const 
             nameBuilder.append(info.name);
             if (info.size > 1 && index >= 1) {
                 nameBuilder.append('[');
-                nameBuilder.append(String::number(index));
+                nameBuilder.appendNumber(index);
                 nameBuilder.append(']');
             }
             // Now need to look this up by name again to find its location

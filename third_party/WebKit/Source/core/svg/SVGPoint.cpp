@@ -110,9 +110,9 @@ void SVGPoint::setValueAsString(const String& string, ExceptionState& exceptionS
 String SVGPoint::valueAsString() const
 {
     StringBuilder builder;
-    builder.append(String::number(x()));
+    builder.appendNumber(x());
     builder.append(' ');
-    builder.append(String::number(y()));
+    builder.appendNumber(y());
     return builder.toString();
 }
 

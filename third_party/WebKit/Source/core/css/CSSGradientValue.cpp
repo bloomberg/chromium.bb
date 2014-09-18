@@ -512,7 +512,7 @@ String CSSLinearGradientValue::customCSSText() const
                 result.append(')');
             } else {
                 result.appendLiteral("color-stop(");
-                result.append(String::number(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER)));
+                result.appendNumber(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER));
                 result.appendLiteral(", ");
                 result.append(stop.m_color->cssText());
                 result.append(')');
@@ -797,7 +797,7 @@ String CSSRadialGradientValue::customCSSText() const
                 result.append(')');
             } else {
                 result.appendLiteral("color-stop(");
-                result.append(String::number(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER)));
+                result.appendNumber(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER));
                 result.appendLiteral(", ");
                 result.append(stop.m_color->cssText());
                 result.append(')');

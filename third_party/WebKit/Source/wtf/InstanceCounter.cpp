@@ -126,18 +126,18 @@ String InstanceCounter::dump()
 
     StringBuilder builder;
 
-    builder.append("{");
+    builder.append('{');
     HashMap<String, int>::iterator it = m_counterMap.begin();
     HashMap<String, int>::iterator itEnd = m_counterMap.end();
     for (; it != itEnd; ++it) {
         if (it != m_counterMap.begin())
-            builder.append(",");
-        builder.append("\"");
+            builder.append(',');
+        builder.append('"');
         builder.append(it->key);
-        builder.append("\": ");
-        builder.append(String::number(it->value));
+        builder.appendLiteral("\": ");
+        builder.appendNumber(it->value);
     }
-    builder.append("}");
+    builder.append('}');
 
     return builder.toString();
 }

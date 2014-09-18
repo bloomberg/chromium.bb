@@ -162,12 +162,12 @@ static double msToDays(double ms)
     return floor(ms / msPerDay);
 }
 
-static String twoDigitStringFromNumber(int number)
+static void appendTwoDigitNumber(StringBuilder& builder, int number)
 {
     ASSERT(number >= 0 && number < 100);
-    if (number > 9)
-        return String::number(number);
-    return "0" + String::number(number);
+    if (number <= 9)
+        builder.append('0');
+    builder.appendNumber(number);
 }
 
 int msToYear(double ms)
@@ -813,17 +813,17 @@ String makeRFC2822DateString(unsigned dayOfWeek, unsigned day, unsigned month, u
     stringBuilder.appendNumber(year);
     stringBuilder.append(' ');
 
-    stringBuilder.append(twoDigitStringFromNumber(hours));
+    appendTwoDigitNumber(stringBuilder, hours);
     stringBuilder.append(':');
-    stringBuilder.append(twoDigitStringFromNumber(minutes));
+    appendTwoDigitNumber(stringBuilder, minutes);
     stringBuilder.append(':');
-    stringBuilder.append(twoDigitStringFromNumber(seconds));
+    appendTwoDigitNumber(stringBuilder, seconds);
     stringBuilder.append(' ');
 
     stringBuilder.append(utcOffset > 0 ? '+' : '-');
     int absoluteUTCOffset = abs(utcOffset);
-    stringBuilder.append(twoDigitStringFromNumber(absoluteUTCOffset / 60));
-    stringBuilder.append(twoDigitStringFromNumber(absoluteUTCOffset % 60));
+    appendTwoDigitNumber(stringBuilder, absoluteUTCOffset / 60);
+    appendTwoDigitNumber(stringBuilder, absoluteUTCOffset % 60);
 
     return stringBuilder.toString();
 }
