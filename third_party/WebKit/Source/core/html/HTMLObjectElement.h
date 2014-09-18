@@ -127,6 +127,7 @@ template<typename T> inline const T* toElement(const FormAssociatedElement*);
 template<> inline const HTMLObjectElement* toElement<HTMLObjectElement>(const FormAssociatedElement* element)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!element || !element->isFormControlElement());
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || !element->isLabelElement());
     const HTMLObjectElement* objectElement = static_cast<const HTMLObjectElement*>(element);
     // We need to assert after the cast because FormAssociatedElement doesn't
     // have hasTagName.
@@ -137,6 +138,7 @@ template<> inline const HTMLObjectElement* toElement<HTMLObjectElement>(const Fo
 template<> inline const HTMLObjectElement& toElement<HTMLObjectElement>(const FormAssociatedElement& element)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!element.isFormControlElement());
+    ASSERT_WITH_SECURITY_IMPLICATION(!element.isLabelElement());
     const HTMLObjectElement& objectElement = static_cast<const HTMLObjectElement&>(element);
     // We need to assert after the cast because FormAssociatedElement doesn't
     // have hasTagName.

@@ -1,0 +1,10 @@
+As per spec labels must support form association by parser.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.getElementById("lab").form.id is "form"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

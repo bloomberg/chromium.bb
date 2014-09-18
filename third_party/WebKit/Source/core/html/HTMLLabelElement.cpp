@@ -38,12 +38,17 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLLabelElement::HTMLLabelElement(Document& document)
+inline HTMLLabelElement::HTMLLabelElement(Document& document, HTMLFormElement* form)
     : HTMLElement(labelTag, document)
 {
+    FormAssociatedElement::associateByParser(form);
 }
 
-DEFINE_NODE_FACTORY(HTMLLabelElement)
+PassRefPtrWillBeRawPtr<HTMLLabelElement> HTMLLabelElement::create(Document& document, HTMLFormElement* form)
+{
+    RefPtrWillBeRawPtr<HTMLLabelElement> labelElement = adoptRefWillBeNoop(new HTMLLabelElement(document, form));
+    return labelElement.release();
+}
 
 bool HTMLLabelElement::rendererIsFocusable() const
 {
@@ -75,7 +80,7 @@ LabelableElement* HTMLLabelElement::control() const
 
 HTMLFormElement* HTMLLabelElement::formOwner() const
 {
-    return FormAssociatedElement::findAssociatedForm(this);
+    return FormAssociatedElement::form();
 }
 
 void HTMLLabelElement::setActive(bool down)
@@ -226,9 +231,9 @@ void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForA
         return;
 
     if (!oldForAttributeValue.isEmpty())
-        scope.removeLabel(oldForAttributeValue, toHTMLLabelElement(this));
+        scope.removeLabel(oldForAttributeValue, this);
     if (!newForAttributeValue.isEmpty())
-        scope.addLabel(newForAttributeValue, toHTMLLabelElement(this));
+        scope.addLabel(newForAttributeValue, this);
 }
 
 void HTMLLabelElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
@@ -244,6 +249,7 @@ void HTMLLabelElement::attributeWillChange(const QualifiedName& name, const Atom
 Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
+    FormAssociatedElement::insertedInto(insertionPoint);
     if (insertionPoint->isInTreeScope()) {
         TreeScope& scope = insertionPoint->treeScope();
         if (scope == treeScope() && scope.shouldCacheLabelsByForAttribute())
@@ -260,6 +266,21 @@ void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
             updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
     }
     HTMLElement::removedFrom(insertionPoint);
+    FormAssociatedElement::removedFrom(insertionPoint);
+}
+
+void HTMLLabelElement::trace(Visitor* visitor)
+{
+    HTMLElement::trace(visitor);
+    FormAssociatedElement::trace(visitor);
+}
+
+void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const AtomicString& attributeValue)
+{
+    if (attributeName == formAttr)
+        formAttributeChanged();
+    else
+        HTMLElement::parseAttribute(attributeName, attributeValue);
 }
 
 } // namespace

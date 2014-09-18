@@ -30,6 +30,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/ValidityState.h"
 
@@ -307,8 +308,10 @@ const HTMLElement& toHTMLElement(const FormAssociatedElement& associatedElement)
 {
     if (associatedElement.isFormControlElement())
         return toHTMLFormControlElement(associatedElement);
-    // Assumes the element is an HTMLObjectElement
-    return toHTMLObjectElement(associatedElement);
+    else if (associatedElement.isLabelElement())
+        return toHTMLLabelElement(associatedElement);
+    else
+        return toHTMLObjectElement(associatedElement);
 }
 
 const HTMLElement* toHTMLElement(const FormAssociatedElement* associatedElement)
