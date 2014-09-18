@@ -17167,6 +17167,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicVerifyProofFailed.HandshakeConfirmed"
+    enum="BooleanHandshakeConfirmed">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Logged whenever proof verification fails and if the failure occurred before
+    or after the crypto handshake is confirmed.
+  </summary>
+</histogram>
+
 <histogram name="Net.RenegotiationExtensionSupported">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -38781,6 +38790,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanHadBlankText" type="int">
   <int value="0" label="Did not have blank text"/>
   <int value="1" label="Had blank text"/>
+</enum>
+
+<enum name="BooleanHandshakeConfirmed" type="int">
+  <int value="0" label="Handshake not confirmed"/>
+  <int value="1" label="Handshake confirmed"/>
 </enum>
 
 <enum name="BooleanHasCrc" type="int">

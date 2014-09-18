@@ -213,7 +213,9 @@ int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoWriteComplete(int rv) {
-  state_ = SET_DONE;
+  // Keep the entry open for future writes.
+  new_data_.clear();
+  state_ = NONE;
   return OK;
 }
 
@@ -221,7 +223,8 @@ int DiskCacheBasedQuicServerInfo::DoCreateOrOpenComplete(int rv) {
   if (rv != OK) {
     state_ = SET_DONE;
   } else {
-    entry_ = data_shim_->entry;
+    if (!entry_)
+      entry_ = data_shim_->entry;
     state_ = WRITE;
   }
   return OK;
@@ -264,8 +267,10 @@ int DiskCacheBasedQuicServerInfo::DoWrite() {
 }
 
 int DiskCacheBasedQuicServerInfo::DoCreateOrOpen() {
-  DCHECK(entry_ == NULL);
   state_ = CREATE_OR_OPEN_COMPLETE;
+  if (entry_)
+    return OK;
+
   if (found_entry_) {
     return backend_->OpenEntry(key(), &data_shim_->entry, io_callback_);
   }

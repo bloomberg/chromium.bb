@@ -106,6 +106,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     STATE_GET_CHANNEL_ID,
     STATE_GET_CHANNEL_ID_COMPLETE,
     STATE_RECV_SHLO,
+    STATE_INITIALIZE_SCUP,
+    STATE_VERIFY_PROOF_DONE,
   };
 
   // Handles new server config and optional source-address token provided by the
@@ -116,6 +118,21 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
   // |in| may be NULL if the call did not result from a received message.
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);
+
+  // Start the proof verification if |server_id_| is https and |cached| has
+  // signature.
+  void DoInitializeServerConfigUpdate(
+      QuicCryptoClientConfig::CachedState* cached);
+
+  // Starts the proof verification. Returns the QuicAsyncStatus returned by the
+  // ProofVerifier's VerifyProof.
+  QuicAsyncStatus DoVerifyProof(QuicCryptoClientConfig::CachedState* cached);
+
+  // If proof is valid then it sets the proof as valid (which persists the
+  // server config) and returns QUIC_NO_ERROR. If not, it closes the connection
+  // and returns QUIC_PROOF_INVALID.
+  QuicErrorCode DoVerifyProofComplete(
+      QuicCryptoClientConfig::CachedState* cached);
 
   // Called to set the proof of |cached| valid.  Also invokes the session's
   // OnProofValid() method.

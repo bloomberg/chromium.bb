@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
+#include "base/metrics/histogram.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -156,6 +157,13 @@ void QuicCryptoClientStream::HandleServerConfigUpdateMessage(
         error, "Server config update invalid: " + error_details);
     return;
   }
+
+  DCHECK(handshake_confirmed());
+  if (proof_verify_callback_) {
+    proof_verify_callback_->Cancel();
+  }
+  next_state_ = STATE_INITIALIZE_SCUP;
+  DoHandshakeLoop(NULL);
 }
 
 // kMaxClientHellos is the maximum number of times that we'll send a client
@@ -308,56 +316,14 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         next_state_ = STATE_GET_CHANNEL_ID;
         break;
       case STATE_VERIFY_PROOF: {
-        ProofVerifier* verifier = crypto_config_->proof_verifier();
-        DCHECK(verifier);
-        next_state_ = STATE_VERIFY_PROOF_COMPLETE;
-        generation_counter_ = cached->generation_counter();
-
-        ProofVerifierCallbackImpl* proof_verify_callback =
-            new ProofVerifierCallbackImpl(this);
-
-        verify_ok_ = false;
-
-        QuicAsyncStatus status = verifier->VerifyProof(
-            server_id_.host(),
-            cached->server_config(),
-            cached->certs(),
-            cached->signature(),
-            verify_context_.get(),
-            &verify_error_details_,
-            &verify_details_,
-            proof_verify_callback);
-
-        switch (status) {
-          case QUIC_PENDING:
-            proof_verify_callback_ = proof_verify_callback;
-            DVLOG(1) << "Doing VerifyProof";
-            return;
-          case QUIC_FAILURE:
-            delete proof_verify_callback;
-            break;
-          case QUIC_SUCCESS:
-            delete proof_verify_callback;
-            verify_ok_ = true;
-            break;
+        if (QUIC_PENDING == DoVerifyProof(cached)) {
+          return;
         }
         break;
       }
       case STATE_VERIFY_PROOF_COMPLETE:
-        if (!verify_ok_) {
-          client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
-          CloseConnectionWithDetails(
-              QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
+        if (QUIC_PROOF_INVALID == DoVerifyProofComplete(cached)) {
           return;
-        }
-        // Check if generation_counter has changed between STATE_VERIFY_PROOF
-        // and STATE_VERIFY_PROOF_COMPLETE state changes.
-        if (generation_counter_ != cached->generation_counter()) {
-          next_state_ = STATE_VERIFY_PROOF;
-        } else {
-          SetCachedProofValid(cached);
-          cached->SetProofVerifyDetails(verify_details_.release());
-          next_state_ = STATE_GET_CHANNEL_ID;
         }
         break;
       case STATE_GET_CHANNEL_ID: {
@@ -471,8 +437,93 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         // This means that the peer sent us a message that we weren't expecting.
         CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);
         return;
+      case STATE_INITIALIZE_SCUP:
+        DoInitializeServerConfigUpdate(cached);
+        break;
+      case STATE_VERIFY_PROOF_DONE:
+        return;  // We are done.
     }
   }
+}
+
+void QuicCryptoClientStream::DoInitializeServerConfigUpdate(
+    QuicCryptoClientConfig::CachedState* cached) {
+  if (!server_id_.is_https()) {
+    // We don't check the certificates for insecure QUIC connections.
+    SetCachedProofValid(cached);
+    next_state_ = STATE_VERIFY_PROOF_DONE;
+    return;
+  }
+  if (!cached->IsEmpty() && !cached->signature().empty()) {
+    // Note that we verify the proof even if the cached proof is valid.
+    DCHECK(crypto_config_->proof_verifier());
+    next_state_ = STATE_VERIFY_PROOF;
+  }
+}
+
+QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(
+    QuicCryptoClientConfig::CachedState* cached) {
+  ProofVerifier* verifier = crypto_config_->proof_verifier();
+  DCHECK(verifier);
+  next_state_ = STATE_VERIFY_PROOF_COMPLETE;
+  generation_counter_ = cached->generation_counter();
+
+  ProofVerifierCallbackImpl* proof_verify_callback =
+      new ProofVerifierCallbackImpl(this);
+
+  verify_ok_ = false;
+
+  QuicAsyncStatus status = verifier->VerifyProof(
+      server_id_.host(),
+      cached->server_config(),
+      cached->certs(),
+      cached->signature(),
+      verify_context_.get(),
+      &verify_error_details_,
+      &verify_details_,
+      proof_verify_callback);
+
+  switch (status) {
+    case QUIC_PENDING:
+      proof_verify_callback_ = proof_verify_callback;
+      DVLOG(1) << "Doing VerifyProof";
+      break;
+    case QUIC_FAILURE:
+      delete proof_verify_callback;
+      break;
+    case QUIC_SUCCESS:
+      delete proof_verify_callback;
+      verify_ok_ = true;
+      break;
+  }
+  return status;
+}
+
+QuicErrorCode QuicCryptoClientStream::DoVerifyProofComplete(
+    QuicCryptoClientConfig::CachedState* cached) {
+  if (!verify_ok_) {
+    client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicVerifyProofFailed.HandshakeConfirmed",
+                          handshake_confirmed());
+    CloseConnectionWithDetails(
+        QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
+    return QUIC_PROOF_INVALID;
+  }
+
+  // Check if generation_counter has changed between STATE_VERIFY_PROOF and
+  // STATE_VERIFY_PROOF_COMPLETE state changes.
+  if (generation_counter_ != cached->generation_counter()) {
+    next_state_ = STATE_VERIFY_PROOF;
+  } else {
+    SetCachedProofValid(cached);
+    cached->SetProofVerifyDetails(verify_details_.release());
+    if (!handshake_confirmed()) {
+      next_state_ = STATE_GET_CHANNEL_ID;
+    } else {
+      next_state_ = STATE_VERIFY_PROOF_DONE;
+    }
+  }
+  return QUIC_NO_ERROR;
 }
 
 void QuicCryptoClientStream::SetCachedProofValid(
