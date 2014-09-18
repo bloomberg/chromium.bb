@@ -637,7 +637,14 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMExpectedCrash) {
       "plugin crash");
 }
 
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
+// Disabled on Windows because this flakily causes failures in ~File, which
+// causes base::ThreadRestrictions::AssertIOAllowed problems. crbug.com/415742
+#if defined(OS_WIN)
+#define MAYBE_FileIOTest DISABLED_FileIOTest
+#else
+#define MAYBE_FileIOTest FileIOTest
+#endif
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, MAYBE_FileIOTest) {
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem,
                        kFileIOTestSuccess);
 }
