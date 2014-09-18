@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
@@ -41,6 +42,20 @@ public class ChromeShellToolbar extends LinearLayout {
         }
     };
 
+    private final Runnable mUpdateProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mProgressDrawable.setLevel(100 * mProgress);
+            if (mLoading) {
+                mStopReloadButton.setImageResource(R.drawable.btn_stop_normal);
+            } else {
+                mStopReloadButton.setImageResource(R.drawable.btn_reload_normal);
+                ApiCompatibilityUtils.postOnAnimationDelayed(ChromeShellToolbar.this,
+                        mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
+            }
+        }
+    };
+
     private EditText mUrlTextView;
     private ClipDrawable mProgressDrawable;
 
@@ -53,6 +68,7 @@ public class ChromeShellToolbar extends LinearLayout {
     private SuggestionPopup mSuggestionPopup;
 
     private ImageButton mStopReloadButton;
+    private int mProgress = 0;
     private boolean mLoading = true;
 
     /**
@@ -89,14 +105,10 @@ public class ChromeShellToolbar extends LinearLayout {
 
     private void onLoadProgressChanged(int progress) {
         removeCallbacks(mClearProgressRunnable);
-        mProgressDrawable.setLevel(100 * progress);
+        removeCallbacks(mUpdateProgressRunnable);
+        mProgress = progress;
         mLoading = progress != 100;
-        if (mLoading) {
-            mStopReloadButton.setImageResource(R.drawable.btn_stop_normal);
-        } else {
-            mStopReloadButton.setImageResource(R.drawable.btn_reload_normal);
-            postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
-        }
+        ApiCompatibilityUtils.postOnAnimation(this, mUpdateProgressRunnable);
     }
 
     /**

@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.animation.ValueAnimator;
 import android.app.PendingIntent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -230,6 +231,37 @@ public class ApiCompatibilityUtils {
             view.postInvalidateOnAnimation();
         } else {
             view.postInvalidate();
+        }
+    }
+
+    /**
+     * @see android.view.View#postOnAnimation()
+     */
+    public static void postOnAnimation(View view, Runnable action) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.postOnAnimation(action);
+        } else {
+            view.postDelayed(action, getFrameTime());
+        }
+    }
+
+    /**
+     * @see android.view.View#postOnAnimationDelayed()
+     */
+    public static void postOnAnimationDelayed(View view, Runnable action, long delayMillis) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.postOnAnimationDelayed(action, delayMillis);
+        } else {
+            view.postDelayed(action, getFrameTime() + delayMillis);
+        }
+    }
+
+    private static long getFrameTime() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            return ValueAnimator.getFrameDelay();
+        } else {
+            // Any reasonable fake frame delay will have to do.
+            return 10;
         }
     }
 
