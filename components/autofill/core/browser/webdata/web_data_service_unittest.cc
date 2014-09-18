@@ -374,16 +374,16 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   EXPECT_EQ(profile2, *consumer.result()[1]);
   STLDeleteElements(&consumer.result());
 
-  AutofillProfile profile1_changed(profile1);
-  profile1_changed.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bill"));
+  AutofillProfile profile2_changed(profile2);
+  profile2_changed.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bill"));
   const AutofillProfileChange expected_change(
-      AutofillProfileChange::UPDATE, profile1.guid(), &profile1_changed);
+      AutofillProfileChange::UPDATE, profile2.guid(), &profile2_changed);
 
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
       .WillOnce(SignalEvent(&done_event_));
 
   // Update the profile.
-  wds_->UpdateAutofillProfile(profile1_changed);
+  wds_->UpdateAutofillProfile(profile2_changed);
   done_event_.TimedWait(test_timeout_);
 
   // Check that the updates were made.
@@ -392,9 +392,9 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   base::MessageLoop::current()->Run();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(2U, consumer2.result().size());
-  EXPECT_NE(profile1, *consumer2.result()[0]);
-  EXPECT_EQ(profile1_changed, *consumer2.result()[0]);
-  EXPECT_EQ(profile2, *consumer2.result()[1]);
+  EXPECT_EQ(profile1, *consumer2.result()[0]);
+  EXPECT_EQ(profile2_changed, *consumer2.result()[1]);
+  EXPECT_NE(profile2, *consumer2.result()[1]);
   STLDeleteElements(&consumer2.result());
 }
 
