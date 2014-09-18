@@ -32,7 +32,7 @@ css1/formatting_model/horizontal_formatting.html
 css1/text_properties/text_align.html
 css1/units/rounding.html
 css1/units/zero-duration-without-units.html
-css3/compositing/should-have-compositing-layer.html
+css3/blending/should-have-compositing-layer.html
 css3/device-adapt/viewport-insert-rule-after.html
 css3/device-adapt/viewport-insert-rule-before.html
 css3/filters/crash-hw-sw-switch.html
