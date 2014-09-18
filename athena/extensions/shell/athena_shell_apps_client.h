@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_EXTENSIONS_CHROME_ATHENA_APPS_CLIENT_H_
-#define ATHENA_EXTENSIONS_CHROME_ATHENA_APPS_CLIENT_H_
+#ifndef ATHENA_EXTENSIONS_SHELL_ATHENA_SHELL_APPS_CLIENT_H_
+#define ATHENA_EXTENSIONS_SHELL_ATHENA_SHELL_APPS_CLIENT_H_
 
-#include "extensions/browser/app_window/apps_client.h"
+#include "athena/extensions/athena_apps_client_base.h"
 #include "base/macros.h"
 
 namespace athena {
 
-// The implementation of AppsClient for Athena.
-class AthenaAppsClient : public extensions::AppsClient {
+class AthenaShellAppsClient : public AthenaAppsClientBase {
  public:
-  AthenaAppsClient();
-  virtual ~AthenaAppsClient();
+  AthenaShellAppsClient(content::BrowserContext* context);
+  virtual ~AthenaShellAppsClient();
 
  private:
   // extensions::AppsClient
@@ -23,18 +22,15 @@ class AthenaAppsClient : public extensions::AppsClient {
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;
-  virtual extensions::NativeAppWindow* CreateNativeAppWindow(
-      extensions::AppWindow* window,
-      const extensions::AppWindow::CreateParams& params) OVERRIDE;
-  virtual void IncrementKeepAliveCount() OVERRIDE;
-  virtual void DecrementKeepAliveCount() OVERRIDE;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
                                   const base::Closure& callback) OVERRIDE;
   virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(AthenaAppsClient);
+  content::BrowserContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(AthenaShellAppsClient);
 };
 
 }  // namespace athena
 
-#endif  // ATHENA_EXTENSIONS_CHROME_ATHENA_APPS_CLIENT_H_
+#endif  // ATHENA_EXTENSIONS_SHELL_ATHENA_SHELL_APPS_CLIENT_H_

@@ -49,7 +49,7 @@ class UserActivityDetector;
 }
 
 namespace extensions {
-
+class AppsClient;
 class Extension;
 
 // Handles desktop-related tasks for app_shell.
@@ -128,6 +128,8 @@ class ShellDesktopController : public DesktopController,
 #if defined(OS_CHROMEOS)
   scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
 #endif
+
+  scoped_ptr<AppsClient> apps_client_;
 
   // The desktop supports a single app window.
   AppWindow* app_window_;  // NativeAppWindow::Close() deletes this.

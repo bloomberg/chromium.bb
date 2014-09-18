@@ -6,7 +6,7 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
-#include "athena/extensions/chrome/athena_apps_client.h"
+#include "athena/extensions/chrome/athena_chrome_apps_client.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -32,7 +32,7 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     extensions::AppsClient::Set(&apps_client_);
   }
 
-  virtual ~ChromeExtensionsDelegate() {}
+  virtual ~ChromeExtensionsDelegate() { extensions::AppsClient::Set(NULL); }
 
  private:
   // ExtensionsDelegate:
@@ -106,7 +106,7 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
   // Installed extensions.
   extensions::ExtensionSet extensions_;
 
-  AthenaAppsClient apps_client_;
+  AthenaChromeAppsClient apps_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsDelegate);
 };

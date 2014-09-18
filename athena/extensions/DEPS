@@ -1,9 +1,14 @@
 include_rules = [
+  "+athena/env/public",
   "+athena/activity/public",
   "+athena/home/public",
+  "+components/native_app_window",
+  "+content/public/browser",
   "+extensions/browser",
   "+extensions/common",
   "+extensions/grit",
   "+ui/app_list",
+  "+ui/aura",
   "+ui/base/resource",
+  "+ui/gfx",
 ]

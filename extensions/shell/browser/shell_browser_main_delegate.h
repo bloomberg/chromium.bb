@@ -11,7 +11,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class AppsClient;
 class DesktopController;
 
 class ShellBrowserMainDelegate {
@@ -30,9 +29,6 @@ class ShellBrowserMainDelegate {
   // and window manager. Subclass may return its subclass to customize the
   // windo manager.
   virtual DesktopController* CreateDesktopController() = 0;
-
-  // Creates the AppsClient instance to support app.window extension API.
-  virtual AppsClient* CreateAppsClient() = 0;
 };
 
 }  // namespace extensions

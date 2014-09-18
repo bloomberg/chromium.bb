@@ -75,50 +75,6 @@ class AthenaDesktopController : public extensions::DesktopController {
   DISALLOW_COPY_AND_ASSIGN(AthenaDesktopController);
 };
 
-class AthenaAppsClient : public extensions::AppsClient {
- public:
-  AthenaAppsClient() {}
-  virtual ~AthenaAppsClient() {}
-
-  // extensions::AppsClient:
-  virtual std::vector<content::BrowserContext*>
-  GetLoadedBrowserContexts() OVERRIDE {
-    NOTIMPLEMENTED();
-    return std::vector<content::BrowserContext*>();
-  }
-
-  virtual extensions::AppWindow* CreateAppWindow(
-      content::BrowserContext* context,
-      const extensions::Extension* extension) OVERRIDE {
-    return new extensions::AppWindow(
-        context, new extensions::ShellAppDelegate, extension);
-  }
-
-  virtual extensions::NativeAppWindow* CreateNativeAppWindow(
-      extensions::AppWindow* window,
-      const extensions::AppWindow::CreateParams& params) OVERRIDE {
-    athena::ActivityManager::Get()->AddActivity(
-        athena::ActivityFactory::Get()->CreateAppActivity(window, NULL));
-    return new extensions::ShellNativeAppWindow(window, params);
-  }
-
-  virtual void IncrementKeepAliveCount() OVERRIDE {}
-
-  virtual void DecrementKeepAliveCount() OVERRIDE {}
-
-  virtual void OpenDevToolsWindow(content::WebContents* web_contents,
-                                  const base::Closure& callback) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual bool IsCurrentChannelOlderThanDev() OVERRIDE {
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AthenaAppsClient);
-};
-
 class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
  public:
   AthenaBrowserMainDelegate() {}
@@ -157,10 +113,6 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
 
   virtual extensions::DesktopController* CreateDesktopController() OVERRIDE {
     return new AthenaDesktopController();
-  }
-
-  virtual extensions::AppsClient* CreateAppsClient() OVERRIDE {
-    return new AthenaAppsClient();
   }
 
  private:

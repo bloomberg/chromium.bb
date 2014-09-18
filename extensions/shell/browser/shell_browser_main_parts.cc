@@ -125,9 +125,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   device_client_.reset(new ShellDeviceClient);
 
-  apps_client_.reset(browser_main_delegate_->CreateAppsClient());
-  extensions::AppsClient::Set(apps_client_.get());
-
   extensions_client_.reset(new ShellExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
 
