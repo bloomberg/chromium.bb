@@ -509,8 +509,13 @@ class GSContext(object):
 
       # We have seen flaky errors with 5xx return codes
       # See b/17376491 for the "JSON decoding" error.
-      if ('ServiceException: 5' in error or
-          'Failure: No JSON object could be decoded' in error):
+      # We have seen transient Oauth 2.0 credential errors (crbug.com/414345).
+      TRANSIENT_ERROR_MESSAGE = (
+          'ServiceException: 5',
+          'Failure: No JSON object could be decoded',
+          'Oauth 2.0 User Account',
+      )
+      if any(x in error for x in TRANSIENT_ERROR_MESSAGE):
         return True
 
     return False
