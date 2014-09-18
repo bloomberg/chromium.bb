@@ -11,6 +11,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
@@ -52,6 +54,10 @@ namespace policy {
 
 namespace {
 
+const char kAffiliatedUserID1[] = "test_1@example.com";
+const char kAffiliatedUserID2[] = "test_2@example.com";
+const char kUnaffiliatedUserID[] = "test_2@other_domain.test";
+
 KeyedService* BuildProfileInvalidationProvider(
     content::BrowserContext* context) {
   scoped_ptr<invalidation::FakeInvalidationService> invalidation_service(
@@ -74,7 +80,7 @@ class DeviceCloudPolicyInvalidatorTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   // Ownership is not passed. The Profile is owned by the global ProfileManager.
-  Profile *CreateProfile(const std::string& profile_name);
+  Profile *LogInAndReturnProfile(const std::string& user_id);
 
   invalidation::TiclInvalidationService* GetDeviceInvalidationService();
   bool HasDeviceInvalidationServiceObserver() const;
@@ -95,6 +101,8 @@ class DeviceCloudPolicyInvalidatorTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
   TestingProfileManager profile_manager_;
+  chromeos::FakeUserManager* fake_user_manager_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   ScopedStubEnterpriseInstallAttributes install_attributes_;
   scoped_ptr<chromeos::ScopedTestDeviceSettingsService>
       test_device_settings_service_;
@@ -109,6 +117,8 @@ DeviceCloudPolicyInvalidatorTest::DeviceCloudPolicyInvalidatorTest()
       system_request_context_(new net::TestURLRequestContextGetter(
           base::MessageLoopProxy::current())),
       profile_manager_(TestingBrowserProcess::GetGlobal()),
+      fake_user_manager_(new chromeos::FakeUserManager),
+      user_manager_enabler_(fake_user_manager_),
       install_attributes_("example.com",
                           "user@example.com",
                           "device_id",
@@ -170,9 +180,10 @@ void DeviceCloudPolicyInvalidatorTest::TearDown() {
   chromeos::SystemSaltGetter::Shutdown();
 }
 
-Profile *DeviceCloudPolicyInvalidatorTest::CreateProfile(
-    const std::string& profile_name) {
-  Profile* profile = profile_manager_.CreateTestingProfile(profile_name);
+Profile *DeviceCloudPolicyInvalidatorTest::LogInAndReturnProfile(
+    const std::string& user_id) {
+  fake_user_manager_->AddUser(user_id);
+  Profile* profile = profile_manager_.CreateTestingProfile(user_id);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),
@@ -219,13 +230,17 @@ DeviceCloudPolicyInvalidatorTest::GetCloudPolicyInvalidator() const {
 }
 
 void DeviceCloudPolicyInvalidatorTest::ConnectDeviceInvalidationService() {
+  const int per_profile_invalidation_service_observer_count =
+      GetProfileInvalidationServiceObserverCount();
+
   // Verify that a device-global invalidation service has been created.
   ASSERT_TRUE(GetDeviceInvalidationService());
   EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
 
-  // Verify that no per-profile invalidation service observers have been
+  // Verify that no new per-profile invalidation service observers have been
   // created.
-  EXPECT_EQ(0, GetProfileInvalidationServiceObserverCount());
+  EXPECT_EQ(per_profile_invalidation_service_observer_count,
+            GetProfileInvalidationServiceObserverCount());
 
   // Verify that no invalidator exists yet
   EXPECT_FALSE(GetCloudPolicyInvalidator());
@@ -254,6 +269,7 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, UseDeviceInvalidationService) {
   // is created when the service connects.
   ConnectDeviceInvalidationService();
   ASSERT_TRUE(GetDeviceInvalidationService());
+  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
 
   // Indicate that the device-global invalidation service has disconnected.
   GetDeviceInvalidationService()->OnInvalidatorStateChange(
@@ -269,12 +285,13 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, UseDeviceInvalidationService) {
   EXPECT_FALSE(GetInvalidationService());
 }
 
-// Verifies that a DeviceCloudPolicyInvalidator backed by a per-profile
-// invalidation service is created/destroyed as the service
-// connects/disconnects.
-TEST_F(DeviceCloudPolicyInvalidatorTest, UseProfileInvalidationService) {
-  // Create a user profile.
-  Profile* profile = CreateProfile("test");
+// Verifies that when the per-profile invalidation service for an affiliated
+// user connect/disconnects, a DeviceCloudPolicyInvalidator backed by it is
+// created/destroyed.
+TEST_F(DeviceCloudPolicyInvalidatorTest,
+       UseAffiliatedProfileInvalidationService) {
+  // Log in as an affiliated user.
+  Profile* profile = LogInAndReturnProfile(kAffiliatedUserID1);
   ASSERT_TRUE(profile);
 
   // Verify that a device-global invalidation service has been created.
@@ -287,7 +304,7 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, UseProfileInvalidationService) {
   ASSERT_TRUE(profile_invalidation_service);
   EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
 
-  // Verify that no invalidator exists yet
+  // Verify that no invalidator exists yet.
   EXPECT_FALSE(GetCloudPolicyInvalidator());
   EXPECT_FALSE(GetInvalidationService());
 
@@ -327,13 +344,55 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, UseProfileInvalidationService) {
   EXPECT_FALSE(GetInvalidationService());
 }
 
-// Verifies that a DeviceCloudPolicyInvalidator exists whenever a connected
-// invalidation service is available, automatically switching between
-// device-global and per-profile invalidation services as they
-// connect/disconnect, giving priority to per-profile invalidation services.
-// Also verifies that the highest handled invalidation version is preserved when
-// switching invalidation services.
-TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
+// Verifies that even if the per-profile invalidation service for an
+// unaffiliated user connects, no DeviceCloudPolicyInvalidator backed by it is
+// created.
+TEST_F(DeviceCloudPolicyInvalidatorTest,
+       DoNotUseUnaffiliatedProfileInvalidationService) {
+  // Log in as an unaffiliated user.
+  Profile* profile = LogInAndReturnProfile(kUnaffiliatedUserID);
+  ASSERT_TRUE(profile);
+
+  // Verify that a device-global invalidation service has been created.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service has been created.
+  invalidation::FakeInvalidationService* profile_invalidation_service =
+      GetProfileInvalidationService(profile);
+  ASSERT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(0, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that no invalidator exists yet.
+  EXPECT_FALSE(GetCloudPolicyInvalidator());
+  EXPECT_FALSE(GetInvalidationService());
+
+  // Indicate that the per-profile invalidation service has connected.
+  profile_invalidation_service->SetInvalidatorState(
+      syncer::INVALIDATIONS_ENABLED);
+
+  // Verify that the device-global invalidator still exists.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service still exists.
+  profile_invalidation_service = GetProfileInvalidationService(profile);
+  EXPECT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(0, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that no invalidator has been created.
+  EXPECT_FALSE(GetCloudPolicyInvalidator());
+  EXPECT_FALSE(GetInvalidationService());
+}
+
+// Verifies that when the per-profile invalidation service for an affiliated
+// user connects, a DeviceCloudPolicyInvalidator backed by it replaces the
+// current DeviceCloudPolicyInvalidator backed by a device-global invalidation
+// service. Also verifies that the device-global invalidation service is
+// destroyed at this point and the highest handled invalidation version is
+// preserved when switching invalidation services.
+TEST_F(DeviceCloudPolicyInvalidatorTest,
+       SwitchToAffiliatedProfileInvalidationService) {
   CloudPolicyStore* store = static_cast<CloudPolicyStore*>(
       TestingBrowserProcess::GetGlobal()->platform_part()->
           browser_policy_connector_chromeos()->GetDeviceCloudPolicyManager()->
@@ -345,25 +404,30 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   ConnectDeviceInvalidationService();
   CloudPolicyInvalidator* invalidator = GetCloudPolicyInvalidator();
   ASSERT_TRUE(invalidator);
-  ASSERT_TRUE(GetDeviceInvalidationService());
+  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
 
   // Verify that the invalidator's highest handled invalidation version starts
   // out as zero.
   EXPECT_EQ(0, invalidator->highest_handled_invalidation_version());
 
-  // Create a first user profile.
-  Profile* profile_1 = CreateProfile("test_1");
-  ASSERT_TRUE(profile_1);
+  // Handle an invalidation with version 1. Verify that the invalidator's
+  // highest handled invalidation version is updated accordingly.
+  store->Store(device_policy_.policy(), 1);
+  invalidator->OnStoreLoaded(store);
+  EXPECT_EQ(1, invalidator->highest_handled_invalidation_version());
+
+  // Log in as an affiliated user.
+  Profile* profile = LogInAndReturnProfile(kAffiliatedUserID1);
+  ASSERT_TRUE(profile);
 
   // Verify that the device-global invalidation service still exists.
   EXPECT_TRUE(GetDeviceInvalidationService());
   EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
 
-  // Verify that a per-profile invalidation service has been created for the
-  // first user profile.
-  invalidation::FakeInvalidationService* profile_1_invalidation_service =
-      GetProfileInvalidationService(profile_1);
-  ASSERT_TRUE(profile_1_invalidation_service);
+  // Verify that a per-profile invalidation service has been created.
+  invalidation::FakeInvalidationService* profile_invalidation_service =
+      GetProfileInvalidationService(profile);
+  ASSERT_TRUE(profile_invalidation_service);
   EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
 
   // Verify that an invalidator backed by the device-global invalidation service
@@ -371,7 +435,214 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   EXPECT_TRUE(GetCloudPolicyInvalidator());
   EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
 
-  // Indicate that the first user profile's per-profile invalidation service has
+  // Indicate that the per-profile invalidation service has connected.
+  profile_invalidation_service->SetInvalidatorState(
+      syncer::INVALIDATIONS_ENABLED);
+
+  // Verify that the device-global invalidator has been destroyed.
+  EXPECT_FALSE(GetDeviceInvalidationService());
+  EXPECT_FALSE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service still exists.
+  profile_invalidation_service = GetProfileInvalidationService(profile);
+  EXPECT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that an invalidator backed by the per-profile invalidation service
+  // has been created.
+  invalidator = GetCloudPolicyInvalidator();
+  ASSERT_TRUE(invalidator);
+  EXPECT_EQ(profile_invalidation_service, GetInvalidationService());
+
+  // Verify that the invalidator's highest handled invalidation version starts
+  // out as one.
+  EXPECT_EQ(1, invalidator->highest_handled_invalidation_version());
+}
+
+// Verifies that when the per-profile invalidation service for an unaffiliated
+// user connects, the current DeviceCloudPolicyInvalidator backed by a
+// device-global invalidation service is not destroyed and replaced.
+TEST_F(DeviceCloudPolicyInvalidatorTest,
+       DoNotSwitchToUnaffiliatedProfileInvalidationService) {
+  // Verify that an invalidator backed by the device-global invalidation service
+  // is created when the service connects.
+  ConnectDeviceInvalidationService();
+  CloudPolicyInvalidator* invalidator = GetCloudPolicyInvalidator();
+  ASSERT_TRUE(invalidator);
+  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
+
+  // Verify that the invalidator's highest handled invalidation version starts
+  // out as zero.
+  EXPECT_EQ(0, invalidator->highest_handled_invalidation_version());
+
+  // Log in as an unaffiliated user.
+  Profile* profile = LogInAndReturnProfile(kUnaffiliatedUserID);
+  ASSERT_TRUE(profile);
+
+  // Verify that the device-global invalidation service still exists.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service has been created.
+  invalidation::FakeInvalidationService* profile_invalidation_service =
+      GetProfileInvalidationService(profile);
+  ASSERT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(0, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that an invalidator backed by the device-global invalidation service
+  // still exists.
+  EXPECT_TRUE(GetCloudPolicyInvalidator());
+  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
+
+  // Indicate that the per-profile invalidation service has connected.
+  profile_invalidation_service->SetInvalidatorState(
+      syncer::INVALIDATIONS_ENABLED);
+
+  // Verify that the device-global invalidator still exists.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service still exists.
+  profile_invalidation_service = GetProfileInvalidationService(profile);
+  EXPECT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(0, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that an invalidator backed by the device-global invalidation service
+  // still exists.
+  EXPECT_TRUE(GetCloudPolicyInvalidator());
+  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
+}
+
+// Verifies that when the per-profile invalidation service backing the current
+// DeviceCloudPolicyInvalidator disconnects and no other connected invalidation
+// service is available for use, a device-global invalidation service is
+// created. Also verifies that when this service connects, a
+// DeviceCloudPolicyInvalidator backed by it is created and the highest handled
+// invalidation version is preserved when switching invalidation services.
+TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchToDeviceInvalidationService) {
+  CloudPolicyStore* store = static_cast<CloudPolicyStore*>(
+      TestingBrowserProcess::GetGlobal()->platform_part()->
+          browser_policy_connector_chromeos()->GetDeviceCloudPolicyManager()->
+              device_store());
+  ASSERT_TRUE(store);
+
+  // Log in as an affiliated user.
+  Profile* profile = LogInAndReturnProfile(kAffiliatedUserID1);
+  ASSERT_TRUE(profile);
+
+  // Verify that a device-global invalidation service has been created.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service has been created.
+  invalidation::FakeInvalidationService* profile_invalidation_service =
+      GetProfileInvalidationService(profile);
+  ASSERT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that no invalidator exists yet.
+  EXPECT_FALSE(GetCloudPolicyInvalidator());
+  EXPECT_FALSE(GetInvalidationService());
+
+  // Indicate that the per-profile invalidation service has connected.
+  profile_invalidation_service->SetInvalidatorState(
+      syncer::INVALIDATIONS_ENABLED);
+
+  // Verify that the device-global invalidator has been destroyed.
+  EXPECT_FALSE(GetDeviceInvalidationService());
+  EXPECT_FALSE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service still exists.
+  profile_invalidation_service = GetProfileInvalidationService(profile);
+  ASSERT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that an invalidator backed by the per-profile invalidation service
+  // has been created.
+  CloudPolicyInvalidator* invalidator = GetCloudPolicyInvalidator();
+  ASSERT_TRUE(invalidator);
+  EXPECT_EQ(profile_invalidation_service, GetInvalidationService());
+
+  // Verify that the invalidator's highest handled invalidation version starts
+  // out as zero.
+  EXPECT_EQ(0, invalidator->highest_handled_invalidation_version());
+
+  // Handle an invalidation with version 1. Verify that the invalidator's
+  // highest handled invalidation version is updated accordingly.
+  store->Store(device_policy_.policy(), 1);
+  invalidator->OnStoreLoaded(store);
+  EXPECT_EQ(1, invalidator->highest_handled_invalidation_version());
+
+  // Indicate that the per-profile invalidation service has disconnected.
+  profile_invalidation_service->SetInvalidatorState(
+      syncer::INVALIDATION_CREDENTIALS_REJECTED);
+
+  // Verify that a device-global invalidation service has been created.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service still exists.
+  profile_invalidation_service = GetProfileInvalidationService(profile);
+  EXPECT_TRUE(profile_invalidation_service);
+  EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that the invalidator has been destroyed.
+  EXPECT_FALSE(GetCloudPolicyInvalidator());
+  EXPECT_FALSE(GetInvalidationService());
+
+  // Verify that an invalidator backed by the device-global invalidation service
+  // is created when the service connects.
+  ConnectDeviceInvalidationService();
+  invalidator = GetCloudPolicyInvalidator();
+  ASSERT_TRUE(invalidator);
+  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
+
+  // Verify that the invalidator's highest handled invalidation version starts
+  // out as one.
+  EXPECT_EQ(1, invalidator->highest_handled_invalidation_version());
+}
+
+// Verifies that when the per-profile invalidation service backing the current
+// DeviceCloudPolicyInvalidator disconnects and another connected per-profile
+// invalidation service is available for use, a DeviceCloudPolicyInvalidator
+// backed by that service is created. Also verifies that the highest handled
+// invalidation version is preserved when switching invalidation services.
+TEST_F(DeviceCloudPolicyInvalidatorTest,
+       SwitchBetweenAffiliatedProfileInvalidationServices) {
+  CloudPolicyStore* store = static_cast<CloudPolicyStore*>(
+      TestingBrowserProcess::GetGlobal()->platform_part()->
+          browser_policy_connector_chromeos()->GetDeviceCloudPolicyManager()->
+              device_store());
+  ASSERT_TRUE(store);
+
+  // Verify that a device-global invalidation service has been created.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that no invalidator exists yet.
+  EXPECT_FALSE(GetCloudPolicyInvalidator());
+  EXPECT_FALSE(GetInvalidationService());
+
+  // Log in as a first affiliated user.
+  Profile* profile_1 = LogInAndReturnProfile(kAffiliatedUserID1);
+  ASSERT_TRUE(profile_1);
+
+  // Verify that the device-global invalidation service still exists.
+  EXPECT_TRUE(GetDeviceInvalidationService());
+  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
+
+  // Verify that a per-profile invalidation service has been created for the
+  // first user.
+  invalidation::FakeInvalidationService* profile_1_invalidation_service =
+      GetProfileInvalidationService(profile_1);
+  ASSERT_TRUE(profile_1_invalidation_service);
+  EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
+
+  // Verify that no invalidator has been created.
+  EXPECT_FALSE(GetCloudPolicyInvalidator());
+  EXPECT_FALSE(GetInvalidationService());
+
+  // Indicate that the first user's per-profile invalidation service has
   // connected.
   profile_1_invalidation_service->SetInvalidatorState(
       syncer::INVALIDATIONS_ENABLED);
@@ -381,14 +652,14 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   EXPECT_FALSE(HasDeviceInvalidationServiceObserver());
 
   // Verify that a per-profile invalidation service still exists for the first
-  // user profile.
+  // user.
   profile_1_invalidation_service = GetProfileInvalidationService(profile_1);
   EXPECT_TRUE(profile_1_invalidation_service);
   EXPECT_EQ(1, GetProfileInvalidationServiceObserverCount());
 
-  // Verify that an invalidator backed by the per-profile invalidation service
-  // for the first user profile has been created.
-  invalidator = GetCloudPolicyInvalidator();
+  // Verify that an invalidator backed by the first user's per-profile
+  // invalidation service has been created.
+  CloudPolicyInvalidator* invalidator = GetCloudPolicyInvalidator();
   ASSERT_TRUE(invalidator);
   EXPECT_EQ(profile_1_invalidation_service, GetInvalidationService());
 
@@ -402,8 +673,8 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   invalidator->OnStoreLoaded(store);
   EXPECT_EQ(1, invalidator->highest_handled_invalidation_version());
 
-  // Create a second user profile.
-  Profile* profile_2 = CreateProfile("test_2");
+  // Log in as a second affiliated user.
+  Profile* profile_2 = LogInAndReturnProfile(kAffiliatedUserID2);
   ASSERT_TRUE(profile_2);
 
   // Verify that the device-global invalidator still does not exist.
@@ -411,7 +682,7 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   EXPECT_FALSE(HasDeviceInvalidationServiceObserver());
 
   // Verify that a per-profile invalidation service still exists for the first
-  // user profile and one has been created for the second user profile.
+  // user and one has been created for the second user.
   profile_1_invalidation_service = GetProfileInvalidationService(profile_1);
   EXPECT_TRUE(profile_1_invalidation_service);
   invalidation::FakeInvalidationService* profile_2_invalidation_service =
@@ -419,13 +690,13 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   ASSERT_TRUE(profile_2_invalidation_service);
   EXPECT_EQ(2, GetProfileInvalidationServiceObserverCount());
 
-  // Verify that an invalidator backed by the per-profile invalidation service
-  // for the first user profile still exists.
+  // Verify that an invalidator backed by the first user's per-profile
+  // invalidation service still exists.
   EXPECT_TRUE(GetCloudPolicyInvalidator());
   EXPECT_EQ(profile_1_invalidation_service, GetInvalidationService());
 
-  // Indicate that the second user profile's per-profile invalidation service
-  // has connected.
+  // Indicate that the second user's per-profile invalidation service has
+  // connected.
   profile_2_invalidation_service->SetInvalidatorState(
       syncer::INVALIDATIONS_ENABLED);
 
@@ -433,21 +704,20 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   EXPECT_FALSE(GetDeviceInvalidationService());
   EXPECT_FALSE(HasDeviceInvalidationServiceObserver());
 
-  // Verify that per-profile invalidation services still exist for both user
-  // profiles.
+  // Verify that per-profile invalidation services still exist for both users.
   profile_1_invalidation_service = GetProfileInvalidationService(profile_1);
   ASSERT_TRUE(profile_1_invalidation_service);
   profile_2_invalidation_service = GetProfileInvalidationService(profile_2);
   EXPECT_TRUE(profile_2_invalidation_service);
   EXPECT_EQ(2, GetProfileInvalidationServiceObserverCount());
 
-  // Verify that an invalidator backed by the per-profile invalidation service
-  // for the first user profile still exists.
+  // Verify that an invalidator backed by the first user's per-profile
+  // invalidation service still exists.
   EXPECT_TRUE(GetCloudPolicyInvalidator());
   EXPECT_EQ(profile_1_invalidation_service, GetInvalidationService());
 
-  // Indicate that the per-profile invalidation service for the first user
-  // profile has disconnected.
+  // Indicate that the first user's per-profile invalidation service has
+  // disconnected.
   profile_1_invalidation_service->SetInvalidatorState(
       syncer::INVALIDATION_CREDENTIALS_REJECTED);
 
@@ -455,77 +725,22 @@ TEST_F(DeviceCloudPolicyInvalidatorTest, SwitchInvalidationServices) {
   EXPECT_FALSE(GetDeviceInvalidationService());
   EXPECT_FALSE(HasDeviceInvalidationServiceObserver());
 
-  // Verify that per-profile invalidation services still exist for both user
-  // profiles.
+  // Verify that per-profile invalidation services still exist for both users.
   profile_1_invalidation_service = GetProfileInvalidationService(profile_1);
   EXPECT_TRUE(profile_1_invalidation_service);
   profile_2_invalidation_service = GetProfileInvalidationService(profile_2);
   ASSERT_TRUE(profile_2_invalidation_service);
   EXPECT_EQ(2, GetProfileInvalidationServiceObserverCount());
 
-  // Verify that an invalidator backed by the per-profile invalidation service
-  // for the second user profile has been created.
+  // Verify that an invalidator backed by the second user's per-profile
+  // invalidation service has been created.
   invalidator = GetCloudPolicyInvalidator();
   ASSERT_TRUE(invalidator);
   EXPECT_EQ(profile_2_invalidation_service, GetInvalidationService());
 
   // Verify that the invalidator's highest handled invalidation version starts
-  // out as 1.
+  // out as one.
   EXPECT_EQ(1, invalidator->highest_handled_invalidation_version());
-
-  // Handle an invalidation with version 2. Verify that the invalidator's
-  // highest handled invalidation version is updated accordingly.
-  store->Store(device_policy_.policy(), 2);
-  invalidator->OnStoreLoaded(store);
-  EXPECT_EQ(2, invalidator->highest_handled_invalidation_version());
-
-  // Indicate that the per-profile invalidation service for the second user
-  // profile has disconnected.
-  profile_2_invalidation_service->SetInvalidatorState(
-      syncer::INVALIDATION_CREDENTIALS_REJECTED);
-
-  // Verify that a device-global invalidation service has been created.
-  ASSERT_TRUE(GetDeviceInvalidationService());
-  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
-
-  // Verify that per-profile invalidation services still exist for both user
-  // profiles.
-  profile_1_invalidation_service = GetProfileInvalidationService(profile_1);
-  EXPECT_TRUE(profile_1_invalidation_service);
-  profile_2_invalidation_service = GetProfileInvalidationService(profile_2);
-  EXPECT_TRUE(profile_2_invalidation_service);
-  EXPECT_EQ(2, GetProfileInvalidationServiceObserverCount());
-
-  // Verify that the invalidator has been destroyed.
-  EXPECT_FALSE(GetCloudPolicyInvalidator());
-  EXPECT_FALSE(GetInvalidationService());
-
-  // Indicate that the device-global invalidation service has connected.
-  GetDeviceInvalidationService()->OnInvalidatorStateChange(
-      syncer::INVALIDATIONS_ENABLED);
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that the device-global invalidation service still exists.
-  EXPECT_TRUE(GetDeviceInvalidationService());
-  EXPECT_TRUE(HasDeviceInvalidationServiceObserver());
-
-  // Verify that per-profile invalidation services still exist for both user
-  // profiles.
-  profile_1_invalidation_service = GetProfileInvalidationService(profile_1);
-  EXPECT_TRUE(profile_1_invalidation_service);
-  profile_2_invalidation_service = GetProfileInvalidationService(profile_2);
-  EXPECT_TRUE(profile_2_invalidation_service);
-  EXPECT_EQ(2, GetProfileInvalidationServiceObserverCount());
-
-  // Verify that an invalidator backed by the device-global invalidation service
-  // has been created.
-  invalidator = GetCloudPolicyInvalidator();
-  ASSERT_TRUE(invalidator);
-  EXPECT_EQ(GetDeviceInvalidationService(), GetInvalidationService());
-
-  // Verify that the invalidator's highest handled invalidation version starts
-  // out as 2.
-  EXPECT_EQ(2, invalidator->highest_handled_invalidation_version());
 }
 
 }  // namespace policy

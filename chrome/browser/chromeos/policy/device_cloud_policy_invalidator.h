@@ -23,12 +23,11 @@ namespace policy {
 class CloudPolicyInvalidator;
 
 // This class provides invalidations for device policy via a
-// |CloudPolicyInvalidator| backed by an |InvalidationService|. If a user with a
-// connected invalidation service is logged in, that service is used to conserve
-// server resources. If there are no logged-in users or none of them have
-// connected invalidation services, a device-global |TiclInvalidationService| is
-// spun up.
-// The class monitors the status of all invalidation services and switches
+// |CloudPolicyInvalidator| backed by an |InvalidationService|. If an affiliated
+// user with a connected invalidation service is logged in, that service is used
+// to conserve server resources. If there are no logged-in users matching these
+// criteria, a device-global |TiclInvalidationService| is spun up.
+// The class monitors the status of the invalidation services and switches
 // between them whenever the service currently in use disconnects or the
 // device-global invalidation service can be replaced with another service that
 // just connected.
@@ -55,11 +54,11 @@ class DeviceCloudPolicyInvalidator : public content::NotificationObserver {
       invalidation::InvalidationService* invalidation_service);
 
   // Attempt to create a |CloudPolicyInvalidator| backed by a connected
-  // invalidation service. If there is no connected invalidation service, a
-  // |CloudPolicyInvalidator| will be created later when a connected service
-  // becomes available.
+  // invalidation service. If no connected invalidation service is available for
+  // use, a |CloudPolicyInvalidator| will be created later when a connected
+  // service becomes available.
   // Further ensures that a device-global invalidation service is running iff
-  // there is no other connected service.
+  // there is no other connected service available for use.
   void TryToCreateInvalidator();
 
   // Create a |CloudPolicyInvalidator| backed by the |invalidation_service|.

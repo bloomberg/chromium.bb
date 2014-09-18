@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/ticl_device_settings_provider.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -31,6 +32,8 @@
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/invalidation/ticl_invalidation_service.h"
 #include "components/invalidation/ticl_settings_provider.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -141,15 +144,23 @@ void DeviceCloudPolicyInvalidator::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED, type);
+  Profile* profile = content::Details<Profile>(details).ptr();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-          content::Details<Profile>(details).ptr());
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile);
   if (!invalidation_provider) {
     // If the Profile does not support invalidation (e.g. guest, incognito),
     // ignore it.
     return;
   }
-
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user ||
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetUserAffiliation(user->email()) != USER_AFFILIATION_MANAGED) {
+    // If the Profile belongs to a user who is not affiliated with the domain
+    // the device is enrolled into, ignore it.
+    return;
+  }
   // Create a state observer for the user's invalidation service.
   profile_invalidation_service_observers_.push_back(
       new InvalidationServiceObserver(
@@ -209,9 +220,9 @@ void DeviceCloudPolicyInvalidator::TryToCreateInvalidator() {
            profile_invalidation_service_observers_.begin();
            it != profile_invalidation_service_observers_.end(); ++it) {
     if ((*it)->IsServiceConnected()) {
-      // If a connected invalidation service belonging to a logged-in user is
-      // found, create a |CloudPolicyInvalidator| backed by that service and
-      // destroy the device-global service, if any.
+      // If a connected invalidation service belonging to an affiliated
+      // logged-in user is found, create a |CloudPolicyInvalidator| backed by
+      // that service and destroy the device-global service, if any.
       DestroyDeviceInvalidationService();
       CreateInvalidator((*it)->GetInvalidationService());
       return;
