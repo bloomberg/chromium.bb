@@ -7,13 +7,13 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 90x37
           text run at (0,0) width 90: "Blocks"
       RenderBlock {DIV} at (0,58.44) size 784x18
-        RenderInline (generated) at (0,0) size 35x18
+        RenderInline (pseudo:before) at (0,0) size 35x18
           RenderTextFragment at (0,0) size 35x18
             text run at (0,0) width 35: "Test: "
         RenderText {#text} at (35,0) size 46x18
           text run at (35,0) width 46: "content"
       RenderBlock {DIV} at (0,76.44) size 784x18
-        RenderBlock (generated) at (0,0) size 31x18
+        RenderBlock (pseudo:before) at (0,0) size 31x18
           RenderTextFragment at (0,0) size 31x18
             text run at (0,0) width 31: "Test:"
         RenderText {#text} at (31,0) size 46x18
@@ -32,14 +32,14 @@ layer at (0,0) size 800x600
           text run at (0,0) width 92: "Inlines"
       RenderBlock (anonymous) at (0,192.31) size 784x54
         RenderInline {SPAN} at (0,0) size 81x18
-          RenderInline (generated) at (0,0) size 35x18
+          RenderInline (pseudo:before) at (0,0) size 35x18
             RenderTextFragment at (0,0) size 35x18
               text run at (0,0) width 35: "Test: "
           RenderText {#text} at (35,0) size 46x18
             text run at (35,0) width 46: "content"
         RenderBR {BR} at (81,14) size 0x0
         RenderInline {SPAN} at (0,0) size 77x18
-          RenderBlock (generated) at (0,18) size 31x18
+          RenderBlock (pseudo:before) at (0,18) size 31x18
             RenderTextFragment at (0,0) size 31x18
               text run at (0,0) width 31: "Test:"
           RenderText {#text} at (31,18) size 46x18

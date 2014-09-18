@@ -8,241 +8,241 @@ layer at (0,0) size 800x104
           text run at (0,0) width 272: "The following two lines should look the same:"
       RenderBlock {DIV} at (0,36) size 784x22
         RenderInline {SPAN} at (0,0) size 7x19
-          RenderInline (generated) at (0,0) size 7x19
+          RenderInline (pseudo:before) at (0,0) size 7x19
             RenderCounter at (0,2) size 7x19
               text run at (0,2) width 7: "\x{10D0}"
         RenderText {#text} at (7,2) size 4x19
           text run at (7,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (11,2) size 8x19
               text run at (11,2) width 8: "\x{10D1}"
         RenderText {#text} at (19,2) size 4x19
           text run at (19,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (23,2) size 8x19
               text run at (23,2) width 8: "\x{10D2}"
         RenderText {#text} at (31,2) size 4x19
           text run at (31,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 14x19
-          RenderInline (generated) at (0,0) size 14x19
+          RenderInline (pseudo:before) at (0,0) size 14x19
             RenderCounter at (35,2) size 14x19
               text run at (35,2) width 14: "\x{10D3}"
         RenderText {#text} at (49,2) size 4x19
           text run at (49,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (53,2) size 8x19
               text run at (53,2) width 8: "\x{10D4}"
         RenderText {#text} at (61,2) size 4x19
           text run at (61,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (65,2) size 8x19
               text run at (65,2) width 8: "\x{10D5}"
         RenderText {#text} at (73,2) size 4x19
           text run at (73,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 12x19
-          RenderInline (generated) at (0,0) size 12x19
+          RenderInline (pseudo:before) at (0,0) size 12x19
             RenderCounter at (77,2) size 12x19
               text run at (77,2) width 12: "\x{10D6}"
         RenderText {#text} at (89,2) size 4x19
           text run at (89,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (generated) at (0,0) size 10x19
+          RenderInline (pseudo:before) at (0,0) size 10x19
             RenderCounter at (93,2) size 10x19
               text run at (93,2) width 10: "\x{10F1}"
         RenderText {#text} at (103,2) size 4x19
           text run at (103,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 14x19
-          RenderInline (generated) at (0,0) size 14x19
+          RenderInline (pseudo:before) at (0,0) size 14x19
             RenderCounter at (107,2) size 14x19
               text run at (107,2) width 14: "\x{10D7}"
         RenderText {#text} at (121,2) size 4x19
           text run at (121,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 9x19
-          RenderInline (generated) at (0,0) size 9x19
+          RenderInline (pseudo:before) at (0,0) size 9x19
             RenderCounter at (125,2) size 9x19
               text run at (125,2) width 9: "\x{10D8}"
         RenderText {#text} at (134,2) size 4x19
           text run at (134,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 16x19
-          RenderInline (generated) at (0,0) size 16x19
+          RenderInline (pseudo:before) at (0,0) size 16x19
             RenderCounter at (138,2) size 16x19
               text run at (138,2) width 16: "\x{10D8}\x{10D0}"
         RenderText {#text} at (154,2) size 4x19
           text run at (154,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 17x19
-          RenderInline (generated) at (0,0) size 17x19
+          RenderInline (pseudo:before) at (0,0) size 17x19
             RenderCounter at (158,2) size 17x19
               text run at (158,2) width 17: "\x{10D8}\x{10D1}"
         RenderText {#text} at (175,2) size 4x19
           text run at (175,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 7x19
-          RenderInline (generated) at (0,0) size 7x19
+          RenderInline (pseudo:before) at (0,0) size 7x19
             RenderCounter at (179,2) size 7x19
               text run at (179,2) width 7: "\x{10D9}"
         RenderText {#text} at (186,2) size 4x19
           text run at (186,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 15x19
-          RenderInline (generated) at (0,0) size 15x19
+          RenderInline (pseudo:before) at (0,0) size 15x19
             RenderCounter at (190,2) size 15x19
               text run at (190,2) width 15: "\x{10DA}"
         RenderText {#text} at (205,2) size 4x19
           text run at (205,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (209,2) size 8x19
               text run at (209,2) width 8: "\x{10DB}"
         RenderText {#text} at (217,2) size 4x19
           text run at (217,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (221,2) size 8x19
               text run at (221,2) width 8: "\x{10DC}"
         RenderText {#text} at (229,2) size 4x19
           text run at (229,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 9x19
-          RenderInline (generated) at (0,0) size 9x19
+          RenderInline (pseudo:before) at (0,0) size 9x19
             RenderCounter at (233,2) size 9x19
               text run at (233,2) width 9: "\x{10F2}"
         RenderText {#text} at (242,2) size 4x19
           text run at (242,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 11x19
-          RenderInline (generated) at (0,0) size 11x19
+          RenderInline (pseudo:before) at (0,0) size 11x19
             RenderCounter at (246,2) size 11x19
               text run at (246,2) width 11: "\x{10DD}"
         RenderText {#text} at (257,2) size 4x19
           text run at (257,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (261,2) size 8x19
               text run at (261,2) width 8: "\x{10DE}"
         RenderText {#text} at (269,2) size 4x19
           text run at (269,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (273,2) size 8x19
               text run at (273,2) width 8: "\x{10DF}"
         RenderText {#text} at (281,2) size 4x19
           text run at (281,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 11x19
-          RenderInline (generated) at (0,0) size 11x19
+          RenderInline (pseudo:before) at (0,0) size 11x19
             RenderCounter at (285,2) size 11x19
               text run at (285,2) width 11: "\x{10E0}"
         RenderText {#text} at (296,2) size 4x19
           text run at (296,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (300,2) size 8x19
               text run at (300,2) width 8: "\x{10E1}"
         RenderText {#text} at (308,2) size 4x19
           text run at (308,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 12x19
-          RenderInline (generated) at (0,0) size 12x19
+          RenderInline (pseudo:before) at (0,0) size 12x19
             RenderCounter at (312,2) size 12x19
               text run at (312,2) width 12: "\x{10E2}"
         RenderText {#text} at (324,2) size 4x19
           text run at (324,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (328,2) size 8x19
               text run at (328,2) width 8: "\x{10F3}"
         RenderText {#text} at (336,2) size 4x19
           text run at (336,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 11x19
-          RenderInline (generated) at (0,0) size 11x19
+          RenderInline (pseudo:before) at (0,0) size 11x19
             RenderCounter at (340,2) size 11x19
               text run at (340,2) width 11: "\x{10E4}"
         RenderText {#text} at (351,2) size 4x19
           text run at (351,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 7x19
-          RenderInline (generated) at (0,0) size 7x19
+          RenderInline (pseudo:before) at (0,0) size 7x19
             RenderCounter at (355,2) size 7x19
               text run at (355,2) width 7: "\x{10E5}"
         RenderText {#text} at (362,2) size 4x19
           text run at (362,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 11x19
-          RenderInline (generated) at (0,0) size 11x19
+          RenderInline (pseudo:before) at (0,0) size 11x19
             RenderCounter at (366,2) size 11x19
               text run at (366,2) width 11: "\x{10E6}"
         RenderText {#text} at (377,2) size 4x19
           text run at (377,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (381,2) size 8x19
               text run at (381,2) width 8: "\x{10E7}"
         RenderText {#text} at (389,2) size 4x19
           text run at (389,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (393,2) size 8x19
               text run at (393,2) width 8: "\x{10E8}"
         RenderText {#text} at (401,2) size 4x19
           text run at (401,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (405,2) size 8x19
               text run at (405,2) width 8: "\x{10E9}"
         RenderText {#text} at (413,2) size 4x19
           text run at (413,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 9x19
-          RenderInline (generated) at (0,0) size 9x19
+          RenderInline (pseudo:before) at (0,0) size 9x19
             RenderCounter at (417,2) size 9x19
               text run at (417,2) width 9: "\x{10EA}"
         RenderText {#text} at (426,2) size 4x19
           text run at (426,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (430,2) size 8x19
               text run at (430,2) width 8: "\x{10EB}"
         RenderText {#text} at (438,2) size 4x19
           text run at (438,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (442,2) size 8x19
               text run at (442,2) width 8: "\x{10EC}"
         RenderText {#text} at (450,2) size 4x19
           text run at (450,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 9x19
-          RenderInline (generated) at (0,0) size 9x19
+          RenderInline (pseudo:before) at (0,0) size 9x19
             RenderCounter at (454,2) size 9x19
               text run at (454,2) width 9: "\x{10ED}"
         RenderText {#text} at (463,2) size 4x19
           text run at (463,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (467,2) size 8x19
               text run at (467,2) width 8: "\x{10EE}"
         RenderText {#text} at (475,2) size 4x19
           text run at (475,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (479,2) size 8x19
               text run at (479,2) width 8: "\x{10F4}"
         RenderText {#text} at (487,2) size 4x19
           text run at (487,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 11x19
-          RenderInline (generated) at (0,0) size 11x19
+          RenderInline (pseudo:before) at (0,0) size 11x19
             RenderCounter at (491,2) size 11x19
               text run at (491,2) width 11: "\x{10EF}"
         RenderText {#text} at (502,2) size 4x19
           text run at (502,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 8x19
-          RenderInline (generated) at (0,0) size 8x19
+          RenderInline (pseudo:before) at (0,0) size 8x19
             RenderCounter at (506,2) size 8x19
               text run at (506,2) width 8: "\x{10F0}"
         RenderText {#text} at (514,2) size 4x19
           text run at (514,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 9x19
-          RenderInline (generated) at (0,0) size 9x19
+          RenderInline (pseudo:before) at (0,0) size 9x19
             RenderCounter at (518,2) size 9x19
               text run at (518,2) width 9: "\x{10F5}"
         RenderText {#text} at (527,2) size 4x19
           text run at (527,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 47x19
-          RenderInline (generated) at (0,0) size 47x19
+          RenderInline (pseudo:before) at (0,0) size 47x19
             RenderCounter at (531,2) size 47x19
               text run at (531,2) width 47: "\x{10F5}\x{10F0}\x{10E8}\x{10DF}\x{10D7}"
         RenderText {#text} at (0,0) size 0x0

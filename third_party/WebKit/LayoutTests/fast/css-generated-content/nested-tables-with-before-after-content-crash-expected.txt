@@ -7,18 +7,18 @@ layer at (0,0) size 800x600
         RenderTableSection (anonymous) at (0,0) size 48x16
           RenderTableRow (anonymous) at (0,0) size 48x16
             RenderTableCell (anonymous) at (0,0) size 48x16 [r=0 c=0 rs=1 cs=1]
-              RenderInline (generated) at (0,0) size 16x16 [color=#FF0000]
+              RenderInline (pseudo:before) at (0,0) size 16x16 [color=#FF0000]
                 RenderCounter at (0,0) size 16x16
                   text run at (0,0) width 16: "0"
               RenderTable {Q} at (16,0) size 32x16
                 RenderTableSection (anonymous) at (0,0) size 32x16
                   RenderTableRow (anonymous) at (0,0) size 32x16
                     RenderTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
-                      RenderInline (generated) at (0,0) size 16x16
+                      RenderInline (pseudo:before) at (0,0) size 16x16
                         RenderQuote at (0,0) size 16x16
                           RenderTextFragment at (0,0) size 16x16
                             text run at (0,0) width 16: "\""
-                      RenderInline (generated) at (0,0) size 16x16
+                      RenderInline (pseudo:after) at (0,0) size 16x16
                         RenderQuote at (0,0) size 16x16
                           RenderTextFragment at (16,0) size 16x16
                             text run at (16,0) width 16: "\""

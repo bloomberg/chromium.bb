@@ -7,7 +7,7 @@ layer at (0,0) size 800x348
         RenderTableSection (anonymous) at (0,0) size 694x316
           RenderTableRow {Q} at (0,0) size 694x316
             RenderTableCell (anonymous) at (0,0) size 694x316 [r=0 c=0 rs=1 cs=1]
-              RenderInline (generated) at (0,0) size 13x37
+              RenderInline (pseudo:before) at (0,0) size 13x37
                 RenderQuote at (0,0) size 13x37
                   RenderTextFragment at (0,279) size 13x37
                     text run at (0,279) width 13: "\""
@@ -15,7 +15,7 @@ layer at (0,0) size 800x348
                 text run at (13,279) width 31: " A"
               RenderText {#text} at (652,279) size 29x37
                 text run at (652,279) width 29: "B "
-              RenderInline (generated) at (0,0) size 13x37
+              RenderInline (pseudo:after) at (0,0) size 13x37
                 RenderQuote at (0,0) size 13x37
                   RenderTextFragment at (681,279) size 13x37
                     text run at (681,279) width 13: "\""

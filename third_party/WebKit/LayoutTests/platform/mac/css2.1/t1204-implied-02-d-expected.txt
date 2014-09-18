@@ -8,32 +8,32 @@ layer at (0,0) size 800x94
           text run at (0,0) width 277: "The following two lines should be identical:"
       RenderBlock {DIV} at (0,34) size 784x18
         RenderInline {SPAN} at (0,0) size 35x18
-          RenderInline (generated) at (0,0) size 11x18
+          RenderInline (pseudo:before) at (0,0) size 11x18
             RenderTextFragment at (0,0) size 11x18
               text run at (0,0) width 11: "B"
           RenderInline {SPAN} at (0,0) size 12x18
-            RenderInline (generated) at (0,0) size 12x18
+            RenderInline (pseudo:before) at (0,0) size 12x18
               RenderCounter at (11,0) size 8x18
                 text run at (11,0) width 8: "1"
               RenderTextFragment at (19,0) size 4x18
                 text run at (19,0) width 4: " "
           RenderInline {SPAN} at (0,0) size 12x18
             RenderInline {SPAN} at (0,0) size 12x18
-              RenderInline (generated) at (0,0) size 12x18
+              RenderInline (pseudo:before) at (0,0) size 12x18
                 RenderCounter at (23,0) size 8x18
                   text run at (23,0) width 8: "0"
                 RenderTextFragment at (31,0) size 4x18
                   text run at (31,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 32x18
           RenderInline {SPAN} at (0,0) size 12x18
-            RenderInline (generated) at (0,0) size 12x18
+            RenderInline (pseudo:before) at (0,0) size 12x18
               RenderCounter at (35,0) size 8x18
                 text run at (35,0) width 8: "1"
               RenderTextFragment at (43,0) size 4x18
                 text run at (43,0) width 4: " "
           RenderInline {SPAN} at (0,0) size 20x18
             RenderInline {SPAN} at (0,0) size 20x18
-              RenderInline (generated) at (0,0) size 20x18
+              RenderInline (pseudo:before) at (0,0) size 20x18
                 RenderCounter at (47,0) size 20x18
                   text run at (47,0) width 20: "1.0"
                 RenderTextFragment at (0,0) size 0x0

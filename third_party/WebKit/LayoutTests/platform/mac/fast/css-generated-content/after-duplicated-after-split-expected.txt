@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
         RenderBlock (anonymous) at (0,110) size 784x110
           RenderInline {SPAN} at (0,0) size 147x110
             RenderInline {B} at (0,0) size 0x0
-            RenderInline (generated) at (0,0) size 147x110
+            RenderInline (pseudo:after) at (0,0) size 147x110
               RenderTextFragment at (0,0) size 147x110
                 text run at (0,0) width 147: "not "
           RenderText {#text} at (147,0) size 153x110
