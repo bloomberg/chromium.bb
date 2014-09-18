@@ -279,7 +279,7 @@ class EasyUnlockPrivateGetRemoteDevicesFunction : public SyncExtensionFunction {
 };
 
 class EasyUnlockPrivateGetSignInChallengeFunction :
-    public AsyncExtensionFunction {
+    public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getSignInChallenge",
                              EASYUNLOCKPRIVATE_GETSIGNINCHALLENGE)
@@ -288,8 +288,8 @@ class EasyUnlockPrivateGetSignInChallengeFunction :
  private:
   virtual ~EasyUnlockPrivateGetSignInChallengeFunction();
 
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetSignInChallengeFunction);
 };

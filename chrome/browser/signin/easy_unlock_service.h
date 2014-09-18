@@ -70,8 +70,11 @@ class EasyUnlockService : public KeyedService {
   // Resets the turn off flow if one is in progress.
   virtual void ResetTurnOffFlow() = 0;
 
-  // Returns the cirernt turn off flow status.
+  // Returns the current turn off flow status.
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const = 0;
+
+  // Gets the challenge bytes for the currently associated user.
+  virtual std::string GetChallenge() const = 0;
 
   // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
   // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance

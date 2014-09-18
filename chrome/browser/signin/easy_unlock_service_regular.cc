@@ -152,6 +152,10 @@ EasyUnlockService::TurnOffFlowStatus
   return turn_off_flow_status_;
 }
 
+std::string EasyUnlockServiceRegular::GetChallenge() const {
+  return std::string();
+}
+
 void EasyUnlockServiceRegular::InitializeInternal() {
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(

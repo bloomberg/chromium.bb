@@ -541,9 +541,14 @@ EasyUnlockPrivateGetSignInChallengeFunction::
     ~EasyUnlockPrivateGetSignInChallengeFunction() {
 }
 
-bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
-  SetError("Not implemented");
-  SendResponse(false);
+bool EasyUnlockPrivateGetSignInChallengeFunction::RunSync() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const std::string challenge =
+      EasyUnlockService::Get(profile)->GetChallenge();
+  if (!challenge.empty()) {
+    results_ =
+        easy_unlock_private::GetSignInChallenge::Results::Create(challenge);
+  }
   return true;
 }
 

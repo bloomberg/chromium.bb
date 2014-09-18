@@ -41,6 +41,7 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   virtual void RunTurnOffFlow() OVERRIDE;
   virtual void ResetTurnOffFlow() OVERRIDE;
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const OVERRIDE;
+  virtual std::string GetChallenge() const OVERRIDE;
   virtual void InitializeInternal() OVERRIDE;
   virtual bool IsAllowedInternal() OVERRIDE;
 
