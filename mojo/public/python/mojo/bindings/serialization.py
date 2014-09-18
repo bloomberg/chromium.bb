@@ -16,42 +16,28 @@ class SerializationException(Exception):
   pass
 
 
-class DeserializationException(Exception):
-  """Error when strying to deserialize a struct."""
-  pass
-
-
 class Serialization(object):
   """
   Helper class to serialize/deserialize a struct.
   """
   def __init__(self, groups):
-    self.version = _GetVersion(groups)
     self._groups = groups
+    self.version = _GetVersion(groups)
     main_struct = _GetStruct(groups)
     self.size = HEADER_STRUCT.size + main_struct.size
     self._struct_per_version = {
-        self.version: main_struct,
-    }
-    self._groups_per_version = {
-        self.version: groups,
+      self.version: main_struct,
     }
 
   def _GetMainStruct(self):
     return self._GetStruct(self.version)
 
-  def _GetGroups(self, version):
-    # If asking for a version greater than the last known.
-    version = min(version, self.version)
-    if version not in self._groups_per_version:
-      self._groups_per_version[version] = _FilterGroups(self._groups, version)
-    return self._groups_per_version[version]
-
   def _GetStruct(self, version):
-    # If asking for a version greater than the last known.
+    # If asking for a greater ver
     version = min(version, self.version)
     if version not in self._struct_per_version:
-      self._struct_per_version[version] = _GetStruct(self._GetGroups(version))
+      self._struct_per_version[version] = _GetStruct(_FilterGroups(self._groups,
+                                                                   version))
     return self._struct_per_version[version]
 
   def Serialize(self, obj, handle_offset):
@@ -78,18 +64,6 @@ class Serialization(object):
     self._GetMainStruct().pack_into(data, HEADER_STRUCT.size, *to_pack)
     return (data, handles)
 
-  def Deserialize(self, fields, data, handles):
-    (_, version) = HEADER_STRUCT.unpack_from(data)
-    version_struct = self._GetStruct(version)
-    entitities = version_struct.unpack_from(data, HEADER_STRUCT.size)
-    filtered_groups = self._GetGroups(version)
-    position = HEADER_STRUCT.size
-    for (group, value) in zip(filtered_groups, entitities):
-      position = position + NeededPaddingForAlignment(position,
-                                                      group.GetByteSize())
-      fields.update(group.Deserialize(value, data[position:], handles))
-      position += group.GetByteSize()
-
 
 def NeededPaddingForAlignment(value, alignment=8):
   """Returns the padding necessary to align value with the given alignment."""
@@ -103,7 +77,7 @@ def _GetVersion(groups):
 
 
 def _FilterGroups(groups, version):
-  return [group for group in groups if group.GetVersion() < version]
+  return [group for group in groups if group.version < version]
 
 
 def _GetStruct(groups):
