@@ -112,6 +112,26 @@ bool CanChangeChannel() {
 
 #endif  // defined(OS_CHROMEOS)
 
+base::string16 BrowserVersionString(bool long_html) {
+  chrome::VersionInfo version_info;
+  DCHECK(version_info.is_valid());
+
+  std::string version = version_info.Version();
+
+  std::string modifier = chrome::VersionInfo::GetVersionStringModifier();
+  if (!modifier.empty())
+    version += " " + modifier;
+
+#if defined(ARCH_CPU_64_BITS)
+  version += " (64-bit)";
+#endif
+
+  if (long_html)
+    version += "<br>(" + version_info.LastChange() + ")";
+
+  return base::UTF8ToUTF16(version);
+}
+
 }  // namespace
 
 HelpHandler::HelpHandler()
@@ -214,7 +234,11 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
-                                 BuildBrowserVersionString()));
+                                 BrowserVersionString(false)));
+  localized_strings->SetString(
+      "browserVersionLongHtml",
+      l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
+                                 BrowserVersionString(true)));
 
   base::Time::Exploded exploded_time;
   base::Time::Now().LocalExplode(&exploded_time);
@@ -311,26 +335,7 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
 
 // static
 base::string16 HelpHandler::BuildBrowserVersionString() {
-  chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
-
-  std::string browser_version = version_info.Version();
-  std::string version_modifier =
-      chrome::VersionInfo::GetVersionStringModifier();
-  if (!version_modifier.empty())
-    browser_version += " " + version_modifier;
-
-#if !defined(GOOGLE_CHROME_BUILD)
-  browser_version += " (";
-  browser_version += version_info.LastChange();
-  browser_version += ")";
-#endif
-
-#if defined(ARCH_CPU_64_BITS)
-  browser_version += " (64-bit)";
-#endif
-
-  return base::UTF8ToUTF16(browser_version);
+  return BrowserVersionString(false);
 }
 
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {
