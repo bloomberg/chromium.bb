@@ -53,8 +53,7 @@ std::string GetWindowOrder(const aura::Window::Windows& original,
 class WindowListObserver : public WindowListProviderObserver {
  public:
   explicit WindowListObserver(WindowListProvider* provider)
-      : calls_(0),
-        provider_(provider) {
+      : calls_(0), window_removal_calls_(0), provider_(provider) {
     provider_->AddObserver(this);
   }
   virtual ~WindowListObserver() {
@@ -62,15 +61,22 @@ class WindowListObserver : public WindowListProviderObserver {
   }
 
   int calls() const { return calls_; }
+  int window_removal_calls() const { return window_removal_calls_; }
 
   // WindowListProviderObserver:
   virtual void OnWindowStackingChanged() OVERRIDE {
     calls_++;
   }
 
+  virtual void OnWindowRemoved(aura::Window* removed_window,
+                               int index) OVERRIDE {
+    window_removal_calls_++;
+  }
+
  private:
   // The number of calls to the observer.
   int calls_;
+  int window_removal_calls_;
 
   // The associated WindowListProvider which is observed.
   WindowListProvider* provider_;
@@ -129,7 +135,7 @@ TEST_F(WindowListProviderImplTest, ListContainsOnlyNormalWindows) {
   scoped_ptr<WindowListProvider> list_provider(
       new WindowListProviderImpl(container.get()));
 
-  const aura::Window::Windows list = list_provider->GetWindowList();
+  const aura::Window::Windows& list = list_provider->GetWindowList();
   EXPECT_EQ(list.end(), std::find(list.begin(), list.end(), second.get()));
   EXPECT_EQ(list.end(), std::find(list.begin(), list.end(), fourth.get()));
   EXPECT_NE(list.end(), std::find(list.begin(), list.end(), first.get()));
@@ -191,6 +197,7 @@ TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
   container->AddChild(window1.get());
   container->AddChild(window2.get());
   container->AddChild(window3.get());
+  // Make a copy of the window-list in the original order.
   aura::Window::Windows original_order = list_provider->GetWindowList();
   ASSERT_EQ(3U, original_order.size());
   EXPECT_EQ(original_order[0], window1.get());
@@ -244,6 +251,52 @@ TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
   EXPECT_EQ("3 2 1", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
   EXPECT_EQ(5, observer->calls());
+}
+
+TEST_F(WindowListProviderImplTest, TestWindowRemovalNotification) {
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> container(new aura::Window(&delegate));
+
+  scoped_ptr<aura::Window> window1 =
+      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window2 =
+      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window3 =
+      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window4 =
+      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_POPUP);
+
+  scoped_ptr<WindowListProvider> list_provider(
+      new WindowListProviderImpl(container.get()));
+  scoped_ptr<WindowListObserver> observer(
+      new WindowListObserver(list_provider.get()));
+
+  // Add the windows.
+  container->AddChild(window1.get());
+  container->AddChild(window2.get());
+  container->AddChild(window3.get());
+  container->AddChild(window4.get());
+  // The popup-window (window4) should not be included in the window-list.
+  ASSERT_EQ(3U, list_provider->GetWindowList().size());
+  EXPECT_EQ(0, observer->window_removal_calls());
+  EXPECT_FALSE(list_provider->IsWindowInList(window4.get()));
+
+  // Destroying the popup window should not trigger the remove notification.
+  window4.reset();
+  ASSERT_EQ(3U, list_provider->GetWindowList().size());
+  EXPECT_EQ(0, observer->window_removal_calls());
+
+  window2.reset();
+  ASSERT_EQ(2U, list_provider->GetWindowList().size());
+  EXPECT_EQ(1, observer->window_removal_calls());
+
+  window1.reset();
+  ASSERT_EQ(1U, list_provider->GetWindowList().size());
+  EXPECT_EQ(2, observer->window_removal_calls());
+
+  window3.reset();
+  ASSERT_EQ(0U, list_provider->GetWindowList().size());
+  EXPECT_EQ(3, observer->window_removal_calls());
 }
 
 }  // namespace athena

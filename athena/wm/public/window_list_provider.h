@@ -24,7 +24,7 @@ class ATHENA_EXPORT WindowListProvider {
   virtual void RemoveObserver(WindowListProviderObserver* observer) = 0;
 
   // Returns an ordered list of the current window configuration.
-  virtual aura::Window::Windows GetWindowList() const = 0;
+  virtual const aura::Window::Windows& GetWindowList() const = 0;
 
   // Returns true if the |window| is part of the list.
   virtual bool IsWindowInList(aura::Window* window) const = 0;

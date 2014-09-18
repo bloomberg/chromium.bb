@@ -68,7 +68,8 @@ AthenaContainerLayoutManager::~AthenaContainerLayoutManager() {
 
 void AthenaContainerLayoutManager::OnWindowResized() {
   // Resize all the existing windows.
-  aura::Window::Windows list = instance->window_list_provider_->GetWindowList();
+  const aura::Window::Windows& list =
+      instance->window_list_provider_->GetWindowList();
   const gfx::Size work_area =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
   bool is_splitview = instance->split_view_controller_->IsSplitViewModeActive();
@@ -98,8 +99,7 @@ void AthenaContainerLayoutManager::OnWindowResized() {
 }
 
 void AthenaContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  aura::Window::Windows list = instance->window_list_provider_->GetWindowList();
-  if (std::find(list.begin(), list.end(), child) == list.end())
+  if (!instance->window_list_provider_->IsWindowInList(child))
     return;
 
   if (instance->split_view_controller_->IsSplitViewModeActive() &&

@@ -120,7 +120,7 @@ AppActivity* AppActivityRegistry::GetMruActivity() {
   DCHECK(activity_list_.size());
   WindowListProvider* window_list_provider =
       WindowManager::GetInstance()->GetWindowListProvider();
-  const aura::Window::Windows children =
+  const aura::Window::Windows& children =
       window_list_provider->GetWindowList();
   // Find the first window in the container which is part of the application.
   for (aura::Window::Windows::const_iterator child_iterator = children.begin();

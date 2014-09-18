@@ -21,10 +21,12 @@ class ATHENA_EXPORT WindowListProviderImpl : public WindowListProvider,
   virtual ~WindowListProviderImpl();
 
  private:
+  void RecreateWindowList();
+
   // WindowListProvider:
   virtual void AddObserver(WindowListProviderObserver* observer) OVERRIDE;
   virtual void RemoveObserver(WindowListProviderObserver* observer) OVERRIDE;
-  virtual aura::Window::Windows GetWindowList() const OVERRIDE;
+  virtual const aura::Window::Windows& GetWindowList() const OVERRIDE;
   virtual bool IsWindowInList(aura::Window* window) const OVERRIDE;
   virtual bool IsValidWindow(aura::Window* window) const OVERRIDE;
   virtual void MoveToFront(aura::Window* window) OVERRIDE;
@@ -39,6 +41,7 @@ class ATHENA_EXPORT WindowListProviderImpl : public WindowListProvider,
   virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
   aura::Window* container_;
+  aura::Window::Windows window_list_;
   ObserverList<WindowListProviderObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowListProviderImpl);

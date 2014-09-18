@@ -36,7 +36,7 @@ class SplitViewControllerTest : public test::AthenaTestBase {
   bool SplitViewWindowsTopmost() const {
     SplitViewController* controller = api_->GetSplitViewController();
     DCHECK(controller->IsSplitViewModeActive());
-    aura::Window::Windows list =
+    const aura::Window::Windows& list =
         api_->GetWindowListProvider()->GetWindowList();
     aura::Window* topmost = *list.rbegin();
     aura::Window* second_topmost = *(list.rbegin() + 1);

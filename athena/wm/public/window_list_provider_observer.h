@@ -7,6 +7,10 @@
 
 #include "athena/athena_export.h"
 
+namespace aura {
+class Window;
+}
+
 namespace athena {
 
 // An observer to window list changes like e.g. stacking order has changed.
@@ -16,6 +20,11 @@ class ATHENA_EXPORT WindowListProviderObserver {
 
   // The Window stacking has changed.
   virtual void OnWindowStackingChanged() = 0;
+
+  // The specified Window has been removed from the list. At the time of
+  // removal, |removed_window| was at the |index| position in the window list.
+  virtual void OnWindowRemoved(aura::Window* removed_window,
+                               int index) = 0;
 };
 
 }  // namespace athena

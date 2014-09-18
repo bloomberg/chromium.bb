@@ -10,6 +10,7 @@
 
 #include "athena/wm/overview_toolbar.h"
 #include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/split_view_controller.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -159,6 +160,17 @@ void TransformSplitWindowScale(aura::Window* window, float scale) {
   window->SetTransform(GetTransformForSplitWindow(window, scale));
 }
 
+void AnimateWindowTo(aura::Window* animate_window,
+                     aura::Window* target_window) {
+  ui::ScopedLayerAnimationSettings settings(
+      animate_window->layer()->GetAnimator());
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  WindowOverviewState* target_state =
+      target_window->GetProperty(kWindowOverviewState);
+  SetWindowProgress(animate_window, target_state->progress);
+}
+
 // Always returns the same target.
 class StaticWindowTargeter : public aura::WindowTargeter {
  public:
@@ -184,10 +196,11 @@ class StaticWindowTargeter : public aura::WindowTargeter {
 
 class WindowOverviewModeImpl : public WindowOverviewMode,
                                public ui::EventHandler,
-                               public ui::CompositorAnimationObserver {
+                               public ui::CompositorAnimationObserver,
+                               public WindowListProviderObserver {
  public:
   WindowOverviewModeImpl(aura::Window* container,
-                         const WindowListProvider* window_list_provider,
+                         WindowListProvider* window_list_provider,
                          SplitViewController* split_view_controller,
                          WindowOverviewModeDelegate* delegate)
       : container_(container),
@@ -206,15 +219,20 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     // state on the windows.
     ComputeTerminalStatesForAllWindows();
     SetInitialWindowStates();
+
+    window_list_provider_->AddObserver(this);
   }
 
   virtual ~WindowOverviewModeImpl() {
+    window_list_provider_->RemoveObserver(this);
     container_->set_target_handler(container_->delegate());
     RemoveAnimationObserver();
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
+    const aura::Window::Windows& windows =
+        window_list_provider_->GetWindowList();
     if (windows.empty())
       return;
-    std::for_each(windows.begin(), windows.end(),
+    std::for_each(windows.begin(),
+                  windows.end(),
                   std::bind2nd(std::ptr_fun(&RestoreWindowState),
                                split_view_controller_));
   }
@@ -224,9 +242,10 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   // positions. The transforms are set in the |kWindowOverviewState| property of
   // the windows.
   void ComputeTerminalStatesForAllWindows() {
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
     size_t index = 0;
 
+    const aura::Window::Windows& windows =
+        window_list_provider_->GetWindowList();
     for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
          iter != windows.rend();
          ++iter, ++index) {
@@ -275,10 +294,11 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   // Sets the initial position for the windows for the overview mode.
   void SetInitialWindowStates() {
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
     // The initial overview state of the topmost three windows.
     const float kInitialProgress[] = { 0.5f, 0.05f, 0.01f };
     size_t index = 0;
+    const aura::Window::Windows& windows =
+        window_list_provider_->GetWindowList();
     for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
          iter != windows.rend();
          ++iter) {
@@ -335,7 +355,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   void DoScroll(float delta_y) {
     const float kEpsilon = 1e-3f;
     float delta_y_p = std::abs(delta_y) / GetScrollableHeight();
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
+    const aura::Window::Windows& windows =
+        window_list_provider_->GetWindowList();
     if (delta_y < 0) {
       // Scroll up. Start with the top-most (i.e. behind-most in terms of
       // z-index) window, and try to scroll them up.
@@ -523,49 +544,6 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       dragged_window_->SetTransform(transform);
       dragged_window_->layer()->SetOpacity(kMinOpacity);
     }
-
-    const aura::Window::Windows list = window_list_provider_->GetWindowList();
-    CHECK(!list.empty());
-    if (list.front() == dragged_window_) {
-      // There's no window behind |dragged_window_|. So move the windows in
-      // front take a step back.
-      for (aura::Window::Windows::const_reverse_iterator iter = list.rbegin();
-           iter != list.rend() && *iter != dragged_window_;
-           ++iter) {
-        aura::Window* window = *iter;
-        ui::ScopedLayerAnimationSettings settings(
-            window->layer()->GetAnimator());
-        settings.SetPreemptionStrategy(
-            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-        aura::Window* next = *(iter + 1);
-        WindowOverviewState* next_state =
-            next->GetProperty(kWindowOverviewState);
-        UpdateTerminalStateForWindowAtIndex(
-            window, iter - list.rbegin(), list.size());
-        SetWindowProgress(window, next_state->progress);
-      }
-    } else {
-      // Move the windows behind |dragged_window_| in the stack forward one
-      // step.
-      for (aura::Window::Windows::const_iterator iter = list.begin();
-           iter != list.end() && *iter != dragged_window_;
-           ++iter) {
-        aura::Window* window = *iter;
-        ui::ScopedLayerAnimationSettings settings(
-            window->layer()->GetAnimator());
-        settings.SetPreemptionStrategy(
-            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-        aura::Window* next = *(iter + 1);
-        WindowOverviewState* next_state =
-            next->GetProperty(kWindowOverviewState);
-        UpdateTerminalStateForWindowAtIndex(
-            window, list.end() - iter, list.size());
-        SetWindowProgress(window, next_state->progress);
-      }
-    }
-
     delete dragged_window_;
     dragged_window_ = NULL;
   }
@@ -729,6 +707,47 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     }
   }
 
+  // WindowListProviderObserver:
+  virtual void OnWindowStackingChanged() OVERRIDE {
+    // Recompute the states of all windows. There isn't enough information at
+    // this point to do anything more clever.
+    ComputeTerminalStatesForAllWindows();
+    SetInitialWindowStates();
+  }
+
+  virtual void OnWindowRemoved(aura::Window* removed_window,
+                               int index) OVERRIDE {
+    const aura::Window::Windows& windows =
+        window_list_provider_->GetWindowList();
+    if (windows.empty())
+      return;
+    CHECK_LE(index, static_cast<int>(windows.size()));
+    if (index == 0) {
+      // The back-most window has been removed. Move all the remaining windows
+      // one step backwards.
+      for (int i = windows.size() - 1; i > 0; --i) {
+        UpdateTerminalStateForWindowAtIndex(
+            windows[i], windows.size() - 1 - i, windows.size());
+        AnimateWindowTo(windows[i], windows[i - 1]);
+      }
+      UpdateTerminalStateForWindowAtIndex(windows.front(),
+                                          windows.size() - 1,
+                                          windows.size());
+      AnimateWindowTo(windows.front(), removed_window);
+    } else {
+      // Move all windows behind the removed window one step forwards.
+      for (int i = 0; i < index - 1; ++i) {
+        UpdateTerminalStateForWindowAtIndex(windows[i], windows.size() - 1 - i,
+                                            windows.size());
+        AnimateWindowTo(windows[i], windows[i + 1]);
+      }
+      UpdateTerminalStateForWindowAtIndex(windows[index - 1],
+                                          windows.size() - index,
+                                          windows.size());
+      AnimateWindowTo(windows[index - 1], removed_window);
+    }
+  }
+
   const int kMinDistanceForDismissal = 300;
   const float kMaxOpacity = 1.0f;
   const float kMinOpacity = 0.2f;
@@ -736,7 +755,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   aura::Window* container_;
   // Provider of the stack of windows to show in the overview mode. Not owned.
-  const WindowListProvider* window_list_provider_;
+  WindowListProvider* window_list_provider_;
   SplitViewController* split_view_controller_;
 
   WindowOverviewModeDelegate* delegate_;
@@ -755,7 +774,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 // static
 scoped_ptr<WindowOverviewMode> WindowOverviewMode::Create(
     aura::Window* container,
-    const WindowListProvider* window_list_provider,
+    WindowListProvider* window_list_provider,
     SplitViewController* split_view_controller,
     WindowOverviewModeDelegate* delegate) {
   return scoped_ptr<WindowOverviewMode>(

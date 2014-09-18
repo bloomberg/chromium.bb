@@ -70,8 +70,8 @@ bool SplitViewController::IsSplitViewModeActive() const {
 
 void SplitViewController::ActivateSplitMode(aura::Window* left,
                                             aura::Window* right) {
-  aura::Window::Windows windows = window_list_provider_->GetWindowList();
-  aura::Window::Windows::reverse_iterator iter = windows.rbegin();
+  const aura::Window::Windows& windows = window_list_provider_->GetWindowList();
+  aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
   if (state_ == ACTIVE) {
     if (!left && left_window_ != right)
       left = left_window_;
@@ -115,11 +115,7 @@ void SplitViewController::ReplaceWindow(aura::Window* window,
   CHECK(replace_with);
   CHECK(window == left_window_ || window == right_window_);
   CHECK(replace_with != left_window_ && replace_with != right_window_);
-#if !defined(NDEBUG)
-  aura::Window::Windows windows = window_list_provider_->GetWindowList();
-  DCHECK(std::find(windows.begin(), windows.end(), replace_with) !=
-         windows.end());
-#endif
+  DCHECK(window_list_provider_->IsWindowInList(replace_with));
 
   if (window == left_window_)
     left_window_ = replace_with;
@@ -267,7 +263,7 @@ void SplitViewController::ScrollBegin(BezelController::Bezel bezel,
     return;
   SetState(SCROLLING);
 
-  aura::Window::Windows windows = window_list_provider_->GetWindowList();
+  const aura::Window::Windows& windows = window_list_provider_->GetWindowList();
   CHECK(windows.size() >= 2);
   aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
   aura::Window* current_window = *(iter);
