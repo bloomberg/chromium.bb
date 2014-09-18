@@ -60,12 +60,5 @@
   'library_dirs': [
     '<!@(python <(python_flags) --library_dirs)',
   ],
-  'direct_dependent_settings': {
-    'variables': {
-      'python_binary_modules': [
-        '<(python_cython_module)<(module_suffix)=<(module_prefix)<(_target_name)<(module_suffix)',
-      ],
-    },
-  },
   'hard_dependency': 1,
 }

@@ -622,6 +622,39 @@
             'mojo_python_embedder',
             'mojo_python_system',
           ],
+          # The python module need to be copied to their destinations
+          'actions': [
+            {
+              'action_name': 'Copy system module.',
+              'inputs': [
+                '<(DEPTH)/build/cp.py',
+                '<(PRODUCT_DIR)/libmojo_python_system.so',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/python/mojo/system.so',
+              ],
+              'action': [
+                'python',
+                '<@(_inputs)',
+                '<@(_outputs)',
+              ]
+            },
+            {
+              'action_name': 'Copy embedder module.',
+              'inputs': [
+                '<(DEPTH)/build/cp.py',
+                '<(PRODUCT_DIR)/libmojo_python_embedder.so',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/python/mojo/embedder.so',
+              ],
+              'action': [
+                'python',
+                '<@(_inputs)',
+                '<@(_outputs)',
+              ]
+            },
+          ],
           'includes': [ '../third_party/cython/python_module.gypi' ],
         },
       ],
