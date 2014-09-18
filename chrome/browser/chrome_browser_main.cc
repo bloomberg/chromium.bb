@@ -1422,7 +1422,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   metrics::MetricsService::SetExecutionPhase(
       metrics::MetricsService::STARTUP_TIMEBOMB_ARM,
       g_browser_process->local_state());
-  startup_watcher_->Arm(base::TimeDelta::FromSeconds(300));
+  startup_watcher_->Arm(base::TimeDelta::FromSeconds(600));
 
   // On mobile, need for clean shutdown arises only when the application comes
   // to foreground (i.e. MetricsService::OnAppEnterForeground is called).
