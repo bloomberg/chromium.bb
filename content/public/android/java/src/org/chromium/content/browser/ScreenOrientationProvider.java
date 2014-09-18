@@ -13,7 +13,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.common.ScreenOrientationValues;
+import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
  * This is the implementation of the C++ counterpart ScreenOrientationProvider.

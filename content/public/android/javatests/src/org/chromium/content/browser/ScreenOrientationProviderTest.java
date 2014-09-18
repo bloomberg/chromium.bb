@@ -12,7 +12,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.MockOrientationObserver;
 import org.chromium.content.browser.test.util.OrientationChangeObserverCriteria;
-import org.chromium.content.common.ScreenOrientationValues;
+import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 

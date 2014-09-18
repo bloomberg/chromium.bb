@@ -8,7 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content_public.Referrer;
+import org.chromium.content_public.common.Referrer;
 
 import java.util.ArrayList;
 

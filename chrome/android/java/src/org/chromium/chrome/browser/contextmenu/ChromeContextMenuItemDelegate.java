@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import org.chromium.chrome.browser.Tab;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.Referrer;
+import org.chromium.content_public.common.Referrer;
 
 /**
  * A delegate responsible for taking actions based on context menu selections.

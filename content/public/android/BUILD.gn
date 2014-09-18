@@ -183,9 +183,9 @@ java_cpp_template("top_controls_state_java") {
 
 java_cpp_template("screen_orientation_values_java") {
   sources = [
-    "java/src/org/chromium/content/common/ScreenOrientationValues.template",
+    "java/src/org/chromium/content_public/common/ScreenOrientationValues.template",
   ]
-  package_name = "org/chromium/content/common"
+  package_name = "org/chromium/content_public/common"
   inputs = [
     "//content/public/common/screen_orientation_values_list.h"
   ]

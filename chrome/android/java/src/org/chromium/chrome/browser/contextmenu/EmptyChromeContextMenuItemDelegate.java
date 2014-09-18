@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
-import org.chromium.content_public.Referrer;
+import org.chromium.content_public.common.Referrer;
 
 /**
  * An empty implementation of {@link ChromeContextMenuItemDelegate} to make overriding subsets of

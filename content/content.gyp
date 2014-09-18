@@ -552,10 +552,10 @@
           'target_name': 'screen_orientation_values_java',
           'type': 'none',
           'sources': [
-            'public/android/java/src/org/chromium/content/common/ScreenOrientationValues.template',
+            'public/android/java/src/org/chromium/content_public/common/ScreenOrientationValues.template',
           ],
           'variables': {
-            'package_name': 'org/chromium/content/common',
+            'package_name': 'org/chromium/content_public/common',
             'template_deps': ['public/common/screen_orientation_values_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],

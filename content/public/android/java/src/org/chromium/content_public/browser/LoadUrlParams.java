@@ -6,7 +6,7 @@ package org.chromium.content_public.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content_public.Referrer;
+import org.chromium.content_public.common.Referrer;
 
 import java.util.Locale;
 import java.util.Map;
@@ -411,18 +411,18 @@ public class LoadUrlParams {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void initializeConstants(
-            int load_type_default,
-            int load_type_browser_initiated_http_post,
-            int load_type_data,
-            int ua_override_inherit,
-            int ua_override_false,
-            int ua_override_true) {
-        assert LOAD_TYPE_DEFAULT == load_type_default;
-        assert LOAD_TYPE_BROWSER_INITIATED_HTTP_POST == load_type_browser_initiated_http_post;
-        assert LOAD_TYPE_DATA == load_type_data;
-        assert UA_OVERRIDE_INHERIT == ua_override_inherit;
-        assert UA_OVERRIDE_FALSE == ua_override_false;
-        assert UA_OVERRIDE_TRUE == ua_override_true;
+            int loadTypeDefault,
+            int loadTypeBrowserInitiatedHttpPost,
+            int loadTypeData,
+            int uaOverrideInherit,
+            int uaOverrideFalse,
+            int uaOverrideTrue) {
+        assert LOAD_TYPE_DEFAULT == loadTypeDefault;
+        assert LOAD_TYPE_BROWSER_INITIATED_HTTP_POST == loadTypeBrowserInitiatedHttpPost;
+        assert LOAD_TYPE_DATA == loadTypeData;
+        assert UA_OVERRIDE_INHERIT == uaOverrideInherit;
+        assert UA_OVERRIDE_FALSE == uaOverrideFalse;
+        assert UA_OVERRIDE_TRUE == uaOverrideTrue;
     }
 
     /**
