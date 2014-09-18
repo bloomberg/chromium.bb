@@ -40,8 +40,6 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/text/PlatformLocale.h"
-#include "public/platform/WebLocalizedString.h"
 #include "wtf/TemporaryChange.h"
 
 using namespace WTF::Unicode;
@@ -189,7 +187,7 @@ void PickerIndicatorElement::didNotifySubtreeInsertionsToDocument()
     if (LayoutTestSupport::isRunningLayoutTest())
         return;
     setAttribute(tabindexAttr, "0");
-    setAttribute(aria_labelAttr, AtomicString(locale().queryString(WebLocalizedString::AXShowPickerButton)));
+    setAttribute(aria_haspopupAttr, "true");
     setAttribute(roleAttr, "button");
 }
 
