@@ -81,8 +81,7 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
     ScopedResource* resource;
   };
 
-  void OnRasterFinished();
-  void OnRasterRequiredForActivationFinished();
+  void OnRasterFinished(TaskSet task_set);
   void FlushCopies();
   scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
   void StagingStateAsValueInto(base::debug::TracedValue* staging_state) const;
@@ -99,11 +98,9 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
 
   bool has_performed_copy_since_last_flush_;
 
-  bool raster_tasks_pending_;
-  bool raster_tasks_required_for_activation_pending_;
+  TaskSetCollection raster_pending_;
 
-  scoped_refptr<RasterizerTask> raster_finished_task_;
-  scoped_refptr<RasterizerTask> raster_required_for_activation_finished_task_;
+  scoped_refptr<RasterizerTask> raster_finished_tasks_[kNumberOfTaskSets];
 
   // Task graph used when scheduling tasks and vector used to gather
   // completed tasks.

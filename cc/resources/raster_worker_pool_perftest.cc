@@ -147,6 +147,8 @@ class RasterWorkerPoolPerfTestBase {
  public:
   typedef std::vector<scoped_refptr<RasterTask> > RasterTaskVector;
 
+  enum NamedTaskSet { REQUIRED_FOR_ACTIVATION = 0, ALL = 1 };
+
   RasterWorkerPoolPerfTestBase()
       : context_provider_(make_scoped_refptr(new PerfContextProvider)),
         task_runner_(new base::TestSimpleTaskRunner),
@@ -196,8 +198,11 @@ class RasterWorkerPoolPerfTestBase {
                             const RasterTaskVector& raster_tasks) {
     for (size_t i = 0u; i < raster_tasks.size(); ++i) {
       bool required_for_activation = (i % 2) == 0;
-      queue->items.push_back(RasterTaskQueue::Item(raster_tasks[i].get(),
-                                                   required_for_activation));
+      TaskSetCollection task_set_collection;
+      task_set_collection[ALL] = true;
+      task_set_collection[REQUIRED_FOR_ACTIVATION] = required_for_activation;
+      queue->items.push_back(
+          RasterTaskQueue::Item(raster_tasks[i].get(), task_set_collection));
     }
   }
 
@@ -261,14 +266,12 @@ class RasterWorkerPoolPerfTest
   }
 
   // Overriden from RasterizerClient:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete() const
-      OVERRIDE {
-    return false;
-  }
-  virtual void DidFinishRunningTasks() OVERRIDE {
+  virtual void DidFinishRunningTasks(TaskSet task_set) OVERRIDE {
     raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
   }
-  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
+  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const OVERRIDE {
+    return TaskSetCollection();
+  }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
     task_graph_runner_->RunUntilIdle();

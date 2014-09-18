@@ -49,8 +49,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
                         ResourceProvider* resource_provider);
 
  private:
-  void OnRasterFinished();
-  void OnRasterRequiredForActivationFinished();
+  void OnRasterFinished(TaskSet task_set);
   scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -59,11 +58,9 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
   RasterizerClient* client_;
   ResourceProvider* resource_provider_;
 
-  bool raster_tasks_pending_;
-  bool raster_tasks_required_for_activation_pending_;
+  TaskSetCollection raster_pending_;
 
-  scoped_refptr<RasterizerTask> raster_finished_task_;
-  scoped_refptr<RasterizerTask> raster_required_for_activation_finished_task_;
+  scoped_refptr<RasterizerTask> raster_finished_tasks_[kNumberOfTaskSets];
 
   // Task graph used when scheduling tasks and vector used to gather
   // completed tasks.

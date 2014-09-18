@@ -96,10 +96,8 @@ unsigned RasterWorkerPool::kOnDemandRasterTaskPriority = 0u;
 unsigned RasterWorkerPool::kBenchmarkRasterTaskPriority = 0u;
 // Task priorities that make sure raster finished tasks run before any
 // remaining raster tasks.
-unsigned RasterWorkerPool::kRasterFinishedTaskPriority = 2u;
-unsigned RasterWorkerPool::kRasterRequiredForActivationFinishedTaskPriority =
-    1u;
-unsigned RasterWorkerPool::kRasterTaskPriorityBase = 3u;
+unsigned RasterWorkerPool::kRasterFinishedTaskPriority = 1u;
+unsigned RasterWorkerPool::kRasterTaskPriorityBase = 2u;
 
 RasterWorkerPool::RasterWorkerPool() {}
 

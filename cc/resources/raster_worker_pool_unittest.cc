@@ -109,6 +109,8 @@ class RasterWorkerPoolTest
 
   typedef std::vector<scoped_refptr<RasterTask> > RasterTaskVector;
 
+  enum NamedTaskSet { REQUIRED_FOR_ACTIVATION = 0, ALL = 1 };
+
   RasterWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
         timeout_seconds_(5),
@@ -173,15 +175,15 @@ class RasterWorkerPoolTest
   }
 
   // Overriden from RasterWorkerPoolClient:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete() const
-      OVERRIDE {
-    return false;
+  virtual void DidFinishRunningTasks(TaskSet task_set) OVERRIDE {
+    if (task_set == ALL) {
+      raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
+      base::MessageLoop::current()->Quit();
+    }
   }
-  virtual void DidFinishRunningTasks() OVERRIDE {
-    raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
-    base::MessageLoop::current()->Quit();
+  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const OVERRIDE {
+    return TaskSetCollection();
   }
-  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
     if (timeout_seconds_) {
@@ -205,8 +207,11 @@ class RasterWorkerPoolTest
 
     for (RasterTaskVector::const_iterator it = tasks_.begin();
          it != tasks_.end();
-         ++it)
-      queue.items.push_back(RasterTaskQueue::Item(it->get(), false));
+         ++it) {
+      TaskSetCollection task_sets;
+      task_sets[ALL] = true;
+      queue.items.push_back(RasterTaskQueue::Item(it->get(), task_sets));
+    }
 
     raster_worker_pool_->AsRasterizer()->ScheduleTasks(&queue);
   }

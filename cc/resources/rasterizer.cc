@@ -56,8 +56,11 @@ RasterTask::~RasterTask() {}
 
 RasterTask* RasterTask::AsRasterTask() { return this; }
 
-RasterTaskQueue::Item::Item(RasterTask* task, bool required_for_activation)
-    : task(task), required_for_activation(required_for_activation) {}
+RasterTaskQueue::Item::Item(RasterTask* task,
+                            const TaskSetCollection& task_sets)
+    : task(task), task_sets(task_sets) {
+  DCHECK(task_sets.any());
+}
 
 RasterTaskQueue::Item::~Item() {}
 

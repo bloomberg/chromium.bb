@@ -8,6 +8,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
+#include "base/strings/stringprintf.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
@@ -43,8 +44,6 @@ ImageCopyRasterWorkerPool::ImageCopyRasterWorkerPool(
       resource_provider_(resource_provider),
       resource_pool_(resource_pool),
       has_performed_copy_since_last_flush_(false),
-      raster_tasks_pending_(false),
-      raster_tasks_required_for_activation_pending_(false),
       raster_finished_weak_ptr_factory_(this) {
   DCHECK(context_provider_);
 }
@@ -70,11 +69,11 @@ void ImageCopyRasterWorkerPool::Shutdown() {
 void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   TRACE_EVENT0("cc", "ImageCopyRasterWorkerPool::ScheduleTasks");
 
-  if (!raster_tasks_pending_)
+  if (raster_pending_.none())
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
 
-  raster_tasks_pending_ = true;
-  raster_tasks_required_for_activation_pending_ = true;
+  // Mark all task sets as pending.
+  raster_pending_.set();
 
   unsigned priority = kRasterTaskPriorityBase;
 
@@ -83,21 +82,19 @@ void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   // Cancel existing OnRasterFinished callbacks.
   raster_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  scoped_refptr<RasterizerTask>
-      new_raster_required_for_activation_finished_task(CreateRasterFinishedTask(
-          task_runner_.get(),
-          base::Bind(
-              &ImageCopyRasterWorkerPool::OnRasterRequiredForActivationFinished,
-              raster_finished_weak_ptr_factory_.GetWeakPtr())));
-  scoped_refptr<RasterizerTask> new_raster_finished_task(
-      CreateRasterFinishedTask(
-          task_runner_.get(),
-          base::Bind(&ImageCopyRasterWorkerPool::OnRasterFinished,
-                     raster_finished_weak_ptr_factory_.GetWeakPtr())));
+  scoped_refptr<RasterizerTask> new_raster_finished_tasks[kNumberOfTaskSets];
+
+  size_t task_count[kNumberOfTaskSets] = {0};
+
+  for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
+    new_raster_finished_tasks[task_set] = CreateRasterFinishedTask(
+        task_runner_.get(),
+        base::Bind(&ImageCopyRasterWorkerPool::OnRasterFinished,
+                   raster_finished_weak_ptr_factory_.GetWeakPtr(),
+                   task_set));
+  }
 
   resource_pool_->CheckBusyResources();
-
-  size_t required_for_activation_count = 0;
 
   for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
        it != queue->items.end();
@@ -106,33 +103,32 @@ void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
     RasterTask* task = item.task;
     DCHECK(!task->HasCompleted());
 
-    if (item.required_for_activation) {
-      ++required_for_activation_count;
-      graph_.edges.push_back(TaskGraph::Edge(
-          task, new_raster_required_for_activation_finished_task.get()));
+    for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
+      if (!item.task_sets[task_set])
+        continue;
+
+      ++task_count[task_set];
+
+      graph_.edges.push_back(
+          TaskGraph::Edge(task, new_raster_finished_tasks[task_set].get()));
     }
 
     InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++);
-
-    graph_.edges.push_back(
-        TaskGraph::Edge(task, new_raster_finished_task.get()));
   }
 
-  InsertNodeForTask(&graph_,
-                    new_raster_required_for_activation_finished_task.get(),
-                    kRasterRequiredForActivationFinishedTaskPriority,
-                    required_for_activation_count);
-  InsertNodeForTask(&graph_,
-                    new_raster_finished_task.get(),
-                    kRasterFinishedTaskPriority,
-                    queue->items.size());
+  for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
+    InsertNodeForTask(&graph_,
+                      new_raster_finished_tasks[task_set].get(),
+                      kRasterFinishedTaskPriority,
+                      task_count[task_set]);
+  }
 
   ScheduleTasksOnOriginThread(this, &graph_);
   task_graph_runner_->ScheduleTasks(namespace_token_, &graph_);
 
-  raster_finished_task_ = new_raster_finished_task;
-  raster_required_for_activation_finished_task_ =
-      new_raster_required_for_activation_finished_task;
+  std::copy(new_raster_finished_tasks,
+            new_raster_finished_tasks + kNumberOfTaskSets,
+            raster_finished_tasks_);
 
   resource_pool_->ReduceResourceUsage();
 
@@ -200,24 +196,21 @@ void ImageCopyRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
   resource_pool_->ReleaseResource(resource.Pass());
 }
 
-void ImageCopyRasterWorkerPool::OnRasterFinished() {
-  TRACE_EVENT0("cc", "ImageCopyRasterWorkerPool::OnRasterFinished");
+void ImageCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
+  TRACE_EVENT1("cc",
+               "ImageCopyRasterWorkerPool::OnRasterFinished",
+               "task_set",
+               task_set);
 
-  DCHECK(raster_tasks_pending_);
-  raster_tasks_pending_ = false;
-  TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
-  client_->DidFinishRunningTasks();
-}
-
-void ImageCopyRasterWorkerPool::OnRasterRequiredForActivationFinished() {
-  TRACE_EVENT0(
-      "cc", "ImageCopyRasterWorkerPool::OnRasterRequiredForActivationFinished");
-
-  DCHECK(raster_tasks_required_for_activation_pending_);
-  raster_tasks_required_for_activation_pending_ = false;
-  TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
-  client_->DidFinishRunningTasksRequiredForActivation();
+  DCHECK(raster_pending_[task_set]);
+  raster_pending_[task_set] = false;
+  if (raster_pending_.any()) {
+    TRACE_EVENT_ASYNC_STEP_INTO1(
+        "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+  } else {
+    TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
+  }
+  client_->DidFinishRunningTasks(task_set);
 }
 
 void ImageCopyRasterWorkerPool::FlushCopies() {
@@ -233,9 +226,10 @@ ImageCopyRasterWorkerPool::StateAsValue() const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
 
-  state->SetInteger("pending_count", raster_task_states_.size());
-  state->SetBoolean("tasks_required_for_activation_pending",
-                    raster_tasks_required_for_activation_pending_);
+  state->BeginArray("tasks_pending");
+  for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set)
+    state->AppendBoolean(raster_pending_[task_set]);
+  state->EndArray();
   state->BeginDictionary("staging_state");
   StagingStateAsValueInto(state.get());
   state->EndDictionary();

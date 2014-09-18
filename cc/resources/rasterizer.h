@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_RASTERIZER_H_
 #define CC_RESOURCES_RASTERIZER_H_
 
+#include <bitset>
 #include <vector>
 
 #include "base/callback.h"
@@ -85,11 +86,14 @@ class CC_EXPORT RasterTask : public RasterizerTask {
   ImageDecodeTask::Vector dependencies_;
 };
 
+static const size_t kNumberOfTaskSets = 2;
+typedef size_t TaskSet;
+typedef std::bitset<kNumberOfTaskSets> TaskSetCollection;
+
 class CC_EXPORT RasterizerClient {
  public:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete() const = 0;
-  virtual void DidFinishRunningTasks() = 0;
-  virtual void DidFinishRunningTasksRequiredForActivation() = 0;
+  virtual void DidFinishRunningTasks(TaskSet task_set) = 0;
+  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const = 0;
 
  protected:
   virtual ~RasterizerClient() {}
@@ -109,15 +113,11 @@ struct CC_EXPORT RasterTaskQueue {
 
     typedef std::vector<Item> Vector;
 
-    Item(RasterTask* task, bool required_for_activation);
+    Item(RasterTask* task, const TaskSetCollection& task_sets);
     ~Item();
 
-    static bool IsRequiredForActivation(const Item& item) {
-      return item.required_for_activation;
-    }
-
     RasterTask* task;
-    bool required_for_activation;
+    TaskSetCollection task_sets;
   };
 
   RasterTaskQueue();

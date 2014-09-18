@@ -18,7 +18,6 @@ class CC_EXPORT RasterWorkerPool {
   static unsigned kOnDemandRasterTaskPriority;
   static unsigned kBenchmarkRasterTaskPriority;
   static unsigned kRasterFinishedTaskPriority;
-  static unsigned kRasterRequiredForActivationFinishedTaskPriority;
   static unsigned kRasterTaskPriorityBase;
 
   RasterWorkerPool();
@@ -40,14 +39,6 @@ class CC_EXPORT RasterWorkerPool {
   static scoped_refptr<RasterizerTask> CreateRasterFinishedTask(
       base::SequencedTaskRunner* task_runner,
       const base::Closure& callback);
-
-  // Utility function that can be used to create a "raster required for
-  // activation finished" task that posts |callback| to |task_runner| when run.
-  static scoped_refptr<RasterizerTask>
-      CreateRasterRequiredForActivationFinishedTask(
-          size_t tasks_required_for_activation_count,
-          base::SequencedTaskRunner* task_runner,
-          const base::Closure& callback);
 
   // Utility function that can be used to call ::ScheduleOnOriginThread() for
   // each task in |graph|.

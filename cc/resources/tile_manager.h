@@ -87,6 +87,13 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
 class CC_EXPORT TileManager : public RasterizerClient,
                               public RefCountedManager<Tile> {
  public:
+  enum NamedTaskSet {
+    REQUIRED_FOR_ACTIVATION = 0,
+    ALL = 1,
+    // Adding additional values requires increasing kNumberOfTaskSets in
+    // rasterizer.h
+  };
+
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
       base::SequencedTaskRunner* task_runner,
@@ -174,9 +181,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
   virtual void Release(Tile* tile) OVERRIDE;
 
   // Overriden from RasterizerClient:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete() const OVERRIDE;
-  virtual void DidFinishRunningTasks() OVERRIDE;
-  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE;
+  virtual void DidFinishRunningTasks(TaskSet task_set) OVERRIDE;
+  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const OVERRIDE;
 
   typedef std::vector<Tile*> TileVector;
   typedef std::set<Tile*> TileSet;

@@ -94,10 +94,6 @@ bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
                    tile) != tiles_for_raster.end();
 }
 
-void FakeTileManager::DidFinishRunningTasksForTesting() {
-  DidFinishRunningTasks();
-}
-
 void FakeTileManager::Release(Tile* tile) {
   TileManager::Release(tile);
 
