@@ -32,7 +32,7 @@
 #include "compositor.h"
 #include "filter.h"
 
-void
+WL_EXPORT void
 weston_filter_dispatch(struct weston_motion_filter *filter,
 		       struct weston_motion_params *motion,
 		       void *data, uint32_t time)
@@ -313,7 +313,7 @@ struct weston_motion_filter_interface accelerator_interface = {
 	accelerator_destroy
 };
 
-struct weston_motion_filter *
+WL_EXPORT struct weston_motion_filter *
 create_pointer_accelator_filter(accel_profile_func_t profile)
 {
 	struct pointer_accelerator *filter;

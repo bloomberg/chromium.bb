@@ -35,7 +35,7 @@ struct weston_motion_params {
 
 struct weston_motion_filter;
 
-WL_EXPORT void
+void
 weston_filter_dispatch(struct weston_motion_filter *filter,
 		       struct weston_motion_params *motion,
 		       void *data, uint32_t time);
@@ -57,7 +57,7 @@ typedef double (*accel_profile_func_t)(struct weston_motion_filter *filter,
 				       double velocity,
 				       uint32_t time);
 
-WL_EXPORT struct weston_motion_filter *
+struct weston_motion_filter *
 create_pointer_accelator_filter(accel_profile_func_t filter);
 
 #endif // _FILTER_H_

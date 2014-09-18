@@ -963,10 +963,10 @@ weston_view_from_global_fixed(struct weston_view *view,
 			      wl_fixed_t x, wl_fixed_t y,
 			      wl_fixed_t *vx, wl_fixed_t *vy);
 
-WL_EXPORT void
+void
 weston_surface_to_buffer_float(struct weston_surface *surface,
 			       float x, float y, float *bx, float *by);
-WL_EXPORT void
+void
 weston_surface_to_buffer(struct weston_surface *surface,
 			 int sx, int sy, int *bx, int *by);
 pixman_box32_t
@@ -1196,7 +1196,7 @@ weston_view_schedule_repaint(struct weston_view *view);
 int
 weston_surface_is_mapped(struct weston_surface *surface);
 
-WL_EXPORT void
+void
 weston_surface_set_size(struct weston_surface *surface,
 			int32_t width, int32_t height);
 
