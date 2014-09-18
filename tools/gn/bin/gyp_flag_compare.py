@@ -9,6 +9,7 @@ build, report on differences between the command lines."""
 
 
 import os
+import shlex
 import subprocess
 import sys
 
@@ -76,8 +77,7 @@ def GetFlags(lines):
     if 'clang' not in line:
       continue
 
-    # TODO(scottmg): Proper escapes.
-    command_line = line.strip().split()[1:]
+    command_line = shlex.split(line.strip())[1:]
 
     output_name = FindAndRemoveArgWithValue(command_line, '-o')
     dep_name = FindAndRemoveArgWithValue(command_line, '-MF')
