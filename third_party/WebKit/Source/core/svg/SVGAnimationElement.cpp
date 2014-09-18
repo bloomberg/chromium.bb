@@ -78,63 +78,57 @@ fail:
 }
 
 template<typename CharType>
-static void parseKeySplinesInternal(const String& string, Vector<UnitBezier>& result)
+static bool parseKeySplinesInternal(const String& string, Vector<UnitBezier>& result)
 {
     const CharType* ptr = string.getCharacters<CharType>();
     const CharType* end = ptr + string.length();
 
     skipOptionalSVGSpaces(ptr, end);
 
-    bool delimParsed = false;
     while (ptr < end) {
-        delimParsed = false;
         float posA = 0;
-        if (!parseNumber(ptr, end, posA)) {
-            result.clear();
-            return;
-        }
+        if (!parseNumber(ptr, end, posA))
+            return false;
 
         float posB = 0;
-        if (!parseNumber(ptr, end, posB)) {
-            result.clear();
-            return;
-        }
+        if (!parseNumber(ptr, end, posB))
+            return false;
 
         float posC = 0;
-        if (!parseNumber(ptr, end, posC)) {
-            result.clear();
-            return;
-        }
+        if (!parseNumber(ptr, end, posC))
+            return false;
 
         float posD = 0;
-        if (!parseNumber(ptr, end, posD, DisallowWhitespace)) {
-            result.clear();
-            return;
-        }
+        if (!parseNumber(ptr, end, posD, DisallowWhitespace))
+            return false;
 
         skipOptionalSVGSpaces(ptr, end);
 
-        if (ptr < end && *ptr == ';') {
-            delimParsed = true;
+        if (ptr < end && *ptr == ';')
             ptr++;
-        }
         skipOptionalSVGSpaces(ptr, end);
 
         result.append(UnitBezier(posA, posB, posC, posD));
     }
-    if (!(ptr == end && !delimParsed))
-        result.clear();
+
+    return ptr == end;
 }
 
-static void parseKeySplines(const String& string, Vector<UnitBezier>& result)
+static bool parseKeySplines(const String& string, Vector<UnitBezier>& result)
 {
     result.clear();
     if (string.isEmpty())
-        return;
+        return true;
+    bool parsed = true;
     if (string.is8Bit())
-        parseKeySplinesInternal<LChar>(string, result);
+        parsed = parseKeySplinesInternal<LChar>(string, result);
     else
-        parseKeySplinesInternal<UChar>(string, result);
+        parsed = parseKeySplinesInternal<UChar>(string, result);
+    if (!parsed) {
+        result.clear();
+        return false;
+    }
+    return true;
 }
 
 bool SVGAnimationElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -188,7 +182,8 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
     }
 
     if (name == SVGNames::keySplinesAttr) {
-        parseKeySplines(value, m_keySplines);
+        if (!parseKeySplines(value, m_keySplines))
+            reportAttributeParsingError(ParsingAttributeFailedError, name, value);
         return;
     }
 
