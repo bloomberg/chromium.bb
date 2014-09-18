@@ -16,7 +16,9 @@ namespace {
 ppapi::DeviceRefData FromStreamDeviceInfo(const StreamDeviceInfo& info) {
   ppapi::DeviceRefData data;
   data.id = info.device.id;
-  data.name = info.device.name;
+  // Some Flash content can't handle an empty string, so stick a space in to
+  // make them happy. See crbug.com/408404.
+  data.name = info.device.name.empty() ? std::string(" ") : info.device.name;
   data.type = PepperMediaDeviceManager::FromMediaStreamType(info.device.type);
   return data;
 }
