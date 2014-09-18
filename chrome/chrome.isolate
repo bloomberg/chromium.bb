@@ -30,10 +30,16 @@
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
-          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/resources/extension/',
+        ],
+      },
+    }],
+    ['OS=="win" or (OS=="linux" and target_arch=="x64")', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
         ],
       },
     }],
