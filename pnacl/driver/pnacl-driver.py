@@ -494,10 +494,12 @@ def main(argv):
   if env.getbool('ALLOW_NATIVE'):
     if not compiling_to_native:
       Log.Fatal("--pnacl-allow-native without -arch is not meaningful.")
-    # For native/mixed links, also bring in the native libgcc to avoid link
-    # failure if pre-translated native code needs functions from it.
+    # For native/mixed links, also bring in the native libgcc and
+    # libcrt_platform to avoid link failure if pre-translated native
+    # code needs functions from it.
     env.append('LD_FLAGS', env.eval('-L${LIBS_NATIVE_ARCH}'))
     env.append('STDLIBS', '-lgcc')
+    env.append('STDLIBS', '-lcrt_platform')
 
 
   if not env.get('STDLIB'):
