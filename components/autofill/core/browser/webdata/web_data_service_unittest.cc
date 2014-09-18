@@ -348,9 +348,12 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
 }
 
 TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
-  AutofillProfile profile1;
+  // The GUIDs are alphabetical for easier testing.
+  AutofillProfile profile1("087151C8-6AB1-487C-9095-28E80BE5DA15",
+                           "http://example.com");
   profile1.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Abe"));
-  AutofillProfile profile2;
+  AutofillProfile profile2("6141084B-72D7-4B73-90CF-3D6AC154673B",
+                           "http://example.com");
   profile2.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Alice"));
 
   EXPECT_CALL(observer_, AutofillProfileChanged(_))
@@ -439,9 +442,11 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
 }
 
 TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
-  CreditCard card1;
+  CreditCard card1("B9C52112-BD5F-4080-84E1-C651D2CB90E2",
+                   "https://ejemplo.mx");
   card1.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Abe"));
-  CreditCard card2;
+  CreditCard card2("E4D2662E-5E16-44F3-AF5A-5A77FAE4A6F3",
+                   "https://example.com");
   card2.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Alice"));
 
   wds_->AddCreditCard(card1);

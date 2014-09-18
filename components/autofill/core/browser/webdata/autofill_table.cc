@@ -929,7 +929,8 @@ bool AutofillTable::GetAutofillProfiles(
 
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid "
-      "FROM autofill_profiles"));
+      "FROM autofill_profiles "
+      "ORDER BY date_modified, guid"));
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
@@ -1067,7 +1068,8 @@ bool AutofillTable::GetCreditCards(
 
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid "
-      "FROM credit_cards"));
+      "FROM credit_cards "
+      "ORDER BY date_modified, guid"));
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);

@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -225,44 +226,51 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"Autofill"})
     public void testLabels()  throws InterruptedException, ExecutionException {
-       AutofillProfile profile1 = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "John Major", "Acme Inc.",
-                "123 Main", "California", "Los Angeles", "",
-                "90210", "",
-                "US", "555 123-4567", "jm@example.com", "");
-       // An almost identical profile.
-       AutofillProfile profile2 = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "John Major", "Acme Inc.",
-                "123 Main", "California", "Los Angeles", "",
-                "90210", "",
-                "US", "555 123-4567", "jm-work@example.com", "");
-       // A different profile.
-       AutofillProfile profile3 = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "Jasper Lundgren", "",
-                "1500 Second Ave", "California", "Hollywood", "",
-                "90068", "",
-                "US", "555 123-9876", "jasperl@example.com", "");
-       // A profile where a lot of stuff is missing.
-       AutofillProfile profile4 = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "Joe Sergeant", "",
-                "", "Texas", "Fort Worth", "",
-                "", "",
-                "US", "", "", "");
+        AutofillProfile profile1 = new AutofillProfile(
+                 "" /* guid */, "https://www.example.com" /* origin */,
+                 "John Major", "Acme Inc.",
+                 "123 Main", "California", "Los Angeles", "",
+                 "90210", "",
+                 "US", "555 123-4567", "jm@example.com", "");
+        // An almost identical profile.
+        AutofillProfile profile2 = new AutofillProfile(
+                 "" /* guid */, "https://www.example.com" /* origin */,
+                 "John Major", "Acme Inc.",
+                 "123 Main", "California", "Los Angeles", "",
+                 "90210", "",
+                 "US", "555 123-4567", "jm-work@example.com", "");
+        // A different profile.
+        AutofillProfile profile3 = new AutofillProfile(
+                 "" /* guid */, "https://www.example.com" /* origin */,
+                 "Jasper Lundgren", "",
+                 "1500 Second Ave", "California", "Hollywood", "",
+                 "90068", "",
+                 "US", "555 123-9876", "jasperl@example.com", "");
+        // A profile where a lot of stuff is missing.
+        AutofillProfile profile4 = new AutofillProfile(
+                 "" /* guid */, "https://www.example.com" /* origin */,
+                 "Joe Sergeant", "",
+                 "", "Texas", "Fort Worth", "",
+                 "", "",
+                 "US", "", "", "");
 
-       mHelper.setProfile(profile1);
-       mHelper.setProfile(profile2);
-       mHelper.setProfile(profile3);
-       mHelper.setProfile(profile4);
+        mHelper.setProfile(profile1);
+        mHelper.setProfile(profile2);
+        mHelper.setProfile(profile3);
+        mHelper.setProfile(profile4);
 
-       List<AutofillProfile> profiles = mHelper.getProfiles();
-       assertEquals(4, profiles.size());
-       assertEquals("123 Main, Los Angeles, jm@example.com", profiles.get(0).getLabel());
-       assertEquals("123 Main, Los Angeles, jm-work@example.com", profiles.get(1).getLabel());
-       assertEquals("1500 Second Ave, Hollywood", profiles.get(2).getLabel());
-       assertEquals("Fort Worth, Texas", profiles.get(3).getLabel());
+        List<String> expectedLabels = new LinkedList<String>();
+        expectedLabels.add("123 Main, Los Angeles, jm@example.com");
+        expectedLabels.add("123 Main, Los Angeles, jm-work@example.com");
+        expectedLabels.add("1500 Second Ave, Hollywood");
+        expectedLabels.add("Fort Worth, Texas");
+
+        List<AutofillProfile> profiles = mHelper.getProfiles();
+        assertEquals(expectedLabels.size(), profiles.size());
+        for (int i = 0; i < profiles.size(); ++i) {
+            int idx = expectedLabels.indexOf(profiles.get(i).getLabel());
+            assertFalse(-1 == idx);
+            expectedLabels.remove(idx);
+        }
     }
 }

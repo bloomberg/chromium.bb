@@ -47,6 +47,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::ASCIIToUTF16;
+using base::UTF16ToASCII;
 using base::WideToUTF16;
 
 namespace autofill {
@@ -378,8 +379,12 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
 
   SetProfiles(&profiles);
   ASSERT_EQ(profiles.size(), personal_data_manager()->GetProfiles().size());
-  for (size_t i = 0; i < profiles.size(); ++i)
-    EXPECT_EQ(profiles[i], *personal_data_manager()->GetProfiles()[i]);
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    EXPECT_TRUE(std::find(profiles.begin(),
+                          profiles.end(),
+                          *personal_data_manager()->GetProfiles()[i]) !=
+                profiles.end());
+  }
 
   std::vector<CreditCard> cards;
   CreditCard card1;
@@ -429,8 +434,12 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
 
   SetCards(&cards);
   ASSERT_EQ(cards.size(), personal_data_manager()->GetCreditCards().size());
-  for (size_t i = 0; i < cards.size(); ++i)
-    EXPECT_EQ(cards[i], *personal_data_manager()->GetCreditCards()[i]);
+  for (size_t i = 0; i < cards.size(); ++i) {
+    EXPECT_TRUE(std::find(cards.begin(),
+                          cards.end(),
+                          *personal_data_manager()->GetCreditCards()[i]) !=
+                cards.end());
+  }
 }
 
 // Test filling in invalid values for profiles are saved as-is. Phone
@@ -621,12 +630,20 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
     FillFormAndSubmit("autofill_test_form.html", profiles[i]);
 
   ASSERT_EQ(2u, personal_data_manager()->GetProfiles().size());
-  ASSERT_EQ(ASCIIToUTF16("408-871-4567"),
-            personal_data_manager()->GetProfiles()[0]->GetRawInfo(
-                PHONE_HOME_WHOLE_NUMBER));
-  ASSERT_EQ(ASCIIToUTF16("+49 40-80-81-79-000"),
-            personal_data_manager()->GetProfiles()[1]->GetRawInfo(
-                PHONE_HOME_WHOLE_NUMBER));
+  int us_address_index =
+      personal_data_manager()->GetProfiles()[0]->GetRawInfo(
+          ADDRESS_HOME_LINE1) == ASCIIToUTF16("123 Cherry Ave")
+          ? 0
+          : 1;
+
+  EXPECT_EQ(
+      ASCIIToUTF16("408-871-4567"),
+      personal_data_manager()->GetProfiles()[us_address_index]->GetRawInfo(
+          PHONE_HOME_WHOLE_NUMBER));
+  ASSERT_EQ(
+      ASCIIToUTF16("+49 40-80-81-79-000"),
+      personal_data_manager()->GetProfiles()[1 - us_address_index]->GetRawInfo(
+          PHONE_HOME_WHOLE_NUMBER));
 }
 
 // Prepend country codes when formatting phone numbers, but only if the user
@@ -649,14 +666,21 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
   FillFormAndSubmit("autofill_test_form.html", data);
 
   ASSERT_EQ(2u, personal_data_manager()->GetProfiles().size());
-  EXPECT_EQ(ASCIIToUTF16("+49 8450 777777"),
-            personal_data_manager()->GetProfiles()[0]->GetRawInfo(
-                PHONE_HOME_WHOLE_NUMBER));
+  int second_address_index =
+      personal_data_manager()->GetProfiles()[0]->GetRawInfo(
+          ADDRESS_HOME_LINE1) == ASCIIToUTF16("4321 H St.")
+          ? 0
+          : 1;
 
-  FillFormAndSubmit("autofill_test_form.html", data);
-  EXPECT_EQ(ASCIIToUTF16("08450 777777"),
-            personal_data_manager()->GetProfiles()[1]->GetRawInfo(
-                PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(ASCIIToUTF16("+49 8450 777777"),
+            personal_data_manager()
+                ->GetProfiles()[1 - second_address_index]
+                ->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  EXPECT_EQ(
+      ASCIIToUTF16("08450 777777"),
+      personal_data_manager()->GetProfiles()[second_address_index]->GetRawInfo(
+          PHONE_HOME_WHOLE_NUMBER));
 }
 
 // Test that Autofill uses '+' sign for international numbers.
@@ -665,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
 //   The phone number does not have a leading '+'.
 //   The phone number has a leading international direct dialing (IDD) code.
 // This does not apply to US numbers. For US numbers, '+' is removed.
-IN_PROC_BROWSER_TEST_F(AutofillTest, UsePlusSignForInternaltionalNumber) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, UsePlusSignForInternationalNumber) {
   ASSERT_TRUE(test_server()->Start());
   std::vector<FormMap> profiles;
 
@@ -717,18 +741,24 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, UsePlusSignForInternaltionalNumber) {
     FillFormAndSubmit("autofill_test_form.html", profiles[i]);
 
   ASSERT_EQ(4u, personal_data_manager()->GetProfiles().size());
-  ASSERT_EQ(ASCIIToUTF16("+447624123456"),
-            personal_data_manager()->GetProfiles()[0]->GetInfo(
-                AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
-  ASSERT_EQ(ASCIIToUTF16("+447624123456"),
-            personal_data_manager()->GetProfiles()[1]->GetInfo(
-                AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
-  ASSERT_EQ(ASCIIToUTF16("+447624123456"),
-            personal_data_manager()->GetProfiles()[2]->GetInfo(
-                AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
-  ASSERT_EQ(ASCIIToUTF16("14088714567"),
-            personal_data_manager()->GetProfiles()[3]->GetInfo(
-                AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
+
+  for (size_t i = 0; i < personal_data_manager()->GetProfiles().size(); ++i) {
+    AutofillProfile* profile = personal_data_manager()->GetProfiles()[i];
+    std::string expectation;
+    std::string name = UTF16ToASCII(profile->GetRawInfo(NAME_FIRST));
+
+    if (name == "Bonnie")
+      expectation = "+447624123456";
+    else if (name == "John")
+      expectation = "+447624123456";
+    else if (name == "Jane")
+      expectation = "+447624123456";
+    else if (name == "Bob")
+      expectation = "14088714567";
+
+    EXPECT_EQ(ASCIIToUTF16(expectation),
+              profile->GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
+  }
 }
 
 // Test CC info not offered to be saved when autocomplete=off for CC field.
