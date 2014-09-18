@@ -37,6 +37,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=391957)
     self.Fail('conformance/glsl/bugs/conditional-discard-in-loop.html',
         ['win'], bug=402195)
+    self.Fail('conformance/attribs/gl-bindAttribLocation-matrix.html',
+        ['win'], bug=415688)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
