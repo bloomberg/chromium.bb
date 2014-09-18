@@ -17,8 +17,8 @@ function url_test(name, url) {
         assert_equals(worker.scriptURL, expectedURL,
                       'Returned ServiceWorker object should have scriptURL');
         service_worker_unregister_and_done(t, scope);
-      }));
-    t.done();
+      }))
+      .catch(unreached_rejection(t));
   }, 'Verify the scriptURL property: ' + name);
 }
 
