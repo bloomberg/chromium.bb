@@ -43,6 +43,7 @@ static_library("extensions") {
     "//components/copresence",
     "//components/omaha_query_params",
     "//components/onc",
+    "//components/proximity_auth",
     "//components/strings",
     "//components/url_matcher",
     "//content/app/resources",

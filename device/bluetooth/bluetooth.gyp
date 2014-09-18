@@ -104,6 +104,9 @@
             '../../build/linux/system.gyp:dbus',
             '../../chromeos/chromeos.gyp:chromeos',
             '../../dbus/dbus.gyp:dbus',
+          ],
+          'export_dependent_settings': [
+            '../../build/linux/system.gyp:dbus'
           ]
         }],
         ['OS=="win"', {

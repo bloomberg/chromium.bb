@@ -179,9 +179,6 @@
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
-            'proximity_auth/connection_unittest.cc',
-            'proximity_auth/proximity_auth_system_unittest.cc',
-            'proximity_auth/wire_message_unittest.cc',
             'query_parser/query_parser_unittest.cc',
             'query_parser/snippet_unittest.cc',
             'rappor/bloom_filter_unittest.cc',
@@ -391,9 +388,6 @@
             # Dependencies of password_manager
             'components.gyp:password_manager_core_browser',
             'components.gyp:password_manager_core_browser_test_support',
-
-            # Dependencies of proxmity_auth
-            'components.gyp:proximity_auth',
 
             # Dependencies of precache/core
             'components.gyp:password_manager_core_browser',
@@ -651,11 +645,17 @@
                 'copresence/rpc/http_post_unittest.cc',
                 'copresence/rpc/rpc_handler_unittest.cc',
                 'copresence/timed_map_unittest.cc',
+                'proximity_auth/connection_unittest.cc',
+                'proximity_auth/proximity_auth_system_unittest.cc',
+                'proximity_auth/wire_message_unittest.cc',
               ],
               'dependencies': [
                 # Dependencies for copresence.
                 'components.gyp:copresence',
                 'components.gyp:copresence_test_support',
+
+                # Dependencies of proxmity_auth
+                'components.gyp:proximity_auth',
               ],
             }],
             ['chromeos==1', {

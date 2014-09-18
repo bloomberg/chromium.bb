@@ -8,13 +8,14 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/proximity_auth/bluetooth_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -369,23 +370,26 @@ bool EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::RunAsync() {
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  easy_unlock::SeekBluetoothDeviceByAddress(
+  proximity_auth::bluetooth_util::SeekDeviceByAddress(
       params->device_address,
       base::Bind(
-          &EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::
-              OnSeekCompleted,
-          this));
+          &EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekSuccess,
+          this),
+      base::Bind(
+          &EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekFailure,
+          this),
+      content::BrowserThread::GetBlockingPool());
   return true;
 }
 
-void EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekCompleted(
-    const easy_unlock::SeekDeviceResult& seek_result) {
-  if (seek_result.success) {
-    SendResponse(true);
-  } else {
-    SetError(seek_result.error_message);
-    SendResponse(false);
-  }
+void EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekSuccess() {
+  SendResponse(true);
+}
+
+void EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekFailure(
+    const std::string& error_message) {
+  SetError(error_message);
+  SendResponse(false);
 }
 
 EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
@@ -397,7 +401,7 @@ EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
 void EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
     ConnectToService(device::BluetoothDevice* device,
                      const device::BluetoothUUID& uuid) {
-  easy_unlock::ConnectToBluetoothServiceInsecurely(
+  proximity_auth::bluetooth_util::ConnectToServiceInsecurely(
       device,
       uuid,
       base::Bind(&EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::

@@ -158,8 +158,9 @@ class EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction
   // AsyncExtensionFunction:
   virtual bool RunAsync() OVERRIDE;
 
-  // Callback that is called when the seek operation succeeds.
-  void OnSeekCompleted(const easy_unlock::SeekDeviceResult& seek_result);
+  // Callbacks that are called when the seek operation succeeds or fails.
+  void OnSeekSuccess();
+  void OnSeekFailure(const std::string& error_message);
 
   DISALLOW_COPY_AND_ASSIGN(
       EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction);

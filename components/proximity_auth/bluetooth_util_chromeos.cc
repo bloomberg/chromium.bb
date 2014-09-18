@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
+#include "components/proximity_auth/bluetooth_util.h"
 
 #include <stdint.h>
 #include <sys/socket.h>
@@ -11,6 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -18,7 +20,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "net/socket/socket_descriptor.h"
@@ -43,9 +44,8 @@ struct sockaddr_l2 {
 // From <bluetooth/sdp.h>:
 #define SDP_PSM 0x0001
 
-namespace extensions {
-namespace api {
-namespace easy_unlock {
+namespace proximity_auth {
+namespace bluetooth_util {
 namespace {
 
 using device::BluetoothDevice;
@@ -58,6 +58,14 @@ const char kUnableToConnectToDevice[] =
 // Delay prior to closing an SDP connection opened to register a Bluetooth
 // device with the system BlueZ daemon.
 const int kCloseSDPConnectionDelaySec = 5;
+
+struct SeekDeviceResult {
+  // Whether the connection to the device succeeded.
+  bool success;
+
+  // If the connection failed, an error message describing the failure.
+  std::string error_message;
+};
 
 // Writes |address| into the |result|. Return true on success, false if the
 // |address| is not a valid Bluetooth address.
@@ -92,11 +100,9 @@ void CloseSocket(net::SocketDescriptor socket_descriptor) {
 // Connects to the SDP service on the Bluetooth device with the given
 // |device_address|, if possible. Returns an indicator of success or an error
 // message on failure.
-SeekDeviceResult SeekBluetoothDeviceByAddressImpl(
-    const std::string& device_address) {
-  base::TaskRunner* blocking_pool = content::BrowserThread::GetBlockingPool();
-  DCHECK(blocking_pool->RunsTasksOnCurrentThread());
-
+SeekDeviceResult SeekDeviceByAddressImpl(
+    const std::string& device_address,
+    scoped_refptr<base::TaskRunner> task_runner) {
   SeekDeviceResult seek_result;
   seek_result.success = false;
 
@@ -116,7 +122,7 @@ SeekDeviceResult SeekBluetoothDeviceByAddressImpl(
                        sizeof(addr));
   if (result == 0) {
     seek_result.success = true;
-    blocking_pool->PostDelayedTask(
+    task_runner->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CloseSocket, socket_descriptor),
         base::TimeDelta::FromSeconds(kCloseSDPConnectionDelaySec));
@@ -127,18 +133,30 @@ SeekDeviceResult SeekBluetoothDeviceByAddressImpl(
   return seek_result;
 }
 
-}  // namespace
-
-void SeekBluetoothDeviceByAddress(const std::string& device_address,
-                                  const SeekDeviceCallback& callback) {
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&SeekBluetoothDeviceByAddressImpl, device_address),
-      callback);
+void OnSeekDeviceResult(const base::Closure& callback,
+                        const ErrorCallback& error_callback,
+                        const SeekDeviceResult& result) {
+  if (result.success)
+    callback.Run();
+  else
+    error_callback.Run(result.error_message);
 }
 
-void ConnectToBluetoothServiceInsecurely(
+}  // namespace
+
+void SeekDeviceByAddress(const std::string& device_address,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback,
+                         base::TaskRunner* task_runner) {
+  base::PostTaskAndReplyWithResult(
+      task_runner,
+      FROM_HERE,
+      base::Bind(&SeekDeviceByAddressImpl, device_address,
+                 make_scoped_refptr(task_runner)),
+      base::Bind(&OnSeekDeviceResult, callback, error_callback));
+}
+
+void ConnectToServiceInsecurely(
     device::BluetoothDevice* device,
     const device::BluetoothUUID& uuid,
     const BluetoothDevice::ConnectToServiceCallback& callback,
@@ -147,6 +165,5 @@ void ConnectToBluetoothServiceInsecurely(
       ->ConnectToServiceInsecurely(uuid, callback, error_callback);
 }
 
-}  // namespace easy_unlock
-}  // namespace api
-}  // namespace extensions
+}  // namespace bluetooth_util
+}  // namespace proximity_auth

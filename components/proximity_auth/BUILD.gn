@@ -4,6 +4,9 @@
 
 static_library("proximity_auth") {
   sources = [
+    "bluetooth_util.cc",
+    "bluetooth_util_chromeos.cc",
+    "bluetooth_util.h",
     "connection.cc",
     "connection.h",
     "connection_observer.h",
@@ -16,6 +19,7 @@ static_library("proximity_auth") {
 
   deps = [
     "//base",
+    "//device/bluetooth",
   ]
 }
 

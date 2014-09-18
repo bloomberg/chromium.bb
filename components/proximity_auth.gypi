@@ -12,8 +12,12 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
       ],
       'sources': [
+        "proximity_auth/bluetooth_util.cc",
+        "proximity_auth/bluetooth_util_chromeos.cc",
+        "proximity_auth/bluetooth_util.h",
         "proximity_auth/connection.cc",
         "proximity_auth/connection.h",
         "proximity_auth/connection_observer.h",
