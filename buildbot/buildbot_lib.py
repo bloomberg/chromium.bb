@@ -178,6 +178,8 @@ def ParseStandardCommandLine(context):
                     help='Append SUFFIX to buildbot step names.')
   parser.add_option('--no-gyp', dest='no_gyp', default=False,
                     action='store_true', help='Do not run the gyp build')
+  parser.add_option('--no-goma', dest='no_goma', default=False,
+                    action='store_true', help='Do not run with goma')
   parser.add_option('--use-breakpad-tools', dest='use_breakpad_tools',
                     default=False, action='store_true',
                     help='Use breakpad tools for testing')
@@ -233,6 +235,7 @@ def ParseStandardCommandLine(context):
   context['inside_toolchain'] = options.inside_toolchain
   context['step_suffix'] = options.step_suffix
   context['no_gyp'] = options.no_gyp
+  context['no_goma'] = options.no_goma
   context['coverage'] = options.coverage
   context['use_breakpad_tools'] = options.use_breakpad_tools
   context['scons_args'] = options.scons_args

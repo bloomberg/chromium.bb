@@ -295,6 +295,8 @@ for platform in [
     # Windows builds via gyp, so the reduced test coverage should be slight.
     if arch == 'arm' or (platform == 'win' and arch == '32'):
       arch_flags += ' --no-gyp'
+    if platform == 'win7' and arch == '32':
+      arch_flags += ' --no-goma'
     if arch == '':
       arch_part = ''
       real_arch = '32'

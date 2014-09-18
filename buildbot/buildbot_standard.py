@@ -76,14 +76,16 @@ def ArchiveCoverage(context):
 
 
 def CommandGypBuild(context):
-  if RunningOnBuildbot():
+  use_goma = RunningOnBuildbot() and not context['no_goma']
+
+  if use_goma:
     Command(context, cmd=[
         sys.executable, '/b/build/goma/goma_ctl.py', 'restart'])
   try:
     Command(context, cmd=[
         'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
   finally:
-    if RunningOnBuildbot():
+    if use_goma:
       Command(context, cmd=[
           sys.executable, '/b/build/goma/goma_ctl.py', 'stop'])
 
