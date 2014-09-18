@@ -81,7 +81,7 @@
       ],
       'sources': [
         'examples/sample_app/gles2_client_impl.cc',
-        'examples/sample_app/gles2_client_impl.cc',
+        'examples/sample_app/gles2_client_impl.h',
         'examples/sample_app/sample_app.cc',
         'examples/sample_app/spinning_cube.cc',
         'examples/sample_app/spinning_cube.h',
@@ -567,7 +567,6 @@
             '../skia/skia.gyp:skia',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/gl/gl.gyp:gl',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_base.gyp:mojo_cpp_bindings',
             'mojo_base.gyp:mojo_utility',
@@ -663,7 +662,6 @@
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/gl/gl.gyp:gl',
             '../ui/resources/ui_resources.gyp:ui_resources',
             '../ui/resources/ui_resources.gyp:ui_test_pak',
             '../ui/views/views.gyp:views',
@@ -698,7 +696,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/gl/gl.gyp:gl',
             '../url/url.gyp:url_lib',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_base.gyp:mojo_cpp_bindings',
@@ -723,7 +720,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/gl/gl.gyp:gl',
             '../url/url.gyp:url_lib',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_base.gyp:mojo_cpp_bindings',

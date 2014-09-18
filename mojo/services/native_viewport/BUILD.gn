@@ -4,10 +4,22 @@
 
 import("//build/config/ui.gni")
 
-# GYP version: mojo/mojo_services.gypi:mojo_native_viewport_service_lib
-static_library("native_viewport") {
-  output_name = "mojo_native_viewport"
+if (!is_android) {
+  shared_library("native_viewport") {
+    output_name = "mojo_native_viewport_service"
 
+    deps = [
+      ":lib",
+      "//mojo/public/c/system:for_shared_library",
+      "//mojo/services/public/interfaces/native_viewport",
+      "//ui/gl",
+    ]
+
+    sources = [ "main.cc" ]
+  }
+}
+
+source_set("lib") {
   deps = [
     "//base",
     "//cc/surfaces",
@@ -25,6 +37,7 @@ static_library("native_viewport") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
   ]
 
   sources = [
@@ -47,13 +60,6 @@ static_library("native_viewport") {
 
   if (is_android) {
     deps += [ "//mojo:jni_headers" ]
-  }
-
-  if (is_win) {
-    deps += [
-      # TODO(GYP)
-      # '../ui/platform_window/win/win_window.gyp:win_window',
-    ]
   }
 
   if (use_x11) {
