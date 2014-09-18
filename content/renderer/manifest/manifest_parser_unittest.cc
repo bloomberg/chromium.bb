@@ -42,6 +42,7 @@ TEST_F(ManifestParserTest, EmptyStringNull) {
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
   ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  ASSERT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
 }
 
 TEST_F(ManifestParserTest, ValidNoContentParses) {
@@ -53,6 +54,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
   ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  ASSERT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
 }
 
 TEST_F(ManifestParserTest, NameParseRules) {
@@ -225,6 +227,101 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   {
     Manifest manifest = ParseManifest("{ \"display\": \"BROWSER\" }");
     EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+  }
+}
+
+TEST_F(ManifestParserTest, OrientationParserRules) {
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"natural\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockNatural);
+    EXPECT_FALSE(manifest.IsEmpty());
+  }
+
+  // Trim whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"natural\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockNatural);
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": {} }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": 42 }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
+  }
+
+  // Parse fails if string isn't known.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"naturalish\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
+  }
+
+  // Accept 'any'.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"any\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockAny);
+  }
+
+  // Accept 'natural'.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"natural\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockNatural);
+  }
+
+  // Accept 'landscape'.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"landscape\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockLandscape);
+  }
+
+  // Accept 'landscape-primary'.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"orientation\": \"landscape-primary\" }");
+    EXPECT_EQ(manifest.orientation,
+              blink::WebScreenOrientationLockLandscapePrimary);
+  }
+
+  // Accept 'landscape-secondary'.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"orientation\": \"landscape-secondary\" }");
+    EXPECT_EQ(manifest.orientation,
+              blink::WebScreenOrientationLockLandscapeSecondary);
+  }
+
+  // Accept 'portrait'.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"portrait\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockPortrait);
+  }
+
+  // Accept 'portrait-primary'.
+  {
+    Manifest manifest =
+      ParseManifest("{ \"orientation\": \"portrait-primary\" }");
+    EXPECT_EQ(manifest.orientation,
+              blink::WebScreenOrientationLockPortraitPrimary);
+  }
+
+  // Accept 'portrait-secondary'.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"orientation\": \"portrait-secondary\" }");
+    EXPECT_EQ(manifest.orientation,
+              blink::WebScreenOrientationLockPortraitSecondary);
+  }
+
+  // Case insensitive.
+  {
+    Manifest manifest = ParseManifest("{ \"orientation\": \"LANDSCAPE\" }");
+    EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockLandscape);
   }
 }
 

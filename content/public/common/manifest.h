@@ -7,6 +7,7 @@
 
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -42,6 +43,10 @@ struct CONTENT_EXPORT Manifest {
   // Set to DISPLAY_MODE_UNSPECIFIED if the parsing failed or the field was not
   // present.
   DisplayMode display;
+
+  // Set to blink::WebScreenOrientationLockDefault if the parsing failed or the
+  // field was not present.
+  blink::WebScreenOrientationLockType orientation;
 
   // Maximum length for all the strings inside the Manifest when it is sent over
   // IPC. The renderer process should truncate the strings before sending the

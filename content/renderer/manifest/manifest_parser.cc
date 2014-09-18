@@ -99,6 +99,38 @@ Manifest::DisplayMode ParseDisplay(const base::DictionaryValue& dictionary) {
     return Manifest::DISPLAY_MODE_UNSPECIFIED;
 }
 
+// Parses the 'orientation' field of the manifest, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
+// Returns the parsed WebScreenOrientationLockType if any,
+// WebScreenOrientationLockDefault if the parsing failed.
+blink::WebScreenOrientationLockType ParseOrientation(
+    const base::DictionaryValue& dictionary) {
+  base::NullableString16 orientation =
+      ParseString(dictionary, "orientation", Trim);
+
+  if (orientation.is_null())
+    return blink::WebScreenOrientationLockDefault;
+
+  if (LowerCaseEqualsASCII(orientation.string(), "any"))
+    return blink::WebScreenOrientationLockAny;
+  else if (LowerCaseEqualsASCII(orientation.string(), "natural"))
+    return blink::WebScreenOrientationLockNatural;
+  else if (LowerCaseEqualsASCII(orientation.string(), "landscape"))
+    return blink::WebScreenOrientationLockLandscape;
+  else if (LowerCaseEqualsASCII(orientation.string(), "landscape-primary"))
+    return blink::WebScreenOrientationLockLandscapePrimary;
+  else if (LowerCaseEqualsASCII(orientation.string(), "landscape-secondary"))
+    return blink::WebScreenOrientationLockLandscapeSecondary;
+  else if (LowerCaseEqualsASCII(orientation.string(), "portrait"))
+    return blink::WebScreenOrientationLockPortrait;
+  else if (LowerCaseEqualsASCII(orientation.string(), "portrait-primary"))
+    return blink::WebScreenOrientationLockPortraitPrimary;
+  else if (LowerCaseEqualsASCII(orientation.string(), "portrait-secondary"))
+    return blink::WebScreenOrientationLockPortraitSecondary;
+  else
+    return blink::WebScreenOrientationLockDefault;
+}
+
 } // anonymous namespace
 
 Manifest ManifestParser::Parse(const base::StringPiece& json,
@@ -129,6 +161,7 @@ Manifest ManifestParser::Parse(const base::StringPiece& json,
   manifest.short_name = ParseShortName(*dictionary);
   manifest.start_url = ParseStartURL(*dictionary, manifest_url, document_url);
   manifest.display = ParseDisplay(*dictionary);
+  manifest.orientation = ParseOrientation(*dictionary);
 
   return manifest;
 }
