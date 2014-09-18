@@ -412,10 +412,15 @@ void RenderText::SetText(const base::string16& text) {
   text_ = text;
 
   // Adjust ranged styles and colors to accommodate a new text length.
+  // Clear style ranges as they might break new text graphemes and apply
+  // the first style to the whole text instead.
   const size_t text_length = text_.length();
   colors_.SetMax(text_length);
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
-    styles_[style].SetMax(text_length);
+  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
+    BreakList<bool>& break_list = styles_[style];
+    break_list.SetValue(break_list.breaks().begin()->second);
+    break_list.SetMax(text_length);
+  }
   cached_bounds_and_offset_valid_ = false;
 
   // Reset selection model. SetText should always followed by SetSelectionModel
@@ -651,7 +656,12 @@ void RenderText::SetStyle(TextStyle style, bool value) {
 }
 
 void RenderText::ApplyStyle(TextStyle style, bool value, const Range& range) {
-  styles_[style].ApplyValue(value, range);
+  // Do not change styles mid-grapheme to avoid breaking ligatures.
+  const size_t start = IsValidCursorIndex(range.start()) ? range.start() :
+      IndexOfAdjacentGrapheme(range.start(), CURSOR_BACKWARD);
+  const size_t end = IsValidCursorIndex(range.end()) ? range.end() :
+      IndexOfAdjacentGrapheme(range.end(), CURSOR_FORWARD);
+  styles_[style].ApplyValue(value, Range(start, end));
 
   cached_bounds_and_offset_valid_ = false;
   ResetLayout();
