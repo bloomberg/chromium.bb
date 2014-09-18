@@ -11,6 +11,9 @@
 //   File path to writing out the raw event log of the simulation session.
 // --sim-id=
 //   Unique simulation ID.
+// --target-delay-ms=
+//   Target playout delay to configure (integer number of milliseconds).
+//   Optional; default is 400.
 //
 // Output:
 // - Raw event log of the simulation session tagged with the unique test ID,
@@ -26,6 +29,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -65,12 +69,23 @@ using media::cast::proto::NetworkSimulationModelType;
 namespace media {
 namespace cast {
 namespace {
-const int kTargetDelay = 400;
 const char kSourcePath[] = "source";
 const char kModelPath[] = "model";
 const char kOutputPath[] = "output";
 const char kSimulationId[] = "sim-id";
 const char kLibDir[] = "lib-dir";
+const char kTargetDelay[] = "target-delay-ms";
+
+base::TimeDelta GetTargetPlayoutDelay() {
+  const std::string delay_str =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kTargetDelay);
+  if (delay_str.empty())
+    return base::TimeDelta::FromMilliseconds(400);
+  int delay_ms;
+  CHECK(base::StringToInt(delay_str, &delay_ms));
+  CHECK_GT(delay_ms, 0);
+  return base::TimeDelta::FromMilliseconds(delay_ms);
+}
 
 void UpdateCastTransportStatus(CastTransportStatus status) {
   LOG(INFO) << "Cast transport status: " << status;
@@ -219,8 +234,7 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Audio sender config.
   AudioSenderConfig audio_sender_config = GetDefaultAudioSenderConfig();
-  audio_sender_config.max_playout_delay =
-      base::TimeDelta::FromMilliseconds(kTargetDelay);
+  audio_sender_config.max_playout_delay = GetTargetPlayoutDelay();
 
   // Audio receiver config.
   FrameReceiverConfig audio_receiver_config =
@@ -233,8 +247,7 @@ void RunSimulation(const base::FilePath& source_path,
   video_sender_config.max_bitrate = 2500000;
   video_sender_config.min_bitrate = 2000000;
   video_sender_config.start_bitrate = 2000000;
-  video_sender_config.max_playout_delay =
-      base::TimeDelta::FromMilliseconds(kTargetDelay);
+  video_sender_config.max_playout_delay = GetTargetPlayoutDelay();
 
   // Video receiver config.
   FrameReceiverConfig video_receiver_config =
@@ -355,6 +368,7 @@ void RunSimulation(const base::FilePath& source_path,
   int encoded_video_frames = 0;
   int dropped_video_frames = 0;
   int late_video_frames = 0;
+  int64 total_delay_of_late_frames_ms = 0;
   int64 encoded_size = 0;
   int64 target_bitrate = 0;
   for (size_t i = 0; i < video_frame_events.size(); ++i) {
@@ -368,8 +382,10 @@ void RunSimulation(const base::FilePath& source_path,
     } else {
       ++dropped_video_frames;
     }
-    if (event.has_delay_millis() && event.delay_millis() < 0)
+    if (event.has_delay_millis() && event.delay_millis() < 0) {
       ++late_video_frames;
+      total_delay_of_late_frames_ms += -event.delay_millis();
+    }
   }
 
   double avg_encoded_bitrate =
@@ -379,10 +395,18 @@ void RunSimulation(const base::FilePath& source_path,
   double avg_target_bitrate =
       !encoded_video_frames ? 0 : target_bitrate / encoded_video_frames / 1000;
 
+  LOG(INFO) << "Configured target playout delay (ms): "
+            << video_receiver_config.rtp_max_delay_ms;
   LOG(INFO) << "Audio frame count: " << audio_frame_count;
   LOG(INFO) << "Total video frames: " << total_video_frames;
   LOG(INFO) << "Dropped video frames " << dropped_video_frames;
-  LOG(INFO) << "Late video frames: " << late_video_frames;
+  LOG(INFO) << "Late video frames: " << late_video_frames
+            << " (average lateness: "
+            << (late_video_frames > 0 ?
+                    static_cast<double>(total_delay_of_late_frames_ms) /
+                        late_video_frames :
+                    0)
+            << " ms)";
   LOG(INFO) << "Average encoded bitrate (kbps): " << avg_encoded_bitrate;
   LOG(INFO) << "Average target bitrate (kbps): " << avg_target_bitrate;
   LOG(INFO) << "Writing log: " << output_path.value();
