@@ -247,7 +247,7 @@ void PrintToPdfCallback(const scoped_refptr<base::RefCountedBytes>& data,
   printing::PdfMetafileSkia metafile;
   metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
   base::File file(path,
-                  base::File::FLAG_CREATE_ALWAYS || base::File::FLAG_WRITE);
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   metafile.SaveTo(&file);
   if (!pdf_file_saved_closure.is_null())
     pdf_file_saved_closure.Run();
