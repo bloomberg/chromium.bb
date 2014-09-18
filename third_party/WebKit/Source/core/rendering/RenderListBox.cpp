@@ -64,10 +64,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// The minSize constant was originally defined to render scrollbars correctly.
-// This might vary for different platforms.
-const int minSize = 4;
-
 // Default size when the multiple attribute is present but size attribute is absent.
 const int defaultSize = 4;
 
@@ -93,8 +89,8 @@ inline HTMLSelectElement* RenderListBox::selectElement() const
 int RenderListBox::size() const
 {
     int specifiedSize = selectElement()->size();
-    if (specifiedSize > 1)
-        return max(minSize, specifiedSize);
+    if (specifiedSize >= 1)
+        return specifiedSize;
 
     return defaultSize;
 }

@@ -12,7 +12,13 @@ layer at (0,0) size 800x546
         text run at (135,48) width 5: " "
       RenderText {#text} at (197,48) size 5x18
         text run at (197,48) width 5: " "
-      RenderBR {BR} at (201,48) size 1x18
+      RenderText {#text} at (251,48) size 5x18
+        text run at (251,48) width 5: " "
+      RenderText {#text} at (304,48) size 5x18
+        text run at (304,48) width 5: " "
+      RenderText {#text} at (358,48) size 5x18
+        text run at (358,48) width 5: " "
+      RenderBR {BR} at (362,48) size 1x18
       RenderText {#text} at (46,118) size 5x18
         text run at (46,118) width 5: " "
       RenderText {#text} at (93,118) size 5x18
@@ -70,6 +76,48 @@ layer at (152,11) size 50x59 clip at (153,12) size 37x57 scrollHeight 56
       RenderBlock {OPTION} at (0,14.19) size 37.23x14.19 [color=#808080] [bgcolor=#D4D4D4]
         RenderText {#text} at (2,0) size 34x13
           text run at (2,0) width 34: "    baz"
+layer at (214,54) size 41x16 clip at (215,55) size 28x14 scrollHeight 56
+  RenderListBox {SELECT} at (205.92,45.81) size 41.52x16.19 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo1"
+    RenderBlock {OPTION} at (1,15.19) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo2"
+    RenderBlock {OPTION} at (1,29.38) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo3"
+    RenderBlock {OPTION} at (1,43.56) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo4"
+layer at (267,40) size 42x30 clip at (268,41) size 29x28 scrollHeight 56
+  RenderListBox {SELECT} at (259.44,31.63) size 41.52x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo1"
+    RenderBlock {OPTION} at (1,15.19) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo2"
+    RenderBlock {OPTION} at (1,29.38) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo3"
+    RenderBlock {OPTION} at (1,43.56) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo4"
+layer at (321,25) size 41x45 clip at (322,26) size 28x43 scrollHeight 56
+  RenderListBox {SELECT} at (312.95,17.44) size 41.52x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo1"
+    RenderBlock {OPTION} at (1,15.19) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo2"
+    RenderBlock {OPTION} at (1,29.38) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo3"
+    RenderBlock {OPTION} at (1,43.56) size 28.52x14.19
+      RenderText {#text} at (2,0) size 25x13
+        text run at (2,0) width 25: "foo4"
 layer at (12,77) size 39x63 clip at (15,80) size 22x57 scrollHeight 56
   RenderListBox {SELECT} at (4,69.25) size 38.56x62.75 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
     RenderBlock {OPTION} at (3,3) size 21.56x14.19
