@@ -870,7 +870,8 @@ def main():
   print('addr2line: %s' % addr2line_binary)
   print('nm: %s' % nm_binary)
 
-  CheckDebugFormatSupport(opts.library, addr2line_binary)
+  if opts.library:
+    CheckDebugFormatSupport(opts.library, addr2line_binary)
 
   symbols = GetNmSymbols(opts.nm_in, opts.nm_out, opts.library,
                          opts.jobs, opts.verbose is True,
