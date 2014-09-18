@@ -88,6 +88,25 @@ static_library("net") {
   forward_dependent_configs_from = [ ":metrics" ]
 }
 
+# GYP version: components/metrics.gypi:metrics_profiler
+source_set("profiler") {
+  sources = [
+    "profiler/profiler_metrics_provider.cc",
+    "profiler/profiler_metrics_provider.h",
+    "profiler/tracking_synchronizer.cc",
+    "profiler/tracking_synchronizer.h",
+    "profiler/tracking_synchronizer_observer.h",
+  ]
+
+  deps = [
+    ":metrics",
+    "//base",
+    "//content/public/browser",
+  ]
+
+  forward_dependent_configs_from = [ ":metrics" ]
+}
+
 # GYP version: components/metrics.gypi:metrics_test_support
 static_library("test_support") {
   sources = [

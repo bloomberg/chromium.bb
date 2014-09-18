@@ -152,6 +152,7 @@
             'metrics/metrics_service_unittest.cc',
             'metrics/metrics_state_manager_unittest.cc',
             'metrics/persisted_logs_unittest.cc',
+            'metrics/profiler/profiler_metrics_provider_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'network_time/network_time_tracker_unittest.cc',
             'omaha_query_params/omaha_query_params_unittest.cc',
@@ -370,6 +371,7 @@
             'components.gyp:metrics',
             'components.gyp:metrics_gpu',
             'components.gyp:metrics_net',
+            'components.gyp:metrics_profiler',
             'components.gyp:metrics_test_support',
 
             # Dependencies of network_time

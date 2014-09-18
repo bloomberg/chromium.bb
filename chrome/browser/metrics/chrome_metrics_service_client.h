@@ -14,8 +14,8 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/network_stats_uploader.h"
-#include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -23,7 +23,6 @@ class ChromeOSMetricsProvider;
 class GoogleUpdateMetricsProviderWin;
 class PluginMetricsProvider;
 class PrefRegistrySimple;
-class ProfilerMetricsProvider;
 
 #if !defined(OS_CHROMEOS) && !defined(OS_IOS)
 class SigninStatusMetricsProvider;
@@ -36,13 +35,14 @@ class FilePath;
 namespace metrics {
 class MetricsService;
 class MetricsStateManager;
+class ProfilerMetricsProvider;
 }
 
 // ChromeMetricsServiceClient provides an implementation of MetricsServiceClient
 // that depends on chrome/.
 class ChromeMetricsServiceClient
     : public metrics::MetricsServiceClient,
-      public chrome_browser_metrics::TrackingSynchronizerObserver,
+      public metrics::TrackingSynchronizerObserver,
       public content::NotificationObserver {
  public:
   virtual ~ChromeMetricsServiceClient();
@@ -153,7 +153,7 @@ class ChromeMetricsServiceClient
 
   // The ProfilerMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
-  ProfilerMetricsProvider* profiler_metrics_provider_;
+  metrics::ProfilerMetricsProvider* profiler_metrics_provider_;
 
 #if defined(ENABLE_PLUGINS)
   // The PluginMetricsProvider instance that was registered with

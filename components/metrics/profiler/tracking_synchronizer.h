@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_H_
-#define CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_H_
+#ifndef COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_H_
+#define COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_H_
 
 #include <map>
 #include <string>
@@ -30,7 +30,7 @@
 // associated with sequence number and send the unpickled profiler data to the
 // |callback_object_|.
 
-namespace chrome_browser_metrics {
+namespace metrics {
 
 class TrackingSynchronizerObserver;
 
@@ -112,6 +112,6 @@ class TrackingSynchronizer
   DISALLOW_COPY_AND_ASSIGN(TrackingSynchronizer);
 };
 
-}  // namespace chrome_browser_metrics
+}  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_H_
+#endif  // COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_H_

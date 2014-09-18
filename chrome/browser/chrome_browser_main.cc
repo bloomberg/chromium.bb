@@ -57,7 +57,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -104,6 +103,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/rappor/rappor_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -955,7 +955,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif
 
   // Initialize tracking synchronizer system.
-  tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
+  tracking_synchronizer_ = new metrics::TrackingSynchronizer();
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

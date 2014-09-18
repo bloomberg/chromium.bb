@@ -23,8 +23,6 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
-#include "chrome/browser/metrics/profiler_metrics_provider.h"
-#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,6 +34,8 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
+#include "components/metrics/profiler/profiler_metrics_provider.h"
+#include "components/metrics/profiler/tracking_synchronizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
@@ -308,7 +308,7 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider()));
-  profiler_metrics_provider_ = new ProfilerMetricsProvider;
+  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider;
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 
@@ -374,7 +374,7 @@ void ChromeMetricsServiceClient::OnInitTaskGotPluginInfo() {
 void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
   // Start the next part of the init task: fetching performance data.  This will
   // call into |FinishedReceivingProfilerData()| when the task completes.
-  chrome_browser_metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
+  metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
       weak_ptr_factory_.GetWeakPtr());
 }
 

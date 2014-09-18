@@ -68,6 +68,7 @@ static_library("browser") {
     "//components/invalidation",
     "//components/metrics:gpu",
     "//components/metrics:net",
+    "//components/metrics:profiler",
     "//components/metrics/proto:proto",
     "//components/native_app_window",
     "//components/navigation_metrics",

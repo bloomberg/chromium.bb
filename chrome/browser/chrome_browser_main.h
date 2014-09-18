@@ -41,7 +41,7 @@ extern const char kMissingLocaleDataMessage[];
 #endif
 }
 
-namespace chrome_browser_metrics {
+namespace metrics {
 class TrackingSynchronizer;
 }
 
@@ -154,8 +154,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Members initialized after / released before main_message_loop_ ------------
 
   scoped_ptr<BrowserProcessImpl> browser_process_;
-  scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>
-      tracking_synchronizer_;
+  scoped_refptr<metrics::TrackingSynchronizer> tracking_synchronizer_;
 #if !defined(OS_ANDROID)
   // Browser creation happens on the Java side in Android.
   scoped_ptr<StartupBrowserCreator> browser_creator_;

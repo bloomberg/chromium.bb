@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/tracking_synchronizer.h"
+#include "components/metrics/profiler/tracking_synchronizer.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/metrics/tracking_synchronizer_observer.h"
+#include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"
@@ -30,12 +30,12 @@ const int kNeverUsableSequenceNumber = -2;
 // calls. This object is created on the UI thread, and it is destroyed after
 // all the other threads have gone away. As a result, it is ok to call it
 // from the UI thread, or for about:profiler.
-static chrome_browser_metrics::TrackingSynchronizer* g_tracking_synchronizer =
+static metrics::TrackingSynchronizer* g_tracking_synchronizer =
     NULL;
 
 }  // anonymous namespace
 
-namespace chrome_browser_metrics {
+namespace metrics {
 
 // The "RequestContext" structure describes an individual request received
 // from the UI. All methods are accessible on UI thread.
@@ -294,4 +294,4 @@ int TrackingSynchronizer::GetNextAvailableSequenceNumber() {
   return last_used_sequence_number_;
 }
 
-}  // namespace chrome_browser_metrics
+}  // namespace metrics

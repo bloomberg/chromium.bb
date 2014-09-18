@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
-#define CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
+#ifndef COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_OBSERVER_H_
+#define COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_OBSERVER_H_
 
 namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
 
-namespace chrome_browser_metrics {
+namespace metrics {
 
 // Observer for notifications from the TrackingSynchronizer class.
 class TrackingSynchronizerObserver {
@@ -34,6 +34,6 @@ class TrackingSynchronizerObserver {
   DISALLOW_COPY_AND_ASSIGN(TrackingSynchronizerObserver);
 };
 
-}  // namespace chrome_browser_metrics
+}  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
+#endif  // COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_OBSERVER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/profiler_metrics_provider.h"
+#include "components/metrics/profiler/profiler_metrics_provider.h"
 
 #include <ctype.h>
 #include <string>
@@ -13,8 +13,9 @@
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/process_type.h"
 
-using metrics::ProfilerEventProto;
 using tracked_objects::ProcessDataSnapshot;
+
+namespace metrics {
 
 namespace {
 
@@ -86,14 +87,14 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
     tracked_object->set_birth_thread_name_hash(
-        metrics::MetricsLog::Hash(MapThreadName(it->birth.thread_name)));
+        MetricsLog::Hash(MapThreadName(it->birth.thread_name)));
     tracked_object->set_exec_thread_name_hash(
-        metrics::MetricsLog::Hash(MapThreadName(it->death_thread_name)));
+        MetricsLog::Hash(MapThreadName(it->death_thread_name)));
     tracked_object->set_source_file_name_hash(
-        metrics::MetricsLog::Hash(NormalizeFileName(
+        MetricsLog::Hash(NormalizeFileName(
             it->birth.location.file_name)));
     tracked_object->set_source_function_name_hash(
-        metrics::MetricsLog::Hash(it->birth.location.function_name));
+        MetricsLog::Hash(it->birth.location.function_name));
     tracked_object->set_source_line_number(it->birth.location.line_number);
     tracked_object->set_exec_count(death_data.count);
     tracked_object->set_exec_time_total(death_data.run_duration_sum);
@@ -114,7 +115,7 @@ ProfilerMetricsProvider::~ProfilerMetricsProvider() {
 }
 
 void ProfilerMetricsProvider::ProvideGeneralMetrics(
-    metrics::ChromeUserMetricsExtension* uma_proto) {
+    ChromeUserMetricsExtension* uma_proto) {
   if (!has_profiler_data_)
     return;
 
@@ -141,3 +142,5 @@ void ProfilerMetricsProvider::RecordProfilerData(
   profiler_event_cache_.set_time_source(ProfilerEventProto::WALL_CLOCK_TIME);
   WriteProfilerData(process_data, process_type, &profiler_event_cache_);
 }
+
+}  // namespace metrics

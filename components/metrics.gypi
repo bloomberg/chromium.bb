@@ -107,6 +107,26 @@
       ],
     },
     {
+      # GN version: //components/metrics:profiler
+      'target_name': 'metrics_profiler',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../content/content.gyp:content_browser',
+        'component_metrics_proto',
+        'metrics',
+      ],
+      'sources': [
+        'metrics/profiler/profiler_metrics_provider.cc',
+        'metrics/profiler/profiler_metrics_provider.h',
+        'metrics/profiler/tracking_synchronizer.cc',
+        'metrics/profiler/tracking_synchronizer.h',
+        'metrics/profiler/tracking_synchronizer_observer.h',
+      ],
+    },
+    {
       # Protobuf compiler / generator for UMA (User Metrics Analysis).
       #
       # GN version: //components/metrics/proto:proto

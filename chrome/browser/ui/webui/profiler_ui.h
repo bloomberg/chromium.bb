@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_PROFILER_UI_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/metrics/tracking_synchronizer_observer.h"
+#include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The C++ back-end for the chrome://profiler webui page.
 class ProfilerUI : public content::WebUIController,
-                   public chrome_browser_metrics::TrackingSynchronizerObserver {
+                   public metrics::TrackingSynchronizerObserver {
  public:
   explicit ProfilerUI(content::WebUI* web_ui);
   virtual ~ProfilerUI();

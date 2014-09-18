@@ -527,7 +527,6 @@
       'browser/metrics/cloned_install_detector_unittest.cc',
       'browser/metrics/extensions_metrics_provider_unittest.cc',
       'browser/metrics/plugin_metrics_provider_unittest.cc',
-      'browser/metrics/profiler_metrics_provider_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_unittest.cc',
       'browser/metrics/rappor/sampling_unittest.cc',
       'browser/metrics/thread_watcher_unittest.cc',
