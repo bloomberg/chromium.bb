@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/extension_urls.h"
 #include "url/gurl.h"
 
 namespace app_list {

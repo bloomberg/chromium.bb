@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -31,7 +30,9 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -179,8 +180,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
 }
 
 - (void)onExtensionName:(id)sender {
-  GURL url(std::string(extension_urls::kGalleryBrowsePrefix) +
-           std::string("/detail/") + extension_->id());
+  GURL url(extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
   OpenURLParams params(url,
                        Referrer(),
                        NEW_FOREGROUND_TAB,

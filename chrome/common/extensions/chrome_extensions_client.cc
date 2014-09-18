@@ -4,6 +4,9 @@
 
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
@@ -19,6 +22,7 @@
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/features/feature_provider.h"
@@ -44,6 +48,12 @@
 namespace extensions {
 
 namespace {
+
+// TODO(battre): Delete the HTTP URL once the blacklist is downloaded via HTTPS.
+const char kExtensionBlocklistUrlPrefix[] =
+    "http://www.gstatic.com/chrome/extensions/blacklist";
+const char kExtensionBlocklistHttpsUrlPrefix[] =
+    "https://www.gstatic.com/chrome/extensions/blacklist";
 
 const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
@@ -271,6 +281,35 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
   // Suppress fatal errors only on beta and stable channels.
   return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
+}
+
+std::string ChromeExtensionsClient::GetWebstoreBaseURL() const {
+  std::string gallery_prefix = extension_urls::kChromeWebstoreBaseURL;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
+    gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kAppsGalleryURL);
+  if (EndsWith(gallery_prefix, "/", true))
+    gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
+  return gallery_prefix;
+}
+
+std::string ChromeExtensionsClient::GetWebstoreUpdateURL() const {
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL))
+    return cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL);
+  else
+    return extension_urls::GetDefaultWebstoreUpdateUrl().spec();
+}
+
+bool ChromeExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
+  // The extension blacklist URL is returned from the update service and
+  // therefore not determined by Chromium. If the location of the blacklist file
+  // ever changes, we need to update this function. A DCHECK in the
+  // ExtensionUpdater ensures that we notice a change. This is the full URL
+  // of a blacklist:
+  // http://www.gstatic.com/chrome/extensions/blacklist/l_0_0_0_7.txt
+  return StartsWithASCII(url.spec(), kExtensionBlocklistUrlPrefix, true) ||
+         StartsWithASCII(url.spec(), kExtensionBlocklistHttpsUrlPrefix, true);
 }
 
 // static

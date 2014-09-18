@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
 #include "chrome/browser/safe_json_parser.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/extension_urls.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"

@@ -9,6 +9,7 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/common_manifest_handlers.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
@@ -190,6 +191,20 @@ void ShellExtensionsClient::RegisterAPISchemaResources(
 }
 
 bool ShellExtensionsClient::ShouldSuppressFatalErrors() const {
+  return true;
+}
+
+std::string ShellExtensionsClient::GetWebstoreBaseURL() const {
+  return extension_urls::kChromeWebstoreBaseURL;
+}
+
+std::string ShellExtensionsClient::GetWebstoreUpdateURL() const {
+  return extension_urls::kChromeWebstoreUpdateURL;
+}
+
+bool ShellExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
+  // TODO(rockot): Maybe we want to do something else here. For now we accept
+  // any URL as a blacklist URL because we don't really care.
   return true;
 }
 

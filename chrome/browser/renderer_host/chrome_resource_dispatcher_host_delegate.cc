@@ -31,7 +31,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
@@ -69,6 +68,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/user_script.h"
 #endif
 
@@ -661,6 +661,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
                                               info->GetRouteID());
 
   // Build in additional protection for the chrome web store origin.
+#if defined(ENABLE_EXTENSIONS)
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
   if (request->url().DomainIs(webstore_url.host().c_str())) {
     net::HttpResponseHeaders* response_headers = request->response_headers();
@@ -670,6 +671,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       response_headers->AddHeader("x-frame-options: sameorigin");
     }
   }
+#endif
 
   // Ignores x-frame-options for the chrome signin UI.
   const std::string request_spec(

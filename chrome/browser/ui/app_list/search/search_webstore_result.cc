@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/common/extension_urls.h"
 #include "grit/theme_resources.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"

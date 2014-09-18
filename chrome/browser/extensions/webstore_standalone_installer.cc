@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "url/gurl.h"
 
 using content::WebContents;

@@ -41,6 +41,9 @@ class TestExtensionsClient : public ExtensionsClient {
       const std::string& name) const OVERRIDE;
   virtual void RegisterAPISchemaResources(ExtensionAPI* api) const OVERRIDE;
   virtual bool ShouldSuppressFatalErrors() const OVERRIDE;
+  virtual std::string GetWebstoreBaseURL() const OVERRIDE;
+  virtual std::string GetWebstoreUpdateURL() const OVERRIDE;
+  virtual bool IsBlacklistUpdateURL(const GURL& url) const OVERRIDE;
 
   // A whitelist of extensions that can script anywhere. Do not add to this
   // list (except in tests) without consulting the Extensions team first.

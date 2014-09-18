@@ -44,6 +44,9 @@ class ShellExtensionsClient : public ExtensionsClient {
       const std::string& name) const OVERRIDE;
   virtual void RegisterAPISchemaResources(ExtensionAPI* api) const OVERRIDE;
   virtual bool ShouldSuppressFatalErrors() const OVERRIDE;
+  virtual std::string GetWebstoreBaseURL() const OVERRIDE;
+  virtual std::string GetWebstoreUpdateURL() const OVERRIDE;
+  virtual bool IsBlacklistUpdateURL(const GURL& url) const OVERRIDE;
 
  private:
   const ExtensionsAPIPermissions extensions_api_permissions_;

@@ -17,6 +17,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/page_navigator.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"

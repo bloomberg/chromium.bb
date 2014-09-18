@@ -73,6 +73,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"

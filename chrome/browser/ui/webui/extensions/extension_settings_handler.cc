@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
@@ -89,6 +88,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -471,15 +471,16 @@ void ExtensionSettingsHandler::GetLocalizedValues(
           IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           base::ASCIIToUTF16(
               google_util::AppendGoogleLocaleParam(
-                  GURL(extension_urls::GetExtensionGalleryURL()),
+                  GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
                   g_browser_process->GetApplicationLocale()).spec())));
   source->AddString("extensionSettingsGetMoreExtensions",
       l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS));
-  source->AddString("extensionSettingsGetMoreExtensionsUrl",
-                    base::ASCIIToUTF16(
-                        google_util::AppendGoogleLocaleParam(
-                            GURL(extension_urls::GetExtensionGalleryURL()),
-                            g_browser_process->GetApplicationLocale()).spec()));
+  source->AddString(
+      "extensionSettingsGetMoreExtensionsUrl",
+      base::ASCIIToUTF16(
+          google_util::AppendGoogleLocaleParam(
+              GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
+              g_browser_process->GetApplicationLocale()).spec()));
   source->AddString("extensionSettingsExtensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
   source->AddString("extensionSettingsExtensionPath",
