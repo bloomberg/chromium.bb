@@ -42,6 +42,10 @@ private:
 
     RespondWithObserver(ExecutionContext*, int eventID);
 
+    // Sends a response back to the client. The null response means to fallback
+    // to native.
+    void sendResponse(Response*);
+
     int m_eventID;
 
     enum State { Initial, Pending, Done };

@@ -74,13 +74,20 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventI
     m_client.didHandleInstallEvent(installEventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID)
+void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, Response* response)
 {
-    m_client.didHandleFetchEvent(fetchEventID);
-}
+    if (!response) {
+        m_client.didHandleFetchEvent(fetchEventID);
+        return;
+    }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& webResponse)
-{
+    WebServiceWorkerResponse webResponse;
+    response->populateWebServiceWorkerResponse(webResponse);
+    if (webResponse.status() == 0) {
+        // The status code is 0 means a network error.
+        m_client.didHandleFetchEvent(fetchEventID);
+        return;
+    }
     m_client.didHandleFetchEvent(fetchEventID, webResponse);
 }
 
