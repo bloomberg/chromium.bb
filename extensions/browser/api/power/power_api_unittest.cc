@@ -258,7 +258,7 @@ TEST_F(PowerApiTest, MultipleExtensions) {
   // Create a second extension that blocks system suspend.  No additional
   // PowerSaveBlocker is needed; the blocker from the first extension
   // already covers the behavior requested by the second extension.
-  scoped_refptr<Extension> extension2(test_util::CreateExtensionWithID("id2"));
+  scoped_refptr<Extension> extension2(test_util::CreateEmptyExtension("id2"));
   ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension2.get()));
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 

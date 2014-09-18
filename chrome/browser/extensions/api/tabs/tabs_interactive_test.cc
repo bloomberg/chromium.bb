@@ -13,6 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/common/test_util.h"
 
 namespace keys = extensions::tabs_constants;
 namespace utils = extension_function_test_utils;
@@ -36,7 +37,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
 
   scoped_refptr<extensions::WindowsGetLastFocusedFunction> function =
       new extensions::WindowsGetLastFocusedFunction();
-  scoped_refptr<extensions::Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<extensions::Extension> extension(
+      extensions::test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(function.get(),

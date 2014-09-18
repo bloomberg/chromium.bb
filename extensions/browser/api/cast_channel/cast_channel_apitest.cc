@@ -15,6 +15,7 @@
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel.h"
 #include "extensions/common/switches.h"
+#include "extensions/common/test_util.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
@@ -294,7 +295,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension =
+      extensions::test_util::CreateEmptyExtension();
   scoped_refptr<extensions::CastChannelOpenFunction> cast_channel_open_function;
 
   // Invalid URL
@@ -338,7 +340,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
   scoped_refptr<extensions::CastChannelSendFunction> cast_channel_send_function;
 
   // Numbers are not supported

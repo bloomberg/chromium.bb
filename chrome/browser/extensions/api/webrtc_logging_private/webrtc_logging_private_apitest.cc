@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/test_util.h"
 
 using extensions::Extension;
 
@@ -29,7 +30,8 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
 
   // Tell the uploader to save the multipart to a buffer instead of uploading.
   std::string multipart;
@@ -120,7 +122,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
 // ------**--yradnuoBgoLtrapitluMklaTelgooG--**------
 //
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
 
   // Tell the uploader to save the multipart to a buffer instead of uploading.
   std::string multipart;
@@ -278,7 +281,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopRtpDump) {
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
 
   // Start RTP dump.
   scoped_refptr<extensions::WebrtcLoggingPrivateStartRtpDumpFunction>

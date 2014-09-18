@@ -88,10 +88,10 @@ class TestObserver : public ExtensionRegistryObserver {
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
   ExtensionRegistry registry(NULL);
-  scoped_refptr<Extension> extension1 = test_util::CreateExtensionWithID("id1");
-  scoped_refptr<Extension> extension2 = test_util::CreateExtensionWithID("id2");
-  scoped_refptr<Extension> extension3 = test_util::CreateExtensionWithID("id3");
-  scoped_refptr<Extension> extension4 = test_util::CreateExtensionWithID("id4");
+  scoped_refptr<Extension> extension1 = test_util::CreateEmptyExtension("id1");
+  scoped_refptr<Extension> extension2 = test_util::CreateEmptyExtension("id2");
+  scoped_refptr<Extension> extension3 = test_util::CreateEmptyExtension("id3");
+  scoped_refptr<Extension> extension4 = test_util::CreateEmptyExtension("id4");
 
   // All the sets start empty.
   EXPECT_EQ(0u, registry.enabled_extensions().size());
@@ -124,7 +124,7 @@ TEST_F(ExtensionRegistryTest, AddAndRemoveExtensionFromRegistry) {
   ExtensionRegistry registry(NULL);
 
   // Adding an extension works.
-  scoped_refptr<Extension> extension = test_util::CreateExtensionWithID("id");
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension("id");
   EXPECT_TRUE(registry.AddEnabled(extension));
   EXPECT_EQ(1u, registry.enabled_extensions().size());
 
@@ -143,7 +143,7 @@ TEST_F(ExtensionRegistryTest, AddAndRemoveExtensionFromRegistry) {
 
 TEST_F(ExtensionRegistryTest, AddExtensionToRegistryTwice) {
   ExtensionRegistry registry(NULL);
-  scoped_refptr<Extension> extension = test_util::CreateExtensionWithID("id");
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension("id");
 
   // An extension can exist in two sets at once. It would be nice to eliminate
   // this functionality, but some users of ExtensionRegistry need it.
@@ -163,14 +163,13 @@ TEST_F(ExtensionRegistryTest, GetExtensionById) {
   EXPECT_FALSE(
       registry.GetExtensionById("id", ExtensionRegistry::EVERYTHING));
 
-  scoped_refptr<Extension> enabled =
-      test_util::CreateExtensionWithID("enabled");
+  scoped_refptr<Extension> enabled = test_util::CreateEmptyExtension("enabled");
   scoped_refptr<Extension> disabled =
-      test_util::CreateExtensionWithID("disabled");
+      test_util::CreateEmptyExtension("disabled");
   scoped_refptr<Extension> terminated =
-      test_util::CreateExtensionWithID("terminated");
+      test_util::CreateEmptyExtension("terminated");
   scoped_refptr<Extension> blacklisted =
-      test_util::CreateExtensionWithID("blacklisted");
+      test_util::CreateEmptyExtension("blacklisted");
 
   // Add an extension to each set.
   registry.AddEnabled(enabled);
@@ -245,7 +244,7 @@ TEST_F(ExtensionRegistryTest, Observer) {
   EXPECT_TRUE(observer.installed().empty());
 
   scoped_refptr<const Extension> extension =
-      test_util::CreateExtensionWithID("id");
+      test_util::CreateEmptyExtension("id");
 
   registry.TriggerOnWillBeInstalled(
       extension.get(), false, false, base::EmptyString());

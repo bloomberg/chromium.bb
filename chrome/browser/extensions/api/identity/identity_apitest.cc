@@ -41,6 +41,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
+#include "extensions/common/test_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -117,7 +118,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
     if (!function->extension()) {
       scoped_refptr<Extension> empty_extension(
-          utils::CreateEmptyExtension());
+          test_util::CreateEmptyExtension());
       function->set_extension(empty_extension.get());
     }
 
@@ -411,7 +412,7 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
       const std::vector<std::string>& accounts) {
     scoped_refptr<IdentityGetAccountsFunction> func(
         new IdentityGetAccountsFunction);
-    func->set_extension(utils::CreateEmptyExtension(kExtensionId).get());
+    func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
     if (!utils::RunFunction(
             func.get(), std::string("[]"), browser(), utils::NONE)) {
       return GenerateFailureResult(accounts, NULL)
@@ -532,7 +533,7 @@ class IdentityGetProfileUserInfoFunctionTest : public ExtensionBrowserTest {
   scoped_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfo() {
     scoped_refptr<IdentityGetProfileUserInfoFunction> func(
         new IdentityGetProfileUserInfoFunction);
-    func->set_extension(utils::CreateEmptyExtension(kExtensionId).get());
+    func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
     scoped_ptr<base::Value> value(
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
     return api::identity::ProfileUserInfo::FromValue(*value.get());
@@ -1594,7 +1595,7 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   bool InvalidateDefaultToken() {
     scoped_refptr<IdentityRemoveCachedAuthTokenFunction> func(
         new IdentityRemoveCachedAuthTokenFunction);
-    func->set_extension(utils::CreateEmptyExtension(kExtensionId).get());
+    func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
     return utils::RunFunction(
         func.get(),
         std::string("[{\"token\": \"") + kAccessToken + "\"}]",
@@ -1607,17 +1608,14 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   }
 
   void SetCachedToken(IdentityTokenCacheValue& token_data) {
-    ExtensionTokenKey key(crx_file::id_util::GenerateId(kExtensionId),
-                          "test@example.com",
-                          std::set<std::string>());
+    ExtensionTokenKey key(
+        kExtensionId, "test@example.com", std::set<std::string>());
     id_api()->SetCachedToken(key, token_data);
   }
 
   const IdentityTokenCacheValue& GetCachedToken() {
-    return id_api()->GetCachedToken(
-        ExtensionTokenKey(crx_file::id_util::GenerateId(kExtensionId),
-                          "test@example.com",
-                          std::set<std::string>()));
+    return id_api()->GetCachedToken(ExtensionTokenKey(
+        kExtensionId, "test@example.com", std::set<std::string>()));
   }
 };
 
@@ -1677,8 +1675,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
   WaitForGURLAndCloseWindow popup_observer(auth_url);
@@ -1704,8 +1701,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
   std::string args = "[{\"interactive\": false, \"url\": \"" +
@@ -1727,8 +1723,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
   std::string args = "[{\"interactive\": true, \"url\": \"" +
@@ -1748,8 +1743,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
@@ -1775,8 +1769,7 @@ IN_PROC_BROWSER_TEST_F(
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
@@ -1804,8 +1797,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");

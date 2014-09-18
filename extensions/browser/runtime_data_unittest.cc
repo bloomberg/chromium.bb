@@ -10,20 +10,12 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace {
-
-// Creates a very simple extension.
-scoped_refptr<Extension> CreateExtension() {
-  return ExtensionBuilder()
-      .SetManifest(
-           DictionaryBuilder().Set("name", "test").Set("version", "0.1"))
-      .SetID("id1")
-      .Build();
-}
 
 // Creates a very simple extension with a background page.
 scoped_refptr<Extension> CreateExtensionWithBackgroundPage() {
@@ -52,7 +44,7 @@ class RuntimeDataTest : public testing::Test {
 
 TEST_F(RuntimeDataTest, IsBackgroundPageReady) {
   // An extension without a background page is always considered ready.
-  scoped_refptr<Extension> no_background = CreateExtension();
+  scoped_refptr<Extension> no_background = test_util::CreateEmptyExtension();
   EXPECT_TRUE(runtime_data_.IsBackgroundPageReady(no_background.get()));
 
   // An extension with a background page is not ready until the flag is set.
@@ -68,7 +60,7 @@ TEST_F(RuntimeDataTest, IsBackgroundPageReady) {
 }
 
 TEST_F(RuntimeDataTest, IsBeingUpgraded) {
-  scoped_refptr<Extension> extension = CreateExtension();
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
 
   // An extension is not being upgraded until the flag is set.
   EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension.get()));
@@ -81,7 +73,7 @@ TEST_F(RuntimeDataTest, IsBeingUpgraded) {
 }
 
 TEST_F(RuntimeDataTest, HasUsedWebRequest) {
-  scoped_refptr<Extension> extension = CreateExtension();
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
 
   // An extension has not used web request until the flag is set.
   EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension.get()));

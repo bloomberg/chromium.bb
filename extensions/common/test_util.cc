@@ -20,15 +20,13 @@ ExtensionBuilder& BuildExtension(ExtensionBuilder& builder) {
 }
 
 scoped_refptr<Extension> CreateEmptyExtension() {
-  scoped_refptr<Extension> empty_extension(
-      ExtensionBuilder()
-          .SetManifest(
-               DictionaryBuilder().Set("name", "Test").Set("version", "1.0"))
-          .Build());
-  return empty_extension;
+  return ExtensionBuilder()
+      .SetManifest(
+           DictionaryBuilder().Set("name", "Test").Set("version", "1.0"))
+      .Build();
 }
 
-scoped_refptr<Extension> CreateExtensionWithID(const std::string& id) {
+scoped_refptr<Extension> CreateEmptyExtension(const std::string& id) {
   return ExtensionBuilder()
       .SetManifest(
            DictionaryBuilder().Set("name", "test").Set("version", "0.1"))

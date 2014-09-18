@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/api/system_network/system_network_api.h"
+#include "extensions/common/test_util.h"
 
 using extensions::Extension;
 using extensions::core_api::SystemNetworkGetNetworkInterfacesFunction;
@@ -35,7 +36,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, SystemNetworkExtension) {
 IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, GetNetworkInterfaces) {
   scoped_refptr<SystemNetworkGetNetworkInterfacesFunction> socket_function(
       new SystemNetworkGetNetworkInterfacesFunction());
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
 
   socket_function->set_extension(empty_extension.get());
   socket_function->set_has_callback(true);

@@ -48,23 +48,10 @@ base::DictionaryValue* ToDictionary(base::Value* val);
 // If |val| is a list, return it as one, otherwise NULL.
 base::ListValue* ToList(base::Value* val);
 
-// Creates an extension instance that can be attached to an ExtensionFunction
-// before running it.
-scoped_refptr<extensions::Extension> CreateEmptyExtension();
-
 // Creates an extension instance with a specified location that can be attached
 // to an ExtensionFunction before running.
 scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
     extensions::Manifest::Location location);
-
-// Creates an empty extension with a variable ID, for tests that require
-// multiple extensions side-by-side having distinct IDs. If not empty, then
-// id_input is passed directly to Extension::CreateId() and thus has the same
-// behavior as that method. If id_input is empty, then Extension::Create()
-// receives an empty explicit ID and generates an appropriate ID for a blank
-// extension.
-scoped_refptr<extensions::Extension> CreateEmptyExtension(
-    const std::string& id_input);
 
 scoped_refptr<extensions::Extension> CreateExtension(
     extensions::Manifest::Location location,

@@ -17,6 +17,7 @@
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
+#include "extensions/common/test_util.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -70,7 +71,8 @@ class SocketsTcpServerApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
   scoped_refptr<SocketsTcpServerCreateFunction>
       socket_create_function(new SocketsTcpServerCreateFunction());
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
 
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);

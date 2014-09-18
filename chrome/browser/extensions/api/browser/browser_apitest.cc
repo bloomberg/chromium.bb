@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/browser/browser_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "extensions/common/test_util.h"
 
 namespace extensions {
 
@@ -27,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(BrowserApiTest, OpenTab) {
 
   scoped_refptr<api::BrowserOpenTabFunction> function =
       new api::BrowserOpenTabFunction();
-  scoped_refptr<Extension> extension(utils::CreateEmptyExtension());
+  scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
   base::Value* result = utils::RunFunctionAndReturnSingleResult(
       function.get(),

@@ -7,7 +7,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +17,7 @@
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_socket.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
+#include "extensions/common/test_util.h"
 #include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -32,7 +32,6 @@ using device::MockBluetoothSocket;
 using extensions::Extension;
 using extensions::ResultCatcher;
 
-namespace utils = extension_function_test_utils;
 namespace api = extensions::core_api;
 
 namespace {
@@ -43,7 +42,7 @@ class BluetoothSocketApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
-    empty_extension_ = utils::CreateEmptyExtension();
+    empty_extension_ = extensions::test_util::CreateEmptyExtension();
     SetUpMockAdapter();
   }
 

@@ -41,9 +41,9 @@ TEST_F(ApiResourceManagerUnitTest, TwoAppsCannotShareResources) {
   scoped_ptr<ApiResourceManager<FakeApiResource> > manager(
       new ApiResourceManager<FakeApiResource>(NULL));
   scoped_refptr<extensions::Extension> extension_one =
-      test_util::CreateExtensionWithID("one");
+      test_util::CreateEmptyExtension("one");
   scoped_refptr<extensions::Extension> extension_two =
-      test_util::CreateExtensionWithID("two");
+      test_util::CreateEmptyExtension("two");
 
   const std::string extension_one_id(extension_one->id());
   const std::string extension_two_id(extension_two->id());

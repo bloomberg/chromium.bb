@@ -103,23 +103,11 @@ base::ListValue* ToList(base::Value* val) {
   return static_cast<base::ListValue*>(val);
 }
 
-scoped_refptr<Extension> CreateEmptyExtension() {
-  return CreateEmptyExtensionWithLocation(Manifest::INTERNAL);
-}
-
 scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
     Manifest::Location location) {
   scoped_ptr<base::DictionaryValue> test_extension_value(
       ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
   return CreateExtension(location, test_extension_value.get(), std::string());
-}
-
-scoped_refptr<Extension> CreateEmptyExtension(
-    const std::string& id_input) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
-      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
-  return CreateExtension(Manifest::INTERNAL, test_extension_value.get(),
-                         id_input);
 }
 
 scoped_refptr<Extension> CreateExtension(

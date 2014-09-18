@@ -4,7 +4,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -15,6 +14,7 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
+#include "extensions/common/test_util.h"
 #include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -41,8 +41,6 @@ using testing::ReturnRef;
 using testing::ReturnRefOfCopy;
 using testing::SaveArg;
 using testing::_;
-
-namespace utils = extension_function_test_utils;
 
 namespace {
 
@@ -99,7 +97,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
-    empty_extension_ = utils::CreateEmptyExtension();
+    empty_extension_ = extensions::test_util::CreateEmptyExtension();
     SetUpMocks();
   }
 
@@ -1162,7 +1160,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/reconnect_after_disconnected")));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
@@ -1199,7 +1196,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
   disconnect_callback.Run();
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {

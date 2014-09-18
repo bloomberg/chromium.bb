@@ -22,8 +22,9 @@ ExtensionBuilder& BuildExtension(ExtensionBuilder& builder);
 // before running it.
 scoped_refptr<Extension> CreateEmptyExtension();
 
-// Return a very simple extension with a given |id|.
-scoped_refptr<Extension> CreateExtensionWithID(const std::string& id);
+// Create an extension with a variable |id|, for tests that require multiple
+// extensions side-by-side having distinct IDs.
+scoped_refptr<Extension> CreateEmptyExtension(const std::string& id);
 
 }  // namespace test_util
 }  // namespace extensions

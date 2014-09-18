@@ -19,6 +19,7 @@
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
+#include "extensions/common/test_util.h"
 #include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -46,7 +47,7 @@ class BluetoothApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
-    empty_extension_ = utils::CreateEmptyExtension();
+    empty_extension_ = extensions::test_util::CreateEmptyExtension();
     SetUpMockAdapter();
   }
 

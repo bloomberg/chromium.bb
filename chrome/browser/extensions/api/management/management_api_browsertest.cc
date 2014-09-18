@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/test_util.h"
 
 namespace keys = extension_management_api_constants;
 namespace util = extension_function_test_utils;
@@ -118,8 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 
   const std::string id = extension->id();
 
-  scoped_refptr<Extension> empty_extension(
-      extension_function_test_utils::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
   // Uninstall, then cancel via the confirm dialog.
   scoped_refptr<ManagementUninstallFunction> uninstall_function(
       new ManagementUninstallFunction());
