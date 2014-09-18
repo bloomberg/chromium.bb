@@ -34,6 +34,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
+#include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -48,15 +49,37 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMIDIClientMock.h"
 #include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebWidgetClient.h"
 
 namespace content {
 
 namespace {
+
+class CaptureCallback : public blink::WebCompositeAndReadbackAsyncCallback {
+ public:
+  CaptureCallback(const base::Callback<void(const SkBitmap&)>& callback);
+  virtual ~CaptureCallback();
+
+  void set_wait_for_popup(bool wait) { wait_for_popup_ = wait; }
+  void set_popup_position(const gfx::Point& position) {
+    popup_position_ = position;
+  }
+
+  // WebCompositeAndReadbackAsyncCallback implementation.
+  virtual void didCompositeAndReadback(const SkBitmap& bitmap);
+
+ private:
+  base::Callback<void(const SkBitmap&)> callback_;
+  SkBitmap main_bitmap_;
+  bool wait_for_popup_;
+  gfx::Point popup_position_;
+};
 
 class HostMethodTask : public WebMethodTask<WebTestProxyBase> {
  public:
@@ -331,9 +354,6 @@ WebTestProxyBase::WebTestProxyBase()
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->WindowClosed(this);
-  // Tests must wait for readback requests to finish before notifying that
-  // they are done.
-  CHECK_EQ(0u, composite_and_readback_callbacks_.size());
 }
 
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
@@ -458,20 +478,6 @@ void WebTestProxyBase::DrawSelectionRect(SkCanvas* canvas) {
   canvas->drawIRect(rect, paint);
 }
 
-void WebTestProxyBase::didCompositeAndReadback(const SkBitmap& bitmap) {
-  TRACE_EVENT2("shell",
-               "WebTestProxyBase::didCompositeAndReadback",
-               "x",
-               bitmap.info().fWidth,
-               "y",
-               bitmap.info().fHeight);
-  SkCanvas canvas(bitmap);
-  DrawSelectionRect(&canvas);
-  DCHECK(!composite_and_readback_callbacks_.empty());
-  composite_and_readback_callbacks_.front().Run(bitmap);
-  composite_and_readback_callbacks_.pop_front();
-}
-
 void WebTestProxyBase::SetAcceptLanguages(const std::string& accept_languages) {
   bool notify = accept_languages_ != accept_languages;
   accept_languages_ = accept_languages;
@@ -528,6 +534,36 @@ void WebTestProxyBase::CapturePixelsForPrinting(
   callback.Run(bitmap);
 }
 
+CaptureCallback::CaptureCallback(
+    const base::Callback<void(const SkBitmap&)>& callback)
+    : callback_(callback), wait_for_popup_(false) {
+}
+
+CaptureCallback::~CaptureCallback() {
+}
+
+void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
+  TRACE_EVENT2("shell",
+               "CaptureCallback::didCompositeAndReadback",
+               "x",
+               bitmap.info().fWidth,
+               "y",
+               bitmap.info().fHeight);
+  if (!wait_for_popup_) {
+    callback_.Run(bitmap);
+    delete this;
+    return;
+  }
+  if (main_bitmap_.isNull()) {
+    bitmap.deepCopyTo(&main_bitmap_);
+    return;
+  }
+  SkCanvas canvas(main_bitmap_);
+  canvas.drawBitmap(bitmap, popup_position_.x(), popup_position_.y());
+  callback_.Run(main_bitmap_);
+  delete this;
+}
+
 void WebTestProxyBase::CapturePixelsAsync(
     const base::Callback<void(const SkBitmap&)>& callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
@@ -544,8 +580,23 @@ void WebTestProxyBase::CapturePixelsAsync(
     return;
   }
 
-  composite_and_readback_callbacks_.push_back(callback);
-  web_widget_->compositeAndReadbackAsync(this);
+  CaptureCallback* capture_callback = new CaptureCallback(base::Bind(
+      &WebTestProxyBase::DidCapturePixelsAsync, base::Unretained(this),
+      callback));
+  web_widget_->compositeAndReadbackAsync(capture_callback);
+  if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
+    capture_callback->set_wait_for_popup(true);
+    capture_callback->set_popup_position(popup->positionRelativeToOwner());
+    popup->compositeAndReadbackAsync(capture_callback);
+  }
+}
+
+void WebTestProxyBase::DidCapturePixelsAsync(const base::Callback<void(const SkBitmap&)>& callback,
+                                             const SkBitmap& bitmap) {
+  SkCanvas canvas(bitmap);
+  DrawSelectionRect(&canvas);
+  if (!callback.is_null())
+    callback.Run(bitmap);
 }
 
 void WebTestProxyBase::SetLogConsoleOutput(bool enabled) {

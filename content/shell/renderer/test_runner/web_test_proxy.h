@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/web_task.h"
-#include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -32,6 +31,7 @@
 #include "third_party/WebKit/public/web/WebTextAffinity.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 
+class SkBitmap;
 class SkCanvas;
 
 namespace blink {
@@ -93,7 +93,7 @@ class WebTestInterfaces;
 // when it requires a behavior to be different from the usual, it will call
 // WebTestProxyBase that implements the expected behavior.
 // See WebTestProxy class comments for more information.
-class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
+class WebTestProxyBase {
  public:
   void SetInterfaces(WebTestInterfaces* interfaces);
   void SetDelegate(WebTestDelegate* delegate);
@@ -140,9 +140,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   blink::WebView* GetWebView() const;
 
   void PostSpellCheckEvent(const blink::WebString& event_name);
-
-  // WebCompositeAndReadbackAsyncCallback implementation.
-  virtual void didCompositeAndReadback(const SkBitmap& bitmap);
 
   void SetAcceptLanguages(const std::string& accept_languages);
 
@@ -253,6 +250,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   void CheckDone(blink::WebLocalFrame* frame, CheckDoneReason reason);
   void AnimateNow();
   void DrawSelectionRect(SkCanvas* canvas);
+  void DidCapturePixelsAsync(const base::Callback<void(const SkBitmap&)>& callback, const SkBitmap& bitmap);
   void DidDisplayAsync(const base::Closure& callback, const SkBitmap& bitmap);
 
   blink::WebWidget* web_widget() const { return web_widget_; }
@@ -268,8 +266,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
 
   bool animate_scheduled_;
   std::map<unsigned, std::string> resource_identifier_map_;
-  std::deque<base::Callback<void(const SkBitmap&)> >
-      composite_and_readback_callbacks_;
 
   bool log_console_output_;
   int chooser_count_;
