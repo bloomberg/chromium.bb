@@ -669,7 +669,12 @@ void DisplayController::CreateOrUpdateNonDesktopDisplay(
 
 void DisplayController::CloseNonDesktopDisplay() {
   mirror_window_controller_->Close();
-  cursor_window_controller_->UpdateContainer();
+  // If cursor_compositing is enabled for large cursor, the cursor window is
+  // always on the desktop display (the visible cursor on the non-desktop
+  // display is drawn through compositor mirroring). Therefore, it's unnecessary
+  // to handle the cursor_window at all. See: http://crbug.com/412910
+  if (!cursor_window_controller_->is_cursor_compositing_enabled())
+    cursor_window_controller_->UpdateContainer();
 }
 
 void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {

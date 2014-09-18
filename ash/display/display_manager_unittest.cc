@@ -1285,6 +1285,46 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   Shell::GetScreen()->RemoveObserver(&display_observer);
 }
 
+#if defined(OS_CHROMEOS)
+// Make sure this does not cause any crashes. See http://crbug.com/412910
+// This test is limited to OS_CHROMEOS because CursorCompositingEnabled is only
+// for ChromeOS.
+TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("300x400,400x500");
+
+  test::MirrorWindowTestApi test_api;
+  EXPECT_EQ(NULL, test_api.GetHost());
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayInfo secondary_info = display_manager->GetDisplayInfo(
+      ScreenUtil::GetSecondaryDisplay().id());
+
+  display_manager->SetSoftwareMirroring(true);
+  display_manager->UpdateDisplays();
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_FALSE(root_windows[0]->Contains(test_api.GetCursorWindow()));
+
+  Shell::GetInstance()->SetCursorCompositingEnabled(true);
+
+  EXPECT_TRUE(root_windows[0]->Contains(test_api.GetCursorWindow()));
+
+  // Removes the first display and keeps the second one.
+  display_manager->SetSoftwareMirroring(false);
+  std::vector<DisplayInfo> new_info_list;
+  new_info_list.push_back(secondary_info);
+  display_manager->OnNativeDisplaysChanged(new_info_list);
+
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_TRUE(root_windows[0]->Contains(test_api.GetCursorWindow()));
+
+  Shell::GetInstance()->SetCursorCompositingEnabled(false);
+}
+#endif  // OS_CHROMEOS
+
 TEST_F(DisplayManagerTest, MirroredLayout) {
   if (!SupportsMultipleDisplays())
     return;
