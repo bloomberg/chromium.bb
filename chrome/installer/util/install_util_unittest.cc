@@ -82,7 +82,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
   // Update the stage when there's no "ap" value.
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE);
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
                                       installer::BUILDING);
@@ -96,7 +96,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
   // Update the stage when there is an "ap" value.
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(google_update::kRegApField, L"2.0-dev");
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -111,7 +111,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
   // Clear the stage.
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
       .WriteValue(google_update::kRegApField, L"2.0-dev-stage:building");
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -132,7 +132,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
   // Update the stage when there's no "InstallerExtraCode1" value.
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .DeleteValue(installer::kInstallerExtraCode1);
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -147,7 +147,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
   // Update the stage when there is an "InstallerExtraCode1" value.
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(installer::kInstallerExtraCode1,
                     static_cast<DWORD>(installer::UNPACKING));
@@ -163,7 +163,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
   // Clear the stage.
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(installer::kInstallerExtraCode1, static_cast<DWORD>(5));
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -185,7 +185,7 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
 
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_key");
+    override_manager.OverrideRegistry(root);
     // Nothing to delete if the keys aren't even there.
     {
       MockRegistryValuePredicate pred;
@@ -293,7 +293,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
 
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_key");
+    override_manager.OverrideRegistry(root);
     // Nothing to delete if the key isn't even there.
     {
       MockRegistryValuePredicate pred;
@@ -357,7 +357,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
 
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_key");
+    override_manager.OverrideRegistry(root);
     // Default value matches: delete using empty string.
     {
       MockRegistryValuePredicate pred;
@@ -378,7 +378,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
 
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_key");
+    override_manager.OverrideRegistry(root);
     // Default value matches: delete using NULL.
     {
       MockRegistryValuePredicate pred;

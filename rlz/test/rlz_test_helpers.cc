@@ -111,8 +111,8 @@ void InitializeRegistryOverridesForTesting(
                                        KEY_READ), &data);
   }
 
-  override_manager->OverrideRegistry(HKEY_LOCAL_MACHINE, L"rlz_temp_hklm");
-  override_manager->OverrideRegistry(HKEY_CURRENT_USER, L"rlz_temp_hkcu");
+  override_manager->OverrideRegistry(HKEY_LOCAL_MACHINE);
+  override_manager->OverrideRegistry(HKEY_CURRENT_USER);
 
   if (do_copy) {
     base::win::RegKey key(

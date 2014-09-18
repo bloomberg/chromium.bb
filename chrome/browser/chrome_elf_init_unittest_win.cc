@@ -29,8 +29,7 @@ class ChromeBlacklistTrialTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
 
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER,
-                                       L"browser_blacklist_test");
+    override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
 
     blacklist_registry_key_.reset(
         new base::win::RegKey(HKEY_CURRENT_USER,

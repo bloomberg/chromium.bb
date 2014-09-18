@@ -92,9 +92,7 @@ RegistryOverrideManager::RegistryOverrideManager(
 
 RegistryOverrideManager::~RegistryOverrideManager() {}
 
-void RegistryOverrideManager::OverrideRegistry(
-    HKEY override,
-    const base::string16& /*override_name*/) {
+void RegistryOverrideManager::OverrideRegistry(HKEY override) {
   base::string16 key_path = GenerateTempKeyPath(test_key_root_, timestamp_);
   overrides_.push_back(new ScopedRegistryKeyOverride(override, key_path));
 }

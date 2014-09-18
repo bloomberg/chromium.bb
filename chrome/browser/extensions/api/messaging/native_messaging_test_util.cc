@@ -75,7 +75,7 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
 
 #if defined(OS_WIN)
   HKEY root_key = user_level ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-  registry_override_.OverrideRegistry(root_key, L"native_messaging");
+  registry_override_.OverrideRegistry(root_key);
 #else
   path_override_.reset(new base::ScopedPathOverride(
       user_level ? chrome::DIR_USER_NATIVE_MESSAGING

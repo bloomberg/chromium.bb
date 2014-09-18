@@ -127,7 +127,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
   // Ensure that CollectDllBlacklistData correctly adds the set of sanitized dll
   // names currently stored in the registry to the report.
   registry_util::RegistryOverrideManager override_manager;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER, L"safe_browsing_test");
+  override_manager.OverrideRegistry(HKEY_CURRENT_USER);
 
   base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER,
                                            blacklist::kRegistryFinchListPath,

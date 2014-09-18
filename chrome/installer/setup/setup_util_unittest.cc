@@ -408,8 +408,7 @@ namespace {
 class MigrateMultiToSingleTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    registry_override_manager_.OverrideRegistry(kRootKey,
-                                                L"MigrateMultiToSingleTest");
+    registry_override_manager_.OverrideRegistry(kRootKey);
   }
 
   static const bool kSystemLevel = false;

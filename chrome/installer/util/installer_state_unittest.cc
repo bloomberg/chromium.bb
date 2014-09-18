@@ -353,7 +353,7 @@ TEST_F(InstallerStateTest, WithProduct) {
 
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_pit");
+    override_manager.OverrideRegistry(root);
     BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER);
     RegKey chrome_key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
@@ -385,7 +385,7 @@ TEST_F(InstallerStateTest, InstallerResult) {
   // check results for a fresh install of single Chrome
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     CommandLine cmd_line = CommandLine::FromString(L"setup.exe --system-level");
     const MasterPreferences prefs(cmd_line);
     InstallationState machine_state;
@@ -416,7 +416,7 @@ TEST_F(InstallerStateTest, InstallerResult) {
   // check results for a fresh install of multi Chrome
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_inst_res");
+    override_manager.OverrideRegistry(root);
     CommandLine cmd_line = CommandLine::FromString(
         L"setup.exe --system-level --multi-install --chrome");
     const MasterPreferences prefs(cmd_line);
@@ -617,8 +617,8 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   base::ScopedPathOverride local_app_data_override(base::DIR_LOCAL_APP_DATA,
                                                    temp);
   registry_util::RegistryOverrideManager override_manager;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER, base::string16());
-  override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE, base::string16());
+  override_manager.OverrideRegistry(HKEY_CURRENT_USER);
+  override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
 
   InstallationState machine_state;
   machine_state.Initialize();

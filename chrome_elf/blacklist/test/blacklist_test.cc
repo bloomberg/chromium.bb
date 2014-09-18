@@ -47,7 +47,7 @@ namespace {
 class BlacklistTest : public testing::Test {
  protected:
   BlacklistTest() : override_manager_() {
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER, L"beacon_test");
+    override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
   }
 
   scoped_ptr<base::win::RegKey> blacklist_registry_key_;

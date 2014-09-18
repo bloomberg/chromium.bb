@@ -67,7 +67,7 @@ void ProductStateTest::SetUp() {
   // directly because it doesn't suit itself to our use here.
   RegKey temp_key;
 
-  registry_override_manager_.OverrideRegistry(overridden_, L"ProductStateTest");
+  registry_override_manager_.OverrideRegistry(overridden_);
 
   EXPECT_EQ(ERROR_SUCCESS,
             clients_.Create(overridden_, dist_->GetVersionKey().c_str(),

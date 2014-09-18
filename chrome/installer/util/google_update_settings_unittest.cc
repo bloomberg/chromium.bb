@@ -35,8 +35,8 @@ const wchar_t kTestExperimentLabel[] = L"test_label_value";
 class GoogleUpdateSettingsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE, L"HKLM_pit");
-    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER, L"HKCU_pit");
+    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
   }
 
   enum SystemUserInstall {
@@ -1084,7 +1084,7 @@ void CollectStatsConsent::SetUp() {
   base::string16 reg_temp_name(
       stats_state.system_level() ? L"HKLM_" : L"HKCU_");
   reg_temp_name += L"CollectStatsConsent";
-  override_manager_.OverrideRegistry(root_key, reg_temp_name);
+  override_manager_.OverrideRegistry(root_key);
 
   if (stats_state.multi_install()) {
     MakeChromeMultiInstall(root_key);

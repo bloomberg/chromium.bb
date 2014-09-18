@@ -11,8 +11,8 @@
 
 GCAPITestRegistryOverrider::GCAPITestRegistryOverrider() {
   // Override keys - this is undone during destruction.
-  override_manager_.OverrideRegistry(HKEY_CURRENT_USER, L"hkcu_override");
-  override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, L"hklm_override");
+  override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+  override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
 }
 
 GCAPITestRegistryOverrider::~GCAPITestRegistryOverrider() {

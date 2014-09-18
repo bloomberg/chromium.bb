@@ -79,7 +79,7 @@ TEST_F(ProductTest, ProductInstallBasic) {
   HKEY root = installer_state.root_key();
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root, L"root_pit");
+    override_manager.OverrideRegistry(root);
 
     // There should be no installed version in the registry.
     machine_state.Initialize();

@@ -34,11 +34,10 @@ class RegistryOverrideManager {
   RegistryOverrideManager();
   ~RegistryOverrideManager();
 
-  // Override the given registry hive using a temporary key named by temp_name
-  // under the temporary test key path. There is no need to randomize
-  // |override_name|, as a random parent key is generated. Multiple overrides to
-  // the same hive are not supported and lead to undefined behavior.
-  void OverrideRegistry(HKEY override, const base::string16& override_name);
+  // Override the given registry hive using a randomly generated temporary key.
+  // Multiple overrides to the same hive are not supported and lead to undefined
+  // behavior.
+  void OverrideRegistry(HKEY override);
 
  private:
   friend class RegistryOverrideManagerTest;

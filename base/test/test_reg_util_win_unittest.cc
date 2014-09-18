@@ -64,7 +64,7 @@ class RegistryOverrideManagerTest : public testing::Test {
 
   void CreateManager(const base::Time& timestamp) {
     manager_.reset(new RegistryOverrideManager(timestamp, fake_test_key_root_));
-    manager_->OverrideRegistry(HKEY_CURRENT_USER, L"override_manager_unittest");
+    manager_->OverrideRegistry(HKEY_CURRENT_USER);
   }
 
   base::string16 fake_test_key_root_;
