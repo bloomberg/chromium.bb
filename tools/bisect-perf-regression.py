@@ -2210,7 +2210,7 @@ class BisectPerformanceMetrics(object):
 
     if self.source_control.IsGit() and self.opts.target_platform == 'chromium':
       changes_to_deps = self.source_control.QueryFileRevisionHistory(
-          'DEPS', good_revision, bad_revision)
+          FILE_DEPS, good_revision, bad_revision)
 
       if changes_to_deps:
         # DEPS file was changed, search from the oldest change to DEPS file to
@@ -2253,9 +2253,9 @@ class BisectPerformanceMetrics(object):
       True if the revisions are in the proper order (good earlier than bad).
     """
     if self.source_control.IsGit() and target_depot != 'cros':
-      cmd = ['log', '--format=%ct', '-1', good_revision]
       cwd = self._GetDepotDirectory(target_depot)
 
+      cmd = ['log', '--format=%ct', '-1', good_revision]
       output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
       good_commit_time = int(output)
 
@@ -3291,12 +3291,12 @@ class BisectOptions(object):
         if not opts.working_directory:
           raise RuntimeError('missing required parameter: --working_directory')
 
-      metric_values = opts.metric.split('/')
-      if (len(metric_values) != 2 and
-          opts.bisect_mode != BISECT_MODE_RETURN_CODE):
-        raise RuntimeError('Invalid metric specified: [%s]' % opts.metric)
+      if opts.bisect_mode != BISECT_MODE_RETURN_CODE:
+        metric_values = opts.metric.split('/')
+        if len(metric_values) != 2:
+          raise RuntimeError('Invalid metric specified: [%s]' % opts.metric)
+        opts.metric = metric_values
 
-      opts.metric = metric_values
       opts.repeat_test_count = min(max(opts.repeat_test_count, 1), 100)
       opts.max_time_minutes = min(max(opts.max_time_minutes, 1), 60)
       opts.truncate_percent = min(max(opts.truncate_percent, 0), 25)
@@ -3327,7 +3327,7 @@ class BisectOptions(object):
       assert hasattr(opts, k), 'Invalid %s attribute in BisectOptions.' % k
       setattr(opts, k, v)
 
-    if opts.metric:
+    if opts.metric and opts.bisect_mode != BISECT_MODE_RETURN_CODE:
       metric_values = opts.metric.split('/')
       if len(metric_values) != 2:
         raise RuntimeError('Invalid metric specified: [%s]' % opts.metric)
