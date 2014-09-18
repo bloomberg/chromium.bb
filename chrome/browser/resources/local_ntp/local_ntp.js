@@ -1082,7 +1082,7 @@ function init() {
     fakebox.id = IDS.FAKEBOX;
     var fakeboxHtml = [];
     fakeboxHtml.push('<input id="' + IDS.FAKEBOX_INPUT +
-        '" autocomplete="off" tabindex="-1" aria-hidden="true">');
+        '" autocomplete="off" tabindex="-1" type="url" aria-hidden="true">');
     fakeboxHtml.push('<div id="' + IDS.FAKEBOX_TEXT + '"></div>');
     fakeboxHtml.push('<div id="cursor"></div>');
     fakebox.innerHTML = fakeboxHtml.join('');
