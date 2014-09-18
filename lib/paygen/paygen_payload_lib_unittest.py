@@ -206,9 +206,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen._PrepareGenerator()
 
     # Ensure that the expected executables in the au-generator are available.
-    expected = os.path.join(gen.generator_dir, 'convert_recovery_to_ssd.sh')
-    self.assertTrue(os.path.exists(expected))
-
     expected = os.path.join(gen.generator_dir, 'cros_generate_update_payload')
     self.assertTrue(os.path.exists(expected))
 
@@ -277,7 +274,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
           key='mp-v3',
           uri=download_uri)
       test_extract_file = None
-      test_is_recovery = True
     elif image_type == 'UnsignedImageArchive':
       image_obj = gspaths.UnsignedImageArchive(
           channel='dev-channel',
@@ -286,7 +282,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
           image_type='test',
           uri=download_uri)
       test_extract_file = paygen_payload_lib._PaygenPayload.TEST_IMAGE_NAME
-      test_is_recovery = False
     else:
       raise ValueError('invalid image type descriptor (%s)' % image_type)
 
@@ -305,13 +300,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                                  test_extract_file], cwd=test_work_dir)
       self.mox.StubOutWithMock(shutil, 'move')
       shutil.move(os.path.join(test_work_dir, test_extract_file), image_file)
-
-    if test_is_recovery:
-      self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
-                               '_RunGeneratorCmd')
-      gen._RunGeneratorCmd(['convert_recovery_to_ssd.sh',
-                            image_file, '--force',
-                            '--cgpt=%s/au-generator/cgpt' % test_work_dir])
 
     # Run the test.
     self.mox.ReplayAll()

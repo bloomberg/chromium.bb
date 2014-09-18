@@ -261,8 +261,7 @@ class _PaygenPayload(object):
         'test': (self.TEST_IMAGE_NAME, False),
         'recovery': (self.RECOVERY_IMAGE_NAME, True),
     }
-    extract_file, is_recovery = image_handling_by_type[image.get('image_type',
-                                                                 'signed')]
+    extract_file, _ = image_handling_by_type[image.get('image_type', 'signed')]
 
     # Are we donwloading an archive that contains the image?
     if extract_file:
@@ -287,14 +286,6 @@ class _PaygenPayload(object):
 
       # It's safe to delete the archive at this point.
       os.remove(download_file)
-
-    # If necessary, convert a recovery image into an SSD image in place.
-    if is_recovery:
-      # IMPORTANT: convert_recovery_to_ssd.sh requires args in exactly this
-      # order!
-      cmd = ['convert_recovery_to_ssd.sh', image_file, '--force',
-             '--cgpt=%s' % os.path.join(self.generator_dir, 'cgpt')]
-      self._RunGeneratorCmd(cmd)
 
   def _GenerateUnsignedPayload(self):
     """Generate the unsigned delta into self.payload_file."""
