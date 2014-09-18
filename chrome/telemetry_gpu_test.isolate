@@ -29,7 +29,6 @@
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/chrome.dll.pdb',
           '<(PRODUCT_DIR)/chrome.exe.pdb',
           '<(PRODUCT_DIR)/chrome_child.dll.pdb',
         ],
