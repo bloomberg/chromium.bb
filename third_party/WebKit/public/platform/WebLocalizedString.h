@@ -40,6 +40,7 @@ struct WebLocalizedString {
         AXCalendarShowMonthSelector,
         AXCalendarShowNextMonth,
         AXCalendarShowPreviousMonth,
+        AXCalendarWeekDescription,
         AXCheckedCheckBoxActionVerb,
         AXDateTimeFieldEmptyValueText,
         AXDayOfMonthFieldText,

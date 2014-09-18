@@ -633,6 +633,19 @@ bool DateComponents::setMillisecondsSinceEpochForWeek(double ms)
     return true;
 }
 
+bool DateComponents::setWeek(int year, int weekNumber)
+{
+    m_type = Invalid;
+    if (year < minimumYear() || year > maximumYear())
+        return false;
+    m_year = year;
+    if (weekNumber < 1 || weekNumber > maxWeekNumberInYear())
+        return false;
+    m_week = weekNumber;
+    m_type = Week;
+    return true;
+}
+
 double DateComponents::millisecondsSinceEpochForTime() const
 {
     ASSERT(m_type == Time || m_type == DateTime || m_type == DateTimeLocal);

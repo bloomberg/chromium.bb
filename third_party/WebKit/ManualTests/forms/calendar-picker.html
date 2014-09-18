@@ -335,6 +335,9 @@ function openCalendar() {
             var monthLabels = ['<Jan>', '<Feb>', '<Mar>', '<Apr>', '<May>', '<Jun>',
                                '<Jul>', '<Aug>', '<Sept>', '<Oct>', '<Nov>', '<Dec>'];
             return monthLabels[zeroBaseMonth] + " " + year;
+        },
+        formatWeek: function(year, week, startDate) {
+            return '' + year + '-W' + week + ' starting on ' + startDate;
         }
     }
 

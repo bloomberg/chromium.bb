@@ -91,6 +91,16 @@ String PagePopupController::formatShortMonth(int year, int zeroBaseMonth)
     return m_popupClient->locale().formatDateTime(date, Locale::FormatTypeShort);
 }
 
+String PagePopupController::formatWeek(int year, int weekNumber, const String& localizedDateString)
+{
+    if (!m_popupClient)
+        return emptyString();
+    DateComponents week;
+    ASSERT(week.setWeek(year, weekNumber));
+    String localizedWeek = m_popupClient->locale().formatDateTime(week);
+    return m_popupClient->locale().queryString(WebLocalizedString::AXCalendarWeekDescription, localizedWeek, localizedDateString);
+}
+
 void PagePopupController::clearPagePopupClient()
 {
     m_popupClient = 0;

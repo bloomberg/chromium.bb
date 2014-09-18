@@ -349,6 +349,18 @@ Day.prototype.toString = function() {
     return yearString + "-" + ("0" + (this.month + 1)).substr(-2, 2) + "-" + ("0" + this.date).substr(-2, 2);
 };
 
+/**
+ * @return {!string}
+ */
+Day.prototype.format = function() {
+    if (!Day.formatter) {
+        Day.formatter = new Intl.DateTimeFormat(getLocale(), {
+            weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC"
+        });
+    }
+    return Day.formatter.format(this.startDate());
+};
+
 // See WebCore/platform/DateComponents.h.
 Day.Minimum = Day.createFromValue(-62135596800000.0);
 Day.Maximum = Day.createFromValue(8640000000000000.0);
@@ -3133,12 +3145,7 @@ DayCell.prototype.setIsToday = function(selected) {
 DayCell.prototype.reset = function(day) {
     this.day = day;
     this.element.textContent = localizeNumber(this.day.date.toString());
-    if (!DayCell.formatter) {
-        DayCell.formatter = new Intl.DateTimeFormat(getLocale(), {
-            weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC"
-        });
-    }
-    this.element.setAttribute("aria-label", DayCell.formatter.format(this.day.startDate()));
+    this.element.setAttribute("aria-label", this.day.format());
     this.element.id = this.day.toString();
     this.show();
 };
@@ -3191,6 +3198,9 @@ WeekNumberCell.recycleOrCreate = function() {
  */
 WeekNumberCell.prototype.reset = function(week) {
     this.week = week;
+    this.element.id = week.toString();
+    this.element.setAttribute("role", "gridcell");
+    this.element.setAttribute("aria-label", window.pagePopupController.formatWeek(week.year, week.week, week.firstDay().format()));
     this.element.textContent = localizeNumber(this.week.week.toString());
     this.show();
 };
@@ -3204,10 +3214,13 @@ WeekNumberCell.prototype.throwAway = function() {
 };
 
 WeekNumberCell.prototype.setHighlighted = function(highlighted) {
-    if (highlighted)
+    if (highlighted) {
         this.element.classList.add(WeekNumberCell.ClassNameHighlighted);
-    else
+        this.element.setAttribute("aria-selected", "true");
+    } else {
         this.element.classList.remove(WeekNumberCell.ClassNameHighlighted);
+        this.element.setAttribute("aria-selected", "false");
+    }
 };
 
 WeekNumberCell.prototype.setDisabled = function(disabled) {
@@ -3536,7 +3549,7 @@ CalendarTableView.prototype.updateCells = function() {
     var currentMonth = this.calendarPicker.currentMonth();
     var firstDayInCurrentMonth = currentMonth.firstDay().valueOf();
     var lastDayInCurrentMonth = currentMonth.lastDay().valueOf();
-    var activeDayCell = null;
+    var activeCell = null;
     for (var dayString in this._dayCells) {
         var dayCell = this._dayCells[dayString];
         var day = dayCell.day;
@@ -3545,7 +3558,7 @@ CalendarTableView.prototype.updateCells = function() {
         var isHighlighted = day >= firstDayInHighlight && day <= lastDayInHighlight;
         dayCell.setHighlighted(isHighlighted);
         if (isHighlighted && firstDayInHighlight == lastDayInHighlight)
-            activeDayCell = dayCell;
+            activeCell = dayCell;
         dayCell.setIsInCurrentMonth(day >= firstDayInCurrentMonth && day <= lastDayInCurrentMonth);
         dayCell.setDisabled(!this.calendarPicker.isValidDay(day));
     }
@@ -3553,17 +3566,20 @@ CalendarTableView.prototype.updateCells = function() {
         for (var weekString in this._weekNumberCells) {
             var weekNumberCell = this._weekNumberCells[weekString];
             var week = weekNumberCell.week;
+            var isWeekHighlighted = highlight && highlight.equals(week);
             weekNumberCell.setSelected(selection && selection.equals(week));
-            weekNumberCell.setHighlighted(highlight && highlight.equals(week));
+            weekNumberCell.setHighlighted(isWeekHighlighted);
+            if (isWeekHighlighted)
+                activeCell = weekNumberCell;
             weekNumberCell.setDisabled(!this.calendarPicker.isValid(week));
         }
     }
-    if (activeDayCell) {
+    if (activeCell) {
         // Ensure a renderer because an element with no renderer doesn't post
         // activedescendant events. This shouldn't run in the above |for| loop
         // to avoid CSS transition.
-        activeDayCell.element.offsetLeft;
-        this.element.setAttribute("aria-activedescendant", activeDayCell.element.id);
+        activeCell.element.offsetLeft;
+        this.element.setAttribute("aria-activedescendant", activeCell.element.id);
     }
 };
 

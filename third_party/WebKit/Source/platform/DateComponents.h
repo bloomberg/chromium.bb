@@ -138,6 +138,8 @@ public:
 
     // Another initializer for Month type. Updates m_year and m_month.
     bool setMonthsSinceEpoch(double months);
+    // Another initializer for Week type. Updates m_year and m_week.
+    bool setWeek(int year, int weekNumber);
 
     // Returns the number of milliseconds from 1970-01-01 00:00:00 UTC.
     // For a DateComponents initialized with parseDateTimeLocal(),
