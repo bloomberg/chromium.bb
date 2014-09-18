@@ -25,7 +25,7 @@ def features_path(branch):
 
 def parse_features_file(features_text):
     valid_values = {
-        'status': ['stable', 'experimental', 'test'],
+        'status': ['stable', 'experimental', 'deprecated', 'test'],
     }
     defaults = {
         'condition': None,
