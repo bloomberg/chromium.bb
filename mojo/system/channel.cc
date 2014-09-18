@@ -119,7 +119,7 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
 
   endpoint->AttachToChannel(this, local_id);
   // This might fail if that port got an |OnPeerClose()| before attaching.
-  if (message_pipe->Attach(port, endpoint.get(), this, local_id))
+  if (message_pipe->Attach(port, endpoint.get()))
     return local_id;
 
   // Note: If it failed, quite possibly the endpoint info was removed from that
@@ -180,7 +180,7 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
   // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
   endpoint->Run(remote_id);
   // TODO(vtl): Get rid of this.
-  message_pipe->Run(port, remote_id);
+  message_pipe->Run(port);
   return true;
 }
 

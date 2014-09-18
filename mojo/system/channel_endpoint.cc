@@ -22,6 +22,45 @@ ChannelEndpoint::ChannelEndpoint(MessagePipe* message_pipe, unsigned port)
   DCHECK(port_ == 0 || port_ == 1);
 }
 
+bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
+  DCHECK(message);
+
+  base::AutoLock locker(lock_);
+  if (!channel_) {
+    // Generally, this should only happen if the channel is shut down for some
+    // reason (with live message pipes on it).
+    return false;
+  }
+  DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
+  // TODO(vtl): Currently, we only support enqueueing messages when we're
+  // "running".
+  DCHECK_NE(remote_id_, MessageInTransit::kInvalidEndpointId);
+
+  message->SerializeAndCloseDispatchers(channel_);
+  message->set_source_id(local_id_);
+  message->set_destination_id(remote_id_);
+  return channel_->WriteMessage(message.Pass());
+}
+
+void ChannelEndpoint::DetachFromMessagePipe() {
+  // TODO(vtl): Once |message_pipe_| is under |lock_|, we should null it out
+  // here. For now, get the channel to do so for us.
+
+  scoped_refptr<Channel> channel;
+  {
+    base::AutoLock locker(lock_);
+    if (!channel_)
+      return;
+    DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
+    // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
+    // here as well.
+    channel = channel_;
+  }
+  // Don't call this under |lock_|, since it'll call us back.
+  // TODO(vtl): This seems pretty suboptimal.
+  channel->DetachMessagePipeEndpoint(local_id_, remote_id_);
+}
+
 void ChannelEndpoint::AttachToChannel(Channel* channel,
                                       MessageInTransit::EndpointId local_id) {
   DCHECK(channel);

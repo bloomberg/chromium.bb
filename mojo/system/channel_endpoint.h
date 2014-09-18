@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"
@@ -116,7 +117,21 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // |Channel|.)
   ChannelEndpoint(MessagePipe* message_pipe, unsigned port);
 
+  // Methods called by |MessagePipe| (via |ProxyMessagePipeEndpoint|):
+
+  // TODO(vtl): This currently only works if we're "running". We'll move the
+  // "paused message queue" here (will this be needed when we have
+  // locally-allocated remote IDs?).
+  bool EnqueueMessage(scoped_ptr<MessageInTransit> message);
+
+  void DetachFromMessagePipe();
+
+  // Methods called by |Channel|:
+
+  // Called by |Channel| when it takes a reference to this object.
   void AttachToChannel(Channel* channel, MessageInTransit::EndpointId local_id);
+
+  // TODO(vtl): Combine this with |AttachToChannel()|.
   void Run(MessageInTransit::EndpointId remote_id);
 
   // Called by |Channel| before it gives up its reference to this object.

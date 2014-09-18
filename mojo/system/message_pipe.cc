@@ -176,31 +176,25 @@ MojoResult MessagePipe::EnqueueMessage(unsigned port,
   return EnqueueMessageInternal(port, message.Pass(), NULL);
 }
 
-bool MessagePipe::Attach(unsigned port,
-                         ChannelEndpoint* channel_endpoint,
-                         Channel* channel,
-                         MessageInTransit::EndpointId local_id) {
+bool MessagePipe::Attach(unsigned port, ChannelEndpoint* channel_endpoint) {
   DCHECK(port == 0 || port == 1);
   DCHECK(channel_endpoint);
-  DCHECK(channel);
-  DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);
   if (!endpoints_[port])
     return false;
 
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeProxy);
-  endpoints_[port]->Attach(channel_endpoint, channel, local_id);
+  endpoints_[port]->Attach(channel_endpoint);
   return true;
 }
 
-void MessagePipe::Run(unsigned port, MessageInTransit::EndpointId remote_id) {
+void MessagePipe::Run(unsigned port) {
   DCHECK(port == 0 || port == 1);
-  DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port]);
-  if (!endpoints_[port]->Run(remote_id))
+  if (!endpoints_[port]->Run())
     endpoints_[port].reset();
 }
 

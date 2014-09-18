@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/message_in_transit.h"
@@ -18,7 +17,6 @@
 namespace mojo {
 namespace system {
 
-class Channel;
 class ChannelEndpoint;
 class LocalMessagePipeEndpoint;
 class MessagePipe;
@@ -55,43 +53,22 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   virtual Type GetType() const OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
-  virtual void Attach(ChannelEndpoint* channel_endpoint,
-                      Channel* channel,
-                      MessageInTransit::EndpointId local_id) OVERRIDE;
-  virtual bool Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
+  virtual void Attach(ChannelEndpoint* channel_endpoint) OVERRIDE;
+  virtual bool Run() OVERRIDE;
   virtual void OnRemove() OVERRIDE;
 
  private:
   void Detach();
 
-#ifdef NDEBUG
-  void AssertConsistentState() const {}
-#else
-  void AssertConsistentState() const;
-#endif
-
-  bool is_attached() const { return !!channel_.get(); }
-
-  bool is_running() const {
-    return remote_id_ != MessageInTransit::kInvalidEndpointId;
-  }
+  // TODO(vtl): Get rid of these.
+  bool is_attached() const { return !!channel_endpoint_.get(); }
+  bool is_running() const { return is_running_; }
 
   // This should only be set if we're attached.
   scoped_refptr<ChannelEndpoint> channel_endpoint_;
 
-  // TODO(vtl): Remove this, local_id_, and remote_id_.
-  // This should only be set if we're attached.
-  scoped_refptr<Channel> channel_;
-
-  // |local_id_| should be set to something other than
-  // |MessageInTransit::kInvalidEndpointId| when we're attached.
-  MessageInTransit::EndpointId local_id_;
-
-  // |remote_id_| being set to anything other than
-  // |MessageInTransit::kInvalidEndpointId| indicates that we're "running",
-  // i.e., actively able to send messages. We should only ever be running if
-  // we're attached.
-  MessageInTransit::EndpointId remote_id_;
+  // TODO(vtl): Get rid of this.
+  bool is_running_;
 
   bool is_peer_open_;
 

@@ -25,7 +25,6 @@
 namespace mojo {
 namespace system {
 
-class Channel;
 class ChannelEndpoint;
 class Waiter;
 
@@ -96,11 +95,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
                             scoped_ptr<MessageInTransit> message);
 
   // These are used by |Channel|.
-  bool Attach(unsigned port,
-              ChannelEndpoint* channel_endpoint,
-              Channel* channel,
-              MessageInTransit::EndpointId local_id);
-  void Run(unsigned port, MessageInTransit::EndpointId remote_id);
+  bool Attach(unsigned port, ChannelEndpoint* channel_endpoint);
+  void Run(unsigned port);
   void OnRemove(unsigned port);
 
  private:

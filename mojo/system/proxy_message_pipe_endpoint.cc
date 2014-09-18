@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "mojo/system/channel.h"
 #include "mojo/system/channel_endpoint.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe_dispatcher.h"
@@ -16,16 +15,13 @@ namespace mojo {
 namespace system {
 
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint()
-    : local_id_(MessageInTransit::kInvalidEndpointId),
-      remote_id_(MessageInTransit::kInvalidEndpointId),
-      is_peer_open_(true) {
+    : is_running_(false), is_peer_open_(true) {
 }
 
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
     LocalMessagePipeEndpoint* local_message_pipe_endpoint,
     bool is_peer_open)
-    : local_id_(MessageInTransit::kInvalidEndpointId),
-      remote_id_(MessageInTransit::kInvalidEndpointId),
+    : is_running_(false),
       is_peer_open_(is_peer_open),
       paused_message_queue_(MessageInTransitQueue::PassContents(),
                             local_message_pipe_endpoint->message_queue()) {
@@ -35,7 +31,6 @@ ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
 ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
   DCHECK(!is_running());
   DCHECK(!is_attached());
-  AssertConsistentState();
   DCHECK(paused_message_queue_.IsEmpty());
 }
 
@@ -71,47 +66,33 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
   if (is_running()) {
-    message->SerializeAndCloseDispatchers(channel_.get());
-
-    message->set_source_id(local_id_);
-    message->set_destination_id(remote_id_);
-    if (!channel_->WriteMessage(message.Pass()))
-      LOG(WARNING) << "Failed to write message to channel";
+    DCHECK(channel_endpoint_.get());
+    LOG_IF(WARNING, !channel_endpoint_->EnqueueMessage(message.Pass()))
+        << "Failed to write enqueue message to channel";
   } else {
     paused_message_queue_.AddMessage(message.Pass());
   }
 }
 
-void ProxyMessagePipeEndpoint::Attach(ChannelEndpoint* channel_endpoint,
-                                      Channel* channel,
-                                      MessageInTransit::EndpointId local_id) {
+void ProxyMessagePipeEndpoint::Attach(ChannelEndpoint* channel_endpoint) {
   DCHECK(channel_endpoint);
-  DCHECK(channel);
-  DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
-
   DCHECK(!is_attached());
-
-  AssertConsistentState();
   channel_endpoint_ = channel_endpoint;
-  channel_ = channel;
-  local_id_ = local_id;
-  AssertConsistentState();
 }
 
-bool ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
-  // Assertions about arguments:
-  DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
-
+bool ProxyMessagePipeEndpoint::Run() {
   // Assertions about current state:
   DCHECK(is_attached());
   DCHECK(!is_running());
 
-  AssertConsistentState();
-  remote_id_ = remote_id;
-  AssertConsistentState();
+  is_running_ = true;
 
-  while (!paused_message_queue_.IsEmpty())
-    EnqueueMessage(paused_message_queue_.GetMessage());
+  while (!paused_message_queue_.IsEmpty()) {
+    LOG_IF(
+        WARNING,
+        !channel_endpoint_->EnqueueMessage(paused_message_queue_.GetMessage()))
+        << "Failed to write enqueue message to channel";
+  }
 
   if (is_peer_open_)
     return true;  // Stay alive.
@@ -128,27 +109,11 @@ void ProxyMessagePipeEndpoint::OnRemove() {
 void ProxyMessagePipeEndpoint::Detach() {
   DCHECK(is_attached());
 
-  AssertConsistentState();
-  channel_->DetachMessagePipeEndpoint(local_id_, remote_id_);
-  channel_ = NULL;
-  // TODO(vtl): Inform |channel_endpoint_| that we were detached.
+  channel_endpoint_->DetachFromMessagePipe();
   channel_endpoint_ = NULL;
-  local_id_ = MessageInTransit::kInvalidEndpointId;
-  remote_id_ = MessageInTransit::kInvalidEndpointId;
+  is_running_ = false;
   paused_message_queue_.Clear();
-  AssertConsistentState();
 }
-
-#ifndef NDEBUG
-void ProxyMessagePipeEndpoint::AssertConsistentState() const {
-  if (is_attached()) {
-    DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
-  } else {  // Not attached.
-    DCHECK_EQ(local_id_, MessageInTransit::kInvalidEndpointId);
-    DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);
-  }
-}
-#endif
 
 }  // namespace system
 }  // namespace mojo

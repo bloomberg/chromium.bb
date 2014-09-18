@@ -48,13 +48,11 @@ void MessagePipeEndpoint::RemoveWaiter(Waiter* /*waiter*/,
     *signals_state = HandleSignalsState();
 }
 
-void MessagePipeEndpoint::Attach(ChannelEndpoint* /*channel_endpoint*/,
-                                 Channel* /*channel*/,
-                                 MessageInTransit::EndpointId /*local_id*/) {
+void MessagePipeEndpoint::Attach(ChannelEndpoint* /*channel_endpoint*/) {
   NOTREACHED();
 }
 
-bool MessagePipeEndpoint::Run(MessageInTransit::EndpointId /*remote_id*/) {
+bool MessagePipeEndpoint::Run() {
   NOTREACHED();
   return true;
 }
