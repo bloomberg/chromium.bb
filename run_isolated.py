@@ -765,11 +765,7 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
     command = bundle.command + extra_args
 
-    # subprocess.call doesn't consider 'cwd' when searching for executable.
-    # Yet isolate can specify command relative to 'cwd'. Convert it to absolute
-    # path if necessary.
-    if not os.path.isabs(command[0]):
-      command[0] = os.path.abspath(os.path.join(cwd, command[0]))
+    file_path.ensure_command_has_abs_path(command, cwd)
     command = process_command(command, out_dir)
     logging.info('Running %s, cwd=%s' % (command, cwd))
 

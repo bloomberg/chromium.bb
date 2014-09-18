@@ -489,3 +489,13 @@ def fix_native_path_case(root, path):
     native_case_path = os.path.join(native_case_path, part)
 
   return os.path.normpath(native_case_path)
+
+
+def ensure_command_has_abs_path(command, cwd):
+  """Ensures that an isolate command uses absolute path.
+
+  This is needed since isolate can specify a command relative to 'cwd' and
+  subprocess.call doesn't consider 'cwd' when searching for executable.
+  """
+  if not os.path.isabs(command[0]):
+    command[0] = os.path.abspath(os.path.join(cwd, command[0]))

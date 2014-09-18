@@ -916,6 +916,7 @@ def CMDrun(parser, args):
         outdir, complete_state.root_dir, complete_state.saved_state.files,
         complete_state.saved_state.relative_cwd,
         complete_state.saved_state.read_only)
+    file_path.ensure_command_has_abs_path(cmd, cwd)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     try:
       result = subprocess.call(cmd, cwd=cwd)
