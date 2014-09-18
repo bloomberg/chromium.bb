@@ -301,6 +301,9 @@ char kTSanDefaultSuppressions[] =
 "deadlock:"
 "base::debug::TraceEventTestFixture_ThreadOnceBlocking_Test::TestBody\n"
 
+// http://crbug.com/415472
+"deadlock:base::debug::TraceLog::GetCategoryGroupEnabled\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
