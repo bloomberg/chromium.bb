@@ -757,6 +757,31 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupTapOutsidePopup) {
   view_ = NULL;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+// On Desktop Linux, select boxes need mouse capture in order to work. Test that
+// when a select box is opened via a mouse press that it retains mouse capture
+// after the mouse is released.
+TEST_F(RenderWidgetHostViewAuraTest, PopupRetainsCaptureAfterMouseRelease) {
+  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
+  parent_view_->Focus();
+  EXPECT_TRUE(parent_view_->HasFocus());
+
+  ui::test::EventGenerator generator(
+      parent_view_->GetNativeView()->GetRootWindow(), gfx::Point(300, 300));
+  generator.PressLeftButton();
+
+  view_->SetPopupType(blink::WebPopupTypeSelect);
+  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
+  ASSERT_TRUE(view_->NeedsMouseCapture());
+  aura::Window* window = view_->GetNativeView();
+  EXPECT_TRUE(window->HasCapture());
+
+  generator.ReleaseLeftButton();
+  EXPECT_TRUE(window->HasCapture());
+}
+#endif
+
 // Checks that IME-composition-event state is maintained correctly.
 TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   view_->InitAsChild(NULL);

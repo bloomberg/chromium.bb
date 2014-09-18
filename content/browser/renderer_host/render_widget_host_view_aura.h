@@ -360,6 +360,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           PopupRetainsCaptureAfterMouseRelease);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SetCompositionText);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventState);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -407,6 +409,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Returns whether the widget needs an input grab to work properly.
   bool NeedsInputGrab();
+
+  // Returns whether the widget needs to grab mouse capture to work properly.
+  bool NeedsMouseCapture();
 
   // Confirm existing composition text in the webpage and ask the input method
   // to cancel its ongoing composition session.
