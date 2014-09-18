@@ -1904,11 +1904,7 @@ void RenderFrameImpl::loadURLExternally(
   if (policy == blink::WebNavigationPolicyDownload) {
     render_view_->Send(new ViewHostMsg_DownloadUrl(render_view_->GetRoutingID(),
                                                    request.url(), referrer,
-                                                   suggested_name, false));
-  } else if (policy == blink::WebNavigationPolicyDownloadTo) {
-    render_view_->Send(new ViewHostMsg_DownloadUrl(render_view_->GetRoutingID(),
-                                                   request.url(), referrer,
-                                                   suggested_name, true));
+                                                   suggested_name));
   } else {
     OpenURL(frame, request.url(), referrer, policy);
   }

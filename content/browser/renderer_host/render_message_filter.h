@@ -87,7 +87,7 @@ struct WebPluginInfo;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
-class RenderMessageFilter : public BrowserMessageFilter {
+class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
@@ -118,13 +118,21 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Only call on the IO thread.
   net::CookieStore* GetCookieStoreForURL(const GURL& url);
 
+ protected:
+  virtual ~RenderMessageFilter();
+
+  // This method will be overridden by TestSaveImageFromDataURL class for test.
+  virtual void DownloadUrl(int render_view_id,
+                           const GURL& url,
+                           const Referrer& referrer,
+                           const base::string16& suggested_name,
+                           const bool use_prompt) const;
+
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<RenderMessageFilter>;
 
   class OpenChannelToNpapiPluginCallback;
-
-  virtual ~RenderMessageFilter();
 
   void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
   void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
@@ -201,8 +209,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnDownloadUrl(int render_view_id,
                      const GURL& url,
                      const Referrer& referrer,
-                     const base::string16& suggested_name,
-                     const bool use_prompt);
+                     const base::string16& suggested_name);
+  void OnSaveImageFromDataURL(int render_view_id, const std::string& url_str);
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
 

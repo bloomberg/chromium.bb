@@ -1086,11 +1086,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
         return false;
 
-      if (params_.media_type == WebContextMenuData::MediaTypeCanvas)
-        return true;
-
-      return params_.src_url.is_valid() &&
-          ProfileIOData::IsHandledProtocol(params_.src_url.scheme());
+      return params_.has_image_contents;
     }
 
     // The images shown in the most visited thumbnails can't be opened or
@@ -1345,11 +1341,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
-      if (params_.media_type == WebContextMenuData::MediaTypeCanvas) {
+      bool is_large_data_url = params_.has_image_contents &&
+          params_.src_url.is_empty();
+      if (params_.media_type == WebContextMenuData::MediaTypeCanvas ||
+          (params_.media_type == WebContextMenuData::MediaTypeImage &&
+              is_large_data_url)) {
         source_web_contents_->GetRenderViewHost()->SaveImageAt(
           params_.x, params_.y);
       } else {
-        // TODO(zino): We can use SaveImageAt() like a case of canvas.
         RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
         const GURL& url = params_.src_url;
         content::Referrer referrer = CreateSaveAsReferrer(url, params_);

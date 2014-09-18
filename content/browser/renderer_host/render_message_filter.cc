@@ -32,6 +32,7 @@
 #include "content/browser/transition_request_manager.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/cookie_data.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
@@ -353,7 +354,8 @@ RenderMessageFilter::RenderMessageFilter(
       media_internals_(media_internals) {
   DCHECK(request_context_.get());
 
-  render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
+  if (render_widget_helper)
+    render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 }
 
 RenderMessageFilter::~RenderMessageFilter() {
@@ -421,6 +423,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SaveImageFromDataURL,
+                        OnSaveImageFromDataURL)
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
@@ -895,11 +899,11 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 }
 #endif
 
-void RenderMessageFilter::OnDownloadUrl(int render_view_id,
-                                        const GURL& url,
-                                        const Referrer& referrer,
-                                        const base::string16& suggested_name,
-                                        const bool use_prompt) {
+void RenderMessageFilter::DownloadUrl(int render_view_id,
+                                      const GURL& url,
+                                      const Referrer& referrer,
+                                      const base::string16& suggested_name,
+                                      const bool use_prompt) const {
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->suggested_name = suggested_name;
   save_info->prompt_for_save_location = use_prompt;
@@ -911,6 +915,7 @@ void RenderMessageFilter::OnDownloadUrl(int render_view_id,
   // default cookie store.
   // TODO(tburkard): retrieve the appropriate special cookie store, if this
   // is ever to be used for downloads as well.
+
   scoped_ptr<net::URLRequest> request(
       resource_context_->GetRequestContext()->CreateRequest(
           url, net::DEFAULT_PRIORITY, NULL, NULL));
@@ -926,6 +931,26 @@ void RenderMessageFilter::OnDownloadUrl(int render_view_id,
       save_info.Pass(),
       DownloadItem::kInvalidId,
       ResourceDispatcherHostImpl::DownloadStartedCallback());
+}
+
+void RenderMessageFilter::OnDownloadUrl(int render_view_id,
+                                        const GURL& url,
+                                        const Referrer& referrer,
+                                        const base::string16& suggested_name) {
+  DownloadUrl(render_view_id, url, referrer, suggested_name, false);
+}
+
+void RenderMessageFilter::OnSaveImageFromDataURL(int render_view_id,
+                                                 const std::string& url_str) {
+  // Please refer to RenderViewImpl::saveImageFromDataURL().
+  if (url_str.length() >= kMaxLengthOfDataURLString)
+    return;
+
+  GURL data_url(url_str);
+  if (!data_url.SchemeIs(url::kDataScheme))
+    return;
+
+  DownloadUrl(render_view_id, data_url, Referrer(), base::string16(), true);
 }
 
 void RenderMessageFilter::OnCheckNotificationPermission(

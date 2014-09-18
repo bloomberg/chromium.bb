@@ -40,6 +40,7 @@
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/database_messages.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
@@ -1719,6 +1720,13 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
 void RenderViewImpl::printPage(WebLocalFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     PrintPage(frame, handling_input_event_));
+}
+
+void RenderViewImpl::saveImageFromDataURL(const blink::WebString& data_url) {
+  // Note: We should basically send GURL but we use size-limited string instead
+  // in order to send a larger data url to save a image for <canvas> or <img>.
+  if (data_url.length() < kMaxLengthOfDataURLString)
+    Send(new ViewHostMsg_SaveImageFromDataURL(routing_id_, data_url.utf8()));
 }
 
 bool RenderViewImpl::enumerateChosenDirectory(

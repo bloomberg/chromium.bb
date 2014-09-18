@@ -19,6 +19,9 @@ extern const uint16 kMaxPluginSideLength;
 // plugin.
 extern const uint32 kMaxPluginSize;
 
+// The maximum length of string as data url.
+extern const size_t kMaxLengthOfDataURLString;
+
 // Constants used to organize content processes in about:tracing.
 CONTENT_EXPORT extern const int kTraceEventBrowserProcessSortIndex;
 CONTENT_EXPORT extern const int kTraceEventRendererProcessSortIndex;

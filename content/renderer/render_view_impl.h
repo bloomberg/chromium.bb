@@ -377,6 +377,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool enumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion);
+  virtual void saveImageFromDataURL(const blink::WebString& data_url);
   virtual void didCancelCompositionOnSelectionChange();
   virtual bool handleCurrentKeyboardEvent();
   virtual bool runFileChooser(
