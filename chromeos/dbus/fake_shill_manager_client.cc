@@ -355,23 +355,6 @@ void FakeShillManagerClient::ConnectToBestServices(
       dbus::ObjectPath(best_service_), callback, error_callback);
 }
 
-void FakeShillManagerClient::AddWakeOnPacketConnection(
-    const net::IPEndPoint& ip_endpoint,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
-
-void FakeShillManagerClient::RemoveWakeOnPacketConnection(
-    const net::IPEndPoint& ip_endpoint,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
-
-void FakeShillManagerClient::RemoveAllWakeOnPacketConnections(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
-
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
   return this;
 }
