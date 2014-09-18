@@ -68,7 +68,9 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
 
   void AddTraceChunkOnFileThread(
       const scoped_refptr<base::RefCountedString> chunk) {
-    if (!OpenFileIfNeededOnFileThread())
+    if (file_ != NULL)
+      fputc(',', file_);
+    else if (!OpenFileIfNeededOnFileThread())
       return;
     ignore_result(fwrite(chunk->data().c_str(), strlen(chunk->data().c_str()),
         1, file_));
