@@ -51,6 +51,8 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/power/origin_power_map.h"
+#include "components/power/origin_power_map_factory.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -303,6 +305,12 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(restrict_urls);
 #endif
     }
+
+    // The power consumption history by origin contains details of websites
+    // that were visited.
+    power::OriginPowerMap* origin_power_map =
+        power::OriginPowerMapFactory::GetForBrowserContext(profile_);
+    origin_power_map->ClearOriginMap();
 
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history: we have no mechanism to track when these items were

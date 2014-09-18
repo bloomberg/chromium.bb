@@ -59,4 +59,9 @@ void OriginPowerMap::OnAllOriginsUpdated() {
   callback_list_.Notify();
 }
 
+void OriginPowerMap::ClearOriginMap() {
+  origin_map_.clear();
+  total_consumed_ = 0;
+}
+
 }  // namespace power

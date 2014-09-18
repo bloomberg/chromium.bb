@@ -43,6 +43,9 @@ class OriginPowerMap : public KeyedService {
   // updating for all origins this cycle.
   void OnAllOriginsUpdated();
 
+  // Clears all URLs out of the map.
+  void ClearOriginMap();
+
  private:
   // OriginMap maps a URL to the amount of power consumed by the URL using the
   // same units as |total_consumed_|.
