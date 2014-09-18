@@ -32554,11 +32554,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="SoftwareReporter.ExitCode" enum="SwReporterExitCode">
-  <owner>mad@chromium.org</owner>
-  <summary>The exit code from the execution of the software reporter.</summary>
-</histogram>
-
 <histogram name="SoftwareReporter.Step" enum="SwReporterStep">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -51401,12 +51396,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
-</enum>
-
-<enum name="SwReporterExitCode" type="int">
-  <int value="0" label="Success / Found"/>
-  <int value="1" label="Failed"/>
-  <int value="2" label="Nothing Found"/>
 </enum>
 
 <enum name="SwReporterStep" type="int">
