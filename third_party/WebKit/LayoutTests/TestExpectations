@@ -1453,9 +1453,6 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 crbug.com/413249 http/tests/perf/large-inlined-script.html [ Skip ]
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
-crbug.com/414649 [ Mavericks ] media/media-controller-effective-playback-rate.html [ Failure ]
-crbug.com/414649 [ Mavericks ] media/media-controller-playbackrate.html [ Failure ]
-
 crbug.com/415039 [ Android ] http/tests/media/media-source/mediasource-play.html [ Crash ]
 crbug.com/415039 [ Android ] media/media-load-event.html [ Crash ]
 crbug.com/415039 [ Android ] media/video-autoplay.html [ Crash ]
