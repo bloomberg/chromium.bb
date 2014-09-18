@@ -60,6 +60,7 @@ void TaskTracker::StartDistiller(DistillerFactory* factory,
 
 void TaskTracker::StartBlobFetcher() {
   if (content_store_) {
+    blob_fetcher_running_ = true;
     content_store_->LoadContent(entry_,
                                 base::Bind(&TaskTracker::OnBlobFetched,
                                            weak_ptr_factory_.GetWeakPtr()));
@@ -147,11 +148,17 @@ void TaskTracker::OnDistillerFinished(
     AddDistilledContentToStore(*distilled_article_);
   }
 
+  // 'distiller_ != null' is used as a signal that distillation is in progress,
+  // so it needs to be released so that we know distillation is done.
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, distiller_.release());
+
   ContentSourceFinished();
 }
 
 void TaskTracker::CancelPendingSources() {
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, distiller_.release());
+  if (distiller_) {
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, distiller_.release());
+  }
 }
 
 void TaskTracker::OnBlobFetched(

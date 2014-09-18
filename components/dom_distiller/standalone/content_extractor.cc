@@ -205,6 +205,7 @@ class ContentExtractionRequest : public ViewRequestDelegate {
   virtual void OnArticleReady(const DistilledArticleProto* article_proto)
       OVERRIDE {
     article_proto_ = article_proto;
+    CHECK(article_proto->pages_size()) << "Failed extracting " << url_;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         finished_callback_);
