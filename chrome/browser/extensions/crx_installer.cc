@@ -801,6 +801,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     // this silently.
     if ((client_ || allow_silent_install_) && grant_permissions_) {
       PermissionsUpdater perms_updater(profile());
+      perms_updater.InitializePermissions(extension());
       perms_updater.GrantActivePermissions(extension());
     }
   }

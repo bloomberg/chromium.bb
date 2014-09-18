@@ -151,6 +151,8 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   install_checker_.set_extension(
       file_util::LoadExtension(
           extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
+  PermissionsUpdater(service_weak_->profile())
+      .InitializePermissions(extension());
 
   if (!extension() ||
       !extension_l10n_util::ValidateExtensionLocales(
@@ -310,6 +312,7 @@ void UnpackedInstaller::InstallExtension() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PermissionsUpdater perms_updater(service_weak_->profile());
+  perms_updater.InitializePermissions(extension());
   perms_updater.GrantActivePermissions(extension());
 
   service_weak_->OnExtensionInstalled(
