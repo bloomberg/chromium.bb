@@ -66,7 +66,7 @@ extern const char kDotfile_Help[] =
     "  secondary_source [optional]\n"
     "      Label of an alternate directory tree to find input files. When\n"
     "      searching for a BUILD.gn file (or the build config file discussed\n"
-    "      above), the file fill first be looked for in the source root.\n"
+    "      above), the file will first be looked for in the source root.\n"
     "      If it's not found, the secondary source root will be checked\n"
     "      (which would contain a parallel directory hierarchy).\n"
     "\n"
