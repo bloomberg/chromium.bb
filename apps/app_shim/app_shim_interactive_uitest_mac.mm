@@ -214,7 +214,8 @@ bool HasAppShimHost(Profile* profile, const std::string& app_id) {
 namespace apps {
 
 // Shims require static libraries http://crbug.com/386024.
-#if defined(COMPONENT_BUILD)
+// This test is flaky on OSX. http://crbug.com/415422
+#if defined(COMPONENT_BUILD) || defined(OS_MACOSX)
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
