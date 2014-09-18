@@ -534,30 +534,6 @@
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
-   # very common in ui tests, also seen in Linux Reliability
-   bug_16093
-   Memcheck:Leak
-   ...
-   fun:getaddrinfo
-}
-{
-   # very common in ui tests, also seen in Linux Reliability
-   bug_16095
-   Memcheck:Leak
-   ...
-   fun:_ZN4base11MessageLoop21AddToDelayedWorkQueueERKN*PendingTaskE
-   fun:_ZN4base11MessageLoop6DoWorkEv
-}
-{
-   bug_16128
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3IPC11SyncChannelC1E*
-   ...
-   fun:_ZN7content11ChildThread4InitEv
-}
-{
    # also bug 17979.  It's a nest of leaks.
    bug_17385
    Memcheck:Leak
@@ -578,16 +554,6 @@
    fun:_ZN3IPC7Channel11ChannelImpl7ConnectEv
    fun:_ZN3IPC7Channel7ConnectEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
-}
-{
-   bug_19371
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
-   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
-   fun:_ZN4base13WaitableEvent4WaitEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
    # slight variant of the above
@@ -675,35 +641,12 @@
    fun:_ZN13WorkerService12CreateWorker*
    fun:_ZN19RenderMessageFilter14OnCreateWorker*
 }
-{
-   bug_27665
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10SkXfermode6CreateENS_4ModeE
-   fun:_ZN7SkPaint15setXfermodeModeEN10SkXfermode4ModeE
-   fun:_ZNK7blink19PlatformContextSkia16setupPaintCommonEP7SkPaint
-   fun:_ZN5blink15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorENS_10ColorSpaceE
-   fun:_ZN5blink15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorENS_10ColorSpaceENS_17CompositeOperatorE
-}
 # The following three suppressions are related to the workers code.
 {
    bug_27837
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
-}
-{
-   bug_29675
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN27ChromeBrowserMainPartsPosix24PostMainMessageLoopStartEv
-   fun:_ZN7content15BrowserMainLoop20MainMessageLoopStartEv
-   fun:_ZN7content21BrowserMainRunnerImpl10InitializeERKNS_18MainFunctionParamsE
-   fun:_ZN7content11BrowserMainERKNS_18MainFunctionParamsE
-   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
-   fun:_ZN7content21ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
-   fun:ChromeMain
 }
 {
    bug_30703a
@@ -760,17 +703,6 @@
    ...
    fun:_ZN24BrowserRenderProcessHost4SendEPN3IPC7MessageE
    fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
-}
-{
-   bug_32623
-   Memcheck:Leak
-   ...
-   fun:ssl3_HandleHandshakeMessage
-   fun:ssl3_HandleHandshake
-   fun:ssl3_HandleRecord
-   fun:ssl3_GatherCompleteHandshake
-   fun:SSL_ForceHandshake
-   fun:_ZN3net18SSLClientSocketNSS4Core11DoHandshakeEv
 }
 {
    bug_32624_b
@@ -892,29 +824,6 @@
    fun:_ZN*7blink17HTMLPlugInElement11getInstanceEv
 }
 {
-   bug_43471
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN4base11MessageLoop19DestructionObserverEE8allocateE*
-   fun:_ZNSt12_Vector_baseIPN4base11MessageLoop19DestructionObserverESaIS*
-   fun:_ZNSt6vectorIPN4base11MessageLoop19DestructionObserverESaIS*
-   fun:_ZNSt6vectorIPN4base11MessageLoop19DestructionObserverESaIS*
-   fun:_ZN16ObserverListBaseIN4base11MessageLoop19DestructionObserverEE11AddObserverEPS*
-   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS0_19DestructionObserverE
-}
-{
-   bug_46250
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN11MessageLoop12TaskObserverEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIPN11MessageLoop12TaskObserverESaIS2_EE11_M_allocateEj
-   fun:_ZNSt6vectorIPN11MessageLoop12TaskObserverESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
-   fun:_ZNSt6vectorIPN11MessageLoop12TaskObserverESaIS2_EE9push_backERKS2_
-   fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE11AddObserverEPS1_
-   fun:_ZN4base11MessageLoop15AddTaskObserverEPNS_12TaskObserverE
-   fun:*IOJankObserver21AttachToCurrentThreadEv
-}
-{
    bug_47950
    Memcheck:Leak
    fun:_Znw*
@@ -944,22 +853,6 @@
    fun:*ChromeCookieMonsterDelegateC2EP7Profile
    fun:*ChromeCookieMonsterDelegateC1EP7Profile
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-}
-{
-   bug_50304
-   Memcheck:Leak
-   ...
-   fun:_ZN7history14HistoryBackend8InitImpl*
-   fun:_ZN7history14HistoryBackend4Init*
-}
-{
-   bug_50936
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN23OffTheRecordProfileImpl4InitEv
-   fun:_ZN7Profile25CreateOffTheRecordProfileEv
-   fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
 }
 {
    bug_56359_a
@@ -1015,16 +908,6 @@
    ...
    fun:_ZN14MessageService16AddEventListenerERKSsi
    fun:_ZN24BrowserRenderProcessHost22OnExtensionAddListenerERKSs
-}
-{
-   bug_52831
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*InotifyReaderTask3RunEv
-   ...
-   fun:_ZN4base11MessageLoop11RunInternalEv
-   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    bug_52837
@@ -1103,17 +986,6 @@
    fun:_ZN14ProfileManager10GetProfileE*
    fun:_ZN14ProfileManager17GetDefaultProfileE*
    fun:_ZN14ProfileManager17GetDefaultProfileEv
-}
-{
-   bug_58564
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:SSL_ImportFD
-   fun:_ZN3net18SSLClientSocketNSS20InitializeSSLOptionsEv
-   fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
-   fun:_ZN3net13SSLConnectJob6DoLoopEi
 }
 {
    bug_60556a
