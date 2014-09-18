@@ -141,6 +141,7 @@ template("yasm_assemble") {
     # root generated code directory).
     # This goes to the end of include list.
     args += [
+      "-I.",
       # Using "//." will produce a relative path "../.." which looks better than
       # "../../" which will result from using "//" as the base (although both
       # work). This is because rebase_path will terminate the result in a
