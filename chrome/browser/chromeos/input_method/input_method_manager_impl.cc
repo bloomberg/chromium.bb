@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -48,6 +50,51 @@ bool Contains(const std::vector<std::string>& container,
               const std::string& value) {
   return std::find(container.begin(), container.end(), value) !=
       container.end();
+}
+
+enum InputMethodCategory {
+  INPUT_METHOD_CATEGORY_UNKNOWN = 0,
+  INPUT_METHOD_CATEGORY_XKB,  // XKB input methods
+  INPUT_METHOD_CATEGORY_ZH,   // Chinese input methods
+  INPUT_METHOD_CATEGORY_JA,   // Japanese input methods
+  INPUT_METHOD_CATEGORY_KO,   // Korean input methods
+  INPUT_METHOD_CATEGORY_M17N, // Multilingualization input methods
+  INPUT_METHOD_CATEGORY_T13N, // Transliteration input methods
+  INPUT_METHOD_CATEGORY_MAX
+};
+
+InputMethodCategory GetInputMethodCategory(const std::string& input_method_id,
+                                           char* first_char = NULL) {
+  const std::string component_id =
+      extension_ime_util::GetComponentIDByInputMethodID(input_method_id);
+  InputMethodCategory category = INPUT_METHOD_CATEGORY_UNKNOWN;
+  char ch = 0;
+  if (StartsWithASCII(component_id, "xkb:", true)) {
+    ch = component_id[4];
+    category = INPUT_METHOD_CATEGORY_XKB;
+  } else if (StartsWithASCII(component_id, "zh-", true)) {
+    size_t pos = component_id.find("-t-i0-");
+    if (pos > 0)
+      pos += 6;
+    ch = component_id[pos];
+    category = INPUT_METHOD_CATEGORY_ZH;
+  } else if (StartsWithASCII(component_id, "nacl_mozc_", true)) {
+    ch = component_id[10];
+    category = INPUT_METHOD_CATEGORY_JA;
+  } else if (StartsWithASCII(component_id, "hangul_", true)) {
+    ch = component_id[7];
+    category = INPUT_METHOD_CATEGORY_KO;
+  } else if (StartsWithASCII(component_id, "vkd_", true)) {
+    ch = component_id[4];
+    category = INPUT_METHOD_CATEGORY_M17N;
+  } else if (component_id.find("-t-i0-") > 0) {
+    ch = component_id[0];
+    category = INPUT_METHOD_CATEGORY_T13N;
+  }
+
+  if (first_char)
+    *first_char = ch;
+  return category;
 }
 
 }  // namespace
@@ -329,6 +376,11 @@ bool InputMethodManagerImpl::StateImpl::ReplaceEnabledInputMethods(
   // If |current_input_method| is no longer in |active_input_method_ids|,
   // ChangeInputMethod() picks the first one in |active_input_method_ids|.
   ChangeInputMethod(current_input_method.id(), false);
+
+  // Record histogram for active input method count.
+  UMA_HISTOGRAM_COUNTS("InputMethod.ActiveCount",
+                       active_input_method_ids.size());
+
   return true;
 }
 
@@ -362,6 +414,7 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
   // TODO(komatsu): Revisit if this is neccessary.
   if (IsActive())
     manager_->ChangeInputMethodInternal(*descriptor, show_message, notify_menu);
+  manager_->RecordInputMethodUsage(current_input_method.id());
 }
 
 bool InputMethodManagerImpl::StateImpl::MethodAwaitsExtensionLoad(
@@ -793,13 +846,42 @@ InputMethodManagerImpl::InputMethodManagerImpl(
   scoped_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
       new ComponentExtensionIMEManagerImpl());
   component_extension_ime_manager_->Initialize(comp_delegate.Pass());
-  util_.ResetInputMethods(
-      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
+  const InputMethodDescriptors& descriptors =
+      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
+  util_.ResetInputMethods(descriptors);
+
+  // Initializes the stat id map.
+  std::map<int, std::vector<std::string> > buckets;
+  for (InputMethodDescriptors::const_iterator it = descriptors.begin();
+       it != descriptors.end(); ++it) {
+    char first_char;
+    int cat_id = static_cast<int>(
+        GetInputMethodCategory(it->id(), &first_char));
+    int key = cat_id * 1000 + first_char;
+    buckets[key].push_back(it->id());
+  }
+  for (std::map<int, std::vector<std::string>>::iterator i =
+       buckets.begin(); i != buckets.end(); ++i) {
+    std::sort(i->second.begin(), i->second.end());
+    for (size_t j = 0; j < i->second.size() && j < 100; ++j) {
+      int key = i->first * 100 + j;
+      stat_id_map_[i->second[j]] = key;
+    }
+  }
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (candidate_window_controller_.get())
     candidate_window_controller_->RemoveObserver(this);
+}
+
+void InputMethodManagerImpl::RecordInputMethodUsage(
+    std::string input_method_id) {
+  UMA_HISTOGRAM_ENUMERATION("InputMethod.Category",
+                            GetInputMethodCategory(input_method_id),
+                            INPUT_METHOD_CATEGORY_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("InputMethod.ID",
+                              stat_id_map_[input_method_id]);
 }
 
 void InputMethodManagerImpl::AddObserver(

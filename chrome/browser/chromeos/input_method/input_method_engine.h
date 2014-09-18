@@ -91,9 +91,9 @@ class InputMethodEngine : public InputMethodEngineInterface {
                                   uint32 anchor_pos) OVERRIDE;
   virtual void HideInputView() OVERRIDE;
 
- private:
-  void RecordHistogram(const char* name, int count);
+  int GetCotextIdForTesting() { return context_id_; }
 
+ private:
   // Converts MenuItem to InputMethodMenuItem.
   void MenuItemToProperty(const MenuItem& item,
                           ash::ime::InputMethodMenuItem* property);
@@ -140,10 +140,6 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // Used with SendKeyEvents and ProcessKeyEvent to check if the key event
   // sent to ProcessKeyEvent is sent by SendKeyEvents.
   const ui::KeyEvent* sent_key_event_;
-
-  // The start & end time of using this input method. This is for UMA.
-  base::Time start_time_;
-  base::Time end_time_;
 };
 
 }  // namespace chromeos
