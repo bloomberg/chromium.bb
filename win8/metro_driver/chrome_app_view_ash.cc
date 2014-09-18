@@ -677,12 +677,6 @@ ChromeAppViewAsh::Run() {
   HRESULT hr = window_->get_Dispatcher(dispatcher.GetAddressOf());
   CheckHR(hr, "Dispatcher failed.");
 
-  hr = window_->Activate();
-  if (FAILED(hr)) {
-    DLOG(WARNING) << "activation failed hr=" << hr;
-    return hr;
-  }
-
   // Create the IPC channel IO thread. It needs to out-live the ChannelProxy.
   base::Thread io_thread("metro_IO_thread");
   base::Thread::Options options;
