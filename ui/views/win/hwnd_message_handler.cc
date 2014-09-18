@@ -1397,6 +1397,9 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   gfx::Size min_window_size;
   gfx::Size max_window_size;
   delegate_->GetMinMaxSize(&min_window_size, &max_window_size);
+  min_window_size = gfx::win::DIPToScreenSize(min_window_size);
+  max_window_size = gfx::win::DIPToScreenSize(max_window_size);
+
 
   // Add the native frame border size to the minimum and maximum size if the
   // view reports its size as the client size.
