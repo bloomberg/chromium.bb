@@ -165,20 +165,12 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
   CursorManagerTestApi test_api(cursor_manager);
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  DisplayInfo::SetAllowUpgradeToHighDPI(false);
   display_manager->SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(1.0f,
             Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
   display_manager->SetDisplayUIScale(display_id, 1.0f);
-
-  DisplayInfo::SetAllowUpgradeToHighDPI(true);
-  // 1x display should keep using 1x cursor even if the DSF is upgraded to 2x.
-  display_manager->SetDisplayUIScale(display_id, 0.5f);
-  EXPECT_EQ(2.0f,
-            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
   // 2x display should keep using 2x cursor regardless of the UI scale.
   UpdateDisplay("800x800*2");
