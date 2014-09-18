@@ -115,19 +115,17 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
         return colorResource;
     }
 
-    // If no resources are associated with the given renderer, return the color resource.
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object);
-    if (!resources) {
-        if (paintType == SVG_PAINTTYPE_URI_NONE || (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color)))
-            return 0;
+    RenderSVGResource* uriResource = 0;
+    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object))
+        uriResource = applyToFill ? resources->fill() : resources->stroke();
 
-        colorResource->setColor(color);
-        return colorResource;
-    }
-
-    // If the requested resource is not available, return the color resource.
-    RenderSVGResource* uriResource = mode == ApplyToFillMode ? resources->fill() : resources->stroke();
+    // If the requested resource is not available, return the color resource or 'none'.
     if (!uriResource) {
+        // The fallback is 'none'.
+        if (paintType == SVG_PAINTTYPE_URI_NONE)
+            return 0;
+        // If there's no fallback color, attempt to use the the parents paint
+        // server if it's a simple <color>.
         if (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color))
             return 0;
 
