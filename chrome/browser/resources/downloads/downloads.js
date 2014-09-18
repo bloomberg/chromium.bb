@@ -108,6 +108,8 @@ function Downloads() {
   this.progressForeground2_ = new Image();
   this.progressForeground2_.src =
     'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@2x';
+
+  window.addEventListener('keydown', this.onKeyDown_.bind(this));
 }
 
 /**
@@ -265,6 +267,19 @@ Downloads.prototype.isUpdateNeeded = function(downloads) {
       return true;
   }
   return false;
+};
+
+/**
+ * Handles shortcut keys.
+ * @param {Event} evt The keyboard event.
+ * @private
+ */
+Downloads.prototype.onKeyDown_ = function(evt) {
+  var keyEvt = /** @type {KeyboardEvent} */(evt);
+  if (keyEvt.keyCode == 67 && keyEvt.altKey) {  // alt + c.
+    clearAll();
+    keyEvt.preventDefault();
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
