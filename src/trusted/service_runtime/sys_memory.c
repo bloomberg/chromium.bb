@@ -23,6 +23,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -938,8 +939,6 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     int                   d,
                     uint32_t              offp) {
   struct NaClApp  *nap = natp->nap;
-  int32_t         retval;
-  uintptr_t       sysaddr;
   nacl_abi_off_t  offset;
 
   NaClLog(3,
@@ -947,35 +946,12 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
           "0x%x,0x%x,%d,0x%08"NACL_PRIx32")\n",
           start, length, prot, flags, d, offp);
 
-  if (0 == offp) {
-    /*
-     * This warning is really targetted towards trusted code,
-     * especially tests that didn't notice the argument type change.
-     * Unfortunatey, zero is a common and legitimate offset value, and
-     * the compiler will not complain since an automatic type
-     * conversion works.
-     */
-    NaClLog(LOG_WARNING,
-            "NaClSysMmap: NULL pointer used"
-            " for offset in/out argument\n");
-    return -NACL_ABI_EINVAL;
-  }
-
-  sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) offp, sizeof offset);
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(3,
-            "NaClSysMmap: offset in a bad untrusted memory location\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-  offset = *(nacl_abi_off_t volatile *) sysaddr;
-
+  if (!NaClCopyInFromUser(nap, &offset, offp, sizeof(offset)))
+    return -NACL_ABI_EFAULT;
   NaClLog(4, " offset = 0x%08"NACL_PRIx64"\n", (uint64_t) offset);
 
-  retval = NaClSysMmapIntern(nap, (void *) (uintptr_t) start, length, prot,
-                             flags, d, offset);
-cleanup:
-  return retval;
+  return NaClSysMmapIntern(nap, (void *) (uintptr_t) start, length, prot,
+                           flags, d, offset);
 }
 
 #if NACL_WINDOWS
