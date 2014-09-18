@@ -574,8 +574,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rfh->GetRenderViewHost(), contents()->GetRenderViewHost());
 
-  // Crash the renderer.
+  // Simulate a renderer crash.
   orig_rfh->GetRenderViewHost()->set_render_view_created(false);
+  orig_rfh->set_render_frame_created(false);
 
   // Navigate to new site.  We should not go into PENDING.
   const GURL url2("http://www.yahoo.com");

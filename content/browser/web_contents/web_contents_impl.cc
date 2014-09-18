@@ -1890,13 +1890,16 @@ bool WebContentsImpl::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
   FrameTreeNode* node = frame_tree_.root();
 
-  // If we are using --site-per-process, we should navigate in the FrameTreeNode
-  // specified in the pending entry.
+  // Navigate in the FrameTreeNode specified in the pending entry, if any.  This
+  // is currently only used in --site-per-process and tests.
   NavigationEntryImpl* pending_entry =
       NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
-      pending_entry->frame_tree_node_id() != -1) {
-    node = frame_tree_.FindByID(pending_entry->frame_tree_node_id());
+  if (pending_entry->frame_tree_node_id() != -1) {
+    FrameTreeNode* subframe =
+        frame_tree_.FindByID(pending_entry->frame_tree_node_id());
+    DCHECK(subframe);
+    if (subframe)
+      node = subframe;
   }
 
   return node->navigator()->NavigateToPendingEntry(

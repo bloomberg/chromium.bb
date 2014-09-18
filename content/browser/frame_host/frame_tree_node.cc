@@ -76,6 +76,9 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 void FrameTreeNode::ResetForNewProcess() {
   current_url_ = GURL();
 
+  // The RenderFrame no longer exists and will need to be created again.
+  current_frame_host()->set_render_frame_created(false);
+
   // The children may not have been cleared if a cross-process navigation
   // commits before the old process cleans everything up.  Make sure the child
   // nodes get deleted before swapping to a new process.

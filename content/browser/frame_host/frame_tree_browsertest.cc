@@ -105,6 +105,13 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   NavigateToURL(shell(),
                 test_server()->GetURL("files/frame_tree/top.html"));
 
+  // Ensure the view and frame are live.
+  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
+  EXPECT_TRUE(rvh->IsRenderViewLive());
+  EXPECT_TRUE(rfh->IsRenderFrameLive());
+
   // Crash the renderer so that it doesn't send any FrameDetached messages.
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
@@ -117,11 +124,19 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   FrameTreeNode* root = wc->GetFrameTree()->root();
   EXPECT_EQ(0UL, root->child_count());
 
+  // Ensure the view and frame aren't live anymore.
+  EXPECT_FALSE(rvh->IsRenderViewLive());
+  EXPECT_FALSE(rfh->IsRenderFrameLive());
+
   // Navigate to a new URL.
   GURL url(test_server()->GetURL("files/title1.html"));
   NavigateToURL(shell(), url);
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(url, root->current_url());
+
+  // Ensure the view and frame are live again.
+  EXPECT_TRUE(rvh->IsRenderViewLive());
+  EXPECT_TRUE(rfh->IsRenderFrameLive());
 }
 
 // Test that we can navigate away if the previous renderer doesn't clean up its
@@ -156,6 +171,32 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateWithLeftoverFrames) {
 
   // The frame tree should now be cleared.
   EXPECT_EQ(0UL, root->child_count());
+}
+
+// Ensure that IsRenderFrameLive is true for main frames and same-site iframes.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+  GURL main_url(test_server()->GetURL("files/frame_tree/top.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()->root();
+
+  // The root and subframe should each have a live RenderFrame.
+  EXPECT_TRUE(
+      root->current_frame_host()->render_view_host()->IsRenderViewLive());
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Load a same-site page into iframe and it should still be live.
+  GURL http_url(test_server()->GetURL("files/title1.html"));
+  NavigateFrameToURL(root->child_at(0), http_url);
+  EXPECT_TRUE(
+      root->current_frame_host()->render_view_host()->IsRenderViewLive());
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
 }
 
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
@@ -226,6 +267,14 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(root_instance));
   EXPECT_FALSE(
       child->render_manager()->GetRenderFrameProxyHost(child_instance));
+
+  // Ensure that the RenderViews and RenderFrames are all live.
+  EXPECT_TRUE(
+      root->current_frame_host()->render_view_host()->IsRenderViewLive());
+  EXPECT_TRUE(
+      child->current_frame_host()->render_view_host()->IsRenderViewLive());
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
 }
 
 }  // namespace content

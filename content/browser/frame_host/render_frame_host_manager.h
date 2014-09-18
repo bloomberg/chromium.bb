@@ -421,14 +421,14 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // initialized for another RenderFrameHost.
   // TODO(creis): opener_route_id is currently for the RenderViewHost but should
   // be for the RenderFrame, since frames can have openers.
-  bool InitRenderView(RenderViewHost* render_view_host,
+  bool InitRenderView(RenderViewHostImpl* render_view_host,
                       int opener_route_id,
                       int proxy_routing_id,
                       bool for_main_frame_navigation);
 
   // Initialization for RenderFrameHost uses the same sequence as InitRenderView
   // above.
-  bool InitRenderFrame(RenderFrameHost* render_frame_host);
+  bool InitRenderFrame(RenderFrameHostImpl* render_frame_host);
 
   // Sets the pending RenderFrameHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_frame_host_ pointer to be non-NULL,

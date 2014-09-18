@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -114,8 +115,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int accessibility_node_id) OVERRIDE;
   virtual BrowserAccessibility* AccessibilityGetParentFrame() OVERRIDE;
 
+  // Creates a RenderFrame in the renderer process.  Only called for
+  // cross-process subframe navigations in --site-per-process.
   bool CreateRenderFrame(int parent_routing_id);
+
+  // Returns whether the RenderFrame in the renderer process has been created
+  // and still has a connection.  This is valid for all frames.
   bool IsRenderFrameLive();
+
+  // Tracks whether the RenderFrame for this RenderFrameHost has been created in
+  // the renderer process.  This is currently only used for subframes.
+  // TODO(creis): Use this for main frames as well when RVH goes away.
+  void set_render_frame_created(bool created) {
+    render_frame_created_ = created;
+  }
 
   // Called for renderer-created windows to resume requests from this frame,
   // after they are blocked in RenderWidgetHelper::CreateNewWindow.
@@ -310,6 +323,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
 
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
+
   // IPC Message handlers.
   void OnAddMessageToConsole(int32 level,
                              const base::string16& message,
@@ -440,7 +455,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   int routing_id_;
   bool is_swapped_out_;
-  bool renderer_initialized_;
+
+  // Tracks whether the RenderFrame for this RenderFrameHost has been created in
+  // the renderer process.  Currently only used for subframes.
+  // TODO(creis): Use this for main frames as well when RVH goes away.
+  bool render_frame_created_;
 
   // Whether we should buffer outgoing Navigate messages rather than sending
   // them. This will be true when a RenderFrameHost is created for a cross-site

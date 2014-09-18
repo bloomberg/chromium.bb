@@ -339,17 +339,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
+  // Navigate to a page with frames and grab a subframe's FrameTreeNode ID.
+  ASSERT_TRUE(test_server()->Start());
+  NavigateToURL(shell(),
+                test_server()->GetURL("files/frame_tree/top.html"));
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = wc->GetFrameTree()->root();
+  ASSERT_EQ(3UL, root->child_count());
+  int64 frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
+  EXPECT_NE(-1, frame_tree_node_id);
 
-  // Navigate with FrameTreeNode ID 4.
-  const GURL url("http://foo");
-  OpenURLParams params(url, Referrer(), 4, CURRENT_TAB, PAGE_TRANSITION_LINK,
-                       true);
+  // Navigate with the subframe's FrameTreeNode ID.
+  const GURL url(test_server()->GetURL("files/title1.html"));
+  OpenURLParams params(url, Referrer(), frame_tree_node_id, CURRENT_TAB,
+                       PAGE_TRANSITION_LINK, true);
   shell()->web_contents()->OpenURL(params);
 
   // Make sure the NavigationEntry ends up with the FrameTreeNode ID.
   NavigationController* controller = &shell()->web_contents()->GetController();
   EXPECT_TRUE(controller->GetPendingEntry());
-  EXPECT_EQ(4, NavigationEntryImpl::FromNavigationEntry(
+  EXPECT_EQ(frame_tree_node_id,
+            NavigationEntryImpl::FromNavigationEntry(
                 controller->GetPendingEntry())->frame_tree_node_id());
 }
 

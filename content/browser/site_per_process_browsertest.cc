@@ -330,6 +330,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   EXPECT_EQ(main_url, root->current_url());
   EXPECT_EQ(cross_site_url, child->current_url());
 
+  EXPECT_TRUE(
+      child->current_frame_host()->render_view_host()->IsRenderViewLive());
+  EXPECT_TRUE(child->current_frame_host()->IsRenderFrameLive());
+
   // Crash the subframe process.
   RenderProcessHost* root_process = root->current_frame_host()->GetProcess();
   RenderProcessHost* child_process = child->current_frame_host()->GetProcess();
@@ -345,6 +349,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   EXPECT_EQ(1U, root->child_count());
   EXPECT_EQ(main_url, root->current_url());
   EXPECT_EQ(GURL(), child->current_url());
+
+  EXPECT_FALSE(
+      child->current_frame_host()->render_view_host()->IsRenderViewLive());
+  EXPECT_FALSE(child->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(child->current_frame_host()->render_frame_created_);
 
   // Now crash the top-level page to clear the child frame.
   {

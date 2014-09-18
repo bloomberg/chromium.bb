@@ -178,7 +178,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
       frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
       is_swapped_out_(is_swapped_out),
-      renderer_initialized_(false),
+      render_frame_created_(false),
       navigations_suspended_(false),
       weak_ptr_factory_(this) {
   frame_tree_->RegisterRenderFrameHost(this);
@@ -536,14 +536,29 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id) {
 
   DCHECK(GetProcess()->HasConnection());
 
-  renderer_initialized_ = true;
   Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id));
+
+  // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
+  // this path is only used for out-of-process iframes.  Main frame RenderFrames
+  // are created with their RenderView, and same-site iframes are created at the
+  // time of OnCreateChildFrame.
+  set_render_frame_created(true);
 
   return true;
 }
 
 bool RenderFrameHostImpl::IsRenderFrameLive() {
-  return GetProcess()->HasConnection() && renderer_initialized_;
+  // RenderFrames are created for main frames at the same time as RenderViews,
+  // so we rely on IsRenderViewLive.  For subframes, we keep track of each
+  // RenderFrame individually with render_frame_created_.
+  bool is_live = !GetParent() ?
+      render_view_host_->IsRenderViewLive() :
+      GetProcess()->HasConnection() && render_frame_created_;
+
+  // Sanity check: the RenderView should always be live if the RenderFrame is.
+  DCHECK(!is_live || render_view_host_->IsRenderViewLive());
+
+  return is_live;
 }
 
 void RenderFrameHostImpl::Init() {
@@ -572,6 +587,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
                                              const std::string& frame_name) {
   RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
       frame_tree_node_, new_routing_id, frame_name);
+
+  // We know that the RenderFrame has been created in this case, immediately
+  // after the CreateChildFrame IPC was sent.
+  new_frame->set_render_frame_created(true);
+
   if (delegate_)
     delegate_->RenderFrameCreated(new_frame);
 }
@@ -770,7 +790,7 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
 
   set_render_frame_proxy_host(proxy);
 
-  if (render_view_host_->IsRenderViewLive())
+  if (IsRenderFrameLive())
     Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID()));
 
   if (!GetParent())
@@ -1216,7 +1236,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   TRACE_EVENT_ASYNC_BEGIN0(
       "navigation", "RenderFrameHostImpl::BeforeUnload", this);
   // TODO(creis): Support subframes.
-  if (!render_view_host_->IsRenderViewLive() || GetParent()) {
+  if (GetParent() || !IsRenderFrameLive()) {
     // We don't have a live renderer, so just skip running beforeunload.
     render_view_host_->is_waiting_for_beforeunload_ack_ = true;
     render_view_host_->unload_ack_is_for_cross_site_transition_ =
