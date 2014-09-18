@@ -36,6 +36,10 @@ cr.define('options.accounts', function() {
           });
     },
 
+    /**
+     * @override
+     * @param {Object} user
+     */
     createItem: function(user) {
       return new UserListItem(user);
     },

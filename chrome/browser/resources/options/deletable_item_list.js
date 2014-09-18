@@ -152,7 +152,8 @@ cr.define('options', function() {
 
       var target = e.target;
       if (target.classList.contains('row-delete-button')) {
-        var listItem = this.getListItemAncestor(target);
+        var listItem = this.getListItemAncestor(
+            /** @type {HTMLElement} */(target));
         var idx = this.getIndexOfListItem(listItem);
         this.deleteItemAtIndex(idx);
       }

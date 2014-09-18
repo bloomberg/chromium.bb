@@ -274,7 +274,8 @@ cr.define('options', function() {
         return true;
 
       e.preventDefault();
-      return this.startDragging_(e.target, {x: e.pageX, y: e.pageY});
+      var target = assertInstanceof(e.target, HTMLElement);
+      return this.startDragging_(target, {x: e.pageX, y: e.pageY});
     },
 
     /**
@@ -292,7 +293,8 @@ cr.define('options', function() {
       e.preventDefault();
       var touch = e.touches[0];
       this.lastTouchLocation_ = {x: touch.pageX, y: touch.pageY};
-      return this.startDragging_(e.target, this.lastTouchLocation_);
+      var target = assertInstanceof(e.target, HTMLElement);
+      return this.startDragging_(target, this.lastTouchLocation_);
     },
 
     /**

@@ -15,9 +15,9 @@ cr.define('options', function() {
     // The title is updated dynamically in the setTitle method as pointer
     // devices are discovered or removed.
     SettingsDialog.call(this, 'pointer-overlay',
-                        '', 'pointer-overlay',
-                        $('pointer-overlay-confirm'),
-                        $('pointer-overlay-cancel'));
+        '', 'pointer-overlay',
+        assertInstanceof($('pointer-overlay-confirm'), HTMLButtonElement),
+        assertInstanceof($('pointer-overlay-cancel'), HTMLButtonElement));
   }
 
   cr.addSingletonGetter(PointerOverlay);

@@ -39,6 +39,10 @@ cr.define('options.proxyexceptions', function() {
           });
     },
 
+    /**
+     * @override
+     * @param {Object} exception
+     */
     createItem: function(exception) {
       return new ProxyExceptionsItem(exception);
     },

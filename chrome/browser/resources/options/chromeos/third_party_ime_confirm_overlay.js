@@ -17,8 +17,9 @@ cr.define('options', function() {
         this, 'thirdPartyImeConfirm',
         loadTimeData.getString('thirdPartyImeConfirmOverlayTabTitle'),
         'third-party-ime-confirm-overlay',
-        $('third-party-ime-confirm-ok'),
-        $('third-party-ime-confirm-cancel'));
+        assertInstanceof($('third-party-ime-confirm-ok'), HTMLButtonElement),
+        assertInstanceof($('third-party-ime-confirm-cancel'),
+                         HTMLButtonElement));
   }
 
   cr.addSingletonGetter(ThirdPartyImeConfirmOverlay);

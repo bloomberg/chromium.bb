@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   id: string,
+ *   name: string,
+ *   subnodes: Array.<{id: string, name: string, readonly: boolean,
+ *                     untrusted: boolean, extractable: boolean,
+ *                     policy: boolean}>
+ * }}
+ */
+var CertificateData;
+
 cr.define('options', function() {
   /** @const */ var Tree = cr.ui.Tree;
   /** @const */ var TreeItem = cr.ui.TreeItem;
@@ -132,7 +143,7 @@ cr.define('options', function() {
 
     /**
      * Populate the tree.
-     * @param {Array} nodesData Nodes data array.
+     * @param {Array.<CertificateData>} nodesData Nodes data array.
      */
     populate: function(nodesData) {
       this.clear();

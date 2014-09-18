@@ -387,11 +387,13 @@ cr.define('options.internet', function() {
      * Creates an indicator event for controlled properties using
      * the same dictionary format as CoreOptionsHandler::CreateValueForPref.
      * @param {string} name The name for the Event.
-     * @param {!{value: *, controlledBy: *, recommendedValue: *}} propData
-     *     Property dictionary,
+     * @param {{value: *, controlledBy: *, recommendedValue: *}} propData
+     *     Property dictionary.
      * @private
      */
     createControlledEvent_: function(name, propData) {
+      assert('value' in propData && 'controlledBy' in propData &&
+             'recommendedValue' in propData);
       var event = new Event(name);
       event.value = {
         value: propData.value,
@@ -1569,11 +1571,14 @@ cr.define('options.internet', function() {
           onc.getActiveValue(propName);
       if (propValue == undefined)
         continue;
+      propValue = assertInstanceof(propValue, Object);
       var event;
       if (managed)
         event = detailsPage.createManagedEvent_(propName, propValue);
       else
-        event = detailsPage.createControlledEvent_(propName, propValue);
+        event = detailsPage.createControlledEvent_(propName,
+            /** @type {{value: *, controlledBy: *, recommendedValue: *}} */(
+                propValue));
       indicators[i].handlePrefChange(event);
       var forElement = $(indicators[i].getAttribute('for'));
       if (forElement) {

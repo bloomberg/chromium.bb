@@ -33,7 +33,8 @@ cr.define('options', function() {
     options.SettingsDialog.call(this, 'keyboard-overlay',
         loadTimeData.getString('keyboardOverlayTabTitle'),
         'keyboard-overlay',
-        $('keyboard-confirm'), $('keyboard-cancel'));
+        assertInstanceof($('keyboard-confirm'), HTMLButtonElement),
+        assertInstanceof($('keyboard-cancel'), HTMLButtonElement));
   }
 
   cr.addSingletonGetter(KeyboardOverlay);

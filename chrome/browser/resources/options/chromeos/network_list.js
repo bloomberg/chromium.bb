@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   ConnectionState: string,
+ *   iconURL: string,
+ *   policyManaged: boolean,
+ *   servicePath: string
+ * }}
+ * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
+ */
+var NetworkInfo;
+
 cr.define('options.network', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var List = cr.ui.List;
@@ -392,8 +403,8 @@ cr.define('options.network', function() {
   /**
    * Creates a control for selecting or configuring a network connection based
    * on the type of connection (e.g. wifi versus vpn).
-   * @param {{key: string, networkList: Array.<Object>}} data Description of the
-   *     network.
+   * @param {{key: string, networkList: Array.<NetworkInfo>}} data Description
+   *     of the network.
    * @constructor
    * @extends {NetworkMenuItem}
    */
@@ -654,7 +665,7 @@ cr.define('options.network', function() {
     /**
      * Extracts a mapping of network names to menu element and position.
      * @param {!Element} menu The menu to process.
-     * @return {Object.<string, {index: number, button: Element}>}
+     * @return {Object.<string, ?{index: number, button: Element}>}
      *     Network mapping.
      * @private
      */
@@ -923,12 +934,19 @@ cr.define('options.network', function() {
       this.endBatchUpdates();
     },
 
-    /** @override */
+    /**
+     * @override
+     * @param {Object} entry
+     */
     createItem: function(entry) {
       if (entry.networkList)
-        return new NetworkSelectorItem(entry);
+        return new NetworkSelectorItem(
+            /** @type {{key: string, networkList: Array.<NetworkInfo>}} */(
+                entry));
       if (entry.command)
-        return new NetworkButtonItem(entry);
+        return new NetworkButtonItem(
+            /** @type {{key: string, subtitle: string, command: Function}} */(
+                entry));
       if (entry.menu)
         return new NetworkMenuItem(entry);
       return undefined;
@@ -971,12 +989,12 @@ cr.define('options.network', function() {
 
   /**
    * Chrome callback for updating network controls.
-   * @param {{wiredList: Array, wirelessList: Array, vpnList: Array,
-   *     rememberedList: Array, wifiAvailable: boolean, wifiEnabled: boolean,
-   *     wimaxAvailable: boolean, wimaxEnabled: boolean,
-   *     cellularAvailable: boolean, cellularEnabled: boolean,
-   *     cellularSupportsScan: boolean}} data Description of available network
-   *     devices and their corresponding state.
+   * @param {{wiredList: Array.<NetworkInfo>, wirelessList: Array.<NetworkInfo>,
+   *     vpnList: Array.<NetworkInfo>, rememberedList: Array.<NetworkInfo>,
+   *     wifiAvailable: boolean, wifiEnabled: boolean, wimaxAvailable: boolean,
+   *     wimaxEnabled: boolean, cellularAvailable: boolean,
+   *     cellularEnabled: boolean, cellularSupportsScan: boolean}} data
+   *     Description of available network devices and their corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
     var networkList = $('network-list');

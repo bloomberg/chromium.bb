@@ -105,7 +105,7 @@ cr.define('options.accounts', function() {
     /**
      * Handler for key down event.
      * @private
-     * @param {!Event} e The keydown event object.
+     * @param {Event} e The keydown event object.
      */
     handleKeyDown_: function(e) {
       if (e.keyIdentifier == 'Enter') {

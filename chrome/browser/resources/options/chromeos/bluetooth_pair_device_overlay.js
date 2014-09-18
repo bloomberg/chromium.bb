@@ -57,16 +57,7 @@ cr.define('options', function() {
 
     /**
      * Description of the bluetooth device.
-     * @type {{name: string,
-     *         address: string,
-     *         paired: boolean,
-     *         connected: boolean,
-     *         connecting: boolean,
-     *         connectable: boolean,
-     *         pairing: (string|undefined),
-     *         passkey: (number|undefined),
-     *         pincode: (string|undefined),
-     *         entered: (number|undefined)}}
+     * @type {?BluetoothDevice}
      * @private
      */
     device_: null,
@@ -170,11 +161,11 @@ cr.define('options', function() {
      * @param {Object} device Description of the bluetooth device.
      */
     update: function(device) {
-      this.device_ = {};
+      this.device_ = /** @type {BluetoothDevice} */({});
       for (var key in device)
         this.device_[key] = device[key];
       // Update the pairing instructions.
-      var instructionsEl = $('bluetooth-pairing-instructions');
+      var instructionsEl = assert($('bluetooth-pairing-instructions'));
       this.clearElement_(instructionsEl);
       this.dismissible_ = ('dismissible' in device) ?
         device.dismissible : true;
@@ -228,7 +219,7 @@ cr.define('options', function() {
 
     /**
      * Handles the ENTER key for the passkey or pincode entry field.
-     * @return {Event} a keydown event.
+     * @param {Event} event A keydown event.
      * @private
      */
     keyDownEventHandler_: function(event) {
@@ -275,7 +266,7 @@ cr.define('options', function() {
      * @param {string} key Passkey or PIN to display.
      */
     updatePasskey_: function(key) {
-      var passkeyEl = $('bluetooth-pairing-passkey-display');
+      var passkeyEl = assert($('bluetooth-pairing-passkey-display'));
       var keyClass = (this.device_.pairing == PAIRING.REMOTE_PASSKEY ||
                       this.device_.pairing == PAIRING.REMOTE_PIN_CODE) ?
           'bluetooth-keyboard-button' : 'bluetooth-passkey-char';

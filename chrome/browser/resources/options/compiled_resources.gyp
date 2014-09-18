@@ -37,6 +37,7 @@
           '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/parse_html_subset.js',
           '../../../../ui/webui/resources/js/util.js',
+          '../../../../chrome/browser/resources/chromeos/keyboard/keyboard_utils.js',
         ],
         'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
       },

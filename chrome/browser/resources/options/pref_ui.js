@@ -42,7 +42,11 @@ cr.define('options', function() {
   /////////////////////////////////////////////////////////////////////////////
   // PrefInputElement class:
 
-  // Define a constructor that uses an input element as its underlying element.
+  /**
+   * Define a constructor that uses an input element as its underlying element.
+   * @constructor
+   * @extends {HTMLInputElement}
+   */
   var PrefInputElement = cr.ui.define('input');
 
   PrefInputElement.prototype = {
@@ -323,8 +327,11 @@ cr.define('options', function() {
      * @private
      */
     updatePrefFromState_: function() {
-      Preferences.setIntegerPref(this.pref, this.mapPositionToPref(this.value),
-                                 !this.dialogPref, this.metric);
+      Preferences.setIntegerPref(
+          this.pref,
+          this.mapPositionToPref(parseInt(this.value, 10)),
+          !this.dialogPref,
+          this.metric);
     },
 
     /**
@@ -575,6 +582,7 @@ cr.define('options', function() {
   // Export
   return {
     PrefCheckbox: PrefCheckbox,
+    PrefInputElement: PrefInputElement,
     PrefNumber: PrefNumber,
     PrefRadio: PrefRadio,
     PrefRange: PrefRange,

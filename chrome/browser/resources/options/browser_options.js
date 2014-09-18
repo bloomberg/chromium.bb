@@ -662,7 +662,8 @@ cr.define('options', function() {
                                       true);
 
       document.body.addEventListener('click', function(e) {
-        var button = findAncestor(e.target, function(el) {
+        var target = assertInstanceof(e.target, Node);
+        var button = findAncestor(target, function(el) {
           return el.tagName == 'BUTTON' &&
                  el.dataset.extensionId !== undefined &&
                  el.dataset.extensionId.length;
@@ -718,7 +719,7 @@ cr.define('options', function() {
      * @private
      */
     handleWindowMessage_: function(e) {
-      if (e.data.method == 'frameSelected')
+      if ((/** @type {{method: string}} */(e.data)).method == 'frameSelected')
         $('search-field').focus();
     },
 
@@ -1252,7 +1253,8 @@ cr.define('options', function() {
     /**
      * Get the selected profile item from the profile list. This also works
      * correctly if the list is not displayed.
-     * @return {Object} the profile item object, or null if nothing is selected.
+     * @return {?Object} The profile item object, or null if nothing is
+     *     selected.
      * @private
      */
     getSelectedProfileItem_: function() {
