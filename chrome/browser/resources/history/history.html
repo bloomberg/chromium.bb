@@ -77,14 +77,17 @@
     <header>
       <h1 i18n-content="history"></h1>
       <div id="search-form" class="search-field-container">
-        <input type="search" id="search-field" required>
-        <input type="submit" id="search-button" i18n-values="value:searchButton">
+        <input type="search" id="search-field"
+               i18n-values="aria-label:searchButton" required>
+        <input type="submit" id="search-button"
+               i18n-values="value:searchButton">
       </div>
       <div id="filter-controls" hidden>
-        <button id="range-today" i18n-content="rangeToday" disabled></button>
-        <button id="range-previous" i18n-values="alt:rangePrevious" disabled>
-        </button>
-        <button id="range-next" i18n-values="alt:rangeNext" disabled>
+        <button id="range-today" i18n-content="rangeToday"
+                i18n-values="aria-label:rangeToday" disabled></button>
+        <button id="range-previous" i18n-values="aria-label:rangePrevious"
+                disabled></button>
+        <button id="range-next" i18n-values="aria-label:rangeNext" disabled>
         </button>
         <div id="display-filter-controls">
           <div class="display-filter-button">
@@ -118,7 +121,8 @@
 </if>
     <div id="top-container">
       <div id="editing-controls">
-        <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
+        <button id="clear-browsing-data" i18n-content="clearAllHistory">
+        </button>
         <button id="remove-selected" disabled="disabled"
             i18n-content="removeSelected"></button>
       </div>

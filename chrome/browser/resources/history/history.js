@@ -1303,6 +1303,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
     siteDomainCheckbox.type = 'checkbox';
     siteDomainCheckbox.addEventListener('click', domainCheckboxClicked);
     siteDomainCheckbox.domain_ = domain;
+    siteDomainCheckbox.setAttribute('aria-label', domain);
     siteDomainRow.appendChild(siteDomainCheckbox);
   }
 
@@ -1338,6 +1339,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
 
   // Collapse until it gets toggled.
   resultsList.style.height = 0;
+  resultsList.setAttribute('aria-hidden', 'true');
 
   // Add the results for each of the domain.
   var isMonthGroupedResult = this.getRangeInDays() == HistoryModel.Range.MONTH;
@@ -1692,7 +1694,9 @@ HistoryView.prototype.toggleGroupedVisits_ = function(e) {
 
   if (entry.classList.contains('expand')) {
     innerResultList.style.height = 0;
+    innerResultList.setAttribute('aria-hidden', 'true');
   } else {
+    innerResultList.setAttribute('aria-hidden', 'false');
     innerResultList.style.height = 'auto';
     // -webkit-transition does not work on height:auto elements so first set
     // the height to auto so that it is computed and then set it to the

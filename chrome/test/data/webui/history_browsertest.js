@@ -143,6 +143,12 @@ BaseHistoryWebUITest.prototype = {
   /** @override */
   typedefCppFixture: 'HistoryUIBrowserTest',
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
   isAsync: true,
 };
 
