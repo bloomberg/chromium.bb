@@ -20,6 +20,16 @@ using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 using infobars::InfoBarManager;
 
+namespace {
+
+bool IsReload(const content::LoadCommittedDetails& details) {
+  return content::PageTransitionStripQualifier(
+      details.entry->GetTransitionType()) == content::PAGE_TRANSITION_RELOAD;
+
+}
+
+}  // namespace
+
 // static
 InfoBarDelegate::NavigationDetails
     InfoBarService::NavigationDetailsFromLoadCommittedDetails(
@@ -32,9 +42,7 @@ InfoBarDelegate::NavigationDetails
   navigation_details.is_main_frame = details.is_main_frame;
 
   const content::PageTransition transition = details.entry->GetTransitionType();
-  navigation_details.is_reload =
-      content::PageTransitionStripQualifier(transition) ==
-      content::PAGE_TRANSITION_RELOAD;
+  navigation_details.is_reload = IsReload(details);
   navigation_details.is_redirect =
       (transition & content::PAGE_TRANSITION_IS_REDIRECT_MASK) != 0;
 
@@ -51,7 +59,8 @@ content::WebContents* InfoBarService::WebContentsFromInfoBar(InfoBar* infobar) {
 }
 
 InfoBarService::InfoBarService(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      ignore_next_reload_(false) {
   DCHECK(web_contents);
 }
 
@@ -90,9 +99,18 @@ void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
 
+void InfoBarService::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  ignore_next_reload_ = false;
+}
+
 void InfoBarService::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));
+  const bool ignore = ignore_next_reload_ && IsReload(load_details);
+  ignore_next_reload_ = false;
+  if (!ignore)
+    OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));
 }
 
 void InfoBarService::WebContentsDestroyed() {

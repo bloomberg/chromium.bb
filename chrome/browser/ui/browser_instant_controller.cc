@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 
 #include "base/bind.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -160,6 +161,13 @@ void BrowserInstantController::DefaultSearchProviderChanged() {
     // renderer.
     if (!instant_service->IsInstantProcess(rph->GetID()))
       continue;
+
     contents->GetController().Reload(false);
+
+    // As the reload was not triggered by the user we don't want to close any
+    // infobars. We have to tell the InfoBarService after the reload, otherwise
+    // it would ignore this call when
+    // WebContentsObserver::DidStartNavigationToPendingEntry is invoked.
+    InfoBarService::FromWebContents(contents)->set_ignore_next_reload();
   }
 }
