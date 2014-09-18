@@ -79,10 +79,11 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
 #if defined(OS_WIN)
   AppbarAutohideEdgeMap appbar_autohide_edge_map_;
-  base::WeakPtrFactory<ChromeViewsDelegate> weak_factory_;
   // If true we're in the process of notifying a callback from
   // GetAutohideEdges().start a new query.
   bool in_autohide_edges_callback_;
+
+  base::WeakPtrFactory<ChromeViewsDelegate> weak_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);

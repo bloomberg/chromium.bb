@@ -36,7 +36,7 @@
 #include "ui/views/win/hwnd_util.h"
 
 ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
-    : weak_ptr_factory_(this), glass_frame_view_(NULL) {
+    : glass_frame_view_(NULL), weak_ptr_factory_(this) {
 }
 
 void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {

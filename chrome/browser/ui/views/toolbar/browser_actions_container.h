@@ -424,14 +424,14 @@ class BrowserActionsContainer
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
 
-  // Handles delayed showing of the overflow menu when hovering.
-  base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
-
   ObserverList<BrowserActionsContainerObserver> observers_;
 
   // The maximum number of icons to show per row when in overflow mode (showing
   // icons in the application menu).
   static int icons_per_overflow_menu_row_;
+
+  // Handles delayed showing of the overflow menu when hovering.
+  base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

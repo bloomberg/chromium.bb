@@ -182,8 +182,6 @@ class ExtensionMessageBubbleView : public ExtensionMessageBubble,
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
       OVERRIDE;
 
-  base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
-
   // The controller for this bubble.
   scoped_ptr<ExtensionMessageBubbleController> controller_;
 
@@ -205,6 +203,8 @@ class ExtensionMessageBubbleView : public ExtensionMessageBubble,
   base::Closure action_callback_;
   base::Closure dismiss_callback_;
   base::Closure link_callback_;
+
+  base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleView);
 };

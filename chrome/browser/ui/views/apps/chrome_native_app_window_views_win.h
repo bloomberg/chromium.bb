@@ -47,8 +47,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   // Overridden from extensions::NativeAppWindow:
   virtual void UpdateShelfMenu() OVERRIDE;
 
-  base::WeakPtrFactory<ChromeNativeAppWindowViewsWin> weak_ptr_factory_;
-
   // Populated if there is a glass frame, which provides special information
   // to the native widget implementation. This will be NULL if there is no
   // glass frame. Note, this can change from NULL to non-NULL and back again
@@ -57,6 +55,8 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
 
   // The Windows Application User Model ID identifying the app.
   base::string16 app_model_id_;
+
+  base::WeakPtrFactory<ChromeNativeAppWindowViewsWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsWin);
 };

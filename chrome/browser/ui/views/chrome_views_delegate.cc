@@ -126,8 +126,8 @@ int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
 
 #if defined(OS_WIN)
 ChromeViewsDelegate::ChromeViewsDelegate()
-    : weak_factory_(this),
-      in_autohide_edges_callback_(false) {
+    : in_autohide_edges_callback_(false),
+      weak_factory_(this) {
 #else
 ChromeViewsDelegate::ChromeViewsDelegate() {
 #endif

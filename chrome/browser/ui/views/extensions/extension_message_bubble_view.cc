@@ -62,14 +62,14 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::BubbleBorder::Arrow arrow_location,
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
     : BubbleDelegateView(anchor_view, arrow_location),
-      weak_factory_(this),
       controller_(controller.Pass()),
       anchor_view_(anchor_view),
       headline_(NULL),
       learn_more_(NULL),
       dismiss_button_(NULL),
       link_clicked_(false),
-      action_taken_(false) {
+      action_taken_(false),
+      weak_factory_(this) {
   DCHECK(anchor_view->GetWidget());
   set_close_on_deactivate(controller_->CloseOnDeactivate());
   set_close_on_esc(true);
