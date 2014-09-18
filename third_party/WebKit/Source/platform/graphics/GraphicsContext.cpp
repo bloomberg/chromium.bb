@@ -34,6 +34,7 @@
 #include "platform/graphics/DisplayList.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
@@ -59,37 +60,6 @@
 #include "wtf/MathExtras.h"
 
 namespace blink {
-
-namespace {
-
-class CompatibleImageBufferSurface : public ImageBufferSurface {
-    WTF_MAKE_NONCOPYABLE(CompatibleImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
-public:
-    CompatibleImageBufferSurface(PassRefPtr<SkSurface> surface, const IntSize& size, OpacityMode opacityMode)
-        : ImageBufferSurface(size, opacityMode)
-        , m_surface(surface)
-    {
-    }
-    virtual ~CompatibleImageBufferSurface() { }
-
-    virtual SkCanvas* canvas() const OVERRIDE { return m_surface ? m_surface->getCanvas() : 0; }
-    virtual bool isValid() const OVERRIDE { return m_surface; }
-    virtual bool isAccelerated() const OVERRIDE { return isValid() && m_surface->getCanvas()->getTopDevice()->accessRenderTarget(); }
-    virtual Platform3DObject getBackingTexture() const OVERRIDE
-    {
-        ASSERT(isAccelerated());
-        GrRenderTarget* renderTarget = m_surface->getCanvas()->getTopDevice()->accessRenderTarget();
-        if (renderTarget) {
-            return renderTarget->asTexture()->getTextureHandle();
-        }
-        return 0;
-    };
-
-private:
-    RefPtr<SkSurface> m_surface;
-};
-
-} // unnamed namespace
 
 struct GraphicsContext::CanvasSaveState {
     CanvasSaveState(bool pendingSave, int count)
@@ -1831,12 +1801,7 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createRasterBuffer(const IntSize& size,
     AffineTransform transform = getCTM();
     IntSize scaledSize(static_cast<int>(ceil(size.width() * transform.xScale())), static_cast<int>(ceil(size.height() * transform.yScale())));
 
-    SkAlphaType alphaType = (opacityMode == Opaque) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
-    RefPtr<SkSurface> skSurface = adoptRef(SkSurface::NewRaster(info));
-    if (!skSurface)
-        return nullptr;
-    OwnPtr<ImageBufferSurface> surface = adoptPtr(new CompatibleImageBufferSurface(skSurface.release(), scaledSize, opacityMode));
+    OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(scaledSize, opacityMode));
     ASSERT(surface->isValid());
     OwnPtr<ImageBuffer> buffer = adoptPtr(new ImageBuffer(surface.release()));
 
