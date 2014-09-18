@@ -44,7 +44,7 @@ def main():
   disable_buffering()
   asan_symbolize.demangle = True
   loop = asan_symbolize.SymbolizationLoop(binary_name_filter=fix_filename)
-  loop.process_stdin()
+  loop.process_logfile()
 
 if __name__ == '__main__':
   main()
