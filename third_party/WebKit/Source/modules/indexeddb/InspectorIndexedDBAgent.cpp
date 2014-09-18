@@ -445,10 +445,19 @@ public:
         Document* document = toDocument(m_scriptState->executionContext());
         if (!document)
             return;
+        // FIXME: There are no tests for this error showing when a recursive
+        // object is inspected.
+        const String errorMessage("\"Inspection error. Maximum depth reached?\"");
+        RefPtr<JSONValue> keyJsonValue = idbCursor->key(m_scriptState.get()).toJSONValue(m_scriptState.get());
+        RefPtr<JSONValue> primaryKeyJsonValue = idbCursor->primaryKey(m_scriptState.get()).toJSONValue(m_scriptState.get());
+        RefPtr<JSONValue> valueJsonValue = idbCursor->value(m_scriptState.get()).toJSONValue(m_scriptState.get());
+        String key = keyJsonValue ? keyJsonValue->toJSONString() : errorMessage;
+        String value = valueJsonValue ? valueJsonValue->toJSONString() : errorMessage;
+        String primaryKey = primaryKeyJsonValue ? primaryKeyJsonValue->toJSONString() : errorMessage;
         RefPtr<DataEntry> dataEntry = DataEntry::create()
-            .setKey(idbCursor->key(m_scriptState.get()).toJSONValue(m_scriptState.get())->toJSONString())
-            .setPrimaryKey(idbCursor->primaryKey(m_scriptState.get()).toJSONValue(m_scriptState.get())->toJSONString())
-            .setValue(idbCursor->value(m_scriptState.get()).toJSONValue(m_scriptState.get())->toJSONString());
+            .setKey(key)
+            .setPrimaryKey(primaryKey)
+            .setValue(value);
         m_result->addItem(dataEntry);
 
     }
