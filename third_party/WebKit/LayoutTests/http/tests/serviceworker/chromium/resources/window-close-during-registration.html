@@ -2,14 +2,21 @@
 <script>
 var scope = 'empty';
 
-navigator.serviceWorker.unregister(scope).then(function() {
-    var promise = navigator.serviceWorker.register('empty-worker.js', { scope: scope });
-    window.close();
-    window.opener.done();
-    return promise;
-}).catch(function(error) {
-    window.opener.testFailed(error.message);
-    window.opener.done();
-});
+navigator.serviceWorker.getRegistration(scope)
+  .then(function(registration) {
+      if (registration)
+        registration.unregister();
+    })
+  .then(function() {
+      var promise = navigator.serviceWorker.register('empty-worker.js',
+                                                     { scope: scope });
+      window.close();
+      window.opener.done();
+      return promise;
+    })
+  .catch(function(error) {
+      window.opener.testFailed(error.message);
+      window.opener.done();
+    });
 </script>
 </html>

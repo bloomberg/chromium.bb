@@ -17,7 +17,7 @@ function scope_test(name, scope) {
       var registration;
       var script = 'resources/serviceworkerglobalscope-scope-worker.js';
       var options = scope ? { scope: scope } : {};
-      navigator.serviceWorker.unregister(scope)
+      service_worker_unregister(t, scope)
         .then(function() {
             return navigator.serviceWorker.register(script, options);
           })

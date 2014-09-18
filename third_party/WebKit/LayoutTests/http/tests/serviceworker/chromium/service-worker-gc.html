@@ -20,12 +20,18 @@ function setup() {
 }
 
 function unregisterAndRegister(url, scope) {
-    return navigator.serviceWorker.unregister(scope).then(function() {
-        return navigator.serviceWorker.register(url, { scope: scope });
-    }).catch(function(error) {
-        testFailed('Could not register worker: ' + error);
-        finishJSTest();
-    });
+    return navigator.serviceWorker.getRegistration(scope)
+        .then(function(registration) {
+            if (registration)
+              return registration.unregister();
+          })
+        .then(function() {
+            return navigator.serviceWorker.register(url, { scope: scope });
+          })
+        .catch(function(error) {
+            testFailed('Could not register worker: ' + error);
+            finishJSTest();
+          });
 }
 
 function onRegister(registration) {
@@ -58,10 +64,14 @@ function unregister() {
     gc();
     shouldBeFalse('registrationObservation.wasCollected');
     shouldBeFalse('swObservation.wasCollected');
-    navigator.serviceWorker.unregister(scope).catch(function(error) {
-        testFailed('Could not unregister worker: ' + error);
-        finishJSTest();
-    });
+    navigator.serviceWorker.getRegistration(scope)
+      .then(function(registration) {
+          registration.unregister();
+        })
+      .catch(function(error) {
+          testFailed('Could not unregister worker: ' + error);
+          finishJSTest();
+        });
 }
 
 function finish()

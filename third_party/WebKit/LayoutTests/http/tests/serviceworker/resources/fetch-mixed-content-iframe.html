@@ -7,7 +7,11 @@ var host_info = get_host_info();
 
 window.addEventListener('message', on_message, false);
 
-navigator.serviceWorker.unregister(SCOPE)
+navigator.serviceWorker.getRegistration(SCOPE)
+  .then(function(registration) {
+      if (registration)
+        return registration.unregister();
+    })
   .then(function() {
       return navigator.serviceWorker.register(URL, {scope: SCOPE});
     })
@@ -31,8 +35,12 @@ function on_state_change(event) {
 }
 
 function on_message(e) {
-  navigator.serviceWorker.unregister(SCOPE)
-  .then(function() {
+  navigator.serviceWorker.getRegistration(SCOPE)
+    .then(function(registration) {
+        if (registration)
+          return registration.unregister();
+      })
+    .then(function() {
       window.parent.postMessage(e.data, host_info['HTTP_ORIGIN']);
     });
 }

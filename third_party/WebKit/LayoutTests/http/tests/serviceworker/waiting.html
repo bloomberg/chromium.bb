@@ -13,7 +13,7 @@ async_test(function(t) {
     var frame;
     var registration;
 
-    navigator.serviceWorker.unregister(scope)
+    service_worker_unregister(t, scope)
     .then(function() { return with_iframe(scope); })
     .then(function(f) {
         frame = f;

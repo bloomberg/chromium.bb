@@ -20,10 +20,18 @@ function service_worker_unregister_and_register(test, url, scope) {
                                  'unregister and register should not fail'));
 }
 
+function service_worker_unregister(test, documentUrl) {
+  return navigator.serviceWorker.getRegistration(documentUrl)
+      .then(function(registration) {
+          if (registration)
+            return registration.unregister();
+        })
+      .catch(unreached_rejection(test, 'unregister should not fail'));
+}
+
 function service_worker_unregister_and_done(test, scope) {
-    return navigator.serviceWorker.unregister(scope).then(
-        test.done.bind(test),
-        unreached_rejection(test, 'unregister should not fail'));
+  return service_worker_unregister(test, scope)
+      .then(test.done.bind(test));
 }
 
 // Rejection-specific helper that provides more details
@@ -202,12 +210,14 @@ function wait_for_activated(test, registration) {
       window.location.pathname;
 
     var test = async_test(description);
+    var registration;
     service_worker_unregister_and_register(test, url, scope)
-      .then(function(registration) {
+      .then(function(r) {
+          registration = r;
           return wait_for_update(test, registration);
         })
       .then(function(worker) { return fetch_tests_from_worker(worker); })
-      .then(function() { return navigator.serviceWorker.unregister(scope); })
+      .then(function() { return registration.unregister(); })
       .then(function() { test.done(); })
       .catch(test.step_func(function(e) { throw e; }));
   };

@@ -13,9 +13,8 @@ async_test(function(t) {
     var frame;
     var registration;
 
-    navigator.serviceWorker.unregister(scope)
-    .then(step(function() { return with_iframe(scope); }),
-          unreached_rejection(t, 'Unregister should not fail'))
+    service_worker_unregister(t, scope)
+    .then(step(function() { return with_iframe(scope); }))
     .then(step(function(f) {
         frame = f;
         return navigator.serviceWorker.register(url, {scope: scope});
@@ -37,6 +36,7 @@ async_test(function(t) {
     .then(step(function() {
         frame.remove();
         return service_worker_unregister_and_done(t, scope);
-    }));
+    }))
+    .catch(unreached_rejection(t));
 }, 'installing is set');
 </script>

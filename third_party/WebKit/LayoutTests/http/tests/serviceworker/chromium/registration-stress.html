@@ -27,10 +27,8 @@ async_test(function(t) {
       .then(step(function(registrations) {
           var unregister_promises = [];
           for (var i = 0; i < number_of_registrations; i++) {
-            var scope = i;
             frames[i].remove();
-            unregister_promises.push(
-                navigator.serviceWorker.unregister(scope));
+            unregister_promises.push(registrations[i].unregister());
           }
           return Promise.all(unregister_promises);
         }))

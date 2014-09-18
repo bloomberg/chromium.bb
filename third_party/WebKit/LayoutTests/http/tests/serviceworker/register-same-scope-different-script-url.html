@@ -13,7 +13,7 @@ async_test(function(t) {
     var register_promise1;
     var register_promise2;
 
-    navigator.serviceWorker.unregister(scope)
+    service_worker_unregister(t, scope)
       .then(function() {
           register_promise1 = navigator.serviceWorker.register(script1,
                                                                {scope: scope});

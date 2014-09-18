@@ -28,15 +28,6 @@ async_test(function(t) {
 }, 'Exceedingly long scope URLs are rejected by register()');
 
 async_test(function(t) {
-    navigator.serviceWorker.unregister(long_url).
-        then(t.unreached_func('unregistering a long scope url should fail')).
-        catch(t.step_func(function(reason) {
-            assert_equals(reason.name, 'SecurityError');
-            t.done();
-        }));
-}, 'Exceedingly long scope URLs are rejected by unregister()');
-
-async_test(function(t) {
     navigator.serviceWorker.getRegistration(long_url).
         then(t.unreached_func('getRegistration with a long url should fail')).
         catch(t.step_func(function(reason) {

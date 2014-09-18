@@ -15,7 +15,7 @@ t.step(function() {
 
     assert_true(navigator.serviceWorker instanceof ServiceWorkerContainer);
     assert_equals(typeof navigator.serviceWorker.register, 'function');
-    assert_equals(typeof navigator.serviceWorker.unregister, 'function');
+    assert_equals(typeof navigator.serviceWorker.getRegistration, 'function');
 
     navigator.serviceWorker.oncurrentchange = function() {
         ++currentChangeCount;
@@ -89,7 +89,7 @@ t.step(function() {
                     resolve();
                 });
             }));
-            navigator.serviceWorker.unregister(scope);
+            registration.unregister();
             sawRedundant.then(t.step_func(function() {
                 t.done();
             }));

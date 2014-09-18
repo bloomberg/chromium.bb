@@ -9,10 +9,7 @@ var t = async_test('controller is set upon reload after registration');
 t.step(function() {
     var reloaded = false;
     var scope = 'resources/blank.html';
-    navigator.serviceWorker.unregister(scope).then(
-        doTest,
-        unreached_rejection(t, 'Unregister should not fail')
-    );
+    service_worker_unregister(t, scope).then(doTest);
 
     function doTest() {
         with_iframe(scope, t.step_func(onIframeLoad));

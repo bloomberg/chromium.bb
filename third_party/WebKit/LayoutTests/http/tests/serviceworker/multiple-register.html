@@ -96,7 +96,7 @@ async_test(function(t) {
 async_test(function(t) {
   var scope = 'scope/concurrent-register';
 
-  navigator.serviceWorker.unregister(scope)
+  service_worker_unregister(t, scope)
     .then(function() {
         var promises = [];
         for (var i = 0; i < 100; ++i) {
