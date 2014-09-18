@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -154,8 +155,6 @@ class RenderingHelper {
   // |texture_target|.
   void RenderTexture(uint32 texture_target, uint32 texture_id);
 
-  // Timer to trigger the RenderContent() repeatly.
-  scoped_ptr<base::RepeatingTimer<RenderingHelper> > render_timer_;
   base::MessageLoop* message_loop_;
 
   scoped_refptr<gfx::GLContext> gl_context_;
@@ -175,6 +174,8 @@ class RenderingHelper {
   gfx::Size thumbnail_size_;
   GLuint program_;
   base::TimeDelta frame_duration_;
+  base::TimeTicks scheduled_render_time_;
+  base::CancelableClosure render_task_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingHelper);
 };

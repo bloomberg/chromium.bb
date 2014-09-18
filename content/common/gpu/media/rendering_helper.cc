@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -112,6 +113,9 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     UnInitialize(&done);
     done.Wait();
   }
+
+  render_task_.Reset(
+      base::Bind(&RenderingHelper::RenderContent, base::Unretained(this)));
 
   frame_duration_ = params.rendering_fps > 0
                         ? base::TimeDelta::FromSeconds(1) / params.rendering_fps
@@ -298,19 +302,13 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
 
-  if (frame_duration_ != base::TimeDelta()) {
-    render_timer_.reset(new base::RepeatingTimer<RenderingHelper>());
-    render_timer_->Start(
-        FROM_HERE, frame_duration_, this, &RenderingHelper::RenderContent);
-  }
   done->Signal();
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-  // Deletion will also stop the timer.
-  render_timer_.reset();
+  render_task_.Cancel();
 
   if (render_as_thumbnails_) {
     glDeleteTextures(1, &thumbnails_texture_id_);
@@ -397,6 +395,13 @@ void RenderingHelper::QueueVideoFrame(
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   RenderedVideo* video = &videos_[window_id];
   DCHECK(!video->is_flushing);
+
+  // Start the rendering task when getting the first frame.
+  if (scheduled_render_time_.is_null() &&
+      (frame_duration_ != base::TimeDelta())) {
+    scheduled_render_time_ = base::TimeTicks::Now();
+    message_loop_->PostTask(FROM_HERE, render_task_.callback());
+  }
 
   if (video->frames_to_drop > 0) {
     --video->frames_to_drop;
@@ -509,6 +514,12 @@ void RenderingHelper::Flush(size_t window_id) {
 
 void RenderingHelper::RenderContent() {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
+
+  scheduled_render_time_ += frame_duration_;
+  base::TimeDelta delay = scheduled_render_time_ - base::TimeTicks::Now();
+  message_loop_->PostDelayedTask(
+      FROM_HERE, render_task_.callback(), std::max(delay, base::TimeDelta()));
+
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
 
   // Frames that will be returned to the client (via the no_longer_needed_cb)
