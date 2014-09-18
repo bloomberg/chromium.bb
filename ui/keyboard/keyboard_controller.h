@@ -104,6 +104,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     return current_keyboard_bounds_;
   }
 
+  // Determines whether a particular window should have insets for overscroll.
+  bool ShouldEnableInsets(aura::Window* window);
+
   // Updates insets on web content window
   void UpdateWindowInsets(aura::Window* window);
 

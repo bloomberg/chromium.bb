@@ -445,14 +445,18 @@ void KeyboardController::OnShowImeIfNeeded() {
   ShowKeyboardInternal();
 }
 
+bool KeyboardController::ShouldEnableInsets(aura::Window* window) {
+  aura::Window *keyboard_window = proxy_->GetKeyboardWindow();
+  return (keyboard_window->GetRootWindow() == window->GetRootWindow() &&
+          keyboard::IsKeyboardOverscrollEnabled() &&
+          proxy_->GetKeyboardWindow()->IsVisible() &&
+          keyboard_visible_);
+}
+
 void KeyboardController::UpdateWindowInsets(aura::Window* window) {
   aura::Window *keyboard_window = proxy_->GetKeyboardWindow();
   if (window == keyboard_window)
     return;
-
-  bool enableInsets = (keyboard_window->GetRootWindow() ==
-      window->GetRootWindow()) && keyboard::IsKeyboardOverscrollEnabled() &&
-      proxy_->GetKeyboardWindow()->IsVisible();
 
   scoped_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
@@ -462,7 +466,7 @@ void KeyboardController::UpdateWindowInsets(aura::Window* window) {
       gfx::Rect window_bounds = view->GetNativeView()->GetBoundsInScreen();
       gfx::Rect intersect = gfx::IntersectRects(window_bounds,
           proxy_->GetKeyboardWindow()->bounds());
-      int overlap = enableInsets ? intersect.height() : 0;
+      int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
       if (overlap > 0 && overlap < window_bounds.height())
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
       else

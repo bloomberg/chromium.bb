@@ -228,6 +228,10 @@ class KeyboardControllerTest : public testing::Test {
     return controller_->WillHideKeyboard();
   }
 
+  bool ShouldEnableInsets(aura::Window* window) {
+    return controller_->ShouldEnableInsets(window);
+  }
+
   base::MessageLoopForUI message_loop_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<TestFocusController> focus_controller_;
@@ -419,6 +423,33 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
   EXPECT_FALSE(WillHideKeyboard());
   EXPECT_TRUE(keyboard_container->IsVisible());
+}
+
+// Test to prevent spurious overscroll boxes when changing tabs during keyboard
+// hide. Refer to crbug.com/401670 for more context.
+TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
+  const gfx::Rect& root_bounds = root_window()->bounds();
+
+  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
+
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  keyboard_container->SetBounds(root_bounds);
+  root_window()->AddChild(keyboard_container);
+
+  // Enable touch keyboard / overscroll mode to test insets.
+  keyboard::SetTouchKeyboardEnabled(true);
+  EXPECT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+
+  SetFocus(&input_client);
+  SetFocus(&no_input_client);
+  // Insets should not be enabled for new windows while keyboard is in the
+  // process of hiding when overscroll is enabled.
+  EXPECT_FALSE(ShouldEnableInsets(proxy()->GetKeyboardWindow()));
+  // Cancel keyboard hide.
+  SetFocus(&input_client);
+  // Insets should be enabled for new windows as hide was cancelled.
+  EXPECT_TRUE(ShouldEnableInsets(proxy()->GetKeyboardWindow()));
 }
 
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
