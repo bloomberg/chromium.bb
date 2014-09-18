@@ -40,7 +40,6 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   PrintPageInternal(page_params,
-                    print_preview_context_.GetPrintCanvasSize(),
                     print_preview_context_.prepared_frame(),
                     initial_render_metafile);
   print_preview_context_.RenderedPreviewPage(
@@ -57,8 +56,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 }
 
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
-                                          int page_count,
-                                          const gfx::Size& canvas_size) {
+                                          int page_count) {
   PdfMetafileSkia metafile;
   if (!metafile.Init())
     return false;
@@ -86,7 +84,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   page_params.params = params.params;
   for (size_t i = 0; i < printed_pages.size(); ++i) {
     page_params.page_number = printed_pages[i];
-    PrintPageInternal(page_params, canvas_size, frame, &metafile);
+    PrintPageInternal(page_params, frame, &metafile);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.
@@ -149,7 +147,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
-    const gfx::Size& canvas_size,
     WebFrame* frame,
     PdfMetafileSkia* metafile) {
   PageSizeMargins page_layout_in_points;

@@ -23,7 +23,6 @@ using blink::WebFrame;
 
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
-    const gfx::Size& canvas_size,
     WebFrame* frame) {
   PdfMetafileSkia metafile;
   if (!metafile.Init())

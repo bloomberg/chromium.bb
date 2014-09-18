@@ -207,27 +207,22 @@ class PrintWebViewHelper
 
   void OnFramePreparedForPrintPages();
   void PrintPages();
-  bool PrintPagesNative(blink::WebFrame* frame,
-                        int page_count,
-                        const gfx::Size& canvas_size);
+  bool PrintPagesNative(blink::WebFrame* frame, int page_count);
   void FinishFramePrinting();
 
   // Prints the page listed in |params|.
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
                          PdfMetafileSkia* metafile);
 #elif defined(OS_WIN)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         const gfx::Size& canvas_size,
                          blink::WebFrame* frame);
 #endif
 
@@ -392,7 +387,6 @@ class PrintWebViewHelper
     int total_page_count() const;
     bool generate_draft_pages() const;
     PdfMetafileSkia* metafile();
-    gfx::Size GetPrintCanvasSize() const;
     int last_error() const;
 
    private:

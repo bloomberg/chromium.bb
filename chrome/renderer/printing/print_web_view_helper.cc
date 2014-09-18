@@ -561,8 +561,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
     return expected_pages_count_;
   }
 
-  gfx::Size GetPrintCanvasSize() const;
-
   void FinishPrinting();
 
   bool IsLoadingSelection() {
@@ -740,12 +738,6 @@ void PrepareFrameAndViewForPrint::frameDetached(blink::WebFrame* frame) {
 
 void PrepareFrameAndViewForPrint::CallOnReady() {
   return on_ready_.Run();  // Can delete |this|.
-}
-
-gfx::Size PrepareFrameAndViewForPrint::GetPrintCanvasSize() const {
-  DCHECK(is_printing_started_);
-  return gfx::Size(web_print_params_.printContentArea.width,
-                   web_print_params_.printContentArea.height);
 }
 
 void PrepareFrameAndViewForPrint::RestoreSize() {
@@ -1357,8 +1349,7 @@ void PrintWebViewHelper::PrintPages() {
   }
 
 
-  if (!PrintPagesNative(prep_frame_view_->frame(), page_count,
-                        prep_frame_view_->GetPrintCanvasSize())) {
+  if (!PrintPagesNative(prep_frame_view_->frame(), page_count)) {
     LOG(ERROR) << "Printing failed.";
     return DidFinishPrinting(FAIL_PRINT);
   }
@@ -1370,8 +1361,7 @@ void PrintWebViewHelper::FinishFramePrinting() {
 
 #if defined(OS_MACOSX)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
-                                          int page_count,
-                                          const gfx::Size& canvas_size) {
+                                          int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
 
@@ -1380,14 +1370,14 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       page_params.page_number = i;
-      PrintPageInternal(page_params, canvas_size, frame);
+      PrintPageInternal(page_params, frame);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       if (params.pages[i] >= page_count)
         break;
       page_params.page_number = params.pages[i];
-      PrintPageInternal(page_params, canvas_size, frame);
+      PrintPageInternal(page_params, frame);
     }
   }
   return true;
@@ -1972,11 +1962,6 @@ PdfMetafileSkia* PrintWebViewHelper::PrintPreviewContext::metafile() {
 
 int PrintWebViewHelper::PrintPreviewContext::last_error() const {
   return error_;
-}
-
-gfx::Size PrintWebViewHelper::PrintPreviewContext::GetPrintCanvasSize() const {
-  DCHECK(IsRendering());
-  return prep_frame_view_->GetPrintCanvasSize();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
