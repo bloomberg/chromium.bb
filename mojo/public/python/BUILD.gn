@@ -17,10 +17,17 @@ python_binary_module("system") {
   python_base_module = "mojo"
   sources = [
     "mojo/c_core.pxd",
+    "mojo/c_environment.pxd",
     "mojo/system.pyx",
+  ]
+  additional_sources = [
+    "src/python_system_helper.cc",
+    "src/python_system_helper.h",
   ]
   deps = [
     "//mojo/public/c/system",
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/utility",
     ":base",
   ]
 }

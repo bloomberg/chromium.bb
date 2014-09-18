@@ -72,6 +72,9 @@ template("python_binary_module") {
       datadeps = invoker.datadeps
     }
     sources = [ cython_output ]
+    if (defined(invoker.additional_sources)) {
+      sources += invoker.additional_sources
+    }
     configs += [ ":$config_name" ]
   }
 
