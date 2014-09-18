@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_MINSFI_PRIV_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_MINSFI_PRIV_H_
 
+#include <setjmp.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -42,6 +43,8 @@ typedef struct {
   uint64_t mem_alloc_size;
   sfiptr_t ptr_mask;
   MinsfiMemoryLayout mem_layout;
+  jmp_buf exit_env;
+  int32_t exit_code;
 } MinsfiSandbox;
 
 /*
@@ -87,7 +90,7 @@ bool MinsfiUnmapSandbox(const MinsfiSandbox *sb);
  * Returns information about the active sandbox, or NULL if there is no
  * initialized sandbox at the moment.
  */
-const MinsfiSandbox *MinsfiGetActiveSandbox(void);
+MinsfiSandbox *MinsfiGetActiveSandbox(void);
 
 /*
  * Sets the sandbox which all trampolines will refer to. Internally copies the

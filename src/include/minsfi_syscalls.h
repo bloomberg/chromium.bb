@@ -43,6 +43,9 @@
 #define MinsfiSyscallPtrTy(TYPE) TYPE
 #endif  // MINSFI_TRUSTED
 
+/* Immediately terminate the sandbox. This function never returns. */
+int32_t __minsfi_syscall_exit(int32_t status) __attribute__((noreturn));
+
 /*
  * Queries the limits of the memory region to be used as a heap.
  * The syscall stores addresses of the heap boundaries, relative to the sandbox

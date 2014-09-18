@@ -5,7 +5,8 @@
  */
 
 #include <stdint.h>
+#include <unistd.h>
 
-int _start(uint32_t info[]) {
-  return 0xCAFEBABE;
+void _start(uint32_t info[]) {
+  _exit(0xCAFEBABE);
 }

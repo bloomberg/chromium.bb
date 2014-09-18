@@ -94,7 +94,7 @@ sfiptr_t MinsfiCopyArguments(int argc, char *argv[], const MinsfiSandbox *sb) {
 }
 
 int MinsfiInvokeSandbox(int argc, char *argv[]) {
-  const MinsfiSandbox *sb;
+  MinsfiSandbox *sb;
   sfiptr_t info;
 
   if ((sb = MinsfiGetActiveSandbox()) == NULL)
@@ -103,7 +103,12 @@ int MinsfiInvokeSandbox(int argc, char *argv[]) {
   if ((info = MinsfiCopyArguments(argc, argv, sb)) == 0)
     return EXIT_FAILURE;
 
-  return _start_minsfi(info);
+  if (setjmp(sb->exit_env) == 0) {
+    _start_minsfi(info);
+    return EXIT_FAILURE;
+  } else {
+    return sb->exit_code;
+  }
 }
 
 bool MinsfiDestroySandbox(void) {
@@ -111,6 +116,11 @@ bool MinsfiDestroySandbox(void) {
 
   if ((sb = MinsfiGetActiveSandbox()) == NULL)
     return true;
+
+  /*
+   * TODO: This function should close the file descriptors held by the sandbox
+   *       once I/O syscalls are implemented.
+   */
 
   if (MinsfiUnmapSandbox(sb)) {
     MinsfiSetActiveSandbox(NULL);

@@ -6,6 +6,8 @@
 
 #include "native_client/src/include/minsfi_syscalls.h"
 
-void _exit(int status) {
-  __minsfi_syscall_exit(status);
+int32_t __minsfi_syscall_exit(int32_t exit_code) {
+  MinsfiSandbox *sb = MinsfiGetActiveSandbox();
+  ((volatile MinsfiSandbox*) sb)->exit_code = exit_code;
+  longjmp(sb->exit_env, 1);
 }

@@ -12,6 +12,7 @@ env.ComponentLibrary('minsfi_runtime', [
     'entry.c',
     'loader.c',
     'state.c',
+    'syscall/exit.c',
     'syscall/heaplim.c',
     'syscall/sysconf.c',
   ], CPPDEFINES=['MINSFI_TRUSTED'])

@@ -15,11 +15,11 @@ int main(int argc, char **argv);
  * See comments in native_client/src/include/minsfi_priv.h for the layout of
  * the 'info' data structure.
  */
-int _start(uint32_t info[]) {
+void _start(uint32_t info[]) {
   int argc = info[0];
   char **argv = (char**) (info + 1);
 
   __newlib_thread_init();
 
-  return main(argc, argv);
+  _exit(main(argc, argv));
 }

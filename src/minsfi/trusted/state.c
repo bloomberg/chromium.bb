@@ -18,7 +18,7 @@ uint64_t __sfi_memory_base = 0;
 
 static MinsfiSandbox ActiveSandbox = { .mem_base = NULL };
 
-const MinsfiSandbox *MinsfiGetActiveSandbox(void) {
+MinsfiSandbox *MinsfiGetActiveSandbox(void) {
   if (ActiveSandbox.mem_base != NULL)
     return &ActiveSandbox;
   else
