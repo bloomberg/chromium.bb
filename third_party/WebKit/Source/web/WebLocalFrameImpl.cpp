@@ -498,9 +498,6 @@ void WebLocalFrameImpl::close()
 {
     m_client = 0;
 
-    if (m_frame)
-        m_frame->setHasBeenClosed();
-
     deref(); // Balances ref() acquired in WebFrame::create
 }
 
