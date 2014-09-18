@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -476,6 +477,10 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
       prefs.v8_cache_options = V8_CACHE_OPTIONS_OFF;
     }
   }
+
+  prefs.v8_script_streaming_enabled =
+      command_line.HasSwitch(switches::kEnableV8ScriptStreaming) ||
+      base::FieldTrialList::FindFullName("V8ScriptStreaming") == "Enabled";
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, url, &prefs);
   return prefs;

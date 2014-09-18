@@ -452,6 +452,9 @@ const char kEnableTracingOutput[]           = "enable-tracing-output";
 const char kEnableUserMediaScreenCapturing[] =
     "enable-usermedia-screen-capturing";
 
+// Enables streaming scripts to V8 while loading.
+const char kEnableV8ScriptStreaming[] = "enable-v8-script-streaming";
+
 // Enables the use of the @viewport CSS rule, which allows
 // pages to control aspects of their own layout. This also turns on touch-screen
 // pinch gestures.
