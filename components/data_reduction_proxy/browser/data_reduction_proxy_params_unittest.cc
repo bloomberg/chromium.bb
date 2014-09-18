@@ -577,11 +577,9 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
             TestDataReductionProxyParams::DefaultOrigin())),
         true,
         true,
-        true,
-        net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultOrigin())),
-        net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultDevFallbackOrigin())),
+        false,
+        net::HostPortPair::FromURL(GURL()),
+        net::HostPortPair::FromURL(GURL()),
         false,
         false,
         false
