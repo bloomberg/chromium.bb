@@ -41,7 +41,6 @@ CASE 2, The original composited layer is no longer composited, which then also r
         [300, 300, 100, 100],
         [220, 220, 100, 100],
         [140, 140, 100, 100],
-        [60, 60, 100, 100],
         [60, 60, 100, 100]
       ]
     }

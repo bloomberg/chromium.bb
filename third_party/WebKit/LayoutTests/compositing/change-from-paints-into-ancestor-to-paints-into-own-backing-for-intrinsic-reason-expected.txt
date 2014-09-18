@@ -17,7 +17,6 @@
           "drawsContent": true,
           "backgroundColor": "#FF0000",
           "repaintRects": [
-            [0, 0, 784, 100],
             [0, 0, 784, 100]
           ],
           "children": [

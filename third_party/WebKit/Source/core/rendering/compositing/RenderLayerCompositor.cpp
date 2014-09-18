@@ -296,6 +296,22 @@ void RenderLayerCompositor::updateWithoutAcceleratedCompositing(CompositingUpdat
 #endif
 }
 
+static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(RenderObject* renderer)
+{
+    // We clear the previous paint invalidation rect as it's wrong (paint invaliation container
+    // changed, ...). Forcing a full invalidation will make us recompute it. Also we are not
+    // changing the previous position from our paint invalidation container, which is fine as
+    // we want a full paint invalidation anyway.
+    renderer->setPreviousPaintInvalidationRect(LayoutRect());
+    renderer->setShouldDoFullPaintInvalidation(true);
+
+    for (RenderObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
+        if (!child->isPaintInvalidationContainer())
+            forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(child);
+    }
+}
+
+
 void RenderLayerCompositor::updateIfNeeded()
 {
     CompositingUpdateType updateType = m_pendingUpdateType;
@@ -376,12 +392,8 @@ void RenderLayerCompositor::updateIfNeeded()
         m_needsUpdateFixedBackground = false;
     }
 
-    for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++) {
-        RenderLayer* layer = layersNeedingPaintInvalidation[i];
-        layer->paintInvalidator().computePaintInvalidationRectsIncludingNonCompositingDescendants();
-
-        paintInvalidationOnCompositingChange(layer);
-    }
+    for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++)
+        forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(layersNeedingPaintInvalidation[i]->renderer());
 
     // Inform the inspector that the layer tree has changed.
     if (m_renderView.frame()->isMainFrame())

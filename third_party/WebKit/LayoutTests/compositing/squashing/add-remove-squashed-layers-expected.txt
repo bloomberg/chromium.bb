@@ -52,7 +52,6 @@ CASE 2, overlap3 gets added:
               "bounds": [260, 260],
               "drawsContent": true,
               "repaintRects": [
-                [160, 160, 100, 100],
                 [160, 160, 100, 100]
               ]
             }
@@ -119,7 +118,6 @@ CASE 4, overlap1 gets removed:
               "repaintRects": [
                 [160, 160, 100, 100],
                 [0, 0, 100, 100],
-                [0, 0, 100, 100],
                 [0, 0, 100, 100]
               ]
             }
@@ -153,8 +151,6 @@ CASE 5, overlap2 gets added back:
               "drawsContent": true,
               "repaintRects": [
                 [80, 80, 100, 100],
-                [80, 80, 100, 100],
-                [0, 0, 100, 100],
                 [0, 0, 100, 100],
                 [0, 0, 100, 100]
               ]
@@ -190,8 +186,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
               "repaintRects": [
                 [80, 80, 100, 100],
                 [80, 80, 100, 100],
-                [80, 80, 100, 100],
-                [0, 0, 100, 100],
                 [0, 0, 100, 100],
                 [0, 0, 100, 100]
               ]

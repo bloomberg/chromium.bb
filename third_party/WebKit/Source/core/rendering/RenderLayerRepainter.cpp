@@ -56,23 +56,6 @@ RenderLayerRepainter::RenderLayerRepainter(RenderLayerModelObject& renderer)
 {
 }
 
-void RenderLayerRepainter::computePaintInvalidationRectsIncludingNonCompositingDescendants()
-{
-    // FIXME: boundsRectForPaintInvalidation() has to walk up the parent chain
-    // for every layer to compute the rects. We should make this more efficient.
-    // FIXME: it's wrong to call this when layout is not up-to-date, which we do.
-    m_renderer.setPreviousPaintInvalidationRect(m_renderer.boundsRectForPaintInvalidation(m_renderer.containerForPaintInvalidation()));
-    // FIXME: We are only updating the paint invalidation bounds but not the
-    // positionFromPaintInvalidationBacking. This means that we may forcing a full
-    // invalidation of the new position, and even incorrect invalidation of the
-    // old location. Is this really correct?
-
-    for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling()) {
-        if (layer->compositingState() != PaintsIntoOwnBacking && layer->compositingState() != PaintsIntoGroupedBacking)
-            layer->paintInvalidator().computePaintInvalidationRectsIncludingNonCompositingDescendants();
-    }
-}
-
 void RenderLayerRepainter::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r)
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
