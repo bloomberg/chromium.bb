@@ -147,6 +147,10 @@ class WebUILoginView : public views::View,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool CheckMediaAccessPermission(
+      content::WebContents* web_contents,
+      const GURL& security_origin,
+      content::MediaStreamType type) OVERRIDE;
   virtual bool PreHandleGestureEvent(
       content::WebContents* source,
       const blink::WebGestureEvent& event) OVERRIDE;

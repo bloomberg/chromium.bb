@@ -146,6 +146,16 @@ void AthenaAppDelegate::RequestMediaAccessPermission(
       web_contents, request, callback, extension);
 }
 
+bool AthenaAppDelegate::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type,
+    const extensions::Extension* extension) {
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(
+          web_contents, security_origin, type, extension);
+}
+
 int AthenaAppDelegate::PreferredIconSize() {
   // TODO(oshima): Find out what to use.
   return extension_misc::EXTENSION_ICON_SMALL;

@@ -33,6 +33,10 @@ class ShellExtensionHostDelegate : public ExtensionHostDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const Extension* extension) OVERRIDE;
+  virtual bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                          const GURL& security_origin,
+                                          content::MediaStreamType type,
+                                          const Extension* extension) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionHostDelegate);

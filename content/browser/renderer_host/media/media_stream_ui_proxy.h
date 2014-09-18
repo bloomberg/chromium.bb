@@ -41,6 +41,16 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   virtual void RequestAccess(const MediaStreamRequest& request,
                              const ResponseCallback& response_callback);
 
+  // Checks if we have permission to access the microphone or camera. Note that
+  // this does not query the user, it checks any stored settings such as policy
+  // or extension permissions. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
+  // or MEDIA_DEVICE_VIDEO_CAPTURE.
+  virtual void CheckAccess(const GURL& security_origin,
+                           MediaStreamType type,
+                           int render_process_id,
+                           int render_frame_id,
+                           const base::Callback<void(bool)>& callback);
+
   // Notifies the UI that the MediaStream has been started. Must be called after
   // access has been approved using RequestAccess(). |stop_callback| is be
   // called on the IO thread after the user has requests the stream to be
@@ -65,6 +75,8 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   void ProcessStopRequestFromUI();
   void OnWindowId(const WindowIdCallback& window_id_callback,
                   gfx::NativeViewId* window_id);
+  void OnCheckedAccess(const base::Callback<void(bool)>& callback,
+                       bool have_access);
 
   scoped_ptr<Core, content::BrowserThread::DeleteOnUIThread> core_;
   ResponseCallback response_callback_;
@@ -81,16 +93,28 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   virtual ~FakeMediaStreamUIProxy();
 
   void SetAvailableDevices(const MediaStreamDevices& devices);
+  void SetMicAccess(bool access);
+  void SetCameraAccess(bool access);
 
   // MediaStreamUIProxy overrides.
   virtual void RequestAccess(
       const MediaStreamRequest& request,
       const ResponseCallback& response_callback) OVERRIDE;
+  virtual void CheckAccess(const GURL& security_origin,
+                           MediaStreamType type,
+                           int render_process_id,
+                           int render_frame_id,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void OnStarted(const base::Closure& stop_callback,
                          const WindowIdCallback& window_id_callback) OVERRIDE;
 
  private:
+  // This is used for RequestAccess().
   MediaStreamDevices devices_;
+
+  // These are used for CheckAccess().
+  bool mic_access_;
+  bool camera_access_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMediaStreamUIProxy);
 };

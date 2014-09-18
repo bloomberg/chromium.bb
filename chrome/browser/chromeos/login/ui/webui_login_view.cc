@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -450,6 +451,14 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
     NOTREACHED() << "Media stream not allowed for WebUI";
+}
+
+bool WebUILoginView::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(web_contents, security_origin, type);
 }
 
 bool WebUILoginView::PreHandleGestureEvent(

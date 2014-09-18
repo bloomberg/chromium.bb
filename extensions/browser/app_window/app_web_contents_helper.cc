@@ -97,6 +97,17 @@ void AppWebContentsHelper::RequestMediaAccessPermission(
       web_contents_, request, callback, extension);
 }
 
+bool AppWebContentsHelper::CheckMediaAccessPermission(
+    const GURL& security_origin,
+    content::MediaStreamType type) const {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return false;
+
+  return app_delegate_->CheckMediaAccessPermission(
+      web_contents_, security_origin, type, extension);
+}
+
 const Extension* AppWebContentsHelper::GetExtension() const {
   return ExtensionRegistry::Get(browser_context_)
       ->enabled_extensions()

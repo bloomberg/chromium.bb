@@ -48,6 +48,11 @@ class AppWebContentsHelper {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) const;
 
+  // Checks permission to use the camera or microphone. See
+  // WebContentsDelegate.
+  bool CheckMediaAccessPermission(const GURL& security_origin,
+                                  content::MediaStreamType type) const;
+
  private:
   const Extension* GetExtension() const;
 

@@ -101,6 +101,10 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool CheckMediaAccessPermission(
+      content::WebContents* web_contents,
+      const GURL& security_origin,
+      content::MediaStreamType type) OVERRIDE;
   virtual bool IsNeverVisible(content::WebContents* web_contents) OVERRIDE;
 
   // content::NotificationObserver

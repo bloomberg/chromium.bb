@@ -28,6 +28,10 @@ void GrantMediaStreamRequest(content::WebContents* web_contents,
                              const content::MediaResponseCallback& callback,
                              const Extension* extension);
 
+// Verifies that the extension has permission for |type|. If not, crash.
+void VerifyMediaAccessPermission(content::MediaStreamType type,
+                                 const Extension* extension);
+
 }  // namespace media_capture_util
 }  // namespace extensions
 

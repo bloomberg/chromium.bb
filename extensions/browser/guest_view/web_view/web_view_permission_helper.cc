@@ -180,8 +180,16 @@ void WebViewPermissionHelper::RequestMediaAccessPermission(
     content::WebContents* source,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  web_view_permission_helper_delegate_-> RequestMediaAccessPermission(
+  web_view_permission_helper_delegate_->RequestMediaAccessPermission(
       source, request, callback);
+}
+
+bool WebViewPermissionHelper::CheckMediaAccessPermission(
+    content::WebContents* source,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  return web_view_permission_helper_delegate_->CheckMediaAccessPermission(
+      source, security_origin, type);
 }
 
 void WebViewPermissionHelper::CanDownload(

@@ -428,6 +428,14 @@ void ExtensionHost::RequestMediaAccessPermission(
       web_contents, request, callback, extension());
 }
 
+bool ExtensionHost::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  return delegate_->CheckMediaAccessPermission(
+      web_contents, security_origin, type, extension());
+}
+
 bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
   ViewType view_type = extensions::GetViewType(web_contents);
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;

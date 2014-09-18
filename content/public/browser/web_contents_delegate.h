@@ -444,6 +444,13 @@ class CONTENT_EXPORT WebContentsDelegate {
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback);
 
+  // Checks if we have permission to access the microphone or camera. Note that
+  // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
+  // or MEDIA_DEVICE_VIDEO_CAPTURE.
+  virtual bool CheckMediaAccessPermission(WebContents* web_contents,
+                                          const GURL& security_origin,
+                                          MediaStreamType type);
+
   // Requests permission to access the PPAPI broker. The delegate should return
   // true and call the passed in |callback| with the result, or return false
   // to indicate that it does not support asking for permission.

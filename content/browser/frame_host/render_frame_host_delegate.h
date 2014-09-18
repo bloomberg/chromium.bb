@@ -130,6 +130,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback);
 
+  // Checks if we have permission to access the microphone or camera. Note that
+  // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
+  // or MEDIA_DEVICE_VIDEO_CAPTURE.
+  virtual bool CheckMediaAccessPermission(const GURL& security_origin,
+                                          MediaStreamType type);
+
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual AccessibilityMode GetAccessibilityMode() const;
 

@@ -403,6 +403,69 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
   return false;
 }
 
+bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  if (CheckAllowAllMediaStreamContentForOrigin(profile, security_origin))
+    return true;
+
+  const char* policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+                                ? prefs::kAudioCaptureAllowed
+                                : prefs::kVideoCaptureAllowed;
+  const char* list_policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+                                     ? prefs::kAudioCaptureAllowedUrls
+                                     : prefs::kVideoCaptureAllowedUrls;
+  if (GetDevicePolicy(
+          profile, security_origin, policy_name, list_policy_name) ==
+      ALWAYS_ALLOW) {
+    return true;
+  }
+
+  // There's no secondary URL for these content types, hence duplicating
+  // |security_origin|.
+  if (profile->GetHostContentSettingsMap()->GetContentSetting(
+          security_origin,
+          security_origin,
+          type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+              ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+              : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
+    return true;
+  }
+
+  return false;
+}
+
+#if defined(ENABLE_EXTENSIONS)
+bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type,
+    const extensions::Extension* extension) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  if (extension->is_platform_app() ||
+      IsMediaRequestWhitelistedForExtension(extension)) {
+    return extension->permissions_data()->HasAPIPermission(
+        type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+            ? extensions::APIPermission::kAudioCapture
+            : extensions::APIPermission::kVideoCapture);
+  }
+
+  return CheckMediaAccessPermission(web_contents, security_origin, type);
+}
+#endif
+
 void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,

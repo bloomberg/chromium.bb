@@ -56,6 +56,14 @@ class ExtensionHostDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const Extension* extension) = 0;
+
+  // Checks if we have permission to access the microphone or camera. Note that
+  // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
+  // or MEDIA_DEVICE_VIDEO_CAPTURE.
+  virtual bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                          const GURL& security_origin,
+                                          content::MediaStreamType type,
+                                          const Extension* extension) = 0;
 };
 
 }  // namespace extensions

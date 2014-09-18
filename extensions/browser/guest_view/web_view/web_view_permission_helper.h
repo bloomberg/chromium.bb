@@ -60,6 +60,9 @@ class WebViewPermissionHelper
       content::WebContents* source,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback);
+  bool CheckMediaAccessPermission(content::WebContents* source,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type);
   void CanDownload(content::RenderViewHost* render_view_host,
                    const GURL& url,
                    const std::string& request_method,

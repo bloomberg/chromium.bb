@@ -45,6 +45,11 @@ class AthenaAppDelegate : public extensions::AppDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension) OVERRIDE;
+  virtual bool CheckMediaAccessPermission(
+      content::WebContents* web_contents,
+      const GURL& security_origin,
+      content::MediaStreamType type,
+      const extensions::Extension* extension) OVERRIDE;
   virtual int PreferredIconSize() OVERRIDE;
   virtual gfx::ImageSkia GetAppDefaultIcon() OVERRIDE;
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,

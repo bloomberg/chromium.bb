@@ -63,6 +63,10 @@ class AppDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const Extension* extension) = 0;
+  virtual bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                          const GURL& security_origin,
+                                          content::MediaStreamType type,
+                                          const Extension* extension) = 0;
   virtual int PreferredIconSize() = 0;
   virtual gfx::ImageSkia GetAppDefaultIcon() = 0;
 

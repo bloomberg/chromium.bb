@@ -24,6 +24,9 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
   MOCK_METHOD2(RequestMediaAccessPermission,
                void(const MediaStreamRequest& request,
                     const MediaResponseCallback& callback));
+  MOCK_METHOD2(CheckMediaAccessPermission,
+               bool(const GURL& security_origin,
+                    MediaStreamType type));
 };
 
 class MockResponseCallback {
@@ -31,6 +34,7 @@ class MockResponseCallback {
   MOCK_METHOD2(OnAccessRequestResponse,
                void(const MediaStreamDevices& devices,
                content::MediaStreamRequestResult result));
+  MOCK_METHOD1(OnCheckResponse, void(bool have_access));
 };
 
 class MockMediaStreamUI : public MediaStreamUI {
@@ -244,6 +248,18 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
       base::Bind(&MockStopStreamHandler::OnStop, base::Unretained(&handler)),
       base::Bind(&MockStopStreamHandler::OnWindowId,
                  base::Unretained(&handler)));
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(MediaStreamUIProxyTest, CheckAccess) {
+  proxy_->CheckAccess(GURL("http://origin/"),
+                           MEDIA_DEVICE_AUDIO_CAPTURE,
+                           0,
+                           0,
+                           base::Bind(&MockResponseCallback::OnCheckResponse,
+                                      base::Unretained(&response_callback_)));
+  EXPECT_CALL(delegate_, CheckMediaAccessPermission(_, _));
+  EXPECT_CALL(response_callback_, OnCheckResponse(_));
   message_loop_.RunUntilIdle();
 }
 

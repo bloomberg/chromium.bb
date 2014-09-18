@@ -245,6 +245,16 @@ void ChromeAppDelegate::RequestMediaAccessPermission(
       web_contents, request, callback, extension);
 }
 
+bool ChromeAppDelegate::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type,
+    const extensions::Extension* extension) {
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(
+          web_contents, security_origin, type, extension);
+}
+
 int ChromeAppDelegate::PreferredIconSize() {
 #if defined(USE_ASH)
   return ash::kShelfSize;

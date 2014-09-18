@@ -1472,6 +1472,14 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
     request->devices.clear();
   }
 
+  if (use_fake_ui_) {
+    if (!fake_ui_)
+      fake_ui_.reset(new FakeMediaStreamUIProxy());
+    request->ui_proxy = fake_ui_.Pass();
+  } else {
+    request->ui_proxy = MediaStreamUIProxy::Create();
+  }
+
   // Output label permissions are based on input permission.
   MediaStreamType type =
       request->audio_type() == MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -1479,38 +1487,14 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
       ? MEDIA_DEVICE_AUDIO_CAPTURE
       : MEDIA_DEVICE_VIDEO_CAPTURE;
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&MediaStreamManager::CheckMediaAccessPermissionOnUIThread,
-                 base::Unretained(this),
-                 request->requesting_process_id,
-                 request->security_origin,
-                 type),
+  request->ui_proxy->CheckAccess(
+      request->security_origin,
+      type,
+      request->requesting_process_id,
+      request->requesting_frame_id,
       base::Bind(&MediaStreamManager::HandleCheckMediaAccessResponse,
                  base::Unretained(this),
                  label));
-}
-
-bool MediaStreamManager::CheckMediaAccessPermissionOnUIThread(
-    int render_process_id,
-    const GURL& security_origin,
-    MediaStreamType type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderProcessHost* host =
-      RenderProcessHost::FromID(render_process_id);
-  if (!host) {
-    // This can happen if the renderer goes away during the lifetime of a
-    // request.
-    return false;
-  }
-  content::BrowserContext* context = host->GetBrowserContext();
-  DCHECK(context);
-  return GetContentClient()->browser()->CheckMediaAccessPermission(
-      context,
-      security_origin,
-      type);
 }
 
 void MediaStreamManager::HandleCheckMediaAccessResponse(

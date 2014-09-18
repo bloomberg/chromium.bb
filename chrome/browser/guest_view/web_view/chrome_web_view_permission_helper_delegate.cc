@@ -138,7 +138,18 @@ void ChromeWebViewPermissionHelperDelegate::RequestMediaAccessPermission(
       false /* allowed_by_default */);
 }
 
- void ChromeWebViewPermissionHelperDelegate::OnMediaPermissionResponse(
+bool ChromeWebViewPermissionHelperDelegate::CheckMediaAccessPermission(
+    content::WebContents* source,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  return web_view_guest()
+      ->embedder_web_contents()
+      ->GetDelegate()
+      ->CheckMediaAccessPermission(
+          web_view_guest()->embedder_web_contents(), security_origin, type);
+}
+
+void ChromeWebViewPermissionHelperDelegate::OnMediaPermissionResponse(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     bool allow,

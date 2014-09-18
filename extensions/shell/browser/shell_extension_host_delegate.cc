@@ -52,5 +52,13 @@ void ShellExtensionHostDelegate::ProcessMediaAccessRequest(
       web_contents, request, callback, extension);
 }
 
-}  // namespace extensions
+bool ShellExtensionHostDelegate::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type,
+    const Extension* extension) {
+  media_capture_util::VerifyMediaAccessPermission(type, extension);
+  return true;
+}
 
+}  // namespace extensions

@@ -647,6 +647,10 @@ class Browser : public TabStripModelObserver,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool CheckMediaAccessPermission(
+      content::WebContents* web_contents,
+      const GURL& security_origin,
+      content::MediaStreamType type) OVERRIDE;
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,

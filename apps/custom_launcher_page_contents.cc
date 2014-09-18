@@ -126,6 +126,14 @@ void CustomLauncherPageContents::RequestMediaAccessPermission(
   helper_->RequestMediaAccessPermission(request, callback);
 }
 
+bool CustomLauncherPageContents::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  DCHECK_EQ(web_contents_.get(), web_contents);
+  return helper_->CheckMediaAccessPermission(security_origin, type);
+}
+
 bool CustomLauncherPageContents::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;

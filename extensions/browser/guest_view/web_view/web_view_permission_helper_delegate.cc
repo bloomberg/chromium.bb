@@ -18,4 +18,12 @@ WebViewPermissionHelperDelegate::WebViewPermissionHelperDelegate(
 WebViewPermissionHelperDelegate::~WebViewPermissionHelperDelegate() {
 }
 
+bool WebViewPermissionHelperDelegate::CheckMediaAccessPermission(
+    content::WebContents* source,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  // Defensive default implementation for privacy reasons.
+  return false;
+}
+
 }  // namespace extensions

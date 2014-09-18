@@ -1759,6 +1759,12 @@ void Browser::RequestMediaAccessPermission(
   ::RequestMediaAccessPermission(web_contents, profile_, request, callback);
 }
 
+bool Browser::CheckMediaAccessPermission(content::WebContents* web_contents,
+                                         const GURL& security_origin,
+                                         content::MediaStreamType type) {
+  return ::CheckMediaAccessPermission(web_contents, security_origin, type);
+}
+
 bool Browser::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,

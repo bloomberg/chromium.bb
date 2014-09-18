@@ -212,39 +212,6 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
            const MediaStreamUIProxy::WindowIdCallback& window_id_callback));
 };
 
-class MediaStreamManagerForTest : public MediaStreamManager {
- public:
-  MediaStreamManagerForTest(media::AudioManager* audio_manager)
-      : MediaStreamManager(audio_manager),
-        mic_access_(true),
-        camera_access_(true) {}
-
-  virtual ~MediaStreamManagerForTest() {}
-
-  void set_mic_access(bool allow_access) {
-    mic_access_ = allow_access;
-  }
-
-  void set_camera_access(bool allow_access) {
-    camera_access_ = allow_access;
-  }
-
- private:
-  virtual bool CheckMediaAccessPermissionOnUIThread(
-      int render_process_id,
-      const GURL& security_origin,
-      MediaStreamType type) OVERRIDE {
-    if (type == MEDIA_DEVICE_AUDIO_CAPTURE)
-      return mic_access_;
-    else if (type == MEDIA_DEVICE_VIDEO_CAPTURE)
-      return camera_access_;
-    return false;
-  }
-
-  bool mic_access_;
-  bool camera_access_;
-};
-
 class MediaStreamDispatcherHostTest : public testing::Test {
  public:
   MediaStreamDispatcherHostTest()
@@ -257,8 +224,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     // Create our own MediaStreamManager.
-    media_stream_manager_.reset(
-        new MediaStreamManagerForTest(audio_manager_.get()));
+    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     video_capture_device_factory_ =
         static_cast<media::FakeVideoCaptureDeviceFactory*>(
             media_stream_manager_->video_capture_manager()
@@ -298,12 +264,12 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
  protected:
   virtual void SetupFakeUI(bool expect_started) {
-    scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
+    stream_ui_ = new MockMediaStreamUIProxy();
     if (expect_started) {
-      EXPECT_CALL(*stream_ui, OnStarted(_, _));
+      EXPECT_CALL(*stream_ui_, OnStarted(_, _));
     }
     media_stream_manager_->UseFakeUI(
-        stream_ui.PassAs<FakeMediaStreamUIProxy>());
+      scoped_ptr<FakeMediaStreamUIProxy>(stream_ui_));
   }
 
   void GenerateStreamAndWaitForResult(int render_frame_id,
@@ -446,7 +412,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<MediaStreamManagerForTest> media_stream_manager_;
+  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  MockMediaStreamUIProxy* stream_ui_;
   ContentBrowserClient* old_browser_client_;
   scoped_ptr<ContentClient> content_client_;
   content::TestBrowserThreadBundle thread_bundle_;
@@ -911,26 +878,30 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevices) {
+  SetupFakeUI(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
                                    MEDIA_DEVICE_AUDIO_CAPTURE);
   EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevices) {
+  SetupFakeUI(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
                                    MEDIA_DEVICE_VIDEO_CAPTURE);
   EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevicesNoAccess) {
-  media_stream_manager_->set_mic_access(false);
+  SetupFakeUI(false);
+  stream_ui_->SetMicAccess(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
                                    MEDIA_DEVICE_AUDIO_CAPTURE);
   EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevicesNoAccess) {
-  media_stream_manager_->set_camera_access(false);
+  SetupFakeUI(false);
+  stream_ui_->SetCameraAccess(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
                                    MEDIA_DEVICE_VIDEO_CAPTURE);
   EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));

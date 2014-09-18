@@ -44,6 +44,14 @@ void RenderFrameHostDelegate::RequestMediaAccessPermission(
                scoped_ptr<MediaStreamUI>());
 }
 
+bool RenderFrameHostDelegate::CheckMediaAccessPermission(
+    const GURL& security_origin,
+    MediaStreamType type) {
+  DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == MEDIA_DEVICE_VIDEO_CAPTURE);
+  return false;
+}
+
 AccessibilityMode RenderFrameHostDelegate::GetAccessibilityMode() const {
   return AccessibilityModeOff;
 }

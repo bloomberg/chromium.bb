@@ -62,6 +62,15 @@ void ShellAppDelegate::RequestMediaAccessPermission(
       web_contents, request, callback, extension);
 }
 
+bool ShellAppDelegate::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type,
+    const Extension* extension) {
+  media_capture_util::VerifyMediaAccessPermission(type, extension);
+  return true;
+}
+
 int ShellAppDelegate::PreferredIconSize() {
   return extension_misc::EXTENSION_ICON_SMALL;
 }

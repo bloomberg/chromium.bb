@@ -226,6 +226,14 @@ void ChromeWebContentsDelegateAndroid::RequestMediaAccessPermission(
       web_contents, request, callback, NULL);
 }
 
+bool ChromeWebContentsDelegateAndroid::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(web_contents, security_origin, type);
+}
+
 bool ChromeWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,

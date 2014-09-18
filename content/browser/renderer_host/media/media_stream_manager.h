@@ -321,11 +321,6 @@ class CONTENT_EXPORT MediaStreamManager
                                   const MediaStreamDevices& devices);
   void FinalizeEnumerateDevices(const std::string& label,
                                 DeviceRequest* request);
-
-  // Checks for media access. Overridden by unit tests.
-  virtual bool CheckMediaAccessPermissionOnUIThread(int render_process_id,
-                                                    const GURL& security_origin,
-                                                    MediaStreamType type);
   void HandleCheckMediaAccessResponse(const std::string& label,
                                       bool have_access);
 

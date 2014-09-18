@@ -56,4 +56,14 @@ void ChromeExtensionHostDelegate::ProcessMediaAccessRequest(
       web_contents, request, callback, extension);
 }
 
+bool ChromeExtensionHostDelegate::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type,
+    const Extension* extension) {
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(
+          web_contents, security_origin, type, extension);
+}
+
 }  // namespace extensions

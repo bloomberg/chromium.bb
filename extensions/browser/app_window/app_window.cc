@@ -346,6 +346,13 @@ void AppWindow::RequestMediaAccessPermission(
   helper_->RequestMediaAccessPermission(request, callback);
 }
 
+bool AppWindow::CheckMediaAccessPermission(content::WebContents* web_contents,
+                                           const GURL& security_origin,
+                                           content::MediaStreamType type) {
+  DCHECK_EQ(AppWindow::web_contents(), web_contents);
+  return helper_->CheckMediaAccessPermission(security_origin, type);
+}
+
 WebContents* AppWindow::OpenURLFromTab(WebContents* source,
                                        const content::OpenURLParams& params) {
   DCHECK_EQ(web_contents(), source);

@@ -25,6 +25,10 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) {}
 
+  virtual bool CheckMediaAccessPermission(content::WebContents* source,
+                                          const GURL& security_origin,
+                                          content::MediaStreamType type);
+
   virtual void CanDownload(
       content::RenderViewHost* render_view_host,
       const GURL& url,
