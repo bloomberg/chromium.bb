@@ -4,7 +4,13 @@
 
 # distutils: language = c++
 
-from libc.stdint cimport int64_t
+from libc.stdint cimport int64_t, intptr_t, uint32_t, uint64_t
+
+
+cdef extern from "mojo/public/c/system/core.h" nogil:
+  ctypedef uint32_t MojoHandle
+  ctypedef uint64_t MojoDeadline
+  ctypedef uint32_t MojoHandleSignals
 
 
 cdef extern from "mojo/public/cpp/bindings/callback.h" nogil:
@@ -12,9 +18,20 @@ cdef extern from "mojo/public/cpp/bindings/callback.h" nogil:
     CClosure()
 
 
+cdef extern from "mojo/public/c/environment/async_waiter.h"  nogil:
+  ctypedef intptr_t MojoAsyncWaitID
+
+
 cdef extern from "mojo/public/python/src/python_system_helper.h" \
-    namespace "mojo" nogil:
+    namespace "mojo::python" nogil:
   cdef CClosure BuildClosure(object)
+  cdef cppclass PythonAsyncWaiter "mojo::python::PythonAsyncWaiter":
+    PythonAsyncWaiter()
+    MojoAsyncWaitID AsyncWait(MojoHandle,
+                              MojoHandleSignals,
+                              MojoDeadline,
+                              object)
+    void CancelWait(MojoAsyncWaitID)
 
 
 cdef extern from "mojo/public/cpp/utility/run_loop.h" nogil:
@@ -23,7 +40,8 @@ cdef extern from "mojo/public/cpp/utility/run_loop.h" nogil:
     void Run() except *
     void RunUntilIdle() except *
     void Quit()
-    void PostDelayedTask(CClosure& task, int64_t delay)
+    void PostDelayedTask(CClosure&, int64_t)
+
 
 cdef extern from "mojo/public/cpp/environment/environment.h" nogil:
   cdef cppclass CEnvironment "mojo::Environment":

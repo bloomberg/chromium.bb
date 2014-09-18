@@ -324,6 +324,19 @@ cdef class Handle(object):
       result = c_core.MojoWait(handle, csignals, cdeadline)
     return result
 
+  def AsyncWait(self, signals, deadline, callback):
+    cdef c_core.MojoHandle handle = self._mojo_handle
+    cdef c_core.MojoHandleSignals csignals = signals
+    cdef c_core.MojoDeadline cdeadline = deadline
+    cdef c_environment.MojoAsyncWaitID wait_id = _ASYNC_WAITER.AsyncWait(
+        handle,
+        csignals,
+        cdeadline,
+        callback)
+    def cancel():
+      _ASYNC_WAITER.CancelWait(wait_id)
+    return cancel
+
   def WriteMessage(self,
                     buffer=None,
                     handles=None,
@@ -725,3 +738,4 @@ cdef class RunLoop(object):
 
 
 cdef c_environment.CEnvironment* _ENVIRONMENT = new c_environment.CEnvironment()
+cdef c_environment.PythonAsyncWaiter* _ASYNC_WAITER = new c_environment.PythonAsyncWaiter()
