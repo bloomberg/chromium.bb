@@ -147,7 +147,7 @@ void URLRequestContextAdapter::InitializeURLRequestContext(
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config->enable_quic) {
     context_->http_server_properties()
-        ->SetAlternateProtocolProbabilityThreshold(1.0f);
+        ->SetAlternateProtocolProbabilityThreshold(0.0f);
     for (size_t hint = 0; hint < config->quic_hints.size(); ++hint) {
       const URLRequestContextConfig::QuicHint& quic_hint =
           *config->quic_hints[hint];
