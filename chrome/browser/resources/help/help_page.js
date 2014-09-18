@@ -104,6 +104,10 @@ cr.define('help', function() {
           }
         };
       }
+      this.maybeSetOnClick_($('about-done'), function() {
+        // Event listener for the close button when shown as an overlay.
+        PageManager.closeOverlay();
+      });
 
       var self = this;
       var channelChanger = $('channel-changer');
@@ -120,13 +124,6 @@ cr.define('help', function() {
           $('request-update').disabled = true;
           chrome.send('requestUpdate');
         });
-
-        // Add event listener for the close button when shown as an overlay.
-        if ($('about-done')) {
-          $('about-done').addEventListener('click', function() {
-            PageManager.closeOverlay();
-          });
-        }
 
         $('change-channel').onclick = function() {
           PageManager.showPageByName('channel-change-page', false);

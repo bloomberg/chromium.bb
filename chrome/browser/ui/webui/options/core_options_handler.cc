@@ -17,6 +17,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/help/help_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -158,6 +160,12 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringUTF16(IDS_DONE));
   localized_strings->SetString("deletableItemDeleteButtonTitle",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DELETABLE_ITEM_DELETE_BUTTON));
+  localized_strings->SetString(
+      "browserVersion",
+      l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
+                                 HelpHandler::BuildBrowserVersionString()));
+  localized_strings->SetBoolean("showVersion",
+                                switches::AboutInSettingsEnabled());
 }
 
 void CoreOptionsHandler::Uninitialize() {

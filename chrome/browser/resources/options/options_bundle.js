@@ -18,7 +18,6 @@
 <if expr="chromeos">
 <include src="../chromeos/user_images_grid.js">
 <include src="../help/channel_change_page.js">
-<include src="../help/help_page.js">
 <include src="../../../../ui/webui/resources/js/chromeos/ui_account_tweaks.js">
 <include src="chromeos/onc_data.js">
 <include src="chromeos/change_picture_options.js">
@@ -116,6 +115,7 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="supervised_user_list_data.js">
 <include src="website_settings.js">
 <include src="website_settings_edit_page.js">
+<include src="../help/help_page.js">
 <include src="../sync_setup_overlay.js">
 <include src="../uber/uber_page_manager_observer.js">
 <include src="../uber/uber_utils.js">

@@ -122,7 +122,7 @@ cr.define('options', function() {
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
 
-      if (cr.isChromeOS && loadTimeData.getBoolean('showVersion')) {
+      if (loadTimeData.getBoolean('showVersion')) {
         $('version-button').hidden = false;
         $('version-button').addEventListener('click', function() {
           PageManager.showPageByName('help');

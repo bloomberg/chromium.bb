@@ -15,7 +15,7 @@
   function load() {
     PageManager.register(HelpPage.getInstance());
 
-    if (cr.isChromeOS) {
+    if (help.ChannelChangePage) {
       PageManager.registerOverlay(help.ChannelChangePage.getInstance(),
                                   HelpPage.getInstance());
     }

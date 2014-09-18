@@ -177,6 +177,14 @@ function load() {
   PageManager.registerOverlay(SyncSetupOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('customize-sync')]);
+  if (loadTimeData.getBoolean('showVersion')) {
+    PageManager.registerOverlay(help.HelpPage.getInstance(),
+                                BrowserOptions.getInstance());
+    if (help.ChannelChangePage) {
+      PageManager.registerOverlay(help.ChannelChangePage.getInstance(),
+                                  help.HelpPage.getInstance());
+    }
+  }
   if (cr.isChromeOS) {
     PageManager.registerOverlay(AccountsOptions.getInstance(),
                                 BrowserOptions.getInstance(),
@@ -211,12 +219,6 @@ function load() {
                                 BrowserOptions.getInstance());
     PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
-    if (loadTimeData.getBoolean('showVersion')) {
-      PageManager.registerOverlay(help.ChannelChangePage.getInstance(),
-                                  help.HelpPage.getInstance());
-      PageManager.registerOverlay(help.HelpPage.getInstance(),
-                                  BrowserOptions.getInstance());
-    }
   }
 
   if (!cr.isWindows && !cr.isMac) {

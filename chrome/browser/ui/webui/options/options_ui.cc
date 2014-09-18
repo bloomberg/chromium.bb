@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/options/easy_unlock_handler.h"
 #include "chrome/browser/ui/webui/options/font_settings_handler.h"
 #include "chrome/browser/ui/webui/options/handler_options_handler.h"
+#include "chrome/browser/ui/webui/options/help_overlay_handler.h"
 #include "chrome/browser/ui/webui/options/home_page_overlay_handler.h"
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
 #include "chrome/browser/ui/webui/options/language_dictionary_overlay_handler.h"
@@ -89,7 +90,6 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
-#include "chrome/browser/ui/webui/options/help_overlay_handler.h"
 #endif
 
 #if defined(USE_NSS)
@@ -278,6 +278,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
 #if defined(ENABLE_GOOGLE_NOW)
   AddOptionsPageUIHandler(localized_strings, new GeolocationOptionsHandler());
 #endif
+  AddOptionsPageUIHandler(localized_strings, new options::HelpOverlayHandler());
   AddOptionsPageUIHandler(localized_strings, new HomePageOverlayHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new MediaDevicesSelectionHandler());
@@ -316,7 +317,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::DisplayOverscanHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::InternetOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new options::HelpOverlayHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::KeyboardHandler());
 

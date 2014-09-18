@@ -22,9 +22,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
-#include "chrome/browser/ui/webui/help/help_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/user_manager/user_manager.h"
@@ -328,13 +326,6 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
             IDS_OPTIONS_CONTROLLED_SETTING_OWNER,
             base::ASCIIToUTF16(user_manager->GetOwnerEmail())));
   }
-
-  localized_strings->SetString(
-      "browserVersion",
-      l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
-                                 ::HelpHandler::BuildBrowserVersionString()));
-  localized_strings->SetBoolean("showVersion",
-                                ::switches::AboutInSettingsEnabled());
 }
 
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(
