@@ -80,7 +80,7 @@ input[type='checkbox'] {
 input[type='radio'] {
   /* OVERRIDE */
   border-radius: 100%;
-  bottom: 3px;
+  bottom: 1px;
   height: 15px;
   position: relative;
   vertical-align: middle;
