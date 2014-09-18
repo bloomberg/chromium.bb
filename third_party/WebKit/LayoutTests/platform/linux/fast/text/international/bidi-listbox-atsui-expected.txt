@@ -9,51 +9,51 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (549,15) size 0x0
         RenderText {#text} at (0,20) size 543x19
           text run at (0,20) width 543: "The order of the text below each list box should match the order of the select's option text."
-      RenderBlock (anonymous) at (0,56) size 784x90
+      RenderBlock (anonymous) at (0,56) size 784x56
         RenderText {#text} at (0,0) size 92x19
           text run at (0,0) width 92: "1) direction: rtl;"
         RenderBR {BR} at (92,15) size 0x0
-        RenderBR {BR} at (84,86) size 0x0
-      RenderBlock {DIV} at (0,146) size 100x20
+        RenderBR {BR} at (84,52) size 0x0
+      RenderBlock {DIV} at (0,112) size 100x20
         RenderText {#text} at (31,0) size 69x19
           text run at (31,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
           text run at (78,0) width 22: "a\x{300}bc"
-      RenderBlock (anonymous) at (0,166) size 784x110
+      RenderBlock (anonymous) at (0,132) size 784x76
         RenderBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 92x19
           text run at (0,20) width 92: "2) direction: ltr;"
         RenderBR {BR} at (92,35) size 0x0
-        RenderBR {BR} at (84,106) size 0x0
-      RenderBlock {DIV} at (0,276) size 100x20
+        RenderBR {BR} at (84,72) size 0x0
+      RenderBlock {DIV} at (0,208) size 100x20
         RenderText {#text} at (0,0) size 69x19
           text run at (0,0) width 22: "a\x{300}bc"
           text run at (22,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-      RenderBlock (anonymous) at (0,296) size 784x110
+      RenderBlock (anonymous) at (0,228) size 784x76
         RenderBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 68x19
           text run at (0,20) width 68: "3) No style"
         RenderBR {BR} at (68,35) size 0x0
-        RenderBR {BR} at (84,106) size 0x0
-      RenderBlock {DIV} at (0,406) size 100x20
+        RenderBR {BR} at (84,72) size 0x0
+      RenderBlock {DIV} at (0,304) size 100x20
         RenderText {#text} at (0,0) size 69x19
           text run at (0,0) width 22: "a\x{300}bc"
           text run at (22,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-      RenderBlock (anonymous) at (0,426) size 784x20
+      RenderBlock (anonymous) at (0,324) size 784x20
         RenderBR {BR} at (0,0) size 0x19
-layer at (8,84) size 84x70 clip at (24,85) size 67x68
-  RenderListBox {SELECT} at (0,20) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (8,84) size 84x36 clip at (24,85) size 67x34
+  RenderListBox {SELECT} at (0,20) size 84x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (16,1) size 67x17
       RenderText {#text} at (2,0) size 63x16
         text run at (2,0) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         text run at (44,0) width 21: "a\x{300}bc"
-layer at (8,214) size 84x70 clip at (9,215) size 67x68
-  RenderListBox {SELECT} at (0,40) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (8,180) size 84x36 clip at (9,181) size 67x34
+  RenderListBox {SELECT} at (0,40) size 84x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 67x17
       RenderText {#text} at (2,0) size 63x16
         text run at (2,0) width 21: "a\x{300}bc"
         text run at (23,0) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-layer at (8,344) size 84x70 clip at (9,345) size 67x68
-  RenderListBox {SELECT} at (0,40) size 84x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (8,276) size 84x36 clip at (9,277) size 67x34
+  RenderListBox {SELECT} at (0,40) size 84x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 67x17
       RenderText {#text} at (2,0) size 63x16
         text run at (2,0) width 21: "a\x{300}bc"

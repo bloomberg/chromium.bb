@@ -12,13 +12,7 @@ layer at (0,0) size 785x627
         text run at (148,59) width 4: " "
       RenderText {#text} at (218,59) size 4x19
         text run at (218,59) width 4: " "
-      RenderText {#text} at (275,59) size 4x19
-        text run at (275,59) width 4: " "
-      RenderText {#text} at (332,59) size 4x19
-        text run at (332,59) width 4: " "
-      RenderText {#text} at (389,59) size 4x19
-        text run at (389,59) width 4: " "
-      RenderBR {BR} at (393,59) size 0x19
+      RenderBR {BR} at (222,59) size 0x19
       RenderText {#text} at (50,142) size 4x19
         text run at (50,142) width 4: " "
       RenderText {#text} at (100,142) size 4x19
@@ -76,48 +70,6 @@ layer at (164,12) size 58x70 clip at (165,13) size 41x68
       RenderBlock {OPTION} at (0,17) size 41x17 [bgcolor=#999999]
         RenderText {#text} at (2,0) size 37x16
           text run at (2,0) width 37: "    baz"
-layer at (234,63) size 45x19 clip at (235,64) size 28x17 scrollHeight 68
-  RenderListBox {SELECT} at (226,55) size 45x19 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo1"
-    RenderBlock {OPTION} at (1,18) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo2"
-    RenderBlock {OPTION} at (1,35) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo3"
-    RenderBlock {OPTION} at (1,52) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo4"
-layer at (291,46) size 45x36 clip at (292,47) size 28x34 scrollHeight 68
-  RenderListBox {SELECT} at (283,38) size 45x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo1"
-    RenderBlock {OPTION} at (1,18) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo2"
-    RenderBlock {OPTION} at (1,35) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo3"
-    RenderBlock {OPTION} at (1,52) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo4"
-layer at (348,29) size 45x53 clip at (349,30) size 28x51 scrollHeight 68
-  RenderListBox {SELECT} at (340,21) size 45x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo1"
-    RenderBlock {OPTION} at (1,18) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo2"
-    RenderBlock {OPTION} at (1,35) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo3"
-    RenderBlock {OPTION} at (1,52) size 28x17
-      RenderText {#text} at (2,0) size 24x16
-        text run at (2,0) width 24: "foo4"
 layer at (12,91) size 42x74 clip at (15,94) size 21x68
   RenderListBox {SELECT} at (4,83) size 42x74 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
     RenderBlock {OPTION} at (3,3) size 21x17

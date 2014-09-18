@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DIV} at (0,0) size 32x498 [border: (1px solid #FF0000)]
+      RenderBlock {DIV} at (0,0) size 32x470 [border: (1px solid #FF0000)]
         RenderTextControl {INPUT} at (1,1) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderTextControl {INPUT} at (1,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
@@ -38,11 +38,11 @@ layer at (0,0) size 800x600
               text run at (8,2) width 31: "select"
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-        RenderBlock {INPUT} at (3.91,318) size 12x12
-        RenderBlock {INPUT} at (3.91,336) size 12x12
+        RenderBlock {INPUT} at (3.91,290) size 12x12
+        RenderBlock {INPUT} at (3.91,308) size 12x12
         RenderText {#text} at (0,0) size 0x0
-        RenderBlock {INPUT} at (3.91,354) size 12x13
-        RenderBlock {INPUT} at (3.91,373) size 12x13
+        RenderBlock {INPUT} at (3.91,326) size 12x13
+        RenderBlock {INPUT} at (3.91,345) size 12x13
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
@@ -50,31 +50,31 @@ layer at (12,12) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
 layer at (12,31) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (9,208) size 48x59 clip at (10,209) size 35x57 scrollHeight 56
-  RenderListBox {SELECT} at (1,200.25) size 47.80x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (9,208) size 48x45 clip at (10,209) size 35x43 scrollHeight 42
+  RenderListBox {SELECT} at (1,200.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.80x14.19
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
-layer at (9,265) size 48x59 clip at (10,266) size 35x57 scrollHeight 56
-  RenderListBox {SELECT} at (1,257.25) size 47.80x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (9,251) size 48x45 clip at (10,252) size 35x43 scrollHeight 42
+  RenderListBox {SELECT} at (1,243.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.80x14.19
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
-layer at (9,397) size 27x27
-  RenderPartObject {IFRAME} at (1,389) size 27x27 [border: (1px solid #000000)]
+layer at (9,369) size 27x27
+  RenderPartObject {IFRAME} at (1,361) size 27x27 [border: (1px solid #000000)]
     layer at (0,0) size 25x25
       RenderView at (0,0) size 25x25
     layer at (0,0) size 25x25
       RenderBlock {HTML} at (0,0) size 25x25
         RenderBody {BODY} at (8,8) size 9x9
-layer at (9,424) size 27x27
-  RenderPartObject {IFRAME} at (1,416) size 27x27 [border: (1px solid #000000)]
+layer at (9,396) size 27x27
+  RenderPartObject {IFRAME} at (1,388) size 27x27 [border: (1px solid #000000)]
     layer at (0,0) size 25x25
       RenderView at (0,0) size 25x25
     layer at (0,0) size 25x25
       RenderBlock {HTML} at (0,0) size 25x25
         RenderBody {BODY} at (8,8) size 9x9
-layer at (9,451) size 27x27
-  RenderEmbeddedObject {EMBED} at (1,443) size 27x27 [border: (1px solid #000000)]
-layer at (9,478) size 27x27
-  RenderEmbeddedObject {EMBED} at (1,470) size 27x27 [border: (1px solid #000000)]
+layer at (9,423) size 27x27
+  RenderEmbeddedObject {EMBED} at (1,415) size 27x27 [border: (1px solid #000000)]
+layer at (9,450) size 27x27
+  RenderEmbeddedObject {EMBED} at (1,442) size 27x27 [border: (1px solid #000000)]
