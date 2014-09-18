@@ -415,16 +415,16 @@ void WEBPImageDecoder::clearColorTransform()
     m_transform = 0;
 }
 
-void WEBPImageDecoder::createColorTransform(const char* data, size_t size)
+bool WEBPImageDecoder::createColorTransform(const char* data, size_t size)
 {
     clearColorTransform();
 
     qcms_profile* deviceProfile = ImageDecoder::qcmsOutputDeviceProfile();
     if (!deviceProfile)
-        return;
+        return false;
     qcms_profile* inputProfile = qcms_profile_from_memory(data, size);
     if (!inputProfile)
-        return;
+        return false;
 
     // We currently only support color profiles for RGB profiled images.
     ASSERT(icSigRgbData == qcms_profile_get_color_space(inputProfile));
@@ -434,6 +434,7 @@ void WEBPImageDecoder::createColorTransform(const char* data, size_t size)
     m_transform = qcms_transform_create(inputProfile, format, deviceProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL);
 
     qcms_profile_release(inputProfile);
+    return !!m_transform;
 }
 
 void WEBPImageDecoder::readColorProfile()
