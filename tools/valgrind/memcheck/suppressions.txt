@@ -2893,35 +2893,6 @@
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
 }
 {
-   bug_110734
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15StartupTimeBomb3ArmERKN4base9TimeDeltaE
-   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
-}
-{
-   bug_111186
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11leveldb_*ChromiumEnv11StartThread*
-   fun:_ZN11leveldb_*ChromiumEnv8Schedule*
-   fun:_ZN7leveldb6DBImpl23MaybeScheduleCompactionEv
-   fun:_ZN7leveldb6DBImpl16MakeRoomForWriteEb
-   fun:_ZN7leveldb6DBImpl5WriteERKNS_12WriteOptionsEPNS_10WriteBatchE
-   fun:_ZN17LeveldbValueStore9WriteToDbEPN7leveldb10WriteBatchE
-   fun:_ZN17LeveldbValueStore3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensions28SettingsStorageQuotaEnforcer3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensions23SyncableSettingsStorage3SetEiRKSsRKN4base5ValueE
-}
-{
-   bug_111341
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN5blink17ClipboardChromiumnwEm
-   fun:_ZN5blink17ClipboardChromium6createENS_9Clipboard13ClipboardTypeEN3WTF10PassRefPtrINS_18ChromiumDataObjectEEENS_21ClipboardAccessPolicyEPNS_5FrameE
-}
-{
    bug_111669
    Memcheck:Leak
    fun:_Znw*
@@ -2949,21 +2920,6 @@
    fun:_tnl_run_pipeline
    fun:_tnl_draw_prims
    fun:_tnl_vbo_draw_prims
-}
-{
-   bug_112315
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2v88internal21NativeObjectsExplorer18FindOrAddGroupInfoEPKc
-   ...
-   fun:_ZN2v88internal21NativeObjectsExplorer27IterateAndExtractReferencesEPNS0_23SnapshotFillerInterfaceE
-   fun:_ZN2v88internal21HeapSnapshotGenerator25CountEntriesAndReferencesEv
-   fun:_ZN2v88internal21HeapSnapshotGenerator16GenerateSnapshotEv
-   fun:_ZN2v88internal12HeapProfiler16TakeSnapshotImplEPKciPNS_15ActivityControlE
-   ...
-   fun:_ZN2v88internal12HeapProfiler12TakeSnapshotEPNS0_6StringEiPNS_15ActivityControlE
-   fun:_ZN2v812HeapProfiler12TakeSnapshotENS_6HandleINS_6StringEEENS_12HeapSnapshot4TypeEPNS_15ActivityControlE
-   fun:_ZL13GetNumObjectsPKc
 }
 {
    bug_112450_b
@@ -3032,58 +2988,6 @@
    fun:_ZN5blink26npObjectPropertyEnumerator*Info*
    ...
    fun:_ZN2v88internal28Runtime_GetPropertyNamesFast*IsolateE
-}
-{
-   bug_112573
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2v88internal2OS15CreateSemaphoreEi
-   fun:_ZN2v88internal8ProfilerC1EPNS0_7IsolateE
-   fun:_ZN2v88internal6Logger5SetUpEv
-   fun:_ZN2v88internal7Isolate4InitEPNS0_12DeserializerE
-   fun:_ZN2v88internal2V810InitializeEPNS0_12DeserializerE
-   fun:_ZN2v88internal8Snapshot11DeserializeEPKhi
-   fun:_ZN2v88internal8Snapshot10InitializeEPKc
-   fun:_ZN2v8L16InitializeHelperEv
-   fun:_ZN2v8L27EnsureInitializedForIsolateEPNS_8internal7IsolateEPKc
-   fun:_ZN2v82V818AddMessageListenerEPFvNS_6HandleINS_7MessageEEENS1_INS_5ValueEEEES5_
-   fun:_ZN5blink27WorkerContextExecutionProxy19initContextIfNeededEv
-   fun:_ZN5blink27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
-   fun:_ZN5blink22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPNS_11ScriptValueE
-   fun:_ZN5blink22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeE
-   fun:_ZN5blink12WorkerThread12workerThreadEv
-   fun:_ZN5blink12WorkerThread17workerThreadStartEPv
-   fun:_ZN3WTFL16threadEntryPointEPv
-}
-{
-   bug_112835
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN5blink31WorkerFileSystemCallbacksBridge4stopEv
-   fun:_ZN5blink31WorkerFileSystemContextObserver10notifyStopEv
-   fun:_ZN5blink13WorkerContext21notifyObserversOfStopEv
-   fun:_ZN5blink29WorkerThreadShutdownStartTask11performTaskEPNS_22ScriptExecutionContextE
-   fun:_ZN5blink13WorkerRunLoop4Task11performTaskERKS0_PNS_22ScriptExecutionContextE
-   fun:_ZN5blink13WorkerRunLoop15runCleanupTasksEPNS_13WorkerContextE
-}
-{
-   bug_115294
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN17AudioRendererHost14OnCreateStreamEiRK15AudioParameters
-}
-{
-   bug_116475
-   Memcheck:Uninitialized
-   ...
-   fun:_ZNK4base9Histogram11BucketIndexEi
-   fun:_ZN4base9Histogram3AddEi
-   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl21histogramCustomCountsEPKciiii
-   fun:_ZN5blink15PlatformSupport21histogramCustomCountsEPKciiii
-   fun:_ZN5blink19CCLayerTreeHostImpl20optimizeRenderPasses*
-   fun:_ZN5blink19CCLayerTreeHostImpl10drawLayersEv
-   fun:_ZN5blink19CCSingleThreadProxy11doCompositeEv
 }
 {
    bug_118890_a
