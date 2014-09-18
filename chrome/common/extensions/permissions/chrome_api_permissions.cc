@@ -63,14 +63,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kEmbeddedExtensionOptions, "embeddedExtensionOptions",
        APIPermissionInfo::kFlagCannotBeOptional},
-      // NOTE(kalman): this is provided by a manifest property but needs to
-      // appear in the install permission dialogue, so we need a fake
-      // permission for it. See http://crbug.com/247857.
-      {APIPermission::kWebConnectable, "webConnectable",
-       APIPermissionInfo::kFlagCannotBeOptional |
-           APIPermissionInfo::kFlagInternal,
-       IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE,
-       PermissionMessage::kWebConnectable},
       {APIPermission::kGeolocation, "geolocation",
        APIPermissionInfo::kFlagCannotBeOptional,
        IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,

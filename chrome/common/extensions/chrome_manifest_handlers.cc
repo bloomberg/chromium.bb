@@ -34,7 +34,6 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
-#include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
@@ -53,7 +52,6 @@ void RegisterChromeManifestHandlers() {
   (new ContentScriptsHandler)->Register();
   (new DefaultLocaleHandler)->Register();
   (new DevToolsPageHandler)->Register();
-  (new ExternallyConnectableHandler)->Register();
   (new FileBrowserHandlerParser)->Register();
   (new HomepageURLHandler)->Register();
 #if defined(OS_CHROMEOS)

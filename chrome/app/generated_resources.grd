@@ -4382,9 +4382,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_NATIVE_MESSAGING" desc="Permission string for Native Messaging API.">
         Communicate with cooperating native applications
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE" desc="Permission string for allowing websites to connect to extensions.">
-        Communicate with cooperating websites
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE" desc="Permission string for locking an unlocking the screen.">
         Lock and unlock the screen
       </message>

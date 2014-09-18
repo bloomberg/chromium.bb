@@ -17,8 +17,6 @@
       # they should be kept here.
       '../extensions/common/extension_l10n_util_unittest.cc',
       '../extensions/common/file_util_unittest.cc',
-      '../extensions/common/manifest_handlers/externally_connectable_unittest.cc',
-      '../extensions/common/manifest_handlers/file_handler_manifest_unittest.cc',
       # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
       # dependency is needed to make commit bots run unit_tests on
       # histograms.xml changes.

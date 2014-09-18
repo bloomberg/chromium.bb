@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
+#include "extensions/common/manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 namespace errors = manifest_errors;
 
-// TODO(jamescook): Convert from ChromeManifestTest to ManifestTest.
-class FileHandlersManifestTest : public ChromeManifestTest {
-};
+typedef ManifestTest FileHandlersManifestTest;
 
 TEST_F(FileHandlersManifestTest, InvalidFileHandlers) {
   Testcase testcases[] = {

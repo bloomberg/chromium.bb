@@ -4,6 +4,8 @@
 
 #include "extensions/common/permissions/extensions_api_permissions.h"
 
+#include <vector>
+
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/socket_permission.h"
@@ -65,6 +67,14 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kVideoCapture, "videoCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
        PermissionMessage::kVideoCapture},
+      // NOTE(kalman): This is provided by a manifest property but needs to
+      // appear in the install permission dialogue, so we need a fake
+      // permission for it. See http://crbug.com/247857.
+      {APIPermission::kWebConnectable, "webConnectable",
+       APIPermissionInfo::kFlagCannotBeOptional |
+           APIPermissionInfo::kFlagInternal,
+       IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE,
+       PermissionMessage::kWebConnectable},
       {APIPermission::kWebView, "webview",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWindowShape, "app.window.shape"},

@@ -170,12 +170,6 @@
       "extension_types": ["shared_module"]
     }
   ],
-  "externally_connectable": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "hosted_app", "legacy_packaged_app", "platform_app"
-    ]
-  },
   "file_browser_handlers": [
     {
       "channel": "stable",
@@ -187,26 +181,9 @@
       "location": "component"
     }
   ],
-  "file_handlers": [
-  {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  }, {
-    "channel": "stable",
-    "extension_types": [ "extension"],
-    "whitelist": [
-      "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
-      "3727DD3E564B6055387425027AD74C58784ACC15",  // Quickoffice internal
-      "12E618C3C6E97495AAECF2AC12DEB082353241C6"   // QO component extension
-    ]
-  }],
   "homepage_url": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
-  },
-  "icons": {
-    "channel": "stable",
-    "extension_types": "all"
   },
   "import": {
     "channel": "stable",
@@ -217,20 +194,6 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "key": {
-    "channel": "stable",
-    "extension_types": "all"
-  },
-  "launcher_page": {
-    "channel": "stable",
-    "min_manifest_version": 2,
-    "extension_types": ["platform_app"],
-    "whitelist": [
-      "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/404000
-      "896B85CC7E913E11C34892C1425A093C0701D386",  // http://crbug.com/404000
-      "11A01C82EF355E674E4F9728A801F5C3CB40D83F"   // http://crbug.com/404000
-    ]
-  },
-  "manifest_version": {
     "channel": "stable",
     "extension_types": "all"
   },
@@ -263,16 +226,6 @@
     "extension_types": [
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
-  },
-  "nacl_modules": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-    ]
-  },
-  "name": {
-    "channel": "stable",
-    "extension_types": "all"
   },
   "oauth2": {
     "channel": "stable",
@@ -400,9 +353,5 @@
   "url_handlers": {
     "channel": "stable",
     "extension_types": ["platform_app"]
-  },
-  "version": {
-    "channel": "stable",
-    "extension_types": "all"
   }
 }

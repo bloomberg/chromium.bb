@@ -1096,6 +1096,8 @@
         'common/features/complex_feature_unittest.cc',
         'common/features/simple_feature_unittest.cc',
         'common/manifest_handler_unittest.cc',
+        'common/manifest_handlers/externally_connectable_unittest.cc',
+        'common/manifest_handlers/file_handler_manifest_unittest.cc',
         'common/manifest_handlers/shared_module_manifest_unittest.cc',
         'common/message_bundle_unittest.cc',
         'common/one_shot_event_unittest.cc',

@@ -349,6 +349,10 @@
       <message name="IDS_EXTENSION_PROMPT_WARNING_U2F_DEVICES" desc="Warning message which indicates that an extension has access to Universal 2nd Factor devices.">
         Access your Universal 2nd Factor devices
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE" desc="Permission string for allowing websites to connect to extensions.">
+        Communicate with cooperating websites
+      </message>
+
     </messages>
   </release>
 </grit>
