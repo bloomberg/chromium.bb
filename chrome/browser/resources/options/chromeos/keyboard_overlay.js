@@ -161,15 +161,10 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(KeyboardOverlay, [
     'showCapsLockOptions',
     'showDiamondKeyOptions',
-  ].forEach(function(name) {
-    KeyboardOverlay[name] = function() {
-      var instance = KeyboardOverlay.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

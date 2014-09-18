@@ -9,6 +9,7 @@ cr.define('options', function() {
 
   /**
    * Base class for banners that appear at the top of the settings page.
+   * @constructor
    */
   function SettingsBannerBase() {}
 
@@ -49,37 +50,13 @@ cr.define('options', function() {
     setVisibilibyDomElement_: null,
 
     /**
-     * Called by the native code to show the banner if needed.
-     * @private
-     */
-    show_: function() {
-      if (!this.hadBeenDismissed_) {
-        chrome.send('metricsHandler:recordAction', [this.showMetricName_]);
-        this.setVisibility_(true);
-      }
-    },
-
-    /**
-     * Called when the banner should be closed as a result of something taking
-     * place on the WebUI page, i.e. when its close button is pressed, or when
-     * the confirmation dialog for the profile settings reset feature is opened.
-     * @private
-     */
-    dismiss_: function() {
-      chrome.send(this.dismissNativeCallbackName_);
-      this.hadBeenDismissed_ = true;
-      this.setVisibility_(false);
-    },
-
-    /**
      * Sets whether or not the reset profile settings banner shall be visible.
      * @param {boolean} show Whether or not to show the banner.
-     * @private
+     * @protected
      */
-    setVisibility_: function(show) {
+    setVisibility: function(show) {
       this.setVisibilibyDomElement_.hidden = !show;
     },
-
   };
 
   // Export

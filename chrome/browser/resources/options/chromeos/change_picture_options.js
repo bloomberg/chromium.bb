@@ -324,19 +324,14 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(ChangePictureOptions, [
     'closeOverlay',
     'setCameraPresent',
     'setDefaultImages',
     'setOldImage',
     'setProfileImage',
     'setSelectedImage',
-  ].forEach(function(name) {
-    ChangePictureOptions[name] = function() {
-      var instance = ChangePictureOptions.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

@@ -17,10 +17,11 @@ cr.define('options', function() {
     DEFAULT: 1
   };
 
-  //
-  // BrowserOptions class
-  // Encapsulated handling of browser options page.
-  //
+  /**
+   * Encapsulated handling of browser options page.
+   * @constructor
+   * @extends {cr.ui.pageManager.Page}
+   */
   function BrowserOptions() {
     Page.call(this, 'settings', loadTimeData.getString('settingsTitle'),
               'settings');
@@ -742,7 +743,7 @@ cr.define('options', function() {
       section.classList.add('sliding');
 
       // Force a style recalc before starting the animation.
-      /** @suppress {uselessCode} */
+      /** @suppress {suspiciousCode} */
       section.offsetHeight;
 
       section.style.height = (showing ? container.offsetHeight : 0) + 'px';
@@ -1429,16 +1430,25 @@ cr.define('options', function() {
       ManageProfileOverlay.showDeleteDialog(this.getCurrentProfile_());
     },
 
+    /**
+     * @param {boolean} enabled
+     */
     setNativeThemeButtonEnabled_: function(enabled) {
       var button = $('themes-native-button');
       if (button)
         button.disabled = !enabled;
     },
 
+    /**
+     * @param {boolean} enabled
+     */
     setThemesResetButtonEnabled_: function(enabled) {
       $('themes-reset').disabled = !enabled;
     },
 
+    /**
+     * @param {boolean} managed
+     */
     setAccountPictureManaged_: function(managed) {
       var picture = $('account-picture');
       if (managed || UIAccountTweaks.loggedInAsGuest()) {
@@ -1470,6 +1480,9 @@ cr.define('options', function() {
       }
     },
 
+    /**
+     * @param {boolean} managed
+     */
     setWallpaperManaged_: function(managed) {
       var button = $('set-wallpaper');
       button.disabled = !!managed;
@@ -1921,7 +1934,7 @@ cr.define('options', function() {
   };
 
   //Forward public APIs to private implementations.
-  [
+  cr.makePublic(BrowserOptions, [
     'addBluetoothDevice',
     'deleteCurrentProfile',
     'enableCertificateButton',
@@ -1966,14 +1979,8 @@ cr.define('options', function() {
     'updateEasyUnlock',
     'updateManagesSupervisedUsers',
     'updateSearchEngines',
-    'updateStartupPages',
     'updateSyncState',
-  ].forEach(function(name) {
-    BrowserOptions[name] = function() {
-      var instance = BrowserOptions.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   if (cr.isChromeOS) {
     /**

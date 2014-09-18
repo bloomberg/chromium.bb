@@ -294,6 +294,24 @@ var cr = function() {
     };
   }
 
+  /**
+   * Forwards public APIs to private implementations.
+   * @param {Function} ctor Constructor that have private implementations in its
+   *     prototype.
+   * @param {Array.<string>} methods List of public method names that have their
+   *     underscored counterparts in constructor's prototype.
+   * @param {string=} opt_target Selector for target node.
+   */
+  function makePublic(ctor, methods, opt_target) {
+    methods.forEach(function(method) {
+      ctor[method] = function() {
+        var target = opt_target ? document.getElementById(opt_target) :
+                     ctor.getInstance();
+        return target[method + '_'].apply(target, arguments);
+      };
+    });
+  }
+
   return {
     addSingletonGetter: addSingletonGetter,
     createUid: createUid,
@@ -303,6 +321,7 @@ var cr = function() {
     dispatchSimpleEvent: dispatchSimpleEvent,
     exportPath: exportPath,
     getUid: getUid,
+    makePublic: makePublic,
     PropertyKind: PropertyKind,
 
     get doc() {

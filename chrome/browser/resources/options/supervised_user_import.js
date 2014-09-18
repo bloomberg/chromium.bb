@@ -236,14 +236,9 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(SupervisedUserImportOverlay, [
     'onSuccess',
-  ].forEach(function(name) {
-    SupervisedUserImportOverlay[name] = function() {
-      var instance = SupervisedUserImportOverlay.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

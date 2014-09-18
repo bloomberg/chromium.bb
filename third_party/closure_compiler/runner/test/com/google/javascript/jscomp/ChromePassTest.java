@@ -363,4 +363,166 @@ public class ChromePassTest extends CompilerTestCase {
         test("cr.exportPath();", null, ChromePass.CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
+    public void testCrMakePublicWorksOnOneMethodDefinedInPrototypeObject() throws Exception {
+        test(
+            "/** @constructor */\n" +
+            "function Class() {};\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  /** @return {number} */\n" +
+            "  method_: function() { return 42; }\n" +
+            "};\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);",
+            "/** @constructor */\n" +
+            "function Class() {};\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  /** @return {number} */\n" +
+            "  method_: function() { return 42; }\n" +
+            "};\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.method;\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);");
+    }
+
+    public void testCrMakePublicWorksOnTwoMethods() throws Exception {
+        test(
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  /** @return {number} */\n" +
+            "  m1_: function() { return 42; },\n" +
+            "\n" +
+            "  /** @return {string} */\n" +
+            "  m2_: function() { return ''; }\n" +
+            "};\n" +
+            "\n" +
+            "cr.makePublic(Class, ['m1', 'm2']);",
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  /** @return {number} */\n" +
+            "  m1_: function() { return 42; },\n" +
+            "\n" +
+            "  /** @return {string} */\n" +
+            "  m2_: function() { return ''; }\n" +
+            "}\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.m1;\n" +
+            "\n" +
+            "/** @return {string} */\n" +
+            "Class.m2;\n" +
+            "\n" +
+            "cr.makePublic(Class, ['m1', 'm2']);");
+    }
+
+    public void testCrMakePublicRequiresMethodsToHaveJSDoc() throws Exception {
+        test("/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  method_: function() {}\n" +
+            "}\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);", null, ChromePass.CR_MAKE_PUBLIC_HAS_NO_JSDOC);
+    }
+
+    public void testCrMakePublicDoesNothingWithMethodsNotInAPI() throws Exception {
+        test(
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  method_: function() {}\n" +
+            "}\n" +
+            "\n" +
+            "cr.makePublic(Class, []);",
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "  method_: function() {}\n" +
+            "}\n" +
+            "\n" +
+            "cr.makePublic(Class, []);");
+    }
+
+    public void testCrMakePublicRequiresExportedMethodToBeDeclared() throws Exception {
+        test(
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "Class.prototype = {\n" +
+            "}\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);", null,
+            ChromePass.CR_MAKE_PUBLIC_MISSED_DECLARATION);
+    }
+
+    public void testCrMakePublicWorksOnOneMethodDefinedDirectlyOnPrototype() throws Exception {
+        test(
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.prototype.method_ = function() {};\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);",
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.prototype.method_ = function() {};\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.method;\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);");
+    }
+
+    public void testCrMakePublicWorksOnDummyDeclaration() throws Exception {
+        test(
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.prototype.method_;\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);",
+            "/** @constructor */\n" +
+            "function Class() {}\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.prototype.method_;\n" +
+            "\n" +
+            "/** @return {number} */\n" +
+            "Class.method;\n" +
+            "\n" +
+            "cr.makePublic(Class, ['method']);");
+    }
+
+    public void testCrMakePublicReportsInvalidSecondArgumentMissing() throws Exception {
+        test(
+            "cr.makePublic(Class);", null,
+            ChromePass.CR_MAKE_PUBLIC_INVALID_SECOND_ARGUMENT);
+    }
+
+    public void testCrMakePublicReportsInvalidSecondArgumentNotAnArray() throws Exception {
+        test(
+            "cr.makePublic(Class, 42);", null,
+            ChromePass.CR_MAKE_PUBLIC_INVALID_SECOND_ARGUMENT);
+    }
+
+    public void testCrMakePublicReportsInvalidSecondArgumentArrayWithNotAString() throws Exception {
+        test(
+            "cr.makePublic(Class, [42]);", null,
+            ChromePass.CR_MAKE_PUBLIC_INVALID_SECOND_ARGUMENT);
+    }
+
 }

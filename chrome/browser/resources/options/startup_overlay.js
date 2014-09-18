@@ -155,15 +155,10 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(StartupOverlay, [
     'updateStartupPages',
     'updateAutocompleteSuggestions',
-  ].forEach(function(name) {
-    StartupOverlay[name] = function() {
-      var instance = StartupOverlay.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

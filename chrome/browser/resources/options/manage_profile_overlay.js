@@ -356,7 +356,7 @@ cr.define('options', function() {
      * @param {boolean} nameIsUnique
      */
     getImportHandler_: function(supervisedUser, nameIsUnique) {
-      return (function() {
+      return function() {
         if (supervisedUser.needAvatar || !nameIsUnique) {
           PageManager.showPageByName('supervisedUserImport');
         } else {
@@ -366,7 +366,7 @@ cr.define('options', function() {
               [supervisedUser.name, supervisedUser.iconURL, false, true,
                    supervisedUser.id]);
         }
-      }).bind(this);
+      }.bind(this);
     },
 
     /**
@@ -597,7 +597,7 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(ManageProfileOverlay, [
     'receiveDefaultProfileIconsAndNames',
     'receiveNewProfileDefaults',
     'receiveExistingProfileNames',
@@ -608,12 +608,7 @@ cr.define('options', function() {
     'showDeleteDialog',
     'showDisconnectManagedProfileDialog',
     'showCreateDialog',
-  ].forEach(function(name) {
-    ManageProfileOverlay[name] = function() {
-      var instance = ManageProfileOverlay.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   function CreateProfileOverlay() {
     Page.call(this, 'createProfile',
@@ -853,7 +848,7 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(CreateProfileOverlay, [
     'cancelCreateProfile',
     'onError',
     'onSuccess',
@@ -861,12 +856,7 @@ cr.define('options', function() {
     'updateCreateInProgress',
     'updateSignedInStatus',
     'updateSupervisedUsersAllowed',
-  ].forEach(function(name) {
-    CreateProfileOverlay[name] = function() {
-      var instance = CreateProfileOverlay.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

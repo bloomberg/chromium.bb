@@ -88,14 +88,9 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(SupervisedUserCreateConfirmOverlay, [
     'setProfileInfo',
-  ].forEach(function(name) {
-    SupervisedUserCreateConfirmOverlay[name] = function() {
-      var instance = SupervisedUserCreateConfirmOverlay.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {
