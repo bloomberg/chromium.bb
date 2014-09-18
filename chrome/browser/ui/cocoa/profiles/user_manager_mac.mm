@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 // Default window size. Taken from the views implementation in
 // chrome/browser/ui/views/user_manager_view.cc.
@@ -44,8 +45,7 @@ void HideUserManager() {
 // Custom WebContentsDelegate that allows handling of hotkeys.
 class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  UserManagerWebContentsDelegate(ChromeEventProcessingWindow* window)
-    : window_(window) {}
+  UserManagerWebContentsDelegate() {}
 
   // WebContentsDelegate implementation. Forwards all unhandled keyboard events
   // to the current window.
@@ -55,19 +55,21 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
     if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
       return;
 
-    int commandId = [BrowserWindowUtils getCommandId:event];
+    // -getCommandId returns -1 if the event isn't a chrome accelerator.
+    int chromeCommandId = [BrowserWindowUtils getCommandId:event];
 
-    // Since the User Manager is a "top level" window, only handle close events.
-    if (commandId == IDC_CLOSE_WINDOW || commandId == IDC_EXIT) {
-      // Not invoking +[BrowserWindowUtils handleKeyboardEvent here], since the
-      // window in question is a ConstrainedWindowCustomWindow, not a
-      // BrowserWindow.
-      [window_ redispatchKeyEvent:event.os_event];
+    // Check for Cmd+A and Cmd+V events that could come from a password field.
+    bool isTextEditingCommand =
+        (event.modifiers & blink::WebInputEvent::MetaKey) &&
+        (event.windowsKeyCode == ui::VKEY_A ||
+         event.windowsKeyCode == ui::VKEY_V);
+
+    // Only handle close window Chrome accelerators and text editing ones.
+    if (chromeCommandId == IDC_CLOSE_WINDOW || chromeCommandId == IDC_EXIT ||
+        isTextEditingCommand) {
+      [[NSApp mainMenu] performKeyEquivalent:event.os_event];
     }
   }
-
- private:
-  ChromeEventProcessingWindow* window_;  // Used to redispatch key events.
 };
 
 // Window controller for the User Manager view.
@@ -118,7 +120,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
     webContents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
     window.contentView = webContents_->GetNativeView();
-    webContentsDelegate_.reset(new UserManagerWebContentsDelegate(window));
+    webContentsDelegate_.reset(new UserManagerWebContentsDelegate());
     webContents_->SetDelegate(webContentsDelegate_.get());
     DCHECK(window.contentView);
 
