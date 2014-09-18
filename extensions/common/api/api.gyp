@@ -16,5 +16,20 @@
         'schemas.gypi',
       ],
     },
+    {
+      # Protobuf compiler / generator for chrome.cast.channel-related protocol buffers.
+      # GN version: //extensions/browser/api/cast_channel:cast_channel_proto
+      'target_name': 'cast_channel_proto',
+      'type': 'static_library',
+      'sources': [
+          'cast_channel/cast_channel.proto',
+          'cast_channel/logging.proto'
+      ],
+      'variables': {
+          'proto_in_dir': 'cast_channel',
+          'proto_out_dir': 'extensions/common/api/cast_channel',
+      },
+      'includes': [ '../../../build/protoc.gypi' ]
+    },
   ],
 }
