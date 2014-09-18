@@ -4425,19 +4425,11 @@ class TestSwapPromise : public SwapPromise {
 
   virtual ~TestSwapPromise() {
     base::AutoLock lock(result_->lock);
-    LOG(ERROR) << "~TestSwapPromise() "
-               << " did_swap_called " << result_->did_swap_called
-               << " did_not_swap_called " << result_->did_not_swap_called
-               << " result addr " << result_;
     result_->dtor_called = true;
   }
 
   virtual void DidSwap(CompositorFrameMetadata* metadata) OVERRIDE {
     base::AutoLock lock(result_->lock);
-    LOG(ERROR) << "TestSwapPromise::DidSwap "
-               << " did_swap_called " << result_->did_swap_called
-               << " did_not_swap_called " << result_->did_not_swap_called
-               << " result addr " << result_;
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
     result_->did_swap_called = true;
@@ -4445,11 +4437,6 @@ class TestSwapPromise : public SwapPromise {
 
   virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE {
     base::AutoLock lock(result_->lock);
-    LOG(ERROR) << "TestSwapPromise::DidNotSwap "
-               << " reason " << reason
-               << " did_swap_called " << result_->did_swap_called
-               << " did_not_swap_called " << result_->did_not_swap_called
-               << " result addr " << result_;
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
     result_->did_not_swap_called = true;
@@ -4534,8 +4521,6 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
   TestSwapPromiseResult swap_promise_result_[3];
 };
 
-// TODO(miletus): Flaky test: crbug.com/393995
-// Enabled with verbose logging information.
 MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
 class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
