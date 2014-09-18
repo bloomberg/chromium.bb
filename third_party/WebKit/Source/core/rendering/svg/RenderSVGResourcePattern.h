@@ -63,7 +63,7 @@ private:
     PassOwnPtr<ImageBuffer> createTileImage(const PatternAttributes&, const FloatRect& tileBoundaries,
                                             const FloatRect& absoluteTileBoundaries, const AffineTransform& tileImageTransform) const;
 
-    PatternData* buildPattern(RenderObject*, unsigned short resourceMode);
+    PatternData* buildPattern(RenderObject*, const SVGPatternElement*);
 
     bool m_shouldCollectPatternAttributes : 1;
     PatternAttributes m_attributes;

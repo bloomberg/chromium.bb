@@ -52,24 +52,12 @@ void RenderSVGResourcePattern::removeClientFromCache(RenderObject* client, bool 
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsigned short resourceMode)
+PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const SVGPatternElement* patternElement)
 {
     ASSERT(object);
     PatternData* currentData = m_patternMap.get(object);
     if (currentData && currentData->pattern)
         return currentData;
-
-    SVGPatternElement* patternElement = toSVGPatternElement(element());
-    if (!patternElement)
-        return 0;
-
-    if (m_shouldCollectPatternAttributes) {
-        patternElement->synchronizeAnimatedSVGAttribute(anyQName());
-
-        m_attributes = PatternAttributes();
-        patternElement->collectPatternAttributes(m_attributes);
-        m_shouldCollectPatternAttributes = false;
-    }
 
     // If we couldn't determine the pattern content element root, stop here.
     if (!m_attributes.patternContentElement())
@@ -133,13 +121,25 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
 
     clearInvalidationMask();
 
+    SVGPatternElement* patternElement = toSVGPatternElement(element());
+    if (!patternElement)
+        return false;
+
+    if (m_shouldCollectPatternAttributes) {
+        patternElement->synchronizeAnimatedSVGAttribute(anyQName());
+
+        m_attributes = PatternAttributes();
+        patternElement->collectPatternAttributes(m_attributes);
+        m_shouldCollectPatternAttributes = false;
+    }
+
     // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
     // then the given effect (e.g. a gradient or a filter) will be ignored.
     FloatRect objectBoundingBox = object->objectBoundingBox();
     if (m_attributes.patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
         return false;
 
-    PatternData* patternData = buildPattern(object, resourceMode);
+    PatternData* patternData = buildPattern(object, patternElement);
     if (!patternData)
         return false;
 
