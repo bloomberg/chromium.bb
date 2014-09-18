@@ -520,6 +520,8 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
     }
     if (page_down) {
       int page = engine_->GetFirstVisiblePage();
+      if (page == -1)
+        return true;
       // Engine calculates visible page including delimiter to the page size.
       // We need to check here if the page itself is completely out of view and
       // scroll to the next one in that case.
@@ -531,6 +533,8 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
       return true;
     } else if (page_up) {
       int page = engine_->GetFirstVisiblePage();
+      if (page == -1)
+        return true;
       if (engine_->GetPageRect(page).y() * zoom_ >= v_scrollbar_->GetValue())
         page--;
       ScrollToPage(page);
