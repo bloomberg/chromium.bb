@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -277,6 +278,13 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 }
 
 - (void)windowMainStatusChanged:(NSNotification*)notification {
+  // A Yosemite AppKit bug causes this notification to be sent during the
+  // -dealloc for a specific NSWindow. Any autoreleases sent to that window
+  // must be drained before the window finishes -dealloc. In this method, an
+  // autorelease is sent by the invocation of [NSApp windows].
+  // http://crbug.com/406944.
+  base::mac::ScopedNSAutoreleasePool pool;
+
   id window = [notification object];
   NSString* name = [notification name];
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
