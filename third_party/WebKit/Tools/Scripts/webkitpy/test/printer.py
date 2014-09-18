@@ -55,10 +55,10 @@ class Printer(object):
         log_level = logging.INFO
         if options.quiet:
             log_level = logging.WARNING
-        elif options.verbose == 2:
+        elif options.verbose >= 2:
             log_level = logging.DEBUG
 
-        self.meter = MeteredStream(self.stream, (options.verbose == 2),
+        self.meter = MeteredStream(self.stream, (options.verbose >= 2),
             number_of_columns=SystemHost().platform.terminal_width())
 
         handler = logging.StreamHandler(self.stream)
