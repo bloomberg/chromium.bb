@@ -47,11 +47,11 @@ void TextPainter::setEmphasisMark(const AtomicString& emphasisMark, TextEmphasis
     }
 }
 
-void TextPainter::paint(int startOffset, int endOffset, int length, const Style& textStyle)
+void TextPainter::paint(int startOffset, int endOffset, int length, const Style& textStyle, TextBlobPtr* cachedTextBlob)
 {
     GraphicsContextStateSaver stateSaver(*m_graphicsContext, false);
     updateGraphicsContext(textStyle, stateSaver);
-    paintInternal<PaintText>(startOffset, endOffset, length);
+    paintInternal<PaintText>(startOffset, endOffset, length, cachedTextBlob);
 
     if (!m_emphasisMark.isEmpty()) {
         if (textStyle.emphasisMarkColor != textStyle.fillColor)
@@ -96,25 +96,47 @@ void TextPainter::updateGraphicsContext(GraphicsContext* context, const Style& t
     }
 }
 
+static bool graphicsContextAllowsTextBlobs(GraphicsContext* context)
+{
+    // Text blobs affect the shader coordinate space.
+    // FIXME: Fix this, most likely in Skia.
+    return !context->strokeGradient() && !context->strokePattern() && !context->fillGradient() && !context->fillPattern();
+}
+
 template <TextPainter::PaintInternalStep step>
-void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to)
+void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to, TextBlobPtr* cachedTextBlob)
 {
     textRunPaintInfo.from = from;
     textRunPaintInfo.to = to;
-    if (step == PaintEmphasisMark)
+
+    if (step == PaintEmphasisMark) {
         m_graphicsContext->drawEmphasisMarks(m_font, textRunPaintInfo, m_emphasisMark, m_textOrigin + IntSize(0, m_emphasisMarkOffset));
+        return;
+    }
+
+    ASSERT(step == PaintText);
+
+    TextBlobPtr localTextBlob;
+    TextBlobPtr& textBlob = cachedTextBlob ? *cachedTextBlob : localTextBlob;
+    bool canUseTextBlobs = RuntimeEnabledFeatures::textBlobEnabled() && graphicsContextAllowsTextBlobs(m_graphicsContext);
+
+    if (canUseTextBlobs && !textBlob)
+        textBlob = m_font.buildTextBlob(textRunPaintInfo, m_textOrigin, m_graphicsContext->couldUseLCDRenderedText());
+
+    if (canUseTextBlobs && textBlob)
+        m_font.drawTextBlob(m_graphicsContext, textBlob.get(), m_textOrigin.data());
     else
         m_graphicsContext->drawText(m_font, textRunPaintInfo, m_textOrigin);
-
 }
 
 template <TextPainter::PaintInternalStep Step>
-void TextPainter::paintInternal(int startOffset, int endOffset, int truncationPoint)
+void TextPainter::paintInternal(int startOffset, int endOffset, int truncationPoint, TextBlobPtr* cachedTextBlob)
 {
+    // FIXME: We should be able to use cachedTextBlob in more cases.
     TextRunPaintInfo textRunPaintInfo(m_run);
     textRunPaintInfo.bounds = m_textBounds;
     if (startOffset <= endOffset) {
-        paintInternalRun<Step>(textRunPaintInfo, startOffset, endOffset);
+        paintInternalRun<Step>(textRunPaintInfo, startOffset, endOffset, cachedTextBlob);
     } else {
         if (endOffset > 0)
             paintInternalRun<Step>(textRunPaintInfo, 0, endOffset);

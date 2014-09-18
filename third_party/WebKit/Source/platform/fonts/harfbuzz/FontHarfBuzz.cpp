@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/fonts/Font.h"
 
-#include "platform/NotImplemented.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
@@ -201,6 +201,8 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 
 void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoint& origin) const
 {
+    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
+
     // FIXME: It would be good to move this to Font.cpp, if we're sure that none
     // of the things in FontMac's setupPaint need to apply here.
     // See also paintGlyphs.
@@ -296,6 +298,8 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
 PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance,
     const FloatRect& bounds, float& advance, bool couldUseLCD) const
 {
+    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
+
     // FIXME: Except for setupPaint, this is not specific to FontHarfBuzz.
     // FIXME: Also implement the more general full-positioning path.
     ASSERT(!glyphBuffer.hasVerticalAdvances());

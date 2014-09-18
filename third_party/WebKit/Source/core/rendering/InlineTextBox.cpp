@@ -72,6 +72,9 @@ COMPILE_ASSERT(sizeof(InlineTextBox) == sizeof(SameSizeAsInlineTextBox), InlineT
 typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* gTextBoxesWithOverflow;
 
+typedef WTF::HashMap<const InlineTextBox*, TextBlobPtr> InlineTextBoxBlobCacheMap;
+static InlineTextBoxBlobCacheMap* gTextBlobCache;
+
 static const int misspellingLineThickness = 3;
 
 void InlineTextBox::destroy()
@@ -80,11 +83,17 @@ void InlineTextBox::destroy()
 
     if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow)
         gTextBoxesWithOverflow->remove(this);
+    if (gTextBlobCache)
+        gTextBlobCache->remove(this);
     InlineBox::destroy();
 }
 
 void InlineTextBox::markDirty()
 {
+    // FIXME: Is it actually possible to try and paint a dirty InlineTextBox?
+    if (gTextBlobCache)
+        gTextBlobCache->remove(this);
+
     m_len = 0;
     m_start = 0;
     InlineBox::markDirty();
@@ -589,7 +598,18 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             startOffset = selectionEnd;
             endOffset = selectionStart;
         }
-        textPainter.paint(startOffset, endOffset, length, textStyle);
+
+        // FIXME: This cache should probably ultimately be held somewhere else.
+        // A hashmap is convenient to avoid a memory hit when the
+        // RuntimeEnabledFeature is off.
+        bool textBlobIsCacheable = RuntimeEnabledFeatures::textBlobEnabled() && startOffset == 0 && endOffset == length;
+        TextBlobPtr* cachedTextBlob = 0;
+        if (textBlobIsCacheable) {
+            if (!gTextBlobCache)
+                gTextBlobCache = new InlineTextBoxBlobCacheMap;
+            cachedTextBlob = &gTextBlobCache->add(this, nullptr).storedValue->value;
+        }
+        textPainter.paint(startOffset, endOffset, length, textStyle, cachedTextBlob);
     }
 
     if ((paintSelectedTextOnly || paintSelectedTextSeparately) && selectionStart < selectionEnd) {

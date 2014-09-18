@@ -6,6 +6,7 @@
 #define TextPainter_h
 
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
@@ -33,7 +34,7 @@ public:
 
     static void updateGraphicsContext(GraphicsContext*, const Style&, bool horizontal, GraphicsContextStateSaver&);
 
-    void paint(int startOffset, int endOffset, int length, const Style&);
+    void paint(int startOffset, int endOffset, int length, const Style&, TextBlobPtr* cachedTextBlob = 0);
 
     struct Style {
         Color fillColor;
@@ -62,10 +63,10 @@ private:
     enum PaintInternalStep { PaintText, PaintEmphasisMark };
 
     template <PaintInternalStep step>
-    void paintInternalRun(TextRunPaintInfo&, int from, int to);
+    void paintInternalRun(TextRunPaintInfo&, int from, int to, TextBlobPtr* cachedTextBlob = 0);
 
     template <PaintInternalStep step>
-    void paintInternal(int startOffset, int endOffset, int truncationPoint);
+    void paintInternal(int startOffset, int endOffset, int truncationPoint, TextBlobPtr* cachedTextBlob = 0);
 
     void paintEmphasisMarkForCombinedText();
 

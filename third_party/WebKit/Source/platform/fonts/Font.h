@@ -135,6 +135,9 @@ public:
 
     CodePath codePath(const TextRun&) const;
 
+    PassTextBlobPtr buildTextBlob(const TextRunPaintInfo&, const FloatPoint& textOrigin, bool couldUseLCDRenderedText, CustomFontNotReadyAction = DoNotPaintIfFontNotReady) const;
+    void drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint& origin) const;
+
 private:
     enum ForTextEmphasisOrNot { NotForTextEmphasis, ForTextEmphasis };
 
@@ -144,7 +147,6 @@ private:
     void drawEmphasisMarksForSimpleText(GraphicsContext*, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&) const;
     void drawGlyphs(GraphicsContext*, const SimpleFontData*, const GlyphBuffer&, unsigned from, unsigned numGlyphs, const FloatPoint&, const FloatRect& textRect) const;
     float drawGlyphBuffer(GraphicsContext*, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&) const;
-    void drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint& origin) const;
     void drawEmphasisMarks(GraphicsContext*, const TextRunPaintInfo&, const GlyphBuffer&, const AtomicString&, const FloatPoint&) const;
     float floatWidthForSimpleText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, IntRectExtent* glyphBounds = 0) const;
     int offsetForPositionForSimpleText(const TextRun&, float position, bool includePartialGlyphs) const;
@@ -159,6 +161,9 @@ private:
     float floatWidthForComplexText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const;
     int offsetForPositionForComplexText(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForComplexText(const TextRun&, const FloatPoint&, int h, int from, int to) const;
+
+    PassTextBlobPtr buildTextBlobForSimpleText(const TextRunPaintInfo&, const FloatPoint& textOrigin, bool couldUseLCDRenderedText) const;
+    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds, float& advance, bool couldUseLCD) const;
 
     friend struct WidthIterator;
     friend class SVGTextRunRenderingContext;
@@ -186,9 +191,6 @@ private:
     {
         return m_fontFallbackList && m_fontFallbackList->shouldSkipDrawing();
     }
-
-    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds,
-        float& advance, bool couldUseLCD) const;
 
     FontDescription m_fontDescription;
     mutable RefPtr<FontFallbackList> m_fontFallbackList;

@@ -25,6 +25,7 @@
 
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
+#include "platform/fonts/TextBlob.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 

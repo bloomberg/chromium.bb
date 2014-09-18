@@ -203,6 +203,42 @@ float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
     return width(run);
 }
 
+PassTextBlobPtr Font::buildTextBlob(const TextRunPaintInfo& runInfo, const FloatPoint& textOrigin, bool couldUseLCDRenderedText, CustomFontNotReadyAction customFontNotReadyAction) const
+{
+    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
+
+    // FIXME: Some logic in common with Font::drawText. Would be nice to
+    // deduplicate.
+    if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
+        return nullptr;
+
+    CodePath codePathToUse = codePath(runInfo.run);
+    // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
+    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
+        codePathToUse = ComplexPath;
+
+    if (codePathToUse != ComplexPath)
+        return buildTextBlobForSimpleText(runInfo, textOrigin, couldUseLCDRenderedText);
+
+    return nullptr;
+}
+
+PassTextBlobPtr Font::buildTextBlobForSimpleText(const TextRunPaintInfo& runInfo, const FloatPoint& textOrigin, bool couldUseLCDRenderedText) const
+{
+    GlyphBuffer glyphBuffer;
+    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
+    ASSERT(!glyphBuffer.hasVerticalAdvances());
+
+    if (glyphBuffer.isEmpty())
+        return nullptr;
+
+    FloatRect blobBounds = runInfo.bounds;
+    blobBounds.moveBy(-textOrigin);
+
+    float ignoredWidth;
+    return buildTextBlob(glyphBuffer, initialAdvance, blobBounds, ignoredWidth, couldUseLCDRenderedText);
+}
+
 FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
     to = (to == -1 ? run.length() : to);
