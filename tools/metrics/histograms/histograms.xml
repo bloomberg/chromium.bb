@@ -51739,7 +51739,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="prefs::kPinnedTabs"/>
   <int value="12"
       label="extensions::pref_names::kKnownDisabled (Obsolete 07/2014)"/>
-  <int value="13" label="prefs::kProfileResetPromptMemento (Obsolete 07/2014)"/>
+  <int value="13" label="prefs::kProfileResetPromptMemento"/>
   <int value="14"
       label="DefaultSearchManager::kDefaultSearchProviderDataPrefName"/>
   <int value="15" label="prefs::kPreferenceResetTime"/>

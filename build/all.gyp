@@ -98,6 +98,7 @@
           'dependencies': [
             '../third_party/re2/re2.gyp:re2',
             '../chrome/chrome.gyp:*',
+            '../chrome/tools/profile_reset/jtl_compiler.gyp:*',
             '../cc/blink/cc_blink_tests.gyp:*',
             '../cc/cc_tests.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',

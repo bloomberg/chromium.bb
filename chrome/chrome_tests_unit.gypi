@@ -2528,6 +2528,9 @@
           ],
         }],
         ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
+          ],
           'sources!': [
             'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',
             'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.cc',

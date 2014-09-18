@@ -17,7 +17,7 @@
   "SRCDIR": "../..",
 
   "chrome/browser/browser_resources.grd": {
-    "includes": [500],
+    "includes": [400],
     "structures": [750],
   },
   "chrome/browser/resources/component_extension_resources.grd": {

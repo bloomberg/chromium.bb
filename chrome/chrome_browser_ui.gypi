@@ -864,6 +864,7 @@
       'browser/ui/settings_window_manager.cc',
       'browser/ui/settings_window_manager.h',
       'browser/ui/settings_window_manager_observer.h',
+      'browser/ui/profile_reset_bubble.h',
       'browser/ui/simple_message_box.h',
       'browser/ui/status_bubble.h',
       'browser/ui/sync/inline_login_dialog.cc',
@@ -2175,6 +2176,8 @@
       'browser/ui/views/profiles/new_avatar_button.h',
       'browser/ui/views/profiles/profile_chooser_view.cc',
       'browser/ui/views/profiles/profile_chooser_view.h',
+      'browser/ui/views/profiles/profile_reset_bubble_view.cc',
+      'browser/ui/views/profiles/profile_reset_bubble_view.h',
       'browser/ui/views/profiles/user_manager_view.cc',
       'browser/ui/views/profiles/user_manager_view.h',
       'browser/ui/views/renderer_context_menu/render_view_context_menu_views.cc',
@@ -2312,6 +2315,9 @@
       'browser/ui/webui/gesture_config_ui.cc',
       'browser/ui/webui/gesture_config_ui.h',
       'browser/ui/window_sizer/window_sizer_aura.cc',
+    ],
+    'chrome_browser_ui_non_aura_sources': [
+      'browser/ui/profile_reset_bubble_stub.cc',
     ],
     # Aura but not ChromeOS.
     'chrome_browser_ui_aura_non_chromeos': [
@@ -2766,6 +2772,8 @@
               'sources': [ '<@(chrome_browser_ui_aura_non_chromeos)' ],
             }],
           ],
+        }, { # else: use_aura==0
+          'sources': [ '<@(chrome_browser_ui_non_aura_sources)' ],
         }],
         ['ui_compositor_image_transport==1', {
           'dependencies': [

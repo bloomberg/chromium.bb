@@ -35,6 +35,7 @@ var PageManager = cr.ui.pageManager.PageManager;
 var PasswordManager = options.PasswordManager;
 var Preferences = options.Preferences;
 var PreferredNetworks = options.PreferredNetworks;
+var ResetProfileSettingsBanner = options.ResetProfileSettingsBanner;
 var ResetProfileSettingsOverlay = options.ResetProfileSettingsOverlay;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
@@ -238,6 +239,7 @@ function load() {
   cr.ui.FocusManager.disableMouseFocusOnButtons();
   OptionsFocusManager.getInstance().initialize();
   Preferences.getInstance().initialize();
+  ResetProfileSettingsBanner.getInstance().initialize();
   AutomaticSettingsResetBanner.getInstance().initialize();
   OptionsPage.initialize();
   PageManager.initialize(BrowserOptions.getInstance());

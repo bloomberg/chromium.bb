@@ -153,6 +153,11 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
+  {
+   13, prefs::kProfileResetPromptMementoInProfilePrefs,
+   PrefHashFilter::ENFORCE_ON_LOAD,
+   PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
 #endif
   {
     14, DefaultSearchManager::kDefaultSearchProviderDataPrefName,

@@ -134,6 +134,7 @@
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #else
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #endif
 
@@ -220,11 +221,12 @@ const char kBackupPref[] = "backup";
 // be cleared from user data.
 const char kSyncPromoErrorMessage[] = "sync_promo.error_message";
 
-// The AutomaticProfileResetter service, which has since been unimplemented,
-// used this preference to save that the profile reset prompt had already been
-// shown. We keep the name here for now so that we can clear out legacy values.
+// The AutomaticProfileResetter service used this preference to save that the
+// profile reset prompt had already been shown, however, the preference has been
+// renamed in Local State. We keep the name here for now so that we can clear
+// out legacy values.
 // TODO(engedy): Remove this and usages in M42 or later. See crbug.com/398813.
-const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
+const char kLegacyProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 #endif
 
 }  // namespace
@@ -288,6 +290,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 #if !defined(OS_ANDROID)
+  AutomaticProfileResetterFactory::RegisterPrefs(registry);
   BackgroundModeManager::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
 #if !defined(OS_CHROMEOS)
@@ -349,7 +352,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   // Preferences registered only for migration (clearing or moving to a new key)
   // go here.
 #if !defined(OS_ANDROID)
-  registry->RegisterDictionaryPref(kProfileResetPromptMemento);
+  registry->RegisterDictionaryPref(kLegacyProfileResetPromptMemento);
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -601,7 +604,7 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
   }
 
 #if !defined(OS_ANDROID)
-  local_state->ClearPref(kProfileResetPromptMemento);
+  local_state->ClearPref(kLegacyProfileResetPromptMemento);
 #endif
 
 #if defined(OS_CHROMEOS)
