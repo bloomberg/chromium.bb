@@ -177,7 +177,8 @@ void VideoLayerImpl::AppendQuads(
   gfx::Size coded_size = frame_->coded_size();
 
   gfx::Rect visible_quad_rect =
-      occlusion_tracker.UnoccludedContentRect(quad_rect, transform);
+      occlusion_tracker.GetCurrentOcclusionForLayer(transform)
+          .GetUnoccludedContentRect(quad_rect);
   if (visible_quad_rect.IsEmpty())
     return;
 

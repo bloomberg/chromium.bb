@@ -444,8 +444,10 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       quad_content_to_delegated_target_space.ConcatTransform(draw_transform());
     }
 
-    gfx::Rect quad_visible_rect = occlusion_tracker.UnoccludedContentRect(
-        delegated_quad->visible_rect, quad_content_to_delegated_target_space);
+    gfx::Rect quad_visible_rect =
+        occlusion_tracker.GetCurrentOcclusionForLayer(
+                              quad_content_to_delegated_target_space)
+            .GetUnoccludedContentRect(delegated_quad->visible_rect);
 
     if (quad_visible_rect.IsEmpty())
       continue;

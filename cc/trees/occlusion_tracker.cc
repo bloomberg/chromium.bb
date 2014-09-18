@@ -493,47 +493,6 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
 }
 
 template <typename LayerType>
-gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
-    const gfx::Rect& content_rect,
-    const gfx::Transform& draw_transform) const {
-  DCHECK(!stack_.empty());
-  if (content_rect.IsEmpty())
-    return content_rect;
-
-  const StackObject& back = stack_.back();
-  if (back.occlusion_from_inside_target.IsEmpty() &&
-      back.occlusion_from_outside_target.IsEmpty()) {
-    return content_rect;
-  }
-
-  gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
-  bool ok = draw_transform.GetInverse(&inverse_draw_transform);
-  DCHECK(ok);
-
-  // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
-  // partial pixels in the resulting Rect.
-  gfx::Rect unoccluded_rect_in_target_surface =
-      MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
-  DCHECK_LE(back.occlusion_from_inside_target.GetRegionComplexity(), 1u);
-  DCHECK_LE(back.occlusion_from_outside_target.GetRegionComplexity(), 1u);
-  // These subtract operations are more lossy than if we did both operations at
-  // once.
-  unoccluded_rect_in_target_surface.Subtract(
-      back.occlusion_from_inside_target.bounds());
-  unoccluded_rect_in_target_surface.Subtract(
-      back.occlusion_from_outside_target.bounds());
-
-  if (unoccluded_rect_in_target_surface.IsEmpty())
-    return gfx::Rect();
-
-  gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
-      inverse_draw_transform, unoccluded_rect_in_target_surface);
-  unoccluded_rect.Intersect(content_rect);
-
-  return unoccluded_rect;
-}
-
-template <typename LayerType>
 gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) const {

@@ -204,6 +204,8 @@ void TiledLayerImpl::AppendQuads(
   if (skips_draw_)
     return;
 
+  Occlusion occlusion =
+      occlusion_tracker.GetCurrentOcclusionForLayer(draw_transform());
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       DrawableTile* tile = TileAt(i, j);
@@ -216,7 +218,7 @@ void TiledLayerImpl::AppendQuads(
         continue;
 
       gfx::Rect visible_tile_rect =
-          occlusion_tracker.UnoccludedContentRect(tile_rect, draw_transform());
+          occlusion.GetUnoccludedContentRect(tile_rect);
       if (visible_tile_rect.IsEmpty())
         continue;
 

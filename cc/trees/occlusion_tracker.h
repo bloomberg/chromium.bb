@@ -25,12 +25,11 @@ class RenderSurface;
 // front-to-back order. As each layer is visited, one of the methods in this
 // class is called to notify it about the current target surface. Then,
 // occlusion in the content space of the current layer may be queried, via
-// methods such UnoccludedContentRect(), or using Occlusion from
-// GetCurrentOcclusionForLayer. If the current layer owns a RenderSurfaceImpl,
-// then occlusion on that RenderSurfaceImpl may also be queried via
-// surfaceOccluded() and surfaceUnoccludedContentRect(). Finally, once finished
-// with the layer, occlusion behind the layer should be marked by calling
-// MarkOccludedBehindLayer().
+// Occlusion from GetCurrentOcclusionForLayer(). If the current layer owns a
+// RenderSurfaceImpl, then occlusion on that RenderSurfaceImpl may also be
+// queried via surfaceOccluded() and surfaceUnoccludedContentRect(). Finally,
+// once finished with the layer, occlusion behind the layer should be marked by
+// calling MarkOccludedBehindLayer().
 template <typename LayerType>
 class CC_EXPORT OcclusionTracker {
  public:
@@ -48,13 +47,6 @@ class CC_EXPORT OcclusionTracker {
   // Called at the end of each step in the LayerIterator's front-to-back
   // traversal.
   void LeaveLayer(const LayerIteratorPosition<LayerType>& layer_iterator);
-
-  // Gives an unoccluded sub-rect of |content_rect| in the content space of a
-  // layer. Used when considering occlusion for a layer that paints/draws
-  // something. |render_target| is the contributing layer's render target, and
-  // |draw_transform| and |impl_draw_transform_is_unknown| are relative to that.
-  gfx::Rect UnoccludedContentRect(const gfx::Rect& content_rect,
-                                  const gfx::Transform& draw_transform) const;
 
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
   // render_target owned by the layer. Used when considering occlusion for a

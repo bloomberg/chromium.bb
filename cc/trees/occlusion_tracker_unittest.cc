@@ -90,11 +90,12 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
   }
 
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
-  // layer. Simple wrapper around UnoccludedContentRect.
+  // layer. Simple wrapper around GetUnoccludedContentRect.
   gfx::Rect UnoccludedLayerContentRect(const LayerType* layer,
                                        const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_content_rect().Contains(content_rect));
-    return this->UnoccludedContentRect(content_rect, layer->draw_transform());
+    return this->GetCurrentOcclusionForLayer(layer->draw_transform())
+        .GetUnoccludedContentRect(content_rect);
   }
 
   gfx::Rect UnoccludedSurfaceContentRect(const LayerType* layer,

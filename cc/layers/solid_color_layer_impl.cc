@@ -33,6 +33,9 @@ void SolidColorLayerImpl::AppendQuads(
   AppendDebugBorderQuad(
       render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
+  Occlusion occlusion = occlusion_tracker.GetCurrentOcclusionForLayer(
+      draw_properties().target_space_transform);
+
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.
   int width = content_bounds().width();
@@ -43,8 +46,8 @@ void SolidColorLayerImpl::AppendQuads(
                           y,
                           std::min(width - x, tile_size_),
                           std::min(height - y, tile_size_));
-      gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
-          quad_rect, draw_properties().target_space_transform);
+      gfx::Rect visible_quad_rect =
+          occlusion.GetUnoccludedContentRect(quad_rect);
       if (visible_quad_rect.IsEmpty())
         continue;
 

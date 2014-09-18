@@ -29,6 +29,39 @@ bool Occlusion::IsOccluded(const gfx::Rect& content_rect) const {
     return false;
   }
 
+  gfx::Rect unoccluded_rect_in_target_surface =
+      GetUnoccludedRectInTargetSurface(content_rect);
+  return unoccluded_rect_in_target_surface.IsEmpty();
+}
+
+gfx::Rect Occlusion::GetUnoccludedContentRect(
+    const gfx::Rect& content_rect) const {
+  if (content_rect.IsEmpty())
+    return content_rect;
+
+  if (occlusion_from_inside_target_.IsEmpty() &&
+      occlusion_from_outside_target_.IsEmpty()) {
+    return content_rect;
+  }
+
+  gfx::Rect unoccluded_rect_in_target_surface =
+      GetUnoccludedRectInTargetSurface(content_rect);
+  if (unoccluded_rect_in_target_surface.IsEmpty())
+    return gfx::Rect();
+
+  gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
+  bool ok = draw_transform_.GetInverse(&inverse_draw_transform);
+  DCHECK(ok);
+
+  gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
+      inverse_draw_transform, unoccluded_rect_in_target_surface);
+  unoccluded_rect.Intersect(content_rect);
+
+  return unoccluded_rect;
+}
+
+gfx::Rect Occlusion::GetUnoccludedRectInTargetSurface(
+    const gfx::Rect& content_rect) const {
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
   gfx::Rect unoccluded_rect_in_target_surface =
@@ -42,7 +75,7 @@ bool Occlusion::IsOccluded(const gfx::Rect& content_rect) const {
   unoccluded_rect_in_target_surface.Subtract(
       occlusion_from_outside_target_.bounds());
 
-  return unoccluded_rect_in_target_surface.IsEmpty();
+  return unoccluded_rect_in_target_surface;
 }
 
 }  // namespace cc

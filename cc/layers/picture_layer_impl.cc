@@ -161,6 +161,9 @@ void PictureLayerImpl::AppendQuads(
       gfx::ScaleToEnclosingRect(visible_content_rect(), max_contents_scale);
   scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
 
+  Occlusion occlusion =
+      occlusion_tracker.GetCurrentOcclusionForLayer(scaled_draw_transform);
+
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(scaled_draw_transform,
@@ -183,8 +186,8 @@ void PictureLayerImpl::AppendQuads(
 
     gfx::Rect geometry_rect = scaled_visible_content_rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
-    gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
-        geometry_rect, scaled_draw_transform);
+    gfx::Rect visible_geometry_rect =
+        occlusion.GetUnoccludedContentRect(geometry_rect);
     if (visible_geometry_rect.IsEmpty())
       return;
 
@@ -279,8 +282,8 @@ void PictureLayerImpl::AppendQuads(
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
-    gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
-        geometry_rect, scaled_draw_transform);
+    gfx::Rect visible_geometry_rect =
+        occlusion.GetUnoccludedContentRect(geometry_rect);
     if (visible_geometry_rect.IsEmpty())
       continue;
 

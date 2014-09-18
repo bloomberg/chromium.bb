@@ -213,8 +213,10 @@ void NinePatchLayerImpl::AppendQuads(
   gfx::Rect visible_rect;
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  visible_rect =
-      occlusion_tracker.UnoccludedContentRect(layer_top_left, draw_transform());
+  Occlusion occlusion =
+      occlusion_tracker.GetCurrentOcclusionForLayer(draw_transform());
+
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_top_left);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -231,8 +233,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion_tracker.UnoccludedContentRect(layer_top_right,
-                                                         draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_top_right);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -249,8 +250,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion_tracker.UnoccludedContentRect(layer_bottom_left,
-                                                         draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_bottom_left);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -267,8 +267,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion_tracker.UnoccludedContentRect(layer_bottom_right,
-                                                         draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_bottom_right);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -285,8 +284,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect =
-      occlusion_tracker.UnoccludedContentRect(layer_top, draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_top);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -303,8 +301,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect =
-      occlusion_tracker.UnoccludedContentRect(layer_left, draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_left);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -321,8 +318,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect =
-      occlusion_tracker.UnoccludedContentRect(layer_right, draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_right);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -339,8 +335,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect =
-      occlusion_tracker.UnoccludedContentRect(layer_bottom, draw_transform());
+  visible_rect = occlusion.GetUnoccludedContentRect(layer_bottom);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -358,8 +353,7 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   if (fill_center_) {
-    visible_rect =
-        occlusion_tracker.UnoccludedContentRect(layer_center, draw_transform());
+    visible_rect = occlusion.GetUnoccludedContentRect(layer_center);
     if (!visible_rect.IsEmpty()) {
       TextureDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
