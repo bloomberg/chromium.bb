@@ -897,18 +897,36 @@ void XMLHttpRequest::abort()
 {
     WTF_LOG(Network, "XMLHttpRequest %p abort()", this);
 
+    // internalAbort() clears |m_loader|. Compute |sendFlag| now.
+    //
+    // |sendFlag| corresponds to "the send() flag" defined in the XHR spec.
+    //
+    // |sendFlag| is only set when we have an active, asynchronous loader.
+    // Don't use it as "the send() flag" when the XHR is in sync mode.
     bool sendFlag = m_loader;
 
-    // Response is cleared next, save needed progress event data.
+    // internalAbort() clears the response. Save the data needed for
+    // dispatching ProgressEvents.
     long long expectedLength = m_response.expectedContentLength();
     long long receivedLength = m_receivedLength;
 
     if (!internalAbort())
         return;
 
-    if (!((m_state <= OPENED && !sendFlag) || m_state == DONE)) {
-        ASSERT(!m_loader);
-        handleRequestError(0, EventTypeNames::abort, receivedLength, expectedLength);
+    // The script never gets any chance to call abort() on a sync XHR between
+    // send() call and transition to the DONE state. It's because a sync XHR
+    // doesn't dispatch any event between them. So, if |m_async| is false, we
+    // can skip the "request error steps" (defined in the XHR spec) without any
+    // state check.
+    //
+    // FIXME: It's possible open() is invoked in internalAbort() and |m_async|
+    // becomes true by that. We should implement more reliable treatment for
+    // nested method invocations at some point.
+    if (m_async) {
+        if ((m_state == OPENED && sendFlag) || m_state == HEADERS_RECEIVED || m_state == LOADING) {
+            ASSERT(!m_loader);
+            handleRequestError(0, EventTypeNames::abort, receivedLength, expectedLength);
+        }
     }
     m_state = UNSENT;
 }
