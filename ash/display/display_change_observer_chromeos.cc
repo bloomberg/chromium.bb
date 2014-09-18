@@ -26,6 +26,7 @@
 #include "ui/events/device_data_manager.h"
 #include "ui/events/touchscreen_device.h"
 #include "ui/gfx/display.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
 
@@ -246,6 +247,13 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       &displays, ui::DeviceDataManager::GetInstance()->touchscreen_devices());
   // DisplayManager can be null during the boot.
   Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
+
+  // For the purposes of user activity detection, ignore synthetic mouse events
+  // that are triggered by screen resizes: http://crbug.com/360634
+  ::wm::UserActivityDetector* user_activity_detector =
+      Shell::GetInstance()->user_activity_detector();
+  if (user_activity_detector)
+    user_activity_detector->OnDisplayPowerChanging();
 }
 
 void DisplayChangeObserver::OnAppTerminating() {

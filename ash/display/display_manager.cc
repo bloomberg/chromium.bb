@@ -651,7 +651,7 @@ void DisplayManager::SetColorCalibrationProfile(
 void DisplayManager::OnNativeDisplaysChanged(
     const std::vector<DisplayInfo>& updated_displays) {
   if (updated_displays.empty()) {
-    VLOG(1) << "OnNativeDisplayChanged(0): # of current displays="
+    VLOG(1) << "OnNativeDisplaysChanged(0): # of current displays="
             << displays_.size();
     // If the device is booted without display, or chrome is started
     // without --ash-host-window-bounds on linux desktop, use the
