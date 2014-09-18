@@ -530,7 +530,8 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
          (identifiers_[0] > 0 ||
           identifiers_[0] == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
           identifiers_[0] == POPUP_ITEM_ID_PASSWORD_ENTRY ||
-          identifiers_[0] == POPUP_ITEM_ID_DATALIST_ENTRY);
+          identifiers_[0] == POPUP_ITEM_ID_DATALIST_ENTRY ||
+          identifiers_[0] == POPUP_ITEM_ID_MAC_ACCESS_CONTACTS);
 }
 
 void AutofillPopupControllerImpl::SetValues(

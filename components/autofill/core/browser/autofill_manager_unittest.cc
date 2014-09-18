@@ -95,15 +95,13 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
     if (credit_card) {
       credit_cards_.erase(
-          std::remove(credit_cards_.begin(), credit_cards_.end(), credit_card),
-          credit_cards_.end());
+          std::find(credit_cards_.begin(), credit_cards_.end(), credit_card));
     }
 
     AutofillProfile* profile = GetProfileWithGUID(guid.c_str());
     if (profile) {
       web_profiles_.erase(
-          std::remove(web_profiles_.begin(), web_profiles_.end(), profile),
-          web_profiles_.end());
+          std::find(web_profiles_.begin(), web_profiles_.end(), profile));
     }
   }
 
@@ -2787,13 +2785,19 @@ TEST_F(AutofillManagerTest, AccessAddressBookPrompt) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
   FormFieldData& field = form.fields[0];
+  field.should_autocomplete = true;
 
-  field.should_autocomplete = false;
+  // A profile already exists.
   EXPECT_FALSE(
       autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
 
-  field.should_autocomplete = true;
+  // Remove all profiles.
+  personal_data_.ClearAutofillProfiles();
   EXPECT_TRUE(
+      autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
+
+  field.should_autocomplete = false;
+  EXPECT_FALSE(
       autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)

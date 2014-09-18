@@ -2706,10 +2706,24 @@ TEST_F(PersonalDataManagerTest, ShowAddressBookPrompt) {
 
   AutofillType type(ADDRESS_HOME_STREET_ADDRESS);
 
+  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
+  EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
+
   prefs_->SetBoolean(prefs::kAutofillEnabled, true);
   EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
 
-  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
+  // Adding an Autofill Profile should prevent the prompt from appearing.
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+  test::SetProfileInfo(&profile,
+      "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
   EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)

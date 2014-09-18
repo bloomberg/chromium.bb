@@ -363,6 +363,11 @@ bool PersonalDataManager::AccessAddressBook() {
 
 bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
     AutofillType type) {
+  // Don't show the access Address Book prompt if the user has built up any
+  // Autofill state.
+  if (!web_profiles_.empty())
+    return false;
+
   if (!enabled_pref_->GetValue())
     return false;
 
