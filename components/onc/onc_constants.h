@@ -83,6 +83,7 @@ ONC_EXPORT extern const char kErrorState[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
+ONC_EXPORT extern const char kWimax[];
 
 ONC_EXPORT extern std::string CellularProperty(const std::string& property);
 ONC_EXPORT extern std::string VpnProperty(const std::string& property);
@@ -201,7 +202,6 @@ ONC_EXPORT extern const char kFrequency[];
 ONC_EXPORT extern const char kFrequencyList[];
 ONC_EXPORT extern const char kHiddenSSID[];
 ONC_EXPORT extern const char kPassphrase[];
-ONC_EXPORT extern const char kProxyURL[];
 ONC_EXPORT extern const char kSSID[];
 ONC_EXPORT extern const char kSecurity[];
 ONC_EXPORT extern const char kSecurityNone[];
@@ -212,6 +212,12 @@ ONC_EXPORT extern const char kWPA_PSK[];
 ONC_EXPORT extern const char kWPA2_PSK[];
 ONC_EXPORT extern const char kWPA_EAP[];
 }  // namespace wifi
+
+namespace wimax {
+ONC_EXPORT extern const char kAutoConnect[];
+ONC_EXPORT extern const char kEAP[];
+ONC_EXPORT extern const char kSignalStrength[];
+}  // namespace wimax
 
 namespace client_cert {
 ONC_EXPORT extern const char kClientCertPattern[];

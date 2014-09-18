@@ -393,10 +393,7 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
   if (!onc_network_type.empty()) {
     onc_object_->SetStringWithoutPathExpansion(::onc::network_config::kType,
                                                onc_network_type);
-    // Wimax is not supported by ONC, yet.
-    // TOOD(pneubeck): Wimax support is required, see https://crbug.com/414417 .
-    if (onc_network_type != ::onc::network_type::kWimax)
-      TranslateAndAddNestedObject(onc_network_type);
+    TranslateAndAddNestedObject(onc_network_type);
   }
 
   // Since Name is a read only field in Shill unless it's a VPN, it is copied

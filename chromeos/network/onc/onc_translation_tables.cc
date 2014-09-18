@@ -119,6 +119,11 @@ const FieldTranslationEntry wifi_fields[] = {
     { ::onc::wifi::kSignalStrength, shill::kSignalStrengthProperty},
     {NULL}};
 
+const FieldTranslationEntry wimax_fields[] = {
+    { ::onc::wimax::kAutoConnect, shill::kAutoConnectProperty},
+    { ::onc::wimax::kSignalStrength, shill::kSignalStrengthProperty},
+    {NULL}};
+
 const FieldTranslationEntry cellular_apn_fields[] = {
     { ::onc::cellular_apn::kAccessPointName, shill::kApnProperty},
     { ::onc::cellular_apn::kName, shill::kApnNameProperty},
@@ -226,6 +231,8 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kVPNSignature, vpn_fields },
   { &kWiFiSignature, wifi_fields },
   { &kWiFiWithStateSignature, wifi_fields },
+  { &kWiMAXSignature, wimax_fields },
+  { &kWiMAXWithStateSignature, wimax_fields },
   { &kCellularApnSignature, cellular_apn_fields },
   { &kCellularFoundNetworkSignature, cellular_found_network_fields },
   { &kCellularProviderSignature, cellular_provider_fields },

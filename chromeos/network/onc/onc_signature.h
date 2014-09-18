@@ -53,6 +53,7 @@ CHROMEOS_EXPORT extern const OncValueSignature kProxyLocationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxyManualSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxySettingsSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kWiFiSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kWiMAXSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCertificateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kNetworkConfigurationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature
@@ -65,6 +66,7 @@ CHROMEOS_EXPORT extern const OncValueSignature kToplevelConfigurationSignature;
 // Derived "ONC with State" signatures.
 CHROMEOS_EXPORT extern const OncValueSignature kNetworkWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kWiFiWithStateSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kWiMAXWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularProviderSignature;

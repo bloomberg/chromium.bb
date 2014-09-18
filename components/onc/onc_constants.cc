@@ -58,6 +58,7 @@ const char kStaticIPConfig[] = "StaticIPConfig";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
+const char kWimax[] = "WiMAX";
 
 std::string CellularProperty(const std::string& property) {
   return std::string(kCellular) + "." + property;
@@ -79,7 +80,7 @@ const char kCellular[] = "Cellular";
 const char kEthernet[] = "Ethernet";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
-const char kWimax[] = "Wimax";
+const char kWimax[] = "WiMAX";
 const char kWireless[] = "Wireless";
 }  // namespace network_type
 
@@ -183,7 +184,6 @@ const char kFrequency[] = "Frequency";
 const char kFrequencyList[] = "FrequencyList";
 const char kHiddenSSID[] = "HiddenSSID";
 const char kPassphrase[] = "Passphrase";
-const char kProxyURL[] = "ProxyURL";
 const char kSSID[] = "SSID";
 const char kSecurity[] = "Security";
 const char kSecurityNone[] = "None";
@@ -194,6 +194,12 @@ const char kWPA_EAP[] = "WPA-EAP";
 const char kWPA_PSK[] = "WPA-PSK";
 const char kWPA2_PSK[] = "WPA2-PSK";
 }  // namespace wifi
+
+namespace wimax {
+const char kAutoConnect[] = "AutoConnect";
+const char kEAP[] = "EAP";
+const char kSignalStrength[] = "SignalStrength";
+}  // namespace wimax
 
 namespace client_cert {
 const char kClientCertPattern[] = "ClientCertPattern";

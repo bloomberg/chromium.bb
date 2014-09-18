@@ -216,6 +216,16 @@ const OncFieldSignature wifi_with_state_fields[] = {
     { ::onc::wifi::kSignalStrength, &kIntegerSignature},
     {NULL}};
 
+const OncFieldSignature wimax_fields[] = {
+    { ::onc::kRecommended, &kRecommendedSignature},
+    { ::onc::wimax::kAutoConnect, &kBoolSignature},
+    { ::onc::wimax::kEAP, &kEAPSignature},
+    {NULL}};
+
+const OncFieldSignature wimax_with_state_fields[] = {
+    { ::onc::wimax::kSignalStrength, &kIntegerSignature},
+    {NULL}};
+
 const OncFieldSignature cellular_provider_fields[] = {
     { ::onc::cellular_provider::kCode, &kStringSignature},
     { ::onc::cellular_provider::kCountry, &kStringSignature},
@@ -305,6 +315,7 @@ const OncFieldSignature network_configuration_fields[] = {
     { ::onc::network_config::kType, &kStringSignature},
     { ::onc::network_config::kVPN, &kVPNSignature},
     { ::onc::network_config::kWiFi, &kWiFiSignature},
+    { ::onc::network_config::kWimax, &kWiMAXSignature},
     {NULL}};
 
 const OncFieldSignature network_with_state_fields[] = {
@@ -318,6 +329,7 @@ const OncFieldSignature network_with_state_fields[] = {
     { ::onc::network_config::kSavedIPConfig, &kSavedIPConfigSignature},
     { ::onc::network_config::kSource, &kStringSignature},
     { ::onc::network_config::kWiFi, &kWiFiWithStateSignature},
+    { ::onc::network_config::kWimax, &kWiMAXWithStateSignature},
     {NULL}};
 
 const OncFieldSignature global_network_configuration_fields[] = {
@@ -406,6 +418,9 @@ const OncValueSignature kProxySettingsSignature = {
 const OncValueSignature kWiFiSignature = {
   base::Value::TYPE_DICTIONARY, wifi_fields, NULL
 };
+const OncValueSignature kWiMAXSignature = {
+  base::Value::TYPE_DICTIONARY, wimax_fields, NULL
+};
 const OncValueSignature kCertificateSignature = {
   base::Value::TYPE_DICTIONARY, certificate_fields, NULL
 };
@@ -432,6 +447,9 @@ const OncValueSignature kNetworkWithStateSignature = {
 };
 const OncValueSignature kWiFiWithStateSignature = {
   base::Value::TYPE_DICTIONARY, wifi_with_state_fields, NULL, &kWiFiSignature
+};
+const OncValueSignature kWiMAXWithStateSignature = {
+  base::Value::TYPE_DICTIONARY, wimax_with_state_fields, NULL, &kWiMAXSignature
 };
 const OncValueSignature kCellularSignature = {
   base::Value::TYPE_DICTIONARY, cellular_fields, NULL

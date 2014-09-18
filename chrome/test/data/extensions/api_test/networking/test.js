@@ -204,6 +204,16 @@ var availableTests = [
                     }
                   },
                   {
+                    "Connectable": true,
+                    "ConnectionState": "Connected",
+                    "GUID": "stub_wimax_guid",
+                    "Name": "wimax",
+                    "Type": "WiMAX",
+                    "WiMAX": {
+                      "SignalStrength": 40
+                    }
+                  },
+                  {
                     "ConnectionState": "Connected",
                     "GUID": "stub_vpn1_guid",
                     "Name": "vpn1",
@@ -255,6 +265,7 @@ var availableTests = [
     // Connected or Connecting networks should be listed first, sorted by type.
     var expected = ["stub_ethernet_guid",
                     "stub_wifi1_guid",
+                    "stub_wimax_guid",
                     "stub_vpn1_guid",
                     "stub_wifi2_guid"];
     var done = chrome.test.callbackAdded();
@@ -425,6 +436,7 @@ var availableTests = [
     // networks should be listed first, sorted by type.
     var expected = ["stub_ethernet_guid",
                     "stub_wifi2_guid",
+                    "stub_wimax_guid",
                     "stub_vpn1_guid",
                     "stub_wifi1_guid"];
     var done = chrome.test.callbackAdded();
