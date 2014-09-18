@@ -51,7 +51,9 @@ class LibcurlWrapper {
                        const string& basename);
   virtual bool SendRequest(const string& url,
                            const std::map<string, string>& parameters,
-                           string* server_response);
+                           int* http_status_code,
+                           string* http_header_data,
+                           string* http_response_data);
  private:
   // This function initializes class state corresponding to function
   // pointers into the CURL library.
@@ -82,6 +84,7 @@ class LibcurlWrapper {
   CURLcode (*easy_perform_)(CURL *);
   const char* (*easy_strerror_)(CURLcode);
   void (*easy_cleanup_)(CURL *);
+  CURLcode (*easy_getinfo_)(CURL *, CURLINFO info, ...);
   void (*formfree_)(struct curl_httppost *);
 
 };

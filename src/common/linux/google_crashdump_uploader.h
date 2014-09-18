@@ -79,7 +79,9 @@ class GoogleCrashdumpUploader {
             const string& proxy_host,
             const string& proxy_userpassword,
             LibcurlWrapper* http_layer);
-  bool Upload();
+  bool Upload(int* http_status_code,
+              string* http_response_header,
+              string* http_response_body);
 
  private:
   bool CheckRequiredParametersArePresent();
