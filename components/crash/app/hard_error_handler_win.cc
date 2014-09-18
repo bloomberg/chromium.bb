@@ -14,9 +14,11 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
-#include "components/crash/app/breakpad_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 
 namespace breakpad {
+
+using crash_reporter::GetCrashReporterClient;
 
 namespace {
 const DWORD kExceptionModuleNotFound = VcppException(ERROR_SEVERITY_ERROR,
@@ -39,7 +41,7 @@ DWORD FacilityFromException(DWORD exception_code) {
 void RaiseHardErrorMsg(long nt_status, const std::string& p1,
                                        const std::string& p2) {
   // If headless just exit silently.
-  if (GetBreakpadClient()->IsRunningUnattended())
+  if (GetCrashReporterClient()->IsRunningUnattended())
     return;
 
   HMODULE ntdll = ::GetModuleHandleA("NTDLL.DLL");

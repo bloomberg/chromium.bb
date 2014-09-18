@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_APP_SHELL_BREAKPAD_CLIENT_H_
-#define CONTENT_SHELL_APP_SHELL_BREAKPAD_CLIENT_H_
+#ifndef CONTENT_SHELL_APP_SHELL_CRASH_REPORTER_CLIENT_H_
+#define CONTENT_SHELL_APP_SHELL_CRASH_REPORTER_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "components/crash/app/breakpad_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 
 namespace content {
 
-class ShellBreakpadClient : public breakpad::BreakpadClient {
+class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
-  ShellBreakpadClient();
-  virtual ~ShellBreakpadClient();
+  ShellCrashReporterClient();
+  virtual ~ShellCrashReporterClient();
 
 #if defined(OS_WIN)
   // Returns a textual description of the product type and version to include
@@ -46,10 +46,10 @@ class ShellBreakpadClient : public breakpad::BreakpadClient {
   virtual bool EnableBreakpadForProcess(
       const std::string& process_type) OVERRIDE;
 
-private:
-  DISALLOW_COPY_AND_ASSIGN(ShellBreakpadClient);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShellCrashReporterClient);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_APP_SHELL_BREAKPAD_CLIENT_H_
+#endif  // CONTENT_SHELL_APP_SHELL_CRASH_REPORTER_CLIENT_H_

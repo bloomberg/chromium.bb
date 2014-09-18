@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_CHROME_BREAKPAD_CLIENT_H_
-#define CHROME_APP_CHROME_BREAKPAD_CLIENT_H_
+#ifndef CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_H_
+#define CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/crash/app/breakpad_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 
 namespace chrome {
 
-class ChromeBreakpadClient : public breakpad::BreakpadClient {
+class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
-  ChromeBreakpadClient();
-  virtual ~ChromeBreakpadClient();
+  ChromeCrashReporterClient();
+  virtual ~ChromeCrashReporterClient();
 
-  // breakpad::BreakpadClient implementation.
-  virtual void SetBreakpadClientIdFromGUID(
+  // crash_reporter::CrashReporterClient implementation.
+  virtual void SetCrashReporterClientIdFromGUID(
       const std::string& client_guid) OVERRIDE;
 #if defined(OS_WIN)
   virtual bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir)
@@ -69,9 +69,9 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
       const std::string& process_type) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);
+  DISALLOW_COPY_AND_ASSIGN(ChromeCrashReporterClient);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_APP_CHROME_BREAKPAD_CLIENT_H_
+#endif  // CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_H_

@@ -1845,8 +1845,8 @@
             '../components/components.gyp:crash_component',
           ],
           'sources': [
-            'app/chrome_breakpad_client.cc',
-            'app/chrome_breakpad_client_mac.mm',
+            'app/chrome_crash_reporter_client.cc',
+            'app/chrome_crash_reporter_client_mac.mm',
             'app/chrome_main_mac.mm',
           ],
         }],

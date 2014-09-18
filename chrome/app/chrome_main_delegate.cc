@@ -67,8 +67,8 @@
 #if defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
-#include "chrome/app/chrome_breakpad_client.h"
-#include "components/crash/app/breakpad_client.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
@@ -128,8 +128,8 @@ base::LazyInstance<chrome::ChromeContentPluginClient>
 #endif
 
 #if defined(OS_POSIX)
-base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
-    g_chrome_breakpad_client = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
+    g_chrome_crash_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 extern int NaClMain(const content::MainFunctionParams&);
@@ -639,7 +639,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_POSIX)
-  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
+  crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
 #endif
 
 #if defined(OS_MACOSX)

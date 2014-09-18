@@ -12,10 +12,11 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/crash/app/breakpad_client.h"
-
+#include "components/crash/app/crash_reporter_client.h"
 
 namespace breakpad {
+
+using crash_reporter::CrashReporterClient;
 
 namespace {
 
@@ -64,11 +65,9 @@ void CrashKeysWin::SetPluginPath(const std::wstring& path) {
 }
 
 // Appends the breakpad dump path to |g_custom_entries|.
-void CrashKeysWin::SetBreakpadDumpPath(BreakpadClient* breakpad_client) {
-
+void CrashKeysWin::SetBreakpadDumpPath(CrashReporterClient* crash_client) {
   base::FilePath crash_dumps_dir_path;
-  if (breakpad_client->GetAlternativeCrashDumpLocation(
-          &crash_dumps_dir_path)) {
+  if (crash_client->GetAlternativeCrashDumpLocation(&crash_dumps_dir_path)) {
     custom_entries_.push_back(google_breakpad::CustomInfoEntry(
         L"breakpad-dump-location", crash_dumps_dir_path.value().c_str()));
   }
@@ -81,12 +80,12 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
                             const std::wstring& type,
                             const std::wstring& profile_type,
                             base::CommandLine* cmd_line,
-                            BreakpadClient* breakpad_client) {
+                            CrashReporterClient* crash_client) {
   base::string16 version, product;
   base::string16 special_build;
   base::string16 channel_name;
 
-  breakpad_client->GetProductNameAndVersion(
+  crash_client->GetProductNameAndVersion(
       base::FilePath(exe_path),
       &product,
       &version,
@@ -125,13 +124,13 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
 
   // Check whether configuration management controls crash reporting.
   bool crash_reporting_enabled = true;
-  bool controlled_by_policy = breakpad_client->ReportingIsEnforcedByPolicy(
+  bool controlled_by_policy = crash_client->ReportingIsEnforcedByPolicy(
       &crash_reporting_enabled);
   bool use_crash_service = !controlled_by_policy &&
       (cmd_line->HasSwitch(switches::kNoErrorDialogs) ||
-          breakpad_client->IsRunningUnattended());
+          crash_client->IsRunningUnattended());
   if (use_crash_service)
-    SetBreakpadDumpPath(breakpad_client);
+    SetBreakpadDumpPath(crash_client);
 
   // Create space for dynamic ad-hoc keys. The names and values are set using
   // the API defined in base/debug/crash_logging.h.

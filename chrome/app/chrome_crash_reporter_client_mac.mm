@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_breakpad_client.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -33,7 +33,7 @@ bool NaClBreakpadCrashFilter(int exception_type,
 
 }  // namespace
 
-void ChromeBreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
+void ChromeCrashReporterClient::InstallAdditionalFilters(BreakpadRef breakpad) {
 #if !defined(DISABLE_NACL)
   if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType) == switches::kNaClLoaderProcess) {
@@ -42,7 +42,8 @@ void ChromeBreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
 #endif
 }
 
-bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
+bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(
+    bool* breakpad_enabled) {
   base::ScopedCFTypeRef<CFStringRef> key(
       base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
   Boolean key_valid;

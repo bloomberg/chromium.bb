@@ -41,7 +41,7 @@
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "chrome/app/chrome_breakpad_client.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 #endif
 
 namespace {
@@ -114,10 +114,10 @@ int LaunchChromeTests(int default_jobs,
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // We leak this pointer intentionally. The breakpad client needs to outlive
   // all other code.
-  chrome::ChromeBreakpadClient* breakpad_client =
-      new chrome::ChromeBreakpadClient();
-  ANNOTATE_LEAKING_OBJECT_PTR(breakpad_client);
-  breakpad::SetBreakpadClient(breakpad_client);
+  chrome::ChromeCrashReporterClient* crash_client =
+      new chrome::ChromeCrashReporterClient();
+  ANNOTATE_LEAKING_OBJECT_PTR(crash_client);
+  crash_reporter::SetCrashReporterClient(crash_client);
 #endif
 
   ChromeTestLauncherDelegate launcher_delegate(runner);

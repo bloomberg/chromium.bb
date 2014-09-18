@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_APP_BREAKPAD_CLIENT_H_
-#define COMPONENTS_CRASH_APP_BREAKPAD_CLIENT_H_
+#ifndef COMPONENTS_CRASH_APP_CRASH_REPORTER_CLIENT_H_
+#define COMPONENTS_CRASH_APP_CRASH_REPORTER_CLIENT_H_
 
 #include <string>
 
@@ -25,30 +25,31 @@ class FilePath;
 typedef void* BreakpadRef;
 #endif
 
-namespace breakpad {
+namespace crash_reporter {
 
-class BreakpadClient;
+class CrashReporterClient;
 
 // Setter and getter for the client.  The client should be set early, before any
-// breakpad code is called, and should stay alive throughout the entire runtime.
-void SetBreakpadClient(BreakpadClient* client);
+// crash reporter code is called, and should stay alive throughout the entire
+// runtime.
+void SetCrashReporterClient(CrashReporterClient* client);
 
 #if defined(CRASH_IMPLEMENTATION)
-// Breakpad's embedder API should only be used by breakpad.
-BreakpadClient* GetBreakpadClient();
+// The components's embedder API should only be used by the component.
+CrashReporterClient* GetCrashReporterClient();
 #endif
 
 // Interface that the embedder implements.
-class BreakpadClient {
+class CrashReporterClient {
  public:
-  BreakpadClient();
-  virtual ~BreakpadClient();
+  CrashReporterClient();
+  virtual ~CrashReporterClient();
 
-  // Sets the Breakpad client ID, which is a unique identifier for the client
+  // Sets the crash reporting client ID, a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
   // |client_guid| may either be a full GUID or a GUID that was already stripped
   // from its dashes.
-  virtual void SetBreakpadClientIdFromGUID(const std::string& client_guid);
+  virtual void SetCrashReporterClientIdFromGUID(const std::string& client_guid);
 
 #if defined(OS_WIN)
   // Returns true if an alternative location to store the minidump files was
@@ -88,7 +89,7 @@ class BreakpadClient {
   // crashed process.
   virtual int GetResultCodeRespawnFailed();
 
-  // Invoked when initializing breakpad in the browser process.
+  // Invoked when initializing the crash reporter in the browser process.
   virtual void InitBrowserCrashDumpsRegKey();
 
   // Invoked before attempting to write a minidump.
@@ -119,8 +120,8 @@ class BreakpadClient {
   virtual bool GetCollectStatsConsent();
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // Returns true if breakpad is enforced via management policies. In that
-  // case, |breakpad_enabled| is set to the value enforced by policies.
+  // Returns true if crash reporting is enforced via management policies. In
+  // that case, |breakpad_enabled| is set to the value enforced by policies.
   virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);
 #endif
 
@@ -138,6 +139,6 @@ class BreakpadClient {
   virtual bool EnableBreakpadForProcess(const std::string& process_type);
 };
 
-}  // namespace breakpad
+}  // namespace crash_reporter
 
-#endif  // COMPONENTS_CRASH_APP_BREAKPAD_CLIENT_H_
+#endif  // COMPONENTS_CRASH_APP_CRASH_REPORTER_CLIENT_H_

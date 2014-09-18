@@ -308,9 +308,9 @@
                     '../components/components.gyp:policy',
                   ],
                   'sources': [
-                    'app/chrome_breakpad_client.cc',
-                    'app/chrome_breakpad_client.h',
-                    'app/chrome_breakpad_client_mac.mm',
+                    'app/chrome_crash_reporter_client.cc',
+                    'app/chrome_crash_reporter_client.h',
+                    'app/chrome_crash_reporter_client_mac.mm',
                   ],
                 }, {  # else: mac_breakpad_compiled_in!=1
                   # No Breakpad, put in the stubs.

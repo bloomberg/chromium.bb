@@ -501,8 +501,8 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
-            'app/chrome_breakpad_client.cc',
-            'app/chrome_breakpad_client.h',
+            'app/chrome_crash_reporter_client.cc',
+            'app/chrome_crash_reporter_client.h',
             'app/chrome_exe.rc',
             'common/crash_keys.cc',
             'common/crash_keys.h',
@@ -610,7 +610,7 @@
               'type': 'executable',
               'product_name': 'nacl64',
               'sources': [
-                'app/chrome_breakpad_client.cc',
+                'app/chrome_crash_reporter_client.cc',
                 'common/crash_keys.cc',
                 'nacl/nacl_exe_win_64.cc',
                 '../content/app/startup_helper_win.cc',

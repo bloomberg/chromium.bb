@@ -3161,8 +3161,8 @@
         }],
         ['os_posix == 1 and OS != "mac" and OS != "ios"', {
           'sources': [
-            'app/chrome_breakpad_client.cc',
-            'app/chrome_breakpad_client.h',
+            'app/chrome_crash_reporter_client.cc',
+            'app/chrome_crash_reporter_client.h',
           ],
           'dependencies': [
             '../components/components.gyp:breakpad_host',

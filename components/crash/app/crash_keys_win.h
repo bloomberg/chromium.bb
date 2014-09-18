@@ -16,9 +16,11 @@ namespace base {
 class CommandLine;
 }  // namespace base
 
-namespace breakpad {
+namespace crash_reporter {
+class CrashReporterClient;
+}
 
-class BreakpadClient;
+namespace breakpad {
 
 // Manages the breakpad key/value pair stash, there may only be one instance
 // of this class per process at one time.
@@ -36,13 +38,13 @@ class CrashKeysWin {
   // profile, e.g. "mandatory", or "roaming" or similar.
   // |cmd_line| is the current process' command line consulted for explicit
   // crash reporting flags.
-  // |breakpad_client| is consulted for crash reporting settings.
+  // |crash_client| is consulted for crash reporting settings.
   google_breakpad::CustomClientInfo* GetCustomInfo(
         const std::wstring& exe_path,
         const std::wstring& type,
         const std::wstring& profile_type,
         base::CommandLine* cmd_line,
-        BreakpadClient* breakpad_client);
+        crash_reporter::CrashReporterClient* crash_client);
 
   void SetCrashKeyValue(const std::wstring& key, const std::wstring& value);
   void ClearCrashKeyValue(const std::wstring& key);
@@ -52,7 +54,7 @@ class CrashKeysWin {
  private:
   // One-time initialization of private key/value pairs.
   void SetPluginPath(const std::wstring& path);
-  void SetBreakpadDumpPath(BreakpadClient* breakpad_client);
+  void SetBreakpadDumpPath(crash_reporter::CrashReporterClient* crash_client);
 
   // Must not be resized after GetCustomInfo is invoked.
   std::vector<google_breakpad::CustomInfoEntry> custom_entries_;

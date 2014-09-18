@@ -8,8 +8,8 @@
       'target_name': 'crash_component_lib',
       'type': 'static_library',
       'sources': [
-        'crash/app/breakpad_client.cc',
-        'crash/app/breakpad_client.h',
+        'crash/app/crash_reporter_client.cc',
+        'crash/app/crash_reporter_client.h',
         'crash/app/crash_keys_win.cc',
         'crash/app/crash_keys_win.h',
       ],
@@ -127,8 +127,8 @@
           'target_name': 'breakpad_win64',
           'type': 'static_library',
           'sources': [
-            'crash/app/breakpad_client.cc',
-            'crash/app/breakpad_client.h',
+            'crash/app/crash_reporter_client.cc',
+            'crash/app/crash_reporter_client.h',
             'crash/app/breakpad_linux.cc',
             'crash/app/breakpad_linux.h',
             'crash/app/breakpad_linux_impl.h',
@@ -187,8 +187,8 @@
             '../base/base.gyp:base',
           ],
           'sources': [
-            'crash/app/breakpad_client.cc',
-            'crash/app/breakpad_client.h',
+            'crash/app/crash_reporter_client.cc',
+            'crash/app/crash_reporter_client.h',
             'crash/app/breakpad_mac.h',
             'crash/app/breakpad_mac_stubs.mm',
           ],

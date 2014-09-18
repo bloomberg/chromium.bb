@@ -32,8 +32,8 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "components/crash/app/breakpad_client.h"
 #include "components/crash/app/crash_keys_win.h"
+#include "components/crash/app/crash_reporter_client.h"
 #include "components/crash/app/hard_error_handler_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/nt_internals.h"
@@ -46,6 +46,8 @@
 #pragma intrinsic(_ReturnAddress)
 
 namespace breakpad {
+
+using crash_reporter::GetCrashReporterClient;
 
 namespace {
 
@@ -200,7 +202,7 @@ bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
   if (HardErrorHandler(ex_info))
     return true;
 
-  if (!GetBreakpadClient()->AboutToRestart())
+  if (!GetCrashReporterClient()->AboutToRestart())
     return true;
 
   // Now we just start chrome browser with the same command line.
@@ -224,7 +226,7 @@ volatile LONG handling_exception = 0;
 // to implement it.
 bool FilterCallbackWhenNoCrash(
     void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
-  GetBreakpadClient()->RecordCrashDumpAttempt(false);
+  GetCrashReporterClient()->RecordCrashDumpAttempt(false);
   return true;
 }
 
@@ -238,7 +240,7 @@ bool FilterCallback(void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
   if (::InterlockedCompareExchange(&handling_exception, 1, 0) == 1) {
     ::Sleep(INFINITE);
   }
-  GetBreakpadClient()->RecordCrashDumpAttempt(true);
+  GetCrashReporterClient()->RecordCrashDumpAttempt(true);
   return true;
 }
 
@@ -303,7 +305,7 @@ static bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // Its not safe to continue executing, exit silently here.
     ::TerminateProcess(::GetCurrentProcess(),
-                       GetBreakpadClient()->GetResultCodeRespawnFailed());
+                       GetCrashReporterClient()->GetResultCodeRespawnFailed());
   }
 
   return true;
@@ -320,8 +322,8 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   base::string16 message;
   base::string16 title;
   bool is_rtl_locale;
-  if (!GetBreakpadClient()->ShouldShowRestartDialog(
-           &title, &message, &is_rtl_locale)) {
+  if (!GetCrashReporterClient()->ShouldShowRestartDialog(
+          &title, &message, &is_rtl_locale)) {
     return false;
   }
 
@@ -434,13 +436,14 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
 
   // Check whether configuration management controls crash reporting.
   bool crash_reporting_enabled = true;
-  bool controlled_by_policy = GetBreakpadClient()->ReportingIsEnforcedByPolicy(
-      &crash_reporting_enabled);
+  bool controlled_by_policy =
+      GetCrashReporterClient()->ReportingIsEnforcedByPolicy(
+          &crash_reporting_enabled);
 
   const CommandLine& command = *CommandLine::ForCurrentProcess();
-  bool use_crash_service =
-      !controlled_by_policy && (command.HasSwitch(switches::kNoErrorDialogs) ||
-                                GetBreakpadClient()->IsRunningUnattended());
+  bool use_crash_service = !controlled_by_policy &&
+                           (command.HasSwitch(switches::kNoErrorDialogs) ||
+                            GetCrashReporterClient()->IsRunningUnattended());
 
   std::wstring pipe_name;
   if (use_crash_service) {
@@ -451,7 +454,8 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
     // user allows it first (in case the administrator didn't already decide
     // via policy).
     if (!controlled_by_policy)
-      crash_reporting_enabled = GetBreakpadClient()->GetCollectStatsConsent();
+      crash_reporting_enabled =
+          GetCrashReporterClient()->GetCollectStatsConsent();
 
     if (!crash_reporting_enabled) {
       // Crash reporting is disabled, don't set the environment variable.
@@ -497,7 +501,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   GetModuleFileNameW(NULL, exe_path, MAX_PATH);
 
   bool is_per_user_install =
-      GetBreakpadClient()->GetIsPerUserInstall(base::FilePath(exe_path));
+      GetCrashReporterClient()->GetIsPerUserInstall(base::FilePath(exe_path));
 
   // This is intentionally leaked.
   CrashKeysWin* keeper = new CrashKeysWin();
@@ -505,7 +509,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   google_breakpad::CustomClientInfo* custom_info =
       keeper->GetCustomInfo(exe_path, process_type,
                             GetProfileType(), CommandLine::ForCurrentProcess(),
-                            GetBreakpadClient());
+                            GetCrashReporterClient());
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
@@ -521,7 +525,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
 
   if (process_type == L"browser") {
     InitPipeNameEnvVar(is_per_user_install);
-    GetBreakpadClient()->InitBrowserCrashDumpsRegKey();
+    GetCrashReporterClient()->InitBrowserCrashDumpsRegKey();
   }
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -554,7 +558,8 @@ void InitCrashReporter(const std::string& process_type_switch) {
   // Capture full memory if explicitly instructed to.
   if (command.HasSwitch(switches::kFullMemoryCrashReport))
     dump_type = kFullDumpType;
-  else if (GetBreakpadClient()->GetShouldDumpLargerDumps(is_per_user_install))
+  else if (GetCrashReporterClient()->GetShouldDumpLargerDumps(
+               is_per_user_install))
     dump_type = kLargerDumpType;
 
   g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,
@@ -587,7 +592,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
 
 #ifndef _WIN64
     if (process_type != L"browser" &&
-        !GetBreakpadClient()->IsRunningUnattended()) {
+        !GetCrashReporterClient()->IsRunningUnattended()) {
       // Initialize the hook TerminateProcess to catch unexpected exits.
       InitTerminateProcessHooks();
     }

@@ -8,8 +8,8 @@ if (is_android) {
 
 source_set("lib") {
   sources = [
-    "breakpad_client.cc",
-    "breakpad_client.h",
+    "crash_reporter_client.cc",
+    "crash_reporter_client.h",
     "crash_keys_win.cc",
     "crash_keys_win.h",
   ]

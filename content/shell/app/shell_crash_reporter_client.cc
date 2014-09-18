@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/app/shell_breakpad_client.h"
+#include "content/shell/app/shell_crash_reporter_client.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -17,11 +17,11 @@
 
 namespace content {
 
-ShellBreakpadClient::ShellBreakpadClient() {}
-ShellBreakpadClient::~ShellBreakpadClient() {}
+ShellCrashReporterClient::ShellCrashReporterClient() {}
+ShellCrashReporterClient::~ShellCrashReporterClient() {}
 
 #if defined(OS_WIN)
-void ShellBreakpadClient::GetProductNameAndVersion(
+void ShellCrashReporterClient::GetProductNameAndVersion(
     const base::FilePath& exe_path,
     base::string16* product_name,
     base::string16* version,
@@ -35,18 +35,19 @@ void ShellBreakpadClient::GetProductNameAndVersion(
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
-void ShellBreakpadClient::GetProductNameAndVersion(std::string* product_name,
-                                                   std::string* version) {
+void ShellCrashReporterClient::GetProductNameAndVersion(
+    std::string* product_name,
+    std::string* version) {
   *product_name = "content_shell";
   *version = CONTENT_SHELL_VERSION;
 }
 
-base::FilePath ShellBreakpadClient::GetReporterLogFilename() {
+base::FilePath ShellCrashReporterClient::GetReporterLogFilename() {
   return base::FilePath(FILE_PATH_LITERAL("uploads.log"));
 }
 #endif
 
-bool ShellBreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
+bool ShellCrashReporterClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kCrashDumpsDir))
     return false;
   *crash_dir = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
@@ -55,12 +56,12 @@ bool ShellBreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
 }
 
 #if defined(OS_ANDROID)
-int ShellBreakpadClient::GetAndroidMinidumpDescriptor() {
+int ShellCrashReporterClient::GetAndroidMinidumpDescriptor() {
   return kAndroidMinidumpDescriptor;
 }
 #endif
 
-bool ShellBreakpadClient::EnableBreakpadForProcess(
+bool ShellCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == switches::kRendererProcess ||
          process_type == switches::kPluginProcess ||

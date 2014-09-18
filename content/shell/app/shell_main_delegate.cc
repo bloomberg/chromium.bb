@@ -17,7 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
-#include "content/shell/app/shell_breakpad_client.h"
+#include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/app/webkit_test_platform_support.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -67,8 +67,8 @@
 
 namespace {
 
-base::LazyInstance<content::ShellBreakpadClient>::Leaky
-    g_shell_breakpad_client = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<content::ShellCrashReporterClient>::Leaky
+    g_shell_crash_client = LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_WIN)
 // If "Content Shell" doesn't show up in your list of trace providers in
@@ -206,7 +206,7 @@ void ShellMainDelegate::PreSandboxStartup() {
     std::string process_type =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
-    breakpad::SetBreakpadClient(g_shell_breakpad_client.Pointer());
+    crash_reporter::SetCrashReporterClient(g_shell_crash_client.Pointer());
 #if defined(OS_MACOSX)
     base::mac::DisableOSCrashDumps();
     breakpad::InitCrashReporter(process_type);

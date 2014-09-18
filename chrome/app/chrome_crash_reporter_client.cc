@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_breakpad_client.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 
 #include "base/atomicops.h"
 #include "base/command_line.h"
@@ -76,17 +76,17 @@ base::subtle::Atomic32 g_browser_crash_dump_count = 0;
 
 }  // namespace
 
-ChromeBreakpadClient::ChromeBreakpadClient() {}
+ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
-ChromeBreakpadClient::~ChromeBreakpadClient() {}
+ChromeCrashReporterClient::~ChromeCrashReporterClient() {}
 
-void ChromeBreakpadClient::SetBreakpadClientIdFromGUID(
+void ChromeCrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {
   crash_keys::SetCrashClientIdFromGUID(client_guid);
 }
 
 #if defined(OS_WIN)
-bool ChromeBreakpadClient::GetAlternativeCrashDumpLocation(
+bool ChromeCrashReporterClient::GetAlternativeCrashDumpLocation(
     base::FilePath* crash_dir) {
   // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
   // location to write breakpad crash dumps can be set.
@@ -100,7 +100,7 @@ bool ChromeBreakpadClient::GetAlternativeCrashDumpLocation(
   return false;
 }
 
-void ChromeBreakpadClient::GetProductNameAndVersion(
+void ChromeCrashReporterClient::GetProductNameAndVersion(
     const base::FilePath& exe_path,
     base::string16* product_name,
     base::string16* version,
@@ -132,9 +132,9 @@ void ChromeBreakpadClient::GetProductNameAndVersion(
       !GetIsPerUserInstall(exe_path), channel_name);
 }
 
-bool ChromeBreakpadClient::ShouldShowRestartDialog(base::string16* title,
-                                                   base::string16* message,
-                                                   bool* is_rtl_locale) {
+bool ChromeCrashReporterClient::ShouldShowRestartDialog(base::string16* title,
+                                                        base::string16* message,
+                                                        bool* is_rtl_locale) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (!env->HasVar(env_vars::kShowRestart) ||
       !env->HasVar(env_vars::kRestartInfo) ||
@@ -160,7 +160,7 @@ bool ChromeBreakpadClient::ShouldShowRestartDialog(base::string16* title,
   return true;
 }
 
-bool ChromeBreakpadClient::AboutToRestart() {
+bool ChromeCrashReporterClient::AboutToRestart() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (!env->HasVar(env_vars::kRestartInfo))
     return false;
@@ -169,7 +169,7 @@ bool ChromeBreakpadClient::AboutToRestart() {
   return true;
 }
 
-bool ChromeBreakpadClient::GetDeferredUploadsSupported(
+bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
     bool is_per_user_install) {
   Version update_version = GoogleUpdateSettings::GetGoogleUpdateVersion(
       !is_per_user_install);
@@ -180,11 +180,13 @@ bool ChromeBreakpadClient::GetDeferredUploadsSupported(
   return true;
 }
 
-bool ChromeBreakpadClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
+bool ChromeCrashReporterClient::GetIsPerUserInstall(
+    const base::FilePath& exe_path) {
   return InstallUtil::IsPerUserInstall(exe_path.value().c_str());
 }
 
-bool ChromeBreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
+bool ChromeCrashReporterClient::GetShouldDumpLargerDumps(
+    bool is_per_user_install) {
   base::string16 channel_name =
       GoogleUpdateSettings::GetChromeChannel(!is_per_user_install);
 
@@ -194,11 +196,11 @@ bool ChromeBreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
           channel_name == GoogleChromeSxSDistribution::ChannelName());
 }
 
-int ChromeBreakpadClient::GetResultCodeRespawnFailed() {
+int ChromeCrashReporterClient::GetResultCodeRespawnFailed() {
   return chrome::RESULT_CODE_RESPAWN_FAILED;
 }
 
-void ChromeBreakpadClient::InitBrowserCrashDumpsRegKey() {
+void ChromeCrashReporterClient::InitBrowserCrashDumpsRegKey() {
   DCHECK(g_browser_crash_dump_regkey == NULL);
 
   base::win::RegKey regkey;
@@ -229,7 +231,7 @@ void ChromeBreakpadClient::InitBrowserCrashDumpsRegKey() {
   g_browser_crash_dump_regkey = regkey.Take();
 }
 
-void ChromeBreakpadClient::RecordCrashDumpAttempt(bool is_real_crash) {
+void ChromeCrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
   // If we're not a browser (or the registry is unavailable to us for some
   // reason) then there's nothing to do.
   if (g_browser_crash_dump_regkey == NULL)
@@ -253,7 +255,8 @@ void ChromeBreakpadClient::RecordCrashDumpAttempt(bool is_real_crash) {
   }
 }
 
-bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
+bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(
+    bool* breakpad_enabled) {
 // Determine whether configuration management allows loading the crash reporter.
 // Since the configuration management infrastructure is not initialized at this
 // point, we read the corresponding registry key directly. The return status
@@ -281,8 +284,9 @@ bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
-void ChromeBreakpadClient::GetProductNameAndVersion(std::string* product_name,
-                                                    std::string* version) {
+void ChromeCrashReporterClient::GetProductNameAndVersion(
+    std::string* product_name,
+    std::string* version) {
   DCHECK(product_name);
   DCHECK(version);
 #if defined(OS_ANDROID)
@@ -300,12 +304,13 @@ void ChromeBreakpadClient::GetProductNameAndVersion(std::string* product_name,
   *version = PRODUCT_VERSION;
 }
 
-base::FilePath ChromeBreakpadClient::GetReporterLogFilename() {
+base::FilePath ChromeCrashReporterClient::GetReporterLogFilename() {
   return base::FilePath(CrashUploadList::kReporterLogFilename);
 }
 #endif
 
-bool ChromeBreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
+bool ChromeCrashReporterClient::GetCrashDumpLocation(
+    base::FilePath* crash_dir) {
   // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
   // location to write breakpad crash dumps can be set.
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -319,19 +324,19 @@ bool ChromeBreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 
-size_t ChromeBreakpadClient::RegisterCrashKeys() {
+size_t ChromeCrashReporterClient::RegisterCrashKeys() {
   // Note: This is not called on Windows because Breakpad is initialized in the
   // EXE module, but code that uses crash keys is in the DLL module.
   // RegisterChromeCrashKeys() will be called after the DLL is loaded.
   return crash_keys::RegisterChromeCrashKeys();
 }
 
-bool ChromeBreakpadClient::IsRunningUnattended() {
+bool ChromeCrashReporterClient::IsRunningUnattended() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   return env->HasVar(env_vars::kHeadless);
 }
 
-bool ChromeBreakpadClient::GetCollectStatsConsent() {
+bool ChromeCrashReporterClient::GetCollectStatsConsent() {
 #if defined(GOOGLE_CHROME_BUILD)
   bool is_official_chrome_build = true;
 #else
@@ -360,12 +365,12 @@ bool ChromeBreakpadClient::GetCollectStatsConsent() {
 }
 
 #if defined(OS_ANDROID)
-int ChromeBreakpadClient::GetAndroidMinidumpDescriptor() {
+int ChromeCrashReporterClient::GetAndroidMinidumpDescriptor() {
   return kAndroidMinidumpDescriptor;
 }
 #endif
 
-bool ChromeBreakpadClient::EnableBreakpadForProcess(
+bool ChromeCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == switches::kRendererProcess ||
          process_type == switches::kPluginProcess ||

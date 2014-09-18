@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "components/crash/app/breakpad_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +18,7 @@ using testing::DoAll;
 using testing::Return;
 using testing::SetArgPointee;
 
-class MockBreakpadClient : public BreakpadClient {
+class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   MOCK_METHOD1(GetAlternativeCrashDumpLocation,
                bool(base::FilePath* crash_dir));
@@ -61,7 +61,7 @@ class CrashKeysWinTest : public testing::Test {
       const wchar_t* key, const wchar_t* value);
 
  protected:
-  testing::StrictMock<MockBreakpadClient> breakpad_client_;
+  testing::StrictMock<MockCrashReporterClient> crash_client_;
 };
 
 size_t CrashKeysWinTest::CountKeyValueOccurences(
@@ -98,22 +98,22 @@ TEST_F(CrashKeysWinTest, OfficialLikeKeys) {
 
   const base::FilePath kExePath(L"C:\\temp\\exe_path.exe");
   // The exe path ought to get passed through to the breakpad client.
-  EXPECT_CALL(breakpad_client_, GetProductNameAndVersion(kExePath, _, _, _, _))
+  EXPECT_CALL(crash_client_, GetProductNameAndVersion(kExePath, _, _, _, _))
       .WillRepeatedly(DoAll(
           SetArgPointee<1>(L"SomeProdName"),
           SetArgPointee<2>(L"1.2.3.4"),
           SetArgPointee<3>(L""),
           SetArgPointee<4>(L"-devm")));
 
-  EXPECT_CALL(breakpad_client_, GetAlternativeCrashDumpLocation(_))
+  EXPECT_CALL(crash_client_, GetAlternativeCrashDumpLocation(_))
       .WillRepeatedly(DoAll(
           SetArgPointee<0>(base::FilePath(L"C:\\temp")),
           Return(false)));
 
-  EXPECT_CALL(breakpad_client_, ReportingIsEnforcedByPolicy(_))
+  EXPECT_CALL(crash_client_, ReportingIsEnforcedByPolicy(_))
       .WillRepeatedly(Return(false));
 
-  EXPECT_CALL(breakpad_client_,  IsRunningUnattended())
+  EXPECT_CALL(crash_client_,  IsRunningUnattended())
       .WillRepeatedly(Return(false));
 
   // Provide an empty command line.
@@ -123,7 +123,7 @@ TEST_F(CrashKeysWinTest, OfficialLikeKeys) {
                                L"made_up_type",
                                L"temporary",
                                &cmd_line,
-                               &breakpad_client_);
+                               &crash_client_);
 
   ASSERT_TRUE(info != NULL);
   ASSERT_TRUE(info->entries != NULL);

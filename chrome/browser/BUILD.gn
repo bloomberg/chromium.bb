@@ -393,8 +393,8 @@ static_library("browser") {
   }
   if (is_posix && !is_mac && !is_ios) {
     sources += [
-      "//chrome/app/chrome_breakpad_client.cc",
-      "//chrome/app/chrome_breakpad_client.h",
+      "//chrome/app/chrome_crash_reporter_client.cc",
+      "//chrome/app/chrome_crash_reporter_client.h",
     ]
     deps += [
       "//components/crash/app",

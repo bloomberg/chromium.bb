@@ -38,8 +38,8 @@
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
-#include "components/crash/app/breakpad_client.h"
 #include "components/crash/app/breakpad_linux_impl.h"
+#include "components/crash/app/crash_reporter_client.h"
 #include "content/public/common/content_descriptors.h"
 
 #if defined(OS_ANDROID)
@@ -69,6 +69,7 @@
 // spurious compiler warnings.
 #define IGNORE_RET(x) do { if (x); } while (0)
 
+using crash_reporter::GetCrashReporterClient;
 using google_breakpad::ExceptionHandler;
 using google_breakpad::MinidumpDescriptor;
 
@@ -206,7 +207,7 @@ void SetClientIdFromCommandLine(const CommandLine& command_line) {
   // Get the guid from the command line switch.
   std::string switch_value =
       command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
-  GetBreakpadClient()->SetBreakpadClientIdFromGUID(switch_value);
+  GetCrashReporterClient()->SetCrashReporterClientIdFromGUID(switch_value);
 }
 
 // MIME substrings.
@@ -630,9 +631,9 @@ void EnableCrashDumping(bool unattended) {
   PathService::Get(base::DIR_TEMP, &tmp_path);
 
   base::FilePath dumps_path(tmp_path);
-  if (GetBreakpadClient()->GetCrashDumpLocation(&dumps_path)) {
+  if (GetCrashReporterClient()->GetCrashDumpLocation(&dumps_path)) {
     base::FilePath logfile =
-        dumps_path.Append(GetBreakpadClient()->GetReporterLogFilename());
+        dumps_path.Append(GetCrashReporterClient()->GetReporterLogFilename());
     std::string logfile_str = logfile.value();
     const size_t crash_log_path_len = logfile_str.size() + 1;
     g_crash_log_path = new char[crash_log_path_len];
@@ -867,10 +868,11 @@ void ClearCrashKey(const base::StringPiece& key) {
   g_crash_keys->RemoveKey(key.data());
 }
 
-// GetBreakpadClient() cannot call any Set methods until after InitCrashKeys().
+// GetCrashReporterClient() cannot call any Set methods until after
+// InitCrashKeys().
 void InitCrashKeys() {
   g_crash_keys = new CrashKeyStorage;
-  GetBreakpadClient()->RegisterCrashKeys();
+  GetCrashReporterClient()->RegisterCrashKeys();
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValue, &ClearCrashKey);
 }
 
@@ -1309,7 +1311,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     std::string product_name;
     std::string version;
 
-    GetBreakpadClient()->GetProductNameAndVersion(&product_name, &version);
+    GetCrashReporterClient()->GetProductNameAndVersion(&product_name, &version);
 
     writer.AddBoundary();
     writer.AddPairString("prod", product_name.c_str());
@@ -1552,8 +1554,8 @@ void InitCrashReporter(const std::string& process_type) {
     return;
 
   if (process_type.empty()) {
-    bool enable_breakpad = GetBreakpadClient()->GetCollectStatsConsent() ||
-                           GetBreakpadClient()->IsRunningUnattended();
+    bool enable_breakpad = GetCrashReporterClient()->GetCollectStatsConsent() ||
+                           GetCrashReporterClient()->IsRunningUnattended();
     enable_breakpad &=
         !parsed_command_line.HasSwitch(switches::kDisableBreakpad);
     if (!enable_breakpad) {
@@ -1566,8 +1568,8 @@ void InitCrashReporter(const std::string& process_type) {
     }
 
     InitCrashKeys();
-    EnableCrashDumping(GetBreakpadClient()->IsRunningUnattended());
-  } else if (GetBreakpadClient()->EnableBreakpadForProcess(process_type)) {
+    EnableCrashDumping(GetCrashReporterClient()->IsRunningUnattended());
+  } else if (GetCrashReporterClient()->EnableBreakpadForProcess(process_type)) {
 #if defined(OS_ANDROID)
     NOTREACHED() << "Breakpad initialized with InitCrashReporter() instead of "
       "InitNonBrowserCrashReporter in " << process_type << " process.";
@@ -1598,7 +1600,7 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
     // generated as the renderer and browser run with different UIDs
     // (preventing the browser from inspecting the renderer process).
     int minidump_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
-        GetBreakpadClient()->GetAndroidMinidumpDescriptor());
+        GetCrashReporterClient()->GetAndroidMinidumpDescriptor());
     if (minidump_fd < 0) {
       NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
     } else {
