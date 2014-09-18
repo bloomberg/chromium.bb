@@ -3493,113 +3493,10 @@
    fun:_ZN5blink27ScriptProfileNodeV8InternalL16childrenCallbackERKN2v89ArgumentsE
 }
 {
-   bug_138522
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink23v8StringToblinkStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN*blink*V8StringResourceILNS_20V8StringResourceMode*
-   ...
-   fun:_ZN5blink21EventTargetV8InternalL22addEventListenerMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-}
-{
    bug_138712
    Memcheck:Uninitialized
    fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN3gfx30JPEGCodec_EncodeDecodeRGB_Test8TestBodyEv
-}
-{
-   bug_139467
-   Memcheck:Uninitialized
-   fun:_ZNK7blink18AccessibilityTable9roleValueEv
-   fun:_ZNK7blink25AccessibilityRenderObject20ariaLiveRegionStatusEv
-   fun:_ZNK7blink19AccessibilityObject22supportsARIALiveRegionEv
-   fun:_ZNK7blink19AccessibilityObject22supportsARIAAttributesEv
-   fun:_ZN5blink25AccessibilityRenderObject26determineAccessibilityRoleEv
-   fun:_ZN5blink23AccessibilityNodeObject4initEv
-   fun:_ZN5blink25AccessibilityRenderObject4initEv
-   fun:_ZN5blink18AccessibilityTable4initEv
-}
-{
-   bug_139470
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink22ThreadableBlobRegistry17unregisterBlobURLERKNS_4KURLE
-   ...
-   fun:_ZN5blink15WrapperTypeInfo11derefObjectEPv
-   fun:_ZN5blink7DOMData11derefObjectEPNS_15WrapperTypeInfoEPv
-   fun:_ZN5blink7DOMData23WrapperMapObjectRemoverIvE15visitDOMWrapperEPNS_12DOMDataStoreEPvN2v810PersistentINS6_6ObjectEEE
-   fun:_ZN5blink16WeakReferenceMapIvN2v86ObjectEE5visitEPNS_12DOMDataStoreEPNS_24AbstractWeakReferenceMapIvS2_E7VisitorE
-   fun:_ZN5blink7DOMData27removeObjectsFromWrapperMapIvEEvPNS_12DOMDataStoreERNS_24AbstractWeakReferenceMapIT_N2v86ObjectEEE
-   fun:_ZN5blink19removeAllDOMObjectsEv
-   fun:_ZN5blink22WorkerScriptControllerD1Ev
-   fun:_ZN3WTF14deleteOwnedPtrIN7blink22WorkerScriptControllerEEEvPT_
-   fun:_ZN3WTF6OwnPtrIN7blink22WorkerScriptControllerEE5clearEv
-   fun:_ZN5blink13WorkerContext11clearScriptEv
-   fun:_ZN5blink30WorkerThreadShutdownFinishTask11performTaskEPNS_22ScriptExecutionContextE
-   fun:_ZN5blink13WorkerRunLoop4Task11performTaskERKS0_PNS_22ScriptExecutionContextE
-   fun:_ZN5blink13WorkerRunLoop9runInModeEPNS_13WorkerContextERKNS_13ModePredicateENS0_8WaitModeE
-   fun:_ZN5blink13WorkerRunLoop3runEPNS_13WorkerContextE
-   fun:_ZN5blink12WorkerThread12runEventLoopEv
-   fun:_ZN5blink21DedicatedWorkerThread12runEventLoopEv
-}
-{
-   bug_139853
-   Memcheck:Unaddressable
-   fun:_ZN11SkGpuDeviceC1EP9GrContextP9GrTexture
-   fun:_ZN5blinkL23createAcceleratedCanvas*
-   fun:_ZN5blink45FrameBufferSkPictureCanvasLayerTextureUpdater17*
-   fun:_ZN5blink45FrameBufferSkPictureCanvasLayerTextureUpdater7Texture10updateRectEPNS_18CCResourceProviderERKNS_7IntRectES6_
-   fun:_ZN5blink12_GLOBAL__N_126UnthrottledTextureUploader13uploadTextureEPNS_19LayerTextureUpdater7TextureEPNS_18CCResourceProviderENS_7IntRectES7_
-   fun:_ZN5blink16CCTextureUpdater6updateEPNS_18CCResourceProviderEPNS_13TextureCopierEPNS_15TextureUploaderEm
-   fun:_ZN5blink19CCSingleThreadProxy8doCommitERNS_16CCTextureUpdaterE
-   fun:_ZN5blink19CCSingleThreadProxy18commitAndCompositeEv
-   fun:_ZN5blink19CCSingleThreadProxy20compositeAndReadbackEPvRKNS_7IntRectE
-   fun:_ZN5blink15CCLayerTreeHost20compositeAndReadbackEPvRKNS_7IntRectE
-   fun:_ZN5blink16WebLayerTreeView20compositeAndReadbackEPvRKNS_7WebRectE
-   fun:_ZN5blink11WebViewImpl23doPixelReadbackToCanvasEP8SkCanvasRKN7blink7IntRectE
-   fun:_ZN5blink11WebViewImpl5paintEP8SkCanvasRKNS_7WebRectE
-   fun:_ZN11WebViewHost9paintRectERKN5blink7WebRectE
-   fun:_ZN11WebViewHost22paintInvalidatedRegionEv
-}
-{
-   bug_139996
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink23v8StringToblinkStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN5blink15toblinkStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN5blink6V8Blob19constructorCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL30Builtin_HandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   bug_140196
-   Memcheck:Uninitialized
-   fun:_ZNK12SkDescriptor6equalsERKS_
-   fun:_ZN12SkGlyphCache10VisitCacheEPK12SkDescriptorPFbPKS_PvES5_
-   ...
-   fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_b
-}
-{
-   bug_143545
-   Memcheck:Uninitialized
-   fun:_ZN4aura10RootWindow10ShowCursorEb
-   fun:_ZN3ash5Shell10ShowCursorEb
-   fun:_ZN3ash13CursorManager10ShowCursorEb
-   fun:_ZN3ash4test11AshTestBase5SetUpEv
-}
-{
-   bug_144118
-   Memcheck:Unaddressable
-   fun:NPP_SetWindow
-   fun:_ZN6webkit5npapi14PluginInstance13NPP_SetWindowEP9_NPWindow
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl17WindowedSetWindowEv
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl22WindowedUpdateGeometryERKN3gfx4RectES5_
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl14UpdateGeometryERKN3gfx4RectES5_
-   fun:_ZN6webkit5npapi13WebPluginImpl14updateGeometryERKN5blink7WebRectES5_RKNS2_9WebVectorIS3_EEb
-   fun:_ZN5blink22WebPluginContainerImpl14reportGeometryEv
-   fun:_ZN5blink22WebPluginContainerImpl12setFrameRectERKN7blink7IntRectE
-   ...
-   fun:_ZN9TestShell4dumpEv
 }
 {
    bug_144118_b
@@ -3609,16 +3506,6 @@
    fun:_ZN5blink22WebPluginContainerImpl12setFrameRectERKN7blink7IntRectE
    ...
    fun:_ZN9TestShell4dumpEv
-}
-{
-   bug_144913
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos30BluetoothAdapterClientStubImplC1Ev
-   fun:_ZN8chromeos22BluetoothAdapterClient6CreateENS_28DBusClientImplementationTypeEPN4dbus3BusEPNS_22BluetoothManagerClientE
-   fun:_ZN8chromeos21DBusThreadManagerImplC1ENS_28DBusClientImplementationTypeE
-   fun:_ZN8chromeos17DBusThreadManager10InitializeEv
-   fun:_ZN8chromeos23KioskModeIdleLogoutTest5SetUpEv
 }
 {
    bug_144913_b
@@ -3637,33 +3524,10 @@
    fun:_ZN8chromeos23KioskModeIdleLogoutTest5SetUpEv
 }
 {
-   bug_144930
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZL20cachedPaintLuminancef
-}
-{
    bug_144930_b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZL21cachedDeviceLuminancef
-}
-{
-   bug_145244
-   Memcheck:Uninitialized
-   fun:_ZN5blink15StyleRuleImport17requestStyleSheetEPNS_13CSSStyleSheetERKNS_16CSSParserContextE
-   fun:_ZN5blink18StyleSheetContents26requestImportedStyleSheetsEPNS_13CSSStyleSheetE
-}
-{
-   bug_145645
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7blink18InjectedScriptHostEEnwEm
-   fun:_ZN5blink18InjectedScriptHost6createEv
-   fun:_ZN5blink21InjectedScriptManagerC1EPFbPNS_11ScriptStateEE
-   fun:_ZN5blink21InjectedScriptManager15createForWorkerEv
-   fun:_ZN5blink25WorkerInspectorControllerC1EPNS_13WorkerContextE
 }
 {
    bug_145650a
@@ -3771,22 +3635,6 @@
    fun:_ZN7content15WebContentsImpl4InitERKNS_11WebContents12CreateParamsE
 }
 {
-   bug_145704
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2v88internal5Debug17CreateScriptCacheEv
-   fun:_ZN2v88internal5Debug16GetLoadedScriptsEv
-   fun:_ZN2v88internal29Runtime_DebugGetLoadedScriptsENS0_9ArgumentsEPNS0_7IsolateE
-}
-{
-   bug_145705
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions16SettingsFrontendC1ERK13scoped_refptrINS_22SettingsStorageFactoryEEP7Profile
-   fun:_ZN10extensions16SettingsFrontend6CreateEP7Profile
-   fun:_ZN16ExtensionServiceC1E*
-}
-{
    bug_145708
    Memcheck:Leak
    fun:_Znw*
@@ -3845,29 +3693,6 @@
    fun:_XConnectXCB
    fun:XOpenDisplay
    fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
-}
-{
-   bug_149734a
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF16VectorBufferBaseIN7blink9AttributeEE14allocateBufferEm
-   fun:_ZN3WTF12VectorBufferIN7blink9AttributeELm4EE14allocateBufferEm
-   fun:_ZN3WTF6VectorIN7blink9AttributeELm4EE22reserveInitialCapacityEm
-   fun:_ZN5blink20ElementAttributeData13cloneDataFromERKS0_RKNS_7ElementERS3_
-}
-{
-   bug_149734b
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF16VectorBufferBaseIN7blink9AttributeEE14allocateBufferEm
-   fun:_ZN3WTF12VectorBufferIN7blink9AttributeELm4EE14allocateBufferEm
-   fun:_ZN3WTF6VectorIN7blink9AttributeELm4EE15reserveCapacityEm
-   fun:_ZN3WTF6VectorIN7blink9AttributeELm4EE14expandCapacityEm
-   fun:_ZN3WTF6VectorIN7blink9AttributeELm4EE14expandCapacityEmPKS2_
-   fun:_ZN3WTF6VectorIN7blink9AttributeELm4EE14appendSlowCaseIS2_EEvRKT_
-   fun:_ZN5blink20ElementAttributeData12addAttributeERKNS_9AttributeEPNS_7ElementENS_30SynchronizationOfLazyAttributeE
 }
 {
    bug_150995
