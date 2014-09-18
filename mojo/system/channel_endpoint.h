@@ -7,21 +7,22 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/system/message_pipe.h"
+#include "base/synchronization/lock.h"
+#include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
 class Channel;
+class MessagePipe;
 
 // TODO(vtl): The plan:
 //   - (Done.) Move |Channel::Endpoint| to |ChannelEndpoint|. Make it
 //     refcounted, and not copyable. Make |Channel| a friend. Make things work.
-//   - Give |ChannelEndpoint| a lock (which nothing else should be called
-//     under -- thus can be taken under any other lock, in particular
-//     |Channel|'s lock and |MessagePipe|'s lock). Stop having |Channel| as a
-//     friend.
+//   - (Done.) Give |ChannelEndpoint| a lock. The lock order (in order of
+//     allowable acquisition) is: |MessagePipe|, |ChannelEndpoint|, |Channel|.
+//   - Stop having |Channel| as a friend.
 //   - Move logic from |ProxyMessagePipeEndpoint| into |ChannelEndpoint|. Right
 //     now, we have to go through lots of contortions to manipulate state owned
 //     by |ProxyMessagePipeEndpoint| (in particular, |Channel::Endpoint| doesn't
@@ -32,6 +33,10 @@ class Channel;
 //     channel-specific aspects of an endpoint (notably local and remote IDs,
 //     and knowledge about handshaking), and mediates between the |Channel| and
 //     the |MessagePipe|.
+//   - In the end state, |Channel| should no longer need to know about
+//     |MessagePipe| and ports (but only |ChannelEndpoint|) and
+//     |ProxyMessagePipeEndpoint| should no longer need to know about |Channel|
+//     (ditto).
 //
 // Things as they are now, before I change everything (TODO(vtl): update this
 // comment appropriately):
@@ -103,7 +108,19 @@ class Channel;
 class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
     : public base::RefCountedThreadSafe<ChannelEndpoint> {
  public:
-  ChannelEndpoint(MessagePipe* message_pipe, unsigned port);
+  // TODO(vtl): More comments....
+  // The caller must keep |channel| alive until the |Channel| has taken
+  // ownership of a reference to the created object. (TODO(vtl): Convert
+  // |Channel::AttachMessagePipeEndpoint()| to a |Channel::AttachEndpoint()|
+  // that takes a |ChannelEndpoint|, and move |ChannelEndpoint| creation out of
+  // |Channel|.)
+  ChannelEndpoint(MessagePipe* message_pipe,
+                  unsigned port,
+                  Channel* channel,
+                  MessageInTransit::EndpointId local_id);
+
+  // Called by |Channel| before it gives up its reference to this object.
+  void DetachFromChannel();
 
  private:
   enum State {
@@ -127,6 +144,17 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   State state_;
   scoped_refptr<MessagePipe> message_pipe_;
   unsigned port_;
+
+  // TODO(vtl): Move the things above under lock.
+  // Protects the members below.
+  base::Lock lock_;
+
+  // |channel_| must be alive whenever this is nonnull. Before the |channel_|
+  // gives up its reference to this object, it will call |DetachFromChannel()|.
+  Channel* channel_;
+  MessageInTransit::EndpointId local_id_;
+  // TODO(vtl):
+  // MessageInTransit::EndpointId remote_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelEndpoint);
 };

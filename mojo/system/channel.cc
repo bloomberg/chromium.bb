@@ -80,6 +80,7 @@ void Channel::Shutdown() {
       DCHECK(!it->second->message_pipe_.get());
       num_zombies++;
     }
+    it->second->DetachFromChannel();
   }
   DVLOG_IF(2, num_live || num_zombies) << "Shut down Channel with " << num_live
                                        << " live endpoints and " << num_zombies
@@ -97,6 +98,7 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
   DCHECK(message_pipe.get());
   DCHECK(port == 0 || port == 1);
 
+  scoped_refptr<ChannelEndpoint> endpoint;
   MessageInTransit::EndpointId local_id;
   {
     base::AutoLock locker(lock_);
@@ -111,8 +113,8 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
 
     local_id = next_local_id_;
     next_local_id_++;
-    local_id_to_endpoint_map_[local_id] =
-        new ChannelEndpoint(message_pipe.get(), port);
+    endpoint = new ChannelEndpoint(message_pipe.get(), port, this, local_id);
+    local_id_to_endpoint_map_[local_id] = endpoint;
   }
 
   // This might fail if that port got an |OnPeerClose()| before attaching.
@@ -139,6 +141,7 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
       local_id_to_endpoint_map_.erase(it);
     }
   }
+  endpoint->DetachFromChannel();
   return MessageInTransit::kInvalidEndpointId;
 }
 
@@ -224,7 +227,9 @@ void Channel::DetachMessagePipeEndpoint(
     MessageInTransit::EndpointId remote_id) {
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
-  bool should_send_remove_message = false;
+  // If this is non-null after the locked block, the endpoint should be detached
+  // (and no remove message sent).
+  scoped_refptr<ChannelEndpoint> endpoint_to_detach;
   {
     base::AutoLock locker_(lock_);
     if (!is_running_)
@@ -237,19 +242,24 @@ void Channel::DetachMessagePipeEndpoint(
       case ChannelEndpoint::STATE_NORMAL:
         it->second->state_ = ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK;
         it->second->message_pipe_ = NULL;
-        should_send_remove_message =
-            (remote_id != MessageInTransit::kInvalidEndpointId);
+        if (remote_id == MessageInTransit::kInvalidEndpointId)
+          return;
+        // We have to send a remove message (outside the lock).
         break;
       case ChannelEndpoint::STATE_WAIT_LOCAL_DETACH:
+        endpoint_to_detach = it->second;
         local_id_to_endpoint_map_.erase(it);
+        // We have to detach (outside the lock).
         break;
       case ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK:
         NOTREACHED();
-        break;
+        return;
     }
   }
-  if (!should_send_remove_message)
+  if (endpoint_to_detach.get()) {
+    endpoint_to_detach->DetachFromChannel();
     return;
+  }
 
   if (!SendControlMessage(
           MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint,
@@ -461,8 +471,11 @@ bool Channel::RemoveMessagePipeEndpoint(
     MessageInTransit::EndpointId remote_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
+  // If this is non-null after the locked block, the endpoint should be detached
+  // (and no remove ack message sent).
+  scoped_refptr<ChannelEndpoint> endpoint_to_detach;
   scoped_refptr<MessagePipe> message_pipe;
-  unsigned port;
+  unsigned port = ~0u;
   {
     base::AutoLock locker(lock_);
 
@@ -472,21 +485,27 @@ bool Channel::RemoveMessagePipeEndpoint(
       return false;
     }
 
-    // If it's waiting for the remove ack, just do it and return.
-    if (it->second->state_ == ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK) {
-      local_id_to_endpoint_map_.erase(it);
-      return true;
+    switch (it->second->state_) {
+      case ChannelEndpoint::STATE_NORMAL:
+        it->second->state_ = ChannelEndpoint::STATE_WAIT_LOCAL_DETACH;
+        message_pipe = it->second->message_pipe_;
+        port = it->second->port_;
+        it->second->message_pipe_ = NULL;
+        // We have to send a remove ack message (outside the lock).
+        break;
+      case ChannelEndpoint::STATE_WAIT_LOCAL_DETACH:
+        DVLOG(2) << "Remove message pipe error: wrong state";
+        return false;
+      case ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK:
+        endpoint_to_detach = it->second;
+        local_id_to_endpoint_map_.erase(it);
+        // We have to detach (outside the lock).
+        break;
     }
-
-    if (it->second->state_ != ChannelEndpoint::STATE_NORMAL) {
-      DVLOG(2) << "Remove message pipe error: wrong state";
-      return false;
-    }
-
-    it->second->state_ = ChannelEndpoint::STATE_WAIT_LOCAL_DETACH;
-    message_pipe = it->second->message_pipe_;
-    port = it->second->port_;
-    it->second->message_pipe_ = NULL;
+  }
+  if (endpoint_to_detach.get()) {
+    endpoint_to_detach->DetachFromChannel();
+    return true;
   }
 
   if (!SendControlMessage(

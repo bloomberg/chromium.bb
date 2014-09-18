@@ -89,6 +89,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // both sides, so one should use |kBootstrapEndpointId| for the remote ID for
   // the first message pipe across a channel.) Returns |kInvalidEndpointId| on
   // failure.
+  // TODO(vtl): This should be combined with "run", and it should take a
+  // |ChannelEndpoint| instead.
   // TODO(vtl): Maybe limit the number of attached message pipes.
   MessageInTransit::EndpointId AttachMessagePipeEndpoint(
       scoped_refptr<MessagePipe> message_pipe,
