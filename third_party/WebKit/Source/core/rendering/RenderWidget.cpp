@@ -171,7 +171,7 @@ void RenderWidget::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintO
     LayoutPoint adjustedPaintOffset = paintOffset + location();
 
     Widget* widget = this->widget();
-    ASSERT(widget);
+    RELEASE_ASSERT(widget);
 
     // Tell the widget to paint now. This is the only time the widget is allowed
     // to paint itself. That way it will composite properly with z-indexed layers.
