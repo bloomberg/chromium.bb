@@ -40,16 +40,15 @@ class StreamTextureProxyImpl
   virtual void Release() OVERRIDE;
 
  private:
-  void SetClient(cc::VideoFrameProvider::Client* client);
-  void BindOnThread(int32 stream_id,
-                    scoped_refptr<base::MessageLoopProxy> loop);
+  void BindOnThread(int32 stream_id);
   void OnFrameAvailable();
 
-  base::Lock client_lock_;
+  // Protects access to |client_| and |loop_|.
+  base::Lock lock_;
   cc::VideoFrameProvider::Client* client_;
+  scoped_refptr<base::MessageLoopProxy> loop_;
 
   // Accessed on the |loop_| thread only.
-  scoped_refptr<base::MessageLoopProxy> loop_;
   base::Closure callback_;
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       context_provider_;
@@ -69,18 +68,19 @@ StreamTextureProxyImpl::StreamTextureProxyImpl(
 StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
 
 void StreamTextureProxyImpl::Release() {
-  // Assumes this is the last reference to this object. So no need to acquire
-  // lock.
-  SetClient(NULL);
+  {
+    // Cannot call into |client_| anymore (from any thread) after returning
+    // from here.
+    base::AutoLock lock(lock_);
+    client_ = NULL;
+  }
+  // Release is analogous to the destructor, so there should be no more external
+  // calls to this object in Release. Therefore there is no need to acquire the
+  // lock to access |loop_|.
   if (!loop_.get() || loop_->BelongsToCurrentThread() ||
       !loop_->DeleteSoon(FROM_HERE, this)) {
     delete this;
   }
-}
-
-void StreamTextureProxyImpl::SetClient(cc::VideoFrameProvider::Client* client) {
-  base::AutoLock lock(client_lock_);
-  client_ = client;
 }
 
 void StreamTextureProxyImpl::BindToLoop(
@@ -88,9 +88,16 @@ void StreamTextureProxyImpl::BindToLoop(
     cc::VideoFrameProvider::Client* client,
     scoped_refptr<base::MessageLoopProxy> loop) {
   DCHECK(loop);
-  SetClient(client);
+
+  {
+    base::AutoLock lock(lock_);
+    DCHECK(!loop_ || (loop == loop_));
+    loop_ = loop;
+    client_ = client;
+  }
+
   if (loop->BelongsToCurrentThread()) {
-    BindOnThread(stream_id, loop);
+    BindOnThread(stream_id);
     return;
   }
   // Unretained is safe here only because the object is deleted on |loop_|
@@ -98,16 +105,10 @@ void StreamTextureProxyImpl::BindToLoop(
   loop->PostTask(FROM_HERE,
                  base::Bind(&StreamTextureProxyImpl::BindOnThread,
                             base::Unretained(this),
-                            stream_id,
-                            loop));
+                            stream_id));
 }
 
-void StreamTextureProxyImpl::BindOnThread(
-    int32 stream_id,
-    scoped_refptr<base::MessageLoopProxy> loop) {
-  DCHECK(!loop_ || (loop == loop_));
-  loop_ = loop;
-
+void StreamTextureProxyImpl::BindOnThread(int32 stream_id) {
   surface_texture_ = context_provider_->GetSurfaceTexture(stream_id);
   if (!surface_texture_) {
     LOG(ERROR) << "Failed to get SurfaceTexture for stream.";
@@ -130,7 +131,7 @@ void StreamTextureProxyImpl::OnFrameAvailable() {
     if (memcmp(current_matrix_, matrix, sizeof(matrix)) != 0) {
       memcpy(current_matrix_, matrix, sizeof(matrix));
 
-      base::AutoLock lock(client_lock_);
+      base::AutoLock lock(lock_);
       if (client_)
         client_->DidUpdateMatrix(current_matrix_);
     }
@@ -139,7 +140,7 @@ void StreamTextureProxyImpl::OnFrameAvailable() {
   // updateTexImage since after we received the first frame.
   has_updated_ = true;
 
-  base::AutoLock lock(client_lock_);
+  base::AutoLock lock(lock_);
   if (client_)
     client_->DidReceiveFrame();
 }
