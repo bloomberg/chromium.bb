@@ -1,0 +1,7 @@
+sourceOpened called.
+Running the garbage collector.
+Setting MediaSource duration.
+durationChanged called.
+
+PASS Tests that the MediaSource keeps the HTMLMediaElement alive. 
+

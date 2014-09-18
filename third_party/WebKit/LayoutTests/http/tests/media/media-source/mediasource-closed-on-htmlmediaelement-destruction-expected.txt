@@ -1,7 +1,0 @@
-sourceOpened called.
-Removing video element from DOM.
-Running the garbage collector.
-sourceClosed called.
-
-PASS Tests that the MediaSource is closed when the HTMLMediaElement is destroyed. 
-

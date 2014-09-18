@@ -3523,7 +3523,39 @@ void HTMLMediaElement::stop()
 
 bool HTMLMediaElement::hasPendingActivity() const
 {
-    return (hasAudio() && isPlaying()) || m_asyncEventQueue->hasPendingEvents();
+    // After the document becomes inactive, no events can ever be fired.
+    if (!document().isActive()) {
+        ASSERT(!m_asyncEventQueue->hasPendingEvents());
+        return false;
+    }
+
+    // The delaying-the-load-event flag is set by resource selection algorithm when looking for a
+    // resource to load, before networkState has reached to NETWORK_LOADING.
+    if (m_shouldDelayLoadEvent)
+        return true;
+
+    // When networkState is NETWORK_LOADING, progress and stalled events may be fired.
+    if (m_networkState == NETWORK_LOADING)
+        return true;
+
+    // When playing or if playback may continue, timeupdate events may be fired.
+    if (couldPlayIfEnoughData())
+        return true;
+
+    // When the seek finishes timeupdate and seeked events will be fired.
+    if (m_seeking)
+        return true;
+
+    // When connected to a MediaSource, e.g. setting MediaSource.duration will cause a
+    // durationchange event to be fired.
+    if (m_mediaSource)
+        return true;
+
+    // Wait for any pending events to be fired.
+    if (m_asyncEventQueue->hasPendingEvents())
+        return true;
+
+    return false;
 }
 
 void HTMLMediaElement::contextDestroyed()

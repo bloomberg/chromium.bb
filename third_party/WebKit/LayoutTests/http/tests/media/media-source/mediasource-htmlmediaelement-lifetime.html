@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <script src="/js-test-resources/js-test.js"></script>
+      <script src="/media-resources/video-test.js"></script>
+      <script src="/w3c/resources/testharness.js"></script>
+      <script src="/w3c/resources/testharnessreport.js"></script>
+      <script src="mediasource-util.js"></script>
+    </head>
+    <body>
+      <div id="log"></div>
+      <script>
+          window.jsTestIsAsync = true;
+
+          async_test(function(test)
+          {
+              var video = document.createElement("video");
+              var ms = new MediaSource();
+
+              function sourceOpened()
+              {
+                  consoleWrite("sourceOpened called.");
+                  var buffer = ms.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
+
+                  consoleWrite("Running the garbage collector.");
+                  video = null;
+                  asyncGC(test.step_func(function()
+                  {
+                      assert_equals(ms.readyState, "open", "MediaSource object is open.");
+
+                      consoleWrite("Setting MediaSource duration.");
+                      ms.duration = 100;
+                  }));
+              }
+
+              function durationChanged()
+              {
+                  consoleWrite("durationChanged called.");
+                  test.done();
+              }
+
+              ms.addEventListener("sourceopen", test.step_func(sourceOpened));
+              video.addEventListener("durationchange", test.step_func(durationChanged));
+              video.src = window.URL.createObjectURL(ms);
+          }, "Tests that the MediaSource keeps the HTMLMediaElement alive.");
+      </script>
+    </body>
+</html>
