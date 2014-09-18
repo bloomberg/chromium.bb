@@ -135,6 +135,11 @@ class WebViewPermissionHelper
   WebViewGuest* web_view_guest() { return web_view_guest_; }
 
  private:
+  void OnMediaPermissionResponse(const content::MediaStreamRequest& request,
+                                 const content::MediaResponseCallback& callback,
+                                 bool allow,
+                                 const std::string& user_input);
+
 #if defined(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(

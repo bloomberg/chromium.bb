@@ -131,10 +131,10 @@ namespace extensions {
 namespace chrome_url_request_util {
 
 bool AllowCrossRendererResourceLoad(net::URLRequest* request,
-                                          bool is_incognito,
-                                          const Extension* extension,
-                                          InfoMap* extension_info_map,
-                                          bool* allowed) {
+                                    bool is_incognito,
+                                    const Extension* extension,
+                                    InfoMap* extension_info_map,
+                                    bool* allowed) {
   if (url_request_util::AllowCrossRendererResourceLoad(
           request, is_incognito, extension, extension_info_map, allowed)) {
     return true;
@@ -171,9 +171,10 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
     base::FilePath request_path =
         extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
     int resource_id = 0;
-    if (ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()->
-        IsComponentExtensionResource(
-            directory_path, request_path, &resource_id)) {
+    if (ExtensionsBrowserClient::Get()
+            ->GetComponentExtensionResourceManager()
+            ->IsComponentExtensionResource(
+                directory_path, request_path, &resource_id)) {
       relative_path = relative_path.Append(request_path);
       relative_path = relative_path.NormalizePathSeparators();
       return new URLRequestResourceBundleJob(request,

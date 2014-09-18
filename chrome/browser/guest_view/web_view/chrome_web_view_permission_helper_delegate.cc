@@ -121,55 +121,6 @@ void ChromeWebViewPermissionHelperDelegate::OnPermissionResponse(
 
 #endif  // defined(ENABLE_PLUGINS)
 
-void ChromeWebViewPermissionHelperDelegate::RequestMediaAccessPermission(
-    content::WebContents* source,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
-  base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, request.security_origin.spec());
-  web_view_permission_helper()->RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_MEDIA,
-      request_info,
-      base::Bind(
-          &ChromeWebViewPermissionHelperDelegate::OnMediaPermissionResponse,
-          base::Unretained(this),
-          request,
-          callback),
-      false /* allowed_by_default */);
-}
-
-bool ChromeWebViewPermissionHelperDelegate::CheckMediaAccessPermission(
-    content::WebContents* source,
-    const GURL& security_origin,
-    content::MediaStreamType type) {
-  return web_view_guest()
-      ->embedder_web_contents()
-      ->GetDelegate()
-      ->CheckMediaAccessPermission(
-          web_view_guest()->embedder_web_contents(), security_origin, type);
-}
-
-void ChromeWebViewPermissionHelperDelegate::OnMediaPermissionResponse(
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
-    bool allow,
-    const std::string& user_input) {
-  if (!allow || !web_view_guest()->attached()) {
-    // Deny the request.
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_INVALID_STATE,
-                 scoped_ptr<content::MediaStreamUI>());
-    return;
-  }
-  if (!web_view_guest()->embedder_web_contents()->GetDelegate())
-    return;
-
-  web_view_guest()->embedder_web_contents()->GetDelegate()->
-      RequestMediaAccessPermission(web_view_guest()->embedder_web_contents(),
-                                   request,
-                                   callback);
-}
-
 void ChromeWebViewPermissionHelperDelegate::CanDownload(
     content::RenderViewHost* render_view_host,
     const GURL& url,

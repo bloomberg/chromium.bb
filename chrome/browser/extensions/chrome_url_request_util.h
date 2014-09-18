@@ -29,10 +29,10 @@ namespace chrome_url_request_util {
 // renderer A to access a resource in an extension running in renderer B.
 // Returns false when it couldn't determine if the resource is allowed or not
 bool AllowCrossRendererResourceLoad(net::URLRequest* request,
-                                          bool is_incognito,
-                                          const Extension* extension,
-                                          InfoMap* extension_info_map,
-                                          bool* allowed);
+                                    bool is_incognito,
+                                    const Extension* extension,
+                                    InfoMap* extension_info_map,
+                                    bool* allowed);
 
 // Creates a URLRequestJob for loading component extension resources out of
 // a Chrome resource bundle. Returns NULL if the requested resource is not a
