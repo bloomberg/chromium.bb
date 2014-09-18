@@ -5,8 +5,8 @@
 
 # This script returns the flags that should be passed to clang.
 
-THIS_ABS_DIR=$(cd $(dirname $0) && echo $PWD)
-CLANG_LIB_PATH=$THIS_ABS_DIR/../../../third_party/llvm-build/Release+Asserts/lib
+SRC_DIR=$(cd $(dirname $0)/../../.. && echo $PWD)
+CLANG_LIB_PATH=$SRC_DIR/third_party/llvm-build/Release+Asserts/lib
 
 if uname -s | grep -q Darwin; then
   LIBSUFFIX=dylib
@@ -14,7 +14,7 @@ else
   LIBSUFFIX=so
 fi
 LIBNAME=\
-$(grep 'set(LIBRARYNAME' "$THIS_ABS_DIR"/../blink_gc_plugin/CMakeLists.txt \
+$(grep 'set(LIBRARYNAME' "$SRC_DIR"/tools/clang/blink_gc_plugin/CMakeLists.txt \
     | cut -d ' ' -f 2 | tr -d ')')
 
 FLAGS=""
