@@ -31,6 +31,7 @@
 #ifndef WebViewImpl_h
 #define WebViewImpl_h
 
+#include "core/page/EventWithHitTestResults.h"
 #include "core/page/PagePopupDriver.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -437,8 +438,8 @@ public:
     void fullFramePluginZoomLevelChanged(double zoomLevel);
 
     void computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll);
-    Node* bestTapNode(const PlatformGestureEvent& tapEvent);
-    void enableTapHighlightAtPoint(const PlatformGestureEvent& tapEvent);
+    Node* bestTapNode(const GestureEventWithHitTestResults& targetedTapEvent);
+    void enableTapHighlightAtPoint(const GestureEventWithHitTestResults& targetedTapEvent);
     void enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node> >&);
     void computeScaleAndScrollForFocusedNode(Node* focusedNode, float& scale, IntPoint& scroll, bool& needAnimation);
 

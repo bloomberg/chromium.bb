@@ -72,7 +72,6 @@
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
 #include "core/page/EventHandler.h"
-#include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/InjectedStyleSheets.h"
@@ -672,15 +671,49 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
     PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
 
-    // FIXME: Remove redundant hit tests by pushing the call to EventHandler::targetGestureEvent
-    // up to this point and pass GestureEventWithHitTestResults around.
+    // Special handling for double tap and scroll events as we don't want to
+    // hit test for them.
+    switch (event.type) {
+    case WebInputEvent::GestureDoubleTap:
+        if (m_webSettings->doubleTapToZoomEnabled() && minimumPageScaleFactor() != maximumPageScaleFactor()) {
+            m_client->cancelScheduledContentIntents();
+            animateDoubleTapZoom(platformEvent.position());
+        }
+        // GestureDoubleTap is currently only used by Android for zooming. For WebCore,
+        // GestureTap with tap count = 2 is used instead. So we drop GestureDoubleTap here.
+        eventSwallowed = true;
+        m_client->didHandleGestureEvent(event, eventCancelled);
+        return eventSwallowed;
+    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::GesturePinchBegin:
+        m_client->cancelScheduledContentIntents();
+    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
+    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::GesturePinchUpdate:
+    case WebInputEvent::GestureFlingStart:
+        // Scrolling-related gesture events invoke EventHandler recursively for each frame down
+        // the chain, doing a single-frame hit-test per frame. This matches handleWheelEvent.
+        // Perhaps we could simplify things by rewriting scroll handling to work inner frame
+        // out, and then unify with other gesture events.
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureScrollEvent(platformEvent);
+        m_client->didHandleGestureEvent(event, eventCancelled);
+        return eventSwallowed;
+    default:
+        break;
+    }
+
+    // Hit test across all frames and do touch adjustment as necessary for the event type.
+    GestureEventWithHitTestResults targetedEvent =
+        m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(platformEvent);
 
     // Handle link highlighting outside the main switch to avoid getting lost in the
     // complicated set of cases handled below.
     switch (event.type) {
     case WebInputEvent::GestureShowPress:
         // Queue a highlight animation, then hand off to regular handler.
-        enableTapHighlightAtPoint(platformEvent);
+        enableTapHighlightAtPoint(targetedEvent);
         break;
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
@@ -695,7 +728,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     switch (event.type) {
     case WebInputEvent::GestureTap: {
         m_client->cancelScheduledContentIntents();
-        if (detectContentOnTouch(platformEvent.position())) {
+        // FIXME: Use targeted event here and save another hit test.
+        if (detectContentOnTouch(targetedEvent.event().position())) {
             eventSwallowed = true;
             break;
         }
@@ -731,7 +765,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             }
         }
 
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
 
         if (m_selectPopup && m_selectPopup == selectPopup) {
             // That tap triggered a select popup which is the same as the one that
@@ -752,38 +786,17 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         m_client->cancelScheduledContentIntents();
         m_page->contextMenuController().clearContextMenu();
         m_contextMenuAllowed = true;
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
         m_contextMenuAllowed = false;
 
         break;
     }
-    case WebInputEvent::GestureShowPress: {
-        m_client->cancelScheduledContentIntents();
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
-        break;
-    }
-    case WebInputEvent::GestureDoubleTap:
-        if (m_webSettings->doubleTapToZoomEnabled() && minimumPageScaleFactor() != maximumPageScaleFactor()) {
-            m_client->cancelScheduledContentIntents();
-            animateDoubleTapZoom(platformEvent.position());
-        }
-        // GestureDoubleTap is currently only used by Android for zooming. For WebCore,
-        // GestureTap with tap count = 2 is used instead. So we drop GestureDoubleTap here.
-        eventSwallowed = true;
-        break;
-    case WebInputEvent::GestureScrollBegin:
-    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GestureShowPress:
         m_client->cancelScheduledContentIntents();
     case WebInputEvent::GestureTapDown:
-    case WebInputEvent::GestureScrollEnd:
-    case WebInputEvent::GestureScrollUpdate:
-    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
     case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GestureTapUnconfirmed:
-    case WebInputEvent::GesturePinchEnd:
-    case WebInputEvent::GesturePinchUpdate:
-    case WebInputEvent::GestureFlingStart: {
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
+    case WebInputEvent::GestureTapUnconfirmed: {
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
         break;
     }
     default:
@@ -1206,17 +1219,14 @@ static bool showsHandCursor(Node* node, LocalFrame* frame)
         || (cursor == CURSOR_AUTO && frame->eventHandler().useHandCursor(node, node->isLink()));
 }
 
-Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
+Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTapEvent)
 {
     TRACE_EVENT0("input", "WebViewImpl::bestTapNode");
 
     if (!m_page || !m_page->mainFrame())
         return 0;
 
-    // FIXME: Rely on earlier hit test instead of hit testing again.
-    GestureEventWithHitTestResults targetedEvent =
-        m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(tapEvent, true);
-    Node* bestTouchNode = targetedEvent.hitTestResult().innerNode();
+    Node* bestTouchNode = targetedTapEvent.hitTestResult().innerNode();
 
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
@@ -1244,9 +1254,9 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     return bestTouchNode;
 }
 
-void WebViewImpl::enableTapHighlightAtPoint(const PlatformGestureEvent& tapEvent)
+void WebViewImpl::enableTapHighlightAtPoint(const GestureEventWithHitTestResults& targetedTapEvent)
 {
-    Node* touchNode = bestTapNode(tapEvent);
+    Node* touchNode = bestTapNode(targetedTapEvent);
 
     WillBeHeapVector<RawPtrWillBeMember<Node> > highlightNodes;
     highlightNodes.append(touchNode);
