@@ -47,7 +47,7 @@ ShortcutHelper::ShortcutHelper(JNIEnv* env,
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       url_(web_contents->GetURL()),
-      web_app_capable_(WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED),
+      display_(content::Manifest::DISPLAY_MODE_BROWSER),
       weak_ptr_factory_(this) {
 }
 
@@ -68,10 +68,29 @@ void ShortcutHelper::OnDidGetWebApplicationInfo(
   web_app_info.description =
       web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
 
-  web_app_capable_ = web_app_info.mobile_capable;
-
   title_ = web_app_info.title.empty() ? web_contents()->GetTitle()
                                       : web_app_info.title;
+
+  if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE ||
+      web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
+    display_ = content::Manifest::DISPLAY_MODE_STANDALONE;
+  }
+
+  // Record what type of shortcut was added by the user.
+  switch (web_app_info.mobile_capable) {
+    case WebApplicationInfo::MOBILE_CAPABLE:
+      content::RecordAction(
+          base::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
+      break;
+    case WebApplicationInfo::MOBILE_CAPABLE_APPLE:
+      content::RecordAction(
+          base::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
+      break;
+    case WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED:
+      content::RecordAction(
+          base::UserMetricsAction("webapps.AddShortcut.Bookmark"));
+      break;
+  }
 
   web_contents()->GetManifest(base::Bind(&ShortcutHelper::OnDidGetManifest,
                                          weak_ptr_factory_.GetWeakPtr()));
@@ -87,6 +106,17 @@ void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
   // Set the url based on the manifest value, if any.
   if (manifest.start_url.is_valid())
     url_ = manifest.start_url;
+
+  // Set the display based on the manifest value, if any.
+  if (manifest.display != content::Manifest::DISPLAY_MODE_UNSPECIFIED)
+    display_ = manifest.display;
+
+  // 'fullscreen' and 'minimal-ui' are not yet supported, fallback to the right
+  // mode in those cases.
+  if (manifest.display == content::Manifest::DISPLAY_MODE_FULLSCREEN)
+    display_ = content::Manifest::DISPLAY_MODE_STANDALONE;
+  if (manifest.display == content::Manifest::DISPLAY_MODE_MINIMAL_UI)
+    display_ = content::Manifest::DISPLAY_MODE_BROWSER;
 
   // The ShortcutHelper is now able to notify its Java counterpart that it is
   // initialized. OnInitialized method is not conceptually part of getting the
@@ -152,7 +182,7 @@ void ShortcutHelper::FinishAddingShortcut(
       base::Bind(&ShortcutHelper::AddShortcutInBackground,
                  url_,
                  title_,
-                 web_app_capable_,
+                 display_,
                  icon_),
       true);
 
@@ -182,7 +212,7 @@ bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
 void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const base::string16& title,
-    WebApplicationInfo::MobileCapable web_app_capable,
+    content::Manifest::DisplayMode display,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
@@ -219,23 +249,5 @@ void ShortcutHelper::AddShortcutInBackground(
       r_value,
       g_value,
       b_value,
-      web_app_capable != WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED);
-
-  // Record what type of shortcut was added by the user.
-  switch (web_app_capable) {
-    case WebApplicationInfo::MOBILE_CAPABLE:
-      content::RecordAction(
-          base::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
-      break;
-    case WebApplicationInfo::MOBILE_CAPABLE_APPLE:
-      content::RecordAction(
-          base::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
-      break;
-    case WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED:
-      content::RecordAction(
-          base::UserMetricsAction("webapps.AddShortcut.Bookmark"));
-      break;
-    default:
-      NOTREACHED();
-  }
+      display == content::Manifest::DISPLAY_MODE_STANDALONE);
 }

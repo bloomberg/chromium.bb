@@ -13,10 +13,10 @@
 #include "chrome/common/web_application_info.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/manifest.h"
 
 namespace content {
 class WebContents;
-struct Manifest;
 }  // namespace content
 
 namespace IPC {
@@ -68,7 +68,7 @@ class ShortcutHelper : public content::WebContentsObserver {
   static void AddShortcutInBackground(
       const GURL& url,
       const base::string16& title,
-      WebApplicationInfo::MobileCapable mobile_capable,
+      content::Manifest::DisplayMode display,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Registers JNI hooks.
@@ -84,7 +84,7 @@ class ShortcutHelper : public content::WebContentsObserver {
   GURL url_;
   base::string16 title_;
   int launcher_large_icon_size_;
-  WebApplicationInfo::MobileCapable web_app_capable_;
+  content::Manifest::DisplayMode display_;
   favicon_base::FaviconRawBitmapResult icon_;
   base::CancelableTaskTracker cancelable_task_tracker_;
 
