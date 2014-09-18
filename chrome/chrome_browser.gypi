@@ -283,6 +283,8 @@
       'browser/content_settings/content_settings_observable_provider.h',
       'browser/content_settings/content_settings_origin_identifier_value_map.cc',
       'browser/content_settings/content_settings_origin_identifier_value_map.h',
+      'browser/content_settings/content_settings_override_provider.cc',
+      'browser/content_settings/content_settings_override_provider.h',
       'browser/content_settings/content_settings_policy_provider.cc',
       'browser/content_settings/content_settings_policy_provider.h',
       'browser/content_settings/content_settings_pref_provider.cc',

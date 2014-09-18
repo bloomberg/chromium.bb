@@ -49,6 +49,7 @@ const char* kProviderNames[] = {
   "platform_app",
   "policy",
   "extension",
+  "override",
   "preference",
   "default"
 };
@@ -57,6 +58,7 @@ content_settings::SettingSource kProviderSourceMap[] = {
   content_settings::SETTING_SOURCE_EXTENSION,
   content_settings::SETTING_SOURCE_POLICY,
   content_settings::SETTING_SOURCE_EXTENSION,
+  content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_USER,
 };
@@ -72,9 +74,9 @@ bool SupportsResourceIdentifier(ContentSettingsType content_type) {
 
 }  // namespace
 
-HostContentSettingsMap::HostContentSettingsMap(
-    PrefService* prefs,
-    bool incognito) :
+HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
+                                               bool incognito)
+    :
 #ifndef NDEBUG
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
@@ -94,6 +96,9 @@ HostContentSettingsMap::HostContentSettingsMap(
       new content_settings::DefaultProvider(prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
+
+  content_settings_providers_[OVERRIDE_PROVIDER] =
+      new content_settings::OverrideProvider(prefs_, is_off_the_record_);
 
   if (!is_off_the_record_) {
     // Migrate obsolete preferences.
@@ -117,6 +122,7 @@ void HostContentSettingsMap::RegisterProfilePrefs(
   content_settings::DefaultProvider::RegisterProfilePrefs(registry);
   content_settings::PrefProvider::RegisterProfilePrefs(registry);
   content_settings::PolicyProvider::RegisterProfilePrefs(registry);
+  content_settings::OverrideProvider::RegisterProfilePrefs(registry);
 }
 
 void HostContentSettingsMap::RegisterProvider(
@@ -164,7 +170,8 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
   for (ConstProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
-    if (provider->first == PREF_PROVIDER)
+    if (provider->first == PREF_PROVIDER ||
+        provider->first == OVERRIDE_PROVIDER)
       continue;
     ContentSetting default_setting =
         GetDefaultContentSettingFromProvider(content_type, provider->second);
@@ -184,8 +191,8 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
   DCHECK(!ContentTypeHasCompoundValue(content_type));
-  scoped_ptr<base::Value> value(GetWebsiteSetting(
-      primary_url, secondary_url, content_type, resource_identifier, NULL));
+  scoped_ptr<base::Value> value = GetWebsiteSetting(
+      primary_url, secondary_url, content_type, resource_identifier, NULL);
   return content_settings::ValueToContentSetting(value.get());
 }
 
@@ -202,6 +209,8 @@ void HostContentSettingsMap::GetSettingsForOneType(
   for (ConstProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
+    if (provider->first == OVERRIDE_PROVIDER)
+      continue;
     // For each provider, iterate first the incognito-specific rules, then the
     // normal rules.
     if (is_off_the_record_) {
@@ -374,6 +383,52 @@ base::Time HostContentSettingsMap::GetLastUsageByPattern(
 
   return GetPrefProvider()->GetLastUsage(
       primary_pattern, secondary_pattern, content_type);
+}
+
+ContentSetting HostContentSettingsMap::GetContentSettingWithoutOverride(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  scoped_ptr<base::Value> value(GetWebsiteSettingWithoutOverride(
+      primary_url, secondary_url, content_type, resource_identifier, NULL));
+  return content_settings::ValueToContentSetting(value.get());
+}
+
+scoped_ptr<base::Value>
+HostContentSettingsMap::GetWebsiteSettingWithoutOverride(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    content_settings::SettingInfo* info) const {
+  return GetWebsiteSettingInternal(primary_url,
+                                   secondary_url,
+                                   content_type,
+                                   resource_identifier,
+                                   info,
+                                   false);
+}
+
+void HostContentSettingsMap::SetContentSettingOverride(
+    ContentSettingsType content_type,
+    bool is_enabled) {
+  UsedContentSettingsProviders();
+
+  content_settings::OverrideProvider* override =
+      static_cast<content_settings::OverrideProvider*>(
+          content_settings_providers_[OVERRIDE_PROVIDER]);
+  override->SetOverrideSetting(content_type, is_enabled);
+}
+
+bool HostContentSettingsMap::GetContentSettingOverride(
+    ContentSettingsType content_type) {
+  UsedContentSettingsProviders();
+
+  content_settings::OverrideProvider* override =
+      static_cast<content_settings::OverrideProvider*>(
+          content_settings_providers_[OVERRIDE_PROVIDER]);
+  return override->IsEnabled(content_type);
 }
 
 void HostContentSettingsMap::AddObserver(content_settings::Observer* observer) {
@@ -662,7 +717,7 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
          primary_url.SchemeIs(content::kChromeUIScheme);
 }
 
-base::Value* HostContentSettingsMap::GetWebsiteSetting(
+scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
@@ -678,44 +733,21 @@ base::Value* HostContentSettingsMap::GetWebsiteSetting(
       info->primary_pattern = ContentSettingsPattern::Wildcard();
       info->secondary_pattern = ContentSettingsPattern::Wildcard();
     }
-    return new base::FundamentalValue(CONTENT_SETTING_ALLOW);
+    return scoped_ptr<base::Value>(
+        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
   }
 
-  ContentSettingsPattern* primary_pattern = NULL;
-  ContentSettingsPattern* secondary_pattern = NULL;
-  if (info) {
-    primary_pattern = &info->primary_pattern;
-    secondary_pattern = &info->secondary_pattern;
-  }
-
-  // The list of |content_settings_providers_| is ordered according to their
-  // precedence.
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    base::Value* value = content_settings::GetContentSettingValueAndPatterns(
-        provider->second, primary_url, secondary_url, content_type,
-        resource_identifier, is_off_the_record_,
-        primary_pattern, secondary_pattern);
-    if (value) {
-      if (info)
-        info->source = kProviderSourceMap[provider->first];
-      return value;
-    }
-  }
-
-  if (info) {
-    info->source = content_settings::SETTING_SOURCE_NONE;
-    info->primary_pattern = ContentSettingsPattern();
-    info->secondary_pattern = ContentSettingsPattern();
-  }
-  return NULL;
+  return GetWebsiteSettingInternal(primary_url,
+                                   secondary_url,
+                                   content_type,
+                                   resource_identifier,
+                                   info,
+                                   true);
 }
 
 // static
 HostContentSettingsMap::ProviderType
-    HostContentSettingsMap::GetProviderTypeFromSource(
-        const std::string& source) {
+HostContentSettingsMap::GetProviderTypeFromSource(const std::string& source) {
   for (size_t i = 0; i < arraysize(kProviderNames); ++i) {
     if (source == kProviderNames[i])
       return static_cast<ProviderType>(i);
@@ -728,4 +760,51 @@ HostContentSettingsMap::ProviderType
 content_settings::PrefProvider* HostContentSettingsMap::GetPrefProvider() {
   return static_cast<content_settings::PrefProvider*>(
       content_settings_providers_[PREF_PROVIDER]);
+}
+
+scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    content_settings::SettingInfo* info,
+    bool get_override) const {
+  UsedContentSettingsProviders();
+  ContentSettingsPattern* primary_pattern = NULL;
+  ContentSettingsPattern* secondary_pattern = NULL;
+  if (info) {
+    primary_pattern = &info->primary_pattern;
+    secondary_pattern = &info->secondary_pattern;
+  }
+
+  // The list of |content_settings_providers_| is ordered according to their
+  // precedence.
+  for (ConstProviderIterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end();
+       ++provider) {
+    if (!get_override && provider->first == OVERRIDE_PROVIDER)
+      continue;
+
+    scoped_ptr<base::Value> value(
+        content_settings::GetContentSettingValueAndPatterns(provider->second,
+                                                            primary_url,
+                                                            secondary_url,
+                                                            content_type,
+                                                            resource_identifier,
+                                                            is_off_the_record_,
+                                                            primary_pattern,
+                                                            secondary_pattern));
+    if (value) {
+      if (info)
+        info->source = kProviderSourceMap[provider->first];
+      return value.Pass();
+    }
+  }
+
+  if (info) {
+    info->source = content_settings::SETTING_SOURCE_NONE;
+    info->primary_pattern = ContentSettingsPattern();
+    info->secondary_pattern = ContentSettingsPattern();
+  }
+  return scoped_ptr<base::Value>();
 }

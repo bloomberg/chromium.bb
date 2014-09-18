@@ -79,6 +79,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesLabelLocation", IDS_WEBSITE_SETTINGS_TYPE_LOCATION},
       {"websitesLabelMediaStream", IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM},
       {"websitesLabelNotifications", IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS},
+      {"websitesLabelOn", IDS_WEBSITE_SETTINGS_CONTENT_SETTING_ENABLED},
       {"websitesLabelStorage", IDS_WEBSITE_SETTINGS_TYPE_STORAGE},
       {"websitesLabelBattery", IDS_WEBSITE_SETTINGS_TYPE_BATTERY},
       {"websitesCookiesDescription", IDS_WEBSITE_SETTINGS_COOKIES_DESCRIPTION},
@@ -176,6 +177,11 @@ void WebsiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setDefaultContentSetting",
       base::Bind(&WebsiteSettingsHandler::HandleSetDefaultSetting,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "setGlobalEnabled",
+      base::Bind(&WebsiteSettingsHandler::HandleSetGlobalToggle,
                  base::Unretained(this)));
 }
 
@@ -306,11 +312,11 @@ void WebsiteSettingsHandler::UpdateOrigins() {
 
     // Mediastream isn't set unless both mic and camera are set to the same.
     if (last_setting == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-      ContentSetting cam_setting =
-          settings->GetContentSetting(origin_url,
-                                      origin_url,
-                                      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                                      std::string());
+      ContentSetting cam_setting = settings->GetContentSettingWithoutOverride(
+          origin_url,
+          origin_url,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          std::string());
       if (it->setting != cam_setting)
         continue;
     }
@@ -340,9 +346,11 @@ void WebsiteSettingsHandler::UpdateOrigins() {
       allowed_origins.SetWithoutPathExpansion(origin, origin_entry);
   }
 
+  bool is_globally_allowed = settings->GetContentSettingOverride(last_setting);
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
                                    allowed_origins,
-                                   blocked_origins);
+                                   blocked_origins,
+                                   base::FundamentalValue(is_globally_allowed));
 }
 
 void WebsiteSettingsHandler::HandleGetOriginInfo(const base::ListValue* args) {
@@ -418,7 +426,7 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
   }
 
   content_settings::SettingInfo info;
-  scoped_ptr<base::Value> v(map->GetWebsiteSetting(
+  scoped_ptr<base::Value> v(map->GetWebsiteSettingWithoutOverride(
       last_site_, last_site_, settings_type, std::string(), &info));
   map->SetNarrowestWebsiteSetting(primary_pattern,
                                   secondary_pattern,
@@ -530,6 +538,22 @@ void WebsiteSettingsHandler::HandleSetDefaultSetting(
   }
 }
 
+void WebsiteSettingsHandler::HandleSetGlobalToggle(
+    const base::ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  bool is_enabled;
+  bool rv = args->GetBoolean(0, &is_enabled);
+  DCHECK(rv);
+
+  ContentSettingsType last_setting;
+  rv = content_settings::GetTypeFromName(last_setting_, &last_setting);
+  DCHECK(rv);
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  map->SetContentSettingOverride(last_setting, is_enabled);
+}
+
 void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
                                               bool show_page) {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -574,26 +598,26 @@ void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
     ContentSetting permission;
     content_settings::SettingInfo info;
     if (permission_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-      scoped_ptr<base::Value> mic_value(
-          map->GetWebsiteSetting(site_url,
-                                 site_url,
-                                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                 std::string(),
-                                 &info));
+      scoped_ptr<base::Value> mic_value(map->GetWebsiteSettingWithoutOverride(
+          site_url,
+          site_url,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+          std::string(),
+          &info));
       ContentSetting mic_setting =
           content_settings::ValueToContentSetting(mic_value.get());
-      ContentSetting cam_setting =
-          map->GetContentSetting(site_url,
-                                 site_url,
-                                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                                 std::string());
+      ContentSetting cam_setting = map->GetContentSettingWithoutOverride(
+          site_url,
+          site_url,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          std::string());
 
       if (mic_setting != cam_setting)
         permission = CONTENT_SETTING_ASK;
       else
         permission = mic_setting;
     } else {
-      scoped_ptr<base::Value> v(map->GetWebsiteSetting(
+      scoped_ptr<base::Value> v(map->GetWebsiteSettingWithoutOverride(
           site_url, site_url, permission_type, std::string(), &info));
       permission = content_settings::ValueToContentSetting(v.get());
     }

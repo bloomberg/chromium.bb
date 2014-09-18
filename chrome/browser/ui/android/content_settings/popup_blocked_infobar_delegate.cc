@@ -62,13 +62,8 @@ PopupBlockedInfoBarDelegate::PopupBlockedInfoBarDelegate(
     HostContentSettingsMap* map)
     : ConfirmInfoBarDelegate(), num_popups_(num_popups), url_(url), map_(map) {
   content_settings::SettingInfo setting_info;
-  scoped_ptr<base::Value> setting(
-      map->GetWebsiteSetting(
-          url,
-          url,
-          CONTENT_SETTINGS_TYPE_POPUPS,
-          std::string(),
-          &setting_info));
+  scoped_ptr<base::Value> setting = map->GetWebsiteSetting(
+      url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &setting_info);
   can_show_popups_ =
       setting_info.source != content_settings::SETTING_SOURCE_POLICY;
 }

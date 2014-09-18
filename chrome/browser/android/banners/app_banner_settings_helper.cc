@@ -40,12 +40,12 @@ bool AppBannerSettingsHelper::IsAllowed(content::WebContents* web_contents,
   HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
   if (!settings)
     return false;
-  scoped_ptr<base::Value> value(
+  scoped_ptr<base::Value> value =
       settings->GetWebsiteSetting(origin_url,
                                   origin_url,
                                   CONTENT_SETTINGS_TYPE_APP_BANNER,
                                   std::string(),
-                                  NULL));
+                                  NULL);
   if (!value.get()) {
     // We've never blocked a banner on this site.
     return true;
@@ -89,12 +89,12 @@ void AppBannerSettingsHelper::Block(content::WebContents* web_contents,
   if (!settings || !pattern.IsValid())
     return;
 
-  scoped_ptr<base::Value> value(
+  scoped_ptr<base::Value> value =
       settings->GetWebsiteSetting(origin_url,
                                   origin_url,
                                   CONTENT_SETTINGS_TYPE_APP_BANNER,
                                   std::string(),
-                                  NULL));
+                                  NULL);
   base::DictionaryValue* banner_dict = NULL;
   if (value.get() && value->IsType(base::Value::TYPE_DICTIONARY)) {
     banner_dict = static_cast<base::DictionaryValue*>(value.release());

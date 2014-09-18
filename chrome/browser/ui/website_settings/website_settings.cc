@@ -274,8 +274,9 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     // This is not a concern for CONTENT_SETTINGS_TYPE_MEDIASTREAM since users
     // can not create media settings exceptions by hand.
     content_settings::SettingInfo info;
-    scoped_ptr<base::Value> v(content_settings_->GetWebsiteSetting(
-        site_url_, site_url_, type, std::string(), &info));
+    scoped_ptr<base::Value> v =
+        content_settings_->GetWebsiteSettingWithoutOverride(
+            site_url_, site_url_, type, std::string(), &info);
     content_settings_->SetNarrowestWebsiteSetting(
         primary_pattern, secondary_pattern, type, std::string(), setting, info);
   } else {
@@ -616,21 +617,23 @@ void WebsiteSettings::PresentSitePermissions() {
 
     content_settings::SettingInfo info;
     if (permission_info.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-      scoped_ptr<base::Value> mic_value(content_settings_->GetWebsiteSetting(
-          site_url_,
-          site_url_,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          std::string(),
-          &info));
+      scoped_ptr<base::Value> mic_value =
+          content_settings_->GetWebsiteSettingWithoutOverride(
+              site_url_,
+              site_url_,
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+              std::string(),
+              &info);
       ContentSetting mic_setting =
           content_settings::ValueToContentSetting(mic_value.get());
 
-      scoped_ptr<base::Value> camera_value(content_settings_->GetWebsiteSetting(
-          site_url_,
-          site_url_,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          std::string(),
-          &info));
+      scoped_ptr<base::Value> camera_value =
+          content_settings_->GetWebsiteSettingWithoutOverride(
+              site_url_,
+              site_url_,
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+              std::string(),
+              &info);
       ContentSetting camera_setting =
           content_settings::ValueToContentSetting(camera_value.get());
 
@@ -639,8 +642,9 @@ void WebsiteSettings::PresentSitePermissions() {
       else
         permission_info.setting = mic_setting;
     } else {
-      scoped_ptr<base::Value> value(content_settings_->GetWebsiteSetting(
-          site_url_, site_url_, permission_info.type, std::string(), &info));
+      scoped_ptr<base::Value> value =
+          content_settings_->GetWebsiteSettingWithoutOverride(
+              site_url_, site_url_, permission_info.type, std::string(), &info);
       DCHECK(value.get());
       if (value->GetType() == base::Value::TYPE_INTEGER) {
         permission_info.setting =

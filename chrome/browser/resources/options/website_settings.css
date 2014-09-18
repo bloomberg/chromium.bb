@@ -119,6 +119,7 @@
 }
 
 #global-setting {
+  -webkit-margin-start: 35px;
   flex: 1;
 }
 

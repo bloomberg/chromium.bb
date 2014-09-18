@@ -400,21 +400,29 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
   content_settings::SettingInfo info;
   bool uses_plugin_specific_setting = false;
   if (ShouldUseJavaScriptSettingForPlugin(plugin)) {
-    value.reset(
-        host_content_settings_map_->GetWebsiteSetting(
-            policy_url, policy_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-            std::string(), &info));
+    value = host_content_settings_map_->GetWebsiteSetting(
+        policy_url,
+        policy_url,
+        CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+        std::string(),
+        &info);
   } else {
     content_settings::SettingInfo specific_info;
-    scoped_ptr<base::Value> specific_setting(
+    scoped_ptr<base::Value> specific_setting =
         host_content_settings_map_->GetWebsiteSetting(
-            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
-            &specific_info));
+            policy_url,
+            plugin_url,
+            CONTENT_SETTINGS_TYPE_PLUGINS,
+            resource,
+            &specific_info);
     content_settings::SettingInfo general_info;
-    scoped_ptr<base::Value> general_setting(
+    scoped_ptr<base::Value> general_setting =
         host_content_settings_map_->GetWebsiteSetting(
-            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS,
-            std::string(), &general_info));
+            policy_url,
+            plugin_url,
+            CONTENT_SETTINGS_TYPE_PLUGINS,
+            std::string(),
+            &general_info);
 
     // If there is a plugin-specific setting, we use it, unless the general
     // setting was set by policy, in which case it takes precedence.

@@ -81,8 +81,11 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // Populates the default setting drop down on the single site edit page.
   void HandleUpdateDefaultSetting(const base::ListValue* args);
 
-  // Sets the default setting for the lat used content setting to |args|.
+  // Sets the default setting for the last used content setting to |args|.
   void HandleSetDefaultSetting(const base::ListValue* args);
+
+  // Sets if a certain content setting enabled to |args|.
+  void HandleSetGlobalToggle(const base::ListValue* args);
 
   // Closes all tabs and app windows which have the same origin as the selected
   // page.

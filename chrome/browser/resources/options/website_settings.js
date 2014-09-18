@@ -66,6 +66,11 @@ cr.define('options.ContentSettings', function() {
         chrome.send('setDefaultContentSetting', [this.value]);
       };
 
+      $('global-setting-toggle').onchange = function(event) {
+        var value = event.target.checked;
+        chrome.send('setGlobalEnabled', [value]);
+      };
+
       var searchBox = $('website-settings-search-box');
       searchBox.addEventListener('search',
                                  this.handleSearchQueryChange_.bind(this));
@@ -144,9 +149,10 @@ cr.define('options.ContentSettings', function() {
            which will be used to sort the origins in the main/allowed list.
      * @param {!Object} blockedDict An optional dictionary of origins to their
            usage, which will be used to sort the origins in the blocked list.
+     * @param {bool} isGloballyEnabled If the content setting is turned on.
      * @private
      */
-    populateOrigins: function(allowedDict, blockedDict) {
+    populateOrigins: function(allowedDict, blockedDict, isGloballyEnabled) {
       this.populateOriginsHelper_(this.allowedList_, allowedDict);
       if (blockedDict) {
         this.populateOriginsHelper_(this.blockedList_, blockedDict);
@@ -159,6 +165,7 @@ cr.define('options.ContentSettings', function() {
         $('allowed-origin-list-title').hidden = true;
         this.allowedList_.classList.add('nonsplit-origin-list');
       }
+      $('global-setting-toggle').checked = isGloballyEnabled;
     },
 
     /**
@@ -242,9 +249,10 @@ cr.define('options.ContentSettings', function() {
     }
   };
 
-  WebsiteSettingsManager.populateOrigins = function(allowedDict, blockedDict) {
+  WebsiteSettingsManager.populateOrigins = function(allowedDict, blockedDict,
+      isGloballyEnabled) {
     WebsiteSettingsManager.getInstance().populateOrigins(allowedDict,
-        blockedDict);
+        blockedDict, isGloballyEnabled);
   };
 
   WebsiteSettingsManager.updateDefault = function(dict) {

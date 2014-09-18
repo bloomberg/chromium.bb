@@ -990,6 +990,11 @@ const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 // Dictionary of content settings applied to all hosts by default.
 const char kDefaultContentSettings[] = "profile.default_content_settings";
 
+// Dictionary of content settings that can globally disallow all hosts by
+// default. If a value is set, it means the setting is globally disallowed.
+// If a value is not set, it means the setting is allowed.
+const char kOverrideContentSettings[] = "profile.override_content_settings";
+
 // Boolean indicating whether the clear on exit pref was migrated to content
 // settings yet.
 const char kContentSettingsClearOnExitMigrated[] =

@@ -183,12 +183,12 @@ ContentSetting CookieSettings::GetCookieSetting(
 
   // First get any host-specific settings.
   content_settings::SettingInfo info;
-  scoped_ptr<base::Value> value(host_content_settings_map_->GetWebsiteSetting(
+  scoped_ptr<base::Value> value = host_content_settings_map_->GetWebsiteSetting(
       url,
       first_party_url,
       CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(),
-      &info));
+      &info);
   if (source)
     *source = info.source;
 

@@ -7990,6 +7990,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBSITE_SETTINGS_BLOCKED_LIST_TITLE" desc="Label above the list of blocked origins for a given permission on the Website Settings dialog.">
         Blocked
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CONTENT_SETTING_ENABLED" desc="Label next to the checkbox that enables/disables a content setting.">
+        On
+      </message>
+
 
       <!-- Automatic updates -->
       <if expr="is_macosx">

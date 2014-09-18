@@ -1750,12 +1750,13 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       << cert_request_info->host_and_port.ToString();
 
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  scoped_ptr<base::Value> filter(
+  scoped_ptr<base::Value> filter =
       profile->GetHostContentSettingsMap()->GetWebsiteSetting(
           requesting_url,
           requesting_url,
           CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-          std::string(), NULL));
+          std::string(),
+          NULL);
 
   if (filter.get()) {
     // Try to automatically select a client certificate.
