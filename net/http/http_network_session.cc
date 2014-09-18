@@ -268,6 +268,8 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
                    params_.enable_quic_time_based_loss_detection);
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
+  dict->SetDouble("alternate_protocol_probability_threshold",
+                  params_.alternate_protocol_probability_threshold);
   return dict;
 }
 

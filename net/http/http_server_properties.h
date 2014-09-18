@@ -181,6 +181,11 @@ class NET_EXPORT HttpServerProperties {
   virtual void SetAlternateProtocolExperiment(
       AlternateProtocolExperiment experiment) = 0;
 
+  // Sets the threshold to be used when evaluating Alternate-Protocol
+  // advertisments. Only advertisements with a with a probability
+  // greater than |threshold| will be honored. |threshold| must be
+  // between 0 and 1 inclusive. Hence, a threshold of 0 implies that
+  // all advertisements will be honored.
   virtual void SetAlternateProtocolProbabilityThreshold(
       double threshold) = 0;
 
