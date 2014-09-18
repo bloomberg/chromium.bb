@@ -388,7 +388,8 @@ class FileIO {
   // - When the file is opened by a CDM instance, it will be classified as "in
   //   use". In this case other CDM instances in the same domain may receive
   //   kInUse status when trying to open it.
-  // - |file_name| should not include path separators.
+  // - |file_name| must not contain forward slash ('/') or backslash ('\'), and
+  //   must not start with an underscore ('_').
   virtual void Open(const char* file_name, uint32_t file_name_size) = 0;
 
   // Reads the contents of the file. FileIOClient::OnReadComplete() will be
@@ -416,6 +417,9 @@ class FileIO {
 };
 
 // Responses to FileIO calls. All responses will be called asynchronously.
+// When kError is returned, the FileIO object could be in an error state. All
+// following calls (other than Close()) could return kError. The CDM should
+// still call Close() to destroy the FileIO object.
 class FileIOClient {
  public:
   enum Status {
