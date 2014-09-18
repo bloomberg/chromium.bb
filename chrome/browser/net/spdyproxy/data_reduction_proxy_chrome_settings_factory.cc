@@ -55,10 +55,9 @@ KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
   int flags = 0;
   if (DataReductionProxyParams::IsIncludedInFieldTrial()) {
     flags |= (DataReductionProxyParams::kAllowed |
-              DataReductionProxyParams::kFallbackAllowed);
+              DataReductionProxyParams::kFallbackAllowed |
+              DataReductionProxyParams::kAlternativeAllowed);
   }
-  if (DataReductionProxyParams::IsIncludedInAlternativeFieldTrial())
-    flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())

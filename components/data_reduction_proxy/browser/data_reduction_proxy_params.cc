@@ -37,8 +37,13 @@ bool DataReductionProxyParams::IsIncludedInFieldTrial() {
 
 // static
 bool DataReductionProxyParams::IsIncludedInAlternativeFieldTrial() {
-  return base::FieldTrialList::FindFullName(
-      "DataCompressionProxyAlternativeConfiguration") == kEnabled;
+  const std::string group_name = base::FieldTrialList::FindFullName(
+      "DataCompressionProxyAlternativeConfiguration");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::kEnableDataReductionProxyAlt)) {
+    return true;
+  }
+  return group_name == kEnabled;
 }
 
 // static

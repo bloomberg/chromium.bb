@@ -45121,6 +45121,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="711424932" label="enable-cloud-print-xps"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
+  <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
   <int value="834326277" label="enable-answers-in-suggest"/>

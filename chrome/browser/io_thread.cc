@@ -636,12 +636,8 @@ void IOThread::InitAsync() {
           IsIncludedInFieldTrial()) {
     drp_flags |=
         (data_reduction_proxy::DataReductionProxyParams::kAllowed |
-         data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed);
-  }
-  if (data_reduction_proxy::DataReductionProxyParams::
-          IsIncludedInAlternativeFieldTrial()) {
-    drp_flags |=
-        data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed;
+         data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
+         data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed);
   }
   if (data_reduction_proxy::DataReductionProxyParams::
           IsIncludedInPromoFieldTrial())
