@@ -14,7 +14,7 @@
       'target_conditions': [
         ['_toolset=="target"', {
           'conditions': [
-            ['OS=="android" and fastbuild==0', {
+            ['OS=="android"', {
               'cflags!': ['-Os'],
               'cflags': ['-O2'],
             }],
