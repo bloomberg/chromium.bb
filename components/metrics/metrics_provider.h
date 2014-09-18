@@ -43,6 +43,10 @@ class MetricsProvider {
   virtual void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto);
 
+  // Called to indicate that saved stability prefs should be cleared, e.g.
+  // because they are from an old version and should not be kept.
+  virtual void ClearSavedStabilityMetrics();
+
   // Provides general metrics that are neither system profile nor stability
   // metrics.
   virtual void ProvideGeneralMetrics(

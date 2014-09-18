@@ -43,6 +43,7 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
   virtual void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+  virtual void ClearSavedStabilityMetrics() OVERRIDE;
 
   // Notifies the provider about an error loading the plugin at |plugin_path|.
   void LogPluginLoadingError(const base::FilePath& plugin_path);

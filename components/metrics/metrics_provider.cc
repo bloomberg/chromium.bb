@@ -33,6 +33,9 @@ void MetricsProvider::ProvideStabilityMetrics(
     SystemProfileProto* system_profile_proto) {
 }
 
+void MetricsProvider::ClearSavedStabilityMetrics() {
+}
+
 void MetricsProvider::ProvideGeneralMetrics(
     ChromeUserMetricsExtension* uma_proto) {
 }

@@ -558,10 +558,15 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 // Initialization methods
 
 void MetricsService::InitializeMetricsState() {
-  local_state_->SetString(metrics::prefs::kStabilityStatsVersion,
-                          client_->GetVersionString());
-  local_state_->SetInt64(metrics::prefs::kStabilityStatsBuildTime,
-                         MetricsLog::GetBuildTime());
+  const int64 buildtime = MetricsLog::GetBuildTime();
+  const std::string version = client_->GetVersionString();
+  bool version_changed = false;
+  if (local_state_->GetInt64(prefs::kStabilityStatsBuildTime) != buildtime ||
+      local_state_->GetString(prefs::kStabilityStatsVersion) != version) {
+    local_state_->SetString(metrics::prefs::kStabilityStatsVersion, version);
+    local_state_->SetInt64(metrics::prefs::kStabilityStatsBuildTime, buildtime);
+    version_changed = true;
+  }
 
   log_manager_.LoadPersistedUnsentLogs();
 
@@ -587,6 +592,25 @@ void MetricsService::InitializeMetricsState() {
     // provided UMA is enabled.
     if (state_manager_->IsMetricsReportingEnabled())
       PrepareInitialStabilityLog();
+  }
+
+  // If no initial stability log was generated and there was a version upgrade,
+  // clear the stability stats from the previous version (so that they don't get
+  // attributed to the current version). This could otherwise happen due to a
+  // number of different edge cases, such as if the last version crashed before
+  // it could save off a system profile or if UMA reporting is disabled (which
+  // normally results in stats being accumulated).
+  if (!has_initial_stability_log_ && version_changed) {
+    for (size_t i = 0; i < metrics_providers_.size(); ++i)
+      metrics_providers_[i]->ClearSavedStabilityMetrics();
+
+    // Reset the prefs that are managed by MetricsService/MetricsLog directly.
+    local_state_->SetInteger(prefs::kStabilityCrashCount, 0);
+    local_state_->SetInteger(prefs::kStabilityExecutionPhase,
+                             UNINITIALIZED_PHASE);
+    local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
+    local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
+    local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
   }
 
   // Update session ID.

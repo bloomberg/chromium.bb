@@ -35,6 +35,7 @@ class ChromeStabilityMetricsProvider
   virtual void OnRecordingDisabled() OVERRIDE;
   virtual void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+  virtual void ClearSavedStabilityMetrics() OVERRIDE;
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);

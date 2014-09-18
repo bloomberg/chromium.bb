@@ -196,6 +196,10 @@ void PluginMetricsProvider::ProvideStabilityMetrics(
   local_state_->ClearPref(prefs::kStabilityPluginStats);
 }
 
+void PluginMetricsProvider::ClearSavedStabilityMetrics() {
+  local_state_->ClearPref(prefs::kStabilityPluginStats);
+}
+
 // Saves plugin-related updates from the in-object buffer to Local State
 // for retrieval next time we send a Profile log (generally next launch).
 void PluginMetricsProvider::RecordCurrentState() {

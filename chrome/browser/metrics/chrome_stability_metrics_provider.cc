@@ -126,15 +126,28 @@ void ChromeStabilityMetricsProvider::ProvideStabilityMetrics(
   }
 }
 
+void ChromeStabilityMetricsProvider::ClearSavedStabilityMetrics() {
+  PrefService* local_state = g_browser_process->local_state();
+
+  // Clear all the prefs used in this class in UMA reports (which doesn't
+  // include |kUninstallMetricsPageLoadCount| as it's not sent up by UMA).
+  local_state->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
+  local_state->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
+  local_state->SetInteger(prefs::kStabilityPageLoadCount, 0);
+  local_state->SetInteger(prefs::kStabilityRendererCrashCount, 0);
+  local_state->SetInteger(prefs::kStabilityRendererHangCount, 0);
+}
+
 // static
 void ChromeStabilityMetricsProvider::RegisterPrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
                                 0);
+  registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
+
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
 }
 
