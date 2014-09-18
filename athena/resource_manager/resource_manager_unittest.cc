@@ -89,6 +89,11 @@ class ResourceManagerTest : public AthenaTestBase {
   ResourceManagerTest() {}
   virtual ~ResourceManagerTest() {}
 
+  virtual void SetUp() OVERRIDE {
+    AthenaTestBase::SetUp();
+    // Override the delay to be instantaneous.
+    ResourceManager::Get()->SetWaitTimeBetweenResourceManageCalls(0);
+  }
   virtual void TearDown() OVERRIDE {
     while (!activity_list_.empty())
       DeleteActivity(activity_list_[0]);
@@ -292,6 +297,85 @@ TEST_F(ResourceManagerTest, NoUnloadFromVisible) {
       MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app2->GetCurrentState());
+}
+
+// Make sure that ActivityVisibility changes will be updated instantaneously
+// when the ResourceManager is called for operation.
+TEST_F(ResourceManagerTest, VisibilityChangeIsInstantaneous) {
+  // Create a few dummy activities in the reverse order as we need them.
+  TestActivity* app3 = CreateActivity("app3");
+  TestActivity* app2 = CreateActivity("app2");
+  TestActivity* app1 = CreateActivity("app1");
+  app1->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app2->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app3->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+
+  // Tell the resource manager to wait for a long time between calls.
+  ResourceManager::Get()->SetWaitTimeBetweenResourceManageCalls(1000);
+
+  // Applying higher pressure should get rid of everything unneeded.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
+
+  // Setting now one window visible again and call a second time should
+  // immediately change the state again.
+  app2->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
+}
+
+// Make sure that a timeout has to be reached before another resource managing
+// operations can be performed.
+TEST_F(ResourceManagerTest, ResourceChangeDelayed) {
+  // Create a few dummy activities in the reverse order as we need them.
+  TestActivity* app4 = CreateActivity("app4");
+  TestActivity* app3 = CreateActivity("app3");
+  TestActivity* app2 = CreateActivity("app2");
+  TestActivity* app1 = CreateActivity("app1");
+  app1->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app2->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
+  app3->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
+  app4->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
+
+  // The timeout override in milliseconds.
+  const int kTimeoutOverrideInMs = 20;
+  // Tell the resource manager to wait for 20ms between calls.
+  ResourceManager::Get()->SetWaitTimeBetweenResourceManageCalls(
+      kTimeoutOverrideInMs);
+  // Applying higher pressure should get unload the oldest activity.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app4->GetCurrentState());
+  // Trying to apply the resource pressure again within the timeout time should
+  // not trigger any operation.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app4->GetCurrentState());
+
+  // Passing the timeout however should allow for another call.
+  usleep(kTimeoutOverrideInMs * 1000);
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app3->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app4->GetCurrentState());
 }
 
 }  // namespace test

@@ -32,6 +32,13 @@ class ATHENA_EXPORT ResourceManager {
   virtual void SetMemoryPressureAndStopMonitoring(
       MemoryPressureObserver::MemoryPressure pressure) = 0;
 
+  // Resource management calls require time to show effect (until memory
+  // gets actually released). This function lets override the time limiter
+  // between two calls to allow for more/less aggressive timeouts.
+  // By calling this function, the next call to the Resource manager will be
+  // executed immediately.
+  virtual void SetWaitTimeBetweenResourceManageCalls(int time_in_ms) = 0;
+
   // Suspend the resource manager temporarily if |pause| is set. This can be
   // called before e.g. re-arranging the order of activities. Once called with
   // |pause| == false any queued operations will be performed and the resource

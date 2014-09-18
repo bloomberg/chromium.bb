@@ -18,6 +18,7 @@
 #include "athena/wm/public/window_manager_observer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "ui/aura/window.h"
 
 namespace athena {
@@ -34,6 +35,13 @@ class ResourceManagerImpl : public ResourceManager,
   // ResourceManager:
   virtual void SetMemoryPressureAndStopMonitoring(
       MemoryPressureObserver::MemoryPressure pressure) OVERRIDE;
+  virtual void SetWaitTimeBetweenResourceManageCalls(int time_in_ms) OVERRIDE {
+    wait_time_for_resource_deallocation_ =
+        base::TimeDelta::FromMilliseconds(time_in_ms);
+    // Reset the timeout to force the next resource call to execute immediately.
+    next_resource_management_time_ = base::Time::Now();
+  }
+
   virtual void Pause(bool pause) OVERRIDE {
     if (pause) {
       if (!pause_)
@@ -107,6 +115,14 @@ class ResourceManagerImpl : public ResourceManager,
   // True if we are in split view mode.
   bool in_splitview_mode_;
 
+  // The last time the resource manager was called to release resources.
+  // Avoid too aggressive resource de-allocation by enforcing a wait time of
+  // |wait_time_for_resource_deallocation_| between executed calls.
+  base::Time next_resource_management_time_;
+
+  // The wait time between two resource managing executions.
+  base::TimeDelta wait_time_for_resource_deallocation_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceManagerImpl);
 };
 
@@ -127,7 +143,10 @@ ResourceManagerImpl::ResourceManagerImpl(ResourceManagerDelegate* delegate)
       queued_command_(false),
       activity_order_changed_(false),
       in_overview_mode_(false),
-      in_splitview_mode_(false) {
+      in_splitview_mode_(false),
+      next_resource_management_time_(base::Time::Now()),
+      wait_time_for_resource_deallocation_(base::TimeDelta::FromMilliseconds(
+          delegate_->MemoryPressureIntervalInMS())) {
   WindowManager::GetInstance()->AddObserver(this);
   WindowManager::GetInstance()->GetWindowListProvider()->AddObserver(this);
   ActivityManager::Get()->AddObserver(this);
@@ -196,8 +215,6 @@ void ResourceManagerImpl::OnSplitViewModeExit() {
 }
 
 void ResourceManagerImpl::OnWindowStackingChanged() {
-  // TODO(skuhne): This needs to be changed to some WindowListProvider observer
-  // if we decouple window order from activity order.
   activity_order_changed_ = true;
   if (pause_) {
     queued_command_ = true;
@@ -312,12 +329,21 @@ void ResourceManagerImpl::ManageResource() {
     }
   }
 
-  // No need to remove anything.
-  if (current_memory_pressure_ == MEMORY_PRESSURE_LOW)
+  // If there is only a low memory pressure, or our last call to release
+  // resources cannot have had any impact yet, we return.
+  // TODO(skuhne): The upper part of this function bumps up the state (to
+  // visible) and the lower part might unload one. Going forward this algorithm
+  // will change significantly and when it does we might want to break this into
+  // two separate pieces.
+  if (current_memory_pressure_ == MEMORY_PRESSURE_LOW ||
+      base::Time::Now() < next_resource_management_time_)
     return;
-  // TODO(skuhne): Do not release too many activities in short succession.
-  // since it takes time to release resources. As such the time of last call
-  // should be remembered and if called to early we should exit early.
+  // Do not release too many activities in short succession since it takes time
+  // to release resources. As such wait the memory pressure interval before the
+  // next call.
+  next_resource_management_time_ = base::Time::Now() +
+                                   wait_time_for_resource_deallocation_;
+
   // Check if/which activity we want to unload.
   Activity* oldest_media_activity = NULL;
   std::vector<Activity*> unloadable_activities;

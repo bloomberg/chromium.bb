@@ -25,7 +25,8 @@ class ATHENA_EXPORT ResourceManagerDelegate {
   virtual int GetUsedMemoryInPercent() = 0;
 
   // Returns the time memory pressure interval time in ms to be used by the
-  // memory pressure monitoring system.
+  // memory pressure monitoring system. This is also used as the default time
+  // difference between resource de-allocation operation calls.
   virtual int MemoryPressureIntervalInMS() = 0;
 };
 
