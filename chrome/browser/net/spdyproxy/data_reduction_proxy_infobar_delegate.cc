@@ -9,14 +9,17 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 // static
 void DataReductionProxyInfoBarDelegate::Create(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents, const std::string& link_url) {
   InfoBarService::FromWebContents(web_contents)->AddInfoBar(
       DataReductionProxyInfoBarDelegate::CreateInfoBar(
           scoped_ptr<DataReductionProxyInfoBarDelegate>(
-              new DataReductionProxyInfoBarDelegate())));
+              new DataReductionProxyInfoBarDelegate(link_url))));
 }
 
 #if !defined(OS_ANDROID)
@@ -33,8 +36,10 @@ scoped_ptr<infobars::InfoBar> DataReductionProxyInfoBarDelegate::CreateInfoBar(
 DataReductionProxyInfoBarDelegate::~DataReductionProxyInfoBarDelegate() {
 }
 
-DataReductionProxyInfoBarDelegate::DataReductionProxyInfoBarDelegate()
-    : ConfirmInfoBarDelegate() {
+DataReductionProxyInfoBarDelegate::DataReductionProxyInfoBarDelegate(
+    const std::string& link_url)
+    : ConfirmInfoBarDelegate(),
+      link_url_(link_url) {
 }
 
 bool DataReductionProxyInfoBarDelegate::ShouldExpire(
@@ -48,4 +53,15 @@ base::string16 DataReductionProxyInfoBarDelegate::GetMessageText() const {
 
 int DataReductionProxyInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
+}
+
+bool DataReductionProxyInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+      content::OpenURLParams(
+          GURL(link_url_),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          content::PAGE_TRANSITION_LINK, false));
+  return true;
 }

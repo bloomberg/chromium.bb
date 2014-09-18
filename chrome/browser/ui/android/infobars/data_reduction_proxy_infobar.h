@@ -12,7 +12,10 @@
 
 class DataReductionProxyInfoBar : public ConfirmInfoBar {
  public:
-  static void Launch(JNIEnv* env, jclass, jobject jweb_contents);
+  static void Launch(JNIEnv* env,
+                     jclass,
+                     jobject jweb_contents,
+                     jstring jlink_url);
 
   static bool Register(JNIEnv* env);
 

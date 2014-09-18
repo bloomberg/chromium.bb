@@ -20,12 +20,13 @@ class WebContents;
 class DataReductionProxyInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates the InfoBar and adds it to the provided |web_contents|.
-  static void Create(content::WebContents* web_contents);
+  static void Create(content::WebContents* web_contents,
+                     const std::string& link_url);
 
   virtual ~DataReductionProxyInfoBarDelegate();
 
  private:
-  DataReductionProxyInfoBarDelegate();
+  explicit DataReductionProxyInfoBarDelegate(const std::string& link_url);
 
   // Returns a Data Reduction Proxy infobar that owns |delegate|.
   static scoped_ptr<infobars::InfoBar> CreateInfoBar(
@@ -35,6 +36,9 @@ class DataReductionProxyInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+
+  std::string link_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyInfoBarDelegate);
 };

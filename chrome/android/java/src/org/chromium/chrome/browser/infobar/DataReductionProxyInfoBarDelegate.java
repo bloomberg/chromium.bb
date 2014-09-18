@@ -14,10 +14,10 @@ import org.chromium.content_public.browser.WebContents;
 public class DataReductionProxyInfoBarDelegate {
     /**
      * Launches the {@link InfoBar}.
-     * @param webContents The {@link WebContents} in which to laucnh the {@link InfoBar}.
+     * @param webContents The {@link WebContents} in which to launch the {@link InfoBar}.
      */
-    static void launch(WebContents webContents) {
-        nativeLaunch(webContents);
+    static void launch(WebContents webContents, String linkUrl) {
+        nativeLaunch(webContents, linkUrl);
     }
 
     private DataReductionProxyInfoBarDelegate() {
@@ -43,5 +43,5 @@ public class DataReductionProxyInfoBarDelegate {
         return infoBar;
     }
 
-    protected static native void nativeLaunch(WebContents webContents);
+    protected static native void nativeLaunch(WebContents webContents, String linkUrl);
 }
