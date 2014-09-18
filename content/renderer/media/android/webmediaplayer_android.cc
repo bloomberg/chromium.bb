@@ -142,7 +142,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
-      pending_playback_(false),
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
       media_log_(media_log),
@@ -766,14 +765,11 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   interpolator_.SetBounds(duration_, duration_);
   client_->timeChanged();
 
-  // if the loop attribute is set, timeChanged() will update the current time
-  // to 0. It will perform a seek to 0. As the requests to the renderer
-  // process are sequential, the OnSeekComplete() will only occur
-  // once OnPlaybackComplete() is done. As the playback can only be executed
-  // upon completion of OnSeekComplete(), the request needs to be saved.
-  UpdatePlayingState(false);
+  // If the loop attribute is set, timeChanged() will update the current time
+  // to 0. It will perform a seek to 0. Issue a command to the player to start
+  // playing after seek completes.
   if (seeking_ && seek_time_ == base::TimeDelta())
-    pending_playback_ = true;
+    player_manager_->Start(player_id_);
 }
 
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
@@ -800,11 +796,6 @@ void WebMediaPlayerAndroid::OnSeekComplete(
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
   client_->timeChanged();
-
-  if (pending_playback_) {
-    play();
-    pending_playback_ = false;
-  }
 }
 
 void WebMediaPlayerAndroid::OnMediaError(int error_type) {

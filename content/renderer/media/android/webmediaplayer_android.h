@@ -459,10 +459,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   scoped_ptr<MediaSourceDelegate,
              MediaSourceDelegate::Destroyer> media_source_delegate_;
 
-  // Internal pending playback state.
-  // Store a playback request that cannot be started immediately.
-  bool pending_playback_;
-
   MediaPlayerHostMsg_Initialize_Type player_type_;
 
   // Whether the browser is currently connected to a remote media player.
