@@ -446,8 +446,10 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         break;
     }
 
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons())
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons()) {
         compositedLayerMappingChanged = true;
+        layer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+    }
 
     if (compositedLayerMappingChanged && layer->renderer()->isRenderPart()) {
         RenderLayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
