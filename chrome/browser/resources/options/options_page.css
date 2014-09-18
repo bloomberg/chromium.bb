@@ -343,11 +343,7 @@ list > [editing] input:invalid {
 }
 
 .option-name {
-  padding-right: 5px;
-}
-
-html[dir=rtl].option-name {
-  padding-left: 5px;
+  -webkit-padding-end: 5px;
 }
 
 .favicon-cell {
