@@ -1952,37 +1952,12 @@
    fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
 }
 {
-   bug_102257
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
-   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
-}
-{
    bug_102327a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN15tracked_objects10ThreadData10InitializeEv
    fun:_ZN15tracked_objects10ThreadData30InitializeAndSetTrackingStatusEb
    fun:_ZN15tracked_objects10ThreadData29ShutdownSingleThreadedCleanupEb
-}
-{
-   bug_102327b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKPKN15tracked_objects6BirthsENS3_9DeathDataEEEE8allocateE*
-   ...
-   fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEE6insertESt17_Rb_tree_iteratorIS9_ERKS9_
-   fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
-   fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6Births*
-   fun:_ZN15tracked_objects10ThreadData3?TallyRun*IfTrackingE*
-}
-{
-   bug_102327c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15tracked_objects10ThreadData11TallyABirthERKNS_8LocationE
-   fun:_ZN15tracked_objects10ThreadData19TallyABirthIfActiveERKNS_8LocationE
 }
 {
    bug_102327d
@@ -1996,12 +1971,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNK15tracked_objects10ThreadData26OnThreadTerminationCleanupEv
-}
-{
-   bug_102614
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12*FinishPepperFlashUpdateRegistrationEP22ComponentUpdateServiceRK7Version
 }
 {
    bug_102831_a
@@ -2027,16 +1996,6 @@
    fun:_ZNK7blink30SVGTextLayoutAttributesBuilder25propagateLayoutAttributesEPNS_12RenderObjectERN3WTF6VectorINS_23SVGTextLayoutAttributesELm0EEERjRt
 }
 {
-   # ProcessSingleton::LinuxWatcher is marked DeleteOnIOThread.  Sometimes it
-   # leaks on shutdown instead of getting deleted.  The destructor doesn't do
-   # anything important, so this shouldn't be a big deal.
-   bug_104578
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16ProcessSingletonC1E*
-   fun:_ZN22ChromeProcessSingletonC1E*
-}
-{
    bug_104806_a
    Memcheck:Leak
    fun:_Znw*
@@ -2052,31 +2011,6 @@
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEii
    fun:_ZN15tracked_objects10ThreadData32TallyRunOnWorkerThreadIfTrackingEPKNS_6BirthsERKNS_11TrackedTimeES6_S6_
-}
-{
-   bug_105715
-   Memcheck:Uninitialized
-   ...
-   fun:vfprintf
-   fun:__vsnprintf_chk
-   fun:_ZN4base9vsnprintfEPcjPKcS0_
-   fun:_ZN4base12_GLOBAL__N_110vsnprintfTEPcjPKcS1_
-   fun:_ZN4base12_GLOBAL__N_1L14StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
-   fun:_ZN4base13StringAppendVEPSsPKcPc
-   fun:_ZN4base13StringAppendFEPSsPKcz
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
-   fun:_ZN4base10JSONWriter16WriteWithOptionsEPKNS_5ValueEbiPSs
-   fun:_ZN25JSONStringValueSerializer17SerializeInternalERKN4base5ValueEb
-   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
-   fun:_ZN18jstemplate_builder12AppendJsonJSEPKN4base15DictionaryValueEPSs
-   fun:_ZN19OptionsUIHTMLSource16StartDataRequestERKSsbi
-   fun:_ZN4base8internal15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEE3RunEPS3_S5_RKbRKi
-   fun:_ZN4base8internal12InvokeHelperILb0EvNS0_15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEEEFvRKPS4_S6_RKbRKiEE8MakeItSoES9_SC_S6_SE_SG_
-   fun:_ZN4base8internal7InvokerILi4ENS0_9BindStateINS0_15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEEEFvPS5_S7_biEFvSB_SsbiEEESC_E3RunEPNS0_13BindStateBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
    bug_105744b
