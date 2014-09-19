@@ -25,8 +25,6 @@
 
         if (window.eventSender) {
           eventSender.gestureShowPress(x, y);
-          // FIXME: This is needed to make link highlighting work by marking paint as dirty. crbug.com/415702
-          document.querySelector("#targetLink").style.color = "red";
           targetDiv.scrollTop += 20;
           window.setTimeout(function() { window.testRunner.notifyDone(); }, 30);
         } else {
