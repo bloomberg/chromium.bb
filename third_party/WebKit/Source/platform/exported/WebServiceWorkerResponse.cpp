@@ -13,6 +13,7 @@ namespace blink {
 
 class WebServiceWorkerResponsePrivate : public RefCounted<WebServiceWorkerResponsePrivate> {
 public:
+    WebServiceWorkerResponsePrivate() : status(0) { }
     WebURL url;
     unsigned short status;
     WebString statusText;
