@@ -4,13 +4,13 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 // Test is flaky: http://crbug.com/346990
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {

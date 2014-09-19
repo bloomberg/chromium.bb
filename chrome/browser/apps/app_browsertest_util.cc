@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -20,6 +19,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 using content::WebContents;
 

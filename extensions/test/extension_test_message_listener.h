@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_MESSAGE_LISTENER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_MESSAGE_LISTENER_H_
+#ifndef EXTENSIONS_TEST_EXTENSION_TEST_MESSAGE_LISTENER_H_
+#define EXTENSIONS_TEST_EXTENSION_TEST_MESSAGE_LISTENER_H_
 
 #include <string>
 
@@ -171,4 +171,4 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   scoped_refptr<extensions::TestSendMessageFunction> function_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_MESSAGE_LISTENER_H_
+#endif  // EXTENSIONS_TEST_EXTENSION_TEST_MESSAGE_LISTENER_H_

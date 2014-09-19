@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 using extensions::Extension;
 

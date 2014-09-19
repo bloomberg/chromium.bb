@@ -7,7 +7,6 @@
 #include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
@@ -23,6 +22,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;

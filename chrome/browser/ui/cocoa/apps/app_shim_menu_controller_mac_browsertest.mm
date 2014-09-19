@@ -11,7 +11,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,6 +19,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 namespace {
 

@@ -1798,8 +1798,6 @@
             'browser/extensions/api/messaging/native_messaging_test_util.h',
             'browser/extensions/extension_notification_observer.cc',
             'browser/extensions/extension_notification_observer.h',
-            'browser/extensions/extension_test_message_listener.cc',
-            'browser/extensions/extension_test_message_listener.h',
             'browser/extensions/mock_extension_special_storage_policy.cc',
             'browser/extensions/mock_extension_special_storage_policy.h',
             'browser/extensions/test_blacklist.cc',

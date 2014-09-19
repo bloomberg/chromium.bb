@@ -5,8 +5,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 namespace extensions {
 

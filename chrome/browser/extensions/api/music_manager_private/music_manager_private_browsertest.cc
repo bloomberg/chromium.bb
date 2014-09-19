@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 // Supported on all platforms, but on Windows only if RLZ is enabled.
 #if !defined(OS_WIN) || defined(ENABLE_RLZ)

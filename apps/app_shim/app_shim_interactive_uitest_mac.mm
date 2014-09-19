@@ -22,7 +22,6 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,6 +30,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/test/extension_test_message_listener.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {

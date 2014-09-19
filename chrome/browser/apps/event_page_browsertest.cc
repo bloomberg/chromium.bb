@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 using extensions::Extension;
 using extensions::PlatformAppBrowserTest;

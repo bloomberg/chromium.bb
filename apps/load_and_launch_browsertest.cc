@@ -11,10 +11,10 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_launcher.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 using extensions::PlatformAppBrowserTest;
 

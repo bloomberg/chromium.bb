@@ -941,6 +941,8 @@
         'common/value_builder.h',
         'renderer/test_extensions_renderer_client.cc',
         'renderer/test_extensions_renderer_client.h',
+        'test/extension_test_message_listener.cc',
+        'test/extension_test_message_listener.h',
         'test/result_catcher.cc',
         'test/result_catcher.h',
         'test/test_extensions_client.cc',

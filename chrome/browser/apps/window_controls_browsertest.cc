@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 class WindowControlsTest : public extensions::PlatformAppBrowserTest {
  protected:
