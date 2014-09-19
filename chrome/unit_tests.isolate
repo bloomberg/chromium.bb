@@ -115,6 +115,12 @@
           '../ppapi/lib/gl/include/KHR/',
           '../skia/ext/data/',
           '../ui/base/glib/',
+        ],
+      },
+    }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/unit_tests.exe.pdb',
         ],
       },

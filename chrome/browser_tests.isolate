@@ -133,8 +133,14 @@
           'tools/build/repack_locales.py',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/browser_tests.exe.pdb',
           '<(PRODUCT_DIR)/plugins/',
+        ],
+      },
+    }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/browser_tests.exe.pdb',
         ],
       },
     }],

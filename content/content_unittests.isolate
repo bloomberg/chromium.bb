@@ -76,6 +76,10 @@
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
+      },
+    }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/content_unittests.exe.pdb',
         ],
