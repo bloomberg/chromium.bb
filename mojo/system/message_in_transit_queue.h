@@ -21,12 +21,6 @@ namespace system {
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
  public:
   MessageInTransitQueue();
-
-  struct PassContents {};
-  // Constructor that takes over the contents of another
-  // |MessageInTransitQueue|, leaving it empty.
-  MessageInTransitQueue(PassContents, MessageInTransitQueue* other);
-
   ~MessageInTransitQueue();
 
   bool IsEmpty() const { return queue_.empty(); }
@@ -49,6 +43,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
   }
 
   void Clear();
+
+  // Efficiently swaps contents with |*other|.
+  void Swap(MessageInTransitQueue* other);
 
  private:
   // TODO(vtl): When C++11 is available, switch this to a deque of

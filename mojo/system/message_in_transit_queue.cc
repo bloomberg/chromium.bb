@@ -13,11 +13,6 @@ namespace system {
 MessageInTransitQueue::MessageInTransitQueue() {
 }
 
-MessageInTransitQueue::MessageInTransitQueue(PassContents,
-                                             MessageInTransitQueue* other) {
-  queue_.swap(other->queue_);
-}
-
 MessageInTransitQueue::~MessageInTransitQueue() {
   if (!IsEmpty()) {
     LOG(WARNING) << "Destroying nonempty message queue";
@@ -27,6 +22,10 @@ MessageInTransitQueue::~MessageInTransitQueue() {
 
 void MessageInTransitQueue::Clear() {
   STLDeleteElements(&queue_);
+}
+
+void MessageInTransitQueue::Swap(MessageInTransitQueue* other) {
+  queue_.swap(other->queue_);
 }
 
 }  // namespace system

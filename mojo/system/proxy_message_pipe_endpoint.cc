@@ -21,10 +21,8 @@ ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint()
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
     LocalMessagePipeEndpoint* local_message_pipe_endpoint,
     bool is_peer_open)
-    : is_running_(false),
-      is_peer_open_(is_peer_open),
-      paused_message_queue_(MessageInTransitQueue::PassContents(),
-                            local_message_pipe_endpoint->message_queue()) {
+    : is_running_(false), is_peer_open_(is_peer_open) {
+  paused_message_queue_.Swap(local_message_pipe_endpoint->message_queue());
   local_message_pipe_endpoint->Close();
 }
 
