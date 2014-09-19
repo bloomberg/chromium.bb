@@ -44,7 +44,7 @@ int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   const ui::MouseEvent* event =
       static_cast<const ui::MouseEvent*>(native_event);
-  DCHECK(event->IsMouseEvent());
+  DCHECK(event->IsMouseEvent() || event->IsScrollEvent());
   return event->changed_button_flags();
 }
 
