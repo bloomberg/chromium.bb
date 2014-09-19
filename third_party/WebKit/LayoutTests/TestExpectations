@@ -643,10 +643,6 @@ crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFa
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
-
-Bug(jchaffraix) compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
-Bug(jchaffraix) fast/repaint/fixed-element-repaint-after-compositing-update.html [ NeedsRebaseline ]
-
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 
