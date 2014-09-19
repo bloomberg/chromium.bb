@@ -5,6 +5,7 @@
 #include "tools/gn/ninja_binary_target_writer.h"
 
 #include <set>
+#include <sstream>
 
 #include "base/strings/string_util.h"
 #include "tools/gn/config_values_extractors.h"
@@ -52,8 +53,13 @@ struct IncludeWriter {
   }
 
   void operator()(const SourceDir& d, std::ostream& out) const {
-    out << " -I";
-    path_output_.WriteDir(out, d, PathOutput::DIR_NO_LAST_SLASH);
+    std::ostringstream path_out;
+    path_output_.WriteDir(path_out, d, PathOutput::DIR_NO_LAST_SLASH);
+    const std::string& path = path_out.str();
+    if (path[0] == '"')
+      out << " \"-I" << path.substr(1);
+    else
+      out << " -I" << path;
   }
 
   PathOutput& path_output_;
@@ -96,9 +102,11 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
   // Include directories.
   if (subst.used[SUBSTITUTION_INCLUDE_DIRS]) {
     out_ << kSubstitutionNinjaNames[SUBSTITUTION_INCLUDE_DIRS] << " =";
+    PathOutput include_path_output(path_output_.current_dir(),
+                                   ESCAPE_NINJA_COMMAND);
     RecursiveTargetConfigToStream<SourceDir>(
         target_, &ConfigValues::include_dirs,
-        IncludeWriter(path_output_), out_);
+        IncludeWriter(include_path_output), out_);
     out_ << std::endl;
   }
 
