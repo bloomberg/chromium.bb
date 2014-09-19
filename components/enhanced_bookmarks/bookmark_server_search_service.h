@@ -8,12 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/enhanced_bookmarks/bookmark_server_service.h"
 #include "net/url_request/url_fetcher.h"
 
-class BookmarkModel;
-
 namespace enhanced_bookmarks {
+
+class EnhancedBookmarkModel;
 
 // Sends requests to the bookmark server to search for bookmarks relevant to a
 // given query. Will handle one outgoing request at a time.
@@ -23,7 +24,7 @@ class BookmarkServerSearchService : public BookmarkServerService {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       ProfileOAuth2TokenService* token_service,
       SigninManagerBase* signin_manager,
-      BookmarkModel* bookmark_model);
+      EnhancedBookmarkModel* bookmark_model);
   virtual ~BookmarkServerSearchService();
 
   // Triggers a search. The query must not be empty. A call to this method
@@ -45,12 +46,15 @@ class BookmarkServerSearchService : public BookmarkServerService {
 
   virtual void CleanAfterFailure() OVERRIDE;
 
-  // BookmarkModelObserver methods.
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) OVERRIDE;
-  virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
-                                       const BookmarkNode* node) OVERRIDE;
+  // EnhancedBookmarkModelObserver methods.
+  virtual void EnhancedBookmarkModelLoaded() OVERRIDE{};
+  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) OVERRIDE;
+  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) OVERRIDE{};
+  virtual void EnhancedBookmarkAllUserNodesRemoved() OVERRIDE;
+  virtual void EnhancedBookmarkRemoteIdChanged(
+      const BookmarkNode* node,
+      const std::string& old_remote_id,
+      const std::string& remote_id) OVERRIDE;
 
  private:
   // The search data, a map from query to a vector of stars.id.

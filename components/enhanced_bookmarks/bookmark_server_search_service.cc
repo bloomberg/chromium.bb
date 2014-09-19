@@ -4,7 +4,6 @@
 
 #include "components/enhanced_bookmarks/bookmark_server_search_service.h"
 
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 #include "components/enhanced_bookmarks/proto/search.pb.h"
 #include "net/base/url_util.h"
@@ -21,11 +20,11 @@ BookmarkServerSearchService::BookmarkServerSearchService(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     ProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
-    BookmarkModel* bookmark_model)
+    EnhancedBookmarkModel* enhanced_bookmark_model)
     : BookmarkServerService(request_context_getter,
                             token_service,
                             signin_manager,
-                            bookmark_model) {
+                            enhanced_bookmark_model) {
 }
 
 BookmarkServerSearchService::~BookmarkServerSearchService() {
@@ -99,17 +98,19 @@ void BookmarkServerSearchService::CleanAfterFailure() {
   searches_.clear();
 }
 
-void BookmarkServerSearchService::BookmarkNodeAdded(BookmarkModel* model,
-                                                    const BookmarkNode* parent,
-                                                    int index) {
-  BookmarkServerService::BookmarkNodeAdded(model, parent, index);
+void BookmarkServerSearchService::EnhancedBookmarkAdded(
+    const BookmarkNode* node) {
   searches_.clear();
 }
 
-void BookmarkServerSearchService::BookmarkMetaInfoChanged(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
-  BookmarkServerService::BookmarkMetaInfoChanged(model, node);
+void BookmarkServerSearchService::EnhancedBookmarkAllUserNodesRemoved() {
+  searches_.clear();
+}
+
+void BookmarkServerSearchService::EnhancedBookmarkRemoteIdChanged(
+    const BookmarkNode* node,
+    const std::string& old_remote_id,
+    const std::string& remote_id) {
   searches_.clear();
 }
 }  // namespace enhanced_bookmarks

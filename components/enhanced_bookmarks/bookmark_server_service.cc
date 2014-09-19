@@ -5,9 +5,7 @@
 #include "components/enhanced_bookmarks/bookmark_server_service.h"
 
 #include "base/auto_reset.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_model_observer.h"
-#include "components/enhanced_bookmarks/metadata_accessor.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -21,24 +19,21 @@ BookmarkServerService::BookmarkServerService(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     ProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
-    BookmarkModel* bookmark_model)
+    EnhancedBookmarkModel* enhanced_bookmark_model)
     : OAuth2TokenService::Consumer("bookmark_server_service"),
-      bookmark_model_(bookmark_model),
+      model_(enhanced_bookmark_model),
       token_service_(token_service),
       signin_manager_(signin_manager),
-      request_context_getter_(request_context_getter),
-      inhibit_change_notifications_(false) {
+      request_context_getter_(request_context_getter) {
   DCHECK(request_context_getter.get());
   DCHECK(token_service);
   DCHECK(signin_manager);
-  DCHECK(bookmark_model);
-  bookmark_model_->AddObserver(this);
-  if (bookmark_model_->loaded())
-    BuildIdMap();
+  DCHECK(enhanced_bookmark_model);
+  model_->AddObserver(this);
 }
 
 BookmarkServerService::~BookmarkServerService() {
-  bookmark_model_->RemoveObserver(this);
+  model_->RemoveObserver(this);
 }
 
 void BookmarkServerService::AddObserver(
@@ -49,23 +44,6 @@ void BookmarkServerService::AddObserver(
 void BookmarkServerService::RemoveObserver(
     BookmarkServerServiceObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void BookmarkServerService::BuildIdMap() {
-  ui::TreeNodeIterator<const BookmarkNode> iterator(
-      bookmark_model_->root_node());
-
-  while (iterator.has_next()) {
-    const BookmarkNode* bookmark = iterator.Next();
-    if (bookmark_model_->is_permanent_node(bookmark))
-      continue;
-    // RemoteIdFromBookmark() will create the ID if it doesn't exists yet.
-    std::string starid =
-        enhanced_bookmarks::RemoteIdFromBookmark(bookmark_model_, bookmark);
-    if (bookmark->is_url()) {
-      starsid_to_bookmark_[starid] = bookmark;
-    }
-  }
 }
 
 const BookmarkNode* BookmarkServerService::BookmarkForRemoteId(
@@ -79,7 +57,7 @@ const BookmarkNode* BookmarkServerService::BookmarkForRemoteId(
 
 const std::string BookmarkServerService::RemoteIDForBookmark(
     const BookmarkNode* bookmark) const {
-  return enhanced_bookmarks::RemoteIdFromBookmark(bookmark_model_, bookmark);
+  return model_->GetRemoteId(bookmark);
 }
 
 void BookmarkServerService::Notify() {
@@ -165,66 +143,8 @@ void BookmarkServerService::OnURLFetchComplete(const net::URLFetcher* source) {
     Notify();
 }
 
-//
-// BookmarkModelObserver methods.
-//
-void BookmarkServerService::BookmarkModelLoaded(BookmarkModel* model,
-                                                bool ids_reassigned) {
-  BuildIdMap();
-}
-
-void BookmarkServerService::BookmarkNodeAdded(BookmarkModel* model,
-                                              const BookmarkNode* parent,
-                                              int index) {
-  DCHECK(!inhibit_change_notifications_);
-  const BookmarkNode* bookmark = parent->GetChild(index);
-  if (!bookmark->is_url())
-    return;
-
-  base::AutoReset<bool> inhibitor(&inhibit_change_notifications_, true);
-  std::string starid =
-      enhanced_bookmarks::RemoteIdFromBookmark(model, bookmark);
-  starsid_to_bookmark_[starid] = bookmark;
-}
-
-void BookmarkServerService::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int old_index,
-    const BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
-  DCHECK(!inhibit_change_notifications_);
-  if (!node->is_url())
-    return;
-  base::AutoReset<bool> inhibitor(&inhibit_change_notifications_, true);
-  std::string starid = enhanced_bookmarks::RemoteIdFromBookmark(model, node);
-  starsid_to_bookmark_.erase(starid);
-}
-
-void BookmarkServerService::OnWillChangeBookmarkMetaInfo(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
-  if (!node->is_url() || inhibit_change_notifications_)
-    return;
-  base::AutoReset<bool> inhibitor(&inhibit_change_notifications_, true);
-  std::string starid = enhanced_bookmarks::RemoteIdFromBookmark(model, node);
-  starsid_to_bookmark_.erase(starid);
-}
-
-void BookmarkServerService::BookmarkMetaInfoChanged(BookmarkModel* model,
-                                                    const BookmarkNode* node) {
-  if (!node->is_url() || inhibit_change_notifications_)
-    return;
-
-  std::string starid = enhanced_bookmarks::RemoteIdFromBookmark(model, node);
-  starsid_to_bookmark_[starid] = node;
-}
-
-void BookmarkServerService::BookmarkAllUserNodesRemoved(
-    BookmarkModel* model,
-    const std::set<GURL>& removed_urls) {
-  DCHECK(!inhibit_change_notifications_);
-  starsid_to_bookmark_.clear();
+void BookmarkServerService::EnhancedBookmarkModelShuttingDown() {
+  NOTREACHED();
 }
 
 SigninManagerBase* BookmarkServerService::GetSigninManager() {

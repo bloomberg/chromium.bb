@@ -8,20 +8,21 @@
 #include <string>
 #include <vector>
 
-#include "components/bookmarks/browser/bookmark_model_observer.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_model_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class BookmarkModel;
 class ProfileOAuth2TokenService;
 class SigninManagerBase;
+class BookmarkNode;
 
 namespace enhanced_bookmarks {
 
 class BookmarkServerService;
+class EnhancedBookmarkModel;
 
 class BookmarkServerServiceObserver {
  public:
@@ -36,14 +37,14 @@ class BookmarkServerServiceObserver {
 // BookmarkNodes. Subclasses just have to provide the right query and the
 // parsing of the response.
 class BookmarkServerService : protected net::URLFetcherDelegate,
-                              protected BookmarkModelObserver,
-                              private OAuth2TokenService::Consumer {
+                              private OAuth2TokenService::Consumer,
+                              public EnhancedBookmarkModelObserver {
  public:
   BookmarkServerService(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       ProfileOAuth2TokenService* token_service,
       SigninManagerBase* signin_manager,
-      BookmarkModel* bookmark_model);
+      EnhancedBookmarkModel* enhanced_bookmark_model);
   virtual ~BookmarkServerService();
 
   void AddObserver(BookmarkServerServiceObserver* observer);
@@ -75,51 +76,18 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   // If the token can't be retrieved or the query fails this method is called.
   virtual void CleanAfterFailure() = 0;
 
-  // BookmarkModelObserver methods.
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE {};
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) OVERRIDE;
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE {};
-  virtual void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
-                                            const BookmarkNode* node) OVERRIDE;
-
-  virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
-                                       const BookmarkNode* node) OVERRIDE;
-
-  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE {};
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node)
-      OVERRIDE {};
-  virtual void BookmarkAllUserNodesRemoved(
-      BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+  // EnhancedBookmarkModelObserver:
+  virtual void EnhancedBookmarkModelShuttingDown() OVERRIDE;
 
   SigninManagerBase* GetSigninManager();
 
   // Cached pointer to the bookmarks model.
-  BookmarkModel* bookmark_model_;  // weak
+  EnhancedBookmarkModel* model_;  // weak
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest,
                            ClearClusterMapOnRemoveAllBookmarks);
-
-  // Once the model is ready this method fills in the starsid_to_bookmark_ map.
-  void BuildIdMap();
 
   // net::URLFetcherDelegate methods. Called when the query is finished.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -145,9 +113,6 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   scoped_ptr<net::URLFetcher> url_fetcher_;
   // A map from stars.id to bookmark nodes. With no null entries.
   std::map<std::string, const BookmarkNode*> starsid_to_bookmark_;
-  // Set to true during the creation of a new bookmark in order to send only the
-  // proper notification.
-  bool inhibit_change_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkServerService);
 };
