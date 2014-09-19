@@ -3,16 +3,40 @@ This test validates initial set of loaded modules.
 
 Running: testInitialLoad
 Loaded modules:
+    common
+    host
+    sdk
+    ui
+    components
+    bindings
+    screencast
+    toolbox
     main
     elements
 
 Running: testCreateElementsPanel
 Loaded modules:
+    common
+    host
+    sdk
+    ui
+    components
+    bindings
+    screencast
+    toolbox
     main
     elements
 
 Running: testCreateNetworkPanel
 Loaded modules:
+    common
+    host
+    sdk
+    ui
+    components
+    bindings
+    screencast
+    toolbox
     main
     elements
     network
@@ -20,6 +44,14 @@ Loaded modules:
 
 Running: testShowSourcesPanel
 Loaded modules:
+    common
+    host
+    sdk
+    ui
+    components
+    bindings
+    screencast
+    toolbox
     main
     elements
     network
@@ -28,6 +60,14 @@ Loaded modules:
 
 Running: testOpenUISourceCode
 Loaded modules:
+    common
+    host
+    sdk
+    ui
+    components
+    bindings
+    screencast
+    toolbox
     main
     elements
     network
