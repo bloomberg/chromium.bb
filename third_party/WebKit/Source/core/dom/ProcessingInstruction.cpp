@@ -218,6 +218,7 @@ void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& bas
 
     ASSERT(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
+    RefPtrWillBeRawPtr<Document> protect(&document());
     parseStyleSheet(sheet);
 }
 
