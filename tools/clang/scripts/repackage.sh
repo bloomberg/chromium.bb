@@ -55,7 +55,11 @@ if [ -f "$LLVM_LIB_DIR/$LIBFILE" ]; then
 fi
 
 cp $PDIR/lib/$LIBFILE "$LLVM_LIB_DIR/"
-tar zcf ${PDIR}_repack.tgz -C "$LLVM_TAR_DIR" bin lib buildlog.txt
+if [ "$(uname -s)" = "Darwin" ]; then
+  tar zcf ${PDIR}_repack.tgz -C "$LLVM_TAR_DIR" bin include lib buildlog.txt
+else
+  tar zcf ${PDIR}_repack.tgz -C "$LLVM_TAR_DIR" bin lib buildlog.txt
+fi
 
 echo The clang package has been repackaged with $LIBNAME
 echo To upload, run:
