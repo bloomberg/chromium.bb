@@ -29,7 +29,8 @@ int LowWaterAdjust(int high_water) {
 namespace disk_cache {
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
-    : max_size_(0), current_size_(0), net_log_(net_log) {}
+    : max_size_(0), current_size_(0), net_log_(net_log), weak_factory_(this) {
+}
 
 MemBackendImpl::~MemBackendImpl() {
   EntryMap::iterator it = entries_.begin();
@@ -180,16 +181,40 @@ int MemBackendImpl::DoomEntriesSince(const base::Time initial_time,
   return net::ERR_FAILED;
 }
 
-int MemBackendImpl::OpenNextEntry(void** iter, Entry** next_entry,
-                                  const CompletionCallback& callback) {
-  if (OpenNextEntry(iter, next_entry))
-    return net::OK;
+class MemBackendImpl::MemIterator : public Backend::Iterator {
+ public:
+  explicit MemIterator(base::WeakPtr<MemBackendImpl> backend)
+      : backend_(backend), current_(NULL) {
+  }
 
-  return net::ERR_FAILED;
-}
+  virtual int OpenNextEntry(Entry** next_entry,
+                            const CompletionCallback& callback) OVERRIDE {
+    if (!backend_)
+      return net::ERR_FAILED;
 
-void MemBackendImpl::EndEnumeration(void** iter) {
-  *iter = NULL;
+    MemEntryImpl* node = backend_->rankings_.GetNext(current_);
+    // We should never return a child entry so iterate until we hit a parent
+    // entry.
+    while (node && node->type() != MemEntryImpl::kParentEntry)
+      node = backend_->rankings_.GetNext(node);
+    *next_entry = node;
+    current_ = node;
+
+    if (node) {
+      node->Open();
+      return net::OK;
+    }
+    return net::ERR_FAILED;
+  }
+
+ private:
+  base::WeakPtr<MemBackendImpl> backend_;
+  MemEntryImpl* current_;
+};
+
+scoped_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
+  return scoped_ptr<Backend::Iterator>(
+      new MemIterator(weak_factory_.GetWeakPtr()));
 }
 
 void MemBackendImpl::OnExternalCacheHit(const std::string& key) {
@@ -285,23 +310,6 @@ bool MemBackendImpl::DoomEntriesSince(const Time initial_time) {
       return true;
     entry->Doom();
   }
-}
-
-bool MemBackendImpl::OpenNextEntry(void** iter, Entry** next_entry) {
-  MemEntryImpl* current = reinterpret_cast<MemEntryImpl*>(*iter);
-  MemEntryImpl* node = rankings_.GetNext(current);
-  // We should never return a child entry so iterate until we hit a parent
-  // entry.
-  while (node && node->type() != MemEntryImpl::kParentEntry) {
-    node = rankings_.GetNext(node);
-  }
-  *next_entry = node;
-  *iter = node;
-
-  if (node)
-    node->Open();
-
-  return NULL != node;
 }
 
 void MemBackendImpl::TrimCache(bool empty) {

@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
-#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -34,6 +33,11 @@ namespace disk_cache {
 // SimpleBackendImpl is a new cache backend that stores entries in individual
 // files.
 // See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
+//
+// The SimpleBackendImpl provides safe iteration; mutating entries during
+// iteration cannot cause a crash. It is undefined whether entries created or
+// destroyed during the iteration will be included in any pre-existing
+// iterations.
 //
 // The non-static functions below must be called on the IO thread unless
 // otherwise stated.
@@ -98,17 +102,16 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                                  const CompletionCallback& callback) OVERRIDE;
   virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
-  virtual int OpenNextEntry(void** iter, Entry** next_entry,
-                            const CompletionCallback& callback) OVERRIDE;
-  virtual void EndEnumeration(void** iter) OVERRIDE;
+  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
   virtual void GetStats(
       std::vector<std::pair<std::string, std::string> >* stats) OVERRIDE;
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  typedef base::hash_map<uint64, SimpleEntryImpl*> EntryMap;
+  class SimpleIterator;
+  friend class SimpleIterator;
 
-  typedef IDMap<std::vector<uint64>, IDMapOwnPointer> ActiveEnumerationMap;
+  typedef base::hash_map<uint64, SimpleEntryImpl*> EntryMap;
 
   typedef base::Callback<void(base::Time mtime, uint64 max_size, int result)>
       InitializeIndexCallback;
@@ -123,17 +126,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     bool detected_magic_number_mismatch;
     int net_error;
   };
-
-  // Convert an iterator from OpenNextEntry() to the key type for
-  // ActiveEnumerationMap. Note it takes a void** argument; this is for safety;
-  // if it took a void*, that would be type compatible with a void** permitting
-  // easy calls missing the dereference.
-  static ActiveEnumerationMap::KeyType IteratorToEnumerationId(void** iter);
-
-  // Convert a key from ActiveEnumerationMap back to a void*, suitable for
-  // storing in the iterator argument to OpenNextEntry().
-  static void* EnumerationIdToIterator(
-      ActiveEnumerationMap::KeyType enumeration_id);
 
   void InitializeIndex(const CompletionCallback& callback,
                        const DiskStatResult& result);
@@ -169,14 +161,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // which is very important to prevent races in DoomEntries() above.
   int DoomEntryFromHash(uint64 entry_hash, const CompletionCallback & callback);
 
-  // Called when the index is initilized to find the next entry in the iterator
-  // |iter|. If there are no more hashes in the iterator list, net::ERR_FAILED
-  // is returned. Otherwise, calls OpenEntryFromHash.
-  void GetNextEntryInIterator(void** iter,
-                              Entry** next_entry,
-                              const CompletionCallback& callback,
-                              int error_code);
-
   // Called when we tried to open an entry with hash alone. When a blank entry
   // has been created and filled in with information from the disk - based on a
   // hash alone - this checks that a duplicate active entry was not created
@@ -195,14 +179,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                             const CompletionCallback& callback,
                             int error_code);
 
-  // Called at the end of the asynchronous operation triggered by
-  // OpenEntryFromHash. Makes sure to continue iterating if the open entry was
-  // not a success.
-  void CheckIterationReturnValue(void** iter,
-                                 Entry** entry,
-                                 const CompletionCallback& callback,
-                                 int error_code);
-
   // A callback thunk used by DoomEntries to clear the |entries_pending_doom_|
   // after a mass doom.
   void DoomEntriesComplete(scoped_ptr<std::vector<uint64> > entry_hashes,
@@ -219,9 +195,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   const SimpleEntryImpl::OperationsMode entry_operations_mode_;
 
   EntryMap active_entries_;
-
-  // One entry for every enumeration in progress.
-  ActiveEnumerationMap active_enumerations_;
 
   // The set of all entries which are currently being doomed. To avoid races,
   // these entries cannot have Doom/Create/Open operations run until the doom
