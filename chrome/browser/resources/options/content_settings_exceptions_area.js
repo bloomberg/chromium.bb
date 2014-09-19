@@ -454,7 +454,7 @@ cr.define('options.contentSettings', function() {
    * Creates a new exceptions list.
    *
    * @constructor
-   * @extends {cr.ui.List}
+   * @extends {options.InlineEditableItemList}
    */
   var ExceptionsList = cr.ui.define('list');
 

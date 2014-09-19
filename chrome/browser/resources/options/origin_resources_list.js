@@ -63,7 +63,10 @@ cr.define('options', function() {
   OriginList.prototype = {
     __proto__: List.prototype,
 
-    /** @override */
+    /**
+     * @override
+     * @param {!Object} entry
+     */
     createItem: function(entry) {
       return new OriginListItem(entry);
     },

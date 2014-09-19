@@ -14,7 +14,7 @@ cr.define('options', function() {
    * Creates a new Language list item.
    * @param {Object} languageInfo The information of the language.
    * @constructor
-   * @extends {options.DeletableItem.ListItem}
+   * @extends {options.DeletableItem}
    */
   function LanguageListItem(languageInfo) {
     var el = cr.doc.createElement('li');
@@ -29,7 +29,7 @@ cr.define('options', function() {
 
     /**
      * The language code of this language.
-     * @type {string}
+     * @type {?string}
      * @private
      */
     languageCode_: null,
@@ -56,7 +56,7 @@ cr.define('options', function() {
    * Creates a new language list.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {cr.ui.List}
+   * @extends {options.DeletableItemList}
    */
   var LanguageList = cr.ui.define('list');
 
@@ -132,8 +132,13 @@ cr.define('options', function() {
       this.addEventListener('dragleave', this.handleDragLeave_.bind(this));
     },
 
+    /**
+     * @override
+     * @param {string} languageCode
+     */
     createItem: function(languageCode) {
-      languageInfo = LanguageList.getLanguageInfoFromLanguageCode(languageCode);
+      var languageInfo =
+          LanguageList.getLanguageInfoFromLanguageCode(languageCode);
       return new LanguageListItem(languageInfo);
     },
 
@@ -379,7 +384,7 @@ cr.define('options', function() {
 
     /**
      * Loads given language list.
-     * @param {Array} languageCodes List of language codes.
+     * @param {!Array} languageCodes List of language codes.
      * @private
      */
     load_: function(languageCodes) {

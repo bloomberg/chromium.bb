@@ -34,7 +34,7 @@ cr.define('options', function() {
     __proto__: Page.prototype,
 
     /** Current UI state */
-    uiState_: UIState.UNKNKOWN,
+    uiState_: UIState.UNKNOWN,
     get uiState() {
       return this.uiState_;
     },

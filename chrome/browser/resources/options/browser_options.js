@@ -2,6 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('options');
+
+/**
+ * @typedef {{actionLinkText: (string|undefined),
+ *            hasError: (boolean|undefined),
+ *            hasUnrecoverableError: (boolean|undefined),
+ *            managed: (boolean|undefined),
+ *            setupCompleted: (boolean|undefined),
+ *            setupInProgress: (boolean|undefined),
+ *            signedIn: (boolean|undefined),
+ *            signinAllowed: (boolean|undefined),
+ *            signinAllowed: boolean,
+ *            signoutAllowed: (boolean|undefined),
+ *            statusText: (string|undefined),
+ *            syncSystemEnabled: (boolean|undefined)}}
+ * @see chrome/browser/ui/webui/options/browser_options_handler.cc
+ */
+options.SyncStatus;
+
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var Page = cr.ui.pageManager.Page;
@@ -912,8 +931,8 @@ cr.define('options', function() {
 
     /**
      * Updates the sync section with the given state.
-     * @param {Object} syncData A bunch of data records that describe the status
-     *     of the sync system.
+     * @param {options.SyncStatus} syncData A bunch of data records that
+     *     describe the status of the sync system.
      * @private
      */
     updateSyncState_: function(syncData) {
@@ -953,7 +972,7 @@ cr.define('options', function() {
       if (this.signedIn_ && !syncData.signedIn && !syncData.setupInProgress)
         SyncSetupOverlay.closeOverlay();
 
-      this.signedIn_ = syncData.signedIn;
+      this.signedIn_ = !!syncData.signedIn;
 
       // Display the "advanced settings" button if we're signed in and sync is
       // not managed/disabled. If the user is signed in, but sync is disabled,
@@ -976,7 +995,7 @@ cr.define('options', function() {
       // already signed in and signout is not allowed.
       var signInButton = $('start-stop-sync');
       signInButton.disabled = syncData.setupInProgress;
-      this.signoutAllowed_ = syncData.signoutAllowed;
+      this.signoutAllowed_ = !!syncData.signoutAllowed;
       if (!syncData.signoutAllowed)
         $('start-stop-sync-indicator').setAttribute('controlled-by', 'policy');
       else
@@ -1058,7 +1077,7 @@ cr.define('options', function() {
 
     /**
      * Get the start/stop sync button DOM element. Used for testing.
-     * @return {DOMElement} The start/stop sync button.
+     * @return {Element} The start/stop sync button.
      * @private
      */
     getStartStopSyncButton_: function() {
@@ -1212,11 +1231,11 @@ cr.define('options', function() {
      */
     updateSearchEngines_: function(engines, defaultValue, defaultManaged) {
       this.clearSearchEngines_();
-      engineSelect = $('default-search-engine');
+      var engineSelect = $('default-search-engine');
       engineSelect.disabled = defaultManaged;
       if (defaultManaged && defaultValue == -1)
         return;
-      engineCount = engines.length;
+      var engineCount = engines.length;
       var defaultIndex = -1;
       for (var i = 0; i < engineCount; i++) {
         var engine = engines[i];
@@ -1322,15 +1341,9 @@ cr.define('options', function() {
 
     /**
      * Adds all |profiles| to the list.
-     * @param {Array.<Object>} profiles An array of profile info objects.
-     *     each object is of the form:
-     *       profileInfo = {
-     *         name: "Profile Name",
-     *         iconURL: "chrome://path/to/icon/image",
-     *         filePath: "/path/to/profile/data/on/disk",
-     *         isCurrentProfile: false,
-     *         isSupervised: false
-     *       };
+     * @param {Array.<{name: string, filePath: string,
+     *     isCurrentProfile: boolean, isSupervised: boolean}>} profiles An array
+     *     of profile info objects.
      * @private
      */
     setProfilesInfo_: function(profiles) {

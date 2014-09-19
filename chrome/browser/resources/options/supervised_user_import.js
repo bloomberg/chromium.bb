@@ -231,6 +231,7 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   cr.makePublic(SupervisedUserImportOverlay, [
+    'onError',
     'onSuccess',
   ]);
 

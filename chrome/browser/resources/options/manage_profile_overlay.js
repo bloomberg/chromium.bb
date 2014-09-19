@@ -211,7 +211,7 @@ cr.define('options', function() {
      * the user will use to choose their profile icon.
      * @param {string} mode A label that specifies the type of dialog box which
      *     is currently being viewed (i.e. 'create' or 'manage').
-     * @param {Array.<string>} iconURLs An array of icon URLs.
+     * @param {!Array.<string>} iconURLs An array of icon URLs.
      * @param {Array.<string>} names An array of default names
      *     corresponding to the icons.
      * @private
@@ -460,6 +460,9 @@ cr.define('options', function() {
       if (name != this.profileInfo_.name)
         options.SupervisedUserListData.resetPromise();
     },
+
+    /** @private */
+    updateSignedInStatus_: assertNotReached,
 
     /**
      * Called when the user clicks "OK" or hits enter. Creates the profile

@@ -77,7 +77,7 @@ cr.define('options.dictionary_words', function() {
   /**
    * A list of words in the dictionary.
    * @constructor
-   * @extends {cr.ui.InlineEditableItemList}
+   * @extends {options.InlineEditableItemList}
    */
   var DictionaryWordsList = cr.ui.define('list');
 
@@ -86,7 +86,7 @@ cr.define('options.dictionary_words', function() {
 
     /**
      * The function to notify that the word list has changed.
-     * @type {function()}
+     * @type {?Function}
      */
     onWordListChanged: null,
 
@@ -204,7 +204,10 @@ cr.define('options.dictionary_words', function() {
       return this.dataModel.length < 2;
     },
 
-    /** @override */
+    /**
+     * @override
+     * @param {string} dictionaryWord
+     */
     createItem: function(dictionaryWord) {
       return new DictionaryWordsListItem(
           dictionaryWord,

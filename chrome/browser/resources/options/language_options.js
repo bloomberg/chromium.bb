@@ -335,8 +335,7 @@ cr.define('options', function() {
           button.inputMethodId = inputMethod.id;
           button.onclick = function(inputMethodId, e) {
             chrome.send('inputMethodOptionsOpen', [inputMethodId]);
-          };
-          button.onclick = button.onclick.bind(this, inputMethod.id);
+          }.bind(this, inputMethod.id);
           element.appendChild(button);
         }
 
@@ -753,10 +752,9 @@ cr.define('options', function() {
 
     /**
      * Updates the language list in the add language overlay.
-     * @param {string} languageCode Language code (ex. "fr").
      * @private
      */
-    updateLanguageListInAddLanguageOverlay_: function(languageCode) {
+    updateLanguageListInAddLanguageOverlay_: function() {
       // Change the visibility of the language list in the add language
       // overlay. Languages that are already active will become invisible,
       // so that users don't add the same language twice.
@@ -830,7 +828,7 @@ cr.define('options', function() {
      * @private
      */
     handleCheckboxClick_: function(e) {
-      var checkbox = e.target;
+      var checkbox = assertInstanceof(e.target, Element);
 
       // Third party IMEs require additional confirmation prior to enabling due
       // to privacy risk.
@@ -917,7 +915,7 @@ cr.define('options', function() {
     updateEnableSpellCheck_: function(e) {
        var value = !$('enable-spell-check').checked;
        $('language-options-spell-check-language-button').disabled = value;
-       if (!cr.IsMac)
+       if (!cr.isMac)
          $('edit-dictionary-button').hidden = value;
      },
 
@@ -1171,10 +1169,17 @@ cr.define('options', function() {
     // If this will go as final UI, refactor this to share the component with
     // new new tab page.
     /**
-     * Shows notification
      * @private
      */
     notificationTimeout_: null,
+
+    /**
+     * Shows notification.
+     * @param {string} text
+     * @param {string} actionText
+     * @param {number=} opt_delay
+     * @private
+     */
     showNotification_: function(text, actionText, opt_delay) {
       var notificationElement = $('notification');
       var actionLink = notificationElement.querySelector('.link-color');

@@ -1367,6 +1367,9 @@ void BrowserOptionsHandler::OnWallpaperManagedChanged(bool managed) {
 
 scoped_ptr<base::DictionaryValue>
 BrowserOptionsHandler::GetSyncStateDictionary() {
+  // The items which are to be written into |sync_status| are also described in
+  // chrome/browser/resources/options/browser_options.js in @typedef
+  // for SyncStatus. Please update it whenever you add or remove any keys here.
   scoped_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->IsGuestSession()) {

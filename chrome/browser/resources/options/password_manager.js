@@ -88,8 +88,10 @@ cr.define('options', function() {
      * @private
      */
     createSavedPasswordsList_: function() {
-      this.savedPasswordsList_ = $('saved-passwords-list');
-      options.passwordManager.PasswordsList.decorate(this.savedPasswordsList_);
+      var savedPasswordsList = $('saved-passwords-list');
+      options.passwordManager.PasswordsList.decorate(savedPasswordsList);
+      this.savedPasswordsList_ = assertInstanceof(savedPasswordsList,
+          options.DeletableItemList);
       this.savedPasswordsList_.autoExpands = true;
     },
 
@@ -98,9 +100,11 @@ cr.define('options', function() {
      * @private
      */
     createPasswordExceptionsList_: function() {
-      this.passwordExceptionsList_ = $('password-exceptions-list');
+      var passwordExceptionsList = $('password-exceptions-list');
       options.passwordManager.PasswordExceptionsList.decorate(
-          this.passwordExceptionsList_);
+          passwordExceptionsList);
+      this.passwordExceptionsList_ = assertInstanceof(passwordExceptionsList,
+          options.DeletableItemList);
       this.passwordExceptionsList_.autoExpands = true;
     },
 
@@ -151,7 +155,7 @@ cr.define('options', function() {
     /**
      * Updates the data model for the saved passwords list with the values from
      * |entries|.
-     * @param {Array} entries The list of saved password data.
+     * @param {!Array} entries The list of saved password data.
      */
     setSavedPasswordsList_: function(entries) {
       if (this.lastQuery_) {

@@ -49,8 +49,9 @@ cr.define('options', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      this.wordList_ = $('language-dictionary-overlay-word-list');
-      DictionaryWordsList.decorate(this.wordList_);
+      var wordList = $('language-dictionary-overlay-word-list');
+      DictionaryWordsList.decorate(wordList);
+      this.wordList_ = assertInstanceof(wordList, DictionaryWordsList);
       this.wordList_.onWordListChanged = function() {
         this.onWordListChanged_();
       }.bind(this);

@@ -50,7 +50,7 @@ cr.define('options.ContentSettings', function() {
 
     /**
      * The saved blocked origins list.
-     * @type {OriginList}
+     * @type {options.OriginList}
      * @private
      */
     blockedList_: null,
@@ -116,7 +116,7 @@ cr.define('options.ContentSettings', function() {
     /**
      * Populate an origin list with all of the origins with a given permission
      * or that are using a given resource.
-     * @param {OriginList} originList A list to populate.
+     * @param {options.OriginList} originList A list to populate.
      * @param {!Object} originDict A dictionary of origins to their usage, which
            will be used to sort the origins.
      * @private

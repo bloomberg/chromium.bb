@@ -58,6 +58,10 @@ cr.define('options', function() {
   IgnoredHandlersList.prototype = {
     __proto__: DeletableItemList.prototype,
 
+    /**
+     * @override
+     * @param {Object} entry
+     */
     createItem: function(entry) {
       return new IgnoredHandlersListItem(entry);
     },
@@ -78,7 +82,7 @@ cr.define('options', function() {
      * IgnoredHandlersListItem for an example of the format the list should
      * take.
      *
-     * @param {Object} list A list of ignored protocol handlers.
+     * @param {!Array} list A list of ignored protocol handlers.
      */
     setHandlers: function(list) {
       this.dataModel = new ArrayDataModel(list);

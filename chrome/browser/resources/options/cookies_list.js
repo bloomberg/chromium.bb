@@ -66,7 +66,7 @@ cr.define('options', function() {
    * into the given list using its @{code splice} method at the given index.
    * @param {Array.<Object>} data The data objects for the nodes to add.
    * @param {number} start The index at which to start inserting the nodes.
-   * @return {Array.<CookieTreeNode>} An array of CookieTreeNodes added.
+   * @return {Array.<options.CookieTreeNode>} An array of CookieTreeNodes added.
    */
   function spliceTreeNodes(data, start, list) {
     var nodes = data.map(function(x) { return new CookieTreeNode(x); });
@@ -109,7 +109,7 @@ cr.define('options', function() {
    * @extends {options.DeletableItem}
    */
   function CookieListItem(origin, list) {
-    var listItem = new DeletableItem(null);
+    var listItem = new DeletableItem();
     listItem.__proto__ = CookieListItem.prototype;
 
     listItem.origin = origin;
@@ -315,7 +315,7 @@ cr.define('options', function() {
 
     /**
      * Append a new cookie node "bubble" to this list item.
-     * @param {CookieTreeNode} node The cookie node to add a bubble for.
+     * @param {options.CookieTreeNode} node The cookie node to add a bubble for.
      * @param {Element} div The DOM element for the bubble itself.
      * @return {number} The index the bubble was added at.
      */
@@ -508,7 +508,8 @@ cr.define('options', function() {
     /**
      * Create the cookie "bubbles" for this node, recursing into children
      * if there are any. Append the cookie bubbles to @{code item}.
-     * @param {CookieListItem} item The cookie list item to create items in.
+     * @param {options.CookieListItem} item The cookie list item to create items
+     *     in.
      */
     createItems: function(item) {
       if (this.children.length > 0) {
@@ -581,7 +582,7 @@ cr.define('options', function() {
 
     /**
      * The parent of this cookie tree node.
-     * @type {?CookieTreeNode|CookieListItem}
+     * @type {?(options.CookieTreeNode|options.CookieListItem)}
      */
     get parent() {
       // See below for an explanation of this special case.
@@ -796,12 +797,15 @@ cr.define('options', function() {
 
     /**
      * The currently expanded item. Used by CookieListItem above.
-     * @type {?CookieListItem}
+     * @type {?options.CookieListItem}
      */
     expandedItem: null,
 
     // from cr.ui.List
-    /** @override */
+    /**
+     * @override
+     * @param {Object} data
+     */
     createItem: function(data) {
       // We use the cached expanded item in order to allow it to maintain some
       // state (like its fixed height, and which bubble is selected).
@@ -923,6 +927,8 @@ cr.define('options', function() {
   };
 
   return {
-    CookiesList: CookiesList
+    CookiesList: CookiesList,
+    CookieListItem: CookieListItem,
+    CookieTreeNode: CookieTreeNode,
   };
 });

@@ -25,6 +25,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of content settings page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function ContentSettings() {
     this.activeNavTab = null;
@@ -162,14 +163,16 @@ cr.define('options', function() {
    * Updates the labels and indicators for the Media settings. Those require
    * special handling because they are backed by multiple prefs and can change
    * their scope based on the managed state of the backing prefs.
-   * @param {Object} mediaSettings A dictionary containing the following fields:
-   *     {String} askText The label for the ask radio button.
-   *     {String} blockText The label for the block radio button.
-   *     {Boolean} cameraDisabled Whether to disable the camera dropdown.
-   *     {Boolean} micDisabled Whether to disable the microphone dropdown.
-   *     {Boolean} showBubble Wether to show the managed icon and bubble for the
-   *         media label.
-   *     {String} bubbleText The text to use inside the bubble if it is shown.
+   * @param {{askText: string, blockText: string, cameraDisabled: boolean,
+   *          micDisabled: boolean, showBubble: boolean, bubbleText: string}}
+   *     mediaSettings A dictionary containing the following fields:
+   *     askText The label for the ask radio button.
+   *     blockText The label for the block radio button.
+   *     cameraDisabled Whether to disable the camera dropdown.
+   *     micDisabled Whether to disable the microphone dropdown.
+   *     showBubble Wether to show the managed icon and bubble for the media
+   *                label.
+   *     bubbleText The text to use inside the bubble if it is shown.
    */
   ContentSettings.updateMediaUI = function(mediaSettings) {
     $('media-stream-ask-label').innerHTML =
@@ -234,8 +237,11 @@ cr.define('options', function() {
    *     exceptions list or null.
    */
   ContentSettings.getExceptionsList = function(type, mode) {
-    return document.querySelector(
+    var exceptionsList = document.querySelector(
         'div[contentType=' + type + '] list[mode=' + mode + ']');
+    return !exceptionsList ? null :
+        assertInstanceof(exceptionsList,
+                         options.contentSettings.ExceptionsList);
   };
 
   /**
