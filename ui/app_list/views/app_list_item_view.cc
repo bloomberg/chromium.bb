@@ -41,15 +41,6 @@ const int kTopPadding = 20;
 const int kIconTitleSpacing = 7;
 const int kProgressBarHorizontalPadding = 12;
 
-// The font is different on each platform. The font size is adjusted on some
-// platforms to keep a consistent look.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Reducing the font size by 2 makes it the same as the Windows font size.
-const int kFontSizeDelta = -2;
-#else
-const int kFontSizeDelta = 0;
-#endif
-
 // Radius of the folder dropping preview circle.
 const int kFolderPreviewRadius = 40;
 
@@ -68,6 +59,20 @@ const gfx::ShadowValues& GetIconShadows() {
       (1,
        gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0))));
   return icon_shadows;
+}
+
+gfx::FontList GetFontList() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& font_list = rb.GetFontList(kItemTextFontStyle);
+// The font is different on each platform. The font size is adjusted on some
+// platforms to keep a consistent look.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Reducing the font size by 2 makes it the same as the Windows font size.
+  const int kFontSizeDelta = -2;
+  return font_list.DeriveWithSizeDelta(kFontSizeDelta);
+#else
+  return font_list;
+#endif
 }
 
 }  // namespace
@@ -91,12 +96,12 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       is_highlighted_(false) {
   icon_->set_interactive(false);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
-  title_->SetFontList(
-      rb.GetFontList(kItemTextFontStyle).DeriveWithSizeDelta(kFontSizeDelta));
+
+  static const gfx::FontList font_list = GetFontList();
+  title_->SetFontList(font_list);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->Invalidate();
   SetTitleSubpixelAA();
