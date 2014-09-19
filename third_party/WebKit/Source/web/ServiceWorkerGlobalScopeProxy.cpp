@@ -44,7 +44,7 @@
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/InstallPhaseEvent.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
-#include "platform/NotImplemented.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebServiceWorkerContextClient.h"
@@ -85,6 +85,11 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
 {
     ASSERT(m_workerGlobalScope);
     RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
+    if (!RuntimeEnabledFeatures::serviceWorkerOnFetchEnabled()) {
+        observer->didDispatchEvent();
+        return;
+    }
+
     Request* request = Request::create(m_workerGlobalScope, webRequest);
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(observer, request));
     fetchEvent->setIsReload(webRequest.isReload());

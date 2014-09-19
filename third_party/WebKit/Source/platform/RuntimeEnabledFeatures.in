@@ -108,8 +108,11 @@ ScriptedSpeech status=stable
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
-
 ServiceWorker status=experimental
+// FIXME: When ServiceWorker is status=stable add a webexposed test to
+// verify that addEventListener('fetch', ... is *not* fired when
+// onfetch is not enabled.
+ServiceWorkerOnFetch status=experimental
 SessionStorage status=stable
 SharedWorker status=stable
 PictureSizes status=stable

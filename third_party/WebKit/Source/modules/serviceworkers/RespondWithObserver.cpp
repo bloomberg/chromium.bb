@@ -12,6 +12,7 @@
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
@@ -84,6 +85,7 @@ void RespondWithObserver::didDispatchEvent()
 
 void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
 {
+    ASSERT(RuntimeEnabledFeatures::serviceWorkerOnFetchEnabled());
     if (m_state != Initial) {
         exceptionState.throwDOMException(InvalidStateError, "respondWith is already called.");
         return;
