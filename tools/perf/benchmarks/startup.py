@@ -26,7 +26,7 @@ class StartupWarmBlankPage(benchmark.Benchmark):
              'pageset_repeat': 20}
 
 
-@benchmark.Disabled('android', 'snowleopard') # crbug.com/336913
+@benchmark.Disabled  # crbug.com/336913
 class StartupColdTheme(benchmark.Benchmark):
   tag = 'theme_cold'
   test = startup.Startup
@@ -36,7 +36,7 @@ class StartupColdTheme(benchmark.Benchmark):
              'pageset_repeat': 5}
 
 
-@benchmark.Disabled('android')
+@benchmark.Disabled
 class StartupWarmTheme(benchmark.Benchmark):
   tag = 'theme_warm'
   test = startup.Startup
@@ -46,7 +46,7 @@ class StartupWarmTheme(benchmark.Benchmark):
              'pageset_repeat': 20}
 
 
-@benchmark.Disabled('android', 'snowleopard') # crbug.com/336913
+@benchmark.Disabled  # crbug.com/336913
 class StartupColdManyExtensions(benchmark.Benchmark):
   tag = 'many_extensions_cold'
   test = startup.Startup
@@ -56,7 +56,7 @@ class StartupColdManyExtensions(benchmark.Benchmark):
              'pageset_repeat': 5}
 
 
-@benchmark.Disabled('android')
+@benchmark.Disabled
 class StartupWarmManyExtensions(benchmark.Benchmark):
   tag = 'many_extensions_warm'
   test = startup.Startup
