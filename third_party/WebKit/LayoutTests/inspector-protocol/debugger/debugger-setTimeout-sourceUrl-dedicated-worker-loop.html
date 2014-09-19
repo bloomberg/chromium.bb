@@ -1,0 +1,83 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+var worker;
+function startWorkerAndRunTest()
+{
+    worker = new Worker("resources/dedicated-worker-string-setTimeout.js");
+    log("Started worker");
+    runTest();
+}
+
+function test()
+{
+    var workerId;
+    var workerRequestId = 1;
+    function sendCommandToWorker(method, params)
+    {
+        InspectorTest.sendCommand("Worker.sendMessageToWorker",
+            {
+                "workerId": workerId,
+                "message": { "method": method,
+                             "params": params,
+                             "id": workerRequestId }
+            });
+        return workerRequestId++;
+    }
+
+    function didEnableWorkerDebugging(messageObject)
+    {
+        if ("error" in messageObject) {
+            InspectorTest.log("FAIL: Couldn't enable worker debugger: " + messageObject.error.message);
+            InspectorTest.completeTest();
+        }
+    }
+    InspectorTest.sendCommand("Worker.enable", {}, didEnableWorkerDebugging);
+
+    var debuggerEnableRequestId = -1;
+    InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)
+    {
+        workerId = messageObject["params"]["workerId"];
+        InspectorTest.log("Worker created");
+        InspectorTest.sendCommand("Worker.connectToWorker", { "workerId": workerId }, didConnectToWorker);
+
+        function didConnectToWorker(messageObject)
+        {
+            InspectorTest.log("didConnectToWorker");
+            debuggerEnableRequestId = sendCommandToWorker("Debugger.enable", {});
+        }
+    }
+
+    var postMessageToWorker = false;
+
+    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
+    {
+        var message = messageObject["params"]["message"];
+        if (message["id"] === debuggerEnableRequestId) {
+            InspectorTest.log("Did enable debugger");
+            // Start setTimeout.
+            InspectorTest.sendCommand("Runtime.evaluate", { "expression": "worker.postMessage(1)" }, didPostMessageToWorker);
+            function didPostMessageToWorker()
+            {
+                postMessageToWorker = true;
+                InspectorTest.log("Did post message to worker");
+            }
+        }
+
+        if (postMessageToWorker && message["method"] === "Debugger.scriptParsed") {
+            var sourceUrl = message["params"]["url"];
+            if (!sourceUrl)
+                InspectorTest.log("SUCCESS: script created from string parameter of setTimeout has no url");
+            else
+                InspectorTest.log("FAIL: script created from string parameter of setTimeout has url " + sourceUrl);
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+<body onLoad="startWorkerAndRunTest();">
+</body>
+</html>

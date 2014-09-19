@@ -69,7 +69,7 @@ static void setTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info
                 return;
             }
         }
-        action = adoptPtr(new ScheduledAction(scriptState, toCoreString(function.As<v8::String>()), workerGlobalScope->url(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(scriptState, toCoreString(function.As<v8::String>()), KURL(), info.GetIsolate()));
     } else if (function->IsFunction()) {
         size_t paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
         OwnPtr<v8::Local<v8::Value>[]> params;

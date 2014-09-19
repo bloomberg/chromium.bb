@@ -1,0 +1,7 @@
+Started worker
+Worker created
+didConnectToWorker
+Did enable debugger
+Did post message to worker
+SUCCESS: script created from string parameter of setTimeout has no url
+
