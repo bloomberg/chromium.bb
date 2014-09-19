@@ -31,10 +31,11 @@ extern "C"
 #endif				/* __cplusplus */
 
 #define widechar unsigned short int
+#define formtype unsigned char
 
 #ifdef _WIN32
 #define EXPORT_CALL __stdcall
-char * EXPORT_CALL lou_getProgramPath ();
+  char *EXPORT_CALL lou_getProgramPath ();
 #else
 #define EXPORT_CALL
 #endif
@@ -63,47 +64,62 @@ char * EXPORT_CALL lou_getProgramPath ();
     ucBrl = 128
   } translationModes;
 
-char * EXPORT_CALL lou_version ();
+  char *EXPORT_CALL lou_version ();
 
-int EXPORT_CALL lou_charSize ();
+  int EXPORT_CALL lou_charSize ();
 
 /* Return the size of widechar */
 
   int EXPORT_CALL lou_translateString
     (const char *tableList,
-     const widechar *inbuf,
+     const widechar * inbuf,
      int *inlen,
-     widechar * outbuf,
-     int *outlen, char *typeform, char *spacing, int mode);
+     widechar * outbuf, int *outlen, formtype *typeform, char *spacing, 
+     int 
+mode);
 
   int EXPORT_CALL lou_translate (const char *tableList, const widechar
-		     *inbuf,
-		     int *inlen, widechar * outbuf, int *outlen,
-		     char *typeform, char *spacing, int *outputPos, int 
-*inputPos, int *cursorPos, int mode);
-int EXPORT_CALL lou_hyphenate (const char *tableList, const widechar
-	       *inbuf,
-      int inlen, char *hyphens, int mode);
-int EXPORT_CALL lou_dotsToChar (const char *tableList, widechar *inbuf, 
-      widechar *outbuf, int length, int mode);
-int EXPORT_CALL lou_charToDots (const char *tableList, const widechar 
-*inbuf, 
-      widechar *outbuf, int length, int mode);
-   int EXPORT_CALL lou_backTranslateString (const char *tableList,
-			       const widechar *inbuf,
-			       int *inlen,
-			       widechar * outbuf,
-			       int *outlen, char *typeform, char
-			       *spacing, int mode);
+				 * inbuf,
+				 int *inlen, widechar * outbuf, int *outlen,
+				 formtype *typeform, char *spacing,
+				 int *outputPos, int *inputPos,
+				 int *cursorPos, int mode);
+
+  int EXPORT_CALL lou_translatePrehyphenated (const char *tableList,
+					      const widechar * inbuf,
+					      int *inlen, widechar * outbuf,
+					      int *outlen, formtype 
+					      *typeform,
+					      char *spacing, int *outputPos,
+					      int *inputPos, int *cursorPos,
+					      char *inputHyphens,
+					      char *outputHyphens, int mode);
+
+  int EXPORT_CALL lou_hyphenate (const char *tableList, const widechar
+				 * inbuf, int inlen, char *hyphens, int mode);
+  int EXPORT_CALL lou_dotsToChar (const char *tableList, widechar * inbuf,
+				  widechar * outbuf, int length, int mode);
+  int EXPORT_CALL lou_charToDots (const char *tableList, const widechar
+				  * inbuf,
+				  widechar * outbuf, int length, int mode);
+  int EXPORT_CALL lou_backTranslateString (const char *tableList,
+					   const widechar * inbuf,
+					   int *inlen,
+					   widechar * outbuf,
+					   int *outlen, formtype 
+					   *typeform, char
+					   *spacing, int mode);
 
   int EXPORT_CALL lou_backTranslate (const char *tableList, const widechar
-			 *inbuf,
-			 int *inlen, widechar * outbuf, int *outlen, 
-char *typeform, char *spacing, int
-			 *outputPos, int *inputPos, int *cursorPos, int
-			 mode);
-  void EXPORT_CALL lou_logPrint (char *format, ...);
-/* prints error messages to a file */
+				     * inbuf,
+				     int *inlen, widechar * outbuf,
+				     int *outlen, formtype *typeform,
+				     char *spacing, int *outputPos,
+				     int *inputPos, int *cursorPos, int mode);
+  void EXPORT_CALL lou_logPrint (const char *format, ...);
+/* Prints error messages to a file
+   @deprecated As of 2.6.0, applications using liblouis should implement
+               their own logging system. */
 
   void EXPORT_CALL lou_logFile (const char *filename);
 /* Specifies the name of the file to be used by lou_logPrint. If it is 
@@ -117,25 +133,46 @@ char *typeform, char *spacing, int
   void EXPORT_CALL lou_logEnd ();
   /* Closes the log file so it can be read by other functions. */
 
-  void * EXPORT_CALL lou_getTable (const char *tableList);
+  void *EXPORT_CALL lou_getTable (const char *tableList);
 /* This function checks a table for errors. If none are found it loads 
 * the table into memory and returns a pointer to it. if errors are found 
 * it returns a null pointer. It is called by lou_translateString and 
 * lou_backTranslateString and also by functions in liblouisxml
 */
 
-int EXPORT_CALL lou_compileString (const char *tableList, const char 
-    *inString);
-  char * EXPORT_CALL lou_setDataPath (char *path);
-  /* Set the path used for searching for tables and liblouisutdml files. 
-  * Overrides the installation path. */
+void EXPORT_CALL lou_registerTableResolver (char ** (* resolver) (const char *table, const char *base));
+/* Register a new table resolver. Overrides the default resolver. */
 
-  char * EXPORT_CALL lou_getDataPath ();
+  int EXPORT_CALL lou_compileString (const char *tableList, const char
+				     *inString);
+  char *EXPORT_CALL lou_setDataPath (char *path);
+  /* Set the path used for searching for tables and liblouisutdml files. 
+   * Overrides the installation path. */
+
+  char *EXPORT_CALL lou_getDataPath ();
   /* Get the path set in the previous function. */
 
 //  char EXPORT_CALL * lou_getTablePaths ();
-  /* Get a list of paths actually used in seraching for tables*/
+  /* Get a list of paths actually used in seraching for tables */
 
+typedef void (*logcallback)(int level, const char *message);
+  void EXPORT_CALL lou_registerLogCallback(logcallback callback);
+/* Register logging callbacks
+ * Set to NULL for default callback.
+ */
+
+  typedef enum
+  {
+    LOG_ALL = -2147483647 - 1,
+    LOG_DEBUG = 10000,
+    LOG_INFO = 20000,
+    LOG_WARN = 30000,
+    LOG_ERROR = 40000,
+    LOG_FATAL = 50000,
+    LOG_OFF = 2147483647
+  } logLevels;
+  void EXPORT_CALL lou_setLogLevel(logLevels level);
+/* Set the level for logging callback to be called at */
   void EXPORT_CALL lou_free ();
 /* This function should be called at the end of 
 * the application to free all memory allocated by liblouis. */

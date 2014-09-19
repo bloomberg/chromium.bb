@@ -450,7 +450,7 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/undoview.git' + '@' + '3ba503e248f3cdbd81b78325a24ece0984637559',
 
     'src/third_party/liblouis/src':
-     Var('chromium_git') + '/external/liblouis.git' + '@' + '3c2daee56250162e5a75830871601d74328d39f5',
+     Var('chromium_git') + '/external/liblouis-github.git' + '@' + '5f9c03f2a3478561deb6ae4798175094be8a26c2',
 
     # Used for embedded builds. CrOS & Linux use the system version.
     'src/third_party/fontconfig/src':

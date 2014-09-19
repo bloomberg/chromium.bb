@@ -1,4 +1,4 @@
-(Copied from liblouis/liblouis.h)
+(Copied from src/liblouis/liblouis.h.in)
 
 /* liblouis Braille Translation and Back-Translation Library
 

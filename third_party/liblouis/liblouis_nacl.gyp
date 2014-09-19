@@ -57,7 +57,8 @@
           'sources': [
             'overrides/liblouis/config.h',
             'overrides/liblouis/liblouis.h',
-            'overrides/liblouis/compileTranslationTable.c',
+            'src/liblouis/compileTranslationTable.c',
+            'src/liblouis/logging.c',
             'src/liblouis/lou_backTranslateString.c',
             'src/liblouis/lou_translateString.c',
             'src/liblouis/transcommon.ci',

@@ -36,7 +36,7 @@
     "locale": "da",
     "dots": "8",
     "id": "da-comp8",
-    "fileName": "da.ctb"
+    "fileName": "da-dk-g18.utb"
   },
   {
     "locale": "nl",
@@ -185,12 +185,6 @@
     "id": "el-g1",
     "grade": "1",
     "fileName": "gr-gr-g1.utb"
-  },
-  {
-    "locale": "hi",
-    "dots": "8",
-    "id": "hi-comp8",
-    "fileName": "hi.ctb"
   },
   {
     "locale": "hi",

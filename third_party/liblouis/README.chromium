@@ -1,8 +1,9 @@
 Name: Braille Translation Library
 Short Name: liblouis
-URL: http://liblouis.googlecode.com/svn/tags/liblouis_2_5_1
-Version: 2.5.1
-License: LGPL3
+URL: https://github.com/liblouis/liblouis
+Version: 2.6.0
+License: LGPL3 and GPL3
+License Android Compatible: No
 License File: LICENSE
 Security Critical: yes
 
@@ -16,12 +17,7 @@ Chrome itself.
 
 Local Modifications:
 
-* Add manually created liblouis.h.
-* On Android: log to logcat.
-* Fix backtranslation to not output unicode braille patterns
-  (svn r838)
-* Fix 3 letters in Danish 8 dot braille table, reverting part of svn r238.
-* Fix out-of-bounds array access (code removed by upstream).
-* Fix compiler warnings (part of svn r856).
+* Add manually created liblouis.h with compiler warning fix.
+* Add minimal config.h.
 * Add tables.json a list of tables with metadata.
 * Add a wrapper to expose the library in native client.
