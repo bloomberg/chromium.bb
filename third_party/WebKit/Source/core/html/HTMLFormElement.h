@@ -173,18 +173,18 @@ private:
 #if !ENABLE(OILPAN)
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
 #endif
-    bool m_associatedElementsAreDirty;
-    bool m_imageElementsAreDirty;
-    bool m_hasElementsAssociatedByParser;
-    bool m_didFinishParsingChildren;
+    bool m_associatedElementsAreDirty : 1;
+    bool m_imageElementsAreDirty : 1;
+    bool m_hasElementsAssociatedByParser : 1;
+    bool m_didFinishParsingChildren : 1;
 
-    bool m_wasUserSubmitted;
-    bool m_isSubmittingOrInUserJSSubmitEvent;
-    bool m_shouldSubmit;
+    bool m_wasUserSubmitted : 1;
+    bool m_isSubmittingOrInUserJSSubmitEvent : 1;
+    bool m_shouldSubmit : 1;
 
-    bool m_isInResetFunction;
+    bool m_isInResetFunction : 1;
 
-    bool m_wasDemoted;
+    bool m_wasDemoted : 1;
 
     OwnPtrWillBeMember<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
