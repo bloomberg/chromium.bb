@@ -1856,47 +1856,6 @@
    fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
-   bug_101125a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN6SkScan12AntiFillPathERK6SkPathRK8SkRegionP9SkBlitterb
-   fun:_ZN6SkScan12AntiFillPathERK6SkPathRK12SkRasterClipP9SkBlitter
-   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
-   fun:_ZN8SkDevice8drawPathERK6SkDrawRK6SkPathRK7SkPaintPK8SkMatrixb
-   fun:_ZNK6SkDraw14drawTextOnPathEPKcmRK6SkPathPK8SkMatrixRK7SkPaint
-   fun:_ZN8SkDevice14drawTextOnPathERK6SkDrawPKvmRK6SkPathPK8SkMatrixRK7SkPaint
-   fun:_ZN8SkCanvas14drawTextOnPathEPKvmRK6SkPathPK8SkMatrixRK7SkPaint
-   fun:_ZNK7blink4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
-   fun:_ZNK7blink4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
-}
-{
-   bug_101125b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN6SkScan12AntiFillRectERK6SkRectPK8SkRegionP9SkBlitter
-   fun:_ZN6SkScan12AntiFillRectERK6SkRectRK12SkRasterClipP9SkBlitter
-   fun:_ZNK6SkDraw8drawRectERK6SkRectRK7SkPaint
-   fun:_ZN8SkDevice8drawRectERK6SkDrawRK6SkRectRK7SkPaint
-   fun:_ZN8SkCanvas8drawRectERK6SkRectRK7SkPaint
-   fun:_ZN5blink15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorENS_10ColorSpaceE
-   fun:_ZN5blink15GraphicsContext20drawHighlightForTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEiRKNS_5ColorENS_10ColorSpaceEii
-}
-{
-   bug_101125c
-   Memcheck:Uninitialized
-   ...
-   fun:_ZL11morphpointsP7SkPointPKS_iR13SkPathMeasureRK8SkMatrix
-   fun:_ZL9morphpathP6SkPathRKS_R13SkPathMeasureRK8SkMatrix
-   fun:_ZNK6SkDraw14drawTextOnPathEPKcmRK6SkPathPK8SkMatrixRK7SkPaint
-   fun:_ZN8SkDevice14drawTextOnPathERK6SkDrawPKvmRK6SkPathPK8SkMatrixRK7SkPaint
-   fun:_ZN8SkCanvas14drawTextOnPathEPKvmRK6SkPathPK8SkMatrixRK7SkPaint
-   fun:_ZNK7blink4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
-   fun:_ZNK7blink4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
-   fun:_ZNK7blink4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZNK7blink4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN5blink15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
-}
-{
    bug_100982
    Memcheck:Leak
    fun:_Znw*
@@ -1904,38 +1863,6 @@
    fun:_ZNK7blink9RenderBox19renderBoxRegionInfoEPNS_12RenderRegionEiNS0_24RenderBoxRegionInfoFlagsE
    ...
    fun:_ZN5blink11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
-}
-{
-   bug_101145b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink23v8StringToblinkStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN*blink16V8StringResourceILNS_20V8StringResourceMode*
-}
-{
-   bug_101145c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink*makeExternalString*
-   ...
-   fun:_ZN5blink11StringCache20v8ExternalStringSlow*
-   fun:_ZN5blink11StringCache16v8ExternalStringEPN*
-}
-{
-   bug_101145d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink*makeExternalString*
-   ...
-   fun:_ZN5blink11StringCache28setReturnValueFromStringSlow*
-   fun:_ZN5blink11StringCache24setReturnValueFromString*
-}
-{
-   bug_101146d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1EPNS_25WebKitPlatformSupportImplE
-   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
 }
 {
    bug_101750
