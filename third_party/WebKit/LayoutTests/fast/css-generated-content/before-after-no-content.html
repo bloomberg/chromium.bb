@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<style>
+span, ::before, ::after { color: green; }
+#before::before { content: "P"; }
+#after::after { content: "S"; }
+</style>
+<p>There should be two green PASSes below.</p>
+<div id="before"><span>ASS</span></div>
+<div id="after"><span>PAS</span></div>
+<div id="noBeforeAfter"></div>

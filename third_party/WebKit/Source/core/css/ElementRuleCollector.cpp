@@ -296,8 +296,11 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Select
             if (m_mode == SelectorChecker::CollectingCSSRules || m_mode == SelectorChecker::CollectingStyleRules)
                 return;
             // FIXME: Matching should not modify the style directly.
-            if (m_style && dynamicPseudo < FIRST_INTERNAL_PSEUDOID)
-                m_style->setHasPseudoStyle(dynamicPseudo);
+            if (!m_style || dynamicPseudo >= FIRST_INTERNAL_PSEUDOID)
+                return;
+            if ((dynamicPseudo == BEFORE || dynamicPseudo == AFTER) && !ruleData.rule()->properties().hasProperty(CSSPropertyContent))
+                return;
+            m_style->setHasPseudoStyle(dynamicPseudo);
         } else {
             // Update our first/last rule indices in the matched rules array.
             ++ruleRange.lastRuleIndex;
