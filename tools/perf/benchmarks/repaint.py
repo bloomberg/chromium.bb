@@ -8,6 +8,7 @@ import page_sets
 from telemetry import benchmark
 
 
+@benchmark.Enabled('android')
 class RepaintKeyMobileSites(benchmark.Benchmark):
   """Measures repaint performance on the key mobile sites.
 
@@ -16,7 +17,7 @@ class RepaintKeyMobileSites(benchmark.Benchmark):
   page_set = page_sets.KeyMobileSitesPageSet
 
 
-@benchmark.Disabled('android')  # crbug.com/412001
+@benchmark.Disabled  # crbug.com/412001
 class RepaintGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """Measures repaint performance on the key mobile sites with forced GPU
   rasterization.

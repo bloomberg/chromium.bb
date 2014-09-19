@@ -85,13 +85,14 @@ class PageCyclerNetsimTop10(benchmark.Benchmark):
     self.test.clear_cache_before_each_run = True
 
 
+@benchmark.Enabled('android')
 class PageCyclerTop10Mobile(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.Top10MobilePageSet
   options = {'pageset_repeat': 10}
 
 
-@benchmark.Disabled('android')
+@benchmark.Disabled
 class PageCyclerKeyMobileSites(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.KeyMobileSitesPageSet
