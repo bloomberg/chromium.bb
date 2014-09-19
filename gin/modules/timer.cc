@@ -41,10 +41,10 @@ ObjectTemplateBuilder Timer::GetObjectTemplateBuilder(v8::Isolate* isolate) {
 
 Timer::Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
              v8::Handle<v8::Function> function)
-    : weak_factory_(this),
-      timer_(false, repeating),
+    : timer_(false, repeating),
       runner_(PerContextData::From(
-          isolate->GetCurrentContext())->runner()->GetWeakPtr()) {
+          isolate->GetCurrentContext())->runner()->GetWeakPtr()),
+      weak_factory_(this) {
   GetWrapper(runner_->GetContextHolder()->isolate())->SetHiddenValue(
       GetHiddenPropertyName(isolate), function);
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),

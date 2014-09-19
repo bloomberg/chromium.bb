@@ -38,9 +38,10 @@ class GIN_EXPORT Timer : public Wrappable<Timer> {
   virtual ~Timer();
   void OnTimerFired();
 
-  base::WeakPtrFactory<Timer> weak_factory_;
   base::Timer timer_;
   base::WeakPtr<gin::Runner> runner_;
+  base::WeakPtrFactory<Timer> weak_factory_;
+
 };
 
 
