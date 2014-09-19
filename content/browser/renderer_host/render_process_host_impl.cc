@@ -437,6 +437,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #endif
       pending_views_(0),
       mojo_application_host_(new MojoApplicationHost),
+      mojo_activation_required_(false),
       visible_widgets_(0),
       backgrounded_(true),
       is_initialized_(false),
@@ -639,6 +640,20 @@ bool RenderProcessHostImpl::Init() {
 
   is_initialized_ = true;
   return true;
+}
+
+void RenderProcessHostImpl::MaybeActivateMojo() {
+  // TODO(darin): Following security review, we can unconditionally initialize
+  // Mojo in all renderers. We will then be able to directly call Activate()
+  // from OnProcessLaunched.
+  if (!mojo_activation_required_)
+    return;  // Waiting on someone to require Mojo.
+
+  if (!GetHandle())
+    return;  // Waiting on renderer startup.
+
+  if (!mojo_application_host_->did_activate())
+    mojo_application_host_->Activate(this, GetHandle());
 }
 
 bool RenderProcessHostImpl::ShouldUseMojoChannel() const {
@@ -1911,6 +1926,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   }
 
   mojo_application_host_.reset(new MojoApplicationHost);
+  mojo_activation_required_ = false;
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
@@ -2077,7 +2093,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.
   // This way, Mojo can be safely used from the renderer in response to any
   // Chrome IPC message.
-  mojo_application_host_->Activate(this, GetHandle());
+  MaybeActivateMojo();
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
@@ -2216,6 +2232,11 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
   --worker_ref_count_;
   if (worker_ref_count_ == 0)
     Cleanup();
+}
+
+void RenderProcessHostImpl::EnsureMojoActivated() {
+  mojo_activation_required_ = true;
+  MaybeActivateMojo();
 }
 
 }  // namespace content
