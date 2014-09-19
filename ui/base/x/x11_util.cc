@@ -1191,28 +1191,42 @@ WindowManagerName GuessWindowManager() {
   std::string name;
   if (GetWindowManagerName(&name)) {
     // These names are taken from the WMs' source code.
+    if (name == "awesome")
+      return WM_AWESOME;
     if (name == "Blackbox")
       return WM_BLACKBOX;
-    if (name == "chromeos-wm")
-      return WM_CHROME_OS;
     if (name == "Compiz" || name == "compiz")
       return WM_COMPIZ;
-    if (name == "e16")
+    if (name == "e16" || name == "Enlightenment")
       return WM_ENLIGHTENMENT;
+    if (name == "i3")
+      return WM_I3;
     if (StartsWithASCII(name, "IceWM", true))
       return WM_ICE_WM;
+    if (name == "ion3")
+      return WM_ION3;
     if (name == "KWin")
       return WM_KWIN;
+    if (name == "matchbox")
+      return WM_MATCHBOX;
     if (name == "Metacity")
       return WM_METACITY;
     if (name == "Mutter (Muffin)")
       return WM_MUFFIN;
     if (name == "GNOME Shell")
-      return WM_MUTTER; // GNOME Shell uses Mutter
+      return WM_MUTTER;  // GNOME Shell uses Mutter
     if (name == "Mutter")
       return WM_MUTTER;
+    if (name == "notion")
+      return WM_NOTION;
     if (name == "Openbox")
       return WM_OPENBOX;
+    if (name == "qtile")
+      return WM_QTILE;
+    if (name == "ratpoison")
+      return WM_RATPOISON;
+    if (name == "stumpwm")
+      return WM_STUMPWM;
     if (name == "Xfwm4")
       return WM_XFWM4;
   }

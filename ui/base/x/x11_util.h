@@ -246,16 +246,24 @@ UI_BASE_EXPORT bool CopyAreaToCanvas(XID drawable,
 
 enum WindowManagerName {
   WM_UNKNOWN,
+
+  WM_AWESOME,
   WM_BLACKBOX,
-  WM_CHROME_OS,
   WM_COMPIZ,
   WM_ENLIGHTENMENT,
+  WM_I3,
   WM_ICE_WM,
+  WM_ION3,
   WM_KWIN,
+  WM_MATCHBOX,
   WM_METACITY,
   WM_MUFFIN,
   WM_MUTTER,
+  WM_NOTION,
   WM_OPENBOX,
+  WM_QTILE,
+  WM_RATPOISON,
+  WM_STUMPWM,
   WM_XFWM4,
 };
 // Attempts to guess the window maager. Returns WM_UNKNOWN if we can't
