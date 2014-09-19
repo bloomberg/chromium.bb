@@ -27,8 +27,6 @@ class ScreenOrientationController FINAL
 public:
     virtual ~ScreenOrientationController();
 
-    virtual void persistentHostHasBeenDestroyed() OVERRIDE;
-
     void setOrientation(ScreenOrientation*);
     void notifyOrientationChanged();
 

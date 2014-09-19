@@ -67,7 +67,7 @@ int muteCount = 0;
 }
 
 FrameConsole::FrameConsole(LocalFrame& frame)
-    : m_frame(frame)
+    : m_frame(&frame)
 {
 }
 
@@ -81,7 +81,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
 
     // FIXME: This should not need to reach for the main-frame.
     // Inspector code should just take the current frame and know how to walk itself.
-    ExecutionContext* context = m_frame.document();
+    ExecutionContext* context = frame().document();
     if (!context)
         return;
 
@@ -102,23 +102,23 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
 
     RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
     if (consoleMessage->source() != ConsoleAPIMessageSource) {
-        if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
+        if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(messageURL))
             reportedCallStack = consoleMessage->callStack();
     } else {
-        if (!m_frame.host() || (consoleMessage->scriptArguments() && consoleMessage->scriptArguments()->argumentCount() == 0))
+        if (!frame().host() || (consoleMessage->scriptArguments() && !consoleMessage->scriptArguments()->argumentCount()))
             return;
 
         if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
 
-        if (m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
+        if (frame().chromeClient().shouldReportDetailedMessageForSource(messageURL))
             reportedCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
     }
 
     String stackTrace;
     if (reportedCallStack)
         stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), reportedCallStack);
-    m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), lineNumber, messageURL, stackTrace);
+    frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), lineNumber, messageURL, stackTrace);
 }
 
 void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsigned long requestIdentifier, const ResourceResponse& response)
@@ -164,14 +164,14 @@ void FrameConsole::unmute()
 
 ConsoleMessageStorage* FrameConsole::messageStorage()
 {
-    LocalFrame* curFrame = &m_frame;
+    LocalFrame* curFrame = m_frame;
     Frame* topFrame = curFrame->tree().top();
     ASSERT(topFrame->isLocalFrame());
     LocalFrame* localTopFrame = toLocalFrame(topFrame);
     if (localTopFrame != curFrame)
         return localTopFrame->console().messageStorage();
     if (!m_consoleMessageStorage)
-        m_consoleMessageStorage = ConsoleMessageStorage::createForFrame(&m_frame);
+        m_consoleMessageStorage = ConsoleMessageStorage::createForFrame(m_frame);
     return m_consoleMessageStorage.get();
 }
 
@@ -187,6 +187,7 @@ void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* p
 
 void FrameConsole::trace(Visitor* visitor)
 {
+    visitor->trace(m_frame);
     visitor->trace(m_consoleMessageStorage);
 }
 

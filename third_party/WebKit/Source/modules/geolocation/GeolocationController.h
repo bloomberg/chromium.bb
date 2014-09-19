@@ -71,7 +71,6 @@ public:
 
     // Inherited from Supplement.
     virtual void trace(Visitor*) OVERRIDE;
-    virtual void persistentHostHasBeenDestroyed() OVERRIDE;
 
 private:
     GeolocationController(LocalFrame&, GeolocationClient*);

@@ -50,6 +50,7 @@ FrameTree::FrameTree(Frame* thisFrame)
 
 FrameTree::~FrameTree()
 {
+#if !ENABLE(OILPAN)
     // FIXME: Why is this here? Doesn't this parallel what we already do in ~LocalFrame?
     for (Frame* child = firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
@@ -57,6 +58,7 @@ FrameTree::~FrameTree()
         else if (child->isRemoteFrame())
             toRemoteFrame(child)->setView(nullptr);
     }
+#endif
 }
 
 void FrameTree::setName(const AtomicString& name, const AtomicString& fallbackName)
@@ -85,7 +87,7 @@ Frame* FrameTree::top() const
     if (!m_thisFrame->client())
         return m_thisFrame;
     Frame* candidate = m_thisFrame->client()->top();
-    return candidate ? candidate : m_thisFrame;
+    return candidate ? candidate : m_thisFrame.get();
 }
 
 Frame* FrameTree::previousSibling() const
@@ -254,7 +256,7 @@ Frame* FrameTree::find(const AtomicString& name) const
         return top();
 
     if (name == "_parent")
-        return parent() ? parent() : m_thisFrame;
+        return parent() ? parent() : m_thisFrame.get();
 
     // Since "_blank" should never be any frame's name, the following just amounts to an optimization.
     if (name == "_blank")
@@ -375,6 +377,11 @@ Frame* FrameTree::deepLastChild() const
         result = last;
 
     return result;
+}
+
+void FrameTree::trace(Visitor* visitor)
+{
+    visitor->trace(m_thisFrame);
 }
 
 } // namespace blink

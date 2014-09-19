@@ -22,16 +22,11 @@ function runTest()
     // Have expected results assume that the frame has been closed and GCed (=> window.closed = true.)
     collectProperties(true);
     frame.parentNode.removeChild(frame);
-    window.setTimeout(verifyResults, 0);
-}
-
-function verifyResults()
-{
-    if (window.gc)
-        gc();
-    for (var i = 0; i < propertiesToVerify.length; ++i)
-        shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);
-    finishJSTest();
+    asyncGC(function () {
+        for (var i = 0; i < propertiesToVerify.length; ++i)
+            shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);
+        finishJSTest();
+    });
 }
 </script>
 </head>

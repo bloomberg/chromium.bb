@@ -44,6 +44,7 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "platform/TraceEvent.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/web/WebAXObject.h"
@@ -233,8 +234,8 @@ bool WebPagePopupImpl::initializePage()
     m_page->settings().setAccessibilityEnabled(m_webView->page()->settings().accessibilityEnabled());
 
     provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
-    static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
-    RefPtr<LocalFrame> frame = LocalFrame::create(emptyFrameLoaderClient, &m_page->frameHost(), 0);
+    static FrameLoaderClient* emptyFrameLoaderClient = new EmptyFrameLoaderClient();
+    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(emptyFrameLoaderClient, &m_page->frameHost(), 0);
     frame->setPagePopupOwner(m_popupClient->ownerElement());
     frame->setView(FrameView::create(frame.get()));
     frame->init();

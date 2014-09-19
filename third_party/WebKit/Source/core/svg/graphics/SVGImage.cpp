@@ -408,7 +408,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
             page->settings().setAcceleratedCompositingEnabled(false);
         }
 
-        RefPtr<LocalFrame> frame;
+        RefPtrWillBeRawPtr<LocalFrame> frame = nullptr;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
             frame = LocalFrame::create(dummyFrameLoaderClient, &page->frameHost(), 0);

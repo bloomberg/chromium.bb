@@ -31,6 +31,7 @@
 #ifndef WebTextCheckingCompletionImpl_h
 #define WebTextCheckingCompletionImpl_h
 
+#include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
 #include "public/web/WebTextCheckingCompletion.h"
 #include "wtf/RefPtr.h"
@@ -41,7 +42,7 @@ class EditorClientImpl;
 
 class WebTextCheckingCompletionImpl FINAL : public WebTextCheckingCompletion {
 public:
-    explicit WebTextCheckingCompletionImpl(WTF::PassRefPtr<TextCheckingRequest> request)
+    explicit WebTextCheckingCompletionImpl(PassRefPtrWillBeRawPtr<TextCheckingRequest> request)
         : m_request(request)
     {
     }
@@ -52,7 +53,7 @@ public:
 private:
     virtual ~WebTextCheckingCompletionImpl() { }
 
-    WTF::RefPtr<TextCheckingRequest> m_request;
+    RefPtrWillBePersistent<TextCheckingRequest> m_request;
 };
 
 } // namespace blink

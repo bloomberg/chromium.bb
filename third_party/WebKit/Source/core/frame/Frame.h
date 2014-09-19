@@ -34,10 +34,6 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
-class WebLayer;
-}
-
-namespace blink {
 
 class ChromeClient;
 class FrameClient;
@@ -48,13 +44,15 @@ class LocalDOMWindow;
 class Page;
 class RenderPart;
 class Settings;
+class WebLayer;
 
-class Frame : public RefCounted<Frame> {
+class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
     virtual bool isLocalFrame() const { return false; }
     virtual bool isRemoteFrame() const { return false; }
 
     virtual ~Frame();
+    virtual void trace(Visitor*);
 
     virtual void detach() = 0;
     void detachChildren();
@@ -87,8 +85,8 @@ public:
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
     // FIXME: These should move to RemoteFrame when that is instantiated.
-    void setRemotePlatformLayer(blink::WebLayer*);
-    blink::WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
+    void setRemotePlatformLayer(WebLayer*);
+    WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
 
     Settings* settings() const; // can be null
 
@@ -103,14 +101,14 @@ protected:
 
     mutable FrameTree m_treeNode;
 
-    FrameHost* m_host;
-    FrameOwner* m_owner;
+    RawPtrWillBeMember<FrameHost> m_host;
+    RawPtrWillBeMember<FrameOwner> m_owner;
 
-    RefPtrWillBePersistent<LocalDOMWindow> m_domWindow;
+    RefPtrWillBeMember<LocalDOMWindow> m_domWindow;
 
 private:
     FrameClient* m_client;
-    blink::WebLayer* m_remotePlatformLayer;
+    WebLayer* m_remotePlatformLayer;
 };
 
 inline FrameClient* Frame::client() const

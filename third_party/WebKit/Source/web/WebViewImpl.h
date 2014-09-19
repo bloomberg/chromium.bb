@@ -36,6 +36,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebGestureCurveTarget.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
@@ -74,6 +75,7 @@ class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentPrivate;
 class WebLocalFrameImpl;
+class WebRemoteFrameImpl;
 class WebImage;
 class WebPagePopupImpl;
 class WebPlugin;
@@ -713,7 +715,7 @@ private:
     int m_flingModifier;
     bool m_flingSourceDevice;
     Vector<OwnPtr<LinkHighlight> > m_linkHighlights;
-    OwnPtr<FullscreenController> m_fullscreenController;
+    OwnPtrWillBePersistent<FullscreenController> m_fullscreenController;
 
     bool m_showFPSCounter;
     bool m_showPaintRects;

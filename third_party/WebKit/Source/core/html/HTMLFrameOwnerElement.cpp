@@ -98,7 +98,7 @@ static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
 
 HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
-    , m_contentFrame(0)
+    , m_contentFrame(nullptr)
     , m_widget(nullptr)
     , m_sandboxFlags(SandboxNone)
 {
@@ -130,7 +130,7 @@ void HTMLFrameOwnerElement::clearContentFrame()
     if (!m_contentFrame)
         return;
 
-    m_contentFrame = 0;
+    m_contentFrame = nullptr;
 
     for (ContainerNode* node = this; node; node = node->parentOrShadowHostNode())
         node->decrementConnectedSubframeCount();
@@ -142,17 +142,31 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // unload event in the subframe which could execute script that could then
     // reach up into this document and then attempt to look back down. We should
     // see if this behavior is really needed as Gecko does not allow this.
-    if (Frame* frame = contentFrame()) {
-        RefPtr<Frame> protect(frame);
+    if (RefPtrWillBeRawPtr<Frame> frame = contentFrame()) {
         frame->detach();
+#if ENABLE(OILPAN)
+        // FIXME: Oilpan: the plugin container is released and finalized here
+        // in order to work around the current inability to make the plugin
+        // container a FrameDestructionObserver (it needs to effectively be on
+        // the heap, and Widget isn't). Hence, release it here while its
+        // frame reference is still valid.
+        if (m_widget && m_widget->isPluginContainer())
+            m_widget = nullptr;
+#endif
         frame->disconnectOwnerElement();
     }
 }
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
 {
+#if ENABLE(OILPAN)
+    // An owner must by now have been informed of detachment
+    // when the frame was closed.
+    ASSERT(!m_contentFrame);
+#else
     if (m_contentFrame)
         m_contentFrame->disconnectOwnerElement();
+#endif
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const
@@ -224,7 +238,7 @@ Widget* HTMLFrameOwnerElement::ownedWidget() const
 
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
-    RefPtr<LocalFrame> parentFrame = document().frame();
+    RefPtrWillBeRawPtr<LocalFrame> parentFrame = document().frame();
     // FIXME(kenrb): The necessary semantics for RemoteFrames have not been worked out yet, but this will likely need some logic to handle them.
     if (contentFrame() && contentFrame()->isLocalFrame()) {
         toLocalFrame(contentFrame())->navigationScheduler().scheduleLocationChange(&document(), url.string(), Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
@@ -241,6 +255,13 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 
     String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, document().outgoingReferrer());
     return parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
+}
+
+void HTMLFrameOwnerElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_contentFrame);
+    HTMLElement::trace(visitor);
+    FrameOwner::trace(visitor);
 }
 
 

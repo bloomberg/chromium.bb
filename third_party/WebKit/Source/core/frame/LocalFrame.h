@@ -64,9 +64,9 @@ namespace blink {
     class TreeScope;
     class VisiblePosition;
 
-    class LocalFrame : public Frame, public WillBePersistentHeapSupplementable<LocalFrame>  {
+    class LocalFrame : public Frame, public WillBeHeapSupplementable<LocalFrame>  {
     public:
-        static PassRefPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
+        static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
         virtual bool isLocalFrame() const OVERRIDE { return true; }
 
@@ -77,6 +77,7 @@ namespace blink {
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 
         virtual ~LocalFrame();
+        virtual void trace(Visitor*) OVERRIDE;
 
         virtual void detach() OVERRIDE;
 
@@ -162,21 +163,23 @@ namespace blink {
 
         String localLayerTreeAsText(unsigned flags) const;
 
-        HashSet<FrameDestructionObserver*> m_destructionObservers;
+        void detachView();
+
+        WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> > m_destructionObservers;
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 
         RefPtr<FrameView> m_view;
         // Usually 0. Non-null if this is the top frame of PagePopup.
-        RefPtrWillBePersistent<Element> m_pagePopupOwner;
+        RefPtrWillBeMember<Element> m_pagePopupOwner;
 
         OwnPtr<ScriptController> m_script;
-        const OwnPtrWillBePersistent<Editor> m_editor;
-        const OwnPtr<SpellChecker> m_spellChecker;
-        const OwnPtrWillBePersistent<FrameSelection> m_selection;
-        const OwnPtrWillBePersistent<EventHandler> m_eventHandler;
-        const OwnPtrWillBePersistent<FrameConsole> m_console;
-        OwnPtr<InputMethodController> m_inputMethodController;
+        const OwnPtrWillBeMember<Editor> m_editor;
+        const OwnPtrWillBeMember<SpellChecker> m_spellChecker;
+        const OwnPtrWillBeMember<FrameSelection> m_selection;
+        const OwnPtrWillBeMember<EventHandler> m_eventHandler;
+        const OwnPtrWillBeMember<FrameConsole> m_console;
+        OwnPtrWillBeMember<InputMethodController> m_inputMethodController;
 
         float m_pageZoomFactor;
         float m_textZoomFactor;

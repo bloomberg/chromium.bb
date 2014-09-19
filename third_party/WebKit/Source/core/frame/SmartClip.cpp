@@ -71,7 +71,7 @@ const String& SmartClipData::clipData() const
     return m_string;
 }
 
-SmartClip::SmartClip(PassRefPtr<LocalFrame> frame)
+SmartClip::SmartClip(PassRefPtrWillBeRawPtr<LocalFrame> frame)
     : m_frame(frame)
 {
 }

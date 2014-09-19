@@ -44,7 +44,7 @@ public:
     virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) = 0;
     virtual String getAutoCorrectSuggestionForMisspelledWord(const String& misspelledWord) = 0;
     virtual void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int* badGrammarLocation, int* badGrammarLength) = 0;
-    virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) = 0;
+    virtual void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) = 0;
 };
 
 }

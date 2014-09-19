@@ -103,7 +103,7 @@ bool EditCommandComposition::belongsTo(const LocalFrame& frame) const
 void EditCommandComposition::unapply()
 {
     ASSERT(m_document);
-    RefPtr<LocalFrame> frame = m_document->frame();
+    RefPtrWillBeRawPtr<LocalFrame> frame = m_document->frame();
     ASSERT(frame);
 
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.
@@ -123,7 +123,7 @@ void EditCommandComposition::unapply()
 void EditCommandComposition::reapply()
 {
     ASSERT(m_document);
-    RefPtr<LocalFrame> frame = m_document->frame();
+    RefPtrWillBeRawPtr<LocalFrame> frame = m_document->frame();
     ASSERT(frame);
 
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.

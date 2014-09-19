@@ -238,12 +238,12 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     if (s.base().anchorNode()) {
         Document& document = *s.base().document();
         if (document.frame() && document.frame() != m_frame && document != m_frame->document()) {
-            RefPtr<LocalFrame> guard = document.frame();
+            RefPtrWillBeRawPtr<LocalFrame> guard(document.frame());
             document.frame()->selection().setSelection(s, options, align, granularity);
             // It's possible that during the above set selection, this FrameSelection has been modified by
             // selectFrameElementInParentIfFullySelected, but that the selection is no longer valid since
             // the frame is about to be destroyed. If this is the case, clear our selection.
-            if (guard->hasOneRef() && !m_selection.isNonOrphanedCaretOrRange())
+            if (!guard->host() && !m_selection.isNonOrphanedCaretOrRange())
                 clear();
             return;
         }
@@ -1899,6 +1899,7 @@ void FrameSelection::showTreeForThis() const
 
 void FrameSelection::trace(Visitor* visitor)
 {
+    visitor->trace(m_frame);
     visitor->trace(m_selection);
     visitor->trace(m_originalBase);
     visitor->trace(m_logicalRange);

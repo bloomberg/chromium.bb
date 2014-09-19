@@ -82,11 +82,12 @@ public:
     };
 
     class DeferUpdatePageInfo {
+        STACK_ALLOCATED();
     public:
         explicit DeferUpdatePageInfo(Page*);
         ~DeferUpdatePageInfo();
     private:
-        RefPtr<LocalFrame> m_mainFrame;
+        RefPtrWillBeMember<LocalFrame> m_mainFrame;
     };
 
 private:

@@ -129,7 +129,7 @@ private:
 
     RefPtr<RenderStyle> m_optionStyle;
 
-    RefPtr<PopupMenu> m_popup;
+    RefPtrWillBeMember<PopupMenu> m_popup;
     bool m_popupIsVisible;
 };
 

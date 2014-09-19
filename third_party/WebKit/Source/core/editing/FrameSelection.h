@@ -266,7 +266,7 @@ private:
 
     VisibleSelection validateSelection(const VisibleSelection&);
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
 

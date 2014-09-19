@@ -5,6 +5,7 @@
 #ifndef WebRemoteFrameImpl_h
 #define WebRemoteFrameImpl_h
 
+#include "platform/heap/Handle.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClient.h"
@@ -17,10 +18,11 @@ namespace blink {
 class FrameHost;
 class FrameOwner;
 class RemoteFrame;
+class WebViewImpl;
 
-class WebRemoteFrameImpl : public WebRemoteFrame, public RefCounted<WebRemoteFrameImpl> {
+class WebRemoteFrameImpl FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebRemoteFrameImpl>, public WebRemoteFrame {
 public:
-    WebRemoteFrameImpl(WebRemoteFrameClient*);
+    explicit WebRemoteFrameImpl(WebRemoteFrameClient*);
     virtual ~WebRemoteFrameImpl();
 
     // WebRemoteFrame methods.
@@ -178,19 +180,34 @@ public:
 
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 
-    void setCoreFrame(PassRefPtr<RemoteFrame>);
+    void setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame>);
     RemoteFrame* frame() const { return m_frame.get(); }
 
     WebRemoteFrameClient* client() const { return m_client; }
 
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
 
+    virtual void trace(Visitor*);
+
 private:
     RemoteFrameClient m_frameClient;
-    RefPtr<RemoteFrame> m_frame;
+    RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 
-    HashMap<WebFrame*, OwnPtr<FrameOwner> > m_ownersForChildren;
+    WebViewImpl* viewImpl() const;
+
+    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner> > m_ownersForChildren;
+
+#if ENABLE(OILPAN)
+    // Oilpan: to provide the guarantee of having the frame live until
+    // close() is called, an instance keep a self-persistent. It is
+    // cleared upon calling close(). This avoids having to assume that
+    // an embedder's WebFrame references are all discovered via thread
+    // state (stack, registers) should an Oilpan GC strike while we're
+    // in the process of detaching.
+    GC_PLUGIN_IGNORE("340522")
+    Persistent<WebRemoteFrameImpl> m_selfKeepAlive;
+#endif
 };
 
 DEFINE_TYPE_CASTS(WebRemoteFrameImpl, WebFrame, frame, frame->isWebRemoteFrame(), frame.isWebRemoteFrame());

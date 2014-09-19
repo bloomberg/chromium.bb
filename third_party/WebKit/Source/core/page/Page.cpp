@@ -83,7 +83,7 @@ HashSet<Page*>& Page::ordinaryPages()
 
 void Page::networkStateChanged(bool online)
 {
-    Vector<RefPtr<LocalFrame> > frames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > frames;
 
     // Get all the frames of all the pages in all the page groups
     HashSet<Page*>::iterator end = allPages().end();
@@ -123,7 +123,7 @@ Page::Page(PageClients& pageClients)
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_undoStack(UndoStack::create())
-    , m_mainFrame(0)
+    , m_mainFrame(nullptr)
     , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
@@ -265,7 +265,7 @@ void Page::refreshPlugins(bool reload)
 
     PluginData::refresh();
 
-    Vector<RefPtr<LocalFrame> > framesNeedingReload;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > framesNeedingReload;
 
     HashSet<Page*>::iterator end = allPages().end();
     for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it) {
@@ -579,7 +579,7 @@ void Page::didCommitLoad(LocalFrame* frame)
 
 void Page::acceptLanguagesChanged()
 {
-    Vector< RefPtr<LocalFrame> > frames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > frames;
 
     // Even though we don't fire an event from here, the LocalDOMWindow's will fire
     // an event so we keep the frames alive until we are done.
@@ -607,10 +607,12 @@ void Page::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_dragCaretController);
     visitor->trace(m_dragController);
+    visitor->trace(m_focusController);
     visitor->trace(m_contextMenuController);
     visitor->trace(m_inspectorController);
     visitor->trace(m_pointerLockController);
     visitor->trace(m_undoStack);
+    visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
@@ -624,7 +626,7 @@ void Page::willBeDestroyed()
     // Destroy inspector first, since it uses frame and view during destruction.
     m_inspectorController->willBeDestroyed();
 
-    RefPtr<Frame> mainFrame = m_mainFrame;
+    RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;
 
     mainFrame->detach();
 
@@ -647,9 +649,9 @@ void Page::willBeDestroyed()
 #endif
 
     m_chrome->willBeDestroyed();
-    m_mainFrame = 0;
     if (m_validationMessageClient)
         m_validationMessageClient->willBeDestroyed();
+    m_mainFrame = nullptr;
 }
 
 Page::PageClients::PageClients()

@@ -1181,6 +1181,7 @@
             'frame/FrameHost.h',
             'frame/FrameOwner.h',
             'frame/FrameView.cpp',
+            'frame/FrameView.h',
             'frame/FrameViewAutoSizeInfo.cpp',
             'frame/History.cpp',
             'frame/History.h',

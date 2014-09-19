@@ -341,7 +341,7 @@ private:
 
     Page* page();
 
-    virtual void frameDestroyed() OVERRIDE;
+    // FrameDestructionObserver
     virtual void willDetachFrameHost() OVERRIDE;
 
     void clearDocument();

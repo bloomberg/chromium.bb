@@ -239,7 +239,7 @@ bool DragController::performDrag(DragData* dragData)
     ASSERT(dragData);
     m_documentUnderMouse = m_page->deprecatedLocalMainFrame()->documentAtPoint(dragData->clientPosition());
     if ((m_dragDestinationAction & DragDestinationActionDHTML) && m_documentIsHandlingDrag) {
-        RefPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
+        RefPtrWillBeRawPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
         bool preventedDefault = false;
         if (mainFrame->view()) {
             // Sending an event can result in the destruction of the view and part.
@@ -460,7 +460,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     Element* element = elementUnderMouse(m_documentUnderMouse.get(), point);
     if (!element)
         return false;
-    RefPtr<LocalFrame> innerFrame = element->ownerDocument()->frame();
+    RefPtrWillBeRawPtr<LocalFrame> innerFrame = element->ownerDocument()->frame();
     ASSERT(innerFrame);
 
     if (m_page->dragCaretController().hasCaret() && !dispatchTextInputEventFor(innerFrame.get(), dragData))
@@ -590,11 +590,11 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
 {
     ASSERT(dragData);
     ASSERT(m_documentUnderMouse);
-    RefPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
-    RefPtr<FrameView> viewProtector = mainFrame->view();
-    if (!viewProtector)
+    RefPtrWillBeRawPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
+    if (!mainFrame->view())
         return false;
 
+    RefPtr<FrameView> viewProtector(mainFrame->view());
     DataTransferAccessPolicy policy = m_documentUnderMouse->securityOrigin()->isLocal() ? DataTransferReadable : DataTransferTypesReadable;
     RefPtrWillBeRawPtr<DataTransfer> dataTransfer = createDraggingDataTransfer(policy, dragData);
     DragOperation srcOpMask = dragData->draggingSourceOperationMask();
@@ -928,12 +928,13 @@ void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation
     m_didInitiateDrag = true;
     m_dragInitiator = frame->document();
     // Protect this frame and view, as a load may occur mid drag and attempt to unload this frame
-    RefPtr<LocalFrame> frameProtector = m_page->deprecatedLocalMainFrame();
-    RefPtr<FrameView> viewProtector = frameProtector->view();
-    m_client->startDrag(image, viewProtector->rootViewToContents(frame->view()->contentsToRootView(dragLocation)),
-        viewProtector->rootViewToContents(frame->view()->contentsToRootView(eventPos)), dataTransfer, frameProtector.get(), forLink);
+    RefPtrWillBeRawPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
+    RefPtr<FrameView> mainFrameView = mainFrame->view();
+
+    m_client->startDrag(image, mainFrameView->rootViewToContents(frame->view()->contentsToRootView(dragLocation)),
+        mainFrameView->rootViewToContents(frame->view()->contentsToRootView(eventPos)), dataTransfer, frame, forLink);
     // DragClient::startDrag can cause our Page to dispear, deallocating |this|.
-    if (!frameProtector->page())
+    if (!frame->page())
         return;
 
     cleanupAfterSystemDrag();

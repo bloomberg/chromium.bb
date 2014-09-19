@@ -71,8 +71,6 @@ public:
 
     EditorClient& client() const;
 
-    LocalFrame& frame() const { return m_frame; }
-
     CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
 
     void handleKeyboardEvent(KeyboardEvent*);
@@ -130,9 +128,10 @@ public:
     bool shouldStyleWithCSS() const { return m_shouldStyleWithCSS; }
 
     class Command {
+        STACK_ALLOCATED();
     public:
         Command();
-        Command(const EditorInternalCommand*, EditorCommandSource, PassRefPtr<LocalFrame>);
+        Command(const EditorInternalCommand*, EditorCommandSource, PassRefPtrWillBeRawPtr<LocalFrame>);
 
         bool execute(const String& parameter = String(), Event* triggeringEvent = 0) const;
         bool execute(Event* triggeringEvent) const;
@@ -148,9 +147,11 @@ public:
         // Returns 0 if this Command is not supported.
         int idForHistogram() const;
     private:
+        LocalFrame& frame() const { return *m_frame; }
+
         const EditorInternalCommand* m_command;
         EditorCommandSource m_source;
-        RefPtr<LocalFrame> m_frame;
+        RefPtrWillBeMember<LocalFrame> m_frame;
     };
     Command command(const String& commandName); // Command source is CommandFromMenuOrKeyBinding.
     Command command(const String& commandName, EditorCommandSource);
@@ -238,7 +239,7 @@ public:
     void trace(Visitor*);
 
 private:
-    LocalFrame& m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     RefPtrWillBeMember<CompositeEditCommand> m_lastEditCommand;
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
@@ -250,6 +251,8 @@ private:
     bool m_overwriteModeEnabled;
 
     explicit Editor(LocalFrame&);
+
+    LocalFrame& frame() const { return *m_frame; }
 
     bool canDeleteRange(Range*) const;
 

@@ -72,13 +72,10 @@ public:
     Document& document() const;
 
 private:
-    explicit DummyPageHolder(
-        const IntSize& initialViewSize,
-        Page::PageClients*,
-        PassOwnPtr<FrameLoaderClient>);
+    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, PassOwnPtr<FrameLoaderClient>);
 
     OwnPtrWillBePersistent<Page> m_page;
-    RefPtr<LocalFrame> m_frame;
+    RefPtrWillBePersistent<LocalFrame> m_frame;
 
     Page::PageClients m_pageClients;
     OwnPtr<FrameLoaderClient> m_frameLoaderClient;

@@ -674,7 +674,11 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
+#if ENABLE(OILPAN)
+    : m_frame(element->document().frame())
+#else
     : FrameDestructionObserver(element->document().frame())
+#endif
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(0)

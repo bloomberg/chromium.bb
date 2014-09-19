@@ -58,6 +58,7 @@ namespace blink {
 
 class Frame;
 class OpenedFrameTracker;
+class Visitor;
 class WebData;
 class WebDataSource;
 class WebDocument;
@@ -680,6 +681,7 @@ public:
 
 #if BLINK_IMPLEMENTATION
     static WebFrame* fromFrame(Frame*);
+    static void traceChildren(Visitor*, WebFrame*);
 #endif
 
 protected:

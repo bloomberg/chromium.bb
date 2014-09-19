@@ -33,6 +33,7 @@
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"
 #include "platform/PopupMenuClient.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -193,7 +194,7 @@ public:
 
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const = 0;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const = 0;
     // For testing.
     virtual void setPagePopupDriver(PagePopupDriver*) = 0;
     virtual void resetPagePopupDriver() = 0;

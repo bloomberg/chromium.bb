@@ -1161,7 +1161,7 @@ private:
     // do eventually load.
     PendingSheetLayout m_pendingSheetLayout;
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     RawPtrWillBeMember<LocalDOMWindow> m_domWindow;
     // FIXME: oilpan: when we get rid of the transition types change the
     // HTMLImportsController to not be a DocumentSupplement since it is

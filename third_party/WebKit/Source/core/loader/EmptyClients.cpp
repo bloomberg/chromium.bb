@@ -76,9 +76,9 @@ public:
     virtual void disconnectClient() OVERRIDE { }
 };
 
-PassRefPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*) const
+PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*) const
 {
-    return adoptRef(new EmptyPopupMenu());
+    return adoptRefWillBeNoop(new EmptyPopupMenu());
 }
 
 PassOwnPtr<ColorChooser> EmptyChromeClient::createColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
@@ -122,7 +122,7 @@ PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(LocalFra
     return DocumentLoader::create(frame, request, substituteData);
 }
 
-PassRefPtr<LocalFrame> EmptyFrameLoaderClient::createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*)
+PassRefPtrWillBeRawPtr<LocalFrame> EmptyFrameLoaderClient::createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*)
 {
     return nullptr;
 }
@@ -137,7 +137,7 @@ PassRefPtr<Widget> EmptyFrameLoaderClient::createJavaAppletWidget(HTMLAppletElem
     return nullptr;
 }
 
-void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtr<TextCheckingRequest>)
+void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>)
 {
 }
 

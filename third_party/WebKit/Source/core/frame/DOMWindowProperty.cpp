@@ -34,14 +34,20 @@ namespace blink {
 
 DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     : m_frame(frame)
+#if !ENABLE(OILPAN)
     , m_associatedDOMWindow(nullptr)
+#endif
 {
     // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created with a null frame.
     // See fast/dom/navigator-detached-no-crash.html for the recipe.
     // We should fix that.  <rdar://problem/11567132>
     if (m_frame) {
+#if ENABLE(OILPAN)
+        m_frame->domWindow()->registerProperty(this);
+#else
         m_associatedDOMWindow = m_frame->domWindow();
         m_associatedDOMWindow->registerProperty(this);
+#endif
     }
 }
 
@@ -55,28 +61,35 @@ DOMWindowProperty::~DOMWindowProperty()
 
 void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 {
-    // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
+    // If the property is getting this callback it must have been
+    // created with a LocalFrame and it should still have it.
     ASSERT(m_frame);
-    ASSERT(m_associatedDOMWindow);
+    m_frame = nullptr;
 
+#if !ENABLE(OILPAN)
     // LocalDOMWindow will along with notifying DOMWindowProperty objects of
     // impending destruction, unilaterally clear out its registered set.
     // Consequently, no explicit unregisteration required by DOMWindowProperty;
-    // here or when finalized.
+    // here or when destructed.
+    ASSERT(m_associatedDOMWindow);
     m_associatedDOMWindow = nullptr;
-    m_frame = nullptr;
+#endif
 }
 
 void DOMWindowProperty::willDetachGlobalObjectFromFrame()
 {
-    // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
+    // If the property is getting this callback it must have been
+    // created with a LocalFrame and it should still have it.
     ASSERT(m_frame);
+#if !ENABLE(OILPAN)
+    // Ditto for its associated LocalDOMWindow.
     ASSERT(m_associatedDOMWindow);
+#endif
 }
 
 void DOMWindowProperty::trace(Visitor* visitor)
 {
-    visitor->trace(m_associatedDOMWindow);
+    visitor->trace(m_frame);
 }
 
-}
+} // namespace blink

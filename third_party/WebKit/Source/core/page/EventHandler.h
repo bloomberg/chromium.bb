@@ -357,7 +357,7 @@ private:
 
     RefPtrWillBeMember<Node> m_nodeUnderMouse;
     RefPtrWillBeMember<Node> m_lastNodeUnderMouse;
-    RefPtr<LocalFrame> m_lastMouseMoveEventSubframe;
+    RefPtrWillBeMember<LocalFrame> m_lastMouseMoveEventSubframe;
     RefPtr<Scrollbar> m_lastScrollbarUnderMouse;
     Cursor m_currentMouseCursor;
 

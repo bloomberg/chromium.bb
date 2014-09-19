@@ -32,6 +32,7 @@
 #define SpellCheckerClientImpl_h
 
 #include "core/page/SpellCheckerClient.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/TextCheckerClient.h"
 
 namespace blink {
@@ -57,7 +58,7 @@ public:
     virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) OVERRIDE;
     virtual void showSpellingUI(bool show) OVERRIDE;
     virtual bool spellingUIIsShowing() OVERRIDE;
-    virtual void requestCheckingOfString(WTF::PassRefPtr<TextCheckingRequest>) OVERRIDE;
+    virtual void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) OVERRIDE;
 
     virtual TextCheckerClient& textChecker() OVERRIDE { return *this; }
 

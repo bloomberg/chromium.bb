@@ -254,7 +254,7 @@ private:
     const OwnPtr<Chrome> m_chrome;
     const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
     const OwnPtrWillBeMember<DragController> m_dragController;
-    const OwnPtr<FocusController> m_focusController;
+    const OwnPtrWillBeMember<FocusController> m_focusController;
     const OwnPtrWillBeMember<ContextMenuController> m_contextMenuController;
     const OwnPtrWillBeMember<InspectorController> m_inspectorController;
     const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
@@ -273,7 +273,7 @@ private:
     // other, thus keeping each other alive. The call to willBeDestroyed()
     // breaks this cycle, so the frame is still properly destroyed once no
     // longer needed.
-    Frame* m_mainFrame;
+    RawPtrWillBeMember<Frame> m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
 

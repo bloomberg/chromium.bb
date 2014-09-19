@@ -28,6 +28,7 @@
 
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/PlainTextRange.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -38,7 +39,7 @@ class LocalFrame;
 class Range;
 class Text;
 
-class InputMethodController {
+class InputMethodController FINAL : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
     enum ConfirmCompositionBehavior {
@@ -46,8 +47,9 @@ public:
         KeepSelection,
     };
 
-    static PassOwnPtr<InputMethodController> create(LocalFrame&);
+    static PassOwnPtrWillBeRawPtr<InputMethodController> create(LocalFrame&);
     ~InputMethodController();
+    void trace(Visitor*);
 
     // international text input composition
     bool hasComposition() const;
@@ -94,8 +96,8 @@ private:
     };
     friend class SelectionOffsetsScope;
 
-    LocalFrame& m_frame;
-    RefPtrWillBePersistent<Text> m_compositionNode;
+    RawPtrWillBeMember<LocalFrame> m_frame;
+    RefPtrWillBeMember<Text> m_compositionNode;
     // We don't use PlainTextRange which is immutable, for composition range.
     unsigned m_compositionStart;
     unsigned m_compositionEnd;
@@ -104,7 +106,10 @@ private:
     Vector<CompositionUnderline> m_customCompositionUnderlines;
 
     explicit InputMethodController(LocalFrame&);
+
     Editor& editor() const;
+    LocalFrame& frame() const { return *m_frame; }
+
     bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;
     enum FinishCompositionMode { ConfirmComposition, CancelComposition };

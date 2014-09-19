@@ -43,6 +43,7 @@
 #include "core/page/StorageClient.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"
 #include "public/platform/WebScreenInfo.h"
@@ -116,7 +117,7 @@ public:
     virtual bool runJavaScriptPrompt(LocalFrame*, const String&, const String&, String&) OVERRIDE { return false; }
 
     virtual bool hasOpenedPopup() const OVERRIDE { return false; }
-    virtual PassRefPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const OVERRIDE;
     virtual void setPagePopupDriver(PagePopupDriver*) OVERRIDE { }
     virtual void resetPagePopupDriver() OVERRIDE { }
 
@@ -225,7 +226,7 @@ public:
     virtual void didDetectXSS(const KURL&, bool) OVERRIDE { }
     virtual void didDispatchPingLoader(const KURL&) OVERRIDE { }
     virtual void selectorMatchChanged(const Vector<String>&, const Vector<String>&) OVERRIDE { }
-    virtual PassRefPtr<LocalFrame> createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
     virtual PassRefPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) OVERRIDE;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const OVERRIDE { return false; }
     virtual PassRefPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) OVERRIDE;
@@ -256,7 +257,7 @@ public:
     virtual void checkSpellingOfString(const String&, int*, int*) OVERRIDE { }
     virtual String getAutoCorrectSuggestionForMisspelledWord(const String&) OVERRIDE { return String(); }
     virtual void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int*, int*) OVERRIDE { }
-    virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) OVERRIDE;
+    virtual void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) OVERRIDE;
 };
 
 class EmptySpellCheckerClient : public SpellCheckerClient {

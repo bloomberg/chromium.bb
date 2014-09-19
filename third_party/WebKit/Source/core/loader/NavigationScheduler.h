@@ -32,6 +32,7 @@
 #define NavigationScheduler_h
 
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -67,9 +68,9 @@ private:
     static unsigned s_navigationDisableCount;
 };
 
-class NavigationScheduler {
+class NavigationScheduler FINAL {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
-
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     explicit NavigationScheduler(LocalFrame*);
     ~NavigationScheduler();
@@ -86,6 +87,8 @@ public:
     void startTimer();
     void cancel();
 
+    void trace(Visitor*);
+
 private:
     bool shouldScheduleNavigation() const;
     bool shouldScheduleNavigation(const String& url) const;
@@ -95,7 +98,7 @@ private:
 
     static bool mustLockBackForwardList(LocalFrame* targetFrame);
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     Timer<NavigationScheduler> m_timer;
     OwnPtr<ScheduledNavigation> m_redirect;
 };

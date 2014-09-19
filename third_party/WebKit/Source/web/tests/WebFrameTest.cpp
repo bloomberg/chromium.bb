@@ -98,6 +98,7 @@
 #include "public/web/WebTextCheckingResult.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Forward.h"
@@ -185,7 +186,8 @@ protected:
         webViewHelper->initializeAndLoad(m_baseURL + "nodeimage.html");
         webViewHelper->webView()->resize(WebSize(640, 480));
         webViewHelper->webView()->layout();
-        RefPtr<LocalFrame> frame = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame());
+        RefPtrWillBeRawPtr<LocalFrame> frame = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame());
+        ASSERT(frame);
         Element* element = frame->document()->getElementById(testcase.c_str());
         return frame->nodeImage(*element);
     }
@@ -641,7 +643,7 @@ TEST_F(WebFrameTest, PostMessageThenDetach)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad("about:blank");
 
-    RefPtr<LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
+    RefPtrWillBeRawPtr<LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
     NonThrowableExceptionState exceptionState;
     frame->domWindow()->postMessage(SerializedScriptValue::create("message"), 0, "*", frame->domWindow(), exceptionState);
     webViewHelper.reset();
@@ -3484,8 +3486,8 @@ TEST_F(WebFrameTest, FindOnDetachedFrame)
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    RefPtr<WebLocalFrameImpl> secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
-    RefPtr<LocalFrame> holdSecondFrame = secondFrame->frame();
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
+    RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     // Detach the frame before finding.
     EXPECT_TRUE(mainFrame->document().getElementById("frame").remove());
@@ -3503,8 +3505,6 @@ TEST_F(WebFrameTest, FindOnDetachedFrame)
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
-
-    holdSecondFrame.release();
 }
 
 TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings)
@@ -3526,7 +3526,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebLocalFrameImpl* secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
-    RefPtr<LocalFrame> holdSecondFrame = secondFrame->frame();
+    RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->find(kFindIdentifier, searchText, options, false, 0));
@@ -3544,8 +3544,6 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings)
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
-
-    holdSecondFrame.release();
 }
 
 TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
@@ -3567,7 +3565,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebLocalFrameImpl* secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
-    RefPtr<LocalFrame> holdSecondFrame = secondFrame->frame();
+    RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->find(kFindIdentifier, searchText, options, false, 0));
@@ -3585,8 +3583,6 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
-
-    holdSecondFrame.release();
 }
 
 TEST_F(WebFrameTest, ResetMatchCount)
@@ -5340,7 +5336,7 @@ TEST_F(WebFrameTest, ReloadIframe)
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
 
     WebLocalFrameImpl* mainFrame = webViewHelper.webViewImpl()->mainFrameImpl();
-    RefPtr<WebLocalFrameImpl> childFrame = toWebLocalFrameImpl(mainFrame->firstChild());
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> childFrame = toWebLocalFrameImpl(mainFrame->firstChild());
     ASSERT_EQ(childFrame->client(), &childClient);
     EXPECT_EQ(mainClient.childFrameCreationCount(), 1);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 1);
@@ -6193,7 +6189,7 @@ TEST_F(WebFrameTest, LoaderOriginAccess)
     KURL resourceUrl(ParsedURLString, "chrome://test.pdf");
     registerMockedChromeURLLoad("test.pdf");
 
-    RefPtr<LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
+    RefPtrWillBeRawPtr<LocalFrame> frame(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame()));
 
     MockDocumentThreadableLoaderClient client;
     ThreadableLoaderOptions options;

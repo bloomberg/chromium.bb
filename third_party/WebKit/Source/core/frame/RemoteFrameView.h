@@ -7,6 +7,7 @@
 
 #include "platform/Widget.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -32,7 +33,10 @@ public:
 private:
     explicit RemoteFrameView(RemoteFrame*);
 
-    RefPtr<RemoteFrame> m_remoteFrame;
+    // The RefPtrWillBePersistent-cycle between RemoteFrame and its RemoteFrameView
+    // is broken in the same manner as FrameView::m_frame and LocalFrame::m_view is.
+    // See the FrameView::m_frame comment.
+    RefPtrWillBePersistent<RemoteFrame> m_remoteFrame;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameView, Widget, widget, widget->isRemoteFrameView(), widget.isRemoteFrameView());

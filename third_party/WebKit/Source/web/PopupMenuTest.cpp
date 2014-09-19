@@ -190,12 +190,11 @@ protected:
     virtual void SetUp()
     {
         m_helper.initialize(false, 0, &m_webviewClient);
-        m_popupMenu = adoptRef(new PopupMenuChromium(*mainFrame()->frame(), &m_popupMenuClient));
+        m_popupMenu = adoptRefWillBeNoop(new PopupMenuChromium(*mainFrame()->frame(), &m_popupMenuClient));
     }
 
     virtual void TearDown()
     {
-        m_popupMenu = nullptr;
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 
@@ -266,7 +265,7 @@ protected:
 protected:
     PopupTestWebViewClient m_webviewClient;
     TestPopupMenuClient m_popupMenuClient;
-    RefPtr<PopupMenu> m_popupMenu;
+    RefPtrWillBePersistent<PopupMenu> m_popupMenu;
     std::string baseURL;
 
 private:
@@ -584,7 +583,6 @@ protected:
 
 protected:
     PopupTestWebViewClient m_webviewClient;
-    RefPtr<PopupMenu> m_popupMenu;
     std::string baseURL;
 
 private:

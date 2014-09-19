@@ -79,7 +79,7 @@ private:
     LocalFrame* frameForSecurityContext() const;
 
     KURL m_url;
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     RefPtrWillBeMember<Document> m_parent;
     RefPtrWillBeMember<Document> m_owner;
     WeakPtrWillBeMember<Document> m_contextDocument;

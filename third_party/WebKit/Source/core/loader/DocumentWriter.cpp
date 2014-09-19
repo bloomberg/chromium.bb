@@ -31,13 +31,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/PassOwnPtr.h"
@@ -106,7 +106,7 @@ void DocumentWriter::end()
     // http://bugs.webkit.org/show_bug.cgi?id=10854
     // The frame's last ref may be removed and it can be deleted by checkCompleted(),
     // so we'll add a protective refcount
-    RefPtr<LocalFrame> protector(m_document->frame());
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_document->frame());
 
     if (!m_parser)
         return;

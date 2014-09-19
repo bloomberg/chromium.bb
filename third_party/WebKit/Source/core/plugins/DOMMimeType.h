@@ -35,6 +35,7 @@ class DOMPlugin;
 class LocalFrame;
 
 class DOMMimeType FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
@@ -48,7 +49,7 @@ public:
     const String& description() const;
     PassRefPtrWillBeRawPtr<DOMPlugin> enabledPlugin() const;
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     const MimeClassInfo& mimeClassInfo() const { return m_pluginData->mimes()[m_index]; }

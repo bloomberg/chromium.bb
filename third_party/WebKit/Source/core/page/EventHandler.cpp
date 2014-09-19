@@ -243,6 +243,7 @@ void EventHandler::trace(Visitor* visitor)
     visitor->trace(m_capturingMouseEventsNode);
     visitor->trace(m_nodeUnderMouse);
     visitor->trace(m_lastNodeUnderMouse);
+    visitor->trace(m_lastMouseMoveEventSubframe);
     visitor->trace(m_clickNode);
     visitor->trace(m_dragTarget);
     visitor->trace(m_frameSetBeingResized);
@@ -1237,7 +1238,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     m_mousePressNode = mev.innerNode();
 
-    RefPtr<LocalFrame> subframe = subframeForHitTestResult(mev);
+    RefPtrWillBeRawPtr<LocalFrame> subframe = subframeForHitTestResult(mev);
     if (subframe && passMousePressEventToSubframe(mev, subframe.get())) {
         // Start capturing future events for this frame.  We only do this if we didn't clear
         // the m_mousePressed flag, which may happen if an AppKit widget entered a modal event loop.
@@ -1443,7 +1444,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     }
 
     bool swallowEvent = false;
-    RefPtr<LocalFrame> newSubframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
+    RefPtrWillBeRawPtr<LocalFrame> newSubframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
 
     // We want mouseouts to happen first, from the inside out.  First send a move event to the last subframe so that it will fire mouseouts.
     if (m_lastMouseMoveEventSubframe && m_lastMouseMoveEventSubframe->tree().isDescendantOf(m_frame) && m_lastMouseMoveEventSubframe != newSubframe)

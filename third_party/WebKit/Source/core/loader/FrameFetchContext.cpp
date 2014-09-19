@@ -207,4 +207,10 @@ void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, un
     dispatchDidFinishLoading(ensureLoader(loader), identifier, 0, 0);
 }
 
+void FrameFetchContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_frame);
+    FetchContext::trace(visitor);
+}
+
 } // namespace blink

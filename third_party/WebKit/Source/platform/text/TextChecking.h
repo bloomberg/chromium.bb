@@ -31,6 +31,7 @@
 #ifndef TextChecking_h
 #define TextChecking_h
 
+#include "platform/heap/Handle.h"
 #include "platform/text/TextDecoration.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -103,9 +104,10 @@ private:
     Vector<unsigned> m_offsets;
 };
 
-class TextCheckingRequest : public RefCounted<TextCheckingRequest> {
+class TextCheckingRequest : public RefCountedWillBeGarbageCollectedFinalized<TextCheckingRequest> {
 public:
     virtual ~TextCheckingRequest() { }
+    virtual void trace(Visitor*) { }
 
     virtual const TextCheckingRequestData& data() const = 0;
     virtual void didSucceed(const Vector<TextCheckingResult>&) = 0;

@@ -49,7 +49,20 @@
 // From the perspective of the embedder, WebFrame is simply an object that it
 // allocates by calling WebFrame::create() and must be freed by calling close().
 // Internally, WebFrame is actually refcounted and it holds a reference to its
-// corresponding LocalFrame in WebCore.
+// corresponding LocalFrame in blink.
+//
+// Oilpan: the middle objects + Page in the above diagram are Oilpan heap allocated,
+// WebView and FrameView are currently not. In terms of ownership and control, the
+// relationships stays the same, but the references from the off-heap WebView to the
+// on-heap Page is handled by a Persistent<>, not a RefPtr<>. Similarly, the mutual
+// strong references between the on-heap LocalFrame and the off-heap FrameView
+// is through a RefPtr (from LocalFrame to FrameView), and a Persistent refers
+// to the LocalFrame in the other direction.
+//
+// From the embedder's point of view, the use of Oilpan brings no changes. close()
+// must still be used to signal that the embedder is through with the WebFrame.
+// Calling it will bring about the release and finalization of the frame object,
+// and everything underneath.
 //
 // How frames are destroyed
 // ------------------------
@@ -66,7 +79,7 @@
 // detached. Most embedders will invoke close() on the WebFrame at this point,
 // triggering its deletion unless something else is still retaining a reference.
 //
-// Thie client is expected to be set whenever the WebLocalFrameImpl is attached to
+// The client is expected to be set whenever the WebLocalFrameImpl is attached to
 // the DOM.
 
 #include "config.h"
@@ -498,7 +511,11 @@ void WebLocalFrameImpl::close()
 {
     m_client = 0;
 
+#if ENABLE(OILPAN)
+    m_selfKeepAlive.clear();
+#else
     deref(); // Balances ref() acquired in WebFrame::create
+#endif
 }
 
 WebString WebLocalFrameImpl::uniqueName() const
@@ -1527,7 +1544,12 @@ WebLocalFrame* WebLocalFrame::create(WebFrameClient* client)
 
 WebLocalFrameImpl* WebLocalFrameImpl::create(WebFrameClient* client)
 {
-    return adoptRef(new WebLocalFrameImpl(client)).leakRef();
+    WebLocalFrameImpl* frame = new WebLocalFrameImpl(client);
+#if ENABLE(OILPAN)
+    return frame;
+#else
+    return adoptRef(frame).leakRef();
+#endif
 }
 
 WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
@@ -1537,6 +1559,9 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_userMediaClientImpl(this)
     , m_geolocationClientProxy(GeolocationClientProxy::create(client ? client->geolocationClient() : 0))
+#if ENABLE(OILPAN)
+    , m_selfKeepAlive(this)
+#endif
 {
     Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
@@ -1550,7 +1575,18 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
     cancelPendingScopingEffort();
 }
 
-void WebLocalFrameImpl::setCoreFrame(PassRefPtr<LocalFrame> frame)
+void WebLocalFrameImpl::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_frame);
+    visitor->trace(m_printContext);
+    visitor->trace(m_geolocationClientProxy);
+
+    WebFrame::traceChildren(visitor, this);
+#endif
+}
+
+void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
 {
     m_frame = frame;
 
@@ -1573,9 +1609,9 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtr<LocalFrame> frame)
     }
 }
 
-PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
-    RefPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
+    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
     setCoreFrame(frame);
     frame->tree().setName(name, fallbackName);
     // We must call init() after m_frame is assigned because it is referenced
@@ -1585,7 +1621,7 @@ PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, F
     return frame;
 }
 
-PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
+PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
 {
     ASSERT(m_client);
     WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, request.frameName()));
@@ -1596,7 +1632,7 @@ PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadReques
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    RefPtr<LocalFrame> child = webframeChild->initializeCoreFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    RefPtrWillBeRawPtr<LocalFrame> child = webframeChild->initializeCoreFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
     // Initializing the core frame may cause the new child to be detached, since
     // it may dispatch a load event in the parent.
     if (!child->tree().parent())

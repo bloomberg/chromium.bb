@@ -15,10 +15,9 @@ inline RemoteFrame::RemoteFrame(FrameClient* client, FrameHost* host, FrameOwner
 {
 }
 
-PassRefPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, FrameHost* host, FrameOwner* owner)
+PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, FrameHost* host, FrameOwner* owner)
 {
-    RefPtr<RemoteFrame> frame = adoptRef(new RemoteFrame(client, host, owner));
-    return frame.release();
+    return adoptRefWillBeNoop(new RemoteFrame(client, host, owner));
 }
 
 RemoteFrame::~RemoteFrame()
@@ -29,7 +28,7 @@ RemoteFrame::~RemoteFrame()
 void RemoteFrame::detach()
 {
     detachChildren();
-    m_host = 0;
+    m_host = nullptr;
 }
 
 void RemoteFrame::setView(PassRefPtr<RemoteFrameView> view)

@@ -142,7 +142,7 @@ void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[])
 {
     // Keep LocalFrame (and therefore ScriptController) alive.
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
     return ScriptController::callFunction(m_frame->document(), function, receiver, argc, info, m_isolate);
 }
 
@@ -192,7 +192,7 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
             *compilationFinishTime = WTF::monotonicallyIncreasingTime();
         }
         // Keep LocalFrame (and therefore ScriptController) alive.
-        RefPtr<LocalFrame> protect(m_frame);
+        RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
         result = V8ScriptRunner::runCompiledScript(script, m_frame->document(), m_isolate);
         ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
     }
@@ -537,7 +537,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     // We need to hold onto the LocalFrame here because executing script can
     // destroy the frame.
-    RefPtr<LocalFrame> protector(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
     RefPtrWillBeRawPtr<Document> ownerDocument(m_frame->document());
 
     const int javascriptSchemeLength = sizeof("javascript:") - 1;
@@ -600,7 +600,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
 
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
     if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         m_frame->loader().didAccessInitialDocument();
 

@@ -37,6 +37,9 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -44,9 +47,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
@@ -179,7 +179,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
 // but not loads initiated by child frames' data sources -- that's the WebFrame's job.
 void DocumentLoader::stopLoading()
 {
-    RefPtr<LocalFrame> protectFrame(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
     // In some rare cases, calling FrameLoader::stopLoading could cause isLoading() to return false.
@@ -546,7 +546,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
 
     // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
     // by starting a new load, so retain temporarily.
-    RefPtr<LocalFrame> protectFrame(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
     m_applicationCacheHost->mainResourceDataReceived(data, length);
@@ -578,7 +578,7 @@ void DocumentLoader::appendRedirect(const KURL& url)
 void DocumentLoader::detachFromFrame()
 {
     ASSERT(m_frame);
-    RefPtr<LocalFrame> protectFrame(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
     // It never makes sense to have a document loader that is detached from its

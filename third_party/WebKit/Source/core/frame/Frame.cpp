@@ -81,19 +81,28 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
 
 Frame::~Frame()
 {
+    // FIXME: We should not be doing all this work inside the destructor
+#if !ENABLE(OILPAN)
     disconnectOwnerElement();
     setDOMWindow(nullptr);
-
-    // FIXME: We should not be doing all this work inside the destructor
+#endif
 
 #ifndef NDEBUG
     frameCounter.decrement();
 #endif
 }
 
+void Frame::trace(Visitor* visitor)
+{
+    visitor->trace(m_treeNode);
+    visitor->trace(m_host);
+    visitor->trace(m_owner);
+    visitor->trace(m_domWindow);
+}
+
 void Frame::detachChildren()
 {
-    typedef Vector<RefPtr<Frame> > FrameVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Frame> > FrameVector;
     FrameVector childrenToDetach;
     childrenToDetach.reserveCapacity(tree().childCount());
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
@@ -126,6 +135,7 @@ void Frame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
     if (m_domWindow)
         m_domWindow->reset();
+
     m_domWindow = domWindow;
 }
 
@@ -158,7 +168,7 @@ RenderPart* Frame::ownerRenderer() const
     return toRenderPart(object);
 }
 
-void Frame::setRemotePlatformLayer(blink::WebLayer* layer)
+void Frame::setRemotePlatformLayer(WebLayer* layer)
 {
     if (m_remotePlatformLayer)
         GraphicsLayer::unregisterContentsLayer(m_remotePlatformLayer);
@@ -197,7 +207,7 @@ void Frame::disconnectOwnerElement()
         if (page())
             page()->decrementSubframeCount();
     }
-    m_owner = 0;
+    m_owner = nullptr;
 }
 
 HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const

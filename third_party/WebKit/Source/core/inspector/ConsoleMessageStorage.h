@@ -52,7 +52,7 @@ private:
     int m_expiredCount;
     WillBeHeapDeque<RefPtrWillBeMember<ConsoleMessage> > m_messages;
     RawPtrWillBeMember<ExecutionContext> m_context;
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 } // namespace blink

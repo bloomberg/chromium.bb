@@ -240,7 +240,27 @@ void PopupContainer::notifyPopupHidden()
     if (!m_popupOpen)
         return;
     m_popupOpen = false;
-    WebViewImpl::fromPage(m_frameView->frame().page())->popupClosed(this);
+
+    // With Oilpan, we cannot assume that the FrameView's LocalFrame's
+    // page is still available, as the LocalFrame itself may have been
+    // detached from its FrameHost by now.
+    //
+    // So, if a popup menu is left in an open/shown state when
+    // finalized, the PopupMenu implementation of this container's
+    // listbox will hide itself when destructed, delivering the
+    // notifyPopupHidden() notification in the process & ending up here.
+    // If the LocalFrame has been detached already -- done when its
+    // HTMLFrameOwnerElement frame owner is detached as part of being
+    // torn down -- the connection to the FrameHost has been snipped &
+    // there's no page. Hence the null check.
+    //
+    // In a non-Oilpan setting, the RenderMenuList that controls/owns
+    // the PopupMenuChromium object and this PopupContainer is torn
+    // down and destructed before the frame and frame owner, hence the
+    // page will always be available in that setting and this will
+    // not be an issue.
+    if (WebViewImpl* webView = WebViewImpl::fromPage(m_frameView->frame().page()))
+        webView->popupClosed(this);
 }
 
 void PopupContainer::fitToListBox()

@@ -372,7 +372,7 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
         return;
     }
 
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
     redirect->fire(m_frame);
@@ -388,7 +388,7 @@ void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
     // and/or confuse the JS when it shortly thereafter tries to schedule a location change. Let the JS have its way.
     // FIXME: This check seems out of place.
     if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() && m_frame->loader().provisionalDocumentLoader()) {
-        RefPtr<Frame> protect(m_frame);
+        RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
         m_frame->loader().provisionalDocumentLoader()->stopLoading();
         if (!m_frame->host())
             return;
@@ -420,6 +420,11 @@ void NavigationScheduler::cancel()
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
     m_redirect.clear();
+}
+
+void NavigationScheduler::trace(Visitor* visitor)
+{
+    visitor->trace(m_frame);
 }
 
 } // namespace blink

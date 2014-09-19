@@ -1007,6 +1007,13 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
 
     m_currentNode->parserAppendChild(newElement.get());
 
+    // Event handlers may synchronously trigger removal of the
+    // document and cancellation of this parser.
+    if (isStopped()) {
+        stopParsing();
+        return;
+    }
+
     if (isHTMLTemplateElement(*newElement))
         pushCurrentNode(toHTMLTemplateElement(*newElement).content());
     else

@@ -33,6 +33,7 @@
 #define FrameLoaderClientImpl_h
 
 #include "core/loader/FrameLoaderClient.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -115,7 +116,7 @@ public:
     virtual WTF::String userAgent(const KURL&) OVERRIDE;
     virtual WTF::String doNotTrackValue() OVERRIDE;
     virtual void transitionToCommittedForNewPage() OVERRIDE;
-    virtual PassRefPtr<LocalFrame> createFrame(const KURL&, const WTF::AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const WTF::AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
     virtual PassRefPtr<Widget> createPlugin(
         HTMLPlugInElement*, const KURL&,

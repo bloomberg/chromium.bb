@@ -143,13 +143,9 @@ public:
     {
         return host ? host->requireSupplement(key) : 0;
     }
-
-    // FIXME: Oilpan: Remove this callback once PersistentHeapSupplementable is removed again.
-    virtual void persistentHostHasBeenDestroyed() { }
 };
 
-// Helper class for implementing Supplementable, HeapSupplementable, and
-// PersistentHeapSupplementable.
+// Helper class for implementing Supplementable and HeapSupplementable.
 template<typename T, bool isGarbageCollected = false>
 class SupplementableBase {
 public:
@@ -215,37 +211,6 @@ public:
     }
 };
 
-// This class is used to make an off-heap class supplementable with supplements
-// that are on-heap, aka. HeapSupplements.
-template<typename T>
-class GC_PLUGIN_IGNORE("http://crbug.com/395036") PersistentHeapSupplementable : public SupplementableBase<T, true> {
-public:
-    PersistentHeapSupplementable() : m_root(this) { }
-    virtual ~PersistentHeapSupplementable()
-    {
-        typedef typename SupplementableTraits<T, true>::SupplementMap::iterator SupplementIterator;
-        for (SupplementIterator it = this->m_supplements.begin(); it != this->m_supplements.end(); ++it)
-            it->value->persistentHostHasBeenDestroyed();
-    }
-
-    virtual void trace(Visitor* visitor)
-    {
-        visitor->trace(this->m_supplements);
-        SupplementableBase<T, true>::trace(visitor);
-    }
-
-private:
-    class TraceDelegate : PersistentBase<ThreadLocalPersistents<AnyThread>, TraceDelegate> {
-    public:
-        TraceDelegate(PersistentHeapSupplementable* owner) : m_owner(owner) { }
-        void trace(Visitor* visitor) { m_owner->trace(visitor); }
-    private:
-        PersistentHeapSupplementable* m_owner;
-    };
-
-    TraceDelegate m_root;
-};
-
 template<typename T>
 class Supplement : public SupplementBase<T, false> { };
 
@@ -257,9 +222,7 @@ public:
     virtual void trace(Visitor* visitor)
     {
         // No tracing of off-heap supplements. We should not have any Supplementable
-        // object on the heap. Either the object is HeapSupplementable or if it is
-        // off heap it should use PersistentHeapSupplementable to trace any on-heap
-        // supplements.
+        // object on the heap.
         COMPILE_ASSERT(!IsGarbageCollectedType<T>::value, GarbageCollectedObjectMustBeHeapSupplementable);
         SupplementableBase<T, false>::trace(visitor);
     }

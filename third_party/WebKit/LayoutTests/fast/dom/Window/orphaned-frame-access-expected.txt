@@ -1,3 +1,12 @@
 This tests access to a window with a null frame. You should see "PASS" for each of the three tests below.
 
-property: PASS ... array: PASS ... missing property: PASS.
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+missing property: PASS
+missing array index: PASS
+missing interface object: PASS
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

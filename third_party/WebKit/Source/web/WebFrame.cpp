@@ -8,6 +8,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/heap/Handle.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
@@ -28,7 +29,7 @@ Frame* toCoreFrame(const WebFrame* frame)
 bool WebFrame::swap(WebFrame* frame)
 {
     using std::swap;
-    RefPtr<Frame> oldFrame = toCoreFrame(this);
+    RefPtrWillBeRawPtr<Frame> oldFrame = toCoreFrame(this);
 
     // All child frames must be detached first.
     oldFrame->detachChildren();
@@ -228,6 +229,22 @@ WebFrame::WebFrame()
 WebFrame::~WebFrame()
 {
     m_openedFrameTracker.reset(0);
+}
+
+void WebFrame::traceChildren(Visitor* visitor, WebFrame* frame)
+{
+#if ENABLE(OILPAN)
+    // Trace the children frames.
+    WebFrame* child = frame ? frame->firstChild() : 0;
+    while (child) {
+        if (child->isWebLocalFrame())
+            visitor->trace(toWebLocalFrameImpl(child));
+        else
+            visitor->trace(toWebRemoteFrameImpl(child));
+
+        child = child->nextSibling();
+    }
+#endif
 }
 
 } // namespace blink

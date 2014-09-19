@@ -63,26 +63,28 @@ private:
     RawPtrWillBeMember<TreeScope> m_rootTreeScope;
 };
 
-class FocusController {
-    WTF_MAKE_NONCOPYABLE(FocusController); WTF_MAKE_FAST_ALLOCATED;
+class FocusController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
+    WTF_MAKE_NONCOPYABLE(FocusController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<FocusController> create(Page*);
+    static PassOwnPtrWillBeRawPtr<FocusController> create(Page*);
 
-    void setFocusedFrame(PassRefPtr<Frame>);
-    void focusDocumentView(PassRefPtr<Frame>);
+    void setFocusedFrame(PassRefPtrWillBeRawPtr<Frame>);
+    void focusDocumentView(PassRefPtrWillBeRawPtr<Frame>);
     Frame* focusedFrame() const { return m_focusedFrame.get(); }
     Frame* focusedOrMainFrame() const;
 
     bool setInitialFocus(FocusType);
     bool advanceFocus(FocusType type) { return advanceFocus(type, false); }
 
-    bool setFocusedElement(Element*, PassRefPtr<Frame>, FocusType = FocusTypeNone);
+    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, FocusType = FocusTypeNone);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }
 
     void setFocused(bool);
     bool isFocused() const { return m_isFocused; }
+
+    void trace(Visitor*);
 
 private:
     explicit FocusController(Page*);
@@ -114,8 +116,8 @@ private:
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, FocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, FocusType, FocusCandidate& closest);
 
-    Page* m_page;
-    RefPtr<Frame> m_focusedFrame;
+    RawPtrWillBeMember<Page> m_page;
+    RefPtrWillBeMember<Frame> m_focusedFrame;
     bool m_isActive;
     bool m_isFocused;
     bool m_isChangingFocusedFrame;

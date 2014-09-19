@@ -72,9 +72,7 @@ struct WindowFeatures;
 template <typename T> class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
-class WebLocalFrameImpl FINAL
-    : public WebLocalFrame
-    , public RefCounted<WebLocalFrameImpl> {
+class WebLocalFrameImpl FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebLocalFrameImpl>, public WebLocalFrame {
 public:
     // WebFrame methods:
     virtual bool isWebLocalFrame() const OVERRIDE;
@@ -237,10 +235,9 @@ public:
     static WebLocalFrameImpl* create(WebFrameClient*);
     virtual ~WebLocalFrameImpl();
 
-    PassRefPtr<LocalFrame> initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
+    PassRefPtrWillBeRawPtr<LocalFrame> initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
 
-    PassRefPtr<LocalFrame> createChildFrame(
-        const FrameLoadRequest&, HTMLFrameOwnerElement*);
+    PassRefPtrWillBeRawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, HTMLFrameOwnerElement*);
 
     void didChangeContentsSize(const IntSize&);
 
@@ -316,13 +313,15 @@ public:
     // Returns a hit-tested VisiblePosition for the given point
     VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
+    void trace(Visitor*);
+
 private:
     friend class FrameLoaderClientImpl;
 
     explicit WebLocalFrameImpl(WebFrameClient*);
 
     // Sets the local core frame and registers destruction observers.
-    void setCoreFrame(PassRefPtr<LocalFrame>);
+    void setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame>);
 
     void loadJavaScriptURL(const KURL&);
 
@@ -333,7 +332,7 @@ private:
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
-    RefPtr<LocalFrame> m_frame;
+    RefPtrWillBeMember<LocalFrame> m_frame;
 
     // Indicate whether the current LocalFrame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.
@@ -348,7 +347,7 @@ private:
 
     // Valid between calls to BeginPrint() and EndPrint(). Containts the print
     // information. Is used by PrintPage().
-    OwnPtrWillBePersistent<ChromePrintContext> m_printContext;
+    OwnPtrWillBeMember<ChromePrintContext> m_printContext;
 
     // Stores the additional input events offset and scale when device metrics emulation is enabled.
     IntSize m_inputEventsOffsetForEmulation;
@@ -356,7 +355,18 @@ private:
 
     UserMediaClientImpl m_userMediaClientImpl;
 
-    OwnPtrWillBePersistent<GeolocationClientProxy> m_geolocationClientProxy;
+    OwnPtrWillBeMember<GeolocationClientProxy> m_geolocationClientProxy;
+
+#if ENABLE(OILPAN)
+    // Oilpan: to provide the guarantee of having the frame live until
+    // close() is called, an instance keep a self-persistent. It is
+    // cleared upon calling close(). This avoids having to assume that
+    // an embedder's WebFrame references are all discovered via thread
+    // state (stack, registers) should an Oilpan GC strike while we're
+    // in the process of detaching.
+    GC_PLUGIN_IGNORE("340522")
+    Persistent<WebLocalFrameImpl> m_selfKeepAlive;
+#endif
 };
 
 DEFINE_TYPE_CASTS(WebLocalFrameImpl, WebFrame, frame, frame->isWebLocalFrame(), frame.isWebLocalFrame());

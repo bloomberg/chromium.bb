@@ -44,9 +44,9 @@
 
 namespace blink {
 
-PassOwnPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
+PassOwnPtrWillBeRawPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
 {
-    return adoptPtr(new FullscreenController(webViewImpl));
+    return adoptPtrWillBeNoop(new FullscreenController(webViewImpl));
 }
 
 FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
@@ -156,6 +156,12 @@ void FullscreenController::exitFullScreenForElement(Element* element)
         return;
     if (WebViewClient* client = m_webViewImpl->client())
         client->exitFullScreen();
+}
+
+void FullscreenController::trace(Visitor* visitor)
+{
+    visitor->trace(m_provisionalFullScreenElement);
+    visitor->trace(m_fullScreenFrame);
 }
 
 } // namespace blink

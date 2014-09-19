@@ -56,7 +56,6 @@ public:
     ExternalPopupMenu(LocalFrame&, PopupMenuClient*, WebViewImpl&);
     virtual ~ExternalPopupMenu();
 
-
     // Fills |info| with the popup menu information contained in the
     // PopupMenuClient associated with this ExternalPopupMenu.
     // FIXME: public only for test access. Need to revert once gtest
@@ -64,6 +63,8 @@ public:
     static void getPopupMenuInfo(WebPopupMenuInfo&, PopupMenuClient&);
     static int toPopupMenuItemIndex(int index, PopupMenuClient&);
     static int toExternalPopupMenuItemIndex(int index, PopupMenuClient&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     // PopupMenu methods:
@@ -81,7 +82,7 @@ private:
     void dispatchEvent(Timer<ExternalPopupMenu>*);
 
     PopupMenuClient* m_popupMenuClient;
-    RefPtr<LocalFrame> m_localFrame;
+    RefPtrWillBeMember<LocalFrame> m_localFrame;
     WebViewImpl& m_webView;
     OwnPtr<WebMouseEvent> m_syntheticEvent;
     Timer<ExternalPopupMenu> m_dispatchEventTimer;

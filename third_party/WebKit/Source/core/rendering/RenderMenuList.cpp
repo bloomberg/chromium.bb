@@ -81,6 +81,7 @@ void RenderMenuList::trace(Visitor* visitor)
 {
     visitor->trace(m_buttonText);
     visitor->trace(m_innerBlock);
+    visitor->trace(m_popup);
     RenderFlexibleBox::trace(visitor);
 }
 

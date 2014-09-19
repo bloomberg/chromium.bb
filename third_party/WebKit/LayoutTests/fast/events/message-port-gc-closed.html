@@ -2,14 +2,21 @@
 <body>
 <script src="../../resources/js-test.js"></script>
 <script>
-jsTestIsAsync = true;
 description("MessagePorts (and their execution contexts) should be collected by GC once close() has been called on them");
+
+window.jsTestIsAsync = true;
 window.onmessage = function(evt) {
     iframeDocGC = internals.observeGC(document.querySelector('iframe').contentDocument);
     document.querySelector('iframe').remove();
-    gc();
-    shouldBeTrue("iframeDocGC.wasCollected");
-    finishJSTest();
+    // The iframe is reachable via evt.source, and evt is on the
+    // stack. asyncGC() will invoke the callback once back at
+    // the event loop (and after having forced a GC); evt
+    // will consequently no longer be in scope and the iframe
+    // will have been GCed.
+    asyncGC(function () {
+        shouldBeTrue("iframeDocGC.wasCollected");
+        finishJSTest();
+    });
 }
 </script>
 <iframe src="resources/message-port-gc-closed-iframe.html"></iframe>

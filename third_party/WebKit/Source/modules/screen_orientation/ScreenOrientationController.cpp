@@ -21,12 +21,6 @@ ScreenOrientationController::~ScreenOrientationController()
 {
 }
 
-void ScreenOrientationController::persistentHostHasBeenDestroyed()
-{
-    // Unregister lifecycle observation once page is being torn down.
-    observeContext(0);
-}
-
 void ScreenOrientationController::provideTo(LocalFrame& frame, WebScreenOrientationClient* client)
 {
     ASSERT(RuntimeEnabledFeatures::screenOrientationEnabled());
@@ -127,7 +121,7 @@ void ScreenOrientationController::notifyOrientationChanged()
     // Keep track of the frames that need to be notified before notifying the
     // current frame as it will prevent side effects from the change event
     // handlers.
-    Vector<RefPtr<LocalFrame> > childFrames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > childFrames;
     for (Frame* child = m_frame.tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));
@@ -139,8 +133,7 @@ void ScreenOrientationController::notifyOrientationChanged()
 
     // ... and child frames, if they have a ScreenOrientationController.
     for (size_t i = 0; i < childFrames.size(); ++i) {
-        ScreenOrientationController* controller = ScreenOrientationController::from(*childFrames[i]);
-        if (controller)
+        if (ScreenOrientationController* controller = ScreenOrientationController::from(*childFrames[i]))
             controller->notifyOrientationChanged();
     }
 }

@@ -484,7 +484,7 @@ void LocalDOMWindow::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stat
 
 void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
 {
-    if (!frame())
+    if (!m_frame)
         return;
 
     // Per step 11 of section 6.5.9 (history traversal) of the HTML5 spec, we
@@ -497,8 +497,6 @@ void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
 
 LocalDOMWindow::~LocalDOMWindow()
 {
-    ASSERT(m_hasBeenReset);
-
 #if ENABLE(OILPAN)
     // Oilpan: the frame host and document objects are
     // also garbage collected; cannot notify these
@@ -508,6 +506,7 @@ LocalDOMWindow::~LocalDOMWindow()
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
 #else
+    ASSERT(m_hasBeenReset);
     reset();
 
     removeAllEventListenersInternal(DoBroadcastListenerRemoval);
@@ -540,12 +539,6 @@ PassRefPtrWillBeRawPtr<MediaQueryList> LocalDOMWindow::matchMedia(const String& 
 Page* LocalDOMWindow::page()
 {
     return frame() ? frame()->page() : 0;
-}
-
-void LocalDOMWindow::frameDestroyed()
-{
-    FrameDestructionObserver::frameDestroyed();
-    reset();
 }
 
 void LocalDOMWindow::willDetachFrameHost()
@@ -903,7 +896,7 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intende
 
 DOMSelection* LocalDOMWindow::getSelection()
 {
-    if (!isCurrentlyDisplayedInFrame() || !m_frame)
+    if (!isCurrentlyDisplayedInFrame())
         return 0;
 
     return m_frame->document()->getSelection();
@@ -1061,8 +1054,8 @@ bool LocalDOMWindow::find(const String& string, bool caseSensitive, bool backwar
         return false;
 
     // |m_frame| can be destructed during |Editor::findString()| via
-    // |Document::updateLayou()|, e.g. event handler removes a frame.
-    RefPtr<LocalFrame> protectFrame(m_frame);
+    // |Document::updateLayout()|, e.g. event handler removes a frame.
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
 
     // FIXME (13016): Support wholeWord, searchInFrames and showDialog
     return m_frame->editor().findString(string, !backwards, caseSensitive, wrap, false);
@@ -1864,11 +1857,10 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
 
 LocalDOMWindow* LocalDOMWindow::anonymousIndexedGetter(uint32_t index)
 {
-    LocalFrame* frame = this->frame();
-    if (!frame)
+    if (!m_frame)
         return 0;
 
-    Frame* child = frame->tree().scopedChild(index);
+    Frame* child = m_frame->tree().scopedChild(index);
     if (child)
         return child->domWindow();
 
@@ -1912,6 +1904,7 @@ void LocalDOMWindow::trace(Visitor* visitor)
     WillBeHeapSupplementable<LocalDOMWindow>::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
     LifecycleContext<LocalDOMWindow>::trace(visitor);
+    FrameDestructionObserver::trace(visitor);
 }
 
 v8::Handle<v8::Object> LocalDOMWindow::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

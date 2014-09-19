@@ -171,7 +171,7 @@ void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> c
 void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
 {
     ExecutionContext* executionContext = scriptState->executionContext();
-    RefPtr<LocalFrame> protect = toDocument(executionContext)->frame();
+    RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
     ScriptDebugServer::compileScript(scriptState, expression, sourceURL, scriptId, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
     if (!scriptId->isNull())
         m_compiledScriptURLs.set(*scriptId, sourceURL);
@@ -196,7 +196,7 @@ void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& sc
     if (frame)
         cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());
 
-    RefPtr<LocalFrame> protect = frame;
+    RefPtrWillBeRawPtr<LocalFrame> protect(frame);
     ScriptDebugServer::runScript(scriptState, scriptId, result, wasThrown, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
 
     if (frame)

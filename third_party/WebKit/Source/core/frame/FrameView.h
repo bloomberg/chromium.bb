@@ -57,6 +57,7 @@ class RenderWidget;
 
 typedef unsigned long long DOMTimeStamp;
 
+// FIXME: Oilpan: move Widget (and thereby FrameView) to the heap.
 class FrameView FINAL : public ScrollView {
 public:
     friend class RenderView;
@@ -418,7 +419,13 @@ private:
     // FIXME: These are just "children" of the FrameView and should be RefPtr<Widget> instead.
     WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderWidget> > m_widgets;
 
-    RefPtr<LocalFrame> m_frame;
+    // Oilpan: the use of a persistent back reference 'emulates' the
+    // RefPtr-cycle that is kept between the two objects non-Oilpan.
+    //
+    // That cycle is broken when a LocalFrame is detached by
+    // FrameLoader::detachFromParent(), it then clears its
+    // FrameView's m_frame reference by calling setView(nullptr).
+    RefPtrWillBePersistent<LocalFrame> m_frame;
 
     bool m_doFullPaintInvalidation;
 

@@ -49,10 +49,14 @@ protected:
     virtual ~DOMWindowProperty();
 #endif
 
-    LocalFrame* m_frame;
-    RawPtrWillBeMember<LocalDOMWindow> m_associatedDOMWindow;
+    RawPtrWillBeWeakMember<LocalFrame> m_frame;
+
+#if !ENABLE(OILPAN)
+private:
+    LocalDOMWindow* m_associatedDOMWindow;
+#endif
 };
 
-}
+} // namespace blink
 
 #endif

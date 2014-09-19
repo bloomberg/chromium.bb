@@ -53,6 +53,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PinchViewport.h"
+#include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -78,7 +79,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/xml/parser/XMLDocumentParser.h"
@@ -127,6 +127,12 @@ FrameLoader::FrameLoader(LocalFrame* frame)
 
 FrameLoader::~FrameLoader()
 {
+}
+
+void FrameLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_frame);
+    visitor->trace(m_fetchContext);
 }
 
 void FrameLoader::init()
@@ -241,6 +247,8 @@ void FrameLoader::didExplicitOpen()
 
 void FrameLoader::clear()
 {
+    // clear() is called during (Local)Frame finalization and when creating
+    // a new Document within it (DocumentLoader::createWriterFor().)
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
@@ -248,7 +256,6 @@ void FrameLoader::clear()
     m_frame->document()->cancelParsing();
     m_frame->document()->prepareForDestruction();
     m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
-
     m_frame->selection().prepareForDestruction();
     m_frame->eventHandler().clear();
     if (m_frame->view())
@@ -398,7 +405,7 @@ void FrameLoader::finishedParsing()
     // This can be called from the LocalFrame's destructor, in which case we shouldn't protect ourselves
     // because doing so will cause us to re-enter the destructor when protector goes out of scope.
     // Null-checking the FrameView indicates whether or not we're in the destructor.
-    RefPtr<LocalFrame> protector = m_frame->view() ? m_frame : 0;
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame->view() ? m_frame.get() : nullptr);
 
     if (client())
         client()->dispatchDidFinishDocumentLoad();
@@ -442,7 +449,7 @@ bool FrameLoader::allAncestorsAreComplete() const
 
 void FrameLoader::checkCompleted()
 {
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     if (m_frame->view())
         m_frame->view()->handleLoadCompleted();
@@ -514,6 +521,11 @@ void FrameLoader::setOpener(LocalFrame* opener)
 
 bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
 {
+    // With Oilpan, a FrameLoader might be accessed after the
+    // FrameHost has been detached. FrameClient will not be
+    // accessible, so bail early.
+    if (!client())
+        return false;
     Settings* settings = m_frame->settings();
     bool allowed = client()->allowPlugins(settings && settings->pluginsEnabled());
     if (!allowed && reason == AboutToInstantiatePlugin)
@@ -584,7 +596,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
 
 void FrameLoader::completed()
 {
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     for (Frame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame)) {
         if (descendant->isLocalFrame())
@@ -708,7 +720,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
     ASSERT(m_frame->document());
 
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     if (m_inStopAllLoaders)
         return;
@@ -717,8 +729,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RefPtr<LocalFrame> targetFrame = request.formState() ? 0 : findFrameForNavigation(AtomicString(request.frameName()), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
-    if (targetFrame && targetFrame != m_frame) {
+    RefPtrWillBeRawPtr<LocalFrame> targetFrame = request.formState() ? 0 : findFrameForNavigation(AtomicString(request.frameName()), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
+    if (targetFrame && targetFrame.get() != m_frame) {
         request.setFrameName("_self");
         targetFrame->loader().load(request);
         if (Page* page = targetFrame->page())
@@ -830,11 +842,11 @@ void FrameLoader::stopAllLoaders()
 
     // Calling stopLoading() on the provisional document loader can blow away
     // the frame from underneath.
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     m_inStopAllLoaders = true;
 
-    for (RefPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RefPtrWillBeRawPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->loader().stopAllLoaders();
     }
@@ -869,7 +881,8 @@ void FrameLoader::didAccessInitialDocument()
 
 void FrameLoader::didAccessInitialDocumentTimerFired(Timer<FrameLoader>*)
 {
-    client()->didAccessInitialDocument();
+    if (client())
+        client()->didAccessInitialDocument();
 }
 
 void FrameLoader::notifyIfInitialDocumentAccessed()
@@ -885,7 +898,7 @@ void FrameLoader::commitProvisionalLoad()
     ASSERT(client()->hasWebView());
     ASSERT(m_state == FrameStateProvisional);
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
@@ -960,10 +973,10 @@ static bool isDocumentDoneLoading(Document* document)
 bool FrameLoader::checkLoadCompleteForThisFrame()
 {
     ASSERT(client()->hasWebView());
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     bool allChildrenAreDoneLoading = true;
-    for (RefPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RefPtrWillBeRawPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             allChildrenAreDoneLoading &= toLocalFrame(child.get())->loader().checkLoadCompleteForThisFrame();
     }
@@ -1090,8 +1103,10 @@ String FrameLoader::userAgent(const KURL& url) const
 
 void FrameLoader::detachFromParent()
 {
+#if !ENABLE(OILPAN)
     // The caller must protect a reference to m_frame.
     ASSERT(m_frame->refCount() > 1);
+#endif
 
     InspectorInstrumentation::frameDetachedFromParent(m_frame);
 
@@ -1145,7 +1160,7 @@ void FrameLoader::detachClient()
 void FrameLoader::receivedMainResourceError(const ResourceError& error)
 {
     // Retain because the stop may release the last reference to it.
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     if (m_frame->document()->parser())
         m_frame->document()->parser()->stopParsing();
@@ -1187,7 +1202,7 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
         return;
 
     // Leaking scroll position to a cross-origin ancestor would permit the so-called "framesniffing" attack.
-    RefPtr<LocalFrame> boundaryFrame(url.hasFragmentIdentifier() ? m_frame->document()->findUnsafeParentScrollPropagationBoundary() : 0);
+    RefPtrWillBeRawPtr<LocalFrame> boundaryFrame = url.hasFragmentIdentifier() ? m_frame->document()->findUnsafeParentScrollPropagationBoundary() : 0;
 
     if (boundaryFrame)
         boundaryFrame->view()->setSafeToPropagateScrollToParent(false);
@@ -1205,7 +1220,7 @@ bool FrameLoader::shouldClose()
         return true;
 
     // Store all references to each subframe in advance since beforeunload's event handler may modify frame
-    Vector<RefPtr<LocalFrame> > targetFrames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > targetFrames;
     targetFrames.append(m_frame);
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().traverseNext(m_frame)) {
         // FIXME: There is not yet any way to dispatch events to out-of-process frames.
@@ -1292,7 +1307,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
         isTransitionNavigation = dispatchNavigationTransitionData();
 
     // stopAllLoaders can detach the LocalFrame, so protect it.
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
@@ -1413,7 +1428,7 @@ LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Docume
 
 void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
 {
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     if (m_frame->page()->defersLoading()) {
         m_deferredHistoryLoad = DeferredHistoryLoad(item, historyLoadType, cachePolicy);
         return;

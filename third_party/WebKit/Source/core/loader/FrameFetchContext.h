@@ -32,6 +32,7 @@
 #define FrameFetchContext_h
 
 #include "core/fetch/FetchContext.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -47,7 +48,10 @@ class ResourceRequest;
 
 class FrameFetchContext FINAL : public FetchContext {
 public:
-    static PassOwnPtr<FrameFetchContext> create(LocalFrame* frame) { return adoptPtr(new FrameFetchContext(frame)); }
+    static PassOwnPtrWillBeRawPtr<FrameFetchContext> create(LocalFrame* frame)
+    {
+        return adoptPtrWillBeNoop(new FrameFetchContext(frame));
+    }
 
     virtual void reportLocalLoadFailed(const KURL&) OVERRIDE;
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType) OVERRIDE;
@@ -63,11 +67,13 @@ public:
     virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&) OVERRIDE;
     virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength) OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit FrameFetchContext(LocalFrame*);
     inline DocumentLoader* ensureLoader(DocumentLoader*);
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 }

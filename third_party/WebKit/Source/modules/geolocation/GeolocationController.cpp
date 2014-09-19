@@ -99,11 +99,6 @@ GeolocationController::~GeolocationController()
 #endif
 }
 
-void GeolocationController::persistentHostHasBeenDestroyed()
-{
-    observeContext(0);
-}
-
 PassOwnPtrWillBeRawPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
 {
     return adoptPtrWillBeNoop(new GeolocationController(frame, client));

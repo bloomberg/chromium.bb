@@ -733,7 +733,7 @@ Page* InspectorOverlay::overlayPage()
     // through some non-composited paint function.
     overlaySettings.setAcceleratedCompositingEnabled(false);
 
-    RefPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient, &m_overlayPage->frameHost(), 0);
+    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient, &m_overlayPage->frameHost(), 0);
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     FrameLoader& loader = frame->loader();

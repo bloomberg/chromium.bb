@@ -1049,7 +1049,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeGarbageCollectedMixin blink::GarbageCollectedMixin
 #define WillBeHeapSupplement blink::HeapSupplement
 #define WillBeHeapSupplementable blink::HeapSupplementable
-#define WillBePersistentHeapSupplementable blink::PersistentHeapSupplementable
 #define WillBeHeapTerminatedArray blink::HeapTerminatedArray
 #define WillBeHeapTerminatedArrayBuilder blink::HeapTerminatedArrayBuilder
 #define WillBeHeapLinkedStack blink::HeapLinkedStack
@@ -1167,7 +1166,6 @@ public:
 #define WillBeGarbageCollectedMixin blink::DummyBase<void>
 #define WillBeHeapSupplement blink::Supplement
 #define WillBeHeapSupplementable blink::Supplementable
-#define WillBePersistentHeapSupplementable blink::Supplementable
 #define WillBeHeapTerminatedArray WTF::TerminatedArray
 #define WillBeHeapTerminatedArrayBuilder WTF::TerminatedArrayBuilder
 #define WillBeHeapLinkedStack WTF::LinkedStack

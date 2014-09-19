@@ -707,12 +707,12 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-PassRefPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& frame, PopupMenuClient* client) const
+PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& frame, PopupMenuClient* client) const
 {
     if (WebViewImpl::useExternalPopupMenus())
-        return adoptRef(new ExternalPopupMenu(frame, client, *m_webView));
+        return adoptRefWillBeNoop(new ExternalPopupMenu(frame, client, *m_webView));
 
-    return adoptRef(new PopupMenuChromium(frame, client));
+    return adoptRefWillBeNoop(new PopupMenuChromium(frame, client));
 }
 
 PagePopup* ChromeClientImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)

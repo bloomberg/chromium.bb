@@ -38,6 +38,11 @@ DOMMimeType::~DOMMimeType()
 {
 }
 
+void DOMMimeType::trace(Visitor* visitor)
+{
+    FrameDestructionObserver::trace(visitor);
+}
+
 const String &DOMMimeType::type() const
 {
     return mimeClassInfo().type;

@@ -34,6 +34,7 @@ class Plugin;
 class PluginData;
 
 class DOMPlugin FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public FrameDestructionObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPlugin);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMPlugin> create(PluginData* pluginData, LocalFrame* frame, unsigned index)
@@ -52,7 +53,7 @@ public:
     bool canGetItemsForName(const AtomicString& propertyName);
     PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     const PluginInfo& pluginInfo() const { return m_pluginData->plugins()[m_index]; }

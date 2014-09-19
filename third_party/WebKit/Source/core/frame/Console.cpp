@@ -63,17 +63,17 @@ void Console::trace(Visitor* visitor)
 
 ExecutionContext* Console::context()
 {
-    if (!m_frame)
+    if (!frame())
         return 0;
-    return m_frame->document();
+    return frame()->document();
 }
 
 void Console::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
-    if (!m_frame)
+    if (!frame())
         return;
 
-    m_frame->console().addMessage(consoleMessage);
+    frame()->console().addMessage(consoleMessage);
 }
 
 PassRefPtrWillBeRawPtr<MemoryInfo> Console::memory() const

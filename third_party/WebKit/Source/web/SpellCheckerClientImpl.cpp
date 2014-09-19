@@ -149,7 +149,7 @@ void SpellCheckerClientImpl::checkSpellingOfString(const String& text, int* miss
         *misspellingLength = spellLength;
 }
 
-void SpellCheckerClientImpl::requestCheckingOfString(WTF::PassRefPtr<TextCheckingRequest> request)
+void SpellCheckerClientImpl::requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest> request)
 {
     if (m_webView->spellCheckClient()) {
         const String& text = request->data().text();

@@ -20,6 +20,7 @@
 #ifndef ScopedPageLoadDeferrer_h
 #define ScopedPageLoadDeferrer_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -28,14 +29,22 @@ namespace blink {
 class LocalFrame;
 class Page;
 
-class ScopedPageLoadDeferrer {
+class ScopedPageLoadDeferrer FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScopedPageLoadDeferrer> {
     WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
 public:
     ScopedPageLoadDeferrer(Page* exclusion = 0);
     ~ScopedPageLoadDeferrer();
 
+#if ENABLE(OILPAN)
+    void dispose();
+#endif
+
+    void trace(Visitor*);
+
 private:
-    Vector<RefPtr<LocalFrame>, 16> m_deferredFrames;
+    void detach();
+
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>, 16> m_deferredFrames;
 };
 
 } // namespace blink

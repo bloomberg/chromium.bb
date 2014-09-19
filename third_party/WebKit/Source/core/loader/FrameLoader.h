@@ -40,6 +40,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryItem.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -62,8 +63,9 @@ struct FrameLoadRequest;
 
 bool isBackForwardLoadType(FrameLoadType);
 
-class FrameLoader {
+class FrameLoader FINAL {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     static ResourceRequest requestFromHistoryItem(HistoryItem*, ResourceRequestCachePolicy);
 
@@ -89,8 +91,10 @@ public:
     void stopAllLoaders();
     void stopLoading();
     bool closeURL();
+
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
     void clear();
+
     void replaceDocumentWhileExecutingJavaScriptURL(const String& source, Document* ownerDocument);
 
     // Sets a timer to notify the client that the initial empty document has
@@ -176,6 +180,8 @@ public:
 
     void restoreScrollPositionAndViewState();
 
+    void trace(Visitor*);
+
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 
@@ -210,7 +216,7 @@ private:
 
     void scheduleCheckCompleted();
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 
     // FIXME: These should be OwnPtr<T> to reduce build times and simplify
     // header dependencies unless performance testing proves otherwise.
@@ -229,7 +235,7 @@ private:
     RefPtr<DocumentLoader> m_documentLoader;
     RefPtr<DocumentLoader> m_provisionalDocumentLoader;
     RefPtr<DocumentLoader> m_policyDocumentLoader;
-    OwnPtr<FetchContext> m_fetchContext;
+    OwnPtrWillBeMember<FetchContext> m_fetchContext;
 
     RefPtr<HistoryItem> m_currentItem;
     RefPtr<HistoryItem> m_provisionalItem;

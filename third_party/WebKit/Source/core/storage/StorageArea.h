@@ -32,11 +32,6 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebStorageArea;
-class WebStorageNamespace;
-}
-
-namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -44,15 +39,18 @@ class KURL;
 class Page;
 class SecurityOrigin;
 class Storage;
+class WebStorageArea;
+class WebStorageNamespace;
 
 enum StorageType {
     LocalStorage,
     SessionStorage
 };
 
-class StorageArea : public NoBaseWillBeGarbageCollectedFinalized<StorageArea> {
+class StorageArea FINAL : public NoBaseWillBeGarbageCollectedFinalized<StorageArea> {
 public:
-    StorageArea(PassOwnPtr<blink::WebStorageArea>, StorageType);
+    static PassOwnPtrWillBeRawPtr<StorageArea> create(PassOwnPtr<WebStorageArea>, StorageType);
+
     virtual ~StorageArea();
 
     // The HTML5 DOM Storage API
@@ -68,20 +66,22 @@ public:
     size_t memoryBytesUsedByCache();
 
     static void dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue,
-        SecurityOrigin*, const KURL& pageURL, blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+        SecurityOrigin*, const KURL& pageURL, WebStorageArea* sourceAreaInstance, bool originatedInProcess);
     static void dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue,
-        SecurityOrigin*, const KURL& pageURL, const blink::WebStorageNamespace&,
-        blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+        SecurityOrigin*, const KURL& pageURL, const WebStorageNamespace&,
+        WebStorageArea* sourceAreaInstance, bool originatedInProcess);
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
-    static bool isEventSource(Storage*, blink::WebStorageArea* sourceAreaInstance);
+    StorageArea(PassOwnPtr<WebStorageArea>, StorageType);
 
-    OwnPtr<blink::WebStorageArea> m_storageArea;
+    static bool isEventSource(Storage*, WebStorageArea* sourceAreaInstance);
+
+    OwnPtr<WebStorageArea> m_storageArea;
     StorageType m_storageType;
+    RawPtrWillBeMember<LocalFrame> m_canAccessStorageCachedFrame;
     bool m_canAccessStorageCachedResult;
-    LocalFrame* m_canAccessStorageCachedFrame;
 };
 
 } // namespace blink

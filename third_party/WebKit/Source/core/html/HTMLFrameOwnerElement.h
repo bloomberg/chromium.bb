@@ -37,6 +37,7 @@ class RenderPart;
 class Widget;
 
 class HTMLFrameOwnerElement : public HTMLElement, public FrameOwner {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLFrameOwnerElement);
 public:
     virtual ~HTMLFrameOwnerElement();
 
@@ -76,6 +77,8 @@ public:
         void performDeferredWidgetTreeOperations();
     };
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
     void setSandboxFlags(SandboxFlags);
@@ -91,7 +94,7 @@ private:
     virtual SandboxFlags sandboxFlags() const OVERRIDE { return m_sandboxFlags; }
     virtual void dispatchLoad() OVERRIDE;
 
-    Frame* m_contentFrame;
+    RawPtrWillBeMember<Frame> m_contentFrame;
     RefPtr<Widget> m_widget;
     SandboxFlags m_sandboxFlags;
 };

@@ -1668,12 +1668,12 @@ static const EditorInternalCommand* internalCommand(const String& commandName)
 
 Editor::Command Editor::command(const String& commandName)
 {
-    return Command(internalCommand(commandName), CommandFromMenuOrKeyBinding, &m_frame);
+    return Command(internalCommand(commandName), CommandFromMenuOrKeyBinding, m_frame);
 }
 
 Editor::Command Editor::command(const String& commandName, EditorCommandSource source)
 {
-    return Command(internalCommand(commandName), source, &m_frame);
+    return Command(internalCommand(commandName), source, m_frame);
 }
 
 bool Editor::executeCommand(const String& commandName)
@@ -1705,10 +1705,10 @@ bool Editor::executeCommand(const String& commandName, const String& value)
 {
     // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
     if (!canEdit() && commandName == "moveToBeginningOfDocument")
-        return m_frame.eventHandler().bubblingScroll(ScrollUp, ScrollByDocument);
+        return frame().eventHandler().bubblingScroll(ScrollUp, ScrollByDocument);
 
     if (!canEdit() && commandName == "moveToEndOfDocument")
-        return m_frame.eventHandler().bubblingScroll(ScrollDown, ScrollByDocument);
+        return frame().eventHandler().bubblingScroll(ScrollDown, ScrollByDocument);
 
     if (commandName == "showGuessPanel") {
         spellChecker().showSpellingGuessPanel();
@@ -1723,7 +1723,7 @@ Editor::Command::Command()
 {
 }
 
-Editor::Command::Command(const EditorInternalCommand* command, EditorCommandSource source, PassRefPtr<LocalFrame> frame)
+Editor::Command::Command(const EditorInternalCommand* command, EditorCommandSource source, PassRefPtrWillBeRawPtr<LocalFrame> frame)
     : m_command(command)
     , m_source(source)
     , m_frame(command ? frame : nullptr)
@@ -1742,7 +1742,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
         if (!isSupported() || !m_frame || !m_command->allowExecutionWhenDisabled)
             return false;
     }
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    frame().document()->updateLayoutIgnorePendingStylesheets();
     blink::Platform::current()->histogramSparse("WebCore.Editing.Commands", m_command->idForUserMetrics);
     return m_command->execute(*m_frame, triggeringEvent, m_source, parameter);
 }

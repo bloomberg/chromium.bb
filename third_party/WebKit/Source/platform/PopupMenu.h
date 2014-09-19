@@ -22,6 +22,7 @@
 #define PopupMenu_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -29,9 +30,10 @@ namespace blink {
 class FloatQuad;
 class IntSize;
 
-class PopupMenu : public RefCounted<PopupMenu> {
+class PopupMenu : public RefCountedWillBeGarbageCollectedFinalized<PopupMenu> {
 public:
     virtual ~PopupMenu() { }
+    virtual void trace(Visitor*) { }
     virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) = 0;
     virtual void hide() = 0;
     virtual void updateFromElement() = 0;

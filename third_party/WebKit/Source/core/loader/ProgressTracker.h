@@ -66,6 +66,14 @@ private:
 
     void reset();
 
+    // This bare frame pointer is safe; it refers to the
+    // owning frame (via FrameLoader.)
+    //
+    // ProgressTracker is finalized by FrameLoader (which in turn is
+    // finalized by LocalFrame.) Its lifetime thus guarantees that
+    // m_frame cannot be used to access a dead LocalFrame.
+    //
+    // FIXME: Oilpan: tidy up and move ProgressTracker to the heap.
     LocalFrame* m_frame;
     bool m_inProgress;
     long long m_totalPageAndResourceBytesToLoad;

@@ -79,7 +79,7 @@ public:
 protected:
     void outputLinkAndLinkedDestinations(GraphicsContext&, Node*, const IntRect& pageRect);
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     Vector<IntRect> m_pageRects;
 
 private:

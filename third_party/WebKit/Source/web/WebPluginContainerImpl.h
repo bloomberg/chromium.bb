@@ -63,7 +63,13 @@ class WheelEvent;
 class Widget;
 struct WebPrintParams;
 
-class WebPluginContainerImpl FINAL : public PluginView, public WebPluginContainer, public FrameDestructionObserver {
+class WebPluginContainerImpl FINAL
+    : public PluginView
+    , public WebPluginContainer
+#if !ENABLE(OILPAN)
+    , public FrameDestructionObserver
+#endif
+    {
 public:
     static PassRefPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
@@ -192,9 +198,24 @@ private:
         const IntRect& frameRect,
         Vector<IntRect>& cutOutRects);
 
-    // FIXME: Oilpan: consider moving Widget to the heap and turn this
-    // into a traced member. For the time being, it is a bare pointer
-    // of its owning PlugInElement and managed as such.
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: consider moving Widget to the heap, allowing this
+    // container object to be a FrameDestructionObserver. And thereby
+    // keep a traced member reference to the frame rather than as a
+    // bare pointer. Instead, the owning object (HTMLFrameOwnerElement)
+    // explicitly deletes this object when it is disconnected from its
+    // frame. Any access to an invalid frame via this bare pointer
+    // is therefore not possible.
+    //
+    // See the HTMLFrameOwnerElement::disconnectContentFrame comment for
+    // (even) more.
+    LocalFrame* m_frame;
+
+    LocalFrame* frame() const { return m_frame; }
+#endif
+
+    // FIXME: see above; for the time being, a bare pointer to the owning
+    // HTMLPlugInElement and managed as such.
     HTMLPlugInElement* m_element;
     WebPlugin* m_webPlugin;
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;

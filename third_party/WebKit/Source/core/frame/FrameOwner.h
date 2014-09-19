@@ -6,12 +6,14 @@
 #define FrameOwner_h
 
 #include "core/dom/SandboxFlags.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class FrameOwner {
+class FrameOwner : public WillBeGarbageCollectedMixin {
 public:
     virtual ~FrameOwner() { }
+    virtual void trace(Visitor*) { }
 
     virtual bool isLocal() const = 0;
 

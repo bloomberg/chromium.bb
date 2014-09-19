@@ -295,7 +295,7 @@ void FrameLoaderClientImpl::detachedFromParent()
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
-    RefPtr<WebLocalFrameImpl> protector(m_webFrame);
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> protector(m_webFrame);
 
     WebFrameClient* client = m_webFrame->client();
     if (!client)
@@ -618,7 +618,7 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
     m_webFrame->createFrameView();
 }
 
-PassRefPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
+PassRefPtrWillBeRawPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
     const KURL& url,
     const AtomicString& name,
     const Referrer& referrer,

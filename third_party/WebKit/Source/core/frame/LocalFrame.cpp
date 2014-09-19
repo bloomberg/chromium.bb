@@ -106,30 +106,63 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
 {
 }
 
-PassRefPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
+PassRefPtrWillBeRawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
-    RefPtr<LocalFrame> frame = adoptRef(new LocalFrame(client, host, owner));
+    RefPtrWillBeRawPtr<LocalFrame> frame = adoptRefWillBeNoop(new LocalFrame(client, host, owner));
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
 }
 
 LocalFrame::~LocalFrame()
 {
+#if ENABLE(OILPAN)
+    // Verify that the FrameView and FrameLoader have instead been
+    // cleared as part of detaching the frame owner.
+    ASSERT(!m_owner);
+    ASSERT(!m_view);
+    // Oilpan: see setDOMWindow() comment why it is acceptable not to
+    // mirror the non-Oilpan call below.
+    //
+    // Also, FrameDestructionObservers that live longer than this
+    // frame object keep weak references to the frame; those will be
+    // automatically cleared by the garbage collector. Hence, explicit
+    // frameDestroyed() notifications aren't needed.
+#else
+    // FIXME: follow Oilpan and clear the FrameView and FrameLoader
+    // during FrameOwner detachment instead, see LocalFrame::disconnectOwnerElement().
     setView(nullptr);
-    loader().clear();
+    m_loader.clear();
     setDOMWindow(nullptr);
 
-    // FIXME: What to do here... some of this is redundant with ~Frame.
-    HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
-    for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
+    HashSet<RawPtr<FrameDestructionObserver> >::iterator stop = m_destructionObservers.end();
+    for (HashSet<RawPtr<FrameDestructionObserver> >::iterator it = m_destructionObservers.begin(); it != stop; ++it)
         (*it)->frameDestroyed();
+#endif
+}
+
+void LocalFrame::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_destructionObservers);
+#endif
+    visitor->trace(m_loader);
+    visitor->trace(m_navigationScheduler);
+    visitor->trace(m_pagePopupOwner);
+    visitor->trace(m_editor);
+    visitor->trace(m_spellChecker);
+    visitor->trace(m_selection);
+    visitor->trace(m_eventHandler);
+    visitor->trace(m_console);
+    visitor->trace(m_inputMethodController);
+    Frame::trace(visitor);
+    WillBeHeapSupplementable<LocalFrame>::trace(visitor);
 }
 
 void LocalFrame::detach()
 {
     // A lot of the following steps can result in the current frame being
     // detached, so protect a reference to it.
-    RefPtr<LocalFrame> protect(this);
+    RefPtrWillBeRawPtr<LocalFrame> protect(this);
     m_loader.stopAllLoaders();
     m_loader.closeURL();
     detachChildren();
@@ -153,13 +186,20 @@ bool LocalFrame::inScope(TreeScope* scope) const
     return owner->treeScope() == scope;
 }
 
-void LocalFrame::setView(PassRefPtr<FrameView> view)
+void LocalFrame::detachView()
 {
-    // We the custom scroll bars as early as possible to prevent m_doc->detach()
-    // from messing with the view such that its scroll bars won't be torn down.
+    // We detach the FrameView's custom scroll bars as early as
+    // possible to prevent m_doc->detach() from messing with the view
+    // such that its scroll bars won't be torn down.
+    //
     // FIXME: We should revisit this.
     if (m_view)
         m_view->prepareForDetach();
+}
+
+void LocalFrame::setView(PassRefPtr<FrameView> view)
+{
+    detachView();
 
     // Prepare for destruction now, so any unload event handlers get run and the LocalDOMWindow is
     // notified. If we wait until the view is destroyed, then things won't be hooked up enough for
@@ -199,7 +239,7 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
     }
 
     // Subframes of the one we're printing don't lay out to the page size.
-    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->setPrinting(printing, FloatSize(), FloatSize(), 0);
     }
@@ -235,6 +275,11 @@ FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize,
 void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
     if (m_domWindow) {
+        // Oilpan: the assumption is that FrameDestructionObserver::willDetachFrameHost()
+        // on LocalWindow will have signalled these frameWindowDiscarded() notifications.
+        //
+        // It is not invoked when finalizing the LocalFrame, as setDOMWindow() isn't
+        // performed (accessing the m_domWindow heap object is unsafe then.)
         console().messageStorage()->frameWindowDiscarded(m_domWindow.get());
         InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
     }
@@ -248,7 +293,7 @@ void LocalFrame::didChangeVisibilityState()
     if (document())
         document()->didChangeVisibilityState();
 
-    Vector<RefPtr<LocalFrame> > childFrames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > childFrames;
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));
@@ -277,8 +322,8 @@ void LocalFrame::willDetachFrameHost()
     if (parent && parent->isLocalFrame())
         toLocalFrame(parent)->loader().checkLoadComplete();
 
-    HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
-    for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> >::iterator stop = m_destructionObservers.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> >::iterator it = m_destructionObservers.begin(); it != stop; ++it)
         (*it)->willDetachFrameHost();
 
     // FIXME: Page should take care of updating focus/scrolling instead of Frame.
@@ -294,9 +339,9 @@ void LocalFrame::willDetachFrameHost()
 
 void LocalFrame::detachFromFrameHost()
 {
-    // We should never be detatching the page during a Layout.
+    // We should never be detaching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
-    m_host = 0;
+    m_host = nullptr;
 }
 
 String LocalFrame::documentTypeString() const
@@ -513,7 +558,7 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
     m_pageZoomFactor = pageZoomFactor;
     m_textZoomFactor = textZoomFactor;
 
-    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
     }
@@ -525,7 +570,7 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
 void LocalFrame::deviceOrPageScaleFactorChanged()
 {
     document()->mediaQueryAffectingValueChanged();
-    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->deviceOrPageScaleFactorChanged();
     }
@@ -665,8 +710,15 @@ double LocalFrame::devicePixelRatio() const
 void LocalFrame::disconnectOwnerElement()
 {
     if (owner()) {
-        if (Document* doc = document())
-            doc->topDocument().clearAXObjectCache();
+        if (Document* document = this->document())
+            document->topDocument().clearAXObjectCache();
+#if ENABLE(OILPAN)
+        // Clear the FrameView and FrameLoader right here rather than
+        // during finalization. Too late to access various heap objects
+        // at that stage.
+        setView(nullptr);
+        loader().clear();
+#endif
     }
     Frame::disconnectOwnerElement();
 }

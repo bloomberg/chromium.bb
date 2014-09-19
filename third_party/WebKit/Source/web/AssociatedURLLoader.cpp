@@ -284,7 +284,7 @@ void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer
     m_client->didFail(m_loader, m_error);
 }
 
-AssociatedURLLoader::AssociatedURLLoader(PassRefPtr<WebLocalFrameImpl> frameImpl, const WebURLLoaderOptions& options)
+AssociatedURLLoader::AssociatedURLLoader(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frameImpl, const WebURLLoaderOptions& options)
     : m_frameImpl(frameImpl)
     , m_options(options)
     , m_client(0)

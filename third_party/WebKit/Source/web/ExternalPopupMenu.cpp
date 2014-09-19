@@ -60,6 +60,12 @@ ExternalPopupMenu::~ExternalPopupMenu()
 {
 }
 
+void ExternalPopupMenu::trace(Visitor* visitor)
+{
+    visitor->trace(m_localFrame);
+    PopupMenu::trace(visitor);
+}
+
 void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, int index)
 {
     IntRect rect(controlPosition.enclosingBoundingBox());
@@ -135,7 +141,7 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     // derefed. This ensures it does not get deleted while we are running this
     // method.
     int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_popupMenuClient);
-    RefPtr<ExternalPopupMenu> guard(this);
+    RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient) {
         m_popupMenuClient->popupDidHide();
@@ -154,7 +160,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     // Calling methods on the PopupMenuClient might lead to this object being
     // derefed. This ensures it does not get deleted while we are running this
     // method.
-    RefPtr<ExternalPopupMenu> protect(this);
+    RefPtrWillBeRawPtr<ExternalPopupMenu> protect(this);
 
     if (!indices.size())
         m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
@@ -174,7 +180,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
 void ExternalPopupMenu::didCancel()
 {
     // See comment in didAcceptIndex on why we need this.
-    RefPtr<ExternalPopupMenu> guard(this);
+    RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient)
         m_popupMenuClient->popupDidHide();

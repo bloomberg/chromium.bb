@@ -98,6 +98,7 @@ void ConsoleMessageStorage::trace(Visitor* visitor)
 {
     visitor->trace(m_messages);
     visitor->trace(m_context);
+    visitor->trace(m_frame);
 }
 
 } // namespace blink

@@ -34,6 +34,7 @@
 #include "core/frame/FrameClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
@@ -142,7 +143,7 @@ namespace blink {
 
         virtual void transitionToCommittedForNewPage() = 0;
 
-        virtual PassRefPtr<LocalFrame> createFrame(const KURL&, const AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) = 0;
+        virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) = 0;
         // Whether or not plugin creation should fail if the HTMLPlugInElement isn't in the DOM after plugin initialization.
         enum DetachedPluginPolicy {
             FailOnDetachedPlugin,

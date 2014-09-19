@@ -59,7 +59,7 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context, const KURL& url, 
     }
 
     // Do not allow sending Beacons over a Navigator that is detached.
-    if (!m_navigator.frame())
+    if (!m_navigator.frame() || !m_navigator.frame()->client())
         return false;
 
     return true;

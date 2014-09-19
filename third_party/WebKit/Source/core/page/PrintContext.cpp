@@ -344,6 +344,7 @@ int PrintContext::numberOfPages(LocalFrame* frame, const FloatSize& pageSizeInPi
 void PrintContext::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_frame);
     visitor->trace(m_linkDestinations);
     visitor->trace(m_linkedDestinations);
 #endif

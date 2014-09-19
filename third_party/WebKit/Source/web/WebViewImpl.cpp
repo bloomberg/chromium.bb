@@ -211,10 +211,10 @@ const double WebView::maxTextSizeMultiplier = 3.0;
 
 // Used to defer all page activity in cases where the embedder wishes to run
 // a nested event loop. Using a stack enables nesting of message loop invocations.
-static Vector<ScopedPageLoadDeferrer*>& pageLoadDeferrerStack()
+static WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer> >& pageLoadDeferrerStack()
 {
-    DEFINE_STATIC_LOCAL(Vector<ScopedPageLoadDeferrer*>, deferrerStack, ());
-    return deferrerStack;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer> > >, deferrerStack, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer> > ())));
+    return *deferrerStack;
 }
 
 // Ensure that the WebDragOperation enum values stay in sync with the original
@@ -317,7 +317,12 @@ void WebView::didExitModalLoop()
 {
     ASSERT(pageLoadDeferrerStack().size());
 
-    delete pageLoadDeferrerStack().last();
+    ScopedPageLoadDeferrer* deferrer = pageLoadDeferrerStack().last();
+#if ENABLE(OILPAN)
+    deferrer->dispose();
+#else
+    delete deferrer;
+#endif
     pageLoadDeferrerStack().removeLast();
 }
 
@@ -971,7 +976,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         return true;
     }
 
-    RefPtr<Frame> focusedFrame = focusedCoreFrame();
+    RefPtrWillBeRawPtr<Frame> focusedFrame = focusedCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrameTemporary()) {
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrameTemporary(focusedFrame.get()));
         webFrame->client()->forwardInputEvent(&event);
@@ -981,7 +986,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     if (!focusedFrame || !focusedFrame->isLocalFrame())
         return false;
 
-    RefPtr<LocalFrame> frame = toLocalFrame(focusedFrame.get());
+    LocalFrame* frame = toLocalFrame(focusedFrame.get());
 
     PlatformKeyboardEventBuilder evt(event);
 
@@ -2039,7 +2044,7 @@ void WebViewImpl::setFocus(bool enable)
     m_page->focusController().setFocused(enable);
     if (enable) {
         m_page->focusController().setActive(true);
-        RefPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
+        RefPtrWillBeRawPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame && focusedFrame->isLocalFrame()) {
             LocalFrame* localFrame = toLocalFrame(focusedFrame.get());
             Element* element = localFrame->document()->focusedElement();
@@ -2072,7 +2077,7 @@ void WebViewImpl::setFocus(bool enable)
         if (!frame)
             return;
 
-        RefPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
+        RefPtrWillBeRawPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame && focusedFrame->isLocalFrame()) {
             // Finish an ongoing composition to delete the composition node.
             if (toLocalFrame(focusedFrame.get())->inputMethodController().hasComposition()) {
@@ -2691,7 +2696,7 @@ void WebViewImpl::setInitialFocus(bool reverse)
 
 void WebViewImpl::clearFocusedElement()
 {
-    RefPtr<Frame> frame = focusedCoreFrame();
+    RefPtrWillBeRawPtr<Frame> frame = focusedCoreFrame();
     if (!frame || !frame->isLocalFrame())
         return;
 

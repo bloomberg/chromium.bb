@@ -1782,7 +1782,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // Script can run below in WidgetUpdates, so protect the LocalFrame.
     // FIXME: Can this still happen? How does script run inside
     // UpdateSuspendScope::performDeferredWidgetTreeOperations() ?
-    RefPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     TRACE_EVENT_BEGIN0("blink", "Document::updateRenderTree");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateRenderTree");
@@ -2200,7 +2200,7 @@ void Document::detach(const AttachContext& context)
     // possible to re-attach. Eventually Document::detach() should be renamed,
     // or this setting of the frame to 0 could be made explicit in each of the
     // callers of Document::detach().
-    m_frame = 0;
+    m_frame = nullptr;
 
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->documentDetached();
@@ -2257,7 +2257,7 @@ void Document::clearAXObjectCache()
 AXObjectCache* Document::existingAXObjectCache() const
 {
     // If the renderer is gone then we are in the process of destruction.
-    // This method will be called before m_frame = 0.
+    // This method will be called before m_frame = nullptr.
     if (!axObjectCacheOwner().renderView())
         return 0;
 
@@ -4651,12 +4651,11 @@ void Document::finishedParsing()
     // Keep it alive until we are done.
     RefPtrWillBeRawPtr<Document> protect(this);
 
-    if (RefPtr<LocalFrame> f = frame()) {
+    if (RefPtrWillBeRawPtr<LocalFrame> frame = this->frame()) {
         // Don't update the render tree if we haven't requested the main resource yet to avoid
         // adding extra latency. Note that the first render tree update can be expensive since it
         // triggers the parsing of the default stylesheets which are compiled-in.
-        const bool mainResourceWasAlreadyRequested =
-            m_frame->loader().stateMachine()->committedFirstRealDocumentLoad();
+        const bool mainResourceWasAlreadyRequested = frame->loader().stateMachine()->committedFirstRealDocumentLoad();
 
         // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
         // resource loads are complete. HTMLObjectElements can start loading their resources from
@@ -4668,11 +4667,11 @@ void Document::finishedParsing()
         if (mainResourceWasAlreadyRequested)
             updateRenderTreeIfNeeded();
 
-        f->loader().finishedParsing();
+        frame->loader().finishedParsing();
 
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkDOMContent", "data", InspectorMarkLoadEvent::data(f.get()));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkDOMContent", "data", InspectorMarkLoadEvent::data(frame.get()));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::domContentLoadedEventFired(f.get());
+        InspectorInstrumentation::domContentLoadedEventFired(frame.get());
     }
 
     // Schedule dropping of the ElementDataCache. We keep it alive for a while after parsing finishes
@@ -5810,6 +5809,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_styleEngine);
     visitor->trace(m_formController);
     visitor->trace(m_visitedLinkState);
+    visitor->trace(m_frame);
     visitor->trace(m_domWindow);
     visitor->trace(m_fetcher);
     visitor->trace(m_parser);

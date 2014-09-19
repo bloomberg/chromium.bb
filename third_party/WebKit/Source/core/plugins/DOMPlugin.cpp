@@ -35,6 +35,11 @@ DOMPlugin::~DOMPlugin()
 {
 }
 
+void DOMPlugin::trace(Visitor* visitor)
+{
+    FrameDestructionObserver::trace(visitor);
+}
+
 String DOMPlugin::name() const
 {
     return pluginInfo().name;

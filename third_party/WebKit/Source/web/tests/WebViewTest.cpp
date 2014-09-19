@@ -319,8 +319,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);
     EXPECT_EQ(kBlue, webView->backgroundColor());
-    webView->setMainFrame(WebLocalFrameImpl::create(0));
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::create(0);
+    webView->setMainFrame(frame);
     webView->close();
+    frame->close();
 }
 
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
