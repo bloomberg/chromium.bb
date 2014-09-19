@@ -92,6 +92,16 @@ void BluetoothControllerPairingController::DeviceLost(
   }
 }
 
+void BluetoothControllerPairingController::SendBuffer(
+    scoped_refptr<net::IOBuffer> io_buffer, int size) {
+  socket_->Send(
+      io_buffer, size,
+      base::Bind(&BluetoothControllerPairingController::OnSendComplete,
+                 ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothControllerPairingController::OnErrorWithMessage,
+                 ptr_factory_.GetWeakPtr()));
+}
+
 void BluetoothControllerPairingController::OnSetPowered() {
   DCHECK(thread_checker_.CalledOnValidThread());
   adapter_->StartDiscoverySession(
@@ -175,15 +185,15 @@ void BluetoothControllerPairingController::OnReceiveComplete(
 }
 
 void BluetoothControllerPairingController::OnError() {
-  // TODO(zork): Add a stage for initialization error. (http://crbug.com/405744)
   LOG(ERROR) << "Pairing initialization failed";
+  ChangeStage(STAGE_INITIALIZATION_ERROR);
   Reset();
 }
 
 void BluetoothControllerPairingController::OnErrorWithMessage(
     const std::string& message) {
-  // TODO(zork): Add a stage for initialization error. (http://crbug.com/405744)
   LOG(ERROR) << message;
+  ChangeStage(STAGE_INITIALIZATION_ERROR);
   Reset();
 }
 
@@ -228,9 +238,8 @@ void BluetoothControllerPairingController::StartPairing() {
          current_stage_ == STAGE_DEVICE_NOT_FOUND ||
          current_stage_ == STAGE_ESTABLISHING_CONNECTION_ERROR ||
          current_stage_ == STAGE_HOST_ENROLLMENT_ERROR);
-  // TODO(zork): Add a stage for no bluetooth. (http://crbug.com/405744)
   if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
-    ChangeStage(STAGE_DEVICE_NOT_FOUND);
+    ChangeStage(STAGE_INITIALIZATION_ERROR);
     return;
   }
 
@@ -309,8 +318,20 @@ void BluetoothControllerPairingController::SetHostConfiguration(
     const std::string& timezone,
     bool send_reports,
     const std::string& keyboard_layout) {
-  // TODO(zork): Get configuration from UI and send to Host.
-  // (http://crbug.com/405744)
+
+  pairing_api::ConfigureHost host_config;
+  host_config.set_api_version(kPairingAPIVersion);
+  host_config.mutable_parameters()->set_accepted_eula(accepted_eula);
+  host_config.mutable_parameters()->set_lang(lang);
+  host_config.mutable_parameters()->set_timezone(timezone);
+  host_config.mutable_parameters()->set_send_reports(send_reports);
+  host_config.mutable_parameters()->set_keyboard_layout(keyboard_layout);
+
+  int size = 0;
+  scoped_refptr<net::IOBuffer> io_buffer(
+      ProtoDecoder::SendConfigureHost(host_config, &size));
+
+  SendBuffer(io_buffer, size);
 }
 
 void BluetoothControllerPairingController::OnAuthenticationDone(
@@ -326,12 +347,7 @@ void BluetoothControllerPairingController::OnAuthenticationDone(
   scoped_refptr<net::IOBuffer> io_buffer(
       ProtoDecoder::SendPairDevices(pair_devices, &size));
 
-  socket_->Send(
-      io_buffer, size,
-      base::Bind(&BluetoothControllerPairingController::OnSendComplete,
-                 ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothControllerPairingController::OnErrorWithMessage,
-                 ptr_factory_.GetWeakPtr()));
+  SendBuffer(io_buffer, size);
   ChangeStage(STAGE_HOST_ENROLLMENT_IN_PROGRESS);
 }
 
@@ -355,13 +371,7 @@ void BluetoothControllerPairingController::OnHostStatusMessage(
     scoped_refptr<net::IOBuffer> io_buffer(
         ProtoDecoder::SendCompleteSetup(complete_setup, &size));
 
-    socket_->Send(
-        io_buffer, size,
-        base::Bind(&BluetoothControllerPairingController::OnSendComplete,
-                   ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &BluetoothControllerPairingController::OnErrorWithMessage,
-            ptr_factory_.GetWeakPtr()));
+    SendBuffer(io_buffer, size);
     ChangeStage(STAGE_PAIRING_DONE);
   } else {
     got_initial_status_ = true;

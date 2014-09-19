@@ -38,6 +38,7 @@ class BluetoothControllerPairingController
   void Reset();
   void DeviceFound(device::BluetoothDevice* device);
   void DeviceLost(device::BluetoothDevice* device);
+  void SendBuffer(scoped_refptr<net::IOBuffer> io_buffer, int size);
 
   void OnSetPowered();
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);

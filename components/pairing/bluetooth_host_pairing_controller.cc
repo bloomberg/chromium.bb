@@ -5,6 +5,7 @@
 #include "components/pairing/bluetooth_host_pairing_controller.h"
 
 #include "base/bind.h"
+#include "base/hash.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
@@ -118,9 +119,10 @@ void BluetoothHostPairingController::OnGetAdapter(
 }
 
 void BluetoothHostPairingController::SetName() {
-  // TODO(zork): Make the device name prettier. (http://crbug.com/405774)
-  device_name_ = base::StringPrintf("%s%s", kDeviceNamePrefix,
-                                    adapter_->GetAddress().c_str());
+  // Hash the bluetooth address and take the lower 2 bytes to create a human
+  // readable device name.
+  const uint32 device_id = base::Hash(adapter_->GetAddress()) & 0xFFFF;
+  device_name_ = base::StringPrintf("%s%04X", kDeviceNamePrefix, device_id);
 
   adapter_->SetName(
       device_name_,
@@ -232,14 +234,12 @@ void BluetoothHostPairingController::OnReceiveComplete(
 void BluetoothHostPairingController::OnCreateServiceError(
     const std::string& message) {
   LOG(ERROR) << message;
-  // TODO(zork): Add a stage for initialization error. (http://crbug.com/405744)
-  ChangeStage(STAGE_NONE);
+  ChangeStage(STAGE_INITIALIZATION_ERROR);
 }
 
 void BluetoothHostPairingController::OnSetError() {
   adapter_->RemovePairingDelegate(this);
-  // TODO(zork): Add a stage for initialization error. (http://crbug.com/405744)
-  ChangeStage(STAGE_NONE);
+  ChangeStage(STAGE_INITIALIZATION_ERROR);
 }
 
 void BluetoothHostPairingController::OnAcceptError(
@@ -267,7 +267,12 @@ void BluetoothHostPairingController::OnHostStatusMessage(
 
 void BluetoothHostPairingController::OnConfigureHostMessage(
     const pairing_api::ConfigureHost& message) {
-  // TODO(zork): Add event to API to handle this case. (http://crbug.com/405744)
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    ConfigureHost(message.parameters().accepted_eula(),
+                                  message.parameters().lang(),
+                                  message.parameters().timezone(),
+                                  message.parameters().send_reports(),
+                                  message.parameters().keyboard_layout()));
 }
 
 void BluetoothHostPairingController::OnPairDevicesMessage(
@@ -337,9 +342,10 @@ void BluetoothHostPairingController::StartPairing() {
   DCHECK_EQ(current_stage_, STAGE_NONE);
   bool bluetooth_available =
       device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
-  // TODO(zork): Add a stage for initialization error. (http://crbug.com/405744)
-  if (!bluetooth_available)
+  if (!bluetooth_available) {
+    ChangeStage(STAGE_INITIALIZATION_ERROR);
     return;
+  }
 
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothHostPairingController::OnGetAdapter,
