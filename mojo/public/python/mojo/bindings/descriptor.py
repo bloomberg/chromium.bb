@@ -205,7 +205,7 @@ class StringType(PointerType):
   def DeserializePointer(self, size, nb_elements, data, handles):
     string_array = self._array_type.DeserializeArray(
         size, nb_elements, data, handles)
-    return unicode(buffer(string_array), 'utf8')
+    return unicode(string_array.tostring(), 'utf8')
 
 
 class HandleType(SerializableType):
