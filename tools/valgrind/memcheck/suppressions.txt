@@ -2610,20 +2610,6 @@
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
 }
 {
-   bug_170340
-   Memcheck:Uninitialized
-   fun:_ZN3WTF12AtomicString3addEPKt
-   fun:_ZN3WTF12AtomicStringC1EPKt
-   fun:_ZN5blink18HTMLPreloadScanner12processTokenEv
-   fun:_ZN5blink18HTMLPreloadScanner4scanEv
-   fun:_ZN5blink18HTMLDocumentParser13pumpTokenizerENS0_15SynchronousModeE
-   fun:_ZN5blink18HTMLDocumentParser23pumpTokenizerIfPossibleENS0_15SynchronousModeE
-   fun:_ZN5blink18HTMLDocumentParser6appendERKNS_15SegmentedStringE
-   fun:_ZN5blink25DecodedDataDocumentParser5flushEPNS_14DocumentWriterE
-   fun:_ZN5blink14DocumentWriter3endEv
-   fun:_ZN5blink14DocumentLoader15finishedLoadingEv
-}
-{
    bug_171722
    Memcheck:Leak
    fun:_Znw*
@@ -2652,61 +2638,10 @@
    fun:_ZN11dom_storage17DomStorageContext36FindUnusedNamespacesInCommitSequenceERKSt3setISsSt4lessISsESaISsEES7_
 }
 {
-   bug_172025
-   Memcheck:Uninitialized
-   fun:_ZN11WebViewHost19didCreateDataSourceEPN5blink8WebFrameEPNS0_13WebDataSourceE
-   fun:_ZN5blink21FrameLoaderClientImpl20createDocumentLoaderERKN7blink15ResourceRequestERKNS1_14SubstituteDataE
-   fun:_ZN5blink11FrameLoader4initEv
-   fun:_ZN5blink5Frame4initEv
-   fun:_ZN5blink12WebFrameImpl21initializeAsMainFrameEPN7blink4PageE
-   fun:_ZN5blink11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
-   fun:_ZN9TestShell15createNewWindowERKN5blink6WebURLEP16DRTDevToolsAgentPN13WebTestRunner17WebTestInterfacesE
-   fun:_ZN9TestShell16createMainWindowEv
-   fun:_ZN9TestShell10initializeEv
-}
-{
-   bug_173096
-   Memcheck:Uninitialized
-   fun:bcmp
-   fun:_ZN2cc19LayerTreeDebugState5equalERKS0_S2_
-   fun:_ZN2cc13LayerTreeHost13setDebugStateERKNS_19LayerTreeDebugStateE
-   fun:_ZN5blink20WebLayerTreeViewImpl*set*
-   fun:_ZN5blink11WebViewImpl33setIsAcceleratedCompositingActiveEb
-   fun:_ZN5blink11WebViewImpl20setRootGraphicsLayerEPN7blink13GraphicsLayerE
-   fun:_ZN5blink16ChromeClientImpl23attachRootGraphicsLayerEPN7blink5FrameEPNS1_13GraphicsLayerE
-   fun:_ZN5blink21RenderLayerCompositor15attachRootLayerENS0_19RootLayerAttachmentE
-   fun:_ZN5blink21RenderLayerCompositor15ensureRootLayerEv
-   fun:_ZN5blink21RenderLayerCompositor21enableCompositingModeEb
-   fun:_ZN5blink21RenderLayerCompositor13updateBackingEPNS_11RenderLayerENS0_24CompositingChangeRepaintE
-   fun:_ZN5blink21RenderLayerCompositor27updateLayerCompositingStateEPNS_11RenderLayerENS0_24CompositingChangeRepaintE
-   fun:_ZN5blink11RenderLayer12styleChangedENS_15StyleDifferenceEPKNS_11RenderStyleE
-   fun:_ZN5blink22RenderLayerModelObject14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
-   fun:_ZN5blink9RenderBox14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
-}
-{
-   bug_175100
-   Memcheck:Leak
-   ...
-   fun:_ZN20OneClickSigninHelper14DidStopLoadingEPN7content14RenderViewHostE
-   fun:_ZN*OneClickSigninHelperTest*
-}
-{
    bug_175823
    Memcheck:Leak
    ...
    fun:_ZN18ValueStoreFrontend*
-}
-{
-    bug_175985
-    Memcheck:Uninitialized
-    fun:_ZN2cc13LayerTreeHost13setDebugStateERKNS_19LayerTreeDebugStateE
-    ...
-    fun:_ZN5blink20WebLayerTreeViewImpl*
-}
-{
-   bug_176270
-   Memcheck:Uninitialized
-   fun:_ZNK2cc19LayerTreeDebugState20recordRenderingStatsEv
 }
 {
    bug_176616_a
