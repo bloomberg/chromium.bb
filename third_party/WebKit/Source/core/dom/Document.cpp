@@ -5752,6 +5752,11 @@ void Document::clearWeakMembers(Visitor* visitor)
 
 v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    // It's possible that no one except for the new wrapper owns this object at
+    // this moment, so we have to prevent GC to collect this object until the
+    // object gets associated with the wrapper.
+    RefPtrWillBeRawPtr<Document> protect(this);
+
     ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();

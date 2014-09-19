@@ -3235,6 +3235,11 @@ v8::Handle<v8::Object> Element::wrap(v8::Handle<v8::Object> creationContext, v8:
 
 v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    // It's possible that no one except for the new wrapper owns this object at
+    // this moment, so we have to prevent GC to collect this object until the
+    // object gets associated with the wrapper.
+    RefPtrWillBeRawPtr<Element> protect(this);
+
     ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
 
     ASSERT(!creationContext.IsEmpty());
