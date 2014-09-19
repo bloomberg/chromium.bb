@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 
 namespace device {
 
@@ -19,6 +20,11 @@ struct UsbConfigDescriptor;
 // UsbDeviceHandle must be created from Open() method.
 class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  public:
+  class Observer {
+   public:
+    virtual void OnDisconnect(scoped_refptr<UsbDevice> device) = 0;
+  };
+
   // Accessors to basic information.
   uint16 vendor_id() const { return vendor_id_; }
   uint16 product_id() const { return product_id_; }
@@ -48,11 +54,14 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Blocking method. Must be called on FILE thread.
   virtual const UsbConfigDescriptor& GetConfiguration() = 0;
 
- protected:
-  UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
-      : vendor_id_(vendor_id), product_id_(product_id), unique_id_(unique_id) {}
+  void AddObserver(Observer* obs) { observer_list_.AddObserver(obs); }
+  void RemoveObserver(Observer* obs) { observer_list_.RemoveObserver(obs); }
 
-  virtual ~UsbDevice() {}
+ protected:
+  UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id);
+  virtual ~UsbDevice();
+
+  void NotifyDisconnect();
 
  private:
   friend class base::RefCountedThreadSafe<UsbDevice>;
@@ -60,6 +69,8 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   const uint16 vendor_id_;
   const uint16 product_id_;
   const uint32 unique_id_;
+
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };

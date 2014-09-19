@@ -35,48 +35,47 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
  public:
   virtual scoped_refptr<UsbDevice> GetDevice() const OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual bool ClaimInterface(const int interface_number) OVERRIDE;
-  virtual bool ReleaseInterface(const int interface_number) OVERRIDE;
-  virtual bool SetInterfaceAlternateSetting(
-      const int interface_number,
-      const int alternate_setting) OVERRIDE;
+  virtual bool ClaimInterface(int interface_number) OVERRIDE;
+  virtual bool ReleaseInterface(int interface_number) OVERRIDE;
+  virtual bool SetInterfaceAlternateSetting(int interface_number,
+                                            int alternate_setting) OVERRIDE;
   virtual bool ResetDevice() OVERRIDE;
   virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE;
   virtual bool GetProduct(base::string16* product) OVERRIDE;
   virtual bool GetSerial(base::string16* serial) OVERRIDE;
-  virtual void ControlTransfer(const UsbEndpointDirection direction,
-                               const TransferRequestType request_type,
-                               const TransferRecipient recipient,
-                               const uint8 request,
-                               const uint16 value,
-                               const uint16 index,
+  virtual void ControlTransfer(UsbEndpointDirection direction,
+                               TransferRequestType request_type,
+                               TransferRecipient recipient,
+                               uint8 request,
+                               uint16 value,
+                               uint16 index,
                                net::IOBuffer* buffer,
-                               const size_t length,
-                               const unsigned int timeout,
+                               size_t length,
+                               unsigned int timeout,
                                const UsbTransferCallback& callback) OVERRIDE;
 
-  virtual void BulkTransfer(const UsbEndpointDirection direction,
-                            const uint8 endpoint,
+  virtual void BulkTransfer(UsbEndpointDirection direction,
+                            uint8 endpoint,
                             net::IOBuffer* buffer,
-                            const size_t length,
-                            const unsigned int timeout,
+                            size_t length,
+                            unsigned int timeout,
                             const UsbTransferCallback& callback) OVERRIDE;
 
-  virtual void InterruptTransfer(const UsbEndpointDirection direction,
-                                 const uint8 endpoint,
+  virtual void InterruptTransfer(UsbEndpointDirection direction,
+                                 uint8 endpoint,
                                  net::IOBuffer* buffer,
-                                 const size_t length,
-                                 const unsigned int timeout,
+                                 size_t length,
+                                 unsigned int timeout,
                                  const UsbTransferCallback& callback) OVERRIDE;
 
   virtual void IsochronousTransfer(
-      const UsbEndpointDirection direction,
-      const uint8 endpoint,
+      UsbEndpointDirection direction,
+      uint8 endpoint,
       net::IOBuffer* buffer,
-      const size_t length,
-      const unsigned int packets,
-      const unsigned int packet_length,
-      const unsigned int timeout,
+      size_t length,
+      unsigned int packets,
+      unsigned int packet_length,
+      unsigned int timeout,
       const UsbTransferCallback& callback) OVERRIDE;
 
   PlatformUsbDeviceHandle handle() const { return handle_; }

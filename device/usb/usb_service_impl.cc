@@ -45,7 +45,7 @@ class UsbServiceImpl : public UsbService,
   // base::MessageLoop::DestructionObserver implementation.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  // Enumerate USB devices from OS and Update devices_ map.
+  // Enumerate USB devices from OS and update devices_ map.
   void RefreshDevices();
 
   scoped_refptr<UsbContext> context_;
@@ -55,9 +55,14 @@ class UsbServiceImpl : public UsbService,
   // TODO(reillyg): Figure out a better solution.
   uint32 next_unique_id_;
 
-  // The map from PlatformUsbDevices to UsbDevices.
-  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl> > DeviceMap;
+  // The map from unique IDs to UsbDevices.
+  typedef std::map<uint32, scoped_refptr<UsbDeviceImpl> > DeviceMap;
   DeviceMap devices_;
+
+  // The map from PlatformUsbDevices to UsbDevices.
+  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl> >
+      PlatformDeviceMap;
+  PlatformDeviceMap platform_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceImpl);
 };
@@ -65,9 +70,9 @@ class UsbServiceImpl : public UsbService,
 scoped_refptr<UsbDevice> UsbServiceImpl::GetDeviceById(uint32 unique_id) {
   DCHECK(CalledOnValidThread());
   RefreshDevices();
-  for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
-    if (it->second->unique_id() == unique_id)
-      return it->second;
+  DeviceMap::iterator it = devices_.find(unique_id);
+  if (it != devices_.end()) {
+    return it->second;
   }
   return NULL;
 }
@@ -120,7 +125,7 @@ void UsbServiceImpl::RefreshDevices() {
 
   // Populates new devices.
   for (ssize_t i = 0; i < device_count; ++i) {
-    if (!ContainsKey(devices_, platform_devices[i])) {
+    if (!ContainsKey(platform_devices_, platform_devices[i])) {
       libusb_device_descriptor descriptor;
       const int rv =
           libusb_get_device_descriptor(platform_devices[i], &descriptor);
@@ -130,31 +135,43 @@ void UsbServiceImpl::RefreshDevices() {
                 << ConvertPlatformUsbErrorToString(rv);
         continue;
       }
-      UsbDeviceImpl* new_device = new UsbDeviceImpl(context_,
-                                                    ui_task_runner_,
-                                                    platform_devices[i],
-                                                    descriptor.idVendor,
-                                                    descriptor.idProduct,
-                                                    ++next_unique_id_);
-      devices_[platform_devices[i]] = new_device;
-      connected_devices.insert(new_device);
+
+      uint32 unique_id;
+      do {
+        unique_id = ++next_unique_id_;
+      } while (devices_.find(unique_id) != devices_.end());
+
+      scoped_refptr<UsbDeviceImpl> new_device(
+          new UsbDeviceImpl(context_,
+                            ui_task_runner_,
+                            platform_devices[i],
+                            descriptor.idVendor,
+                            descriptor.idProduct,
+                            unique_id));
+      platform_devices_[platform_devices[i]] = new_device;
+      devices_[unique_id] = new_device;
+      connected_devices.insert(new_device.get());
     } else {
-      connected_devices.insert(devices_[platform_devices[i]].get());
+      connected_devices.insert(platform_devices_[platform_devices[i]].get());
     }
   }
 
   // Find disconnected devices.
-  for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
+  for (PlatformDeviceMap::iterator it = platform_devices_.begin();
+       it != platform_devices_.end();
+       ++it) {
     if (!ContainsKey(connected_devices, it->second.get())) {
       disconnected_devices.push_back(it->first);
+      devices_.erase(it->second->unique_id());
+      it->second->OnDisconnect();
     }
   }
 
-  // Remove disconnected devices from devices_.
+  // Remove disconnected devices from platform_devices_.
   for (size_t i = 0; i < disconnected_devices.size(); ++i) {
     // UsbDevice will be destroyed after this. The corresponding
     // PlatformUsbDevice will be unref'ed during this process.
-    devices_.erase(disconnected_devices[i]);
+    platform_devices_.erase(disconnected_devices[i]);
   }
 
   libusb_free_device_list(platform_devices, true);

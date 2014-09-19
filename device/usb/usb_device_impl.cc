@@ -98,6 +98,17 @@ UsbUsageType GetUsageType(const libusb_endpoint_descriptor* descriptor) {
 
 }  // namespace
 
+UsbDevice::UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
+    : vendor_id_(vendor_id), product_id_(product_id), unique_id_(unique_id) {
+}
+
+UsbDevice::~UsbDevice() {
+}
+
+void UsbDevice::NotifyDisconnect() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDisconnect(this));
+}
+
 UsbDeviceImpl::UsbDeviceImpl(
     scoped_refptr<UsbContext> context,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,

@@ -51,48 +51,48 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   // Device manipulation operations. These methods are blocking and must be
   // called on FILE thread.
-  virtual bool ClaimInterface(const int interface_number) = 0;
-  virtual bool ReleaseInterface(const int interface_number) = 0;
-  virtual bool SetInterfaceAlternateSetting(const int interface_number,
-                                            const int alternate_setting) = 0;
+  virtual bool ClaimInterface(int interface_number) = 0;
+  virtual bool ReleaseInterface(int interface_number) = 0;
+  virtual bool SetInterfaceAlternateSetting(int interface_number,
+                                            int alternate_setting) = 0;
   virtual bool ResetDevice() = 0;
   virtual bool GetManufacturer(base::string16* manufacturer) = 0;
   virtual bool GetProduct(base::string16* product) = 0;
   virtual bool GetSerial(base::string16* serial) = 0;
 
   // Async IO. Can be called on any thread.
-  virtual void ControlTransfer(const UsbEndpointDirection direction,
-                               const TransferRequestType request_type,
-                               const TransferRecipient recipient,
-                               const uint8 request,
-                               const uint16 value,
-                               const uint16 index,
+  virtual void ControlTransfer(UsbEndpointDirection direction,
+                               TransferRequestType request_type,
+                               TransferRecipient recipient,
+                               uint8 request,
+                               uint16 value,
+                               uint16 index,
                                net::IOBuffer* buffer,
-                               const size_t length,
-                               const unsigned int timeout,
+                               size_t length,
+                               unsigned int timeout,
                                const UsbTransferCallback& callback) = 0;
 
-  virtual void BulkTransfer(const UsbEndpointDirection direction,
-                            const uint8 endpoint,
+  virtual void BulkTransfer(UsbEndpointDirection direction,
+                            uint8 endpoint,
                             net::IOBuffer* buffer,
-                            const size_t length,
-                            const unsigned int timeout,
+                            size_t length,
+                            unsigned int timeout,
                             const UsbTransferCallback& callback) = 0;
 
-  virtual void InterruptTransfer(const UsbEndpointDirection direction,
-                                 const uint8 endpoint,
+  virtual void InterruptTransfer(UsbEndpointDirection direction,
+                                 uint8 endpoint,
                                  net::IOBuffer* buffer,
-                                 const size_t length,
-                                 const unsigned int timeout,
+                                 size_t length,
+                                 unsigned int timeout,
                                  const UsbTransferCallback& callback) = 0;
 
-  virtual void IsochronousTransfer(const UsbEndpointDirection direction,
-                                   const uint8 endpoint,
+  virtual void IsochronousTransfer(UsbEndpointDirection direction,
+                                   uint8 endpoint,
                                    net::IOBuffer* buffer,
-                                   const size_t length,
-                                   const unsigned int packets,
-                                   const unsigned int packet_length,
-                                   const unsigned int timeout,
+                                   size_t length,
+                                   unsigned int packets,
+                                   unsigned int packet_length,
+                                   unsigned int timeout,
                                    const UsbTransferCallback& callback) = 0;
 
  protected:
