@@ -6591,7 +6591,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
             v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
-        TONATIVE_VOID_PROMISE_INTERNAL(arg2, Dictionary(info[1], info.GetIsolate()), info);
+        arg2 = Dictionary(info[1], info.GetIsolate());
         TOSTRING_VOID_PROMISE_INTERNAL(arg3, info[2], info);
         TONATIVE_VOID_PROMISE_INTERNAL(variadic, toImplArguments<String>(info, 3), info);
     }
@@ -6614,13 +6614,11 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Dictionary arg1;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object."), info.GetIsolate())));
             return;
         }
-        TONATIVE_VOID_PROMISE_INTERNAL(arg1, Dictionary(info[0], info.GetIsolate()), info);
+        arg1 = Dictionary(info[0], info.GetIsolate());
     }
     v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
 }
@@ -6667,13 +6665,11 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Dictionary dictionaryArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObject", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
             return;
         }
-        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate()));
+        dictionaryArg = Dictionary(info[0], info.GetIsolate());
     }
     impl->voidMethodDictionaryArg(dictionaryArg);
 }
@@ -7145,13 +7141,11 @@ static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Dictionary optionalDictionaryArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObject", "parameter 1 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
+        optionalDictionaryArg = Dictionary(info[0], info.GetIsolate());
     }
     impl->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
 }

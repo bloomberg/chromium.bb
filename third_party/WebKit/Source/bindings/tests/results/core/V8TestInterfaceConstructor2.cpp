@@ -50,13 +50,11 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     Dictionary dictionaryArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor2", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
             return;
         }
-        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate()));
+        dictionaryArg = Dictionary(info[0], info.GetIsolate());
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(dictionaryArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
@@ -74,8 +72,6 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary defaultUndefinedOptionalDictionaryArg;
     V8StringResource<> optionalStringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[2]);
@@ -89,7 +85,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(defaultUndefinedOptionalDictionaryArg, Dictionary(info[4], info.GetIsolate()));
+        defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate());
         if (UNLIKELY(info.Length() <= 5)) {
             RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
             v8::Handle<v8::Object> wrapper = info.Holder();

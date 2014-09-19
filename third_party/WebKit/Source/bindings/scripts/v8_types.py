@@ -485,6 +485,7 @@ def v8_conversion_is_trivial(idl_type):
     # The conversion is a simple expression that returns the converted value and
     # cannot raise an exception.
     return (idl_type.base_type == 'boolean' or
+            idl_type.base_type == 'Dictionary' or
             idl_type.is_wrapper_type)
 
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)

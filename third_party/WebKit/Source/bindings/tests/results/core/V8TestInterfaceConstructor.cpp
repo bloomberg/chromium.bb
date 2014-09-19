@@ -72,7 +72,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate()));
+        dictionaryArg = Dictionary(info[3], info.GetIsolate());
         TONATIVE_VOID_INTERNAL(sequenceStringArg, toImplArray<String>(info[4], 5, info.GetIsolate()));
         TONATIVE_VOID_INTERNAL(sequenceDictionaryArg, toImplArray<Dictionary>(info[5], 6, info.GetIsolate()));
         if (!isUndefinedOrNull(info[6]) && !info[6]->IsObject()) {
@@ -80,7 +80,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
+        optionalDictionaryArg = Dictionary(info[6], info.GetIsolate());
         optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]);
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
