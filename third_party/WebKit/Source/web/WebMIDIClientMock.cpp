@@ -42,6 +42,11 @@ WebMIDIClientMock::WebMIDIClientMock()
     m_clientMock.reset(new MIDIClientMock());
 }
 
+WebMIDIClientMock::~WebMIDIClientMock()
+{
+    m_clientMock.reset(0);
+}
+
 void WebMIDIClientMock::setSysexPermission(bool allowed)
 {
     m_clientMock->setSysexPermission(allowed);
@@ -60,11 +65,6 @@ void WebMIDIClientMock::requestSysexPermission(const WebMIDIPermissionRequest& r
 void WebMIDIClientMock::cancelSysexPermissionRequest(const WebMIDIPermissionRequest& request)
 {
     m_clientMock->cancelSysexPermissionRequest(request.midiAccessInitializer());
-}
-
-void WebMIDIClientMock::reset()
-{
-    m_clientMock.reset(0);
 }
 
 } // namespace blink

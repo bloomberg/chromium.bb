@@ -42,7 +42,7 @@ class MIDIClientMock;
 class WebMIDIClientMock : public WebMIDIClient {
 public:
     BLINK_EXPORT WebMIDIClientMock();
-    virtual ~WebMIDIClientMock() { reset(); }
+    virtual ~WebMIDIClientMock();
 
     BLINK_EXPORT void setSysexPermission(bool);
     BLINK_EXPORT void resetMock();
@@ -52,8 +52,6 @@ public:
     virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest&) OVERRIDE;
 
 private:
-    BLINK_EXPORT void reset();
-
     WebPrivateOwnPtr<MIDIClientMock> m_clientMock;
 };
 
