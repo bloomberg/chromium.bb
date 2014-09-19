@@ -1,0 +1,36 @@
+#!/bin/bash
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Download the newest version of Closure Compiler, build it and put into Chrome
+# source tree. Also update externs/chrome_extensions.js.
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly TEMP_DIR=$(mktemp -d)
+
+cleanup() {
+  rm -rf "${TEMP_DIR}"
+}
+
+trap cleanup SIGINT SIGHUP SIGTERM
+
+cd "${TEMP_DIR}"
+echo "Cloning Closure Compiler repo"
+git clone https://github.com/google/closure-compiler.git
+
+cd closure-compiler
+echo "Building Closure Compiler"
+ant jar
+
+if [[ "$?" -ne 0 ]]; then
+  echo "Failed to build jar, copying nothing" >&2
+  cleanup
+  exit 1
+fi
+
+echo "Copying compiler.jar and chrome_extensions.js"
+cp build/compiler.jar "${SCRIPT_DIR}/compiler/"
+cp contrib/externs/chrome_extensions.js "${SCRIPT_DIR}/externs/"
+echo "Done"
+cleanup

@@ -23,3 +23,6 @@ Local modifications:
   {cr|Object}.defineProperty() and public API generation with cr.makePublic().
   See third_party/closure_compiler/runner/how_to_test_compiler_pass.md for
   testing instructions on this pass.
+- Use the script third_party/closure_compiler/bump_compiler_version to update
+  the versions of third_party/closure_compiler/compiler/compiler.jar and
+  third_party/closure_compiler/externs/chrome_extensions.js.
