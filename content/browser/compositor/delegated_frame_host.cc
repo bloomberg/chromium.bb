@@ -574,6 +574,9 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
 
+  // TODO(sikugu): We should be able to validate the format here using
+  // GLHelper::IsReadbackConfigSupported before we processs the result.
+  // See crbug.com/415682.
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
                                                 dst_size_in_pixel.height(),

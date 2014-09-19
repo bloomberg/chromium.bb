@@ -25,6 +25,8 @@ void GLHelperReadbackSupport::InitializeReadbackSupport() {
   for (int i = 0; i <= kLastEnum_SkColorType; ++i) {
     format_support_table_[i] = GLHelperReadbackSupport::NOT_SUPPORTED;
   }
+  // TODO(sikugu): kAlpha_8_SkColorType support check is failing on mesa.
+  // See crbug.com/415667.
   CheckForReadbackSupport(kRGB_565_SkColorType);
   CheckForReadbackSupport(kARGB_4444_SkColorType);
   CheckForReadbackSupport(kRGBA_8888_SkColorType);
