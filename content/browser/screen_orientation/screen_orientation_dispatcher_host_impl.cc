@@ -5,6 +5,7 @@
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host_impl.h"
 
 #include "content/common/screen_orientation_messages.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -53,6 +54,13 @@ bool ScreenOrientationDispatcherHostImpl::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void ScreenOrientationDispatcherHostImpl::DidNavigateMainFrame(
+    const LoadCommittedDetails& details, const FrameNavigateParams& params) {
+  if (!provider_ || details.is_in_page)
+    return;
+  provider_->UnlockOrientation();
 }
 
 RenderFrameHost*

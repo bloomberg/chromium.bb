@@ -35,6 +35,8 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHostImpl
   // WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message&,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
+                                    const FrameNavigateParams& params) OVERRIDE;
 
  private:
   void OnLockRequest(RenderFrameHost* render_frame_host,
