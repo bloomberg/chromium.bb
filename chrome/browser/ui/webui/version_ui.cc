@@ -44,6 +44,7 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
 
   // Localized and data strings.
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
+  html_source->AddLocalizedString("application_label", IDS_PRODUCT_NAME);
   chrome::VersionInfo version_info;
   html_source->AddString("version", version_info.Version());
   html_source->AddString("version_modifier",
@@ -56,22 +57,11 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddString("js_version", v8::V8::GetVersion());
 
 #if defined(OS_ANDROID)
-  html_source->AddLocalizedString("application_label",
-                                  IDS_ABOUT_VERSION_APPLICATION);
   html_source->AddString("os_version", AndroidAboutAppInfo::GetOsInfo());
-  base::android::BuildInfo* android_build_info =
-      base::android::BuildInfo::GetInstance();
-  html_source->AddString("application_name",
-                         android_build_info->package_label());
-  html_source->AddString("application_version_name",
-                         android_build_info->package_version_name());
-  html_source->AddString("application_version_code",
-                         android_build_info->package_version_code());
   html_source->AddLocalizedString("build_id_name",
                                   IDS_ABOUT_VERSION_BUILD_ID);
   html_source->AddString("build_id", CHROME_BUILD_ID);
 #else
-  html_source->AddLocalizedString("application_label", IDS_PRODUCT_NAME);
   html_source->AddString("os_version", std::string());
   html_source->AddString("flash_plugin", "Flash");
   // Note that the Flash version is retrieve asynchronously and returned in

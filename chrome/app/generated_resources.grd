@@ -6917,11 +6917,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">
         About Version
       </message>
-      <if expr="is_android">
-        <message name="IDS_ABOUT_VERSION_APPLICATION" desc="label for the application on the about:version page">
-          Application
-        </message>
-      </if>
       <message name="IDS_ABOUT_VERSION_OFFICIAL" desc="official build on the about:version page">
         Official Build
       </message>
