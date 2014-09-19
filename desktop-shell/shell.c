@@ -2247,11 +2247,11 @@ shell_surface_set_class(struct wl_client *client,
 static void
 restore_output_mode(struct weston_output *output)
 {
-	if (output->current_mode != output->original_mode ||
+	if (output->original_mode ||
 	    (int32_t)output->current_scale != output->original_scale)
 		weston_output_switch_mode(output,
-					  output->original_mode,
-					  output->original_scale,
+					  output->native_mode,
+					  output->native_scale,
 					  WESTON_MODE_SWITCH_RESTORE_NATIVE);
 }
 
