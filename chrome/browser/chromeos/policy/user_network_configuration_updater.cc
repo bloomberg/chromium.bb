@@ -15,7 +15,6 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "components/user_manager/user.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "net/cert/x509_certificate.h"
 #include "policy/policy_constants.h"
@@ -85,15 +84,6 @@ void UserNetworkConfigurationUpdater::GetWebTrustedCertificates(
   *certs = web_trust_certs_;
 }
 
-void UserNetworkConfigurationUpdater::OnCertificatesImported(
-    bool /* unused success */,
-    const net::CertificateList& onc_trusted_certificates) {
-  web_trust_certs_.clear();
-  if (allow_trusted_certificates_from_policy_)
-    web_trust_certs_ = onc_trusted_certificates;
-  NotifyTrustAnchorsChanged();
-}
-
 void UserNetworkConfigurationUpdater::ImportCertificates(
     const base::ListValue& certificates_onc) {
   // If certificate importer is not yet set, cache the certificate onc. It will
@@ -103,11 +93,13 @@ void UserNetworkConfigurationUpdater::ImportCertificates(
     return;
   }
 
+  web_trust_certs_.clear();
   certificate_importer_->ImportCertificates(
       certificates_onc,
       onc_source_,
-      base::Bind(&UserNetworkConfigurationUpdater::OnCertificatesImported,
-                 base::Unretained(this)));
+      allow_trusted_certificates_from_policy_ ? &web_trust_certs_ : NULL);
+
+  NotifyTrustAnchorsChanged();
 }
 
 void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
@@ -140,10 +132,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetCertificateImporter(
     net::NSSCertDatabase* database) {
   DCHECK(database);
   SetCertificateImporter(scoped_ptr<chromeos::onc::CertificateImporter>(
-      new chromeos::onc::CertificateImporterImpl(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO),
-          database)));
+      new chromeos::onc::CertificateImporterImpl(database)));
 }
 
 void UserNetworkConfigurationUpdater::SetCertificateImporter(
