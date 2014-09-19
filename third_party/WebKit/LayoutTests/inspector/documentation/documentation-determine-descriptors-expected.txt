@@ -1,0 +1,27 @@
+This test verifies URL provided by DocumentationView.ContextMenuProvider._determineDescriptors
+Case max:
+    Empty selection:
+        0: Math.max
+    Property selected:
+        0: Math.max
+Case insertBefore:
+    Empty selection:
+        0: Node.insertBefore
+    Property selected:
+        0: Node.insertBefore
+Case Number.MAX_VALUE:
+    Empty selection:
+        0: Number.constants
+    Property selected:
+        0: Number.constants
+Case Math.PI:
+    Empty selection:
+        0: Math.constants
+    Property selected:
+        0: Math.constants
+Case NaN:
+    Empty selection:
+        0: window.NaN
+    Property selected:
+        0: window.NaN
+
