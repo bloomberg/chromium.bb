@@ -37,7 +37,7 @@ include_directories("${LLVM_SRC_DIR}/include"
 
 # This line is read by update.sh and other scripts in tools/clang/scripts
 # Note: The spaces are significant.
-set(LIBRARYNAME BlinkGCPlugin_11)
+set(LIBRARYNAME BlinkGCPlugin_12)
 
 add_llvm_loadable_module("lib${LIBRARYNAME}"
                          BlinkGCPlugin.cpp
