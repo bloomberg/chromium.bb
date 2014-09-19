@@ -48,6 +48,13 @@ per-file search_types.*=samarth@chromium.org
 #Content settings
 per-file content_settings*=markusheintz@chromium.org
 
+# Pepper files.
+per-file pepper_*=bbudge@chromium.org
+per-file pepper_*=dmichael@chromium.org
+per-file pepper_*=raymes@chromium.org
+per-file pepper_*=teravest@chromium.org
+per-file pepper_*=yzshen@chromium.org
+
 # Other stuff.
 per-file autocomplete_match_type.*=mpearson@chromium.org
 per-file autocomplete_match_type.*=pkasting@chromium.org
