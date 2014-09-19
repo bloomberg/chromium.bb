@@ -2198,11 +2198,6 @@ content.dll!content::NavigationControllerImpl::LoadEntry
 ...
 *!extensions::ExtensionHost::LoadInitialURL
 
-INVALID HEAP ARGUMENT
-name=bug_413215
-*!replace_operator_delete*
-v8.dll!*
-
 UNINITIALIZED READ
 name=bug_414268
 pdf.dll!chrome_pdf::PDFiumEngine::OnMouseMove

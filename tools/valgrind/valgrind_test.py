@@ -938,6 +938,10 @@ class DrMemory(BaseTool):
     # disable leak scan for now
     proc += ["-no_count_leaks", "-no_leak_scan"]
 
+    # crbug.com/413215, no heap mismatch check for Windows release build binary
+    if common.IsWindows() and "Release" in self._options.build_dir:
+        proc += ["-no_check_delete_mismatch"]
+
     # make callstacks easier to read
     proc += ["-callstack_srcfile_prefix",
              "build\\src,chromium\\src,crt_build\\self_x86"]

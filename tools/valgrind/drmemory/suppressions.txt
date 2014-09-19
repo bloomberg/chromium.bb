@@ -257,20 +257,16 @@ instruction=mov    0xfffffffc(%esp) -> %eax
 chrome.dll!blink::RenderStyle::resetBorder*
 
 INVALID HEAP ARGUMENT
-name=http://crbug.com/101537, http://crbug.com/101717 (1)
-*!scoped_ptr<>*
-
-INVALID HEAP ARGUMENT
-name=http://crbug.com/101717 (2)
+name=http://crbug.com/101717 (1)
 *!sandbox::PolicyBase::~PolicyBase
 
 INVALID HEAP ARGUMENT
-name=http://crbug.com/101717 (3)
+name=http://crbug.com/101717 (2)
 *!scoped_ptr<>::~scoped_ptr<>
 *!sandbox::GetHandleName
 
 INVALID HEAP ARGUMENT
-name=http://crbug.com/101717 (4)
+name=http://crbug.com/101717 (3)
 *!scoped_ptr<>::~scoped_ptr<>
 *!sandbox::GetPathFromHandle
 
@@ -652,11 +648,6 @@ content.dll!content::WebThreadBase::TaskObserverAdapter::WillProcessTask
 base.dll!base::MessageLoop::RunTask
 base.dll!base::Thread::StopSoon
 base.dll!base::MessageLoop::DeferOrRunPendingTask
-
-INVALID HEAP ARGUMENT
-name=http://crbug.com/413215
-*!replace_operator_delete*
-v8.dll!*
 
 UNADDRESSABLE ACCESS
 name=http://crbug.com/414675
