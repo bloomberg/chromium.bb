@@ -24,4 +24,6 @@ clean: CLEAN(libgbm.so)
 
 install: all
 	mkdir -p $(DESTDIR)/$(LIBDIR)
-	install -m 755 $(OUT)/libgbm.so $(DESTDIR)/$(LIBDIR)
+	install -D -m 755 $(OUT)/libgbm.so $(DESTDIR)/$(LIBDIR)
+	install -D -m 0644 $(SRC)/libgbm.pc $(DESTDIR)$(LIBDIR)/pkgconfig/libgbm.pc
+	install -D -m 0644 $(SRC)/gbm.h $(DESTDIR)/usr/include/gbm.h
