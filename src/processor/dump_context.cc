@@ -36,6 +36,16 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+#include <io.h>
+#define PRIx64 "llx"
+#define PRIx32 "lx"
+#define snprintf _snprintf
+#else  // _WIN32
+#include <unistd.h>
+#define O_BINARY 0
+#endif  // _WIN32
+
 #include "processor/logging.h"
 
 namespace google_breakpad {
