@@ -123,7 +123,7 @@ bool TPMTokenLoader::IsTPMLoadingEnabled() const {
   // tests on Linux.
   // Treat TPM as disabled for guest users since they do not store certs.
   return initialized_for_test_ || (base::SysInfo::IsRunningOnChromeOS() &&
-                                   LoginState::Get()->IsGuestSessionUser());
+                                   !LoginState::Get()->IsGuestSessionUser());
 }
 
 void TPMTokenLoader::MaybeStartTokenInitialization() {
