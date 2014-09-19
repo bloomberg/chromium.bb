@@ -376,7 +376,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
     // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
     // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
     if (!m_async && executionContext()->isDocument()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The response type can only be changed for asynchronous HTTP requests made from a document.");
+        exceptionState.throwDOMException(InvalidAccessError, "The response type cannot be changed for synchronous requests made from a document.");
         return;
     }
 
