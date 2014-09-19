@@ -95,6 +95,11 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
+  // Called by the CertificateImporter when an import finished.
+  void OnCertificatesImported(
+      bool success,
+      const net::CertificateList& onc_trusted_certificates);
+
   // NetworkConfigurationUpdater:
   virtual void ImportCertificates(
       const base::ListValue& certificates_onc) OVERRIDE;
