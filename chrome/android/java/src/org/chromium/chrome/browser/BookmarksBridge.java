@@ -6,8 +6,10 @@ package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -162,6 +164,15 @@ public class BookmarksBridge {
     }
 
     /**
+     * Load an empty partner bookmark shim for testing. The root node for bookmark will be an
+     * empty node.
+     */
+    @VisibleForTesting
+    public void loadEmptyPartnerBookmarkShimForTesting() {
+        nativeLoadEmptyPartnerBookmarkShimForTesting(mNativeBookmarksBridge);
+    }
+
+    /**
      * Add an observer to bookmark model changes.
      * @param observer The observer to be added.
      */
@@ -260,6 +271,24 @@ public class BookmarksBridge {
     public BookmarkId getMobileFolderId() {
         assert mIsNativeBookmarkModelLoaded;
         return nativeGetMobileFolderId(mNativeBookmarksBridge);
+    }
+
+    /**
+     * @return Id representing the special "other" folder from bookmark model.
+     */
+    @VisibleForTesting
+    public BookmarkId getOtherFolderId() {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeGetOtherFolderId(mNativeBookmarksBridge);
+    }
+
+    /**
+     * @return BokmarkId representing special "desktop" folder, namely "bookmark bar".
+     */
+    @VisibleForTesting
+    public BookmarkId getDesktopFolderId() {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeGetDesktopFolderId(mNativeBookmarksBridge);
     }
 
     /**
@@ -379,6 +408,46 @@ public class BookmarksBridge {
      */
     public void moveBookmark(BookmarkId bookmarkId, BookmarkId newParentId, int index) {
         nativeMoveBookmark(mNativeBookmarksBridge, bookmarkId, newParentId, index);
+    }
+
+    /**
+     * Add a new folder to the given parent folder
+     *
+     * @param parent Folder where to add. Must be a normal editable folder, instead of a partner
+     *               bookmark folder or a managed bookomark folder or root node of the entire
+     *               bookmark model.
+     * @param index The position to locate the new folder
+     * @param title The title text of the new folder
+     * @return Id of the added node. If adding failed (index is invalid, string is null, parent is
+     *         not editable), returns null.
+     */
+    public BookmarkId addFolder(BookmarkId parent, int index, String title) {
+        assert parent.getType() == BookmarkType.BOOKMARK_TYPE_NORMAL;
+        assert index >= 0;
+        assert title != null;
+
+        return nativeAddFolder(mNativeBookmarksBridge, parent, index, title);
+    }
+
+    /**
+     * Add a new bookmark to a specific position below parent
+     *
+     * @param parent Folder where to add. Must be a normal editable folder, instead of a partner
+     *               bookmark folder or a managed bookomark folder or root node of the entire
+     *               bookmark model.
+     * @param index The position where the bookmark will be placed in parent folder
+     * @param title Title of the new bookmark
+     * @param url Url of the new bookmark
+     * @return Id of the added node. If adding failed (index is invalid, string is null, parent is
+     *         not editable), returns null.
+     */
+    public BookmarkId addBookmark(BookmarkId parent, int index, String title, String url) {
+        assert parent.getType() == BookmarkType.BOOKMARK_TYPE_NORMAL;
+        assert index >= 0;
+        assert title != null;
+        assert url != null;
+
+        return nativeAddBookmark(mNativeBookmarksBridge, parent, index, title, url);
     }
 
     /**
@@ -525,6 +594,8 @@ public class BookmarksBridge {
     private native void nativeGetAllFoldersWithDepths(long nativeBookmarksBridge,
             List<BookmarkId> folderList, List<Integer> depthList);
     private native BookmarkId nativeGetMobileFolderId(long nativeBookmarksBridge);
+    private native BookmarkId nativeGetOtherFolderId(long nativeBookmarksBridge);
+    private native BookmarkId nativeGetDesktopFolderId(long nativeBookmarksBridge);
     private native void nativeGetChildIDs(long nativeBookmarksBridge, long id, int type,
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
     private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarksBridge,
@@ -540,11 +611,16 @@ public class BookmarksBridge {
     private native void nativeGetCurrentFolderHierarchy(long nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
+    private native BookmarkId nativeAddFolder(long nativeBookmarksBridge, BookmarkId parent,
+            int index, String title);
     private native void nativeDeleteBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId);
     private native void nativeMoveBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId,
             BookmarkId newParentId, int index);
+    private native BookmarkId nativeAddBookmark(long nativeBookmarksBridge, BookmarkId parent,
+            int index, String title, String url);
     private static native long nativeGetNativeBookmarkModel(Profile profile);
     private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
+    private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarksBridge);
     private native long nativeInit(Profile profile);
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
     private native void nativeDestroy(long nativeBookmarksBridge);

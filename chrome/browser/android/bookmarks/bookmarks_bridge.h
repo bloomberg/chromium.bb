@@ -31,6 +31,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
 
   bool IsDoingExtensiveChanges(JNIEnv* env, jobject obj);
 
+  void LoadEmptyPartnerBookmarkShimForTesting(JNIEnv* env, jobject obj);
+
   base::android::ScopedJavaLocalRef<jobject> GetBookmarkByID(
       JNIEnv* env,
       jobject obj,
@@ -61,6 +63,12 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
 
   base::android::ScopedJavaLocalRef<jobject> GetMobileFolderId(JNIEnv* env,
                                                                jobject obj);
+
+  base::android::ScopedJavaLocalRef<jobject> GetOtherFolderId(JNIEnv* env,
+                                                              jobject obj);
+
+  base::android::ScopedJavaLocalRef<jobject> GetDesktopFolderId(JNIEnv* env,
+                                                                jobject obj);
 
   void GetChildIDs(JNIEnv* env,
                    jobject obj,
@@ -100,15 +108,27 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                                  jobject j_callback_obj,
                                  jobject j_result_obj);
 
-  void DeleteBookmark(JNIEnv* env,
-                      jobject obj,
-                      jobject j_bookmark_id_obj);
+  base::android::ScopedJavaLocalRef<jobject> AddFolder(JNIEnv* env,
+                                                       jobject obj,
+                                                       jobject j_parent_id_obj,
+                                                       jint index,
+                                                       jstring j_title);
+
+  void DeleteBookmark(JNIEnv* env, jobject obj, jobject j_bookmark_id_obj);
 
   void MoveBookmark(JNIEnv* env,
                     jobject obj,
                     jobject j_bookmark_id_obj,
                     jobject j_parent_id_obj,
                     jint index);
+
+  base::android::ScopedJavaLocalRef<jobject> AddBookmark(
+      JNIEnv* env,
+      jobject obj,
+      jobject j_parent_id_obj,
+      jint index,
+      jstring j_title,
+      jstring j_url);
 
  private:
   virtual ~BookmarksBridge();

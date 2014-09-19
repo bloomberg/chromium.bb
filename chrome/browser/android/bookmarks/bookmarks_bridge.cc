@@ -146,6 +146,15 @@ static jboolean IsEditBookmarksEnabled(JNIEnv* env, jclass clazz) {
   return IsEditBookmarksEnabled();
 }
 
+void BookmarksBridge::LoadEmptyPartnerBookmarkShimForTesting(JNIEnv* env,
+                                                             jobject obj) {
+  if (partner_bookmarks_shim_->IsLoaded())
+      return;
+  partner_bookmarks_shim_->SetPartnerBookmarksRoot(
+      new BookmarkPermanentNode(0));
+  DCHECK(partner_bookmarks_shim_->IsLoaded());
+}
+
 ScopedJavaLocalRef<jobject> BookmarksBridge::GetBookmarkByID(JNIEnv* env,
                                                              jobject obj,
                                                              jlong id,
@@ -356,10 +365,28 @@ void BookmarksBridge::GetAllFoldersWithDepths(JNIEnv* env,
 
 ScopedJavaLocalRef<jobject> BookmarksBridge::GetMobileFolderId(JNIEnv* env,
                                                                jobject obj) {
-  const BookmarkNode* mobileNode = bookmark_model_->mobile_node();
+  const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
       Java_BookmarksBridge_createBookmarkId(
-          env, mobileNode->id(), GetBookmarkType(mobileNode));
+          env, mobile_node->id(), GetBookmarkType(mobile_node));
+  return folder_id_obj;
+}
+
+ScopedJavaLocalRef<jobject> BookmarksBridge::GetOtherFolderId(JNIEnv* env,
+                                                              jobject obj) {
+  const BookmarkNode* other_node = bookmark_model_->other_node();
+  ScopedJavaLocalRef<jobject> folder_id_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, other_node->id(), GetBookmarkType(other_node));
+  return folder_id_obj;
+}
+
+ScopedJavaLocalRef<jobject> BookmarksBridge::GetDesktopFolderId(JNIEnv* env,
+                                                                jobject obj) {
+  const BookmarkNode* desktop_node = bookmark_model_->bookmark_bar_node();
+  ScopedJavaLocalRef<jobject> folder_id_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, desktop_node->id(), GetBookmarkType(desktop_node));
   return folder_id_obj;
 }
 
@@ -550,6 +577,28 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
       env, j_callback_obj, j_folder_id_obj, j_result_obj);
 }
 
+ScopedJavaLocalRef<jobject> BookmarksBridge::AddFolder(JNIEnv* env,
+                                                       jobject obj,
+                                                       jobject j_parent_id_obj,
+                                                       jint index,
+                                                       jstring j_title) {
+  DCHECK(IsLoaded());
+  long bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_parent_id_obj);
+  const BookmarkNode* parent = GetNodeByID(bookmark_id, type);
+
+  const BookmarkNode* new_node = bookmark_model_->AddFolder(
+      parent, index, base::android::ConvertJavaStringToUTF16(env, j_title));
+  if (!new_node) {
+    NOTREACHED();
+    return ScopedJavaLocalRef<jobject>();
+  }
+  ScopedJavaLocalRef<jobject> new_java_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, new_node->id(), GetBookmarkType(new_node));
+  return new_java_obj;
+}
+
 void BookmarksBridge::DeleteBookmark(JNIEnv* env,
                                      jobject obj,
                                      jobject j_bookmark_id_obj) {
@@ -591,6 +640,33 @@ void BookmarksBridge::MoveBookmark(JNIEnv* env,
   type = JavaBookmarkIdGetType(env, j_parent_id_obj);
   const BookmarkNode* new_parent_node = GetNodeByID(bookmark_id, type);
   bookmark_model_->Move(node, new_parent_node, index);
+}
+
+ScopedJavaLocalRef<jobject> BookmarksBridge::AddBookmark(
+    JNIEnv* env,
+    jobject obj,
+    jobject j_parent_id_obj,
+    jint index,
+    jstring j_title,
+    jstring j_url) {
+  DCHECK(IsLoaded());
+  long bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_parent_id_obj);
+  const BookmarkNode* parent = GetNodeByID(bookmark_id, type);
+
+  const BookmarkNode* new_node = bookmark_model_->AddURL(
+      parent,
+      index,
+      base::android::ConvertJavaStringToUTF16(env, j_title),
+      GURL(base::android::ConvertJavaStringToUTF16(env, j_url)));
+  if (!new_node) {
+    NOTREACHED();
+    return ScopedJavaLocalRef<jobject>();
+  }
+  ScopedJavaLocalRef<jobject> new_java_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, new_node->id(), GetBookmarkType(new_node));
+  return new_java_obj;
 }
 
 ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
