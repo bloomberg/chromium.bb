@@ -114,7 +114,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GURL& url,
       const std::vector<GURL>& redirect_chain,
       const Referrer& referrer,
-      PageTransition page_transition,
+      ui::PageTransition page_transition,
       WindowOpenDisposition disposition,
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,

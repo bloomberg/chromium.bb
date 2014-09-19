@@ -86,7 +86,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
       ASSERT_EQ(tab->navigations[0].title(),
                 base::ASCIIToUTF16(kTitle));
       ASSERT_EQ(tab->navigations[0].transition_type(),
-                content::PAGE_TRANSITION_TYPED);
+                ui::PAGE_TRANSITION_TYPED);
     }
   }
 }

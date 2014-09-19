@@ -771,7 +771,7 @@ void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
         item->url,
         content::Referrer(),
         NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_AUTO_BOOKMARK,
+        ui::PAGE_TRANSITION_AUTO_BOOKMARK,
         false));
   }
 }

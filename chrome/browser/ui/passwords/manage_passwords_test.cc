@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 void ManagePasswordsTest::SetUpOnMainThread() {
-  AddTabAtIndex(0, GURL("http://example.com/"), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
   // Create the test UIController here so that it's bound to the currently
   // active WebContents.
   new ManagePasswordsUIControllerMock(

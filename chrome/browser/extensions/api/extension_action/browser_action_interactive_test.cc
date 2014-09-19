@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
     new_browser = chrome::FindBrowserWithWebContents(
         browser()->OpenURL(content::OpenURLParams(
             GURL("about:"), content::Referrer(), NEW_WINDOW,
-            content::PAGE_TRANSITION_TYPED, false)));
+            ui::PAGE_TRANSITION_TYPED, false)));
 #if defined(OS_WIN)
     // Hide all the buttons to test that it opens even when browser action is
     // in the overflow bucket.
@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   Browser* new_browser = chrome::FindBrowserWithWebContents(
       browser()->OpenURL(content::OpenURLParams(
           GURL("about:"), content::Referrer(), NEW_WINDOW,
-          content::PAGE_TRANSITION_TYPED, false)));
+          ui::PAGE_TRANSITION_TYPED, false)));
 
   // Forcibly closing the browser HWND should not cause a crash.
   EXPECT_EQ(TRUE, ::CloseWindow(hwnd));

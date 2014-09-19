@@ -37,8 +37,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
@@ -393,7 +393,7 @@ class Browser : public TabStripModelObserver,
   // Called by chrome::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(content::WebContents* contents,
-                                  content::PageTransition transition,
+                                  ui::PageTransition transition,
                                   bool user_initiated);
 
   // Interface implementations ////////////////////////////////////////////////

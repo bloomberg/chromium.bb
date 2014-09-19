@@ -13,8 +13,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -34,12 +34,12 @@ namespace chrome {
 //
 // Simple Navigate to URL in current tab:
 // chrome::NavigateParams params(browser, GURL("http://www.google.com/"),
-//                               content::PAGE_TRANSITION_LINK);
+//                               ui::PAGE_TRANSITION_LINK);
 // chrome::Navigate(&params);
 //
 // Open bookmark in new background tab:
 // chrome::NavigateParams params(browser, url,
-//                               content::PAGE_TRANSITION_AUTO_BOOKMARK);
+//                               ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 // params.disposition = NEW_BACKGROUND_TAB;
 // chrome::Navigate(&params);
 //
@@ -53,12 +53,12 @@ namespace chrome {
 struct NavigateParams {
   NavigateParams(Browser* browser,
                  const GURL& a_url,
-                 content::PageTransition a_transition);
+                 ui::PageTransition a_transition);
   NavigateParams(Browser* browser,
                  content::WebContents* a_target_contents);
   NavigateParams(Profile* profile,
                  const GURL& a_url,
-                 content::PageTransition a_transition);
+                 ui::PageTransition a_transition);
   ~NavigateParams();
 
   // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
@@ -129,9 +129,9 @@ struct NavigateParams {
   bool trusted_source;
 
   // The transition type of the navigation. Default is
-  // content::PAGE_TRANSITION_LINK when target_contents is specified in the
+  // ui::PAGE_TRANSITION_LINK when target_contents is specified in the
   // constructor.
-  content::PageTransition transition;
+  ui::PageTransition transition;
 
   // Whether this navigation was initiated by the renderer process. Default is
   // false.

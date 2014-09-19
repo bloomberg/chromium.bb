@@ -103,7 +103,7 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
 scoped_ptr<DevToolsTarget>
 BrowserListTabContentsProvider::CreateNewTarget(const GURL& url) {
   chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
-      url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+      url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
   if (!params.target_contents)

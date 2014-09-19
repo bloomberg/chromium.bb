@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_view_host.h"
+#include "ui/base/page_transition_types.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
@@ -49,15 +49,16 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // RenderFrameHostTester implementation.
   virtual TestRenderFrameHost* AppendChild(
       const std::string& frame_name) OVERRIDE;
-  virtual void SendNavigateWithTransition(int page_id,
-                                          const GURL& url,
-                                          PageTransition transition) OVERRIDE;
+  virtual void SendNavigateWithTransition(
+      int page_id,
+      const GURL& url,
+      ui::PageTransition transition) OVERRIDE;
 
   void SendNavigate(int page_id, const GURL& url);
   void SendFailedNavigate(int page_id, const GURL& url);
   void SendNavigateWithTransitionAndResponseCode(
       int page_id,
-      const GURL& url, PageTransition transition,
+      const GURL& url, ui::PageTransition transition,
       int response_code);
   void SendNavigateWithOriginalRequestURL(
       int page_id,
@@ -76,7 +77,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendNavigateWithParameters(
       int page_id,
       const GURL& url,
-      PageTransition transition,
+      ui::PageTransition transition,
       const GURL& original_request_url,
       int response_code,
       const base::FilePath* file_path_for_history_item,

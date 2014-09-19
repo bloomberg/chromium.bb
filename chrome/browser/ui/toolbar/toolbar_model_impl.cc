@@ -264,9 +264,9 @@ bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
           visible_entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL &&
           !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
         pending_entry->SetExtraData(kInterstitialShownKey, base::string16());
-      const content::PageTransition transition_type =
+      const ui::PageTransition transition_type =
           pending_entry->GetTransitionType();
-      if ((transition_type & content::PAGE_TRANSITION_TYPED) != 0 &&
+      if ((transition_type & ui::PAGE_TRANSITION_TYPED) != 0 &&
           !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
         return false;
     }

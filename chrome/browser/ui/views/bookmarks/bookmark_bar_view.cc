@@ -60,7 +60,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -69,6 +68,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
@@ -1269,7 +1269,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     OpenURLParams params(GURL(chrome::kChromeUIAppsURL),
                          Referrer(),
                          disposition_from_event_flags,
-                         content::PAGE_TRANSITION_AUTO_BOOKMARK,
+                         ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                          false);
     page_navigator_->OpenURL(params);
     RecordBookmarkAppsPageOpen(GetBookmarkLaunchLocation());
@@ -1292,7 +1292,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     RecordAppLaunch(browser_->profile(), node->url());
     OpenURLParams params(
         node->url(), Referrer(), disposition_from_event_flags,
-        content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+        ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
     page_navigator_->OpenURL(params);
   } else {
     chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,

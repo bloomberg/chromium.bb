@@ -233,7 +233,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   if (pinned)
     add_types |= TabStripModel::ADD_PINNED;
   chrome::NavigateParams navigate_params(
-      browser, url, content::PAGE_TRANSITION_LINK);
+      browser, url, ui::PAGE_TRANSITION_LINK);
   navigate_params.disposition =
       active ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   navigate_params.tabstrip_index = index;
@@ -610,7 +610,7 @@ void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
     content::OpenURLParams params(OptionsPageInfo::GetOptionsPage(extension),
                                   content::Referrer(),
                                   SINGLETON_TAB,
-                                  content::PAGE_TRANSITION_LINK,
+                                  ui::PAGE_TRANSITION_LINK,
                                   false);
     browser->OpenURL(params);
     browser->window()->Show();

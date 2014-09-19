@@ -37,7 +37,7 @@ chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       popup_url,
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   nav_params.referrer = referrer_;
   nav_params.source_contents = web_contents;
   nav_params.is_renderer_initiated = true;

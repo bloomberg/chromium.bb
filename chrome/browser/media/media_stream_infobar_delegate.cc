@@ -144,7 +144,7 @@ bool MediaStreamInfoBarDelegate::LinkClicked(
           GURL(chrome::kMediaAccessLearnMoreUrl),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+          ui::PAGE_TRANSITION_LINK, false));
 
   return false;  // Do not dismiss the info bar.
 }

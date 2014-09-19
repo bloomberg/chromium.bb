@@ -273,7 +273,7 @@ void ZoomBubbleView::ButtonPressed(views::Button* sender,
         browser,
         GURL(base::StringPrintf("chrome://extensions?id=%s",
                                 extension_info_.id.c_str())),
-        content::PAGE_TRANSITION_FROM_API);
+        ui::PAGE_TRANSITION_FROM_API);
   } else {
     chrome_page_zoom::Zoom(web_contents_, content::PAGE_ZOOM_RESET);
   }

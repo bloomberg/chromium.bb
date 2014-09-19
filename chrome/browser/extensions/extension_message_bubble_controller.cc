@@ -130,7 +130,7 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
         content::OpenURLParams(delegate_->GetLearnMoreUrl(),
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_LINK,
+                               ui::PAGE_TRANSITION_LINK,
                                false));
   }
   AcknowledgeExtensions();

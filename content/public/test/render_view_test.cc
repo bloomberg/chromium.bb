@@ -412,7 +412,7 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
 
   FrameMsg_Navigate_Params navigate_params;
   navigate_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  navigate_params.transition = PAGE_TRANSITION_FORWARD_BACK;
+  navigate_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   navigate_params.current_history_list_length = history_list_length;
   navigate_params.current_history_list_offset = impl->history_list_offset();
   navigate_params.pending_history_list_offset = pending_offset;

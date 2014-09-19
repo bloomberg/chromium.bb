@@ -109,7 +109,7 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
   web_contents()->GetController().LoadURL(
       GURL(src),
       content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 }
 

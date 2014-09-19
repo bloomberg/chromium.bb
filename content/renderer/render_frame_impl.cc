@@ -1939,9 +1939,9 @@ void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
-  if (PageTransitionCoreTypeIs(navigation_state->transition_type(),
-                               PAGE_TRANSITION_LINK)) {
-    navigation_state->set_transition_type(PAGE_TRANSITION_FORM_SUBMIT);
+  if (ui::PageTransitionCoreTypeIs(navigation_state->transition_type(),
+                                   ui::PAGE_TRANSITION_LINK)) {
+    navigation_state->set_transition_type(ui::PAGE_TRANSITION_FORM_SUBMIT);
   }
 
   // Save these to be processed when the ensuing navigation is committed.
@@ -2014,7 +2014,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
     // handle loading of error pages.
     document_state->navigation_state()->set_transition_type(
-        PAGE_TRANSITION_AUTO_SUBFRAME);
+        ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
@@ -2128,8 +2128,8 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
   // state into account, if a location.replace() failed.
   bool replace =
       navigation_state->pending_page_id() != -1 ||
-      PageTransitionCoreTypeIs(navigation_state->transition_type(),
-                               PAGE_TRANSITION_AUTO_SUBFRAME);
+      ui::PageTransitionCoreTypeIs(navigation_state->transition_type(),
+                               ui::PAGE_TRANSITION_AUTO_SUBFRAME);
 
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
@@ -2647,7 +2647,7 @@ void RenderFrameImpl::willSendRequest(
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
 
-  PageTransition transition_type = PAGE_TRANSITION_LINK;
+  ui::PageTransition transition_type = ui::PAGE_TRANSITION_LINK;
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   DCHECK(document_state);
   InternalDocumentStateData* internal_data =
@@ -3359,7 +3359,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     params.contents_mime_type = ds->response().mimeType().utf8();
 
     params.transition = navigation_state->transition_type();
-    if (!PageTransitionIsMainFrame(params.transition)) {
+    if (!ui::PageTransitionIsMainFrame(params.transition)) {
       // If the main frame does a load, it should not be reported as a subframe
       // navigation.  This can occur in the following case:
       // 1. You're on a site with frames.
@@ -3371,7 +3371,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
       // We don't want that, because any navigation that changes the toplevel
       // frame should be tracked as a toplevel navigation (this allows us to
       // update the URL bar, etc).
-      params.transition = PAGE_TRANSITION_LINK;
+      params.transition = ui::PAGE_TRANSITION_LINK;
     }
 
     // If the page contained a client redirect (meta refresh, document.loc...),
@@ -3379,8 +3379,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     if (ds->isClientRedirect()) {
       params.referrer =
           Referrer(params.redirects[0], ds->request().referrerPolicy());
-      params.transition = static_cast<PageTransition>(
-          params.transition | PAGE_TRANSITION_CLIENT_REDIRECT);
+      params.transition = ui::PageTransitionFromInt(
+          params.transition | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
     } else {
       params.referrer = RenderViewImpl::GetReferrerFromRequest(
           frame, ds->request());
@@ -3421,9 +3421,9 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     // SendDidCommitProvisionalLoad has been called since WillNavigateToURL was
     // called to initiate the load.
     if (render_view_->page_id_ > render_view_->last_page_id_sent_to_browser_)
-      params.transition = PAGE_TRANSITION_MANUAL_SUBFRAME;
+      params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
     else
-      params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
+      params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
 
     DCHECK(!navigation_state->history_list_was_cleared());
     params.history_list_was_cleared = false;
@@ -3439,7 +3439,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
-  navigation_state->set_transition_type(PAGE_TRANSITION_LINK);
+  navigation_state->set_transition_type(ui::PAGE_TRANSITION_LINK);
 }
 
 WebElement RenderFrameImpl::GetFocusedElement() {

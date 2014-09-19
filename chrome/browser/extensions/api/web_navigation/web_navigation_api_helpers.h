@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 class BrowserContext;
@@ -36,7 +36,7 @@ void DispatchOnCommitted(const std::string& event_name,
                          content::WebContents* web_contents,
                          content::RenderFrameHost* frame_host,
                          const GURL& url,
-                         content::PageTransition transition_type);
+                         ui::PageTransition transition_type);
 
 void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
                                 content::RenderFrameHost* frame_host,

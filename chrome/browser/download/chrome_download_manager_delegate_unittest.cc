@@ -218,7 +218,7 @@ content::MockDownloadItem*
   ON_CALL(*item, GetTargetFilePath())
       .WillByDefault(ReturnRefOfCopy(base::FilePath()));
   ON_CALL(*item, GetTransitionType())
-      .WillByDefault(Return(content::PAGE_TRANSITION_LINK));
+      .WillByDefault(Return(ui::PAGE_TRANSITION_LINK));
   ON_CALL(*item, GetWebContents())
       .WillByDefault(Return(web_contents()));
   ON_CALL(*item, HasUserGesture())

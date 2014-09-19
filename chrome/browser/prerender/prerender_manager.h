@@ -484,7 +484,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     virtual void DidCommitProvisionalLoadForFrame(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
-        content::PageTransition transition_type) OVERRIDE;
+        ui::PageTransition transition_type) OVERRIDE;
     virtual void DidFailProvisionalLoad(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,

@@ -13,11 +13,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/autocomplete_match_type.h"
-#include "content/public/common/page_transition_types.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 
 using base::ASCIIToUTF16;
 
@@ -34,7 +33,7 @@ struct ShortcutsDatabaseTestInfo {
   std::string contents_class;
   std::string description;
   std::string description_class;
-  content::PageTransition transition;
+  ui::PageTransition transition;
   AutocompleteMatchType::Type type;
   std::string keyword;
   int days_from_now;
@@ -42,17 +41,17 @@ struct ShortcutsDatabaseTestInfo {
 } shortcut_test_db[] = {
   { "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", "goog", "www.google.com",
     "http://www.google.com/", "Google", "0,1,4,0", "Google", "0,1",
-    content::PAGE_TRANSITION_GENERATED, AutocompleteMatchType::SEARCH_HISTORY,
+    ui::PAGE_TRANSITION_GENERATED, AutocompleteMatchType::SEARCH_HISTORY,
     "google.com", 1, 100, },
   { "BD85DBA2-8C29-49F9-84AE-48E1E90880E0", "slash", "slashdot.org",
     "http://slashdot.org/", "slashdot.org", "0,1",
     "Slashdot - News for nerds, stuff that matters", "0,0",
-    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 0,
+    ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 0,
     100},
   { "BD85DBA2-8C29-49F9-84AE-48E1E90880E1", "news", "slashdot.org",
     "http://slashdot.org/", "slashdot.org", "0,1",
     "Slashdot - News for nerds, stuff that matters", "0,0",
-    content::PAGE_TRANSITION_LINK, AutocompleteMatchType::HISTORY_TITLE, "", 0,
+    ui::PAGE_TRANSITION_LINK, AutocompleteMatchType::HISTORY_TITLE, "", 0,
     5},
 };
 
@@ -258,8 +257,8 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
     EXPECT_EQ(statement.ColumnString(1), statement.ColumnString(0));
 
     // The other three columns have default values.
-    EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
-              static_cast<content::PageTransition>(statement.ColumnInt(2)));
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
+              ui::PageTransitionFromInt(statement.ColumnInt(2)));
     EXPECT_EQ(AutocompleteMatchType::HISTORY_TITLE,
               static_cast<AutocompleteMatchType::Type>(statement.ColumnInt(3)));
     EXPECT_TRUE(statement.ColumnString(4).empty());

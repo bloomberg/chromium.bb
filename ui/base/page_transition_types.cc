@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace ui {
 
 bool PageTransitionCoreTypeIs(PageTransition lhs,
                               PageTransition rhs) {
@@ -49,7 +49,7 @@ bool PageTransitionIsRedirect(PageTransition type) {
 
 bool PageTransitionIsNewNavigation(PageTransition type) {
   return (type & PAGE_TRANSITION_FORWARD_BACK) == 0 &&
-      !PageTransitionCoreTypeIs(type, content::PAGE_TRANSITION_RELOAD);
+      !PageTransitionCoreTypeIs(type, PAGE_TRANSITION_RELOAD);
 }
 
 int32 PageTransitionGetQualifier(PageTransition type) {
@@ -86,4 +86,4 @@ const char* PageTransitionGetCoreTransitionString(PageTransition type) {
   return NULL;
 }
 
-}  // namespace content
+}  // namespace ui

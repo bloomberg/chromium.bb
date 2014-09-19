@@ -216,7 +216,7 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // -1 if unknown / invalid.
   IPC_STRUCT_MEMBER(int, parent_render_frame_id)
 
-  IPC_STRUCT_MEMBER(content::PageTransition, transition_type)
+  IPC_STRUCT_MEMBER(ui::PageTransition, transition_type)
 
   // For navigations, whether this navigation should replace the current session
   // history entry on commit.

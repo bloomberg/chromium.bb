@@ -36,7 +36,6 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -44,6 +43,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 
 using content::WebContents;
 using task_manager::browsertest_util::MatchAboutBlankTab;
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
 
   // Open a new tab and make sure the task manager notices it.
-  AddTabAtIndex(0, GetTestURL(), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GetTestURL(), ui::PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
 
   // Open a new tab and make sure the task manager notices it.
-  AddTabAtIndex(0, GetTestURL(), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GetTestURL(), ui::PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabChanges) {
   // The fourth entry (page.html) is also of type extension and has both a
   // WebContents and an extension. The title should start with "Extension:".
   GURL url("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html");
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchExtension("Foobar")));
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
                                 .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
                                 .AppendASCII("1.0.0.0")));
   GURL url("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html");
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
 
   ShowTaskManager();
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchExtension("Foobar")));
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
 
   // Open a new tab to the app's launch URL and make sure we notice that.
   GURL url(extension->GetResourceURL("main.html"));
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
 
   // There should be 1 "App: " tab and the original new tab page.
   ASSERT_NO_FATAL_FAILURE(
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
 
   // Open a new tab to the app's launch URL and make sure we notice that.
   GURL url(extension->GetResourceURL("main.html"));
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
 
   ShowTaskManager();
 
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Check that the new entry's title starts with "Tab:".
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Load the hosted app and make sure it still starts with "Tab:",
@@ -627,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabBeforeReload) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Load the hosted app and make sure it still starts with "Tab:",
@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // Open a new tab and make sure we notice that.
-  AddTabAtIndex(0, GetTestURL(), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GetTestURL(), ui::PAGE_TRANSITION_TYPED);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 
   // Check that we get some value for the cache columns.

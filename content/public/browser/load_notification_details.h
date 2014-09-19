@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -17,7 +17,7 @@ namespace content {
 // log page load metrics.
 struct LoadNotificationDetails {
   LoadNotificationDetails(const GURL& url,
-                          PageTransition origin,
+                          ui::PageTransition origin,
                           base::TimeDelta load_time,
                           NavigationController* controller,
                           int session_index)
@@ -37,7 +37,7 @@ struct LoadNotificationDetails {
   int session_index;
 
   // The type of action that caused the load.
-  PageTransition origin;
+  ui::PageTransition origin;
 
   // The NavigationController for the load.
   NavigationController* controller;

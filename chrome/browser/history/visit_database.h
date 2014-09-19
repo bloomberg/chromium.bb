@@ -100,7 +100,7 @@ class VisitDatabase {
   bool GetVisitsInRangeForTransition(base::Time begin_time,
                                      base::Time end_time,
                                      int max_results,
-                                     content::PageTransition transition,
+                                     ui::PageTransition transition,
                                      VisitVector* visits);
 
   // Fills all visits in the given time range into the given vector that should

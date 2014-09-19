@@ -39,12 +39,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "crypto/secure_hash.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_canon.h"
 
@@ -52,7 +52,7 @@ using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
 using content::BrowserThread;
-using content::PageTransition;
+using ui::PageTransition;
 using content::RenderFrameHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
@@ -249,20 +249,20 @@ int GetMaxLocalPredictionTimeMs() {
 }
 
 bool IsBackForward(PageTransition transition) {
-  return (transition & content::PAGE_TRANSITION_FORWARD_BACK) != 0;
+  return (transition & ui::PAGE_TRANSITION_FORWARD_BACK) != 0;
 }
 
 bool IsHomePage(PageTransition transition) {
-  return (transition & content::PAGE_TRANSITION_HOME_PAGE) != 0;
+  return (transition & ui::PAGE_TRANSITION_HOME_PAGE) != 0;
 }
 
 bool IsIntermediateRedirect(PageTransition transition) {
-  return (transition & content::PAGE_TRANSITION_CHAIN_END) == 0;
+  return (transition & ui::PAGE_TRANSITION_CHAIN_END) == 0;
 }
 
 bool IsFormSubmit(PageTransition transition) {
-  return PageTransitionCoreTypeIs(transition,
-                                  content::PAGE_TRANSITION_FORM_SUBMIT);
+  return ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
 bool ShouldExcludeTransitionForPrediction(PageTransition transition) {

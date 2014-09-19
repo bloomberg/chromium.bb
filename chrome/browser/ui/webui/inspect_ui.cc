@@ -349,7 +349,7 @@ void InspectUI::InspectBrowserWithCustomFrontend(
       content::OpenURLParams(frontend_url,
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
-                             content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                              false));
 
   // Install devtools bindings.

@@ -2913,7 +2913,7 @@ void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
   chrome::NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
       url,
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }

@@ -242,8 +242,8 @@ void HistoryQuickProviderTest::FillData() {
           "INSERT INTO \"visits\" VALUES(%" PRIuS ", %" PRIuS ", %" PRId64
           ", 0, %d, 0, 1)",
           visit_id++, i + 1, visit_time.ToInternalValue(),
-          (j < cur.typed_count) ? content::PAGE_TRANSITION_TYPED :
-                                  content::PAGE_TRANSITION_LINK);
+          (j < cur.typed_count) ? ui::PAGE_TRANSITION_TYPED :
+                                  ui::PAGE_TRANSITION_LINK);
 
       sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
       EXPECT_TRUE(sql_stmt.Run());

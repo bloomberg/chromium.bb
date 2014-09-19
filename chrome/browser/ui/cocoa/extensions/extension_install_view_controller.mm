@@ -211,7 +211,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
                  prompt_->extension()->id());
   navigator_->OpenURL(OpenURLParams(
-      store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      store_url, Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       false));
 
   delegate_->InstallUIAbort(/*user_initiated=*/true);

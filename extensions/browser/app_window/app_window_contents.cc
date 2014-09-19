@@ -56,7 +56,7 @@ void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
   }
 
   web_contents_->GetController().LoadURL(
-      url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
       std::string());
 }
 

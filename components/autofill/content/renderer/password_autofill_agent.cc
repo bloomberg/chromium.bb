@@ -17,7 +17,6 @@
 #include "components/autofill/core/common/password_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view.h"
@@ -33,6 +32,7 @@
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 
@@ -728,7 +728,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
             frame->provisionalDataSource());
     content::NavigationState* navigation_state =
         document_state->navigation_state();
-    if (content::PageTransitionIsWebTriggerable(
+    if (ui::PageTransitionIsWebTriggerable(
             navigation_state->transition_type()) &&
         !blink::WebUserGestureIndicator::isProcessingUserGesture()) {
       // If onsubmit has been called, try and save that form.

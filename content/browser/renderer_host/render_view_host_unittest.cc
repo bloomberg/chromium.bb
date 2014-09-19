@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_content_browser_client.h"
@@ -23,6 +22,7 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 
@@ -96,7 +96,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
 
   NavigateAndCommit(url1);
   controller().LoadURL(
-      url2, Referrer(), PAGE_TRANSITION_LINK, std::string());
+      url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage();
   // Needed so that navigations are not suspended on the RVH.

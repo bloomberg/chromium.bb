@@ -54,7 +54,7 @@ Browser* FullscreenControllerStateInteractiveTest::GetBrowser() {
 IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
                        DISABLED_TransitionsForEachState) {
   // A tab is needed for tab fullscreen.
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED);
   TestTransitionsForEachState();
   // Progress of test can be examined via LOG(INFO) << GetAndClearDebugLog();
 }
@@ -65,15 +65,15 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
 // An "empty" test is included as part of each "TEST_EVENT" because it makes
 // running the entire test suite less flaky on MacOS. All of the tests pass
 // when run individually.
-#define TEST_EVENT(state, event)                                       \
-  IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,     \
-                         DISABLED_##state##__##event##__Empty) {}      \
-  IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,     \
-                         DISABLED_##state##__##event) {                \
-    AddTabAtIndex(                                                     \
-        0, GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_TYPED); \
-    ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event))           \
-        << GetAndClearDebugLog();                                      \
+#define TEST_EVENT(state, event)                                   \
+  IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest, \
+                         DISABLED_##state##__##event##__Empty) {}  \
+  IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest, \
+                         DISABLED_##state##__##event) {            \
+    AddTabAtIndex(                                                 \
+        0, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED);  \
+    ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event))       \
+        << GetAndClearDebugLog();                                  \
   }
     // Progress of tests can be examined by inserting the following line:
     // LOG(INFO) << GetAndClearDebugLog(); }
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
                        DISABLED_ManualTest) {
   // A tab is needed for tab fullscreen.
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED);
   ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN)) << GetAndClearDebugLog();
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE)) << GetAndClearDebugLog();
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE)) << GetAndClearDebugLog();

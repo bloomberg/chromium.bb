@@ -182,7 +182,7 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params) {
   Browser* browser = new Browser(browser_params);
 
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
-      browser, url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+      browser, url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   web_contents->GetRenderViewHost()->SyncRendererPrefs();
 
@@ -228,7 +228,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params) {
 
   GURL extension_url = UrlForExtension(extension, launch_params.override_url);
   chrome::NavigateParams params(browser, extension_url,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.tabstrip_add_types = add_type;
   params.disposition = disposition;
 
@@ -242,7 +242,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params) {
           extension_url,
           content::Referrer(existing_tab->GetURL(),
                             blink::WebReferrerPolicyDefault),
-          disposition, content::PAGE_TRANSITION_LINK, false));
+          disposition, ui::PAGE_TRANSITION_LINK, false));
     // Reset existing_tab as OpenURL() may have clobbered it.
     existing_tab = browser->tab_strip_model()->GetActiveWebContents();
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {

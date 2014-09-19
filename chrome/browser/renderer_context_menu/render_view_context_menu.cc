@@ -1296,7 +1296,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     OpenURL(handlers[handlerIndex].TranslateUrl(params_.link_url),
             GetDocumentURL(params_),
             disposition,
-            content::PAGE_TRANSITION_LINK);
+            ui::PAGE_TRANSITION_LINK);
     return;
   }
 
@@ -1308,19 +1308,19 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               GetDocumentURL(params_),
               !browser || browser->is_app() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
-              content::PAGE_TRANSITION_LINK);
+              ui::PAGE_TRANSITION_LINK);
       break;
     }
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       OpenURL(params_.link_url,
               GetDocumentURL(params_),
               NEW_WINDOW,
-              content::PAGE_TRANSITION_LINK);
+              ui::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       OpenURL(params_.link_url, GURL(), OFF_THE_RECORD,
-              content::PAGE_TRANSITION_LINK);
+              ui::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
@@ -1379,7 +1379,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURL(params_.src_url,
               GetDocumentURL(params_),
               NEW_BACKGROUND_TAB,
-              content::PAGE_TRANSITION_LINK);
+              ui::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
@@ -1623,14 +1623,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
       OpenURL(selection_navigation_url_, GURL(), disposition,
-              content::PAGE_TRANSITION_LINK);
+              ui::PAGE_TRANSITION_LINK);
       break;
     }
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
       GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
-      OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_LINK);
+      OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1640,7 +1640,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);
       GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
-      OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_LINK);
+      OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
       break;
     }
 

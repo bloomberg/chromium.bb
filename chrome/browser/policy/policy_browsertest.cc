@@ -112,7 +112,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
@@ -142,6 +141,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
@@ -2804,7 +2804,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::AddSelectedTabWithURL(browser(), GURL(kRestoredURLs[i]),
-                                  content::PAGE_TRANSITION_LINK);
+                                  ui::PAGE_TRANSITION_LINK);
     observer.Wait();
   }
 }

@@ -44,7 +44,7 @@ class FileTaskExecutorDelegateImpl : public FileTaskExecutorDelegate {
     chrome::ScopedTabbedBrowserDisplayer displayer(
          profile_, chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::AddSelectedTabWithURL(displayer.browser(), open_link,
-                                  content::PAGE_TRANSITION_LINK);
+                                  ui::PAGE_TRANSITION_LINK);
     // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
     // browser will be shown on the active desktop, we ensure the visibility.
     multi_user_util::MoveWindowToCurrentDesktop(

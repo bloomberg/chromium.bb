@@ -16,10 +16,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_WIN)
@@ -76,7 +76,7 @@ class GeneratedCreditCardBubbleControllerTest : public testing::Test {
                                                   BackingCard());
   }
 
-  void NavigateWithTransition(content::PageTransition trans) {
+  void NavigateWithTransition(ui::PageTransition trans) {
     content::WebContentsTester::For(test_web_contents_.get())->TestDidNavigate(
         test_web_contents_->GetMainFrame(), 1, GURL("about:blank"), trans);
   }
@@ -156,7 +156,7 @@ TEST_F(GeneratedCreditCardBubbleControllerTest, HideOnLinkClick) {
   EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
   // However, if the user clicks a link the bubble should hide.
-  NavigateWithTransition(content::PAGE_TRANSITION_LINK);
+  NavigateWithTransition(ui::PAGE_TRANSITION_LINK);
   EXPECT_FALSE(controller());
 }
 
@@ -167,9 +167,9 @@ TEST_F(GeneratedCreditCardBubbleControllerTest, StayOnSomeNavigations) {
 
   // If the user reloads or the page redirects or submits a form, the bubble
   // should stay showing.
-  NavigateWithTransition(content::PAGE_TRANSITION_CLIENT_REDIRECT);
-  NavigateWithTransition(content::PAGE_TRANSITION_FORM_SUBMIT);
-  NavigateWithTransition(content::PAGE_TRANSITION_RELOAD);
+  NavigateWithTransition(ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  NavigateWithTransition(ui::PAGE_TRANSITION_FORM_SUBMIT);
+  NavigateWithTransition(ui::PAGE_TRANSITION_RELOAD);
   EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 }
 

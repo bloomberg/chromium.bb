@@ -105,7 +105,7 @@ void StartNavigationToDistillerViewer(content::WebContents* web_contents,
   GURL viewer_url = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
       dom_distiller::kDomDistillerScheme, url);
   content::NavigationController::LoadURLParams params(viewer_url);
-  params.transition_type = content::PAGE_TRANSITION_AUTO_BOOKMARK;
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   web_contents->GetController().LoadURLWithParams(params);
 }
 

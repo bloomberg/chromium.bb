@@ -44,7 +44,7 @@ base::string16 WebUI::GetJavascriptCall(
 }
 
 WebUIImpl::WebUIImpl(WebContents* contents)
-    : link_transition_type_(PAGE_TRANSITION_LINK),
+    : link_transition_type_(ui::PAGE_TRANSITION_LINK),
       bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents) {
   DCHECK(contents);
@@ -110,11 +110,11 @@ void WebUIImpl::OverrideTitle(const base::string16& title) {
   overridden_title_ = title;
 }
 
-PageTransition WebUIImpl::GetLinkTransitionType() const {
+ui::PageTransition WebUIImpl::GetLinkTransitionType() const {
   return link_transition_type_;
 }
 
-void WebUIImpl::SetLinkTransitionType(PageTransition type) {
+void WebUIImpl::SetLinkTransitionType(ui::PageTransition type) {
   link_transition_type_ = type;
 }
 

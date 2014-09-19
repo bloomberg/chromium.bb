@@ -22,7 +22,7 @@ const char kSearchTermsKey[] = "search_terms";
 SerializedNavigationEntry::SerializedNavigationEntry()
     : index_(-1),
       unique_id_(0),
-      transition_type_(content::PAGE_TRANSITION_TYPED),
+      transition_type_(ui::PAGE_TRANSITION_TYPED),
       has_post_data_(false),
       post_id_(-1),
       is_overriding_user_agent_(false),
@@ -80,41 +80,40 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   if (sync_data.has_page_transition()) {
     switch (sync_data.page_transition()) {
       case sync_pb::SyncEnums_PageTransition_LINK:
-        transition = content::PAGE_TRANSITION_LINK;
+        transition = ui::PAGE_TRANSITION_LINK;
         break;
       case sync_pb::SyncEnums_PageTransition_TYPED:
-        transition = content::PAGE_TRANSITION_TYPED;
+        transition = ui::PAGE_TRANSITION_TYPED;
         break;
       case sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK:
-        transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
+        transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
         break;
       case sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME:
-        transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
+        transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
         break;
       case sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME:
-        transition = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
+        transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
         break;
       case sync_pb::SyncEnums_PageTransition_GENERATED:
-        transition = content::PAGE_TRANSITION_GENERATED;
+        transition = ui::PAGE_TRANSITION_GENERATED;
         break;
       case sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL:
-        transition = content::PAGE_TRANSITION_AUTO_TOPLEVEL;
+        transition = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
         break;
       case sync_pb::SyncEnums_PageTransition_FORM_SUBMIT:
-        transition = content::PAGE_TRANSITION_FORM_SUBMIT;
+        transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
         break;
       case sync_pb::SyncEnums_PageTransition_RELOAD:
-        transition = content::PAGE_TRANSITION_RELOAD;
+        transition = ui::PAGE_TRANSITION_RELOAD;
         break;
       case sync_pb::SyncEnums_PageTransition_KEYWORD:
-        transition = content::PAGE_TRANSITION_KEYWORD;
+        transition = ui::PAGE_TRANSITION_KEYWORD;
         break;
       case sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED:
-        transition =
-            content::PAGE_TRANSITION_KEYWORD_GENERATED;
+        transition = ui::PAGE_TRANSITION_KEYWORD_GENERATED;
         break;
       default:
-        transition = content::PAGE_TRANSITION_LINK;
+        transition = ui::PAGE_TRANSITION_LINK;
         break;
     }
   }
@@ -122,26 +121,25 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   if  (sync_data.has_redirect_type()) {
     switch (sync_data.redirect_type()) {
       case sync_pb::SyncEnums_PageTransitionRedirectType_CLIENT_REDIRECT:
-        transition |= content::PAGE_TRANSITION_CLIENT_REDIRECT;
+        transition |= ui::PAGE_TRANSITION_CLIENT_REDIRECT;
         break;
       case sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT:
-        transition |= content::PAGE_TRANSITION_SERVER_REDIRECT;
+        transition |= ui::PAGE_TRANSITION_SERVER_REDIRECT;
         break;
     }
   }
   if (sync_data.navigation_forward_back())
-      transition |= content::PAGE_TRANSITION_FORWARD_BACK;
+      transition |= ui::PAGE_TRANSITION_FORWARD_BACK;
   if (sync_data.navigation_from_address_bar())
-      transition |= content::PAGE_TRANSITION_FROM_ADDRESS_BAR;
+      transition |= ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
   if (sync_data.navigation_home_page())
-      transition |= content::PAGE_TRANSITION_HOME_PAGE;
+      transition |= ui::PAGE_TRANSITION_HOME_PAGE;
   if (sync_data.navigation_chain_start())
-      transition |= content::PAGE_TRANSITION_CHAIN_START;
+      transition |= ui::PAGE_TRANSITION_CHAIN_START;
   if (sync_data.navigation_chain_end())
-      transition |= content::PAGE_TRANSITION_CHAIN_END;
+      transition |= ui::PAGE_TRANSITION_CHAIN_END;
 
-  navigation.transition_type_ =
-      static_cast<content::PageTransition>(transition);
+  navigation.transition_type_ = static_cast<ui::PageTransition>(transition);
 
   navigation.timestamp_ = base::Time();
   navigation.search_terms_ = base::UTF8ToUTF16(sync_data.search_terms());
@@ -279,7 +277,7 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
     return false;
   virtual_url_ = GURL(virtual_url_spec);
   page_state_ = content::PageState::CreateFromEncodedData(page_state_data);
-  transition_type_ = static_cast<content::PageTransition>(transition_type_int);
+  transition_type_ = ui::PageTransitionFromInt(transition_type_int);
 
   // type_mask did not always exist in the written stream. As such, we
   // don't fail if it can't be read.
@@ -344,7 +342,7 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
           referrer_,
           // Use a transition type of reload so that we don't incorrectly
           // increase the typed count.
-          content::PAGE_TRANSITION_RELOAD,
+          ui::PAGE_TRANSITION_RELOAD,
           false,
           // The extra headers are not sync'ed across sessions.
           std::string(),
@@ -379,51 +377,51 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_data.set_title(base::UTF16ToUTF8(title_));
 
   // Page transition core.
-  COMPILE_ASSERT(content::PAGE_TRANSITION_LAST_CORE ==
-                 content::PAGE_TRANSITION_KEYWORD_GENERATED,
+  COMPILE_ASSERT(ui::PAGE_TRANSITION_LAST_CORE ==
+                 ui::PAGE_TRANSITION_KEYWORD_GENERATED,
                  PageTransitionCoreBounds);
-  switch (PageTransitionStripQualifier(transition_type_)) {
-    case content::PAGE_TRANSITION_LINK:
+  switch (ui::PageTransitionStripQualifier(transition_type_)) {
+    case ui::PAGE_TRANSITION_LINK:
       sync_data.set_page_transition(
           sync_pb::SyncEnums_PageTransition_LINK);
       break;
-    case content::PAGE_TRANSITION_TYPED:
+    case ui::PAGE_TRANSITION_TYPED:
       sync_data.set_page_transition(
           sync_pb::SyncEnums_PageTransition_TYPED);
       break;
-    case content::PAGE_TRANSITION_AUTO_BOOKMARK:
+    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
       sync_data.set_page_transition(
           sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK);
       break;
-    case content::PAGE_TRANSITION_AUTO_SUBFRAME:
+    case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
       break;
-    case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
+    case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME);
       break;
-    case content::PAGE_TRANSITION_GENERATED:
+    case ui::PAGE_TRANSITION_GENERATED:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_GENERATED);
       break;
-    case content::PAGE_TRANSITION_AUTO_TOPLEVEL:
+    case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL);
       break;
-    case content::PAGE_TRANSITION_FORM_SUBMIT:
+    case ui::PAGE_TRANSITION_FORM_SUBMIT:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_FORM_SUBMIT);
       break;
-    case content::PAGE_TRANSITION_RELOAD:
+    case ui::PAGE_TRANSITION_RELOAD:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_RELOAD);
       break;
-    case content::PAGE_TRANSITION_KEYWORD:
+    case ui::PAGE_TRANSITION_KEYWORD:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_KEYWORD);
       break;
-    case content::PAGE_TRANSITION_KEYWORD_GENERATED:
+    case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED);
       break;
@@ -432,25 +430,25 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   }
 
   // Page transition qualifiers.
-  if (PageTransitionIsRedirect(transition_type_)) {
-    if (transition_type_ & content::PAGE_TRANSITION_CLIENT_REDIRECT) {
+  if (ui::PageTransitionIsRedirect(transition_type_)) {
+    if (transition_type_ & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
       sync_data.set_redirect_type(
         sync_pb::SyncEnums_PageTransitionRedirectType_CLIENT_REDIRECT);
-    } else if (transition_type_ & content::PAGE_TRANSITION_SERVER_REDIRECT) {
+    } else if (transition_type_ & ui::PAGE_TRANSITION_SERVER_REDIRECT) {
       sync_data.set_redirect_type(
         sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT);
     }
   }
   sync_data.set_navigation_forward_back(
-      (transition_type_ & content::PAGE_TRANSITION_FORWARD_BACK) != 0);
+      (transition_type_ & ui::PAGE_TRANSITION_FORWARD_BACK) != 0);
   sync_data.set_navigation_from_address_bar(
-      (transition_type_ & content::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0);
+      (transition_type_ & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0);
   sync_data.set_navigation_home_page(
-      (transition_type_ & content::PAGE_TRANSITION_HOME_PAGE) != 0);
+      (transition_type_ & ui::PAGE_TRANSITION_HOME_PAGE) != 0);
   sync_data.set_navigation_chain_start(
-      (transition_type_ & content::PAGE_TRANSITION_CHAIN_START) != 0);
+      (transition_type_ & ui::PAGE_TRANSITION_CHAIN_START) != 0);
   sync_data.set_navigation_chain_end(
-      (transition_type_ & content::PAGE_TRANSITION_CHAIN_END) != 0);
+      (transition_type_ & ui::PAGE_TRANSITION_CHAIN_END) != 0);
 
   sync_data.set_unique_id(unique_id_);
   sync_data.set_timestamp_msec(syncer::TimeToProtoTime(timestamp_));

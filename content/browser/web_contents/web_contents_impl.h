@@ -31,13 +31,13 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 
@@ -508,7 +508,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
   virtual void DidNavigateMainFramePreCommit(
       bool navigation_is_within_page) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(

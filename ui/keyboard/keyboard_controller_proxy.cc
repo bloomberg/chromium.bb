@@ -106,7 +106,7 @@ void KeyboardControllerProxy::LoadContents(const GURL& url) {
         url,
         content::Referrer(),
         SINGLETON_TAB,
-        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
         false);
     keyboard_contents_->OpenURL(params);
   }

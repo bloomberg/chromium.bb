@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -28,13 +28,13 @@ struct CONTENT_EXPORT OpenURLParams {
   OpenURLParams(const GURL& url,
                 const Referrer& referrer,
                 WindowOpenDisposition disposition,
-                PageTransition transition,
+                ui::PageTransition transition,
                 bool is_renderer_initiated);
   OpenURLParams(const GURL& url,
                 const Referrer& referrer,
                 int64 frame_tree_node_id,
                 WindowOpenDisposition disposition,
-                PageTransition transition,
+                ui::PageTransition transition,
                 bool is_renderer_initiated);
   ~OpenURLParams();
 
@@ -66,7 +66,7 @@ struct CONTENT_EXPORT OpenURLParams {
   WindowOpenDisposition disposition;
 
   // The transition type of navigation.
-  PageTransition transition;
+  ui::PageTransition transition;
 
   // Whether this navigation is initiated by the renderer process.
   bool is_renderer_initiated;

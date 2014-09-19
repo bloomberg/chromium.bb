@@ -101,7 +101,7 @@ void CocoaSignInDelegate::HandleKeyboardEvent(
   webContents_->GetController().LoadURL(
       dialog_->delegate()->SignInUrl(),
       content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 }
 

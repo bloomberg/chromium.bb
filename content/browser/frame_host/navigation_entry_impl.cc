@@ -43,7 +43,7 @@ NavigationEntryImpl::NavigationEntryImpl()
       page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
       page_id_(-1),
-      transition_type_(PAGE_TRANSITION_LINK),
+      transition_type_(ui::PAGE_TRANSITION_LINK),
       has_post_data_(false),
       post_id_(-1),
       restore_type_(RESTORE_NONE),
@@ -61,7 +61,7 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          const GURL& url,
                                          const Referrer& referrer,
                                          const base::string16& title,
-                                         PageTransition transition_type,
+                                         ui::PageTransition transition_type,
                                          bool is_renderer_initiated)
     : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(instance),
@@ -202,11 +202,11 @@ bool NavigationEntryImpl::IsViewSourceMode() const {
 }
 
 void NavigationEntryImpl::SetTransitionType(
-    PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   transition_type_ = transition_type;
 }
 
-PageTransition NavigationEntryImpl::GetTransitionType() const {
+ui::PageTransition NavigationEntryImpl::GetTransitionType() const {
   return transition_type_;
 }
 

@@ -526,7 +526,7 @@ NSColor* IdentityVerifiedTextColor() {
 - (void)showHelpPage:(id)sender {
   webContents_->OpenURL(content::OpenURLParams(
       GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
 }
 
 // Create the contents of the Connection tab and add it to the given tab view.

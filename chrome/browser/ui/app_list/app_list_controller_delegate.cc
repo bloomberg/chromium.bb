@@ -149,7 +149,7 @@ void AppListControllerDelegate::ShowAppInWebStore(
       net::AppendQueryParameter(url,
                                 extension_urls::kWebstoreSourceField,
                                 source),
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }
 
@@ -171,7 +171,7 @@ void AppListControllerDelegate::ShowOptionsPage(
   chrome::NavigateParams params(
       profile,
       extensions::OptionsPageInfo::GetOptionsPage(extension),
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }
 

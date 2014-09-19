@@ -57,7 +57,7 @@ void ChromeNewWindowDelegateChromeos::OpenCrosh() {
       content::OpenURLParams(crosh_url,
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
-                             content::PAGE_TRANSITION_GENERATED,
+                             ui::PAGE_TRANSITION_GENERATED,
                              false));
   browser->window()->Show();
   browser->window()->Activate();

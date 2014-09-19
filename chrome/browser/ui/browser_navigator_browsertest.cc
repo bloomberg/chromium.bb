@@ -74,7 +74,7 @@ chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams() const {
 chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
     Browser* browser) const {
   chrome::NavigateParams params(browser, GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   return params;
 }
@@ -248,9 +248,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
                 content::NotificationService::AllSources());
 
   chrome::AddSelectedTabWithURL(browser(), singleton_url1,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   GURL singleton_ref_url3("http://maps.google.com/");
 
   chrome::AddSelectedTabWithURL(browser(), singleton_ref_url1,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, 2nd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -779,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabNew_IgnorePath) {
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -811,9 +811,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnorePath) {
   GURL singleton_url1(GetSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url1,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -845,9 +845,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath) {
   GURL singleton_url1(GetContentSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url1,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -879,9 +879,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath2) {
   GURL singleton_url1(GetContentSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url1,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabFocused_IgnorePath) {
   GURL singleton_url_current(GetContentSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   int initial_tab_count = browser()->tab_strip_model()->count();
   GURL singleton_url_current("chrome://settings/internet");
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 
   EXPECT_EQ(initial_tab_count + 1, browser()->tab_strip_model()->count());
   EXPECT_EQ(initial_tab_count, browser()->tab_strip_model()->active_index());
@@ -1003,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     DISABLED_Disposition_Settings_UseNonIncognitoWindowForBookmark) {
   chrome::NavigateParams params(browser(), GetSettingsURL(),
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = OFF_THE_RECORD;
   {
     content::WindowedNotificationObserver observer(
@@ -1051,7 +1051,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        DISABLED_NavigateToCrashedSingletonTab) {
   GURL singleton_url(GetContentSettingsURL());
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
-      browser(), singleton_url, content::PAGE_TRANSITION_LINK);
+      browser(), singleton_url, ui::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -1220,7 +1220,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                  content::PAGE_TRANSITION_LINK);
+                                  ui::PAGE_TRANSITION_LINK);
     observer.Wait();
   }
 
@@ -1239,7 +1239,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                  content::PAGE_TRANSITION_TYPED);
+                                  ui::PAGE_TRANSITION_TYPED);
     observer.Wait();
   }
 
@@ -1314,7 +1314,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // First navigate using the profile of the existing browser window, and
   // check that the window is reused.
   chrome::NavigateParams params(browser()->profile(), GetGoogleURL(),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
@@ -1322,7 +1322,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // is created.
   chrome::NavigateParams params_incognito(
       browser()->profile()->GetOffTheRecordProfile(),
-      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
+      GetGoogleURL(), ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params_incognito);
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }
@@ -1334,12 +1334,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
 
   chrome::NavigateParams viewsource_params(browser(),
                                            GURL(viewsource_ntp_url),
-                                           content::PAGE_TRANSITION_LINK);
+                                           ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&viewsource_params);
 
   chrome::NavigateParams singleton_params(browser(),
                                           GURL(chrome::kChromeUIVersionURL),
-                                          content::PAGE_TRANSITION_LINK);
+                                          ui::PAGE_TRANSITION_LINK);
   singleton_params.disposition = SINGLETON_TAB;
   EXPECT_EQ(-1, chrome::GetIndexOfSingletonTab(&singleton_params));
 }

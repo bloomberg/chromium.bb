@@ -19,6 +19,7 @@ static_library("navigation_interception") {
     "//content/public/browser",
     "//content/public/common",
     "//net",
+    "//ui/base",
   ]
 
   if (is_android) {

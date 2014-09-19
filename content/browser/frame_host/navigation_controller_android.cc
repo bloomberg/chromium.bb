@@ -167,7 +167,7 @@ void NavigationControllerAndroid::LoadUrl(JNIEnv* env,
 
   params.load_type =
       static_cast<NavigationController::LoadURLType>(load_url_type);
-  params.transition_type = PageTransitionFromInt(transition_type);
+  params.transition_type = ui::PageTransitionFromInt(transition_type);
   params.override_user_agent =
       static_cast<NavigationController::UserAgentOverrideOption>(
           ua_override_option);

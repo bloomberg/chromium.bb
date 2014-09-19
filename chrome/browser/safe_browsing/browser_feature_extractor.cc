@@ -25,7 +25,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -122,7 +122,7 @@ static void AddNavigationFeatures(
              request);
   AddFeature(feature_prefix + features::kPageTransitionType,
              static_cast<double>(
-                 content::PageTransitionStripQualifier(
+                 ui::PageTransitionStripQualifier(
                     entry->GetTransitionType())),
              request);
   AddFeature(feature_prefix + features::kIsFirstNavigation,
@@ -345,17 +345,17 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   for (history::VisitVector::const_iterator it = visits.begin();
        it != visits.end();
        ++it) {
-    if (!content::PageTransitionIsMainFrame(it->transition)) {
+    if (!ui::PageTransitionIsMainFrame(it->transition)) {
       continue;
     }
     if (it->visit_time < threshold) {
       ++num_visits_24h_ago;
     }
-    content::PageTransition transition = content::PageTransitionStripQualifier(
+    ui::PageTransition transition = ui::PageTransitionStripQualifier(
         it->transition);
-    if (transition == content::PAGE_TRANSITION_TYPED) {
+    if (transition == ui::PAGE_TRANSITION_TYPED) {
       ++num_visits_typed;
-    } else if (transition == content::PAGE_TRANSITION_LINK) {
+    } else if (transition == ui::PAGE_TRANSITION_LINK) {
       ++num_visits_link;
     }
   }

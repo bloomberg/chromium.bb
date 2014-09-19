@@ -7,6 +7,7 @@ package org.chromium.content_public.browser;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.base.PageTransitionTypes;
 
 import java.util.Locale;
 import java.util.Map;

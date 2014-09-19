@@ -121,7 +121,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 
   virtual void OpenPageAndWaitForUnload() {
-    AddTabAtIndex(1, page_url_, content::PAGE_TRANSITION_LINK);
+    AddTabAtIndex(1, page_url_, ui::PAGE_TRANSITION_LINK);
     unload_observer_->WaitForUnload(id_);
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
     int reasons = prefs->GetDisableReasons(id_);

@@ -454,7 +454,7 @@ void PluginObserver::OnOpenAboutPlugins() {
       GURL(chrome::kChromeUIPluginsURL),
       content::Referrer(web_contents()->GetURL(),
                         blink::WebReferrerPolicyDefault),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
 
 void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {

@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "content/public/common/page_transition_types.h"
-
 class Browser;
 class GURL;
 

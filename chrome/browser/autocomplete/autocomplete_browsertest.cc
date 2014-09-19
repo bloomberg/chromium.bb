@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
       content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(browser(),
                                 GURL(url::kAboutBlankURL),
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
   chrome::CloseTab(browser());

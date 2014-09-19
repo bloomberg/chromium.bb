@@ -6,11 +6,11 @@
 #define CONTENT_TEST_TEST_WEB_CONTENTS_H_
 
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
+#include "ui/base/page_transition_types.h"
 
 class SiteInstanceImpl;
 
@@ -42,12 +42,13 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   virtual void TestDidNavigate(RenderFrameHost* render_frame_host,
                                int page_id,
                                const GURL& url,
-                               PageTransition transition) OVERRIDE;
-  virtual void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
-                                           int page_id,
-                                           const GURL& url,
-                                           const Referrer& referrer,
-                                           PageTransition transition) OVERRIDE;
+                               ui::PageTransition transition) OVERRIDE;
+  virtual void TestDidNavigateWithReferrer(
+      RenderFrameHost* render_frame_host,
+      int page_id,
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition) OVERRIDE;
   virtual WebPreferences TestComputeWebkitPrefs() OVERRIDE;
 
   // State accessor.

@@ -140,7 +140,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) OVERRIDE {
     if (wait_for_document_loaded_)
       return;
     if (!render_frame_host->GetParent())
@@ -332,7 +332,7 @@ void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
   current_web_contents->GetController().LoadURL(
       embedded_test_server()->GetURL(url),
       content::Referrer(),
-      content::PAGE_TRANSITION_TYPED,
+      ui::PAGE_TRANSITION_TYPED,
       std::string());
   url_loaded_runner.Run();
 

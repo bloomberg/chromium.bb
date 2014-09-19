@@ -98,7 +98,7 @@ void AutoLoginInfoBarDelegateAndroid::LoginSuccess(JNIEnv* env,
   // WARNING: |this| may be deleted at this point!  Do not access any members!
   contents->OpenURL(content::OpenURLParams(
       GURL(base::android::ConvertJavaStringToUTF8(env, result)),
-      content::Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
+      content::Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
       false));
 }
 

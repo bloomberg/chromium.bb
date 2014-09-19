@@ -211,7 +211,7 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   IPC_STRUCT_MEMBER(std::vector<GURL>, redirects)
 
   // The type of transition.
-  IPC_STRUCT_MEMBER(content::PageTransition, transition)
+  IPC_STRUCT_MEMBER(ui::PageTransition, transition)
 
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
@@ -295,7 +295,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
   // True if the request was user initiated.
   IPC_STRUCT_MEMBER(bool, has_user_gesture)
 
-  IPC_STRUCT_MEMBER(content::PageTransition, transition_type)
+  IPC_STRUCT_MEMBER(ui::PageTransition, transition_type)
 
   // Whether this navigation should replace the current session history entry on
   // commit.

@@ -773,7 +773,7 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
                    prompt_->extension()->id());
     OpenURLParams params(
         store_url, Referrer(), NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_LINK,
+        ui::PAGE_TRANSITION_LINK,
         false);
     navigator_->OpenURL(params);
     GetWidget()->Close();

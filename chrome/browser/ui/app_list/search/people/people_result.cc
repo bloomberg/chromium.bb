@@ -174,7 +174,7 @@ void PeopleResult::OpenChat() {
 void PeopleResult::SendEmail() {
   chrome::NavigateParams params(profile_,
                                 GURL(kEmailUrlPrefix + person_->email),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   // If no window exists, this will open a new window this one tab.
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);

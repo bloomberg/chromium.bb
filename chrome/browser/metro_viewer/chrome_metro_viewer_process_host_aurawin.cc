@@ -60,7 +60,7 @@ void OpenURL(const GURL& url) {
   chrome::NavigateParams params(
       ProfileManager::GetActiveUserProfile(),
       GURL(url),
-      content::PAGE_TRANSITION_TYPED);
+      ui::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
   chrome::Navigate(&params);

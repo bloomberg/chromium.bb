@@ -56,7 +56,7 @@ void CustomLauncherPageContents::Initialize(content::BrowserContext* context,
 
   web_contents_->GetController().LoadURL(url,
                                          content::Referrer(),
-                                         content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                          std::string());
 }
 

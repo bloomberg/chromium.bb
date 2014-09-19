@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
   static_cast<content::WebContentsDelegate*>(browser())->OpenURLFromTab(
       tab,
       content::OpenURLParams(http_url2, content::Referrer(), CURRENT_TAB,
-                             content::PAGE_TRANSITION_TYPED, false));
+                             ui::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 
   // Close the tab.

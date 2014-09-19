@@ -18,7 +18,7 @@ void OneClickSigninBubbleLinksDelegate::OnLearnMoreLinkClicked(
     bool is_dialog) {
   chrome::NavigateParams params(browser_,
                                 GURL(chrome::kChromeSyncLearnMoreURL),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   params.disposition = is_dialog ? NEW_WINDOW : NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }

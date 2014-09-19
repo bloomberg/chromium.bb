@@ -71,7 +71,7 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
   content::NavigationController& orig_controller =
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
   orig_controller.LoadURL(
-      url4, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url4, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   EXPECT_EQ(3, orig_controller.GetEntryCount());
   EXPECT_TRUE(orig_controller.GetPendingEntry());
 
@@ -108,7 +108,7 @@ TEST_F(BrowserCommandsTest, ViewSource) {
   content::NavigationController& orig_controller =
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
   orig_controller.LoadURL(
-      url2, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url2, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   EXPECT_EQ(1, orig_controller.GetEntryCount());
   EXPECT_TRUE(orig_controller.GetPendingEntry());
 
@@ -146,7 +146,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   GURL url1("http://foo/1");
   AddTab(browser(), url1);
   browser()->OpenURL(OpenURLParams(
-      url1, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+      url1, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 
   chrome::BookmarkCurrentPage(browser());
 

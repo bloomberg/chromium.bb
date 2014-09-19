@@ -398,7 +398,7 @@ namespace chrome {
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
-                               content::PageTransition a_transition)
+                               ui::PageTransition a_transition)
     : url(a_url),
       frame_tree_node_id(-1),
       uses_post(false),
@@ -429,7 +429,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       source_contents(NULL),
       disposition(CURRENT_TAB),
       trusted_source(false),
-      transition(content::PAGE_TRANSITION_LINK),
+      transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_ACTIVE),
@@ -446,7 +446,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
 
 NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
-                               content::PageTransition a_transition)
+                               ui::PageTransition a_transition)
     : url(a_url),
       frame_tree_node_id(-1),
       uses_post(false),
@@ -577,16 +577,16 @@ void Navigate(NavigateParams* params) {
 
   // Determine if the navigation was user initiated. If it was, we need to
   // inform the target WebContents, and we may need to update the UI.
-  content::PageTransition base_transition =
-      content::PageTransitionStripQualifier(params->transition);
+  ui::PageTransition base_transition =
+      ui::PageTransitionStripQualifier(params->transition);
   bool user_initiated =
-      params->transition & content::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
-      base_transition == content::PAGE_TRANSITION_TYPED ||
-      base_transition == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
-      base_transition == content::PAGE_TRANSITION_GENERATED ||
-      base_transition == content::PAGE_TRANSITION_AUTO_TOPLEVEL ||
-      base_transition == content::PAGE_TRANSITION_RELOAD ||
-      base_transition == content::PAGE_TRANSITION_KEYWORD;
+      params->transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
+      base_transition == ui::PAGE_TRANSITION_TYPED ||
+      base_transition == ui::PAGE_TRANSITION_AUTO_BOOKMARK ||
+      base_transition == ui::PAGE_TRANSITION_GENERATED ||
+      base_transition == ui::PAGE_TRANSITION_AUTO_TOPLEVEL ||
+      base_transition == ui::PAGE_TRANSITION_RELOAD ||
+      base_transition == ui::PAGE_TRANSITION_KEYWORD;
 
   // Check if this is a singleton tab that already exists
   int singleton_index = chrome::GetIndexOfSingletonTab(params);

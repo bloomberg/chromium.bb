@@ -37,8 +37,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   virtual float GetDeviceScaleFactor() const OVERRIDE;
   virtual const base::string16& GetOverriddenTitle() const OVERRIDE;
   virtual void OverrideTitle(const base::string16& title) OVERRIDE;
-  virtual PageTransition GetLinkTransitionType() const OVERRIDE;
-  virtual void SetLinkTransitionType(PageTransition type) OVERRIDE;
+  virtual ui::PageTransition GetLinkTransitionType() const OVERRIDE;
+  virtual void SetLinkTransitionType(ui::PageTransition type) OVERRIDE;
   virtual int GetBindings() const OVERRIDE;
   virtual void SetBindings(int bindings) OVERRIDE;
   virtual void OverrideJavaScriptFrame(const std::string& frame_name) OVERRIDE;
@@ -99,7 +99,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
   base::string16 overridden_title_;  // Defaults to empty string.
-  PageTransition link_transition_type_;  // Defaults to LINK.
+  ui::PageTransition link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
 

@@ -61,7 +61,7 @@ void ChromeTemplateURLServiceClient::AddKeywordGeneratedVisit(const GURL& url) {
   if (history_service)
     history_service->AddPage(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
-                             content::PAGE_TRANSITION_KEYWORD_GENERATED,
+                             ui::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false);
 }
 
@@ -90,7 +90,7 @@ void ChromeTemplateURLServiceClient::Observe(
   TemplateURLService::URLVisitedDetails visited_details;
   visited_details.url = history_details->row.url();
   visited_details.is_keyword_transition =
-      content::PageTransitionStripQualifier(history_details->transition) ==
-      content::PAGE_TRANSITION_KEYWORD;
+      ui::PageTransitionStripQualifier(history_details->transition) ==
+      ui::PAGE_TRANSITION_KEYWORD;
   owner_->OnHistoryURLVisited(visited_details);
 }

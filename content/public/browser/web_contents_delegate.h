@@ -15,7 +15,6 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/skia/include/core/SkColor.h"

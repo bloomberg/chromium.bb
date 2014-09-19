@@ -95,9 +95,9 @@ void GoogleSearchCounterAndroidTest::TestGoogleSearch(
   scoped_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   if (is_omnibox) {
-    entry->SetTransitionType(content::PageTransitionFromInt(
-        content::PAGE_TRANSITION_GENERATED |
-            content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+    entry->SetTransitionType(ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_GENERATED |
+            ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   }
   entry->SetURL(GURL(url));
   details.entry = entry.get();

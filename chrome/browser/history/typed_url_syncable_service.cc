@@ -151,7 +151,7 @@ void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
     sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
-void TypedUrlSyncableService::OnUrlVisited(content::PageTransition transition,
+void TypedUrlSyncableService::OnUrlVisited(ui::PageTransition transition,
                                            URLRow* row) {
   DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(row);
@@ -245,13 +245,13 @@ bool TypedUrlSyncableService::ShouldIgnoreUrl(const GURL& url) {
 }
 
 bool TypedUrlSyncableService::ShouldSyncVisit(
-    content::PageTransition page_transition,
+    ui::PageTransition page_transition,
     URLRow* row) {
   if (!row)
     return false;
   int typed_count = row->typed_count();
-  content::PageTransition transition = static_cast<content::PageTransition>(
-      page_transition & content::PAGE_TRANSITION_CORE_MASK);
+  ui::PageTransition transition = ui::PageTransitionFromInt(
+      page_transition & ui::PAGE_TRANSITION_CORE_MASK);
 
   // Just use an ad-hoc criteria to determine whether to ignore this
   // notification. For most users, the distribution of visits is roughly a bell
@@ -260,7 +260,7 @@ bool TypedUrlSyncableService::ShouldSyncVisit(
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  return (transition == content::PAGE_TRANSITION_TYPED &&
+  return (transition == ui::PAGE_TRANSITION_TYPED &&
           typed_count > 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
@@ -345,13 +345,13 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
     // Walk the passed-in visit vector and count the # of typed visits.
     for (VisitVector::const_iterator visit = visits.begin();
          visit != visits.end(); ++visit) {
-      content::PageTransition transition = content::PageTransitionFromInt(
-          visit->transition & content::PAGE_TRANSITION_CORE_MASK);
+      ui::PageTransition transition = ui::PageTransitionFromInt(
+          visit->transition & ui::PAGE_TRANSITION_CORE_MASK);
       // We ignore reload visits.
-      if (transition == content::PAGE_TRANSITION_RELOAD)
+      if (transition == ui::PAGE_TRANSITION_RELOAD)
         continue;
       ++total;
-      if (transition == content::PAGE_TRANSITION_TYPED)
+      if (transition == ui::PAGE_TRANSITION_TYPED)
         ++typed_count;
     }
     // We should have at least one typed visit. This can sometimes happen if
@@ -370,20 +370,20 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
 
   for (VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
-    content::PageTransition transition = content::PageTransitionFromInt(
-        visit->transition & content::PAGE_TRANSITION_CORE_MASK);
+    ui::PageTransition transition =
+        ui::PageTransitionStripQualifier(visit->transition);
     // Skip reload visits.
-    if (transition == content::PAGE_TRANSITION_RELOAD)
+    if (transition == ui::PAGE_TRANSITION_RELOAD)
       continue;
 
     // If we only have room for typed visits, then only add typed visits.
-    if (only_typed && transition != content::PAGE_TRANSITION_TYPED)
+    if (only_typed && transition != ui::PAGE_TRANSITION_TYPED)
       continue;
 
     if (skip_count > 0) {
       // We have too many entries to fit, so we need to skip the oldest ones.
       // Only skip typed URLs if there are too many typed URLs to fit.
-      if (only_typed || transition != content::PAGE_TRANSITION_TYPED) {
+      if (only_typed || transition != ui::PAGE_TRANSITION_TYPED) {
         --skip_count;
         continue;
       }
@@ -400,7 +400,7 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
     // it's not legal to have an empty visit array (yet another workaround
     // for http://crbug.com/84258).
     typed_url->add_visits(url.last_visit().ToInternalValue());
-    typed_url->add_visit_transitions(content::PAGE_TRANSITION_RELOAD);
+    typed_url->add_visit_transitions(ui::PAGE_TRANSITION_RELOAD);
   }
   CHECK_GT(typed_url->visits_size(), 0);
   CHECK_LE(typed_url->visits_size(), kMaxTypedUrlVisits);
@@ -426,7 +426,7 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(
   if (visits->empty()) {
     DVLOG(1) << "Found empty visits for URL: " << url->url();
     VisitRow visit(
-        url->id(), url->last_visit(), 0, content::PAGE_TRANSITION_TYPED, 0);
+        url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED, 0);
     visits->push_back(visit);
   }
 

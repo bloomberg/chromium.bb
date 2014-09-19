@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
   NavigationController& controller = web_contents->GetController();
   content::TestNavigationObserver observer(web_contents.get());
   controller.LoadURL(GURL("http://www.example.com"), content::Referrer(),
-                     content::PAGE_TRANSITION_TYPED, std::string());
+                     ui::PAGE_TRANSITION_TYPED, std::string());
   observer.Wait();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   ASSERT_TRUE(entry);

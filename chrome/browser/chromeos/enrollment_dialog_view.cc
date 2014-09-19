@@ -17,10 +17,10 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -124,7 +124,7 @@ void EnrollmentDialogView::OnClosed() {
     return;
   chrome::NavigateParams params(profile_,
                                 GURL(target_uri_),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);

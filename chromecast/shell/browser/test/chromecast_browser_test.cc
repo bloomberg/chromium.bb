@@ -58,9 +58,9 @@ void ChromecastBrowserTest::NavigateToURL(content::WebContents* window,
   content::WaitForLoadStop(window);
   content::TestNavigationObserver same_tab_observer(window, 1);
   content::NavigationController::LoadURLParams params(url);
-  params.transition_type = content::PageTransitionFromInt(
-      content::PAGE_TRANSITION_TYPED |
-      content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED |
+      ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   window->GetController().LoadURLWithParams(params);
   same_tab_observer.Wait();
 }

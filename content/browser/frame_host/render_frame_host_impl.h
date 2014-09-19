@@ -20,11 +20,11 @@
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 struct AccessibilityHostMsg_EventParams;
@@ -175,7 +175,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
-      PageTransition page_transition,
+      ui::PageTransition page_transition,
       bool should_replace_current_entry);
 
   // Called on the current RenderFrameHost when the network response is first

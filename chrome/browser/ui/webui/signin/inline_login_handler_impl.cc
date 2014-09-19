@@ -240,7 +240,7 @@ bool InlineLoginHandlerImpl::HandleContextMenu(
 void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   if (!web_contents())
     return;
 

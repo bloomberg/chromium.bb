@@ -115,7 +115,7 @@ void CastServiceSimple::StartInternal() {
 
   web_contents_->GetController().LoadURL(GetStartupURL(),
                                          content::Referrer(),
-                                         content::PAGE_TRANSITION_TYPED,
+                                         ui::PAGE_TRANSITION_TYPED,
                                          std::string());
 }
 

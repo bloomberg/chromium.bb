@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, TabChangeTogglesIcon) {
   // Open a new tab.
   int firstTab = browser()->tab_strip_model()->active_index();
   AddTabAtIndex(
-      firstTab + 1, GURL("http://foo.bar/"), content::PAGE_TRANSITION_TYPED);
+      firstTab + 1, GURL("http://foo.bar/"), ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(decoration()->IsVisible());
 
   // Switch back to the previous tab.

@@ -50,7 +50,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool parent_is_main_frame,
       int parent_render_frame_id,
       ResourceType resource_type,
-      PageTransition transition_type,
+      ui::PageTransition transition_type,
       bool should_replace_current_entry,
       bool is_download,
       bool is_stream,
@@ -78,7 +78,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual int GetProcessType() const OVERRIDE;
   virtual blink::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
   virtual blink::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
-  virtual PageTransition GetPageTransition() const OVERRIDE;
+  virtual ui::PageTransition GetPageTransition() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual bool WasIgnoredByHandler() const OVERRIDE;
   virtual bool GetAssociatedRenderFrame(int* render_process_id,
@@ -181,7 +181,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool enable_load_timing_;
   bool was_ignored_by_handler_;
   ResourceType resource_type_;
-  PageTransition transition_type_;
+  ui::PageTransition transition_type_;
   int memory_cost_;
   blink::WebReferrerPolicy referrer_policy_;
   blink::WebPageVisibilityState visibility_state_;

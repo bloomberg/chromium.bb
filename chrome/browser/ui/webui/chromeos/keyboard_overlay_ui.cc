@@ -363,7 +363,7 @@ void KeyboardOverlayHandler::OpenLearnMorePage(const base::ListValue* args) {
       content::OpenURLParams(GURL(kLearnMoreURL),
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
-                             content::PAGE_TRANSITION_LINK,
+                             ui::PAGE_TRANSITION_LINK,
                              false));
 }
 

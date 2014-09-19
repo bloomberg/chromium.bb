@@ -426,7 +426,7 @@ void RLZTracker::Observe(int type,
           content::Details<content::NavigationEntry>(details).ptr();
       if (entry != NULL &&
           ((entry->GetTransitionType() &
-            content::PAGE_TRANSITION_HOME_PAGE) != 0)) {
+            ui::PAGE_TRANSITION_HOME_PAGE) != 0)) {
         RecordFirstSearch(ChromeHomePage());
         registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                           content::NotificationService::AllSources());

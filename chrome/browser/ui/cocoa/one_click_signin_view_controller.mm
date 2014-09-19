@@ -115,7 +115,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   else {
     content::OpenURLParams params(GURL(chrome::kChromeUISettingsURL),
                                   content::Referrer(), CURRENT_TAB,
-                                  content::PAGE_TRANSITION_LINK, false);
+                                  ui::PAGE_TRANSITION_LINK, false);
     webContents_->OpenURL(params);
   }
   [self close];
@@ -292,7 +292,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
                                    NEW_WINDOW : NEW_FOREGROUND_TAB;
   content::OpenURLParams params(GURL(chrome::kChromeSyncLearnMoreURL),
                                 content::Referrer(), location,
-                                content::PAGE_TRANSITION_LINK, false);
+                                ui::PAGE_TRANSITION_LINK, false);
   webContents_->OpenURL(params);
   return YES;
 }

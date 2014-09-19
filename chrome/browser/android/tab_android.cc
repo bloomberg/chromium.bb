@@ -511,7 +511,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
     // GoogleURLTracker uses the navigation pending notification to trigger the
     // infobar.
     if (google_util::IsGoogleSearchUrl(fixed_url) &&
-        (page_transition & content::PAGE_TRANSITION_GENERATED)) {
+        (page_transition & ui::PAGE_TRANSITION_GENERATED)) {
       GoogleURLTracker* tracker =
           GoogleURLTrackerFactory::GetForProfile(GetProfile());
       if (tracker)
@@ -539,7 +539,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
           base::RefCountedBytes::TakeVector(&post_data);
     }
     load_params.transition_type =
-        content::PageTransitionFromInt(page_transition);
+        ui::PageTransitionFromInt(page_transition);
     if (j_referrer_url) {
       load_params.referrer = content::Referrer(
           GURL(base::android::ConvertJavaStringToUTF8(env, j_referrer_url)),

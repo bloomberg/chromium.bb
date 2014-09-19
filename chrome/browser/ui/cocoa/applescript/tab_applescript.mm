@@ -147,7 +147,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
       url,
       content::Referrer(previousURL, blink::WebReferrerPolicyDefault),
       CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED,
+      ui::PAGE_TRANSITION_TYPED,
       false));
 }
 
@@ -267,7 +267,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
                            entry->GetURL().spec()),
                       Referrer(),
                       NEW_FOREGROUND_TAB,
-                      content::PAGE_TRANSITION_LINK,
+                      ui::PAGE_TRANSITION_LINK,
                       false));
   }
 }

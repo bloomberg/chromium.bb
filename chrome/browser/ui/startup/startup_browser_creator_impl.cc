@@ -773,7 +773,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
       add_types |= TabStripModel::ADD_PINNED;
 
     chrome::NavigateParams params(browser, tabs[i].url,
-                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
     params.disposition = first_tab ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
     params.tabstrip_add_types = add_types;
     params.extension_app_id = tabs[i].app_id;

@@ -1257,7 +1257,7 @@ WindowOpenDisposition LocationBarView::GetWindowOpenDisposition() const {
   return disposition();
 }
 
-content::PageTransition LocationBarView::GetPageTransition() const {
+ui::PageTransition LocationBarView::GetPageTransition() const {
   return transition();
 }
 

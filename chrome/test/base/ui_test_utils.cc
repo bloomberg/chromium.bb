@@ -169,7 +169,7 @@ void NavigateToURL(chrome::NavigateParams* params) {
 
 void NavigateToURLWithPost(Browser* browser, const GURL& url) {
   chrome::NavigateParams params(browser, url,
-                                content::PAGE_TRANSITION_FORM_SUBMIT);
+                                ui::PAGE_TRANSITION_FORM_SUBMIT);
   params.uses_post = true;
   NavigateToURL(&params);
 }
@@ -205,7 +205,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       content::NotificationService::AllSources());
 
   browser->OpenURL(OpenURLParams(
-      url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false));
+      url, Referrer(), disposition, ui::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)

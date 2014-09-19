@@ -199,10 +199,10 @@ class TestWebUI : public content::WebUI {
     return temp_string_;
   }
   virtual void OverrideTitle(const base::string16& title) OVERRIDE {}
-  virtual content::PageTransition GetLinkTransitionType() const OVERRIDE {
-    return content::PAGE_TRANSITION_LINK;
+  virtual ui::PageTransition GetLinkTransitionType() const OVERRIDE {
+    return ui::PAGE_TRANSITION_LINK;
   }
-  virtual void SetLinkTransitionType(content::PageTransition type) OVERRIDE {}
+  virtual void SetLinkTransitionType(ui::PageTransition type) OVERRIDE {}
   virtual int GetBindings() const OVERRIDE {
     return 0;
   }

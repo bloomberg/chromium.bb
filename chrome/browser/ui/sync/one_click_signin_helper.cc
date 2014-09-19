@@ -79,7 +79,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/page_transition_types.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/components_strings.h"
@@ -88,6 +87,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 
@@ -209,7 +209,7 @@ void ConfirmEmailDialogDelegate::OnLinkClicked(
       GURL(chrome::kChromeSyncMergeTroubleshootingURL),
       content::Referrer(),
       NEW_POPUP,
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       false);
   // It is guaranteed that |web_contents_| is valid here because when it's
   // deleted, the dialog is immediately closed and no further action can be
@@ -443,7 +443,7 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
 
  private:
   scoped_ptr<content::WebContents> contents_;
@@ -464,7 +464,7 @@ CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   // Return early if this is not top-level navigation.
   if (render_frame_host->GetParent())
     return;
@@ -1204,7 +1204,7 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(
   content::OpenURLParams params(url,
                                 content::Referrer(),
                                 CURRENT_TAB,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 false);
   contents->OpenURL(params);
 }
@@ -1230,7 +1230,7 @@ void OneClickSigninHelper::RedirectToSignin() {
   content::WebContents* contents = web_contents();
   contents->GetController().LoadURL(page,
                                     content::Referrer(),
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                     std::string());
 }
 
@@ -1314,7 +1314,7 @@ void OneClickSigninHelper::DidNavigateMainFrame(
     // If the navigation to a non-sign-in URL hasn't been triggered by the web
     // contents, the sign in flow has been aborted and the state must be
     // cleaned (crbug.com/269421).
-    if (!content::PageTransitionIsWebTriggerable(params.transition) &&
+    if (!ui::PageTransitionIsWebTriggerable(params.transition) &&
         auto_accept_ != AUTO_ACCEPT_NONE) {
       CleanTransientState();
     }

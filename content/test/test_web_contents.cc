@@ -18,9 +18,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_render_view_host.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 
@@ -61,7 +61,7 @@ TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
 void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       int page_id,
                                       const GURL& url,
-                                      PageTransition transition) {
+                                      ui::PageTransition transition) {
   TestDidNavigateWithReferrer(render_frame_host,
                               page_id,
                               url,
@@ -74,7 +74,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
     int page_id,
     const GURL& url,
     const Referrer& referrer,
-    PageTransition transition) {
+    ui::PageTransition transition) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
   params.page_id = page_id;
@@ -124,7 +124,7 @@ WebContents* TestWebContents::Clone() {
 
 void TestWebContents::NavigateAndCommit(const GURL& url) {
   GetController().LoadURL(
-      url, Referrer(), PAGE_TRANSITION_LINK, std::string());
+      url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(

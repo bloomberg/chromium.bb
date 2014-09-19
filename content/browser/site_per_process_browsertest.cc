@@ -53,7 +53,7 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
-      PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) OVERRIDE {
     navigation_url_ = url;
     navigation_succeeded_ = true;
   }

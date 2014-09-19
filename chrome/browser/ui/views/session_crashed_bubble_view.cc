@@ -375,7 +375,7 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(const gfx::Range& range,
       GURL("https://support.google.com/chrome/answer/96817"),
       content::Referrer(),
       NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       false));
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_HELP);
 }

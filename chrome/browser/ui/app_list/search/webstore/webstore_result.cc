@@ -112,7 +112,7 @@ void WebstoreResult::Open(int event_flags) {
 
   chrome::NavigateParams params(profile_,
                                 store_url,
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
   params.disposition = ui::DispositionFromEventFlags(event_flags);
   chrome::Navigate(&params);
 }

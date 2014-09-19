@@ -367,7 +367,7 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   content::RenderViewHost* render_view_host =
       render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidCommitProvisionalLoad("
@@ -423,8 +423,8 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
         transition_type);
   } else {
     if (navigation_state_.GetIsServerRedirected(render_frame_host)) {
-      transition_type = static_cast<content::PageTransition>(
-          transition_type | content::PAGE_TRANSITION_SERVER_REDIRECT);
+      transition_type = ui::PageTransitionFromInt(
+          transition_type | ui::PAGE_TRANSITION_SERVER_REDIRECT);
     }
     helpers::DispatchOnCommitted(web_navigation::OnCommitted::kEventName,
                                  web_contents(),
@@ -575,7 +575,7 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
     const GURL& url,
     const content::Referrer& referrer,
     WindowOpenDisposition disposition,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     int64 source_frame_num) {
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(render_view_host_->GetProcess()->GetID(),

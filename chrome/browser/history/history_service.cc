@@ -370,7 +370,7 @@ void HistoryService::AddPage(const GURL& url,
                              int32 page_id,
                              const GURL& referrer,
                              const history::RedirectList& redirects,
-                             content::PageTransition transition,
+                             ui::PageTransition transition,
                              history::VisitSource visit_source,
                              bool did_replace_entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -387,7 +387,7 @@ void HistoryService::AddPage(const GURL& url,
   AddPage(
       history::HistoryAddPageArgs(url, time, NULL, 0, GURL(),
                                   history::RedirectList(),
-                                  content::PAGE_TRANSITION_LINK,
+                                  ui::PAGE_TRANSITION_LINK,
                                   visit_source, false));
 }
 

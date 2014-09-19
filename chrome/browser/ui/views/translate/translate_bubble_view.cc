@@ -365,7 +365,7 @@ void TranslateBubbleView::HandleLinkClicked(
           url,
           content::Referrer(),
           NEW_FOREGROUND_TAB,
-          content::PAGE_TRANSITION_LINK,
+          ui::PAGE_TRANSITION_LINK,
           false));
       break;
     }

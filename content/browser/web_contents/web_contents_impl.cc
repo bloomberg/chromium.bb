@@ -1585,7 +1585,7 @@ void WebContentsImpl::CreateNewWindow(
       OpenURLParams open_params(params.target_url,
                                 Referrer(),
                                 CURRENT_TAB,
-                                PAGE_TRANSITION_LINK,
+                                ui::PAGE_TRANSITION_LINK,
                                 true /* is_renderer_initiated */);
       open_params.user_gesture = params.user_gesture;
       new_contents->OpenURL(open_params);
@@ -2574,7 +2574,7 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
 void WebContentsImpl::DidCommitProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   // Notify observers about the commit of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_DEBUG_URLS_H_
 #define CONTENT_BROWSER_FRAME_HOST_DEBUG_URLS_H_
 
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -13,7 +13,7 @@ namespace content {
 
 // Checks if the given url is a url used for debugging purposes, and if so
 // handles it and returns true.
-bool HandleDebugURL(const GURL& url, PageTransition transition);
+bool HandleDebugURL(const GURL& url, ui::PageTransition transition);
 
 // Returns whether the given url is either a debugging url handled in the
 // renderer process, such as one that crashes or hangs the renderer, or a

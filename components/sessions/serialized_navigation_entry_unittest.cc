@@ -16,12 +16,12 @@
 #include "base/time/time.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace sessions {
@@ -36,11 +36,11 @@ const GURL kVirtualURL("http://www.virtual-url.com");
 const base::string16 kTitle = base::ASCIIToUTF16("title");
 const content::PageState kPageState =
     content::PageState::CreateFromEncodedData("page state");
-const content::PageTransition kTransitionType =
-    static_cast<content::PageTransition>(
-        content::PAGE_TRANSITION_AUTO_SUBFRAME |
-        content::PAGE_TRANSITION_HOME_PAGE |
-        content::PAGE_TRANSITION_CLIENT_REDIRECT);
+const ui::PageTransition kTransitionType =
+    ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_AUTO_SUBFRAME |
+        ui::PAGE_TRANSITION_HOME_PAGE |
+        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 const bool kHasPostData = true;
 const int64 kPostID = 100;
 const GURL kOriginalRequestURL("http://www.original-request.com");
@@ -113,7 +113,7 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   EXPECT_EQ(GURL(), navigation.virtual_url());
   EXPECT_TRUE(navigation.title().empty());
   EXPECT_FALSE(navigation.page_state().IsValid());
-  EXPECT_EQ(content::PAGE_TRANSITION_TYPED, navigation.transition_type());
+  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());
   EXPECT_EQ(GURL(), navigation.original_request_url());
@@ -239,7 +239,7 @@ TEST(SerializedNavigationEntryTest, ToNavigationEntry) {
   EXPECT_EQ(kTitle, new_navigation_entry->GetTitle());
   EXPECT_EQ(kPageState, new_navigation_entry->GetPageState());
   EXPECT_EQ(kPageID, new_navigation_entry->GetPageID());
-  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
+  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
             new_navigation_entry->GetTransitionType());
   EXPECT_EQ(kHasPostData, new_navigation_entry->GetHasPostData());
   EXPECT_EQ(kPostID, new_navigation_entry->GetPostID());
@@ -323,18 +323,18 @@ TEST(SerializedNavigationEntryTest, LastNavigationRedirectUrl) {
 TEST(SerializedNavigationEntryTest, TransitionTypes) {
   scoped_ptr<content::NavigationEntry> navigation_entry(
       MakeNavigationEntryForTest());
-  for (uint32 core_type = content::PAGE_TRANSITION_LINK;
-       core_type != content::PAGE_TRANSITION_LAST_CORE; ++core_type) {
+  for (uint32 core_type = ui::PAGE_TRANSITION_LINK;
+       core_type != ui::PAGE_TRANSITION_LAST_CORE; ++core_type) {
     // Because qualifier is a uint32, left shifting will eventually overflow
     // and hit zero again. SERVER_REDIRECT, as the last qualifier and also
     // in place of the sign bit, is therefore the last transition before
     // breaking.
-    for (uint32 qualifier = content::PAGE_TRANSITION_FORWARD_BACK;
+    for (uint32 qualifier = ui::PAGE_TRANSITION_FORWARD_BACK;
          qualifier != 0; qualifier <<= 1) {
       if (qualifier == 0x08000000)
         continue;  // 0x08000000 is not a valid qualifier.
-      content::PageTransition transition =
-          static_cast<content::PageTransition>(core_type | qualifier);
+      ui::PageTransition transition =
+          ui::PageTransitionFromInt(core_type | qualifier);
 
       navigation_entry->SetTransitionType(transition);
       const SerializedNavigationEntry& navigation =
@@ -343,7 +343,7 @@ TEST(SerializedNavigationEntryTest, TransitionTypes) {
       const sync_pb::TabNavigation& sync_data = navigation.ToSyncData();
       const SerializedNavigationEntry& constructed_nav =
           SerializedNavigationEntry::FromSyncData(kIndex, sync_data);
-      const content::PageTransition constructed_transition =
+      const ui::PageTransition constructed_transition =
           constructed_nav.transition_type();
 
       EXPECT_EQ(transition, constructed_transition);

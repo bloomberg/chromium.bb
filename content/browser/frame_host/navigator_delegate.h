@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
@@ -58,7 +58,7 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      PageTransition transition_type) {}
+      ui::PageTransition transition_type) {}
 
   // Handles post-navigation tasks in navigation BEFORE the entry has been
   // committed to the NavigationController.

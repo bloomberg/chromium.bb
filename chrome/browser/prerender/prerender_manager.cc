@@ -1110,7 +1110,7 @@ void PrerenderManager::PendingSwap::ProvisionalChangeToMainFrameUrl(
 void PrerenderManager::PendingSwap::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   if (render_frame_host->GetParent())
     return;
   prerender_data_->ClearPendingSwap();

@@ -121,7 +121,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual std::string GetOriginalMimeType() const OVERRIDE;
   virtual std::string GetRemoteAddress() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
-  virtual PageTransition GetTransitionType() const OVERRIDE;
+  virtual ui::PageTransition GetTransitionType() const OVERRIDE;
   virtual const std::string& GetLastModifiedTime() const OVERRIDE;
   virtual const std::string& GetETag() const OVERRIDE;
   virtual bool IsSavePackageDownload() const OVERRIDE;
@@ -437,7 +437,7 @@ class CONTENT_EXPORT DownloadItemImpl
   base::FilePath forced_file_path_;
 
   // Page transition that triggerred the download.
-  PageTransition transition_type_;
+  ui::PageTransition transition_type_;
 
   // Whether the download was triggered with a user gesture.
   bool has_user_gesture_;

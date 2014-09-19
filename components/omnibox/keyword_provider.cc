@@ -403,7 +403,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   FillInURLAndContents(remaining_input, template_url, &match);
 
   match.keyword = keyword;
-  match.transition = content::PAGE_TRANSITION_KEYWORD;
+  match.transition = ui::PAGE_TRANSITION_KEYWORD;
 
   return match;
 }

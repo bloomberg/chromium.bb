@@ -8,7 +8,7 @@
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 namespace {
@@ -43,7 +43,7 @@ bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message) {
           &message, &iter, &params)) {
         break;
       }
-      if (PageTransitionIsMainFrame(params.transition) &&
+      if (ui::PageTransitionIsMainFrame(params.transition) &&
           !params.was_within_same_page) {
         // We need to track the RenderViewHost routing_id because of downstream
         // dependencies (crbug.com/392171 DownloadRequestHandle,

@@ -80,7 +80,7 @@ void DomDistillerHandler::HandleViewUrl(const base::ListValue* args) {
     web_ui()->GetWebContents()->GetController().LoadURL(
         view_url,
         content::Referrer(),
-        content::PAGE_TRANSITION_GENERATED,
+        ui::PAGE_TRANSITION_GENERATED,
         std::string());
   } else {
     web_ui()->CallJavascriptFunction("domDistiller.onViewUrlFailed");
@@ -96,7 +96,7 @@ void DomDistillerHandler::HandleSelectArticle(const base::ListValue* args) {
   web_ui()->GetWebContents()->GetController().LoadURL(
       url,
       content::Referrer(),
-      content::PAGE_TRANSITION_GENERATED,
+      ui::PAGE_TRANSITION_GENERATED,
       std::string());
 }
 

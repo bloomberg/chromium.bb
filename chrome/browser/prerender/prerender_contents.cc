@@ -38,8 +38,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
@@ -382,15 +382,15 @@ void PrerenderContents::StartPrerendering(
   content::NavigationController::LoadURLParams load_url_params(
       prerender_url_);
   load_url_params.referrer = referrer_;
-  load_url_params.transition_type = content::PAGE_TRANSITION_LINK;
+  load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   if (origin_ == ORIGIN_OMNIBOX) {
-    load_url_params.transition_type = content::PageTransitionFromInt(
-        content::PAGE_TRANSITION_TYPED |
-        content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    load_url_params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_TYPED |
+        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   } else if (origin_ == ORIGIN_INSTANT) {
-    load_url_params.transition_type = content::PageTransitionFromInt(
-        content::PAGE_TRANSITION_GENERATED |
-        content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    load_url_params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_GENERATED |
+        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   }
   load_url_params.override_user_agent =
       prerender_manager_->config().is_overriding_user_agent ?

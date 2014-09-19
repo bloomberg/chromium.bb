@@ -80,7 +80,7 @@ void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
 
 void WebView::LoadInitialURL(const GURL& url) {
   GetWebContents()->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 }
 

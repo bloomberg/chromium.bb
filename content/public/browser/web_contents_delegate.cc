@@ -92,7 +92,7 @@ void WebContentsDelegate::ViewSourceForTab(WebContents* source,
   GURL url = GURL(kViewSourceScheme + std::string(":") + page_url.spec());
   OpenURLFromTab(source, OpenURLParams(url, Referrer(),
                                        NEW_FOREGROUND_TAB,
-                                       PAGE_TRANSITION_LINK, false));
+                                       ui::PAGE_TRANSITION_LINK, false));
 }
 
 void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
@@ -102,7 +102,7 @@ void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
   GURL url = GURL(kViewSourceScheme + std::string(":") + frame_url.spec());
   OpenURLFromTab(source, OpenURLParams(url, Referrer(),
                                        NEW_FOREGROUND_TAB,
-                                       PAGE_TRANSITION_LINK, false));
+                                       ui::PAGE_TRANSITION_LINK, false));
 }
 
 bool WebContentsDelegate::PreHandleKeyboardEvent(

@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 
 struct FrameHostMsg_BeginNavigation_Params;
 struct FrameMsg_Navigate_Params;
@@ -232,7 +233,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
-      PageTransition page_transition,
+      ui::PageTransition page_transition,
       bool should_replace_current_entry);
 
   // Received a response from CrossSiteResourceHandler. If the navigation
@@ -382,7 +383,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   SiteInstance* GetSiteInstanceForNavigation(
       const GURL& dest_url,
       SiteInstance* dest_instance,
-      PageTransition dest_transition,
+      ui::PageTransition dest_transition,
       bool dest_is_restore,
       bool dest_is_view_source_mode);
 
@@ -394,7 +395,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   SiteInstance* GetSiteInstanceForURL(
       const GURL& dest_url,
       SiteInstance* dest_instance,
-      PageTransition dest_transition,
+      ui::PageTransition dest_transition,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       SiteInstance* current_instance,

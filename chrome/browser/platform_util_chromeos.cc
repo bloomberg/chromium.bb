@@ -42,7 +42,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
   //     this function directly and which would therefore break (e.g.
   //     "Browser::EmailPageLocation" (to name only one).
   // As such we should keep this code here.
-  chrome::NavigateParams params(profile, url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
 

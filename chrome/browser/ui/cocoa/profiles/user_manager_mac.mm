@@ -140,7 +140,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
 
 - (void)showURL:(const GURL&)url {
   webContents_->GetController().LoadURL(url, content::Referrer(),
-                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());
   [self show];
 }

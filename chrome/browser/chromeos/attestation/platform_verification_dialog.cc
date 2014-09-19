@@ -14,12 +14,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/web_modal/popup_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/components_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -137,7 +137,7 @@ void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
     Profile* profile = Profile::FromBrowserContext(
         web_contents_->GetBrowserContext());
     chrome::NavigateParams params(
-        profile, learn_more_url, content::PAGE_TRANSITION_LINK);
+        profile, learn_more_url, ui::PAGE_TRANSITION_LINK);
     params.disposition = SINGLETON_TAB;
     chrome::Navigate(&params);
   } else {

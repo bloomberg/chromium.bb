@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_
 
 #include "components/history/core/browser/history_types.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 class WebContents;
@@ -30,7 +30,7 @@ class VisitRow {
   VisitRow(URLID arg_url_id,
            base::Time arg_visit_time,
            VisitID arg_referring_visit,
-           content::PageTransition arg_transition,
+           ui::PageTransition arg_transition,
            SegmentID arg_segment_id);
   ~VisitRow();
 
@@ -47,7 +47,7 @@ class VisitRow {
   VisitID referring_visit;
 
   // A combination of bits from PageTransition.
-  content::PageTransition transition;
+  ui::PageTransition transition;
 
   // The segment id (see visitsegment_database.*).
   // If 0, the segment id is null in the table.
@@ -72,7 +72,7 @@ typedef std::vector<VisitRow> VisitVector;
 
 // The basic information associated with a visit (timestamp, type of visit),
 // used by HistoryBackend::AddVisits() to create new visits for a URL.
-typedef std::pair<base::Time, content::PageTransition> VisitInfo;
+typedef std::pair<base::Time, ui::PageTransition> VisitInfo;
 
 // QueryURLResult -------------------------------------------------------------
 
@@ -96,7 +96,7 @@ struct HistoryAddPageArgs {
   //
   //   HistoryAddPageArgs(
   //       GURL(), base::Time(), NULL, 0, GURL(),
-  //       history::RedirectList(), content::PAGE_TRANSITION_LINK,
+  //       history::RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       SOURCE_BROWSED, false)
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
@@ -105,7 +105,7 @@ struct HistoryAddPageArgs {
                      int32 page_id,
                      const GURL& referrer,
                      const history::RedirectList& redirects,
-                     content::PageTransition transition,
+                     ui::PageTransition transition,
                      VisitSource source,
                      bool did_replace_entry);
   ~HistoryAddPageArgs();
@@ -118,7 +118,7 @@ struct HistoryAddPageArgs {
 
   GURL referrer;
   history::RedirectList redirects;
-  content::PageTransition transition;
+  ui::PageTransition transition;
   VisitSource visit_source;
   bool did_replace_entry;
 };
@@ -127,7 +127,7 @@ struct HistoryAddPageArgs {
 struct BriefVisitInfo {
   URLID url_id;
   base::Time time;
-  content::PageTransition transition;
+  ui::PageTransition transition;
 };
 
 // An observer of VisitDatabase.

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/history/history_types.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 namespace base {
 class Time;
@@ -37,7 +37,7 @@ void AddUrlToHistory(int index, const GURL& url);
 // new visit if the URL already exists), using the passed PageTransition.
 void AddUrlToHistoryWithTransition(int index,
                                    const GURL& url,
-                                   content::PageTransition transition,
+                                   ui::PageTransition transition,
                                    history::VisitSource source);
 
 // Adds a URL to the history DB for a specific sync profile (just registers a
@@ -45,7 +45,7 @@ void AddUrlToHistoryWithTransition(int index,
 // timestamp.
 void AddUrlToHistoryWithTimestamp(int index,
                                   const GURL& url,
-                                  content::PageTransition transition,
+                                  ui::PageTransition transition,
                                   history::VisitSource source,
                                   const base::Time& timestamp);
 

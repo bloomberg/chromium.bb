@@ -178,7 +178,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         chrome::kCrashReasonURL : chrome::kKillReasonURL);
     OpenURLParams params(
         help_url, content::Referrer(), CURRENT_TAB,
-        content::PAGE_TRANSITION_LINK, false);
+        ui::PAGE_TRANSITION_LINK, false);
     web_contents_->OpenURL(params);
   } else if (source == feedback_link_) {
     chrome::ShowFeedbackPage(

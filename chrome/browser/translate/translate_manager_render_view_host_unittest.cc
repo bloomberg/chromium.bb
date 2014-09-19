@@ -839,9 +839,9 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
   // equivalent of typing the URL again in the location bar.
   NavEntryCommittedObserver nav_observer(web_contents());
   web_contents()->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+      url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   rvh_tester()->SendNavigateWithTransition(
-      0, url, content::PAGE_TRANSITION_TYPED);
+      0, url, ui::PAGE_TRANSITION_TYPED);
 
   // Test that we are really getting a same page navigation, the test would be
   // useless if it was not the case.
@@ -894,12 +894,12 @@ TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
 
   // Simulate a sub-frame auto-navigating.
   subframe_tester->SendNavigateWithTransition(
-      1, GURL("http://pub.com"), content::PAGE_TRANSITION_AUTO_SUBFRAME);
+      1, GURL("http://pub.com"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Simulate the user navigating in a sub-frame.
   subframe_tester->SendNavigateWithTransition(
-      2, GURL("http://pub.com"), content::PAGE_TRANSITION_MANUAL_SUBFRAME);
+      2, GURL("http://pub.com"), ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Navigate out of page, a new infobar should show.

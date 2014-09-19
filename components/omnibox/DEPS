@@ -10,10 +10,3 @@ include_rules = [
   "+ui/base",
   "+url",
 ]
-
-specific_include_rules = {
-  "autocomplete_match.\h": [
-    # For content::PageTransition enum. crbug.com/372373
-    "!content/public/common/page_transition_types.h",
-  ],
-}

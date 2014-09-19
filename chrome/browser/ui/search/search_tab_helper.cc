@@ -45,10 +45,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchTabHelper);
@@ -620,7 +620,7 @@ void SearchTabHelper::RedirectToLocalNTP() {
   content::NavigationController::LoadURLParams load_params(
       (GURL(chrome::kChromeSearchLocalNtpUrl)));
   load_params.referrer = content::Referrer();
-  load_params.transition_type = content::PAGE_TRANSITION_SERVER_REDIRECT;
+  load_params.transition_type = ui::PAGE_TRANSITION_SERVER_REDIRECT;
   // Don't push a history entry.
   load_params.should_replace_current_entry = true;
   web_contents_->GetController().LoadURLWithParams(load_params);

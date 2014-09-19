@@ -599,7 +599,7 @@ void OneClickSigninSyncStarter::ShowSettingsPageInWebContents(
   content::OpenURLParams params(url,
                                 content::Referrer(),
                                 CURRENT_TAB,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 false);
   contents->OpenURL(params);
 
@@ -615,6 +615,6 @@ void OneClickSigninSyncStarter::LoadContinueUrl() {
   web_contents()->GetController().LoadURL(
       continue_url_,
       content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 }

@@ -400,7 +400,7 @@ class SdchBrowserTest : public InProcessBrowserTest, net::URLFetcherDelegate {
 
     chrome::AddSelectedTabWithURL(second_browser_,
                                   GURL(url::kAboutBlankURL),
-                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
     content::WaitForLoadStop(
         second_browser_->tab_strip_model()->GetActiveWebContents());
     second_browser_->window()->Show();

@@ -13,6 +13,7 @@
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../ui/base/ui_base.gyp:ui_base',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [

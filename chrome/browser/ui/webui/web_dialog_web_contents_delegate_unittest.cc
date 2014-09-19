@@ -66,7 +66,7 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   EXPECT_TRUE(test_web_contents_delegate_->IsPopupOrPanel(NULL));
   history::HistoryAddPageArgs should_add_args(
       GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
-      content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false);
+      ui::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false);
   test_web_contents_delegate_->NavigationStateChanged(
       NULL, content::InvalidateTypes(0));
   test_web_contents_delegate_->ActivateContents(NULL);
@@ -84,7 +84,7 @@ TEST_F(WebDialogWebContentsDelegateTest, OpenURLFromTabTest) {
       OpenURLParams(GURL(url::kAboutBlankURL),
                     Referrer(),
                     NEW_FOREGROUND_TAB,
-                    content::PAGE_TRANSITION_LINK,
+                    ui::PAGE_TRANSITION_LINK,
                     false));
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -111,7 +111,7 @@ TEST_F(WebDialogWebContentsDelegateTest, DetachTest) {
       OpenURLParams(GURL(url::kAboutBlankURL),
                     Referrer(),
                     NEW_FOREGROUND_TAB,
-                    content::PAGE_TRANSITION_LINK,
+                    ui::PAGE_TRANSITION_LINK,
                     false));
   test_web_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
                                               gfx::Rect(), false, NULL);

@@ -46,7 +46,7 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
     return true;
   }
 
-  if (!content::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
+  if (!ui::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
     *allowed = false;
     return true;
   }

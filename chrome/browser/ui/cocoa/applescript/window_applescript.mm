@@ -179,7 +179,7 @@
   content::WebContents* contents = chrome::AddSelectedTabWithURL(
       browser_,
       GURL(chrome::kChromeUINewTabURL),
-      content::PAGE_TRANSITION_TYPED);
+      ui::PAGE_TRANSITION_TYPED);
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
   core_tab_helper->set_new_tab_start_time(newTabStartTime);
   [aTab setWebContents:contents];
@@ -194,7 +194,7 @@
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
   chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
-                                content::PAGE_TRANSITION_TYPED);
+                                ui::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   chrome::Navigate(&params);

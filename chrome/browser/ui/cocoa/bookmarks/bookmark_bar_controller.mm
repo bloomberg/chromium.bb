@@ -949,7 +949,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // override.
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition {
   OpenURLParams params(
-      url, Referrer(), disposition, content::PAGE_TRANSITION_AUTO_BOOKMARK,
+      url, Referrer(), disposition, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
       false);
   browser_->OpenURL(params);
 }

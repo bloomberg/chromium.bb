@@ -59,7 +59,7 @@ class NetErrorTabHelper
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
 
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,

@@ -132,7 +132,7 @@ void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,
       plugin_url,
       content::Referrer(web_contents->GetURL(),
                         blink::WebReferrerPolicyDefault),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
+      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false));
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadFinished());
 }
 

@@ -10,12 +10,12 @@
 
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
-#include "content/public/common/page_transition_types.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 class TypedUrlSyncableServiceTest;
@@ -57,7 +57,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
 
   // Called directly by HistoryBackend when local url data changes.
   void OnUrlsModified(URLRows* changed_urls);
-  void OnUrlVisited(content::PageTransition transition, URLRow* row);
+  void OnUrlVisited(ui::PageTransition transition, URLRow* row);
   void OnUrlsDeleted(bool all_history, bool expired, URLRows* rows);
 
  protected:
@@ -86,7 +86,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   // notification. We use this to throttle the number of sync changes we send
   // to the server so we don't hit the server for every
   // single typed URL visit.
-  bool ShouldSyncVisit(content::PageTransition transition, URLRow* row);
+  bool ShouldSyncVisit(ui::PageTransition transition, URLRow* row);
 
   // Utility routine that either updates an existing sync node or creates a
   // new one for the passed |typed_url| if one does not already exist. Returns

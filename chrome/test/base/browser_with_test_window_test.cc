@@ -14,8 +14,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
@@ -121,7 +121,7 @@ void BrowserWithTestWindowTest::TearDown() {
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
-  chrome::NavigateParams params(browser, url, content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser, url, ui::PAGE_TRANSITION_TYPED);
   params.tabstrip_index = 0;
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
@@ -174,7 +174,7 @@ void BrowserWithTestWindowTest::NavigateAndCommit(
     NavigationController* controller,
     const GURL& url) {
   controller->LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   CommitPendingLoad(controller);
 }
 

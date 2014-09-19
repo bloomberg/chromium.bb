@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
   // Create several tabs.
   for (int i = 0; i < 4; ++i) {
     chrome::AddSelectedTabWithURL(browser(), url,
-                                  content::PAGE_TRANSITION_TYPED);
+                                  ui::PAGE_TRANSITION_TYPED);
   }
 
   // Alternate focus for the tab.
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   chrome::FocusLocationBar(browser());
 
   // Create a 2nd tab.
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
 
   // Focus should be on the recently opened tab page.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
@@ -525,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
 
   // Open about:blank, focus should be on the location bar.
   chrome::AddSelectedTabWithURL(
-      browser(), GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_LINK);
+      browser(), GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_LINK);
   ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
@@ -626,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   GURL url2("http://maps.google.com/");
 
   // Navigate to url.
-  chrome::NavigateParams p(browser(), url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams p(browser(), url, ui::PAGE_TRANSITION_LINK);
   p.window_action = chrome::NavigateParams::SHOW_WINDOW;
   p.disposition = CURRENT_TAB;
   chrome::Navigate(&p);
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
 
   // Simulate an alt-enter.
   controller->OnAutocompleteAccept(url2, NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_TYPED);
+                                   ui::PAGE_TRANSITION_TYPED);
 
   // Make sure the second tab is selected.
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());

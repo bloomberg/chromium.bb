@@ -276,7 +276,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     OpenURLParams params(learn_more_url,
                          Referrer(),
                          CURRENT_TAB,
-                         content::PAGE_TRANSITION_LINK,
+                         ui::PAGE_TRANSITION_LINK,
                          false);
     web_contents_->OpenURL(params);
     return;
@@ -292,7 +292,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     OpenURLParams params(privacy_url,
                          Referrer(),
                          CURRENT_TAB,
-                         content::PAGE_TRANSITION_LINK,
+                         ui::PAGE_TRANSITION_LINK,
                          false);
     web_contents_->OpenURL(params);
     return;
@@ -329,7 +329,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
       web_contents_->GetController().LoadURL(
           GURL(chrome::kChromeUINewTabURL),
           content::Referrer(),
-          content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+          ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
           std::string());
     }
     return;
@@ -371,7 +371,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
            unsafe_resources_[element_index].threat_type ==
            SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
     OpenURLParams params(
-        diagnostic_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK,
+        diagnostic_url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
         false);
     web_contents_->OpenURL(params);
     return;

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ class CONTENT_EXPORT NavigationState {
       int32 pending_page_id,
       int pending_history_list_offset,
       bool history_list_was_cleared,
-      content::PageTransition transition_type) {
+      ui::PageTransition transition_type) {
     return new NavigationState(transition_type,
                                false,
                                pending_page_id,
@@ -33,7 +33,7 @@ class CONTENT_EXPORT NavigationState {
 
   static NavigationState* CreateContentInitiated() {
     return new NavigationState(
-        content::PAGE_TRANSITION_LINK, true, -1, -1, false);
+        ui::PAGE_TRANSITION_LINK, true, -1, -1, false);
   }
 
   // Contains the page_id for this navigation or -1 if there is none yet.
@@ -70,8 +70,8 @@ class CONTENT_EXPORT NavigationState {
 
   // Contains the transition type that the browser specified when it
   // initiated the load.
-  content::PageTransition transition_type() const { return transition_type_; }
-  void set_transition_type(content::PageTransition type) {
+  ui::PageTransition transition_type() const { return transition_type_; }
+  void set_transition_type(ui::PageTransition type) {
     transition_type_ = type;
   }
 
@@ -116,13 +116,13 @@ class CONTENT_EXPORT NavigationState {
   const std::string& extra_headers() { return extra_headers_; }
 
  private:
-  NavigationState(content::PageTransition transition_type,
+  NavigationState(ui::PageTransition transition_type,
                   bool is_content_initiated,
                   int32 pending_page_id,
                   int pending_history_list_offset,
                   bool history_list_was_cleared);
 
-  content::PageTransition transition_type_;
+  ui::PageTransition transition_type_;
   bool request_committed_;
   bool is_content_initiated_;
   int32 pending_page_id_;

@@ -39,7 +39,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "extensions/browser/event_router.h"
@@ -54,6 +53,7 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "ui/base/page_transition_types.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -275,7 +275,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     content::WebContents* tab = chrome::AddSelectedTabWithURL(
         current_browser(),
         extension_->GetResourceURL("empty.html"),
-        content::PAGE_TRANSITION_LINK);
+        ui::PAGE_TRANSITION_LINK);
     EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnCreated::kEventName,
                            tab->GetRenderProcessHost(),
@@ -296,7 +296,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     content::WebContents* tab = chrome::AddSelectedTabWithURL(
         current_browser(),
         extension_->GetResourceURL("empty.html"),
-        content::PAGE_TRANSITION_LINK);
+        ui::PAGE_TRANSITION_LINK);
     EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnDeterminingFilename::kEventName,
                            tab->GetRenderProcessHost(),
@@ -586,7 +586,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       content::WebContents* tab = chrome::AddSelectedTabWithURL(
           current_browser(),
           extension_->GetResourceURL("empty.html"),
-          content::PAGE_TRANSITION_LINK);
+          ui::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);
       function->SetRenderViewHost(tab->GetRenderViewHost());
     }

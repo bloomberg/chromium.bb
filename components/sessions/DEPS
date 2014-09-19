@@ -3,4 +3,5 @@ include_rules = [
   "+content/public/common",
   "+sync",
   "+third_party/WebKit/public/platform",
+  "+ui/base",
 ]

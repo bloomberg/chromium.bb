@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_APPS_APP_BROWSERTEST_UTIL_H_
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/app_window/app_window.h"
 
 namespace base {

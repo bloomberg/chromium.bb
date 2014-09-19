@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
   load1.Wait();
 
@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
+                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open2);
   load2.Wait();
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open3(GURL(chrome::kChromeUITermsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
+                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open3);
   load3.Wait();
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open4(GURL(chrome::kChromeUIVersionURL), content::Referrer(),
-                      CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open4);
   load4.Wait();
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open5(GURL("chrome://dns"), content::Referrer(),
-                      CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open5);
   load5.Wait();

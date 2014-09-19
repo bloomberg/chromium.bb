@@ -1530,7 +1530,7 @@ void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   chrome::NavigateParams params(
       ProfileManager::GetLastUsedProfileAllowedByPolicy(),
       GURL(chrome::kChromeUIMemoryURL),
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   params.host_desktop_type = desktop_type;
   chrome::Navigate(&params);

@@ -55,10 +55,10 @@ import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
-import org.chromium.content_public.browser.PageTransitionTypes;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.PageTransitionTypes;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 

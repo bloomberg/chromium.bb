@@ -226,7 +226,7 @@ void RenderViewContextMenuImpl::ExecuteCommand(int command_id,
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
           NEW_FOREGROUND_TAB,
-          content::PAGE_TRANSITION_LINK);
+          ui::PAGE_TRANSITION_LINK);
       break;
 
     // Editable

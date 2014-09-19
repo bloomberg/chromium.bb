@@ -10,11 +10,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/page_transition_types.h"
 
 namespace extensions {
 
@@ -92,7 +92,7 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   // - waits for |handler| to launch and send back a |handler_start_message|;
   // - finally checks that the resulting app window count is as expected.
   void TestNavigationInBrowser(const char* matching_target_page,
-                               content::PageTransition transition,
+                               ui::PageTransition transition,
                                const char* handler,
                                const char* handler_start_message);
 
@@ -100,14 +100,14 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   // for form submissions, where the URL would normally match the url_handlers
   // but should not launch it.
   void TestNegativeNavigationInBrowser(const char* matching_target_page,
-                                       content::PageTransition transition,
+                                       ui::PageTransition transition,
                                        const char* success_tab_title,
                                        const char* handler);
 
   // Same as above, but expects the |mismatching_target_page| should not match
   // any of the |handler|'s url_handlers, and therefor not launch the app.
   void TestMismatchingNavigationInBrowser(const char* mismatching_target_page,
-                                          content::PageTransition transition,
+                                          ui::PageTransition transition,
                                           const char* success_tab_title,
                                           const char* handler);
 };
@@ -260,7 +260,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInApp(
 
 void PlatformAppUrlRedirectorBrowserTest::TestNavigationInBrowser(
     const char* matching_target_page,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     const char* handler,
     const char* handler_start_message) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -283,7 +283,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNavigationInBrowser(
 
 void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInBrowser(
     const char* matching_target_page,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     const char* success_tab_title,
     const char* handler) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -308,7 +308,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInBrowser(
 
 void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInBrowser(
     const char* mismatching_target_page,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     const char* success_tab_title,
     const char* handler) {
   TestNegativeNavigationInBrowser(
@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
 #endif
   TestNavigationInBrowser(
       "url_handlers/common/target.html",
-      content::PAGE_TRANSITION_TYPED,
+      ui::PAGE_TRANSITION_TYPED,
       "url_handlers/handlers/simple",
       "Handler launched");
 }
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
 #endif
   TestMismatchingNavigationInBrowser(
       "url_handlers/common/mismatching_target.html",
-      content::PAGE_TRANSITION_TYPED,
+      ui::PAGE_TRANSITION_TYPED,
       "Mismatching link target loaded",
       "url_handlers/handlers/simple");
 }

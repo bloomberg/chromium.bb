@@ -44,9 +44,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::DictionaryValue;
@@ -684,7 +684,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
 
   main_web_contents_->GetController().LoadURL(
       DevToolsUIBindings::ApplyThemeToURL(profile, url), content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   bindings_ = DevToolsUIBindings::ForWebContents(main_web_contents_);
   DCHECK(bindings_);
@@ -1044,7 +1044,7 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
 void DevToolsWindow::OpenInNewTab(const std::string& url) {
   content::OpenURLParams params(
       GURL(url), content::Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   WebContents* inspected_web_contents = GetInspectedWebContents();
   if (inspected_web_contents) {
     inspected_web_contents->OpenURL(params);
@@ -1142,7 +1142,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
       chrome::GetHostDesktopTypeForNativeView(
           main_web_contents_->GetNativeView())));
   browser_->tab_strip_model()->AddWebContents(
-      main_web_contents_, -1, content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      main_web_contents_, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);
   main_web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }

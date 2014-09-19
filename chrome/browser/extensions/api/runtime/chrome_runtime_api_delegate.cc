@@ -174,7 +174,7 @@ void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
         new Browser(Browser::CreateParams(profile, chrome::GetActiveDesktop()));
 
   chrome::NavigateParams params(
-      browser, uninstall_url, content::PAGE_TRANSITION_CLIENT_REDIRECT);
+      browser, uninstall_url, ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   params.disposition = NEW_FOREGROUND_TAB;
   params.user_gesture = false;
   chrome::Navigate(&params);

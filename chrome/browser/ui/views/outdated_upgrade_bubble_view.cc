@@ -214,7 +214,7 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
       navigator_->OpenURL(content::OpenURLParams(GURL(kDownloadChromeUrl),
                                                  content::Referrer(),
                                                  NEW_FOREGROUND_TAB,
-                                                 content::PAGE_TRANSITION_LINK,
+                                                 ui::PAGE_TRANSITION_LINK,
                                                  false));
 #if defined(OS_WIN)
     } else {

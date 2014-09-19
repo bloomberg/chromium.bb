@@ -242,7 +242,7 @@ void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
 
   content::OpenURLParams open_url_params(
       result, content::Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   const std::string& content_type = post_content.first;
   std::string* post_data = &post_content.second;
   if (!post_data->empty()) {

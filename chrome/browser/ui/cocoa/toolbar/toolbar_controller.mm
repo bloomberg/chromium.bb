@@ -795,7 +795,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
           OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(url.spec())));
   }
   OpenURLParams params(
-      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+      url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 
@@ -813,7 +813,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   GURL url(match.destination_url);
 
   OpenURLParams params(
-      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+      url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 

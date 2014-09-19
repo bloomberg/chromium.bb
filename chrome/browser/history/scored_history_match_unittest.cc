@@ -25,7 +25,7 @@ VisitInfoVector CreateVisitInfoVector(int num_visits,
   for (int i = 0; i < num_visits; ++i) {
     visits.push_back(
         std::make_pair(now - base::TimeDelta::FromDays(i * frequency),
-                       content::PAGE_TRANSITION_LINK));
+                       ui::PAGE_TRANSITION_LINK));
   }
   return visits;
 }
@@ -122,7 +122,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   WordStarts one_word_no_offset(1, 0u);
   VisitInfoVector visits_a = CreateVisitInfoVector(3, 30, now);
   // Mark one visit as typed.
-  visits_a[0].second = content::PAGE_TRANSITION_TYPED;
+  visits_a[0].second = ui::PAGE_TRANSITION_TYPED;
   ScoredHistoryMatch scored_a(row_a, visits_a, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               one_word_no_offset, word_starts_a, now, NULL);
@@ -132,7 +132,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   RowWordStarts word_starts_b;
   PopulateWordStarts(row_b, &word_starts_b);
   VisitInfoVector visits_b = CreateVisitInfoVector(10, 30, now);
-  visits_b[0].second = content::PAGE_TRANSITION_TYPED;
+  visits_b[0].second = ui::PAGE_TRANSITION_TYPED;
   ScoredHistoryMatch scored_b(row_b, visits_b, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               one_word_no_offset, word_starts_b, now, NULL);
@@ -143,7 +143,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   RowWordStarts word_starts_c;
   PopulateWordStarts(row_c, &word_starts_c);
   VisitInfoVector visits_c = CreateVisitInfoVector(3, 10, now);
-  visits_c[0].second = content::PAGE_TRANSITION_TYPED;
+  visits_c[0].second = ui::PAGE_TRANSITION_TYPED;
   ScoredHistoryMatch scored_c(row_c, visits_c, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               one_word_no_offset, word_starts_c, now, NULL);
@@ -154,9 +154,9 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   RowWordStarts word_starts_d;
   PopulateWordStarts(row_d, &word_starts_d);
   VisitInfoVector visits_d = CreateVisitInfoVector(3, 30, now);
-  visits_d[0].second = content::PAGE_TRANSITION_TYPED;
-  visits_d[1].second = content::PAGE_TRANSITION_TYPED;
-  visits_d[2].second = content::PAGE_TRANSITION_TYPED;
+  visits_d[0].second = ui::PAGE_TRANSITION_TYPED;
+  visits_d[1].second = ui::PAGE_TRANSITION_TYPED;
+  visits_d[2].second = ui::PAGE_TRANSITION_TYPED;
   ScoredHistoryMatch scored_d(row_d, visits_d, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               one_word_no_offset, word_starts_d, now, NULL);

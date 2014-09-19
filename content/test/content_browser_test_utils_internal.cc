@@ -14,7 +14,7 @@ namespace content {
 void NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   TestFrameNavigationObserver observer(node);
   NavigationController::LoadURLParams params(url);
-  params.transition_type = PageTransitionFromInt(PAGE_TRANSITION_LINK);
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = node->frame_tree_node_id();
   node->navigator()->GetController()->LoadURLWithParams(params);
   observer.Wait();

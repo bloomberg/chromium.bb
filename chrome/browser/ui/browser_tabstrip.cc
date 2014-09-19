@@ -25,7 +25,7 @@ void AddTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
   chrome::NavigateParams params(browser,
       url.is_empty() ? GURL(chrome::kChromeUINewTabURL) : url,
-      content::PAGE_TRANSITION_TYPED);
+      ui::PAGE_TRANSITION_TYPED);
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = idx;
   chrome::Navigate(&params);
@@ -37,7 +37,7 @@ void AddTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
 content::WebContents* AddSelectedTabWithURL(
     Browser* browser,
     const GURL& url,
-    content::PageTransition transition) {
+    ui::PageTransition transition) {
   NavigateParams params(browser, url, transition);
   params.disposition = NEW_FOREGROUND_TAB;
   Navigate(&params);

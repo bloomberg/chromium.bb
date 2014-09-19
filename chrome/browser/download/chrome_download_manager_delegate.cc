@@ -450,7 +450,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
       net::FilePathToFileURL(download->GetTargetFilePath()),
       content::Referrer(),
       NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       false);
   browser->OpenURL(params);
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_BROWSER);

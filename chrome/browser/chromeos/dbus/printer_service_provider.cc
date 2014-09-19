@@ -78,7 +78,7 @@ void FindOrOpenCloudPrintPage(const std::string& /* vendor */,
     UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
                               PAGE_DISPLAYED, PRINTER_SERVICE_EVENT_MAX);
     chrome::AddSelectedTabWithURL(displayer.browser(), url,
-                                  content::PAGE_TRANSITION_LINK);
+                                  ui::PAGE_TRANSITION_LINK);
   }
 }
 

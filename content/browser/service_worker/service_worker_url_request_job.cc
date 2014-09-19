@@ -18,7 +18,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -26,6 +25,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 
@@ -274,8 +274,8 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->referrer = GURL(request_->referrer());
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {
-    request->is_reload = PageTransitionCoreTypeIs(info->GetPageTransition(),
-                                                  PAGE_TRANSITION_RELOAD);
+    request->is_reload = ui::PageTransitionCoreTypeIs(
+        info->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
   }
   return request.Pass();
 }

@@ -25,10 +25,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
 #include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace {
@@ -42,9 +42,9 @@ void SimulateGPUCrash(Browser* browser) {
   chrome::NavigateParams params(
       browser,
       GURL(content::kChromeUIGpuCrashURL),
-      static_cast<content::PageTransition>(
-          content::PAGE_TRANSITION_TYPED |
-          content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+      ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED |
+          ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   params.disposition = NEW_BACKGROUND_TAB;
   chrome::Navigate(&params);
 }

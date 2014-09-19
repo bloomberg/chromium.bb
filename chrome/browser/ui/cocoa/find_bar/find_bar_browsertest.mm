@@ -25,7 +25,7 @@ bool FindBarHasFocus(Browser* browser) {
 typedef InProcessBrowserTest FindBarBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, FocusOnTabSwitch) {
-  AddTabAtIndex(1, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
+  AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
   browser()->GetFindBarController()->Show();
 
   // Verify that if the find bar has focus then switching tabs and changing

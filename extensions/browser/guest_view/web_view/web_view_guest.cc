@@ -629,7 +629,7 @@ WebViewGuest::~WebViewGuest() {
 void WebViewGuest::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
@@ -869,7 +869,7 @@ void WebViewGuest::NavigateGuest(const std::string& src) {
   // can be granted to the guest process.
   LoadURLWithParams(validated_url,
                     content::Referrer(),
-                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                     web_contents());
 }
 
@@ -1015,7 +1015,7 @@ void WebViewGuest::WebContentsCreated(WebContents* source_contents,
 
 void WebViewGuest::LoadURLWithParams(const GURL& url,
                                      const content::Referrer& referrer,
-                                     content::PageTransition transition_type,
+                                     ui::PageTransition transition_type,
                                      content::WebContents* web_contents) {
   content::NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = referrer;

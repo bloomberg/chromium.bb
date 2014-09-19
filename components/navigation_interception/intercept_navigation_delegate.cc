@@ -19,7 +19,7 @@
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
-using content::PageTransition;
+using ui::PageTransition;
 using content::RenderViewHost;
 using content::WebContents;
 

@@ -218,7 +218,7 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
   content::WebContents* new_tab = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));
   new_tab->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+      url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   content::RenderViewHostTester::For(new_tab->GetRenderViewHost())->
       SendNavigate(extra_tabs_.size() + 1, url);
 

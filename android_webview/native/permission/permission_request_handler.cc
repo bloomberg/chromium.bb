@@ -82,10 +82,10 @@ void PermissionRequestHandler::PreauthorizePermission(const GURL& origin,
 
 void PermissionRequestHandler::NavigationEntryCommitted(
     const content::LoadCommittedDetails& details) {
-  const content::PageTransition transition = details.entry->GetTransitionType();
+  const ui::PageTransition transition = details.entry->GetTransitionType();
   if (details.is_navigation_to_different_page() ||
-      content::PageTransitionStripQualifier(transition) ==
-      content::PAGE_TRANSITION_RELOAD ||
+      ui::PageTransitionStripQualifier(transition) ==
+      ui::PAGE_TRANSITION_RELOAD ||
       contents_unique_id_ != details.entry->GetUniqueID()) {
     CancelAllRequests();
     contents_unique_id_ = details.entry->GetUniqueID();

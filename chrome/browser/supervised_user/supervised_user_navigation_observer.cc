@@ -181,7 +181,7 @@ void SupervisedUserNavigationObserver::WarnInfoBarDismissed() {
 void SupervisedUserNavigationObserver::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   if (render_frame_host->GetParent())
     return;
 
@@ -229,7 +229,7 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   history::HistoryAddPageArgs add_page_args(
         url, timestamp, web_contents(), 0,
         url, history::RedirectList(),
-        content::PAGE_TRANSITION_BLOCKED, history::SOURCE_BROWSED,
+        ui::PAGE_TRANSITION_BLOCKED, history::SOURCE_BROWSED,
         false);
 
   // Add the entry to the history database.

@@ -639,11 +639,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     int transition;
   } navigations[] = {
     { https_server.GetURL("files/title1.html"),
-      PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR },
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR },
     { test_server()->GetURL("files/title2.html"),
-      PAGE_TRANSITION_AUTO_BOOKMARK },
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK },
     { https_server.GetURL("files/title3.html"),
-      PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR },
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR },
     { GURL(), 0 }
   };
 
@@ -651,7 +651,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   for (int i = 0; !navigations[i].url.is_empty(); ++i) {
     // Navigate via the user initiating a navigation from the UI.
     NavigationController::LoadURLParams params(navigations[i].url);
-    params.transition_type = PageTransitionFromInt(navigations[i].transition);
+    params.transition_type =
+        ui::PageTransitionFromInt(navigations[i].transition);
 
     RenderViewHost* old_host = web_contents->GetRenderViewHost();
     web_contents->GetController().LoadURLWithParams(params);
@@ -679,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // Navigate again. This should not take any screenshot because of the
   // increased screenshot interval.
   NavigationController::LoadURLParams params(navigations[0].url);
-  params.transition_type = PageTransitionFromInt(navigations[0].transition);
+  params.transition_type = ui::PageTransitionFromInt(navigations[0].transition);
   web_contents->GetController().LoadURLWithParams(params);
   WaitForLoadStop(web_contents);
   screenshot_manager()->WaitUntilScreenshotIsReady();

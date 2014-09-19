@@ -20,7 +20,7 @@ TabStripModelOrderController::~TabStripModelOrderController() {
 }
 
 int TabStripModelOrderController::DetermineInsertionIndex(
-    content::PageTransition transition,
+    ui::PageTransition transition,
     bool foreground) {
   int tab_count = tabstrip_->count();
   if (!tab_count)
@@ -28,7 +28,7 @@ int TabStripModelOrderController::DetermineInsertionIndex(
 
   // NOTE: TabStripModel enforces that all non-mini-tabs occur after mini-tabs,
   // so we don't have to check here too.
-  if (transition == content::PAGE_TRANSITION_LINK &&
+  if (transition == ui::PAGE_TRANSITION_LINK &&
       tabstrip_->active_index() != -1) {
     if (foreground) {
       // If the page was opened in the foreground by a link click in another

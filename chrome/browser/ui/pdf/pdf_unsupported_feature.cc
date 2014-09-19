@@ -87,11 +87,11 @@ PDFEnableAdobeReaderPromptClient::~PDFEnableAdobeReaderPromptClient() {
 
 bool PDFEnableAdobeReaderPromptClient::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
-  content::PageTransition transition =
-      content::PageTransitionStripQualifier(details.entry->GetTransitionType());
+  ui::PageTransition transition =
+      ui::PageTransitionStripQualifier(details.entry->GetTransitionType());
   // We don't want to expire on a reload, because that is how we open the PDF in
   // Reader.
-  return !details.is_in_page && transition != content::PAGE_TRANSITION_RELOAD;
+  return !details.is_in_page && transition != ui::PAGE_TRANSITION_RELOAD;
 }
 
 void PDFEnableAdobeReaderPromptClient::Accept() {
@@ -123,7 +123,7 @@ base::string16 PDFEnableAdobeReaderPromptClient::GetMessageText() const {
 void OpenReaderUpdateURL(WebContents* web_contents) {
   OpenURLParams params(
       GURL(kAdobeReaderUpdateUrl), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   web_contents->OpenURL(params);
 }
 

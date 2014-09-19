@@ -147,7 +147,7 @@ void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
   content::OpenURLParams params(
       GURL(url), content::Referrer(),
       disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   browser_->OpenURL(params);
 }
 

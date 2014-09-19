@@ -11,9 +11,9 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -110,8 +110,8 @@ class NavigationEntry {
 
   // The transition type indicates what the user did to move to this page from
   // the previous page.
-  virtual void SetTransitionType(content::PageTransition transition_type) = 0;
-  virtual content::PageTransition GetTransitionType() const = 0;
+  virtual void SetTransitionType(ui::PageTransition transition_type) = 0;
+  virtual ui::PageTransition GetTransitionType() const = 0;
 
   // The user typed URL was the URL that the user initiated the navigation
   // with, regardless of any redirects. This is used to generate keywords, for

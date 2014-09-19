@@ -100,7 +100,7 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
 void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   DCHECK(CalledOnValidThread());
 
   // Ignore subframes.
@@ -260,7 +260,7 @@ void CaptivePortalTabHelper::OpenLoginTab() {
   content::WebContents* web_contents = chrome::AddSelectedTabWithURL(
           browser,
           CaptivePortalServiceFactory::GetForProfile(profile_)->test_url(),
-          content::PAGE_TRANSITION_TYPED);
+          ui::PAGE_TRANSITION_TYPED);
   CaptivePortalTabHelper* captive_portal_tab_helper =
       CaptivePortalTabHelper::FromWebContents(web_contents);
   captive_portal_tab_helper->SetIsLoginTab();

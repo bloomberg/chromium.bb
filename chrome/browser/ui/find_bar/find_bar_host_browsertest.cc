@@ -1203,7 +1203,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
 
   // Now create a second tab and load the same page.
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(web_contents_1, web_contents_2);
@@ -1328,7 +1328,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(incognito_browser, url,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
   incognito_browser->window()->Show();
 
@@ -1349,7 +1349,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
       FindBarController::kKeepResultsInFindBox);
 
   // Now open a new tab in the original (non-incognito) browser.
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(web_contents_1, web_contents_2);
@@ -1392,7 +1392,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::AddSelectedTabWithURL(
-      popup, GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_LINK);
+      popup, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_LINK);
   // Wait for the page to finish loading.
   observer.Wait();
   popup->window()->Show();

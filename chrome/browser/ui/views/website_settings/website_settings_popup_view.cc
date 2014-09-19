@@ -405,7 +405,7 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
         content::OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_LINK,
+                               ui::PAGE_TRANSITION_LINK,
                                false));
   }
 }

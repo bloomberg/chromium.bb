@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
   SetupPendingPassword();
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   // Set up the second tab.
-  AddTabAtIndex(0, GURL("chrome://newtab"), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL("chrome://newtab"), ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),

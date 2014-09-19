@@ -133,7 +133,7 @@ bool ErrorInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
           GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+          ui::PAGE_TRANSITION_LINK, false));
   return false;
 }
 

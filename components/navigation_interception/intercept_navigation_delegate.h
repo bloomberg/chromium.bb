@@ -8,7 +8,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
-#include "content/public/common/page_transition_types.h"
 
 class GURL;
 

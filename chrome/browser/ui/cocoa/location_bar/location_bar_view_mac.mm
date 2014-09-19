@@ -183,7 +183,7 @@ WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
   return disposition();
 }
 
-content::PageTransition LocationBarViewMac::GetPageTransition() const {
+ui::PageTransition LocationBarViewMac::GetPageTransition() const {
   return transition();
 }
 

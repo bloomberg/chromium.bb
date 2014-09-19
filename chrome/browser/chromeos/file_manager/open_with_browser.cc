@@ -108,7 +108,7 @@ void OpenNewTab(Profile* profile, const GURL& url) {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       profile, chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::AddSelectedTabWithURL(displayer.browser(), url,
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
 
   // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
   // browser will be shown on the active desktop, we ensure the visibility.

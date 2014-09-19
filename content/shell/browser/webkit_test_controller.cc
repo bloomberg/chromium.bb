@@ -281,8 +281,8 @@ bool WebKitTestController::PrepareForLayoutTest(
     SendTestConfiguration();
 
     NavigationController::LoadURLParams params(test_url);
-    params.transition_type = PageTransitionFromInt(
-        PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     params.should_clear_history_list = true;
     main_window_->web_contents()->GetController().LoadURLWithParams(params);
     main_window_->web_contents()->Focus();

@@ -362,7 +362,7 @@ RenderFrameHost* RenderViewContextMenuBase::GetRenderFrameHost() {
 void RenderViewContextMenuBase::OpenURL(
     const GURL& url, const GURL& referring_url,
     WindowOpenDisposition disposition,
-    content::PageTransition transition) {
+    ui::PageTransition transition) {
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
       url,
       content::Referrer(referring_url.GetAsReferrer(),

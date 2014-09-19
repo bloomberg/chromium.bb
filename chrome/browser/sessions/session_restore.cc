@@ -1123,7 +1123,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       if (i == 0)
         add_types |= TabStripModel::ADD_ACTIVE;
       chrome::NavigateParams params(browser, urls[i],
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
       params.disposition = i == 0 ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
       params.tabstrip_add_types = add_types;
       chrome::Navigate(&params);

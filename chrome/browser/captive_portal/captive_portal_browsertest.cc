@@ -1515,7 +1515,7 @@ void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
   browser->OpenURL(content::OpenURLParams(timeout_url,
                                           content::Referrer(),
                                           CURRENT_TAB,
-                                          content::PAGE_TRANSITION_TYPED,
+                                          ui::PAGE_TRANSITION_TYPED,
                                           false));
   portal_observer.WaitForResults(1);
   EXPECT_FALSE(CheckPending(browser));
@@ -2102,7 +2102,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   // window.
   chrome::NavigateParams params(inactive_browser,
                                 GURL(kMockHttpsQuickTimeoutUrl),
-                                content::PAGE_TRANSITION_TYPED);
+                                ui::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_BACKGROUND_TAB;
   params.window_action = chrome::NavigateParams::NO_ACTION;
   ui_test_utils::NavigateToURL(&params);

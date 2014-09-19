@@ -42,7 +42,7 @@ struct CrossSiteResponseParams {
       const GlobalRequestID& global_request_id,
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
-      PageTransition page_transition,
+      ui::PageTransition page_transition,
       bool should_replace_current_entry)
       : render_frame_id(render_frame_id),
         global_request_id(global_request_id),
@@ -56,7 +56,7 @@ struct CrossSiteResponseParams {
   GlobalRequestID global_request_id;
   std::vector<GURL> transfer_url_chain;
   Referrer referrer;
-  PageTransition page_transition;
+  ui::PageTransition page_transition;
   bool should_replace_current_entry;
 };
 

@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
     CreateBrowser(browser()->profile());
 
   GURL url(url::kAboutBlankURL);
-  AddTabAtIndexToBrowser(browser(), 0, url, content::PAGE_TRANSITION_LINK);
+  AddTabAtIndexToBrowser(browser(), 0, url, ui::PAGE_TRANSITION_LINK);
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
   // Get tabs in the 'current' window called from non-focused browser.
@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK,
+                                ui::PAGE_TRANSITION_LINK,
                                 false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
@@ -561,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK,
+                                ui::PAGE_TRANSITION_LINK,
                                 false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
@@ -767,7 +767,7 @@ content::OpenURLParams GetOpenParams(const char* url) {
   return content::OpenURLParams(GURL(url),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK,
+                                ui::PAGE_TRANSITION_LINK,
                                 false);
 }
 

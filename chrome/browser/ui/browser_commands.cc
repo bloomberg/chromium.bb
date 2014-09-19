@@ -213,7 +213,7 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
     case NEW_BACKGROUND_TAB: {
       WebContents* new_tab = current_tab->Clone();
       browser->tab_strip_model()->AddWebContents(
-          new_tab, -1, content::PAGE_TRANSITION_LINK,
+          new_tab, -1, ui::PAGE_TRANSITION_LINK,
           (disposition == NEW_FOREGROUND_TAB) ?
               TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE);
       return new_tab;
@@ -223,7 +223,7 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
       Browser* new_browser = new Browser(Browser::CreateParams(
           browser->profile(), browser->host_desktop_type()));
       new_browser->tab_strip_model()->AddWebContents(
-          new_tab, -1, content::PAGE_TRANSITION_LINK,
+          new_tab, -1, ui::PAGE_TRANSITION_LINK,
           TabStripModel::ADD_ACTIVE);
       new_browser->window()->Show();
       return new_tab;
@@ -393,7 +393,7 @@ void OpenURLOffTheRecord(Profile* profile,
   ScopedTabbedBrowserDisplayer displayer(profile->GetOffTheRecordProfile(),
                                          desktop_type);
   AddSelectedTabWithURL(displayer.browser(), url,
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
 }
 
 bool CanGoBack(const Browser* browser) {
@@ -489,9 +489,9 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
 
   OpenURLParams params(
       url, Referrer(), disposition,
-      content::PageTransitionFromInt(
-          content::PAGE_TRANSITION_AUTO_BOOKMARK |
-          content::PAGE_TRANSITION_HOME_PAGE),
+      ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_AUTO_BOOKMARK |
+          ui::PAGE_TRANSITION_HOME_PAGE),
       false);
   params.extra_headers = extra_headers;
   browser->OpenURL(params);
@@ -505,9 +505,9 @@ void OpenCurrentURL(Browser* browser) {
 
   GURL url(location_bar->GetDestinationURL());
 
-  content::PageTransition page_transition = location_bar->GetPageTransition();
-  content::PageTransition page_transition_without_qualifier(
-      PageTransitionStripQualifier(page_transition));
+  ui::PageTransition page_transition = location_bar->GetPageTransition();
+  ui::PageTransition page_transition_without_qualifier(
+      ui::PageTransitionStripQualifier(page_transition));
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
   // A PAGE_TRANSITION_TYPED means the user has typed a URL. We do not want to
@@ -517,8 +517,8 @@ void OpenCurrentURL(Browser* browser) {
   // Instant should also not handle PAGE_TRANSITION_RELOAD because its knowledge
   // of the omnibox text may be stale if the user focuses in the omnibox and
   // presses enter without typing anything.
-  if (page_transition_without_qualifier != content::PAGE_TRANSITION_TYPED &&
-      page_transition_without_qualifier != content::PAGE_TRANSITION_RELOAD &&
+  if (page_transition_without_qualifier != ui::PAGE_TRANSITION_TYPED &&
+      page_transition_without_qualifier != ui::PAGE_TRANSITION_RELOAD &&
       browser->instant_controller() &&
       browser->instant_controller()->OpenInstant(open_disposition, url))
     return;
@@ -709,7 +709,7 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     // The page transition below is only for the purpose of inserting the tab.
     new_browser->tab_strip_model()->AddWebContents(
         contents_dupe, -1,
-        content::PAGE_TRANSITION_LINK,
+        ui::PAGE_TRANSITION_LINK,
         TabStripModel::ADD_ACTIVE);
   }
 
@@ -1216,7 +1216,7 @@ void ViewSource(Browser* browser,
 
     // The page transition below is only for the purpose of inserting the tab.
     b->tab_strip_model()->AddWebContents(view_source_contents, -1,
-                                         content::PAGE_TRANSITION_LINK,
+                                         ui::PAGE_TRANSITION_LINK,
                                          TabStripModel::ADD_ACTIVE);
   }
 

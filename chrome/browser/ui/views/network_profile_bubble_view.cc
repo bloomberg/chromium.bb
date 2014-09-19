@@ -131,7 +131,7 @@ void NetworkProfileBubbleView::LinkClicked(views::Link* source,
             "common-problems-and-solutions#network_profile"),
       content::Referrer(),
       disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   navigator_->OpenURL(params);
 
   // If the user interacted with the bubble we don't reduce the number of

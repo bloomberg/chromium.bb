@@ -19,7 +19,6 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/page_transition_types.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
 

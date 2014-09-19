@@ -21,7 +21,7 @@ struct URLVisitedDetails : public HistoryDetails {
   URLVisitedDetails();
   virtual ~URLVisitedDetails();
 
-  content::PageTransition transition;
+  ui::PageTransition transition;
 
   // The affected URLRow. The ID will be set to the value that is currently in
   // effect in the main history database.

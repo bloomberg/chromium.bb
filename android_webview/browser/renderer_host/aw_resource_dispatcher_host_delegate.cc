@@ -406,13 +406,13 @@ void AwResourceDispatcherHostDelegate::AddExtraHeadersIfNeeded(
   if (request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME)
     return;
 
-  const content::PageTransition transition = request_info->GetPageTransition();
+  const ui::PageTransition transition = request_info->GetPageTransition();
   const bool is_load_url =
-      transition & content::PAGE_TRANSITION_FROM_API;
+      transition & ui::PAGE_TRANSITION_FROM_API;
   const bool is_go_back_forward =
-      transition & content::PAGE_TRANSITION_FORWARD_BACK;
-  const bool is_reload = content::PageTransitionCoreTypeIs(
-      transition, content::PAGE_TRANSITION_RELOAD);
+      transition & ui::PAGE_TRANSITION_FORWARD_BACK;
+  const bool is_reload = ui::PageTransitionCoreTypeIs(
+      transition, ui::PAGE_TRANSITION_RELOAD);
   if (is_load_url || is_go_back_forward || is_reload) {
     AwResourceContext* awrc = static_cast<AwResourceContext*>(resource_context);
     std::string extra_headers = awrc->GetExtraHeaders(request->url());

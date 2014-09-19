@@ -11,11 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
+#include "ui/base/page_transition_types.h"
 #include "v8/include/v8.h"
 
 class GURL;
@@ -213,7 +213,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|.  If the function returns true, the url is changed to |new_url|.
   virtual bool WillSendRequest(blink::WebFrame* frame,
-                               PageTransition transition_type,
+                               ui::PageTransition transition_type,
                                const GURL& url,
                                const GURL& first_party_for_cookies,
                                GURL* new_url);

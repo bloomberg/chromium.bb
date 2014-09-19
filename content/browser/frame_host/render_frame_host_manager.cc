@@ -358,7 +358,7 @@ void RenderFrameHostManager::OnCrossSiteResponse(
     scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
-    PageTransition page_transition,
+    ui::PageTransition page_transition,
     bool should_replace_current_entry) {
   // We should only get here for transfer navigations.  Most cross-process
   // navigations can just continue and wait to run the unload handler (by
@@ -802,7 +802,7 @@ bool RenderFrameHostManager::ShouldReuseWebUI(
 SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
     const GURL& dest_url,
     SiteInstance* dest_instance,
-    PageTransition dest_transition,
+    ui::PageTransition dest_transition,
     bool dest_is_restore,
     bool dest_is_view_source_mode) {
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
@@ -856,7 +856,7 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
 SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
     const GURL& dest_url,
     SiteInstance* dest_instance,
-    PageTransition dest_transition,
+    ui::PageTransition dest_transition,
     bool dest_is_restore,
     bool dest_is_view_source_mode,
     SiteInstance* current_instance,
@@ -891,7 +891,8 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   //       RenderViews in response to a link click.
   //
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
-      PageTransitionCoreTypeIs(dest_transition, PAGE_TRANSITION_GENERATED)) {
+      ui::PageTransitionCoreTypeIs(
+          dest_transition, ui::PAGE_TRANSITION_GENERATED)) {
     return current_instance;
   }
 

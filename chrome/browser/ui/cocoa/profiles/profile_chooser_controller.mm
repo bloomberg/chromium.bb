@@ -1883,7 +1883,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       content::WebContents::CreateParams(browser_->profile())));
   webContents_->GetController().LoadURL(url,
                                         content::Referrer(),
-                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());
   NSView* webview = webContents_->GetNativeView();
   [webview setFrameSize:NSMakeSize(kFixedGaiaViewWidth, kFixedGaiaViewHeight)];

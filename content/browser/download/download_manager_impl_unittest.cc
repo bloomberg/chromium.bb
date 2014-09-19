@@ -159,7 +159,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetForcedFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(HasUserGesture, bool());
-  MOCK_CONST_METHOD0(GetTransitionType, PageTransition());
+  MOCK_CONST_METHOD0(GetTransitionType, ui::PageTransition());
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_METHOD1(SetIsTemporary, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));

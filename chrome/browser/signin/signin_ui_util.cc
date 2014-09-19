@@ -171,7 +171,7 @@ void ShowSigninErrorLearnMorePage(Profile* profile) {
   static const char kSigninErrorLearnMoreUrl[] =
       "https://support.google.com/chrome/answer/1181420?";
   chrome::NavigateParams params(
-      profile, GURL(kSigninErrorLearnMoreUrl), content::PAGE_TRANSITION_LINK);
+      profile, GURL(kSigninErrorLearnMoreUrl), ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }

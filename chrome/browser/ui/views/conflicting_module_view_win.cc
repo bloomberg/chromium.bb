@@ -197,7 +197,7 @@ void ConflictingModuleView::ButtonPressed(views::Button* sender,
         content::OpenURLParams(help_center_url_,
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_LINK,
+                               ui::PAGE_TRANSITION_LINK,
                                false));
 
     EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();

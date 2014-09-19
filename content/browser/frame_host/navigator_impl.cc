@@ -136,7 +136,7 @@ void NavigatorImpl::MakeNavigateParams(
 
   // Set the redirect chain to the navigation's redirects, unless we are
   // returning to a completed navigation (whose previous redirects don't apply).
-  if (PageTransitionIsNewNavigation(params->transition)) {
+  if (ui::PageTransitionIsNewNavigation(params->transition)) {
     params->redirects = entry.GetRedirectChain();
   } else {
     params->redirects.clear();
@@ -176,7 +176,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
       NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
           controller_->CreateNavigationEntry(validated_url,
                                              content::Referrer(),
-                                             content::PAGE_TRANSITION_LINK,
+                                             ui::PAGE_TRANSITION_LINK,
                                              true /* is_renderer_initiated */,
                                              std::string(),
                                              controller_->GetBrowserContext()));
@@ -447,11 +447,11 @@ void NavigatorImpl::DidNavigate(
         pending_entry &&
         pending_entry->frame_tree_node_id() ==
             render_frame_host->frame_tree_node()->frame_tree_node_id()) {
-      params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
+      params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
     }
   }
 
-  if (PageTransitionIsMainFrame(params.transition)) {
+  if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
       // When overscroll navigation gesture is enabled, a screenshot of the page
       // in its current state is taken so that it can be used during the
@@ -507,7 +507,7 @@ void NavigatorImpl::DidNavigate(
   // TODO(nasko): Verify the correctness of the above comment, since some of the
   // code doesn't exist anymore. Also, move this code in the
   // PageTransitionIsMainFrame code block above.
-  if (PageTransitionIsMainFrame(params.transition) && delegate_)
+  if (ui::PageTransitionIsMainFrame(params.transition) && delegate_)
     delegate_->SetMainFrameMimeType(params.contents_mime_type);
 
   LoadCommittedDetails details;
@@ -525,15 +525,15 @@ void NavigatorImpl::DidNavigate(
   if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
     DCHECK_EQ(!render_frame_host->GetParent(),
               did_navigate ? details.is_main_frame : false);
-    PageTransition transition_type = params.transition;
+    ui::PageTransition transition_type = params.transition;
     // Whether or not a page transition was triggered by going backward or
     // forward in the history is only stored in the navigation controller's
     // entry list.
     if (did_navigate &&
         (controller_->GetLastCommittedEntry()->GetTransitionType() &
-            PAGE_TRANSITION_FORWARD_BACK)) {
-      transition_type = PageTransitionFromInt(
-          params.transition | PAGE_TRANSITION_FORWARD_BACK);
+            ui::PAGE_TRANSITION_FORWARD_BACK)) {
+      transition_type = ui::PageTransitionFromInt(
+          params.transition | ui::PAGE_TRANSITION_FORWARD_BACK);
     }
 
     delegate_->DidCommitProvisionalLoad(render_frame_host,
@@ -593,10 +593,15 @@ void NavigatorImpl::RequestOpenURL(
   // TODO(creis): Pass the redirect_chain into this method to support client
   // redirects.  http://crbug.com/311721.
   std::vector<GURL> redirect_chain;
-  RequestTransferURL(
-      render_frame_host, url, redirect_chain, referrer, PAGE_TRANSITION_LINK,
-      disposition, GlobalRequestID(),
-      should_replace_current_entry, user_gesture);
+  RequestTransferURL(render_frame_host,
+                     url,
+                     redirect_chain,
+                     referrer,
+                     ui::PAGE_TRANSITION_LINK,
+                     disposition,
+                     GlobalRequestID(),
+                     should_replace_current_entry,
+                     user_gesture);
 }
 
 void NavigatorImpl::RequestTransferURL(
@@ -604,7 +609,7 @@ void NavigatorImpl::RequestTransferURL(
     const GURL& url,
     const std::vector<GURL>& redirect_chain,
     const Referrer& referrer,
-    PageTransition page_transition,
+    ui::PageTransition page_transition,
     WindowOpenDisposition disposition,
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry,
@@ -638,7 +643,8 @@ void NavigatorImpl::RequestTransferURL(
     // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
     // automatically generated suggestions).  We don't override other types
     // like TYPED because they have different implications (e.g., autocomplete).
-    if (PageTransitionCoreTypeIs(params.transition, PAGE_TRANSITION_LINK))
+    if (ui::PageTransitionCoreTypeIs(
+        params.transition, ui::PAGE_TRANSITION_LINK))
       params.transition =
           GetRenderManager(render_frame_host)->web_ui()->
               GetLinkTransitionType();

@@ -38,7 +38,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/page_transition_types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
@@ -46,6 +45,7 @@
 #include "policy/proto/device_management_backend.pb.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/notification.h"
@@ -514,7 +514,7 @@ void ConsumerManagementService::ShowDesktopNotificationAndResetStage(
 
 void ConsumerManagementService::OpenSettingsPage(Profile* profile) const {
   const GURL url(chrome::kChromeUISettingsURL);
-  chrome::NavigateParams params(profile, url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }
@@ -523,7 +523,7 @@ void ConsumerManagementService::TryEnrollmentAgain(Profile* profile) const {
   const GURL base_url(chrome::kChromeUISettingsURL);
   const GURL url = base_url.Resolve(kConsumerManagementOverlay);
 
-  chrome::NavigateParams params(profile, url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }

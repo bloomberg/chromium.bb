@@ -58,7 +58,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
-      PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
   virtual void DidFinishLoad(RenderFrameHost* render_frame_host,
                              const GURL& validated_url) OVERRIDE;
   virtual void DocumentLoadedInFrame(

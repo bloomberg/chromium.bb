@@ -559,7 +559,7 @@ bool WindowsCreateFunction::RunSync() {
 
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
     WebContents* tab = chrome::AddSelectedTabWithURL(
-        new_window, *i, content::PAGE_TRANSITION_LINK);
+        new_window, *i, ui::PAGE_TRANSITION_LINK);
     if (create_panel) {
       TabHelper::FromWebContents(tab)->SetExtensionAppIconById(extension_id);
     }
@@ -1250,7 +1250,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   }
 
   web_contents_->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
   // The URL of a tab contents never actually changes to a JavaScript URL, so
   // this check only makes sense in other cases.
@@ -1466,7 +1466,7 @@ bool TabsReloadFunction::RunSync() {
     // This does as same as Browser::ReloadInternal.
     NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
     OpenURLParams params(entry->GetURL(), Referrer(), CURRENT_TAB,
-                         content::PAGE_TRANSITION_RELOAD, false);
+                         ui::PAGE_TRANSITION_RELOAD, false);
     GetCurrentBrowser()->OpenURL(params);
   } else if (bypass_cache) {
     web_contents->GetController().ReloadIgnoringCache(true);

@@ -17,14 +17,14 @@ VisitRow::VisitRow()
     : visit_id(0),
       url_id(0),
       referring_visit(0),
-      transition(content::PAGE_TRANSITION_LINK),
+      transition(ui::PAGE_TRANSITION_LINK),
       segment_id(0) {
 }
 
 VisitRow::VisitRow(URLID arg_url_id,
                    base::Time arg_visit_time,
                    VisitID arg_referring_visit,
-                   content::PageTransition arg_transition,
+                   ui::PageTransition arg_transition,
                    SegmentID arg_segment_id)
     : visit_id(0),
       url_id(arg_url_id),
@@ -50,7 +50,7 @@ QueryURLResult::~QueryURLResult() {
 HistoryAddPageArgs::HistoryAddPageArgs()
     : context_id(NULL),
       page_id(0),
-      transition(content::PAGE_TRANSITION_LINK),
+      transition(ui::PAGE_TRANSITION_LINK),
       visit_source(SOURCE_BROWSED),
       did_replace_entry(false) {}
 
@@ -61,7 +61,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(
     int32 page_id,
     const GURL& referrer,
     const history::RedirectList& redirects,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     VisitSource source,
     bool did_replace_entry)
       : url(url),

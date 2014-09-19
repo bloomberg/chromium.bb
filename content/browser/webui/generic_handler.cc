@@ -50,8 +50,11 @@ void GenericHandler::HandleNavigateToUrl(const base::ListValue* args) {
   if (disposition == CURRENT_TAB && target_string == "_blank")
     disposition = NEW_FOREGROUND_TAB;
 
-  web_ui()->GetWebContents()->OpenURL(OpenURLParams(
-      GURL(url_string), Referrer(), disposition, PAGE_TRANSITION_LINK, false));
+  web_ui()->GetWebContents()->OpenURL(OpenURLParams(GURL(url_string),
+                                                    Referrer(),
+                                                    disposition,
+                                                    ui::PAGE_TRANSITION_LINK,
+                                                    false));
 
   // This may delete us!
 }

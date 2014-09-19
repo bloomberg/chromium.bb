@@ -15,7 +15,7 @@ NavigationParams::NavigationParams(
     const content::Referrer& referrer,
     bool has_user_gesture,
     bool is_post,
-    content::PageTransition transition_type,
+    ui::PageTransition transition_type,
     bool is_redirect)
     : url_(url),
       referrer_(referrer),

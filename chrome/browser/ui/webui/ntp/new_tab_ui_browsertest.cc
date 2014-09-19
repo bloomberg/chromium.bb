@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, DISABLED_LoadNTPInExistingProcess) {
         content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
     browser()->OpenURL(OpenURLParams(
         test_server()->GetURL("files/title1.html"), Referrer(), CURRENT_TAB,
-        content::PAGE_TRANSITION_TYPED, false));
+        ui::PAGE_TRANSITION_TYPED, false));
     process_exited_observer.Wait();
   }
 
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, DISABLED_ChromeHangInNTP) {
   chrome::NewTab(browser());
   browser()->OpenURL(OpenURLParams(
       GURL(content::kChromeUIHangURL), Referrer(), CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+      ui::PAGE_TRANSITION_TYPED, false));
 }
 
 class NewTabUIProcessPerTabTest : public NewTabUIBrowserTest {
@@ -147,6 +147,6 @@ IN_PROC_BROWSER_TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
       browser()->tab_strip_model()->GetActiveWebContents());
   browser()->OpenURL(OpenURLParams(
       GURL("data:text/html,hello world"), Referrer(), CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+      ui::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 }

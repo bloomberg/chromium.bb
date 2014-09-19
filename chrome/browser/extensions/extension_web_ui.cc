@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/extension.h"
@@ -36,6 +35,7 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -81,7 +81,7 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
   // NavigationController has.
   web_contents->GetController().LoadURL(
       url, content::Referrer(url, blink::WebReferrerPolicyDefault),
-      content::PAGE_TRANSITION_RELOAD, std::string());
+      ui::PAGE_TRANSITION_RELOAD, std::string());
 }
 
 // Run favicon callbck with image result. If no favicon was available then
@@ -170,7 +170,7 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
         new extensions::BookmarkManagerPrivateDragEventRouter(
             profile, web_ui->GetWebContents()));
 
-    web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
+    web_ui->SetLinkTransitionType(ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   }
 }
 

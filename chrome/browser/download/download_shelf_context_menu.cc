@@ -217,7 +217,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
           content::OpenURLParams(GURL(chrome::kDownloadInterruptedLearnMoreURL),
                                  content::Referrer(),
                                  NEW_FOREGROUND_TAB,
-                                 content::PAGE_TRANSITION_LINK,
+                                 ui::PAGE_TRANSITION_LINK,
                                  false));
       break;
   }

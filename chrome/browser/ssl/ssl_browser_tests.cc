@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestWSSInvalidCertAndClose) {
   WebContents* tabs[16];
   for (int i = 0; i < 16; ++i) {
     tabs[i] = chrome::AddSelectedTabWithURL(browser(), slave_url,
-                                            content::PAGE_TRANSITION_LINK);
+                                            ui::PAGE_TRANSITION_LINK);
   }
   chrome::SelectNextTab(browser());
 
@@ -830,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
 
   GURL url = https_server_expired_.GetURL("files/ssl/google.htm");
   WebContents* tab2 = chrome::AddSelectedTabWithURL(
-      browser(), url, content::PAGE_TRANSITION_TYPED);
+      browser(), url, ui::PAGE_TRANSITION_TYPED);
   content::WaitForLoadStop(tab2);
 
   // Verify our assumption that there was no prior navigation.
@@ -865,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::NavigateParams navigate_params(browser(), url_dangerous,
-                                           content::PAGE_TRANSITION_TYPED);
+                                           ui::PAGE_TRANSITION_TYPED);
     chrome::Navigate(&navigate_params);
     observer.Wait();
   }
@@ -1054,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
       &replacement_path));
 
   GURL url = https_server_.GetURL(replacement_path);
-  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = 0;
   params.source_contents = tab1;
@@ -1097,7 +1097,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   // disposition won't usually stay in the same process, but this works
   // because we are using process-per-site in SetUpCommandLine.
   GURL url = https_server_.GetURL(replacement_path);
-  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
   content::WindowedNotificationObserver observer(
@@ -1291,7 +1291,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Close the first tab.
@@ -1855,7 +1855,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
 
   AddTabAtIndex(0,
                 https_server_.GetURL("files/ssl/google.html"),
-                content::PAGE_TRANSITION_TYPED);
+                ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(tab, browser()->tab_strip_model()->GetWebContentsAt(1));

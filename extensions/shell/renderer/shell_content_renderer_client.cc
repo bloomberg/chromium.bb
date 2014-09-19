@@ -131,7 +131,7 @@ blink::WebPlugin* ShellContentRendererClient::CreatePluginReplacement(
 
 bool ShellContentRendererClient::WillSendRequest(
     blink::WebFrame* frame,
-    content::PageTransition transition_type,
+    ui::PageTransition transition_type,
     const GURL& url,
     const GURL& first_party_for_cookies,
     GURL* new_url) {

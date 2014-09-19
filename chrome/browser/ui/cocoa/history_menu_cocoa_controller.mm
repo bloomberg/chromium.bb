@@ -56,7 +56,7 @@ using content::Referrer;
     WindowOpenDisposition disposition =
         ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
     chrome::NavigateParams params(bridge_->profile(), node->url,
-        content::PAGE_TRANSITION_AUTO_BOOKMARK);
+        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
     params.disposition = disposition;
     chrome::Navigate(&params);
   }

@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
 

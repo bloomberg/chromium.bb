@@ -2064,7 +2064,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     case NEW_FOREGROUND_TAB: {
       content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
       chrome::NavigateParams params(browser_, *url,
-                                    content::PAGE_TRANSITION_TYPED);
+                                    ui::PAGE_TRANSITION_TYPED);
       params.disposition = disposition;
       params.tabstrip_index = index;
       params.tabstrip_add_types =
@@ -2075,7 +2075,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     case CURRENT_TAB: {
       content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
       OpenURLParams params(
-          *url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+          *url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
       tabStripModel_->GetWebContentsAt(index)->OpenURL(params);
       tabStripModel_->ActivateTabAt(index, true);
       break;

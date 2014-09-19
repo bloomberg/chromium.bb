@@ -62,7 +62,7 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       content::OpenURLParams(
           GURL(GetLearnMoreURL()), content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+          ui::PAGE_TRANSITION_LINK, false));
   return false;
 }
 
@@ -401,7 +401,7 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
       content::OpenURLParams(
           url, content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+          ui::PAGE_TRANSITION_LINK, false));
   return false;
 }
 
@@ -521,7 +521,7 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
               "https://support.google.com/chrome/?p=ib_redirect_to_desktop"),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+          ui::PAGE_TRANSITION_LINK, false));
   return false;
 }
 

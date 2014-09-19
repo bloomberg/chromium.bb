@@ -380,7 +380,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
   void NavigateWithSBHitAndCommit(const GURL& url) {
     // Create a pending navigation.
     controller().LoadURL(
-        url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+        url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
     ASSERT_TRUE(pending_rvh());
     if (web_contents()->GetRenderViewHost()->GetProcess()->GetID() ==
@@ -415,7 +415,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
 
   void NavigateWithoutSBHitAndCommit(const GURL& safe_url) {
     controller().LoadURL(
-        safe_url, content::Referrer(), content::PAGE_TRANSITION_LINK,
+        safe_url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
         std::string());
 
     ASSERT_TRUE(pending_rvh());

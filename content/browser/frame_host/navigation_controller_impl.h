@@ -58,7 +58,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void SetTransientEntry(NavigationEntry* entry) OVERRIDE;
   virtual void LoadURL(const GURL& url,
                        const Referrer& referrer,
-                       PageTransition type,
+                       ui::PageTransition type,
                        const std::string& extra_headers) OVERRIDE;
   virtual void LoadURLWithParams(const LoadURLParams& params) OVERRIDE;
   virtual void LoadIfNecessary() OVERRIDE;

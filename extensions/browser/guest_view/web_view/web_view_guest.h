@@ -246,7 +246,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
@@ -282,7 +282,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   void LoadURLWithParams(const GURL& url,
                          const content::Referrer& referrer,
-                         content::PageTransition transition_type,
+                         ui::PageTransition transition_type,
                          content::WebContents* web_contents);
 
   void RequestNewWindowPermission(

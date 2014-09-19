@@ -27,7 +27,7 @@ namespace content {
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
                         int page_id,
                         const GURL& url,
-                        PageTransition transition) {
+                        ui::PageTransition transition) {
   params->page_id = page_id;
   params->url = url;
   params->referrer = Referrer();
@@ -272,7 +272,7 @@ void TestRenderViewHost::SendFailedNavigate(int page_id, const GURL& url) {
 void TestRenderViewHost::SendNavigateWithTransition(
     int page_id,
     const GURL& url,
-    PageTransition transition) {
+    ui::PageTransition transition) {
   main_render_frame_host_->SendNavigateWithTransition(page_id, url, transition);
 }
 
@@ -299,7 +299,7 @@ void TestRenderViewHost::SendNavigateWithParams(
 void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
     int page_id,
     const GURL& url,
-    PageTransition transition,
+    ui::PageTransition transition,
     int response_code) {
   main_render_frame_host_->SendNavigateWithTransitionAndResponseCode(
       page_id, url, transition, response_code);
@@ -308,7 +308,7 @@ void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
 void TestRenderViewHost::SendNavigateWithParameters(
     int page_id,
     const GURL& url,
-    PageTransition transition,
+    ui::PageTransition transition,
     const GURL& original_request_url,
     int response_code,
     const base::FilePath* file_path_for_history_item) {

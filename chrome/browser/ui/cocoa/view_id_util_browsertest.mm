@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
     browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
                                      Referrer(),
                                      NEW_BACKGROUND_TAB,
-                                     content::PAGE_TRANSITION_TYPED,
+                                     ui::PAGE_TRANSITION_TYPED,
                                      false));
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), true);
     // VIEW_ID_TAB_LAST should always be available.
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
   browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
                                    Referrer(),
                                    NEW_BACKGROUND_TAB,
-                                   content::PAGE_TRANSITION_TYPED,
+                                   ui::PAGE_TRANSITION_TYPED,
                                    false));
   CheckViewID(VIEW_ID_TAB_LAST, true);
 }

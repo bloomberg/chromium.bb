@@ -15,7 +15,7 @@ DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
                                        int64 total_bytes,
                                        const net::BoundNetLog& bound_net_log,
                                        bool has_user_gesture,
-                                       PageTransition transition_type,
+                                       ui::PageTransition transition_type,
                                        scoped_ptr<DownloadSaveInfo> save_info)
     : start_time(start_time),
       total_bytes(total_bytes),
@@ -29,7 +29,7 @@ DownloadCreateInfo::DownloadCreateInfo()
     : total_bytes(0),
       download_id(DownloadItem::kInvalidId),
       has_user_gesture(false),
-      transition_type(PAGE_TRANSITION_LINK),
+      transition_type(ui::PAGE_TRANSITION_LINK),
       save_info(new DownloadSaveInfo()) {
 }
 

@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -64,8 +64,8 @@ class CONTENT_EXPORT WebUI {
 
   // Returns the transition type that should be used for link clicks on this
   // Web UI. This will default to LINK but may be overridden.
-  virtual PageTransition GetLinkTransitionType() const = 0;
-  virtual void SetLinkTransitionType(PageTransition type) = 0;
+  virtual ui::PageTransition GetLinkTransitionType() const = 0;
+  virtual void SetLinkTransitionType(ui::PageTransition type) = 0;
 
   // Allows a controller to override the BindingsPolicy that should be enabled
   // for this page.

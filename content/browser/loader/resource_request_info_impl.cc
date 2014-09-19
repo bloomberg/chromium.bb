@@ -42,7 +42,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           false,                             // parent_is_main_frame
           0,                                 // parent_render_frame_id
           resource_type,                     // resource_type
-          PAGE_TRANSITION_LINK,              // transition_type
+          ui::PAGE_TRANSITION_LINK,          // transition_type
           false,                             // should_replace_current_entry
           false,                             // is_download
           false,                             // is_stream
@@ -97,7 +97,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool parent_is_main_frame,
     int parent_render_frame_id,
     ResourceType resource_type,
-    PageTransition transition_type,
+    ui::PageTransition transition_type,
     bool should_replace_current_entry,
     bool is_download,
     bool is_stream,
@@ -193,7 +193,7 @@ ResourceRequestInfoImpl::GetVisibilityState() const {
   return visibility_state_;
 }
 
-PageTransition ResourceRequestInfoImpl::GetPageTransition() const {
+ui::PageTransition ResourceRequestInfoImpl::GetPageTransition() const {
   return transition_type_;
 }
 

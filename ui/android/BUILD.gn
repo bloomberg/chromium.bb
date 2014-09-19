@@ -13,6 +13,16 @@ java_cpp_enum("java_enums_srcjar") {
   ]
 }
 
+java_cpp_template("page_transition_types_srcjar") {
+  package_name = "org/chromium/ui/base"
+  sources = [
+    "java/PageTransitionTypes.template",
+  ]
+  inputs = [
+    "../base/page_transition_types_list.h",
+  ]
+}
+
 java_strings_grd("ui_strings_grd") {
   grd_file = "java/strings/android_ui_strings.grd"
   outputs = [
@@ -113,5 +123,6 @@ android_library("ui_java") {
   ]
   srcjar_deps = [
     ":java_enums_srcjar",
+    ":page_transition_types_srcjar",
   ]
 }

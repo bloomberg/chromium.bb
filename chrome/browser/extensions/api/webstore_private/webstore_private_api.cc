@@ -38,7 +38,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"

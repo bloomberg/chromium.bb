@@ -162,7 +162,7 @@ void RenderViewHostTestHarness::Reload() {
   controller().Reload(false);
   static_cast<TestRenderViewHost*>(
       rvh())->SendNavigateWithTransition(
-          entry->GetPageID(), entry->GetURL(), PAGE_TRANSITION_RELOAD);
+          entry->GetPageID(), entry->GetURL(), ui::PAGE_TRANSITION_RELOAD);
 }
 
 void RenderViewHostTestHarness::FailedReload() {

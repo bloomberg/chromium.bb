@@ -723,7 +723,7 @@ TEST_F(OneClickSigninHelperTest, CleanTransientStateOnNavigate) {
   content::LoadCommittedDetails details;
   content::FrameNavigateParams params;
   params.url = GURL("http://crbug.com");
-  params.transition = content::PAGE_TRANSITION_TYPED;
+  params.transition = ui::PAGE_TRANSITION_TYPED;
   helper->DidNavigateMainFrame(details, params);
 
   EXPECT_EQ(OneClickSigninHelper::AUTO_ACCEPT_NONE, helper->auto_accept_);
@@ -735,7 +735,7 @@ TEST_F(OneClickSigninHelperTest, NoRedirectToNTPWithPendingEntry) {
 
   const GURL fooWebUIURL("chrome://foo");
   controller.LoadURL(fooWebUIURL, content::Referrer(),
-                     content::PAGE_TRANSITION_TYPED, std::string());
+                     ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(fooWebUIURL, controller.GetPendingEntry()->GetURL());
 
   MockWebContentsDelegate delegate;

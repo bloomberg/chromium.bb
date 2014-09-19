@@ -66,7 +66,7 @@ class WebNavigationTabObserver
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
@@ -87,7 +87,7 @@ class WebNavigationTabObserver
                                    const GURL& url,
                                    const content::Referrer& referrer,
                                    WindowOpenDisposition disposition,
-                                   content::PageTransition transition,
+                                   ui::PageTransition transition,
                                    int64 source_frame_num) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
 

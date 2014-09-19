@@ -64,7 +64,7 @@ class PrerenderTabHelper
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
-      content::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
 
   // Called when a password form has been submitted.
   void PasswordSubmitted(const autofill::PasswordForm& form);

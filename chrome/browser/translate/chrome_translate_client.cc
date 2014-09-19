@@ -260,7 +260,7 @@ void ChromeTranslateClient::ShowReportLanguageDetectionErrorUI(
   }
 
   chrome::AddSelectedTabWithURL(
-      browser, report_url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      browser, report_url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 #endif  // defined(OS_ANDROID)
 }
 

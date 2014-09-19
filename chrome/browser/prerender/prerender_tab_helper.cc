@@ -99,7 +99,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    content::PageTransition transition_type) {
+    ui::PageTransition transition_type) {
   if (render_frame_host->GetParent())
     return;
   RecordEvent(EVENT_MAINFRAME_COMMIT);

@@ -1594,7 +1594,7 @@ void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
   // Navigate in current tab to devices page.
   OpenURLParams params(
       GURL(chrome::kChromeUIDevicesURL), Referrer(),
-      CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+      CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
   web_ui()->GetWebContents()->OpenURL(params);
 }
 

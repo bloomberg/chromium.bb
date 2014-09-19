@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/page_transition_types.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"

@@ -731,7 +731,7 @@ void CreateCloudPrintSigninTab(Browser* browser,
                 url, g_browser_process->GetApplicationLocale()),
             content::Referrer(),
             NEW_FOREGROUND_TAB,
-            content::PAGE_TRANSITION_AUTO_BOOKMARK,
+            ui::PAGE_TRANSITION_AUTO_BOOKMARK,
             false));
     new SignInObserver(web_contents, cloud_devices::GetCloudPrintURL(),
                         callback);

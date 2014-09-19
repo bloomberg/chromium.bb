@@ -639,7 +639,7 @@ void BackgroundContentsService::LoadBackgroundContents(
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
   // startup latency (http://crbug.com/47236).
   contents->web_contents()->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 }
 
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(

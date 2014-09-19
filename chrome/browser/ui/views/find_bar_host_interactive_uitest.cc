@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   chrome::Find(browser());
 
   // Open another tab (tab B).
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
 
   chrome::Find(browser());
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_SelectionRestoreOnTabSwitch) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Show the Find bar.
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Make sure Find box is open.

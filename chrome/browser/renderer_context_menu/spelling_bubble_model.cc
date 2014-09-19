@@ -66,7 +66,7 @@ base::string16 SpellingBubbleModel::GetLinkText() const {
 void SpellingBubbleModel::LinkClicked() {
   OpenURLParams params(
       GURL(chrome::kPrivacyLearnMoreURL), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 }
 

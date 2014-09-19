@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_RESOURCE_REQUEST_POLICY_H_
 #define CHROME_RENDERER_EXTENSIONS_RESOURCE_REQUEST_POLICY_H_
 
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -27,7 +27,7 @@ class ResourceRequestPolicy {
   // than those triggered through UI.
   static bool CanRequestResource(const GURL& resource_url,
                                  blink::WebFrame* frame,
-                                 content::PageTransition transition_type,
+                                 ui::PageTransition transition_type,
                                  const ExtensionSet* loaded_extensions);
   // Returns true if the chrome-extension-resource:// |resource_url| can be
   // requested from |frame_url|.

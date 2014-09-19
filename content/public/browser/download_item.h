@@ -27,7 +27,7 @@
 #include "base/supports_user_data.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -189,7 +189,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual std::string GetOriginalMimeType() const = 0;
   virtual std::string GetRemoteAddress() const = 0;
   virtual bool HasUserGesture() const = 0;
-  virtual PageTransition GetTransitionType() const = 0;
+  virtual ui::PageTransition GetTransitionType() const = 0;
   virtual const std::string& GetLastModifiedTime() const = 0;
   virtual const std::string& GetETag() const = 0;
   virtual bool IsSavePackageDownload() const = 0;

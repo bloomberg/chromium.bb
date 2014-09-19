@@ -53,7 +53,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
       params.disposition == CURRENT_TAB &&
-      params.transition == content::PAGE_TRANSITION_LINK) {
+      params.transition == ui::PAGE_TRANSITION_LINK) {
     nav_params.disposition = NEW_FOREGROUND_TAB;
   } else {
     nav_params.disposition = params.disposition;

@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/base/window_open_disposition.h"

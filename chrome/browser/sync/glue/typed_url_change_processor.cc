@@ -207,8 +207,8 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
 bool TypedUrlChangeProcessor::ShouldSyncVisit(
     history::URLVisitedDetails* details) {
   int typed_count = details->row.typed_count();
-  content::PageTransition transition = static_cast<content::PageTransition>(
-      details->transition & content::PAGE_TRANSITION_CORE_MASK);
+  ui::PageTransition transition =
+      ui::PageTransitionStripQualifier(details->transition);
 
   // Just use an ad-hoc criteria to determine whether to ignore this
   // notification. For most users, the distribution of visits is roughly a bell
@@ -217,7 +217,7 @@ bool TypedUrlChangeProcessor::ShouldSyncVisit(
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  return (transition == content::PAGE_TRANSITION_TYPED &&
+  return (transition == ui::PAGE_TRANSITION_TYPED &&
           typed_count > 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));

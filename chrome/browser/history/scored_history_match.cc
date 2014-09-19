@@ -531,7 +531,7 @@ float ScoredHistoryMatch::GetFrequency(const base::Time& now,
   float summed_visit_points = 0;
   for (size_t i = 0; i < std::min(visits.size(), kMaxVisitsToScore); ++i) {
     int value_of_transition =
-        (visits[i].second == content::PAGE_TRANSITION_TYPED) ? 20 : 1;
+        (visits[i].second == ui::PAGE_TRANSITION_TYPED) ? 20 : 1;
     if (bookmarked)
       value_of_transition = std::max(value_of_transition, bookmark_value_);
     const float bucket_weight =

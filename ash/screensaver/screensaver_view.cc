@@ -130,7 +130,7 @@ void ScreensaverView::LoadScreensaver() {
   screensaver_webview_->GetWebContents()->GetController().LoadURL(
         url_,
         content::Referrer(),
-        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
         std::string());
 }
 

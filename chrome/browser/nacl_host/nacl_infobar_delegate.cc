@@ -56,6 +56,6 @@ bool NaClInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
           GURL("https://support.google.com/chrome/?p=ib_nacl"),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+          ui::PAGE_TRANSITION_LINK, false));
   return false;
 }

@@ -252,7 +252,7 @@ void RlzLibTest::SimulateOmniboxUsage() {
 void RlzLibTest::SimulateHomepageUsage() {
   scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetPageID(0);
-  entry->SetTransitionType(content::PAGE_TRANSITION_HOME_PAGE);
+  entry->SetTransitionType(ui::PAGE_TRANSITION_HOME_PAGE);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(entry.get()));
@@ -827,7 +827,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
   scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetPageID(0);
-  entry->SetTransitionType(content::PAGE_TRANSITION_LINK);
+  entry->SetTransitionType(ui::PAGE_TRANSITION_LINK);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(NULL));

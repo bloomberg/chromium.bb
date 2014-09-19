@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
   web_contents_hidden_callback_ = runner->QuitClosure();
   chrome::AddSelectedTabWithURL(browser(),
                                 GURL(url::kAboutBlankURL),
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   runner->Run();
   web_contents_hidden_callback_.Reset();
 }
@@ -145,12 +145,12 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
   browser()->OpenURL(content::OpenURLParams(GURL(chrome::kChromeUIBookmarksURL),
                                             content::Referrer(),
                                             CURRENT_TAB,
-                                            content::PAGE_TRANSITION_TYPED,
+                                            ui::PAGE_TRANSITION_TYPED,
                                             false));
   browser()->OpenURL(content::OpenURLParams(GURL(chrome::kChromeUIAboutURL),
                                             content::Referrer(),
                                             CURRENT_TAB,
-                                            content::PAGE_TRANSITION_TYPED,
+                                            ui::PAGE_TRANSITION_TYPED,
                                             false));
   runner->Run();
   nav_entry_committed_callback_.Reset();

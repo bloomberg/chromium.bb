@@ -17,7 +17,6 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
-#include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"

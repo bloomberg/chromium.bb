@@ -98,7 +98,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   OpenURLParams params(
       node->url(), Referrer(), disposition,
-      content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
   browser->OpenURL(params);
 }
 

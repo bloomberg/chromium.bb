@@ -1916,7 +1916,7 @@ using content::WebContents;
     if (webContents) {
       OpenURLParams params(
           GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
-          content::PAGE_TRANSITION_LINK, false);
+          ui::PAGE_TRANSITION_LINK, false);
       webContents->OpenURL(params);
     }
   }

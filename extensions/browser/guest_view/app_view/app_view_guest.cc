@@ -203,7 +203,7 @@ void AppViewGuest::DidAttachToEmbedder() {
   // events to the guest, and the guest knows how to get frames to the
   // embedder.
   web_contents()->GetController().LoadURL(
-      url_, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url_, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 }
 
 void AppViewGuest::DidInitialize() {

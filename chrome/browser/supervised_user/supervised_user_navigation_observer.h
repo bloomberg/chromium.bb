@@ -54,7 +54,7 @@ class SupervisedUserNavigationObserver
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) OVERRIDE;
 
   void OnRequestBlockedInternal(const GURL& url);
 

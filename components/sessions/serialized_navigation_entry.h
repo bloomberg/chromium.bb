@@ -15,8 +15,8 @@
 #include "base/time/time.h"
 #include "components/sessions/sessions_export.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 class Pickle;
@@ -102,7 +102,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   const GURL& favicon_url() const { return favicon_url_; }
   int http_status_code() const { return http_status_code_; }
   const content::Referrer& referrer() const { return referrer_; }
-  content::PageTransition transition_type() const {
+  ui::PageTransition transition_type() const {
     return transition_type_;
   }
   bool has_post_data() const { return has_post_data_; }
@@ -147,7 +147,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   GURL virtual_url_;
   base::string16 title_;
   content::PageState page_state_;
-  content::PageTransition transition_type_;
+  ui::PageTransition transition_type_;
   bool has_post_data_;
   int64 post_id_;
   GURL original_request_url_;

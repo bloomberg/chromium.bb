@@ -103,12 +103,12 @@ class TypedUrlSyncableServiceTest : public testing::Test {
 
   static void AddNewestVisit(URLRow* url,
                              VisitVector* visits,
-                             content::PageTransition transition,
+                             ui::PageTransition transition,
                              int64 visit_time);
 
   static void AddOldestVisit(URLRow* url,
                              VisitVector* visits,
-                             content::PageTransition transition,
+                             ui::PageTransition transition,
                              int64 visit_time);
 
   static bool URLsEqual(URLRow& row,
@@ -166,12 +166,12 @@ URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(
     // Add a typed visit for time |last_visit|.
     visits->insert(first,
                    VisitRow(history_url.id(), last_visit_time, 0,
-                            content::PAGE_TRANSITION_TYPED, 0));
+                            ui::PAGE_TRANSITION_TYPED, 0));
   } else {
     // Add a non-typed visit for time |last_visit|.
     visits->insert(first,
                    VisitRow(history_url.id(), last_visit_time, 0,
-                            content::PAGE_TRANSITION_RELOAD, 0));
+                            ui::PAGE_TRANSITION_RELOAD, 0));
   }
 
   history_url.set_visit_count(visits->size());
@@ -181,13 +181,13 @@ URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(
 void TypedUrlSyncableServiceTest::AddNewestVisit(
     URLRow* url,
     VisitVector* visits,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     int64 visit_time) {
   base::Time time = base::Time::FromInternalValue(visit_time);
   visits->insert(visits->begin(),
                  VisitRow(url->id(), time, 0, transition, 0));
 
-  if (transition == content::PAGE_TRANSITION_TYPED) {
+  if (transition == ui::PAGE_TRANSITION_TYPED) {
     url->set_typed_count(url->typed_count() + 1);
   }
 
@@ -198,12 +198,12 @@ void TypedUrlSyncableServiceTest::AddNewestVisit(
 void TypedUrlSyncableServiceTest::AddOldestVisit(
     URLRow* url,
     VisitVector* visits,
-    content::PageTransition transition,
+    ui::PageTransition transition,
     int64 visit_time) {
   base::Time time = base::Time::FromInternalValue(visit_time);
   visits->push_back(VisitRow(url->id(), time, 0, transition, 0));
 
-  if (transition == content::PAGE_TRANSITION_TYPED) {
+  if (transition == ui::PAGE_TRANSITION_TYPED) {
     url->set_typed_count(url->typed_count() + 1);
   }
 
@@ -311,7 +311,7 @@ TEST_F(TypedUrlSyncableServiceTest, UpdateLocalTypedUrlAndSync) {
   VisitVector visits = visit_vectors.front();
 
   URLRows changed_urls;
-  AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_TYPED, 7);
+  AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_TYPED, 7);
   static_cast<TestHistoryBackend*>(fake_history_backend_.get())->
       SetVisitsForUrl(url_row.id(), &visits);
   changed_urls.push_back(url_row);
@@ -363,11 +363,11 @@ TEST_F(TypedUrlSyncableServiceTest, LinkVisitLocalTypedUrlAndSync) {
   VisitVector visits = visit_vectors.front();
 
   // Update the URL row, adding a non-typed visit to the visit vector.
-  AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_LINK, 6);
+  AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_LINK, 6);
   static_cast<TestHistoryBackend*>(fake_history_backend_.get())->
       SetVisitsForUrl(url_row.id(), &visits);
 
-  content::PageTransition transition = content::PAGE_TRANSITION_LINK;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
   // Notify typed url sync service of non-typed visit, expect no change.
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
   ASSERT_EQ(0u, changes.size());
@@ -387,14 +387,14 @@ TEST_F(TypedUrlSyncableServiceTest, TypedVisitLocalTypedUrlAndSync) {
   VisitVector visits = visit_vectors.front();
 
   // Update the URL row, adding another typed visit to the visit vector.
-  AddOldestVisit(&url_row, &visits, content::PAGE_TRANSITION_LINK, 1);
-  AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_LINK, 6);
-  AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_TYPED, 7);
+  AddOldestVisit(&url_row, &visits, ui::PAGE_TRANSITION_LINK, 1);
+  AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_LINK, 6);
+  AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_TYPED, 7);
   static_cast<TestHistoryBackend*>(fake_history_backend_.get())->
       SetVisitsForUrl(url_row.id(), &visits);
 
   // Notify typed url sync service of typed visit.
-  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
 
   ASSERT_EQ(1u, changes.size());
@@ -541,17 +541,17 @@ TEST_F(TypedUrlSyncableServiceTest, MaxVisitLocalTypedUrlAndSync) {
   // non-typed visits are expected to be skipped.
   int i = 1;
   for (; i <= kMaxTypedUrlVisits - 20; ++i)
-    AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_TYPED, i);
+    AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_TYPED, i);
   for (; i <= kMaxTypedUrlVisits; ++i)
-    AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_LINK, i);
+    AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_LINK, i);
   for (; i <= kMaxTypedUrlVisits + 10; ++i)
-    AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_TYPED, i);
+    AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_TYPED, i);
 
   static_cast<TestHistoryBackend*>(fake_history_backend_.get())->
       SetVisitsForUrl(url_row.id(), &visits);
 
   // Notify typed url sync service of typed visit.
-  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
 
   const syncer::SyncChangeList& changes = fake_change_processor_->changes();
@@ -568,7 +568,7 @@ TEST_F(TypedUrlSyncableServiceTest, MaxVisitLocalTypedUrlAndSync) {
   int num_other_visits_synced = 0;
   int r = url_specifics.visits_size() - 1;
   for (int i = 0; i < url_specifics.visits_size(); ++i, --r) {
-    if (url_specifics.visit_transitions(i) == content::PAGE_TRANSITION_TYPED) {
+    if (url_specifics.visit_transitions(i) == ui::PAGE_TRANSITION_TYPED) {
       ++num_typed_visits_synced;
     } else {
       ++num_other_visits_synced;
@@ -592,13 +592,13 @@ TEST_F(TypedUrlSyncableServiceTest, ThrottleVisitLocalTypedUrlSync) {
   // Add enough visits to the url so that typed count is above the throttle
   // limit, and not right on the interval that gets synced.
   for (int i = 1; i < 42; ++i)
-    AddNewestVisit(&url_row, &visits, content::PAGE_TRANSITION_TYPED, i);
+    AddNewestVisit(&url_row, &visits, ui::PAGE_TRANSITION_TYPED, i);
 
   static_cast<TestHistoryBackend*>(fake_history_backend_.get())->
       SetVisitsForUrl(url_row.id(), &visits);
 
   // Notify typed url sync service of typed visit.
-  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
 
   // Should throttle, so sync and local cache should not update.

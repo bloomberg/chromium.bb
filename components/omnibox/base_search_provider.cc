@@ -268,7 +268,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 
   // Search results don't look like URLs.
   match.transition = suggestion.from_keyword_provider() ?
-      content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
+      ui::PAGE_TRANSITION_KEYWORD : ui::PAGE_TRANSITION_GENERATED;
 
   return match;
 }

@@ -48,7 +48,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/menu_item.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/user_agent.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"

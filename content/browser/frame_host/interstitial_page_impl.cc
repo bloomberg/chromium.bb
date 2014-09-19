@@ -40,9 +40,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/page_transition_types.h"
 
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
@@ -470,8 +470,8 @@ void InterstitialPageImpl::DidNavigate(
     DontProceed();
     return;
   }
-  if (PageTransitionCoreTypeIs(params.transition,
-                               PAGE_TRANSITION_AUTO_SUBFRAME)) {
+  if (ui::PageTransitionCoreTypeIs(params.transition,
+                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME)) {
     // No need to handle navigate message from iframe in the interstitial page.
     return;
   }

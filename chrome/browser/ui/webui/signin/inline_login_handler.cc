@@ -120,7 +120,7 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       Profile::FromWebUI(web_ui()),
       net::AppendOrReplaceQueryParameter(
           main_frame_url, signin::kSignInPromoQueryKeyConstrained, "0"),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   chrome::Navigate(&params);
 
   web_ui()->CallJavascriptFunction("inline.login.closeDialog");

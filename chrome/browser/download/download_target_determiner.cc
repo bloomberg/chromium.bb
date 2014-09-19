@@ -849,7 +849,7 @@ bool DownloadTargetDeterminer::IsDangerousFile(PriorVisitsToReferrer visits) {
       // "Allow on user gesture" is OK when we have a user gesture and the
       // hosting page has been visited before today.
       if (download_->GetTransitionType() &
-          content::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
+          ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
         return false;
       }
       return !download_->HasUserGesture() || visits == NO_VISITS_TO_REFERRER;

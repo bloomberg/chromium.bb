@@ -75,7 +75,7 @@ class MachPortsTest : public InProcessBrowserTest {
   // Adds a tab from the page cycler data at the specified domain.
   void AddTab(const std::string& domain) {
     GURL url = server_.GetURL("files/" + domain + "/").Resolve("?skip");
-    AddTabAtIndex(0, url, content::PageTransition::PAGE_TRANSITION_TYPED);
+    AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
   }
 
  private:

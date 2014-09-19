@@ -429,7 +429,6 @@
             'content_strings_grd',
             'content_gamepad_mapping',
             'gesture_event_type_java',
-            'page_transition_types_java',
             'popup_item_type_java',
             'result_codes_java',
             'selection_event_type_java',
@@ -473,18 +472,6 @@
           'variables': {
             'package_name': 'org/chromium/content/browser',
             'template_deps': ['browser/android/gesture_event_type_list.h'],
-          },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
-        },
-        {
-          'target_name': 'page_transition_types_java',
-          'type': 'none',
-          'sources': [
-            'public/android/java/src/org/chromium/content_public/browser/PageTransitionTypes.template',
-          ],
-          'variables': {
-            'package_name': 'org/chromium/content_public/browser',
-            'template_deps': ['public/common/page_transition_types_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

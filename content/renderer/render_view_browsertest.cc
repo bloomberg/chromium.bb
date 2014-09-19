@@ -368,7 +368,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   // An http url will trigger a resource load so cannot be used here.
   nav_params.url = GURL("data:text/html,<div>Page</div>");
   nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  nav_params.transition = PAGE_TRANSITION_TYPED;
+  nav_params.transition = ui::PAGE_TRANSITION_TYPED;
   nav_params.page_id = -1;
   nav_params.is_post = true;
   nav_params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
@@ -573,7 +573,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   FrameMsg_Navigate_Params nav_params;
   nav_params.url = GURL("data:text/html,<div>Page B</div>");
   nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  nav_params.transition = PAGE_TRANSITION_TYPED;
+  nav_params.transition = ui::PAGE_TRANSITION_TYPED;
   nav_params.current_history_list_length = 1;
   nav_params.current_history_list_offset = 0;
   nav_params.pending_history_list_offset = 1;
@@ -610,7 +610,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   // Back to page A (page_id 1) and commit.
   FrameMsg_Navigate_Params params_A;
   params_A.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_A.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_A.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_A.current_history_list_length = 2;
   params_A.current_history_list_offset = 1;
   params_A.pending_history_list_offset = 0;
@@ -636,7 +636,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   FrameMsg_Navigate_Params nav_params;
   nav_params.url = GURL("data:text/html,<div>Page A</div>");
   nav_params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
-  nav_params.transition = PAGE_TRANSITION_RELOAD;
+  nav_params.transition = ui::PAGE_TRANSITION_RELOAD;
   nav_params.current_history_list_length = 2;
   nav_params.current_history_list_offset = 0;
   nav_params.pending_history_list_offset = 0;
@@ -715,7 +715,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Go back to C and commit, preparing for our real test.
   FrameMsg_Navigate_Params params_C;
   params_C.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_C.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_C.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_C.current_history_list_length = 4;
   params_C.current_history_list_offset = 3;
   params_C.pending_history_list_offset = 2;
@@ -733,7 +733,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Back to page B (page_id 2), without committing.
   FrameMsg_Navigate_Params params_B;
   params_B.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_B.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_B.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 4;
   params_B.current_history_list_offset = 2;
   params_B.pending_history_list_offset = 1;
@@ -745,7 +745,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Back to page A (page_id 1) and commit.
   FrameMsg_Navigate_Params params;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 4;
   params_B.current_history_list_offset = 2;
   params_B.pending_history_list_offset = 0;
@@ -800,7 +800,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // Back to page A (page_id 1) and commit.
   FrameMsg_Navigate_Params params_A;
   params_A.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_A.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_A.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_A.current_history_list_length = 2;
   params_A.current_history_list_offset = 1;
   params_A.pending_history_list_offset = 0;
@@ -819,7 +819,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // The browser then sends a stale navigation to B, which should be ignored.
   FrameMsg_Navigate_Params params_B;
   params_B.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_B.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_B.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 2;
   params_B.current_history_list_offset = 0;
   params_B.pending_history_list_offset = 1;
@@ -887,7 +887,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   // Ensure that going back to page B (page_id 2) at offset 0 is successful.
   FrameMsg_Navigate_Params params_B;
   params_B.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params_B.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_B.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 2;
   params_B.current_history_list_offset = 1;
   params_B.pending_history_list_offset = 0;
@@ -2084,7 +2084,7 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   FrameMsg_Navigate_Params nav_params;
   nav_params.url = GURL("data:text/html,world");
   nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  nav_params.transition = PAGE_TRANSITION_TYPED;
+  nav_params.transition = ui::PAGE_TRANSITION_TYPED;
   nav_params.current_history_list_length = 1;
   nav_params.current_history_list_offset = 0;
   nav_params.pending_history_list_offset = 1;
@@ -2453,7 +2453,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   FrameMsg_Navigate_Params early_nav_params;
   early_nav_params.url = GURL("data:text/html,<div>Page</div>");
   early_nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  early_nav_params.transition = PAGE_TRANSITION_TYPED;
+  early_nav_params.transition = ui::PAGE_TRANSITION_TYPED;
   early_nav_params.page_id = -1;
   early_nav_params.is_post = true;
   early_nav_params.browser_navigation_start =
@@ -2472,7 +2472,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   FrameMsg_Navigate_Params late_nav_params;
   late_nav_params.url = GURL("data:text/html,<div>Another page</div>");
   late_nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  late_nav_params.transition = PAGE_TRANSITION_TYPED;
+  late_nav_params.transition = ui::PAGE_TRANSITION_TYPED;
   late_nav_params.page_id = -1;
   late_nav_params.is_post = true;
   late_nav_params.browser_navigation_start =

@@ -243,7 +243,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
     base::snprintf(buf, arraysize(buf), "http://foo.com/%d", i);
     history->AddPage(
         GURL(std::string(buf)), base::Time::Now(), NULL, 1,
-        GURL(), history::RedirectList(), content::PAGE_TRANSITION_LINK,
+        GURL(), history::RedirectList(), ui::PAGE_TRANSITION_LINK,
         history::SOURCE_BROWSED, false);
   }
   EXPECT_TRUE(
@@ -264,7 +264,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
   // Profile is new but has a typed URL.
   history->AddPage(
       GURL("http://example.com"), base::Time::Now(), NULL, 1,
-      GURL(), history::RedirectList(), content::PAGE_TRANSITION_TYPED,
+      GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   EXPECT_TRUE(
       GetCallbackResult(

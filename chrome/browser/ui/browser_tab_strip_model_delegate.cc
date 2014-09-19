@@ -23,7 +23,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_message.h"
 
 namespace chrome {

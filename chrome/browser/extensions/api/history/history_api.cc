@@ -86,38 +86,38 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
   visit_item->referring_visit_id = base::Int64ToString(row.referring_visit);
 
   VisitItem::Transition transition = VisitItem::TRANSITION_LINK;
-  switch (row.transition & content::PAGE_TRANSITION_CORE_MASK) {
-    case content::PAGE_TRANSITION_LINK:
+  switch (row.transition & ui::PAGE_TRANSITION_CORE_MASK) {
+    case ui::PAGE_TRANSITION_LINK:
       transition = VisitItem::TRANSITION_LINK;
       break;
-    case content::PAGE_TRANSITION_TYPED:
+    case ui::PAGE_TRANSITION_TYPED:
       transition = VisitItem::TRANSITION_TYPED;
       break;
-    case content::PAGE_TRANSITION_AUTO_BOOKMARK:
+    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
       transition = VisitItem::TRANSITION_AUTO_BOOKMARK;
       break;
-    case content::PAGE_TRANSITION_AUTO_SUBFRAME:
+    case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
       transition = VisitItem::TRANSITION_AUTO_SUBFRAME;
       break;
-    case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
+    case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
       transition = VisitItem::TRANSITION_MANUAL_SUBFRAME;
       break;
-    case content::PAGE_TRANSITION_GENERATED:
+    case ui::PAGE_TRANSITION_GENERATED:
       transition = VisitItem::TRANSITION_GENERATED;
       break;
-    case content::PAGE_TRANSITION_AUTO_TOPLEVEL:
+    case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
       transition = VisitItem::TRANSITION_AUTO_TOPLEVEL;
       break;
-    case content::PAGE_TRANSITION_FORM_SUBMIT:
+    case ui::PAGE_TRANSITION_FORM_SUBMIT:
       transition = VisitItem::TRANSITION_FORM_SUBMIT;
       break;
-    case content::PAGE_TRANSITION_RELOAD:
+    case ui::PAGE_TRANSITION_RELOAD:
       transition = VisitItem::TRANSITION_RELOAD;
       break;
-    case content::PAGE_TRANSITION_KEYWORD:
+    case ui::PAGE_TRANSITION_KEYWORD:
       transition = VisitItem::TRANSITION_KEYWORD;
       break;
-    case content::PAGE_TRANSITION_KEYWORD_GENERATED:
+    case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
       transition = VisitItem::TRANSITION_KEYWORD_GENERATED;
       break;
     default:

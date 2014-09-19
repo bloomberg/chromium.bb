@@ -12,14 +12,14 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/page_transition_types.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
-using content::PageTransition;
+using ui::PageTransition;
 using content::Referrer;
 using content::RenderProcessHost;
 using content::ResourceRequestInfo;

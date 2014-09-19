@@ -1022,7 +1022,7 @@ void PrintPreviewHandler::HandleManageCloudPrint(
       cloud_devices::GetCloudPrintRelativeURL("manage.html"),
       content::Referrer(),
       NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       false));
 }
 
@@ -1119,7 +1119,7 @@ void PrintPreviewHandler::HandleForceOpenNewTab(const base::ListValue* args) {
     return;
   chrome::AddSelectedTabWithURL(browser,
                                 GURL(url),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 }
 
 void PrintPreviewHandler::SendInitialSettings(

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
 
 #include "base/strings/string16.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -30,7 +30,7 @@ class OmniboxEditController {
  public:
   void OnAutocompleteAccept(const GURL& destination_url,
                             WindowOpenDisposition disposition,
-                            content::PageTransition transition);
+                            ui::PageTransition transition);
 
   // Updates the controller, and, if |contents| is non-NULL, restores saved
   // state that the tab holds.
@@ -78,7 +78,7 @@ class OmniboxEditController {
   CommandUpdater* command_updater() { return command_updater_; }
   GURL destination_url() const { return destination_url_; }
   WindowOpenDisposition disposition() const { return disposition_; }
-  content::PageTransition transition() const { return transition_; }
+  ui::PageTransition transition() const { return transition_; }
 
  private:
   CommandUpdater* command_updater_;
@@ -86,7 +86,7 @@ class OmniboxEditController {
   // The details necessary to open the user's desired omnibox match.
   GURL destination_url_;
   WindowOpenDisposition disposition_;
-  content::PageTransition transition_;
+  ui::PageTransition transition_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxEditController);
 };

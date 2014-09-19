@@ -80,7 +80,7 @@ class NotificationCallbacks
     chrome::NavigateParams params(
         profile_,
         GURL(chrome::kNotificationWelcomeLearnMoreURL),
-        content::PAGE_TRANSITION_LINK);
+        ui::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
     params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     chrome::Navigate(&params);

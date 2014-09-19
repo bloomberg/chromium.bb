@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "content/public/common/page_transition_types.h"
 #include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most

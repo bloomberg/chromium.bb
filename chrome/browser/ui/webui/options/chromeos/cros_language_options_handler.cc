@@ -240,7 +240,7 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   content::OpenURLParams params(ime->options_page_url(),
       content::Referrer(),
       SINGLETON_TAB,
-      content::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       false);
   browser->OpenURL(params);
   browser->window()->Show();

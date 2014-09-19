@@ -33,9 +33,9 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
 #include "sync/api/syncable_service.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(OS_ANDROID)
 class AndroidHistoryProviderService;
@@ -182,7 +182,7 @@ class HistoryService : public content::NotificationObserver,
                int32 page_id,
                const GURL& referrer,
                const history::RedirectList& redirects,
-               content::PageTransition transition,
+               ui::PageTransition transition,
                history::VisitSource visit_source,
                bool did_replace_entry);
 

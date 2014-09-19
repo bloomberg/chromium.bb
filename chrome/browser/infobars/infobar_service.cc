@@ -23,8 +23,8 @@ using infobars::InfoBarManager;
 namespace {
 
 bool IsReload(const content::LoadCommittedDetails& details) {
-  return content::PageTransitionStripQualifier(
-      details.entry->GetTransitionType()) == content::PAGE_TRANSITION_RELOAD;
+  return ui::PageTransitionStripQualifier(
+      details.entry->GetTransitionType()) == ui::PAGE_TRANSITION_RELOAD;
 
 }
 
@@ -41,10 +41,10 @@ InfoBarDelegate::NavigationDetails
   navigation_details.did_replace_entry = details.did_replace_entry;
   navigation_details.is_main_frame = details.is_main_frame;
 
-  const content::PageTransition transition = details.entry->GetTransitionType();
+  const ui::PageTransition transition = details.entry->GetTransitionType();
   navigation_details.is_reload = IsReload(details);
   navigation_details.is_redirect =
-      (transition & content::PAGE_TRANSITION_IS_REDIRECT_MASK) != 0;
+      (transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) != 0;
 
   return navigation_details;
 }

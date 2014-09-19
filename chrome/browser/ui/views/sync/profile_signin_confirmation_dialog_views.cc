@@ -252,7 +252,7 @@ void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
   chrome::NavigateParams params(
       browser_,
       GURL("http://support.google.com/chromeos/bin/answer.py?answer=1331549"),
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_POPUP;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);

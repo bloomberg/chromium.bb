@@ -164,7 +164,7 @@ class AutofillTest : public InProcessBrowserTest {
   void FillFormAndSubmit(const std::string& filename, const FormMap& data) {
     GURL url = test_server()->GetURL("files/autofill/" + filename);
     chrome::NavigateParams params(browser(), url,
-                                  content::PAGE_TRANSITION_LINK);
+                                  ui::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
 

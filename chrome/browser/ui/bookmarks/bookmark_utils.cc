@@ -221,7 +221,7 @@ void OpenAll(gfx::NativeWindow parent,
 
     content::WebContents* opened_tab = navigator->OpenURL(
         content::OpenURLParams(*url, content::Referrer(), disposition,
-                               content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+                               ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 
     if (!opened_first_url) {
       opened_first_url = true;

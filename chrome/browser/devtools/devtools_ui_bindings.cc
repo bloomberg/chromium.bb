@@ -43,13 +43,13 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 
 using base::DictionaryValue;
 using content::BrowserThread;
@@ -208,7 +208,7 @@ void DefaultBindingsDelegate::ActivateWindow() {
 void DefaultBindingsDelegate::OpenInNewTab(const std::string& url) {
   content::OpenURLParams params(
       GURL(url), content::Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
+      ui::PAGE_TRANSITION_LINK, false);
   Browser* browser = FindBrowser(web_contents_);
   browser->OpenURL(params);
 }

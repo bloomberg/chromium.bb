@@ -30,8 +30,8 @@ GoogleSearchCounter::GetGoogleSearchAccessPointForSearchNavEntry(
   // If the |entry| is FROM_ADDRESS_BAR, it comes from the omnibox; if it's
   // GENERATED, the user was doing a search, rather than doing a navigation to a
   // search URL (e.g. from hisotry, or pasted in).
-  if (entry.GetTransitionType() == (content::PAGE_TRANSITION_GENERATED |
-      content::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+  if (entry.GetTransitionType() == (ui::PAGE_TRANSITION_GENERATED |
+      ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
     return GoogleSearchMetrics::AP_OMNIBOX;
   }
 

@@ -291,7 +291,7 @@ bool EphemeralAppLauncher::LaunchHostedApp(const Extension* extension) const {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       profile(), chrome::GetHostDesktopTypeForNativeWindow(parent_window_));
   chrome::NavigateParams params(
-      displayer.browser(), launch_url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+      displayer.browser(), launch_url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
   return true;

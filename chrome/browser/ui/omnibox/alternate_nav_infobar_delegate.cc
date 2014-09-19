@@ -84,7 +84,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   // default action when it's typed again in the future.
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
       content::OpenURLParams(match_.destination_url, content::Referrer(),
-                             disposition, content::PAGE_TRANSITION_TYPED,
+                             disposition, ui::PAGE_TRANSITION_TYPED,
                              false));
 
   // We should always close, even if the navigation did not occur within this

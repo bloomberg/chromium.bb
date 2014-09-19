@@ -236,7 +236,7 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   VisitRow visit_row3;
   visit_row3.url_id = url_ids[1];
   visit_row3.visit_time = visit_times[2];
-  visit_row3.transition = content::PAGE_TRANSITION_TYPED;
+  visit_row3.transition = ui::PAGE_TRANSITION_TYPED;
   main_db_->AddVisit(&visit_row3, SOURCE_BROWSED);
 
   VisitRow visit_row4;
@@ -259,19 +259,19 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
 
   // Four times for each visit.
   VisitRow visit_row1(url_id, last_visit_time - TimeDelta::FromDays(4), 0,
-                      content::PAGE_TRANSITION_TYPED, 0);
+                      ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row1, SOURCE_SYNCED);
 
   VisitRow visit_row2(url_id, last_visit_time - TimeDelta::FromDays(3), 0,
-                      content::PAGE_TRANSITION_TYPED, 0);
+                      ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
   VisitRow visit_row3(url_id, last_visit_time - TimeDelta::FromDays(2), 0,
-                      content::PAGE_TRANSITION_TYPED, 0);
+                      ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row3, SOURCE_EXTENSION);
 
   VisitRow visit_row4(
-      url_id, last_visit_time, 0, content::PAGE_TRANSITION_TYPED, 0);
+      url_id, last_visit_time, 0, ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row4, SOURCE_FIREFOX_IMPORTED);
 }
 

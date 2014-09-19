@@ -11,7 +11,7 @@
 void OmniboxEditController::OnAutocompleteAccept(
     const GURL& destination_url,
     WindowOpenDisposition disposition,
-    content::PageTransition transition) {
+    ui::PageTransition transition) {
   destination_url_ = destination_url;
   disposition_ = disposition;
   transition_ = transition;
@@ -22,9 +22,9 @@ void OmniboxEditController::OnAutocompleteAccept(
 OmniboxEditController::OmniboxEditController(CommandUpdater* command_updater)
     : command_updater_(command_updater),
       disposition_(CURRENT_TAB),
-      transition_(content::PageTransitionFromInt(
-          content::PAGE_TRANSITION_TYPED |
-          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+      transition_(ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED |
+          ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
 }
 
 void OmniboxEditController::HideOriginChip() {

@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
-#include "content/public/common/page_transition_types.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"

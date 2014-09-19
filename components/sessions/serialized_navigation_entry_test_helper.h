@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/public/common/page_transition_types.h"
 
 class GURL;
 

@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_H_
 #define COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_H_
 
-#include "content/public/common/page_transition_types.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace navigation_interception {
@@ -18,7 +18,7 @@ class NavigationParams {
                    const content::Referrer& referrer,
                    bool has_user_gesture,
                    bool is_post,
-                   content::PageTransition page_transition_type,
+                   ui::PageTransition page_transition_type,
                    bool is_redirect);
   NavigationParams(const NavigationParams& other);
   void operator=(const NavigationParams& rhs);
@@ -28,7 +28,7 @@ class NavigationParams {
   const content::Referrer& referrer() const { return referrer_; }
   bool has_user_gesture() const { return has_user_gesture_; }
   bool is_post() const { return is_post_; }
-  content::PageTransition transition_type() const { return transition_type_; }
+  ui::PageTransition transition_type() const { return transition_type_; }
   bool is_redirect() const { return is_redirect_; }
 
  private:
@@ -38,7 +38,7 @@ class NavigationParams {
   content::Referrer referrer_;
   bool has_user_gesture_;
   bool is_post_;
-  content::PageTransition transition_type_;
+  ui::PageTransition transition_type_;
   bool is_redirect_;
 };
 

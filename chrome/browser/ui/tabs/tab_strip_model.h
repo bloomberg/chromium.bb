@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "content/public/common/page_transition_types.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/base/page_transition_types.h"
 
 class Profile;
 class TabStripModelDelegate;
@@ -294,7 +294,7 @@ class TabStripModel {
   // navigation, the TabStripModel may adjust its selection and grouping
   // behavior.
   void TabNavigating(content::WebContents* contents,
-                     content::PageTransition transition);
+                     ui::PageTransition transition);
 
   // Forget all Opener relationships that are stored (but _not_ group
   // relationships!) This is to reduce unpredictable tab switching behavior
@@ -382,7 +382,7 @@ class TabStripModel {
   // append the contents to the end of the tab strip.
   void AddWebContents(content::WebContents* contents,
                       int index,
-                      content::PageTransition transition,
+                      ui::PageTransition transition,
                       int add_types);
 
   // Closes the selected tabs.

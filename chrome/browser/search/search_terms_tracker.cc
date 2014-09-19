@@ -112,7 +112,7 @@ bool SearchTermsTracker::FindMostRecentSearch(
 
     // Do not consider any navigations that precede a non-web-triggerable
     // navigation as they are not related to those terms.
-    if (!content::PageTransitionIsWebTriggerable(
+    if (!ui::PageTransitionIsWebTriggerable(
             entry->GetTransitionType())) {
       break;
     }

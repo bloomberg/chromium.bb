@@ -1145,7 +1145,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       bool expect_swap_to_succeed) const {
     NavigateToURLWithParams(
         content::OpenURLParams(dest_url_, Referrer(), disposition,
-                               content::PAGE_TRANSITION_TYPED, false),
+                               ui::PAGE_TRANSITION_TYPED, false),
         expect_swap_to_succeed);
   }
 
@@ -1165,7 +1165,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
                                     bool expect_swap_to_succeed) const {
     NavigateToURLWithParams(
         content::OpenURLParams(dest_url, Referrer(), disposition,
-                               content::PAGE_TRANSITION_TYPED, false),
+                               ui::PAGE_TRANSITION_TYPED, false),
         expect_swap_to_succeed);
   }
 
@@ -2139,7 +2139,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       GetActiveWebContents(), 2);
   current_browser()->OpenURL(OpenURLParams(
       navigate_url, Referrer(), CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+      ui::PAGE_TRANSITION_TYPED, false));
   swap_observer.Wait();
 
   EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
@@ -2632,7 +2632,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
       LoadURL(
           GURL(content::kChromeUICrashURL),
           content::Referrer(),
-          content::PAGE_TRANSITION_TYPED,
+          ui::PAGE_TRANSITION_TYPED,
           std::string());
   prerender->WaitForStop();
 }
@@ -3931,7 +3931,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExtraHeadersNoSwap) {
                    FINAL_STATUS_APP_TERMINATING, 1);
 
   content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
-                                content::PAGE_TRANSITION_TYPED, false);
+                                ui::PAGE_TRANSITION_TYPED, false);
   params.extra_headers = "X-Custom-Header: 42\r\n";
   NavigateToURLWithParams(params, false);
 }
@@ -3945,7 +3945,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   std::string post_data = "DATA";
   content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
-                                content::PAGE_TRANSITION_TYPED, false);
+                                ui::PAGE_TRANSITION_TYPED, false);
   params.uses_post = true;
   params.browser_initiated_post_data =
       base::RefCountedString::TakeString(&post_data);
@@ -4082,7 +4082,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
-                                content::PAGE_TRANSITION_TYPED, false);
+                                ui::PAGE_TRANSITION_TYPED, false);
   params.should_replace_current_entry = true;
   NavigateToURLWithParams(params, false);
 
@@ -4131,9 +4131,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDoublePendingSwap) {
       current_browser()->tab_strip_model(),
       GetActiveWebContents(), 2);
   current_browser()->OpenURL(OpenURLParams(
-      url1, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+      url1, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   current_browser()->OpenURL(OpenURLParams(
-      url2, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+      url2, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   swap_observer.Wait();
 
   // The WebContents should be on url2. There may be 2 or 3 entries, depending
@@ -4175,7 +4175,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
           &GetActiveWebContents()->GetController()));
   current_browser()->OpenURL(OpenURLParams(
       dest_url(), Referrer(), CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+      ui::PAGE_TRANSITION_TYPED, false));
   page_load_observer.Wait();
 
   // Navigate somewhere else. This should succeed and abort the pending swap.
@@ -4183,7 +4183,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   current_browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
                                            Referrer(),
                                            CURRENT_TAB,
-                                           content::PAGE_TRANSITION_TYPED,
+                                           ui::PAGE_TRANSITION_TYPED,
                                            false));
   nav_observer.Wait();
 }

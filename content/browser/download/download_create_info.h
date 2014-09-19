@@ -15,8 +15,8 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_save_info.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/base/net_log.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,7 +28,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
                      int64 total_bytes,
                      const net::BoundNetLog& bound_net_log,
                      bool has_user_gesture,
-                     PageTransition transition_type,
+                     ui::PageTransition transition_type,
                      scoped_ptr<DownloadSaveInfo> save_info);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
@@ -63,7 +63,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // True if the download was initiated by user action.
   bool has_user_gesture;
 
-  PageTransition transition_type;
+  ui::PageTransition transition_type;
 
   // The content-disposition string from the response header.
   std::string content_disposition;

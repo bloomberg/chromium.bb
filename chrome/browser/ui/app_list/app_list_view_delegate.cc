@@ -492,7 +492,7 @@ void AppListViewDelegate::OpenHelp() {
   content::OpenURLParams params(GURL(chrome::kAppLauncherHelpURL),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK,
+                                ui::PAGE_TRANSITION_LINK,
                                 false);
   displayer.browser()->OpenURL(params);
 }

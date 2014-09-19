@@ -192,7 +192,7 @@ class DelayLoadStartAndExecuteJavascript
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) OVERRIDE {
     if (script_was_executed_ && EndsWith(url.spec(), until_url_suffix_, true)) {
       content::WebContentsObserver::Observe(NULL);
       test_navigation_listener_->ResumeAll();
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
   GURL url = embedded_test_server()->GetURL(
       "/extensions/api_test/webnavigation/targetBlank/a.html");
 
-  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
 
   // There's a link with target=_blank on a.html. Click on it to open it in a

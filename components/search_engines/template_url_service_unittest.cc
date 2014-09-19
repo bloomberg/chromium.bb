@@ -998,7 +998,7 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
           TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("blah")),
           search_terms_data())),
       base::Time::Now(), NULL, 0, GURL(), history::RedirectList(),
-      content::PAGE_TRANSITION_KEYWORD, history::SOURCE_BROWSED, false);
+      ui::PAGE_TRANSITION_KEYWORD, history::SOURCE_BROWSED, false);
 
   // Wait for history to finish processing the request.
   test_util()->profile()->BlockUntilHistoryProcessesPendingRequests();
@@ -1019,8 +1019,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   EXPECT_TRUE(callback.success);
   EXPECT_NE(0, callback.row.id());
   ASSERT_EQ(1U, callback.visits.size());
-  EXPECT_EQ(content::PAGE_TRANSITION_KEYWORD_GENERATED,
-      content::PageTransitionStripQualifier(callback.visits[0].transition));
+  EXPECT_EQ(ui::PAGE_TRANSITION_KEYWORD_GENERATED,
+      ui::PageTransitionStripQualifier(callback.visits[0].transition));
 }
 
 // Make sure that the load routine deletes prepopulated engines that no longer

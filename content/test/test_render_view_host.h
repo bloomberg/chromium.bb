@@ -13,10 +13,10 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/layout.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/vector2d_f.h"
 
 // This file provides a testing framework for mocking out the RenderProcessHost
@@ -44,7 +44,7 @@ class TestWebContents;
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
                         int page_id,
                         const GURL& url,
-                        PageTransition transition_type);
+                        ui::PageTransition transition_type);
 
 // TestRenderViewHostView ------------------------------------------------------
 
@@ -233,8 +233,10 @@ class TestRenderViewHost
   // TestRenderFrameHost should be used.
   virtual void SendNavigate(int page_id, const GURL& url) OVERRIDE;
   virtual void SendFailedNavigate(int page_id, const GURL& url) OVERRIDE;
-  virtual void SendNavigateWithTransition(int page_id, const GURL& url,
-                                          PageTransition transition) OVERRIDE;
+  virtual void SendNavigateWithTransition(
+      int page_id,
+      const GURL& url,
+      ui::PageTransition transition) OVERRIDE;
 
   // Calls OnNavigate on the RenderViewHost with the given information,
   // including a custom original request URL.  Sets the rest of the
@@ -315,7 +317,7 @@ class TestRenderViewHost
 
   void SendNavigateWithTransitionAndResponseCode(int page_id,
                                                  const GURL& url,
-                                                 PageTransition transition,
+                                                 ui::PageTransition transition,
                                                  int response_code);
 
   // Calls OnNavigate on the RenderViewHost with the given information.
@@ -324,7 +326,7 @@ class TestRenderViewHost
   void SendNavigateWithParameters(
       int page_id,
       const GURL& url,
-      PageTransition transition,
+      ui::PageTransition transition,
       const GURL& original_request_url,
       int response_code,
       const base::FilePath* file_path_for_history_item);

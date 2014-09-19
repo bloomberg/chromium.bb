@@ -62,7 +62,7 @@ MostVisitedHandler::~MostVisitedHandler() {
         web_ui()->GetWebContents()->GetController().GetLastCommittedEntry();
     if (entry && (entry->GetURL() != ntp_url)) {
       action_id =
-          content::PageTransitionStripQualifier(entry->GetTransitionType());
+          ui::PageTransitionStripQualifier(entry->GetTransitionType());
     }
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisitedAction", action_id,

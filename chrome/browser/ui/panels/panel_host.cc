@@ -72,7 +72,7 @@ void PanelHost::Init(const GURL& url) {
       web_contents_.get());
 
   web_contents_->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 }
 
 void PanelHost::DestroyWebContents() {
@@ -104,7 +104,7 @@ content::WebContents* PanelHost::OpenURLFromTab(
     return NULL;
 
   // Only allow clicks on links.
-  if (params.transition != content::PAGE_TRANSITION_LINK)
+  if (params.transition != ui::PAGE_TRANSITION_LINK)
     return NULL;
 
   // Force all links to open in a new tab.
@@ -142,7 +142,7 @@ void PanelHost::AddNewContents(content::WebContents* source,
                                bool user_gesture,
                                bool* was_blocked) {
   chrome::NavigateParams navigate_params(profile_, new_contents->GetURL(),
-                                         content::PAGE_TRANSITION_LINK);
+                                         ui::PAGE_TRANSITION_LINK);
   navigate_params.target_contents = new_contents;
 
   // Force all links to open in a new tab, even if they were trying to open a

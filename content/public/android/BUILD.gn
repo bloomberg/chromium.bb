@@ -44,7 +44,6 @@ android_library("content_java") {
     ":common_aidl",
     ":content_gamepad_mapping_java",
     ":gesture_event_type_java",
-    ":page_transition_types_java",
     ":popup_item_type_java",
     ":result_codes_java",
     ":selection_event_type_java",
@@ -118,16 +117,6 @@ java_cpp_template("gesture_event_type_java") {
   package_name = "org/chromium/content/browser"
   inputs = [
     "//content/browser/android/gesture_event_type_list.h"
-  ]
-}
-
-java_cpp_template("page_transition_types_java") {
-  sources = [
-    "java/src/org/chromium/content_public/browser/PageTransitionTypes.template",
-  ]
-  package_name = "org/chromium/content/browser"
-  inputs = [
-    "//content/public/common/page_transition_types_list.h"
   ]
 }
 

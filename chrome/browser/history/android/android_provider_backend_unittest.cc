@@ -224,20 +224,20 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   std::vector<VisitInfo> visits1;
   Time last_visited1 = Time::Now() - TimeDelta::FromDays(1);
   Time created1 = last_visited1 - TimeDelta::FromDays(20);
-  visits1.push_back(VisitInfo(created1, content::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(created1, ui::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(last_visited1 - TimeDelta::FromDays(1),
-                              content::PAGE_TRANSITION_LINK));
-  visits1.push_back(VisitInfo(last_visited1, content::PAGE_TRANSITION_LINK));
+                              ui::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(last_visited1, ui::PAGE_TRANSITION_LINK));
 
   GURL url2("http://www.example.com");
   URLID url_id2 = 0;
   std::vector<VisitInfo> visits2;
   Time last_visited2 = Time::Now();
   Time created2 = last_visited2 - TimeDelta::FromDays(10);
-  visits2.push_back(VisitInfo(created2, content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(created2, ui::PAGE_TRANSITION_LINK));
   visits2.push_back(VisitInfo(last_visited2 - TimeDelta::FromDays(5),
-                              content::PAGE_TRANSITION_LINK));
-  visits2.push_back(VisitInfo(last_visited2, content::PAGE_TRANSITION_LINK));
+                              ui::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(last_visited2, ui::PAGE_TRANSITION_LINK));
 
   // Add a bookmark which is not in the history.
   GURL url3("http://www.bookmark.com");
@@ -366,20 +366,20 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   std::vector<VisitInfo> visits1;
   Time last_visited1 = Time::Now() - TimeDelta::FromDays(1);
   Time created1 = last_visited1 - TimeDelta::FromDays(20);
-  visits1.push_back(VisitInfo(created1, content::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(created1, ui::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(last_visited1 - TimeDelta::FromDays(1),
-                              content::PAGE_TRANSITION_LINK));
-  visits1.push_back(VisitInfo(last_visited1, content::PAGE_TRANSITION_LINK));
+                              ui::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(last_visited1, ui::PAGE_TRANSITION_LINK));
 
   GURL url2("http://www.example.com");
   std::vector<VisitInfo> visits2;
   const base::string16 title2(UTF8ToUTF16("example"));
   Time last_visited2 = Time::Now();
   Time created2 = last_visited2 - TimeDelta::FromDays(10);
-  visits2.push_back(VisitInfo(created2, content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(created2, ui::PAGE_TRANSITION_LINK));
   visits2.push_back(VisitInfo(last_visited2 - TimeDelta::FromDays(5),
-                              content::PAGE_TRANSITION_LINK));
-  visits2.push_back(VisitInfo(last_visited2, content::PAGE_TRANSITION_LINK));
+                              ui::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(last_visited2, ui::PAGE_TRANSITION_LINK));
 
   // Only use the HistoryBackend to generate the test data.
   // HistoryBackend will shutdown after that.
@@ -1802,20 +1802,20 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   std::vector<VisitInfo> visits1;
   Time last_visited1 = Time::Now() - TimeDelta::FromDays(1);
   Time created1 = last_visited1 - TimeDelta::FromDays(20);
-  visits1.push_back(VisitInfo(created1, content::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(created1, ui::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(last_visited1 - TimeDelta::FromDays(1),
-                              content::PAGE_TRANSITION_LINK));
-  visits1.push_back(VisitInfo(last_visited1, content::PAGE_TRANSITION_LINK));
+                              ui::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(last_visited1, ui::PAGE_TRANSITION_LINK));
 
   GURL url2("http://www.example.com");
   std::vector<VisitInfo> visits2;
   const base::string16 title2(UTF8ToUTF16("example"));
   Time last_visited2 = Time::Now();
   Time created2 = last_visited2 - TimeDelta::FromDays(10);
-  visits2.push_back(VisitInfo(created2, content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(created2, ui::PAGE_TRANSITION_LINK));
   visits2.push_back(VisitInfo(last_visited2 - TimeDelta::FromDays(5),
-                              content::PAGE_TRANSITION_LINK));
-  visits2.push_back(VisitInfo(last_visited2, content::PAGE_TRANSITION_LINK));
+                              ui::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(last_visited2, ui::PAGE_TRANSITION_LINK));
 
   // Only use the HistoryBackend to generate the test data.
   // HistoryBackend will shutdown after that.

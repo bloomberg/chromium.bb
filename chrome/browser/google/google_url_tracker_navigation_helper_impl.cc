@@ -72,8 +72,8 @@ void GoogleURLTrackerNavigationHelperImpl::OpenURL(
     GURL url,
     WindowOpenDisposition disposition,
     bool user_clicked_on_link) {
-  content::PageTransition transition_type = user_clicked_on_link ?
-      content::PAGE_TRANSITION_LINK : content::PAGE_TRANSITION_GENERATED;
+  ui::PageTransition transition_type = user_clicked_on_link ?
+      ui::PAGE_TRANSITION_LINK : ui::PAGE_TRANSITION_GENERATED;
   web_contents_->OpenURL(content::OpenURLParams(
       url, content::Referrer(), disposition, transition_type, false));
 }

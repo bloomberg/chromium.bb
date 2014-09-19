@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
   base::Time timestamp = base::Time::Now() - base::TimeDelta::FromDays(365);
   AddUrlToHistoryWithTimestamp(0,
                                new_url,
-                               content::PAGE_TRANSITION_TYPED,
+                               ui::PAGE_TRANSITION_TYPED,
                                history::SOURCE_BROWSED,
                                timestamp);
   history::URLRows urls = GetTypedUrlsFromClient(0);
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
   base::Time timestamp = base::Time::Now() - base::TimeDelta::FromDays(365);
   AddUrlToHistoryWithTimestamp(0,
                                new_url,
-                               content::PAGE_TRANSITION_TYPED,
+                               ui::PAGE_TRANSITION_TYPED,
                                history::SOURCE_BROWSED,
                                timestamp);
   std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
@@ -279,11 +279,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Then add a typed URL to the second client - this test makes sure that
   // we properly merge both sets of visits together to end up with the same
   // set of visits on both ends.
-  AddUrlToHistoryWithTimestamp(0, new_url, content::PAGE_TRANSITION_LINK,
+  AddUrlToHistoryWithTimestamp(0, new_url, ui::PAGE_TRANSITION_LINK,
                                history::SOURCE_BROWSED, timestamp);
-  AddUrlToHistoryWithTimestamp(1, new_url, content::PAGE_TRANSITION_LINK,
+  AddUrlToHistoryWithTimestamp(1, new_url, ui::PAGE_TRANSITION_LINK,
                                history::SOURCE_BROWSED, timestamp);
-  AddUrlToHistoryWithTimestamp(1, new_url, content::PAGE_TRANSITION_TYPED,
+  AddUrlToHistoryWithTimestamp(1, new_url, ui::PAGE_TRANSITION_TYPED,
                                history::SOURCE_BROWSED,
                                timestamp + base::TimeDelta::FromSeconds(1));
 
@@ -316,9 +316,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Setup both clients with the identical typed URL visit. This means we can't
   // use the verifier in this test, because this will show up as two distinct
   // visits in the verifier.
-  AddUrlToHistoryWithTimestamp(0, new_url, content::PAGE_TRANSITION_LINK,
+  AddUrlToHistoryWithTimestamp(0, new_url, ui::PAGE_TRANSITION_LINK,
                                history::SOURCE_BROWSED, timestamp);
-  AddUrlToHistoryWithTimestamp(1, new_url, content::PAGE_TRANSITION_LINK,
+  AddUrlToHistoryWithTimestamp(1, new_url, ui::PAGE_TRANSITION_LINK,
                                history::SOURCE_BROWSED, timestamp);
 
   // Now start up sync. Neither URL should get synced as they do not look like
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   ASSERT_EQ(0U, urls.size());
 
   // Now, add a typed visit to the first client.
-  AddUrlToHistoryWithTimestamp(0, new_url, content::PAGE_TRANSITION_TYPED,
+  AddUrlToHistoryWithTimestamp(0, new_url, ui::PAGE_TRANSITION_TYPED,
                                history::SOURCE_BROWSED,
                                timestamp + base::TimeDelta::FromSeconds(1));
 
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
 
   // Populate one client with a non-typed URL, should not be synced.
   GURL new_url(kHistoryUrl);
-  AddUrlToHistoryWithTransition(0, new_url, content::PAGE_TRANSITION_LINK,
+  AddUrlToHistoryWithTransition(0, new_url, ui::PAGE_TRANSITION_LINK,
                                 history::SOURCE_BROWSED);
   history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
@@ -387,13 +387,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Create 3 items in our first client - 1 imported, one browsed, one with
   // both imported and browsed entries.
   AddUrlToHistoryWithTransition(0, imported_url,
-                                content::PAGE_TRANSITION_TYPED,
+                                ui::PAGE_TRANSITION_TYPED,
                                 history::SOURCE_FIREFOX_IMPORTED);
   AddUrlToHistoryWithTransition(0, browsed_url,
-                                content::PAGE_TRANSITION_TYPED,
+                                ui::PAGE_TRANSITION_TYPED,
                                 history::SOURCE_BROWSED);
   AddUrlToHistoryWithTransition(0, browsed_and_imported_url,
-                                content::PAGE_TRANSITION_TYPED,
+                                ui::PAGE_TRANSITION_TYPED,
                                 history::SOURCE_FIREFOX_IMPORTED);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Now browse to 3rd URL - this should cause it to be synced, even though it
   // was initially imported.
   AddUrlToHistoryWithTransition(0, browsed_and_imported_url,
-                                content::PAGE_TRANSITION_TYPED,
+                                ui::PAGE_TRANSITION_TYPED,
                                 history::SOURCE_BROWSED);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   urls = GetTypedUrlsFromClient(1);

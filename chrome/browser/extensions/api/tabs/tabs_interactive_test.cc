@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   content::RunAllPendingInMessageLoop();
 
   GURL url;
-  AddTabAtIndexToBrowser(focused_window, 0, url, content::PAGE_TRANSITION_LINK);
+  AddTabAtIndexToBrowser(focused_window, 0, url, ui::PAGE_TRANSITION_LINK);
   int focused_window_id =
       extensions::ExtensionTabUtil::GetWindowId(focused_window);
 

@@ -9,9 +9,9 @@
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
@@ -60,7 +60,7 @@ class RenderFrameHostTester {
   // function for simulating the most common types of loads.
   virtual void SendNavigateWithTransition(int page_id,
                                           const GURL& url,
-                                          PageTransition transition) = 0;
+                                          ui::PageTransition transition) = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.
@@ -111,7 +111,7 @@ class RenderViewHostTester {
   // parameters in the message to the "typical" values. This is a helper
   // function for simulating the most common types of loads.
   virtual void SendNavigateWithTransition(int page_id, const GURL& url,
-                                          PageTransition transition) = 0;
+                                          ui::PageTransition transition) = 0;
 
   // Calls OnBeforeUnloadACK on the main RenderFrameHost with the given
   // parameter.

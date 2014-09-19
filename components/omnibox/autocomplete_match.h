@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/omnibox/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 class AutocompleteProvider;
@@ -324,7 +324,7 @@ struct AutocompleteMatch {
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set
   // it to GENERATED.
-  content::PageTransition transition;
+  ui::PageTransition transition;
 
   // True when this match is the "what you typed" match from the history
   // system.

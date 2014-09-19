@@ -221,7 +221,7 @@ void DriveWebContentsManager::StartLoad() {
       web_contents_.get());
 
   content::NavigationController::LoadURLParams load_params(url);
-  load_params.transition_type = content::PAGE_TRANSITION_GENERATED;
+  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   web_contents_->GetController().LoadURLWithParams(load_params);
 
   content::WebContentsObserver::Observe(web_contents_.get());
@@ -318,7 +318,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
   contents->web_contents()->GetController().LoadURL(
       target_url,
       content::Referrer(),
-      content::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       std::string());
 
   // Return false as we already created the WebContents here.

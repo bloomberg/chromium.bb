@@ -24,7 +24,7 @@
 
 using url::kAboutBlankURL;
 using content::WebContents;
-using content::PAGE_TRANSITION_TYPED;
+using ui::PAGE_TRANSITION_TYPED;
 
 namespace {
 

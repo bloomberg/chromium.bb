@@ -11,7 +11,7 @@ namespace content {
 NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
     : url(url),
       load_type(LOAD_TYPE_DEFAULT),
-      transition_type(PAGE_TRANSITION_LINK),
+      transition_type(ui::PAGE_TRANSITION_LINK),
       frame_tree_node_id(-1),
       is_renderer_initiated(false),
       override_user_agent(UA_OVERRIDE_INHERIT),

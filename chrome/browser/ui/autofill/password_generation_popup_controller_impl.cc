@@ -217,7 +217,7 @@ void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
       chrome::FindBrowserWithWebContents(controller_common_.web_contents());
   content::OpenURLParams params(
       GURL(chrome::kPasswordManagerAccountDashboardURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
 }
 

@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
 
   content::OpenURLParams params(GURL("about:blank"), content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
 
   content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
   EXPECT_TRUE(before_open_tab.WaitUntilSatisfied());
   content::OpenURLParams params(GURL("http://google.com"), content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   before_open_tab.Reply("");
 
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   content::OpenURLParams params(GURL("chrome://version"),
                                 content::Referrer(),
                                 CURRENT_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
 
   ExtensionTestMessageListener listeners_setup("ready1", true);
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   // Open a tab on a chrome:// page and make sure we can capture.
   content::OpenURLParams params(GURL("chrome://version"), content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   const Extension* extension = ExtensionRegistry::Get(
       web_contents->GetBrowserContext())->enabled_extensions().GetByID(

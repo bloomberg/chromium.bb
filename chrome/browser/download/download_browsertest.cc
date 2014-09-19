@@ -78,7 +78,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
@@ -91,6 +90,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
@@ -1342,7 +1342,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_NE(static_cast<WebContents*>(NULL),
             chrome::AddSelectedTabWithURL(browser(),
                                           GURL(url::kAboutBlankURL),
-                                          content::PAGE_TRANSITION_TYPED));
+                                          ui::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 

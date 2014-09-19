@@ -423,7 +423,7 @@ void ProfileResetBubbleView::LinkClicked(views::Link* source, int flags) {
       base::UserMetricsAction("SettingsResetBubble.LearnMore"));
   navigator_->OpenURL(content::OpenURLParams(
       GURL(chrome::kResetProfileSettingsLearnMoreURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
 }
 
 void ProfileResetBubbleView::CloseBubbleView() {

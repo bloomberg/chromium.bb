@@ -18,10 +18,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/event_filtering_info.h"
 #include "net/base/net_errors.h"
+#include "ui/base/page_transition_types.h"
 
 namespace extensions {
 
@@ -93,7 +93,7 @@ void DispatchOnCommitted(const std::string& event_name,
                          content::WebContents* web_contents,
                          content::RenderFrameHost* frame_host,
                          const GURL& url,
-                         content::PageTransition transition_type) {
+                         ui::PageTransition transition_type) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
@@ -101,21 +101,21 @@ void DispatchOnCommitted(const std::string& event_name,
   dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(frame_host));
   std::string transition_type_string =
-      content::PageTransitionGetCoreTransitionString(transition_type);
+      ui::PageTransitionGetCoreTransitionString(transition_type);
   // For webNavigation API backward compatibility, keep "start_page" even after
   // renamed to "auto_toplevel".
-  if (PageTransitionStripQualifier(transition_type) ==
-          content::PAGE_TRANSITION_AUTO_TOPLEVEL)
+  if (ui::PageTransitionStripQualifier(transition_type) ==
+          ui::PAGE_TRANSITION_AUTO_TOPLEVEL)
     transition_type_string = "start_page";
   dict->SetString(keys::kTransitionTypeKey, transition_type_string);
   base::ListValue* qualifiers = new base::ListValue();
-  if (transition_type & content::PAGE_TRANSITION_CLIENT_REDIRECT)
+  if (transition_type & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->Append(new base::StringValue("client_redirect"));
-  if (transition_type & content::PAGE_TRANSITION_SERVER_REDIRECT)
+  if (transition_type & ui::PAGE_TRANSITION_SERVER_REDIRECT)
     qualifiers->Append(new base::StringValue("server_redirect"));
-  if (transition_type & content::PAGE_TRANSITION_FORWARD_BACK)
+  if (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK)
     qualifiers->Append(new base::StringValue("forward_back"));
-  if (transition_type & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
+  if (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)
     qualifiers->Append(new base::StringValue("from_address_bar"));
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));

@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
 
   GURL new_url(kSanityHistoryUrl);
   // Add a non-typed URL.
-  AddUrlToHistoryWithTransition(0, new_url, content::PAGE_TRANSITION_LINK,
+  AddUrlToHistoryWithTransition(0, new_url, ui::PAGE_TRANSITION_LINK,
                                 history::SOURCE_BROWSED);
 
   urls = GetTypedUrlsFromClient(0);

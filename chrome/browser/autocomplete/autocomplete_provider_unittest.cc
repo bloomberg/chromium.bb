@@ -382,7 +382,7 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
     match.relevance = 1000;  // Arbitrary non-zero value.
     match.allowed_to_be_default_match = true;
     match.fill_into_edit = match_data[i].fill_into_edit;
-    match.transition = content::PAGE_TRANSITION_KEYWORD;
+    match.transition = ui::PAGE_TRANSITION_KEYWORD;
     match.keyword = match_data[i].keyword;
     matches.push_back(match);
   }

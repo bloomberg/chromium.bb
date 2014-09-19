@@ -112,7 +112,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                           bool is_server_redirect,
                           bool* send_referrer) OVERRIDE;
   virtual bool WillSendRequest(blink::WebFrame* frame,
-                               content::PageTransition transition_type,
+                               ui::PageTransition transition_type,
                                const GURL& url,
                                const GURL& first_party_for_cookies,
                                GURL* new_url) OVERRIDE;

@@ -22,7 +22,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"

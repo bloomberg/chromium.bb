@@ -205,7 +205,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     return;
 
   // Redirects don't count.
-  if (content::PageTransitionIsRedirect(entry->GetTransitionType()))
+  if (ui::PageTransitionIsRedirect(entry->GetTransitionType()))
     return;
 
   if (status_ == DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS ||

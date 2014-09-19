@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/page_transition_types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -18,6 +17,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -32,7 +32,7 @@ namespace extensions {
 bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
     blink::WebFrame* frame,
-    content::PageTransition transition_type,
+    ui::PageTransition transition_type,
     const ExtensionSet* loaded_extensions) {
   CHECK(resource_url.SchemeIs(extensions::kExtensionScheme));
 
@@ -78,7 +78,7 @@ bool ResourceRequestPolicy::CanRequestResource(
     bool is_dev_tools = page_url.SchemeIs(content::kChromeDevToolsScheme) &&
                         !ManifestURL::GetDevToolsPage(extension).is_empty();
     bool transition_allowed =
-        !content::PageTransitionIsWebTriggerable(transition_type);
+        !ui::PageTransitionIsWebTriggerable(transition_type);
     // - unreachable web page error page (to allow showing the icon of the
     //   unreachable app on this page)
     bool is_error_page = frame_url == GURL(content::kUnreachableWebDataURL);

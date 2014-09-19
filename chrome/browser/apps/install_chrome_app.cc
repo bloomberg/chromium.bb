@@ -87,7 +87,7 @@ void InstallChromeApp(const std::string& app_id) {
   content::OpenURLParams params(GetAppInstallUrl(app_id),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 false);
   browser->OpenURL(params);
 

@@ -214,7 +214,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
       web_contents, this, preload_test_fixture_, preload_test_name_);
   content::TestNavigationObserver navigation_observer(web_contents);
   chrome::NavigateParams params(
-      browser(), GURL(browse_to), content::PAGE_TRANSITION_TYPED);
+      browser(), GURL(browse_to), ui::PAGE_TRANSITION_TYPED);
   params.disposition = CURRENT_TAB;
   chrome::Navigate(&params);
   navigation_observer.Wait();

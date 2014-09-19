@@ -216,7 +216,7 @@ int GetModifierFlags() {
       GURL url;
       ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
       webContents_->OpenURL(OpenURLParams(
-          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
+          url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
           false));
       return YES;
     } else {

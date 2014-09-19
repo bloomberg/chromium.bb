@@ -26,10 +26,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_slow_download_job.h"
+#include "ui/base/page_transition_types.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -180,7 +180,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
         new Browser(Browser::CreateParams(profile, host_desktop_type));
     chrome::AddSelectedTabWithURL(new_browser,
                                   GURL(url::kAboutBlankURL),
-                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
     content::WaitForLoadStop(
         new_browser->tab_strip_model()->GetActiveWebContents());
     new_browser->window()->Show();

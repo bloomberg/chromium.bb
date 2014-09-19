@@ -133,7 +133,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       target_disposition_(TARGET_DISPOSITION_OVERWRITE),
       url_chain_(url_chain),
       referrer_url_(referrer_url),
-      transition_type_(PAGE_TRANSITION_LINK),
+      transition_type_(ui::PAGE_TRANSITION_LINK),
       has_user_gesture_(false),
       mime_type_(mime_type),
       original_mime_type_(original_mime_type),
@@ -242,7 +242,7 @@ DownloadItemImpl::DownloadItemImpl(
       target_disposition_(TARGET_DISPOSITION_OVERWRITE),
       url_chain_(1, url),
       referrer_url_(GURL()),
-      transition_type_(PAGE_TRANSITION_LINK),
+      transition_type_(ui::PAGE_TRANSITION_LINK),
       has_user_gesture_(false),
       mime_type_(mime_type),
       original_mime_type_(mime_type),
@@ -588,7 +588,7 @@ bool DownloadItemImpl::HasUserGesture() const {
   return has_user_gesture_;
 };
 
-PageTransition DownloadItemImpl::GetTransitionType() const {
+ui::PageTransition DownloadItemImpl::GetTransitionType() const {
   return transition_type_;
 };
 

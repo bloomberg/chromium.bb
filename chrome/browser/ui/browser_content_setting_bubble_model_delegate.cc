@@ -37,7 +37,7 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
       // blocking, so bounce to an explanatory page for now.
       chrome::AddSelectedTabWithURL(browser_,
                                     GURL(kInsecureScriptHelpUrl),
-                                    content::PAGE_TRANSITION_LINK);
+                                    ui::PAGE_TRANSITION_LINK);
       return;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
@@ -54,5 +54,5 @@ void BrowserContentSettingBubbleModelDelegate::ShowLearnMorePage(
     return;
   chrome::AddSelectedTabWithURL(browser_,
                                 GURL(chrome::kBlockedPluginLearnMoreURL),
-                                content::PAGE_TRANSITION_LINK);
+                                ui::PAGE_TRANSITION_LINK);
 }

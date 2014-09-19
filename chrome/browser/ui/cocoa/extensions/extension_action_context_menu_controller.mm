@@ -184,7 +184,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
   OpenURLParams params(url,
                        Referrer(),
                        NEW_FOREGROUND_TAB,
-                       content::PAGE_TRANSITION_LINK,
+                       ui::PAGE_TRANSITION_LINK,
                        false);
   browser_->OpenURL(params);
 }

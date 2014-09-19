@@ -38,7 +38,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_sender.h"
@@ -48,6 +47,7 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/display.h"
@@ -429,7 +429,7 @@ RendererOverridesHandler::PageNavigate(
   WebContents* web_contents = WebContents::FromRenderViewHost(host_);
   if (web_contents) {
     web_contents->GetController()
-        .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+        .LoadURL(gurl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
     // Fall through into the renderer.
     return NULL;
   }

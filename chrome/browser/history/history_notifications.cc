@@ -7,7 +7,7 @@
 namespace history {
 
 URLVisitedDetails::URLVisitedDetails()
-    : transition(content::PAGE_TRANSITION_LINK) {}
+    : transition(ui::PAGE_TRANSITION_LINK) {}
 
 URLVisitedDetails::~URLVisitedDetails() {}
 

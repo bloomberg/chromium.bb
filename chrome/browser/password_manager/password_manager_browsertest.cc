@@ -1015,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptWhenReloading) {
       PromptObserver::Create(WebContents()));
   GURL url = embedded_test_server()->GetURL("/password/password_form.html");
   chrome::NavigateParams params(browser(), url,
-                                content::PAGE_TRANSITION_RELOAD);
+                                ui::PAGE_TRANSITION_RELOAD);
   ui_test_utils::NavigateToURL(&params);
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());

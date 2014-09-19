@@ -9,10 +9,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 
 namespace base {
 
@@ -111,9 +111,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   void AddTabAtIndexToBrowser(Browser* browser,
                               int index,
                               const GURL& url,
-                              content::PageTransition transition);
+                              ui::PageTransition transition);
   void AddTabAtIndex(int index, const GURL& url,
-                     content::PageTransition transition);
+                     ui::PageTransition transition);
 
   // Initializes the contents of the user data directory. Called by SetUp()
   // after creating the user data directory, but before any browser is launched.

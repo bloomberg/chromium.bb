@@ -63,7 +63,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetReferrerCharset, std::string());
   MOCK_CONST_METHOD0(GetRemoteAddress, std::string());
   MOCK_CONST_METHOD0(HasUserGesture, bool());
-  MOCK_CONST_METHOD0(GetTransitionType, PageTransition());
+  MOCK_CONST_METHOD0(GetTransitionType, ui::PageTransition());
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(IsSavePackageDownload, bool());

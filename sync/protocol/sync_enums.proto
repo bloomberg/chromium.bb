@@ -45,9 +45,8 @@ message SyncEnums {
                                    // generated.
   }
 
-  // See content/public/common/page_transition_types.h for detailed
-  // information on the values of PageTransition and
-  // PageTransitionRedirectType below.
+  // See ui/base/page_transition_types.h for detailed information on the
+  // values of PageTransition and PageTransitionRedirectType below.
 
   // Types of transitions between pages.
   enum PageTransition {

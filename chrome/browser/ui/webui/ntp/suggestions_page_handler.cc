@@ -33,7 +33,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
@@ -52,7 +52,7 @@ SuggestionsHandler::~SuggestionsHandler() {
         web_ui()->GetWebContents()->GetController().GetLastCommittedEntry();
     if (entry && (entry->GetURL() != ntp_url)) {
       action_id =
-          content::PageTransitionStripQualifier(entry->GetTransitionType());
+          ui::PageTransitionStripQualifier(entry->GetTransitionType());
     }
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestedSitesAction", action_id,

@@ -36,7 +36,7 @@ class ShellContentRendererClient : public content::ContentRendererClient {
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) OVERRIDE;
   virtual bool WillSendRequest(blink::WebFrame* frame,
-                               content::PageTransition transition_type,
+                               ui::PageTransition transition_type,
                                const GURL& url,
                                const GURL& first_party_for_cookies,
                                GURL* new_url) OVERRIDE;

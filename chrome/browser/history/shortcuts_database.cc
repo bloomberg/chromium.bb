@@ -11,10 +11,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/omnibox/autocomplete_match_type.h"
-#include "content/public/common/page_transition_types.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "ui/base/page_transition_types.h"
 
 
 // Helpers --------------------------------------------------------------------
@@ -243,7 +243,7 @@ bool ShortcutsDatabase::EnsureTable() {
             "ADD COLUMN transition INTEGER") &&
         db_.Execute(base::StringPrintf(
             "UPDATE omni_box_shortcuts SET transition = %d",
-            static_cast<int>(content::PAGE_TRANSITION_TYPED)).c_str()) &&
+            static_cast<int>(ui::PAGE_TRANSITION_TYPED)).c_str()) &&
         db_.Execute("ALTER TABLE omni_box_shortcuts ADD COLUMN type INTEGER") &&
         db_.Execute(base::StringPrintf(
             "UPDATE omni_box_shortcuts SET type = %d",

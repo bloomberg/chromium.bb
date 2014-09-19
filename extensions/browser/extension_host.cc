@@ -200,7 +200,7 @@ const GURL& ExtensionHost::GetURL() const {
 
 void ExtensionHost::LoadInitialURL() {
   host_contents_->GetController().LoadURL(
-      initial_url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      initial_url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
       std::string());
 }
 

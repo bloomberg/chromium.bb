@@ -153,12 +153,12 @@ void FindBarController::Observe(int type,
     if (source_controller == &web_contents_->GetController()) {
       content::LoadCommittedDetails* commit_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
-      content::PageTransition transition_type =
+      ui::PageTransition transition_type =
           commit_details->entry->GetTransitionType();
       // Hide the find bar on reload or navigation.
       if (find_bar_->IsFindBarVisible() &&
-          (content::PageTransitionStripQualifier(transition_type) ==
-               content::PAGE_TRANSITION_RELOAD ||
+          (ui::PageTransitionStripQualifier(transition_type) ==
+               ui::PAGE_TRANSITION_RELOAD ||
            commit_details->is_navigation_to_different_page()))
         EndFindSession(kKeepSelectionOnPage, kClearResultsInFindBox);
     }

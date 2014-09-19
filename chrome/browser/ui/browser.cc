@@ -861,7 +861,7 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
-                                         content::PageTransition transition,
+                                         ui::PageTransition transition,
                                          bool user_initiated) {
   tab_strip_model_->TabNavigating(contents, transition);
 
@@ -1836,7 +1836,7 @@ void Browser::NavigateOnThumbnailClick(const GURL& url,
   // TODO(kmadhusu): Page transitions to privileged destinations should be
   // marked as "LINK" instead of "AUTO_BOOKMARK"?
   chrome::NavigateParams params(this, url,
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.referrer = content::Referrer();
   params.source_contents = source_contents;
   params.disposition = disposition;
@@ -1931,7 +1931,7 @@ void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
     return;
 
   OpenURL(OpenURLParams(
-      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+      url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2478,7 +2478,7 @@ bool Browser::MaybeCreateBackgroundContents(
     contents->web_contents()->GetController().LoadURL(
         target_url,
         content::Referrer(),
-        content::PAGE_TRANSITION_LINK,
+        ui::PAGE_TRANSITION_LINK,
         std::string());  // No extra headers.
   }
 

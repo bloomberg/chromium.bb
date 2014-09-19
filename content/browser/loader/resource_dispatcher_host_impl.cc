@@ -1336,7 +1336,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // parent_is_main_frame
       -1,        // parent_render_frame_id
       RESOURCE_TYPE_SUB_RESOURCE,
-      PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
       download,  // is_download
       false,     // is_stream

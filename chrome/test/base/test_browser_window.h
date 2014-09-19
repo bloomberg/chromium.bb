@@ -167,7 +167,7 @@ class TestBrowserWindow : public BrowserWindow {
     virtual void ShowFirstRunBubble() OVERRIDE {}
     virtual GURL GetDestinationURL() const OVERRIDE;
     virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
-    virtual content::PageTransition GetPageTransition() const OVERRIDE;
+    virtual ui::PageTransition GetPageTransition() const OVERRIDE;
     virtual void AcceptInput() OVERRIDE {}
     virtual void FocusLocation(bool select_all) OVERRIDE {}
     virtual void FocusSearch() OVERRIDE {}

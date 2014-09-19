@@ -7,7 +7,7 @@
 
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -33,7 +33,7 @@ void AddTabAt(Browser* browser, const GURL& url, int index, bool foreground);
 // created WebContents.
 content::WebContents* AddSelectedTabWithURL(Browser* browser,
                                             const GURL& url,
-                                            content::PageTransition transition);
+                                            ui::PageTransition transition);
 
 // Creates a new tab with the already-created WebContents 'new_contents'.
 // The window for the added contents will be reparented correctly when this

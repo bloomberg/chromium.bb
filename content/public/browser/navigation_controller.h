@@ -14,8 +14,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/session_storage_namespace.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -94,7 +94,7 @@ class NavigationController {
   CONTENT_EXPORT static NavigationEntry* CreateNavigationEntry(
       const GURL& url,
       const Referrer& referrer,
-      PageTransition transition,
+      ui::PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,
       BrowserContext* browser_context);
@@ -109,7 +109,7 @@ class NavigationController {
 
     // PageTransition for this load. See PageTransition for details.
     // Note the default value in constructor below.
-    PageTransition transition_type;
+    ui::PageTransition transition_type;
 
     // The FrameTreeNode ID for the frame to navigate, or -1 for the main frame.
     int64 frame_tree_node_id;
@@ -296,7 +296,7 @@ class NavigationController {
   // request.  Extra headers are separated by \n.
   virtual void LoadURL(const GURL& url,
                        const Referrer& referrer,
-                       PageTransition type,
+                       ui::PageTransition type,
                        const std::string& extra_headers) = 0;
 
   // More general version of LoadURL. See comments in LoadURLParams for

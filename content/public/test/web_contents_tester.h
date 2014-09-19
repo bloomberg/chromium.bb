@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 #define CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -80,14 +80,14 @@ class WebContentsTester {
   virtual void TestDidNavigate(RenderFrameHost* render_frame_host,
                                int page_id,
                                const GURL& url,
-                               PageTransition transition) = 0;
+                               ui::PageTransition transition) = 0;
 
   virtual void TestDidNavigateWithReferrer(
       RenderFrameHost* render_frame_host,
       int page_id,
       const GURL& url,
       const Referrer& referrer,
-      PageTransition transition) = 0;
+      ui::PageTransition transition) = 0;
 
   // Promote ComputeWebkitPrefs to public.
   virtual WebPreferences TestComputeWebkitPrefs() = 0;

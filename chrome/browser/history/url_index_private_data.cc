@@ -1182,8 +1182,7 @@ bool URLIndexPrivateData::RestoreHistoryInfoMap(
     for (int i = 0; i < iter->visits_size(); ++i) {
       visits.push_back(std::make_pair(
           base::Time::FromInternalValue(iter->visits(i).visit_time()),
-          static_cast<content::PageTransition>(iter->visits(i).
-                                               transition_type())));
+          ui::PageTransitionFromInt(iter->visits(i).transition_type())));
     }
     history_info_map_[history_id].visits = visits;
   }

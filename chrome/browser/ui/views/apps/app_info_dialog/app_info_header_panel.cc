@@ -173,7 +173,7 @@ void AppInfoHeaderPanel::ShowAppInWebStore() const {
       net::AppendQueryParameter(url,
                                 extension_urls::kWebstoreSourceField,
                                 extension_urls::kLaunchSourceAppListInfoDialog),
-      content::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }
 
@@ -198,7 +198,7 @@ void AppInfoHeaderPanel::DisplayLicenses() {
   GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
   DCHECK(about_page != GURL::EmptyGURL());
   chrome::NavigateParams params(
-      profile_, about_page, content::PAGE_TRANSITION_LINK);
+      profile_, about_page, ui::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }
 

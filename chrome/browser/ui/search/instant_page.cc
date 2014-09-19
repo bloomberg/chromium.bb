@@ -74,7 +74,7 @@ bool InstantPage::ShouldProcessAboutToNavigateMainFrame() {
 void InstantPage::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
-    content::PageTransition /* transition_type */) {
+    ui::PageTransition /* transition_type */) {
   if (!render_frame_host->GetParent() &&
       ShouldProcessAboutToNavigateMainFrame())
     delegate_->InstantPageAboutToNavigateMainFrame(web_contents(), url);

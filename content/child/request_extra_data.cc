@@ -18,7 +18,7 @@ RequestExtraData::RequestExtraData()
       parent_is_main_frame_(false),
       parent_render_frame_id_(-1),
       allow_download_(true),
-      transition_type_(PAGE_TRANSITION_LINK),
+      transition_type_(ui::PAGE_TRANSITION_LINK),
       should_replace_current_entry_(false),
       transferred_request_child_id_(-1),
       transferred_request_request_id_(-1),

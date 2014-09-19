@@ -97,7 +97,7 @@ views::View* DemoAppListViewDelegate::CreateStartPageWebView(
       content::WebContents::CreateParams(browser_context_)));
   web_contents_->GetController().LoadURL(GURL("http://www.google.com/"),
                                          content::Referrer(),
-                                         content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                          std::string());
   views::WebView* web_view = new views::WebView(
       web_contents_->GetBrowserContext());

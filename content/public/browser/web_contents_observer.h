@@ -10,10 +10,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace content {
@@ -154,7 +154,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
-      PageTransition transition_type) {}
+      ui::PageTransition transition_type) {}
 
   // This method is invoked when the provisional load failed.
   virtual void DidFailProvisionalLoad(
@@ -234,7 +234,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    const GURL& url,
                                    const Referrer& referrer,
                                    WindowOpenDisposition disposition,
-                                   PageTransition transition,
+                                   ui::PageTransition transition,
                                    int64 source_frame_id) {}
 
   virtual void FrameDetached(RenderFrameHost* render_frame_host) {}

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -42,7 +42,7 @@ struct CONTENT_EXPORT FrameNavigateParams {
   content::Referrer referrer;
 
   // The type of transition.
-  PageTransition transition;
+  ui::PageTransition transition;
 
   // Lists the redirects that occurred on the way to the current page. This
   // vector has the same format as reported by the WebDataSource in the glue,

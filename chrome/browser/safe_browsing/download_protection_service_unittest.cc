@@ -1290,7 +1290,7 @@ TEST_F(DownloadProtectionServiceTest,
                   0,
                   GURL(),
                   redirects,
-                  content::PAGE_TRANSITION_TYPED,
+                  ui::PAGE_TRANSITION_TYPED,
                   history::SOURCE_BROWSED,
                   false);
 

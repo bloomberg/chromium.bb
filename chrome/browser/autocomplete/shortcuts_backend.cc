@@ -152,7 +152,7 @@ history::ShortcutsDatabase::Shortcut::MatchCore
       AutocompleteMatch::IsSpecializedSearchType(match.type) ?
           BaseSearchProvider::CreateSearchSuggestion(
               match.search_terms_args->search_terms, match_type,
-              (match.transition == content::PAGE_TRANSITION_KEYWORD),
+              (match.transition == ui::PAGE_TRANSITION_KEYWORD),
               match.GetTemplateURL(service, false),
               UIThreadSearchTermsData(profile)) :
           match;

@@ -110,7 +110,7 @@ public abstract class WebContentsObserverAndroid {
      * @param isMainFrame Whether the load is happening for the main frame.
      * @param url The committed URL being navigated to.
      * @param transitionType The transition type as defined in
-     *                      {@link org.chromium.content.browser.PageTransitionTypes} for the load.
+     *                      {@link org.chromium.ui.base.PageTransitionTypes} for the load.
      */
     @CalledByNative
     public void didCommitProvisionalLoadForFrame(

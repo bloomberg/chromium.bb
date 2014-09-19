@@ -6,7 +6,7 @@
 
 namespace content {
 
-NavigationState::NavigationState(content::PageTransition transition_type,
+NavigationState::NavigationState(ui::PageTransition transition_type,
                                  bool is_content_initiated,
                                  int32 pending_page_id,
                                  int pending_history_list_offset,

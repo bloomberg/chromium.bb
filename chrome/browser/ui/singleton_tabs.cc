@@ -61,7 +61,7 @@ void ShowSingletonTabOverwritingNTP(Browser* browser,
 
 NavigateParams GetSingletonTabNavigateParams(Browser* browser,
                                              const GURL& url) {
-  NavigateParams params(browser, url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
   params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;

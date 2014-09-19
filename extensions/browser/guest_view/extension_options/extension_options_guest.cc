@@ -109,7 +109,7 @@ void ExtensionOptionsGuest::DidAttachToEmbedder() {
   SetUpAutoSize();
   web_contents()->GetController().LoadURL(options_page_,
                                           content::Referrer(),
-                                          content::PAGE_TRANSITION_LINK,
+                                          ui::PAGE_TRANSITION_LINK,
                                           std::string());
 }
 
@@ -211,7 +211,7 @@ bool ExtensionOptionsGuest::ShouldCreateWebContents(
         content::OpenURLParams(target_url,
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_LINK,
+                               ui::PAGE_TRANSITION_LINK,
                                false));
   }
   return false;

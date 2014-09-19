@@ -30,7 +30,7 @@ class CONTENT_EXPORT NavigationEntryImpl
                       const GURL& url,
                       const Referrer& referrer,
                       const base::string16& title,
-                      PageTransition transition_type,
+                      ui::PageTransition transition_type,
                       bool is_renderer_initiated);
   virtual ~NavigationEntryImpl();
 
@@ -54,8 +54,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual const base::string16& GetTitleForDisplay(
       const std::string& languages) const OVERRIDE;
   virtual bool IsViewSourceMode() const OVERRIDE;
-  virtual void SetTransitionType(PageTransition transition_type) OVERRIDE;
-  virtual PageTransition GetTransitionType() const OVERRIDE;
+  virtual void SetTransitionType(ui::PageTransition transition_type) OVERRIDE;
+  virtual ui::PageTransition GetTransitionType() const OVERRIDE;
   virtual const GURL& GetUserTypedURL() const OVERRIDE;
   virtual void SetHasPostData(bool has_post_data) OVERRIDE;
   virtual bool GetHasPostData() const OVERRIDE;
@@ -241,7 +241,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   PageState page_state_;
   int32 page_id_;
   SSLStatus ssl_;
-  PageTransition transition_type_;
+  ui::PageTransition transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;
   int64 post_id_;

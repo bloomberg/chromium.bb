@@ -39,7 +39,7 @@ class SyncTypedUrlModelAssociatorTest : public testing::Test {
     history_url.set_hidden(hidden);
     visits->push_back(history::VisitRow(
         history_url.id(), history_url.last_visit(), 0,
-        content::PAGE_TRANSITION_RELOAD, 0));
+        ui::PAGE_TRANSITION_RELOAD, 0));
     history_url.set_visit_count(visits->size());
     return history_url;
   }
@@ -53,7 +53,7 @@ class SyncTypedUrlModelAssociatorTest : public testing::Test {
     typed_url.set_title(title);
     typed_url.set_hidden(hidden);
     typed_url.add_visits(last_visit);
-    typed_url.add_visit_transitions(content::PAGE_TRANSITION_TYPED);
+    typed_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
     return typed_url;
   }
 
@@ -183,7 +183,7 @@ TEST_F(SyncTypedUrlModelAssociatorTest, MergeUrlsAfterExpiration) {
   // First, create a history row that has two visits, with timestamps 2 and 3.
   history::VisitVector(history_visits);
   history_visits.push_back(history::VisitRow(
-      0, base::Time::FromInternalValue(2), 0, content::PAGE_TRANSITION_TYPED,
+      0, base::Time::FromInternalValue(2), 0, ui::PAGE_TRANSITION_TYPED,
       0));
   history::URLRow history_url(MakeTypedUrlRow("http://pie.com/", "pie",
                                               2, 3, false, &history_visits));
@@ -225,9 +225,9 @@ TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsSame) {
   for (size_t c = 0; c < arraysize(visits); ++c) {
     old_visits.push_back(history::VisitRow(
         0, base::Time::FromInternalValue(visits[c]), 0,
-        content::PAGE_TRANSITION_TYPED, 0));
+        ui::PAGE_TRANSITION_TYPED, 0));
     new_url.add_visits(visits[c]);
-    new_url.add_visit_transitions(content::PAGE_TRANSITION_TYPED);
+    new_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
   }
 
   std::vector<history::VisitInfo> new_visits;
@@ -255,12 +255,12 @@ TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsRemove) {
   for (size_t c = 0; c < arraysize(visits_left); ++c) {
     old_visits.push_back(history::VisitRow(
         0, base::Time::FromInternalValue(visits_left[c]), 0,
-        content::PAGE_TRANSITION_TYPED, 0));
+        ui::PAGE_TRANSITION_TYPED, 0));
   }
 
   for (size_t c = 0; c < arraysize(visits_right); ++c) {
     new_url.add_visits(visits_right[c]);
-    new_url.add_visit_transitions(content::PAGE_TRANSITION_TYPED);
+    new_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
   }
 
   std::vector<history::VisitInfo> new_visits;
@@ -289,12 +289,12 @@ TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsAdd) {
   for (size_t c = 0; c < arraysize(visits_left); ++c) {
     old_visits.push_back(history::VisitRow(
         0, base::Time::FromInternalValue(visits_left[c]), 0,
-        content::PAGE_TRANSITION_TYPED, 0));
+        ui::PAGE_TRANSITION_TYPED, 0));
   }
 
   for (size_t c = 0; c < arraysize(visits_right); ++c) {
     new_url.add_visits(visits_right[c]);
-    new_url.add_visit_transitions(content::PAGE_TRANSITION_TYPED);
+    new_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
   }
 
   std::vector<history::VisitInfo> new_visits;
@@ -307,11 +307,11 @@ TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsAdd) {
   for (size_t c = 0; c < arraysize(visits_added); ++c) {
     EXPECT_EQ(new_visits[c].first.ToInternalValue(),
               visits_added[c]);
-    EXPECT_EQ(new_visits[c].second, content::PAGE_TRANSITION_TYPED);
+    EXPECT_EQ(new_visits[c].second, ui::PAGE_TRANSITION_TYPED);
   }
 }
 
-static history::VisitRow CreateVisit(content::PageTransition type,
+static history::VisitRow CreateVisit(ui::PageTransition type,
                                      int64 timestamp) {
   return history::VisitRow(0, base::Time::FromInternalValue(timestamp), 0,
                            type, 0);
@@ -319,9 +319,9 @@ static history::VisitRow CreateVisit(content::PageTransition type,
 
 TEST_F(SyncTypedUrlModelAssociatorTest, WriteTypedUrlSpecifics) {
   history::VisitVector visits;
-  visits.push_back(CreateVisit(content::PAGE_TRANSITION_TYPED, 1));
-  visits.push_back(CreateVisit(content::PAGE_TRANSITION_RELOAD, 2));
-  visits.push_back(CreateVisit(content::PAGE_TRANSITION_LINK, 3));
+  visits.push_back(CreateVisit(ui::PAGE_TRANSITION_TYPED, 1));
+  visits.push_back(CreateVisit(ui::PAGE_TRANSITION_RELOAD, 2));
+  visits.push_back(CreateVisit(ui::PAGE_TRANSITION_LINK, 3));
 
   history::URLRow url(MakeTypedUrlRow("http://pie.com/", "pie",
                                       1, 100, false, &visits));
@@ -332,18 +332,18 @@ TEST_F(SyncTypedUrlModelAssociatorTest, WriteTypedUrlSpecifics) {
   EXPECT_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
   EXPECT_EQ(1, typed_url.visits(0));
   EXPECT_EQ(3, typed_url.visits(1));
-  EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
-      static_cast<content::PageTransition>(typed_url.visit_transitions(0)));
-  EXPECT_EQ(content::PAGE_TRANSITION_LINK,
-      static_cast<content::PageTransition>(typed_url.visit_transitions(1)));
+  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
+            ui::PageTransitionFromInt(typed_url.visit_transitions(0)));
+  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
+            ui::PageTransitionFromInt(typed_url.visit_transitions(1)));
 }
 
 TEST_F(SyncTypedUrlModelAssociatorTest, TooManyVisits) {
   history::VisitVector visits;
   int64 timestamp = 1000;
-  visits.push_back(CreateVisit(content::PAGE_TRANSITION_TYPED, timestamp++));
+  visits.push_back(CreateVisit(ui::PAGE_TRANSITION_TYPED, timestamp++));
   for (int i = 0 ; i < 100; ++i) {
-    visits.push_back(CreateVisit(content::PAGE_TRANSITION_LINK, timestamp++));
+    visits.push_back(CreateVisit(ui::PAGE_TRANSITION_LINK, timestamp++));
   }
   history::URLRow url(MakeTypedUrlRow("http://pie.com/", "pie",
                                       1, timestamp++, false, &visits));
@@ -356,19 +356,19 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TooManyVisits) {
   // Visit with timestamp of 1001 should be omitted since we should have
   // skipped that visit to stay under the cap.
   EXPECT_EQ(1002, typed_url.visits(1));
-  EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
-      static_cast<content::PageTransition>(typed_url.visit_transitions(0)));
-  EXPECT_EQ(content::PAGE_TRANSITION_LINK,
-      static_cast<content::PageTransition>(typed_url.visit_transitions(1)));
+  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
+            ui::PageTransitionFromInt(typed_url.visit_transitions(0)));
+  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
+            ui::PageTransitionFromInt(typed_url.visit_transitions(1)));
 }
 
 TEST_F(SyncTypedUrlModelAssociatorTest, TooManyTypedVisits) {
   history::VisitVector visits;
   int64 timestamp = 1000;
   for (int i = 0 ; i < 102; ++i) {
-    visits.push_back(CreateVisit(content::PAGE_TRANSITION_TYPED, timestamp++));
-    visits.push_back(CreateVisit(content::PAGE_TRANSITION_LINK, timestamp++));
-    visits.push_back(CreateVisit(content::PAGE_TRANSITION_RELOAD, timestamp++));
+    visits.push_back(CreateVisit(ui::PAGE_TRANSITION_TYPED, timestamp++));
+    visits.push_back(CreateVisit(ui::PAGE_TRANSITION_LINK, timestamp++));
+    visits.push_back(CreateVisit(ui::PAGE_TRANSITION_RELOAD, timestamp++));
   }
   history::URLRow url(MakeTypedUrlRow("http://pie.com/", "pie",
                                       1, timestamp++, false, &visits));
@@ -382,8 +382,8 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TooManyTypedVisits) {
 
   // Ensure there are no non-typed visits since that's all that should fit.
   for (int i = 0; i < typed_url.visits_size(); ++i) {
-    EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
-        static_cast<content::PageTransition>(typed_url.visit_transitions(i)));
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
+              ui::PageTransitionFromInt(typed_url.visit_transitions(i)));
   }
 }
 
@@ -399,8 +399,8 @@ TEST_F(SyncTypedUrlModelAssociatorTest, NoTypedVisits) {
   EXPECT_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
   // First two typed visits should be skipped.
   EXPECT_EQ(1000, typed_url.visits(0));
-  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
-      static_cast<content::PageTransition>(typed_url.visit_transitions(0)));
+  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
+            ui::PageTransitionFromInt(typed_url.visit_transitions(0)));
 }
 
 // This test verifies that we can abort model association from the UI thread.

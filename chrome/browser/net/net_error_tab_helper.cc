@@ -22,7 +22,7 @@ using chrome_common_net::DnsProbeStatus;
 using chrome_common_net::DnsProbeStatusToString;
 using content::BrowserContext;
 using content::BrowserThread;
-using content::PageTransition;
+using ui::PageTransition;
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebContentsObserver;

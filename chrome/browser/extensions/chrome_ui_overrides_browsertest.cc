@@ -22,6 +22,6 @@ IN_PROC_BROWSER_TEST_F(ChromeUIOverridesBrowserTest,
 
   AddTabAtIndex(1,
                 GURL(chrome::kChromeUINewTabURL),
-                content::PAGE_TRANSITION_TYPED);
+                ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_ALL_TABS));
 }

@@ -15,6 +15,7 @@
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../net/net.gyp:net',
+        '../ui/base/ui_base.gyp:ui_base',
       ],
       'include_dirs': [
         '..',

@@ -197,7 +197,7 @@ void AshPanelContents::LoadContents(int32 creator_process_id) {
       host_, Profile::FromBrowserContext(host_->browser_context())));
 
   web_contents_->GetController().LoadURL(
-      url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
       std::string());
 }
 

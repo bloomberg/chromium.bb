@@ -20,6 +20,7 @@ component("sessions") {
     "//base",
     "//content/public/browser",
     "//skia",
+    "//ui/base",
     "//url",
   ]
 

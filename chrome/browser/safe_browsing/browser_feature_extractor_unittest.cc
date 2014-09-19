@@ -26,12 +26,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -121,14 +121,14 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     std::vector<GURL> redirect_chain;
     redirect_chain.push_back(url);
     SetRedirectChain(redirect_chain, true);
-    NavigateAndCommit(url, GURL(), content::PAGE_TRANSITION_LINK);
+    NavigateAndCommit(url, GURL(), ui::PAGE_TRANSITION_LINK);
   }
 
   // This is similar to NavigateAndCommit that is in WebContentsTester, but
   // allows us to specify the referrer and page_transition_type.
   void NavigateAndCommit(const GURL& url,
                          const GURL& referrer,
-                         content::PageTransition type) {
+                         ui::PageTransition type) {
     web_contents()->GetController().LoadURL(
         url, content::Referrer(referrer, blink::WebReferrerPolicyDefault),
         type, std::string());
@@ -269,17 +269,17 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
   history_service()->AddPage(GURL("http://www.foo.com/bar.html?a=b"),
                              base::Time::Now() - base::TimeDelta::FromHours(23),
                              NULL, 0, GURL(), history::RedirectList(),
-                             content::PAGE_TRANSITION_LINK,
+                             ui::PAGE_TRANSITION_LINK,
                              history::SOURCE_BROWSED, false);
   history_service()->AddPage(GURL("http://www.foo.com/bar.html"),
                              base::Time::Now() - base::TimeDelta::FromHours(25),
                              NULL, 0, GURL(), history::RedirectList(),
-                             content::PAGE_TRANSITION_TYPED,
+                             ui::PAGE_TRANSITION_TYPED,
                              history::SOURCE_BROWSED, false);
   history_service()->AddPage(GURL("https://www.foo.com/goo.html"),
                              base::Time::Now() - base::TimeDelta::FromDays(5),
                              NULL, 0, GURL(), history::RedirectList(),
-                             content::PAGE_TRANSITION_TYPED,
+                             ui::PAGE_TRANSITION_TYPED,
                              history::SOURCE_BROWSED, false);
 
   SimpleNavigateAndCommit(GURL("http://www.foo.com/bar.html"));
@@ -372,9 +372,9 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   browse_info_->http_status_code = 200;
   NavigateAndCommit(GURL("http://www.foo.com/"),
                     GURL("http://google.com/"),
-                    content::PageTransitionFromInt(
-                        content::PAGE_TRANSITION_AUTO_BOOKMARK |
-                        content::PAGE_TRANSITION_FORWARD_BACK));
+                    ui::PageTransitionFromInt(
+                        ui::PAGE_TRANSITION_AUTO_BOOKMARK |
+                        ui::PAGE_TRANSITION_FORWARD_BACK));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   std::map<std::string, double> features;
@@ -410,10 +410,10 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   browse_info_->http_status_code = 404;
   NavigateAndCommit(GURL("http://www.foo.com/page.html"),
                     GURL("http://www.foo.com"),
-                    content::PageTransitionFromInt(
-                        content::PAGE_TRANSITION_TYPED |
-                        content::PAGE_TRANSITION_CHAIN_START |
-                        content::PAGE_TRANSITION_CLIENT_REDIRECT));
+                    ui::PageTransitionFromInt(
+                        ui::PAGE_TRANSITION_TYPED |
+                        ui::PAGE_TRANSITION_CHAIN_START |
+                        ui::PAGE_TRANSITION_CLIENT_REDIRECT));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   features.clear();
@@ -463,10 +463,10 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   SetRedirectChain(redirect_chain, true);
   NavigateAndCommit(GURL("http://www.bar.com/"),
                     GURL("http://www.foo.com/page.html"),
-                    content::PageTransitionFromInt(
-                        content::PAGE_TRANSITION_LINK |
-                        content::PAGE_TRANSITION_CHAIN_END |
-                        content::PAGE_TRANSITION_CLIENT_REDIRECT));
+                    ui::PageTransitionFromInt(
+                        ui::PAGE_TRANSITION_LINK |
+                        ui::PAGE_TRANSITION_CHAIN_END |
+                        ui::PAGE_TRANSITION_CLIENT_REDIRECT));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   features.clear();
@@ -502,7 +502,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   SetRedirectChain(redirect_chain, false);
   NavigateAndCommit(GURL("http://www.bar.com/other_page.html"),
                     GURL("http://www.bar.com/"),
-                    content::PAGE_TRANSITION_LINK);
+                    ui::PAGE_TRANSITION_LINK);
 
   EXPECT_TRUE(ExtractFeatures(&request));
   features.clear();
@@ -542,7 +542,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   SetRedirectChain(redirect_chain, true);
   NavigateAndCommit(GURL("http://www.baz.com"),
                     GURL("https://bankofamerica.com"),
-                    content::PAGE_TRANSITION_GENERATED);
+                    ui::PAGE_TRANSITION_GENERATED);
 
   EXPECT_TRUE(ExtractFeatures(&request));
   features.clear();

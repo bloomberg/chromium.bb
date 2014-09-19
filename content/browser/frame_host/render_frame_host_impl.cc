@@ -680,7 +680,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // to allow the pending navigation to continue.
   if (render_view_host_->is_waiting_for_beforeunload_ack_ &&
       render_view_host_->unload_ack_is_for_cross_site_transition_ &&
-      PageTransitionIsMainFrame(validated_params.transition)) {
+      ui::PageTransitionIsMainFrame(validated_params.transition)) {
     OnBeforeUnloadACK(true, send_before_unload_start_time_,
                       base::TimeTicks::Now());
     return;
@@ -746,7 +746,7 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
     scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
-    PageTransition page_transition,
+    ui::PageTransition page_transition,
     bool should_replace_current_entry) {
   frame_tree_node_->render_manager()->OnCrossSiteResponse(
       this, global_request_id, cross_site_transferring_request.Pass(),
@@ -1222,7 +1222,7 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.current_history_list_offset = -1;
   params.current_history_list_length = 0;
   params.url = url;
-  params.transition = PAGE_TRANSITION_LINK;
+  params.transition = ui::PAGE_TRANSITION_LINK;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.browser_navigation_start = base::TimeTicks::Now();
   Navigate(params);

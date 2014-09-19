@@ -318,7 +318,7 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
   ON_CALL(*item, GetTargetFilePath())
       .WillByDefault(ReturnRefOfCopy(base::FilePath()));
   ON_CALL(*item, GetTransitionType())
-      .WillByDefault(Return(content::PAGE_TRANSITION_LINK));
+      .WillByDefault(Return(ui::PAGE_TRANSITION_LINK));
   ON_CALL(*item, GetURL())
       .WillByDefault(ReturnRefOfCopy(download_url));
   ON_CALL(*item, GetUrlChain())

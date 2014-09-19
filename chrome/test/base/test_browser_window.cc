@@ -61,9 +61,9 @@ WindowOpenDisposition
   return CURRENT_TAB;
 }
 
-content::PageTransition
+ui::PageTransition
     TestBrowserWindow::TestLocationBar::GetPageTransition() const {
-  return content::PAGE_TRANSITION_LINK;
+  return ui::PAGE_TRANSITION_LINK;
 }
 
 bool TestBrowserWindow::TestLocationBar::ShowPageActionPopup(

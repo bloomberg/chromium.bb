@@ -155,7 +155,7 @@ void ProcessMirrorHeaderUIThread(
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     web_contents->OpenURL(content::OpenURLParams(
         GURL(chrome::kChromeUINativeNewTabURL), content::Referrer(),
-        OFF_THE_RECORD, content::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+        OFF_THE_RECORD, ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
     AccountManagementScreenHelper::OpenAccountManagementScreen(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()),
@@ -258,7 +258,7 @@ void ProcessMirrorResponseHeaderIfExists(
       content::ResourceRequestInfo::ForRequest(request);
   if (!(info && info->IsMainFrame() &&
         (info->HasUserGesture() ||
-         !content::PageTransitionIsWebTriggerable(info->GetPageTransition()))))
+         !ui::PageTransitionIsWebTriggerable(info->GetPageTransition()))))
     return;
 
   std::string header_value;

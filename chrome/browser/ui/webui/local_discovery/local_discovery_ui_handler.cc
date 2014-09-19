@@ -36,12 +36,12 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/page_transition_types.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
@@ -291,7 +291,7 @@ void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
 
   chrome::AddSelectedTabWithURL(browser,
                                 cloud_devices::GetCloudPrintManageDeviceURL(id),
-                                content::PAGE_TRANSITION_FROM_API);
+                                ui::PAGE_TRANSITION_FROM_API);
 }
 
 void LocalDiscoveryUIHandler::HandleShowSyncUI(
@@ -305,7 +305,7 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
 
   browser->OpenURL(
       content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
-                             content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+                             ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
@@ -686,7 +686,7 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
           CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
       content::Referrer(),
       CURRENT_TAB,
-      content::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_LINK,
       false);
   web_ui()->GetWebContents()->OpenURL(params);
 }

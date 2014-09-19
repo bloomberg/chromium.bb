@@ -96,7 +96,7 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
     content::RenderView* render_view,
     PhishingClassifier* classifier)
     : content::RenderViewObserver(render_view),
-      last_main_frame_transition_(content::PAGE_TRANSITION_LINK),
+      last_main_frame_transition_(ui::PAGE_TRANSITION_LINK),
       have_page_text_(false),
       is_classifying_(false) {
   g_delegates.Get().insert(this);
@@ -240,7 +240,7 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     return;
   }
 
-  if (last_main_frame_transition_ & content::PAGE_TRANSITION_FORWARD_BACK) {
+  if (last_main_frame_transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) {
     // Skip loads from session history navigation.  However, update the
     // last URL sent to the classifier, so that we'll properly detect
     // in-page navigations.

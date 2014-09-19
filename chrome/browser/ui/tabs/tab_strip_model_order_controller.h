@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H_
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController
@@ -21,7 +21,7 @@ class TabStripModelOrderController : public TabStripModelObserver {
 
   // Determine where to place a newly opened tab by using the supplied
   // transition and foreground flag to figure out how it was opened.
-  int DetermineInsertionIndex(content::PageTransition transition,
+  int DetermineInsertionIndex(ui::PageTransition transition,
                               bool foreground);
 
   // Determine where to shift selection after a tab is closed.
