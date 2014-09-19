@@ -266,11 +266,10 @@ class GSContext(object):
     # The version of gsutil is retrieved on demand and cached here.
     self._gsutil_version = None
 
-    # TODO (yjhong): disable parallel composite upload for now because
-    # it is not backward compatible (older gsutil versions cannot
-    # download files uploaded with this option enabled). Remove this
-    # after all users transition to newer versions (3.37 and above).
-    self.gsutil_flags = ['-o', 'GSUtil:parallel_composite_upload_threshold=0']
+    # Increase the number of retries. With 10 retries, Boto will try a total of
+    # 11 times and wait up to 2**11 seconds (~30 minutes) in total, not
+    # not including the time spent actually uploading or downloading.
+    self.gsutil_flags = ['-o', 'Boto:num_retries=10']
 
     # Set HTTP proxy if environment variable http_proxy is set
     # (crbug.com/325032).
@@ -287,11 +286,6 @@ class GSContext(object):
           self.gsutil_flags += ['-o', 'Boto:proxy_pass=%s' % url.password]
         if url.port:
           self.gsutil_flags += ['-o', 'Boto:proxy_port=%d' % url.port]
-
-    # Increase the number of retries. With 10 retries, Boto will try a total of
-    # 11 times and wait up to 2**11 seconds (~30 minutes) in total, not
-    # not including the time spent actually uploading or downloading.
-    self.gsutil_flags += ['-o', 'Boto:num_retries=10']
 
     # Prefer boto_file if specified, else prefer the env then the default.
     if boto_file is None:
