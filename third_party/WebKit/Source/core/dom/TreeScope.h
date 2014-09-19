@@ -91,8 +91,6 @@ public:
     // quirks mode for historical compatibility reasons.
     Element* findAnchor(const String& name);
 
-    bool applyAuthorStyles() const;
-
     // Used by the basic DOM mutation methods (e.g., appendChild()).
     void adoptIfNeeded(Node&);
 

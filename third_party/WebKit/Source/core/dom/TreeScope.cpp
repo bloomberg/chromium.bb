@@ -343,11 +343,6 @@ Element* TreeScope::findAnchor(const String& name)
     return 0;
 }
 
-bool TreeScope::applyAuthorStyles() const
-{
-    return rootNode().isDocumentNode();
-}
-
 void TreeScope::adoptIfNeeded(Node& node)
 {
     ASSERT(this);

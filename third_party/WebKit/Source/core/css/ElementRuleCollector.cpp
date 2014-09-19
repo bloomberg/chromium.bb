@@ -118,16 +118,14 @@ void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* pro
         m_result.isCacheable = false;
 }
 
-static bool rulesApplicableInCurrentTreeScope(const Element* element, const ContainerNode* scopingNode, bool elementApplyAuthorStyles)
+static bool rulesApplicableInCurrentTreeScope(const Element* element, const ContainerNode* scopingNode, bool matchingTreeBoundaryRules)
 {
-    TreeScope& treeScope = element->treeScope();
-
     // [skipped, because already checked] a) it's a UA rule
-    // b) element is allowed to apply author rules
-    if (elementApplyAuthorStyles)
+    // b) We're mathcing tree boundary rules.
+    if (matchingTreeBoundaryRules)
         return true;
     // c) the rules comes from a scoped style sheet within the same tree scope
-    if (!scopingNode || treeScope == scopingNode->treeScope())
+    if (!scopingNode || element->treeScope() == scopingNode->treeScope())
         return true;
     // d) the rules comes from a scoped style sheet within an active shadow root whose host is the given element
     if (SelectorChecker::isHostInItsShadowTree(*element, scopingNode))
@@ -135,7 +133,7 @@ static bool rulesApplicableInCurrentTreeScope(const Element* element, const Cont
     return false;
 }
 
-void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, RuleRange& ruleRange, SelectorChecker::ContextFlags contextFlags, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, RuleRange& ruleRange, SelectorChecker::ContextFlags contextFlags, CascadeScope cascadeScope, CascadeOrder cascadeOrder, bool matchingTreeBoundaryRules)
 {
     ASSERT(matchRequest.ruleSet);
     ASSERT(m_context.element());
@@ -151,12 +149,11 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
         collectMatchingRulesForList(matchRequest.ruleSet->cuePseudoRules(), contextFlags, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     // Check whether other types of rules are applicable in the current tree scope. Criteria for this:
     // a) it's a UA rule
-    // b) the tree scope allows author rules
-    // c) the rules comes from a scoped style sheet within the same tree scope
-    // d) the rules comes from a scoped style sheet within an active shadow root whose host is the given element
-    // e) the rules can cross boundaries
+    // b) the rules comes from a scoped style sheet within the same tree scope
+    // c) the rules comes from a scoped style sheet within an active shadow root whose host is the given element
+    // d) the rules can cross boundaries
     // b)-e) is checked in rulesApplicableInCurrentTreeScope.
-    if (!m_matchingUARules && !rulesApplicableInCurrentTreeScope(&element, matchRequest.scope, matchRequest.elementApplyAuthorStyles))
+    if (!m_matchingUARules && !rulesApplicableInCurrentTreeScope(&element, matchRequest.scope, matchingTreeBoundaryRules))
         return;
 
     // We need to collect the rules for id, class, tag, and everything else into a buffer and

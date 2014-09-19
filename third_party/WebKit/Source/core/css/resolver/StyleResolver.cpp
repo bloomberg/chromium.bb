@@ -374,11 +374,6 @@ StyleResolver::~StyleResolver()
 {
 }
 
-static inline bool applyAuthorStylesOf(const Element* element)
-{
-    return element->treeScope().applyAuthorStyles();
-}
-
 void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree)
 {
     collector.clearMatchedRules();
@@ -386,16 +381,15 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
 
     CascadeScope cascadeScope = 0;
     CascadeOrder cascadeOrder = 0;
-    bool applyAuthorStyles = applyAuthorStylesOf(element);
 
     for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
-        resolversInShadowTree.at(j)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope, cascadeOrder++);
+        resolversInShadowTree.at(j)->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeScope, cascadeOrder++);
 
     if (resolvers.isEmpty() || resolvers.first()->treeScope() != element->treeScope())
         ++cascadeScope;
     cascadeOrder += resolvers.size();
     for (unsigned i = 0; i < resolvers.size(); ++i)
-        resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, --cascadeOrder);
+        resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeScope++, --cascadeOrder);
 
     m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
@@ -406,9 +400,8 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    bool applyAuthorStyles = applyAuthorStylesOf(element);
     if (document().styleEngine()->hasOnlyScopedResolverForDocument()) {
-        document().scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
+        document().scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, ignoreCascadeScope);
         m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
         return;
@@ -432,7 +425,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
         ScopedStyleResolver* resolver = resolvers.at(i);
         // FIXME: Need to clarify how to treat style scoped.
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->treeScope().rootNode().isShadowRoot() ? 0 : cascadeOrder);
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->treeScope().rootNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
     m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
@@ -1038,16 +1031,14 @@ void StyleResolver::collectScopedResolversForHostedShadowTrees(const Element* el
 
 void StyleResolver::styleTreeResolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
 {
-    Document& document = element->document();
     TreeScope& treeScope = element->treeScope();
-    bool applyAuthorStyles = treeScope.applyAuthorStyles();
 
     // Add resolvers for shadow roots hosted by the given element.
     collectScopedResolversForHostedShadowTrees(element, resolvers);
 
     // Add resolvers while walking up DOM tree from the given element.
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
-        if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == document))
+        if (scopedResolver->treeScope() == treeScope)
             resolvers.append(scopedResolver);
     }
 }

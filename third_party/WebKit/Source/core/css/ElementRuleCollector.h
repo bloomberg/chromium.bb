@@ -125,7 +125,7 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
-    void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::ContextFlags = SelectorChecker::DefaultBehavior, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::ContextFlags = SelectorChecker::DefaultBehavior, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);

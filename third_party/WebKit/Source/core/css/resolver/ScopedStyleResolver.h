@@ -61,7 +61,7 @@ public:
     const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
     void addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes>);
 
-    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(CSSStyleSheet*, const MediaQueryEvaluator&, StyleResolver*);
     void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const;
