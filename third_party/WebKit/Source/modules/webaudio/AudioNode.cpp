@@ -74,7 +74,8 @@ AudioNode::~AudioNode()
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
-    fprintf(stderr, "%p: %d: AudioNode::~AudioNode() %d\n", this, nodeType(), m_connectionRefCount);
+    fprintf(stderr, "%p: %2d: AudioNode::~AudioNode() %d [%d]\n",
+        this, nodeType(), m_connectionRefCount, s_nodeCount[nodeType()]);
 #endif
 }
 
@@ -151,6 +152,7 @@ void AudioNode::setNodeType(NodeType type)
 
 #if DEBUG_AUDIONODE_REFERENCES
     ++s_nodeCount[type];
+    fprintf(stderr, "%p: %2d: AudioNode::AudioNode [%3d]\n", this, nodeType(), s_nodeCount[nodeType()]);
 #endif
 }
 
@@ -482,6 +484,11 @@ void AudioNode::disableOutputsIfNecessary()
 void AudioNode::makeConnection()
 {
     atomicIncrement(&m_connectionRefCount);
+
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "%p: %2d: AudioNode::ref   %3d [%3d]\n",
+        this, nodeType(), m_connectionRefCount, s_nodeCount[nodeType()]);
+#endif
     // See the disabling code in disableOutputsIfNecessary(). This handles
     // the case where a node is being re-connected after being used at least
     // once and disconnected. In this case, we need to re-enable.
@@ -520,6 +527,12 @@ void AudioNode::breakConnection()
 void AudioNode::breakConnectionWithLock()
 {
     atomicDecrement(&m_connectionRefCount);
+
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "%p: %2d: AudioNode::deref %3d [%3d]\n",
+        this, nodeType(), m_connectionRefCount, s_nodeCount[nodeType()]);
+#endif
+
     if (!m_connectionRefCount)
         disableOutputsIfNecessary();
 }
@@ -537,7 +550,7 @@ void AudioNode::printNodeCounts()
     fprintf(stderr, "===========================\n");
 
     for (unsigned i = 0; i < NodeTypeEnd; ++i)
-        fprintf(stderr, "%d: %d\n", i, s_nodeCount[i]);
+        fprintf(stderr, "%2d: %d\n", i, s_nodeCount[i]);
 
     fprintf(stderr, "===========================\n\n\n");
 }
