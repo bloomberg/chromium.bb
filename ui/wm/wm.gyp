@@ -142,6 +142,7 @@
         'core/image_grid_unittest.cc',
         'core/nested_accelerator_controller_unittest.cc',
         'core/shadow_controller_unittest.cc',
+        'core/shadow_unittest.cc',
         'core/transient_window_manager_unittest.cc',
         'core/transient_window_stacking_client_unittest.cc',
         'core/user_activity_detector_unittest.cc',

@@ -172,17 +172,8 @@ void Shadow::UpdateImagesForStyle() {
       break;
   }
 
-  // Calculate shadow aperture for style.
-  int shadow_aperture = GetShadowApertureForStyle(style_);
-  gfx::Rect aperture(shadow_aperture,
-                     shadow_aperture,
-                     image.Width() - shadow_aperture * 2,
-                     image.Height() - shadow_aperture * 2);
-
-  // Update nine-patch layer with new bitmap and aperture.
-  shadow_layer_->UpdateNinePatchLayerBitmap(image.AsBitmap(), aperture);
-
-  // Update interior inset for style.
+  shadow_layer_->UpdateNinePatchLayerBitmap(image.AsBitmap());
+  image_size_ = image.Size();
   interior_inset_ = GetInteriorInsetForStyle(style_);
 
   // Image sizes may have changed.
@@ -196,18 +187,17 @@ void Shadow::UpdateLayerBounds() {
   layer()->SetBounds(layer_bounds);
   shadow_layer_->SetBounds(gfx::Rect(layer_bounds.size()));
 
-  // Calculate shadow border for style. Note that border is in layer space
-  // and it cannot exceed the bounds of the layer.
-  int shadow_aperture = GetShadowApertureForStyle(style_);
-  gfx::Rect border(shadow_aperture, shadow_aperture,
-                   shadow_aperture * 2, shadow_aperture * 2);
-  if (layer_bounds.width() < border.width() ||
-      layer_bounds.height() < border.height()) {
-    shadow_layer_->SetVisible(false);
-  } else {
-    shadow_layer_->SetVisible(true);
-    shadow_layer_->UpdateNinePatchLayerBorder(border);
-  }
+  // Update the shadow aperture and border for style. Note that border is in
+  // layer space and it cannot exceed the bounds of the layer.
+  int aperture = GetShadowApertureForStyle(style_);
+  int aperture_x = std::min(aperture, layer_bounds.width() / 2);
+  int aperture_y = std::min(aperture, layer_bounds.height() / 2);
+  shadow_layer_->UpdateNinePatchLayerAperture(
+      gfx::Rect(aperture_x, aperture_y,
+                image_size_.width() - aperture_x * 2,
+                image_size_.height() - aperture_y * 2));
+  shadow_layer_->UpdateNinePatchLayerBorder(
+      gfx::Rect(aperture_x, aperture_y, aperture_x * 2, aperture_y * 2));
 }
 
 }  // namespace wm

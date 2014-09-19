@@ -598,8 +598,7 @@ void Layer::SetShowPaintedContent() {
   RecomputeDrawsContentAndUVRect();
 }
 
-void Layer::UpdateNinePatchLayerBitmap(const SkBitmap& bitmap,
-                                       const gfx::Rect& aperture) {
+void Layer::UpdateNinePatchLayerBitmap(const SkBitmap& bitmap) {
   DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
   SkBitmap bitmap_copy;
   if (bitmap.isImmutable()) {
@@ -610,6 +609,10 @@ void Layer::UpdateNinePatchLayerBitmap(const SkBitmap& bitmap,
     bitmap_copy.setImmutable();
   }
   nine_patch_layer_->SetBitmap(bitmap_copy);
+}
+
+void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture) {
+  DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
   nine_patch_layer_->SetAperture(aperture);
 }
 

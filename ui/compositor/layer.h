@@ -287,13 +287,10 @@ class COMPOSITOR_EXPORT Layer
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
 
-  // Updates the nine patch layer's bitmap and aperture. May only be called for
-  // LAYER_NINE_PATCH.
-  void UpdateNinePatchLayerBitmap(const SkBitmap& bitmap,
-                                  const gfx::Rect& aperture);
-
-  // Updates the nine patch layer's border. May only be called for
-  // LAYER_NINE_PATCH.
+  // Updates the nine patch layer's bitmap, aperture and border. May only be
+  // called for LAYER_NINE_PATCH.
+  void UpdateNinePatchLayerBitmap(const SkBitmap& bitmap);
+  void UpdateNinePatchLayerAperture(const gfx::Rect& aperture);
   void UpdateNinePatchLayerBorder(const gfx::Rect& border);
 
   // Adds |invalid_rect| to the Layer's pending invalid rect and calls
