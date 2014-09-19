@@ -36,13 +36,10 @@
 namespace blink {
 
 struct FocusCandidate;
-class Document;
 class Element;
 class Frame;
 class HTMLFrameOwnerElement;
 class HTMLShadowElement;
-class IntRect;
-class KeyboardEvent;
 class Node;
 class Page;
 class TreeScope;

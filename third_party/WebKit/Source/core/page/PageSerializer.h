@@ -50,8 +50,6 @@ class RenderObject;
 class Resource;
 class SharedBuffer;
 class StylePropertySet;
-class StyleRule;
-class StyleRuleFontFace;
 
 struct SerializedResource;
 

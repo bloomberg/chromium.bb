@@ -33,7 +33,6 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebLayer;
 class WebScrollbarLayer;
 }
 
@@ -41,14 +40,12 @@ namespace blink {
 
 typedef unsigned MainThreadScrollingReasons;
 
-class Document;
 class LocalFrame;
 class FrameView;
 class GraphicsLayer;
 class Page;
 class Region;
 class ScrollableArea;
-class ViewportConstraints;
 
 class ScrollingCoordinator {
 public:

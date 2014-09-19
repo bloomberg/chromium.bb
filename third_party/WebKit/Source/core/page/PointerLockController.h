@@ -35,7 +35,6 @@ class Element;
 class Document;
 class Page;
 class PlatformMouseEvent;
-class VoidCallback;
 
 class PointerLockController FINAL : public NoBaseWillBeGarbageCollected<PointerLockController> {
     WTF_MAKE_NONCOPYABLE(PointerLockController);

@@ -32,9 +32,7 @@
 
 namespace blink {
 
-class Element;
 class LocalFrame;
-class UndoStep;
 
 class EditorClient {
 public:

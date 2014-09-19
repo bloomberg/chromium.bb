@@ -41,16 +41,12 @@ class DragData;
 class DragImage;
 struct DragSession;
 class DragState;
-class Element;
 class LocalFrame;
 class FrameSelection;
 class HTMLInputElement;
-class Image;
-class IntRect;
 class Node;
 class Page;
 class PlatformMouseEvent;
-class Range;
 
 class DragController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
     WTF_MAKE_NONCOPYABLE(DragController);

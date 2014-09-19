@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class HistoryItem;
-
 class BackForwardClient {
 public:
     virtual ~BackForwardClient() { }

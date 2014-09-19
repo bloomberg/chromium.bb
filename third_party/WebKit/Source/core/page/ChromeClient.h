@@ -64,8 +64,6 @@ class PagePopup;
 class PagePopupClient;
 class PagePopupDriver;
 class PopupMenuClient;
-class SecurityOrigin;
-class Widget;
 
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;

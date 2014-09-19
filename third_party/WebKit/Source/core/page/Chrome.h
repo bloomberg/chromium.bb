@@ -47,7 +47,6 @@ class Page;
 class PopupMenu;
 class PopupMenuClient;
 class PopupOpeningObserver;
-class SearchPopupMenu;
 
 struct DateTimeChooserParameters;
 struct ViewportDescription;

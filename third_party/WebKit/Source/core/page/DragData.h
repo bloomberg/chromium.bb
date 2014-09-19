@@ -38,7 +38,6 @@ namespace blink {
 class DataObject;
 class DocumentFragment;
 class LocalFrame;
-class KURL;
 class Range;
 
 enum DragApplicationFlags {

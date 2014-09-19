@@ -29,12 +29,9 @@
 
 namespace blink {
 
-class Element;
 class LocalFrame;
 class HTMLAreaElement;
 class HTMLFrameOwnerElement;
-class IntRect;
-class RenderObject;
 
 inline long long maxDistance()
 {

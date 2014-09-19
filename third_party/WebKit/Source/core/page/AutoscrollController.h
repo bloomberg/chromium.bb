@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class EventHandler;
 class LocalFrame;
 class FrameView;
 class Node;
