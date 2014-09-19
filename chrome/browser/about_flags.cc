@@ -181,17 +181,6 @@ const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
     "2" }
 };
 #endif
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
-const Experiment::Choice kDeviceScaleFactorChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-  { IDS_DEVICE_SCALE_FACTOR_1_1, switches::kForceDeviceScaleFactor, "1.1"},
-  { IDS_DEVICE_SCALE_FACTOR_1_2, switches::kForceDeviceScaleFactor, "1.2"},
-  { IDS_DEVICE_SCALE_FACTOR_1_25, switches::kForceDeviceScaleFactor, "1.25"},
-  { IDS_DEVICE_SCALE_FACTOR_1_3, switches::kForceDeviceScaleFactor, "1.3"},
-  { IDS_DEVICE_SCALE_FACTOR_1_4, switches::kForceDeviceScaleFactor, "1.4"},
-  { IDS_DEVICE_SCALE_FACTOR_2, switches::kForceDeviceScaleFactor, "2"},
-};
-#endif
 
 #if !defined(DISABLE_NACL)
 const Experiment::Choice kNaClDebugMaskChoices[] = {
@@ -926,15 +915,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION,
     kOsDesktop,
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")
-  },
-#endif
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
-  {
-    "force-device-scale-factor",
-    IDS_FLAGS_FORCE_DEVICE_SCALE_FACTOR_NAME,
-    IDS_FLAGS_FORCE_DEVICE_SCALE_FACTOR_DESCRIPTION,
-    kOsLinux | kOsWin | kOsCrOS,
-    MULTI_VALUE_TYPE(kDeviceScaleFactorChoices)
   },
 #endif
 #if defined(OS_CHROMEOS)

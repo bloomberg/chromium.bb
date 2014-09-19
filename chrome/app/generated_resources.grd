@@ -5584,20 +5584,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
         Enables additional keyboard shortcuts that are useful for debugging Chromium.
       </message>
-      <if expr="chromeos or is_win or is_linux">
-        <message name="IDS_FLAGS_FORCE_DEVICE_SCALE_FACTOR_NAME" desc="Name of the 'Force device scale factor' lab.">
-          Overrides the device scale factor on the device.
-        </message>
-        <message name="IDS_FLAGS_FORCE_DEVICE_SCALE_FACTOR_DESCRIPTION" desc="Description of the 'Force device scale factor' lab.">
-          Overrides the device display density to force the use of high DPI mode and assets.
-        </message>
-        <message name="IDS_DEVICE_SCALE_FACTOR_1_1" desc=""> 1.1 </message>
-        <message name="IDS_DEVICE_SCALE_FACTOR_1_2" desc=""> 1.2 </message>
-        <message name="IDS_DEVICE_SCALE_FACTOR_1_25" desc=""> 1.25 </message>
-        <message name="IDS_DEVICE_SCALE_FACTOR_1_3" desc=""> 1.3 </message>
-        <message name="IDS_DEVICE_SCALE_FACTOR_1_4" desc=""> 1.4 </message>
-        <message name="IDS_DEVICE_SCALE_FACTOR_2" desc=""> 2.0 </message>
-      </if>
       <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME" desc="Name of the 'Ignore GPU blacklist' lab.">
         Override software rendering list
       </message>
