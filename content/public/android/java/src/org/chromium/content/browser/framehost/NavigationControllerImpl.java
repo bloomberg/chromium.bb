@@ -180,14 +180,6 @@ import org.chromium.content_public.browser.NavigationHistory;
         return nativeGetOriginalUrlForVisibleNavigationEntry(mNativeNavigationControllerAndroid);
     }
 
-    @CalledByNative
-    private void addToNavigationHistory(Object history, int index, String url,
-              String virtualUrl,String originalUrl, String title, Bitmap favicon) {
-        NavigationEntry entry = new NavigationEntry(index, url, virtualUrl,
-                    originalUrl, title, favicon);
-        ((NavigationHistory) history).addEntry(entry);
-    }
-
     @Override
     public void clearSslPreferences() {
         if (mNativeNavigationControllerAndroid != 0) {
@@ -207,6 +199,26 @@ import org.chromium.content_public.browser.NavigationHistory;
             nativeSetUseDesktopUserAgent(mNativeNavigationControllerAndroid,
                      override, reloadOnChange);
         }
+    }
+
+    @Override
+    public NavigationEntry getPendingEntry() {
+        if (mNativeNavigationControllerAndroid != 0) {
+            return nativeGetPendingEntry(mNativeNavigationControllerAndroid);
+        }
+
+        return null;
+    }
+
+    @CalledByNative
+    private static void addToNavigationHistory(Object history, Object navigationEntry) {
+        ((NavigationHistory) history).addEntry((NavigationEntry) navigationEntry);
+    }
+
+    @CalledByNative
+    private static NavigationEntry createNavigationEntry(int index, String url,
+            String virtualUrl, String originalUrl, String title, Bitmap favicon) {
+        return new NavigationEntry(index, url, virtualUrl, originalUrl, title, favicon);
     }
 
     private native boolean nativeCanGoBack(long nativeNavigationControllerAndroid);
@@ -251,4 +263,5 @@ import org.chromium.content_public.browser.NavigationHistory;
     private native boolean nativeGetUseDesktopUserAgent(long nativeNavigationControllerAndroid);
     private native void nativeSetUseDesktopUserAgent(long nativeNavigationControllerAndroid,
             boolean override, boolean reloadOnChange);
+    private native NavigationEntry nativeGetPendingEntry(long nativeNavigationControllerAndroid);
 }

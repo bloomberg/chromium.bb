@@ -22,11 +22,12 @@ using base::android::ConvertUTF8ToJavaString;
 namespace {
 
 // static
-static void AddNavigationEntryToHistory(JNIEnv* env,
-                                        jobject obj,
-                                        jobject history,
-                                        content::NavigationEntry* entry,
-                                        int index) {
+static base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationEntry(
+    JNIEnv* env,
+    content::NavigationEntry* entry,
+    int index) {
+  DCHECK(entry);
+
   // Get the details of the current entry
   ScopedJavaLocalRef<jstring> j_url(
       ConvertUTF8ToJavaString(env, entry->GetURL().spec()));
@@ -41,17 +42,24 @@ static void AddNavigationEntryToHistory(JNIEnv* env,
   if (status.valid && status.image.ToSkBitmap()->getSize() > 0)
     j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
 
-  // Add the item to the list
-  content::Java_NavigationControllerImpl_addToNavigationHistory(
+  return content::Java_NavigationControllerImpl_createNavigationEntry(
       env,
-      obj,
-      history,
       index,
       j_url.obj(),
       j_virtual_url.obj(),
       j_original_url.obj(),
       j_title.obj(),
       j_bitmap.obj());
+}
+
+static void AddNavigationEntryToHistory(JNIEnv* env,
+                                        jobject history,
+                                        content::NavigationEntry* entry,
+                                        int index) {
+  content::Java_NavigationControllerImpl_addToNavigationHistory(
+      env,
+      history,
+      CreateJavaNavigationEntry(env, entry, index).obj());
 }
 
 }  // namespace
@@ -216,7 +224,7 @@ jint NavigationControllerAndroid::GetNavigationHistory(JNIEnv* env,
   int count = navigation_controller_->GetEntryCount();
   for (int i = 0; i < count; ++i) {
     AddNavigationEntryToHistory(
-        env, obj, history, navigation_controller_->GetEntryAtIndex(i), i);
+        env, history, navigation_controller_->GetEntryAtIndex(i), i);
   }
 
   return navigation_controller_->GetCurrentEntryIndex();
@@ -239,7 +247,7 @@ void NavigationControllerAndroid::GetDirectedNavigationHistory(
       break;
 
     AddNavigationEntryToHistory(
-        env, obj, history, navigation_controller_->GetEntryAtIndex(i), i);
+        env, history, navigation_controller_->GetEntryAtIndex(i), i);
     num_added++;
   }
 }
@@ -290,6 +298,17 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
     // navigation IPC message.
     navigation_controller_->ReloadOriginalRequestURL(false);
   }
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+NavigationControllerAndroid::GetPendingEntry(JNIEnv* env, jobject obj) {
+  content::NavigationEntry* entry = navigation_controller_->GetPendingEntry();
+
+  if (!entry)
+    return base::android::ScopedJavaLocalRef<jobject>();
+
+  return CreateJavaNavigationEntry(
+      env, entry, navigation_controller_->GetPendingEntryIndex());
 }
 
 }  // namespace content

@@ -132,4 +132,10 @@ public interface NavigationController {
      * @param reloadOnChange Reload the page if the UA has changed.
      */
     public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange);
+
+    /**
+     * @return The pending {@link NavigationEntry} for this controller or {@code null} if none
+     *         exists.
+     */
+    public NavigationEntry getPendingEntry();
 }

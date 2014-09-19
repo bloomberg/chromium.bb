@@ -66,6 +66,8 @@ class CONTENT_EXPORT NavigationControllerAndroid {
                               jobject /* obj */,
                               jboolean state,
                               jboolean reload_on_state_change);
+  base::android::ScopedJavaLocalRef<jobject> GetPendingEntry(JNIEnv* env,
+                                                             jobject /* obj */);
   int GetNavigationHistory(JNIEnv* env, jobject obj, jobject history);
   void GetDirectedNavigationHistory(JNIEnv* env,
                                     jobject obj,
