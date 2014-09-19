@@ -76,9 +76,8 @@ def main(argv, stdout, stderr):
             not run_details.initial_results.keyboard_interrupted):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
-
-        gen_dash_board = DashBoardGenerator(port)
-        gen_dash_board.generate()
+            gen_dash_board = DashBoardGenerator(port)
+            gen_dash_board.generate()
 
         return run_details.exit_code
 
