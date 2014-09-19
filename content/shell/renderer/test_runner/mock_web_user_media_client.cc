@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_constraints.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -142,7 +142,7 @@ void MockWebUserMediaClient::requestUserMedia(
     WebUserMediaRequest request = stream_request;
 
     if (request.ownerDocument().isNull() || !request.ownerDocument().frame()) {
-      delegate_->postTask(
+      delegate_->PostTask(
           new UserMediaRequestPermissionDeniedTask(this, request));
         return;
     }
@@ -151,14 +151,14 @@ void MockWebUserMediaClient::requestUserMedia(
     WebString failed_constraint;
     if (!constraints.isNull() &&
         !MockConstraints::VerifyConstraints(constraints, &failed_constraint)) {
-      delegate_->postTask(new UserMediaRequestConstraintFailedTask(
+      delegate_->PostTask(new UserMediaRequestConstraintFailedTask(
           this, request, failed_constraint));
       return;
     }
     constraints = request.videoConstraints();
     if (!constraints.isNull() &&
         !MockConstraints::VerifyConstraints(constraints, &failed_constraint)) {
-      delegate_->postTask(new UserMediaRequestConstraintFailedTask(
+      delegate_->PostTask(new UserMediaRequestConstraintFailedTask(
           this, request, failed_constraint));
       return;
     }
@@ -189,7 +189,7 @@ void MockWebUserMediaClient::requestUserMedia(
 
     stream.setExtraData(new MockExtraData());
 
-    delegate_->postTask(new UserMediaRequestTask(this, request, stream));
+    delegate_->PostTask(new UserMediaRequestTask(this, request, stream));
 }
 
 void MockWebUserMediaClient::cancelUserMediaRequest(
@@ -232,7 +232,7 @@ void MockWebUserMediaClient::requestMediaDevices(
                           WebString::fromUTF8(test_devices[i].group_id));
   }
 
-  delegate_->postTask(new MediaDevicesRequestTask(this, request, devices));
+  delegate_->PostTask(new MediaDevicesRequestTask(this, request, devices));
 }
 
 void MockWebUserMediaClient::cancelMediaDevicesRequest(
@@ -269,7 +269,7 @@ void MockWebUserMediaClient::requestSources(
                         test_sources[i].facing);
   }
 
-  delegate_->postTask(new SourcesRequestTask(this, request, sources));
+  delegate_->PostTask(new SourcesRequestTask(this, request, sources));
 }
 
 }  // namespace content

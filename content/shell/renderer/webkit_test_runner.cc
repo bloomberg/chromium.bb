@@ -194,34 +194,34 @@ WebKitTestRunner::~WebKitTestRunner() {
 
 // WebTestDelegate  -----------------------------------------------------------
 
-void WebKitTestRunner::clearEditCommand() {
+void WebKitTestRunner::ClearEditCommand() {
   render_view()->ClearEditCommands();
 }
 
-void WebKitTestRunner::setEditCommand(const std::string& name,
+void WebKitTestRunner::SetEditCommand(const std::string& name,
                                       const std::string& value) {
   render_view()->SetEditCommandForNextKeyEvent(name, value);
 }
 
-void WebKitTestRunner::setGamepadProvider(
+void WebKitTestRunner::SetGamepadProvider(
     scoped_ptr<RendererGamepadProvider> provider) {
   SetMockGamepadProvider(provider.Pass());
 }
 
-void WebKitTestRunner::setDeviceLightData(const double data) {
+void WebKitTestRunner::SetDeviceLightData(const double data) {
   SetMockDeviceLightData(data);
 }
 
-void WebKitTestRunner::setDeviceMotionData(const WebDeviceMotionData& data) {
+void WebKitTestRunner::SetDeviceMotionData(const WebDeviceMotionData& data) {
   SetMockDeviceMotionData(data);
 }
 
-void WebKitTestRunner::setDeviceOrientationData(
+void WebKitTestRunner::SetDeviceOrientationData(
     const WebDeviceOrientationData& data) {
   SetMockDeviceOrientationData(data);
 }
 
-void WebKitTestRunner::setScreenOrientation(
+void WebKitTestRunner::SetScreenOrientation(
     const WebScreenOrientationType& orientation) {
   MockScreenOrientationClient* mock_client =
       proxy()->GetScreenOrientationClientMock();
@@ -229,33 +229,33 @@ void WebKitTestRunner::setScreenOrientation(
                                        orientation);
 }
 
-void WebKitTestRunner::resetScreenOrientation() {
+void WebKitTestRunner::ResetScreenOrientation() {
   MockScreenOrientationClient* mock_client =
       proxy()->GetScreenOrientationClientMock();
   mock_client->ResetData();
 }
 
-void WebKitTestRunner::didChangeBatteryStatus(
+void WebKitTestRunner::DidChangeBatteryStatus(
     const blink::WebBatteryStatus& status) {
   MockBatteryStatusChanged(status);
 }
 
-void WebKitTestRunner::printMessage(const std::string& message) {
+void WebKitTestRunner::PrintMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }
 
-void WebKitTestRunner::postTask(WebTask* task) {
+void WebKitTestRunner::PostTask(WebTask* task) {
   Platform::current()->callOnMainThread(InvokeTaskHelper, task);
 }
 
-void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {
+void WebKitTestRunner::PostDelayedTask(WebTask* task, long long ms) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebTask::run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(ms));
 }
 
-WebString WebKitTestRunner::registerIsolatedFileSystem(
+WebString WebKitTestRunner::RegisterIsolatedFileSystem(
     const blink::WebVector<blink::WebString>& absolute_filenames) {
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
@@ -266,13 +266,13 @@ WebString WebKitTestRunner::registerIsolatedFileSystem(
   return WebString::fromUTF8(filesystem_id);
 }
 
-long long WebKitTestRunner::getCurrentTimeInMillisecond() {
+long long WebKitTestRunner::GetCurrentTimeInMillisecond() {
   return base::TimeDelta(base::Time::Now() -
                          base::Time::UnixEpoch()).ToInternalValue() /
          base::Time::kMicrosecondsPerMillisecond;
 }
 
-WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
+WebString WebKitTestRunner::GetAbsoluteWebStringFromUTF8Path(
     const std::string& utf8_path) {
   base::FilePath path = base::FilePath::FromUTF8Unsafe(utf8_path);
   if (!path.IsAbsolute()) {
@@ -284,7 +284,7 @@ WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
   return path.AsUTF16Unsafe();
 }
 
-WebURL WebKitTestRunner::localFileToDataURL(const WebURL& file_url) {
+WebURL WebKitTestRunner::LocalFileToDataURL(const WebURL& file_url) {
   base::FilePath local_path;
   if (!net::FileURLToFilePath(file_url, &local_path))
     return WebURL();
@@ -300,7 +300,7 @@ WebURL WebKitTestRunner::localFileToDataURL(const WebURL& file_url) {
   return WebURL(GURL(data_url_prefix + contents_base64));
 }
 
-WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
+WebURL WebKitTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url) {
   const char kPrefix[] = "file:///tmp/LayoutTests/";
   const int kPrefixLen = arraysize(kPrefix) - 1;
 
@@ -321,11 +321,11 @@ WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
   return WebURL(GURL(new_url));
 }
 
-TestPreferences* WebKitTestRunner::preferences() {
+TestPreferences* WebKitTestRunner::Preferences() {
   return &prefs_;
 }
 
-void WebKitTestRunner::applyPreferences() {
+void WebKitTestRunner::ApplyPreferences() {
   WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
@@ -363,56 +363,56 @@ std::string WebKitTestRunner::makeURLErrorDescription(
       domain.c_str(), code, error.unreachableURL.spec().data());
 }
 
-void WebKitTestRunner::useUnfortunateSynchronousResizeMode(bool enable) {
+void WebKitTestRunner::UseUnfortunateSynchronousResizeMode(bool enable) {
   UseSynchronousResizeModeVisitor visitor(enable);
   RenderView::ForEach(&visitor);
 }
 
-void WebKitTestRunner::enableAutoResizeMode(const WebSize& min_size,
+void WebKitTestRunner::EnableAutoResizeMode(const WebSize& min_size,
                                             const WebSize& max_size) {
-  EnableAutoResizeMode(render_view(), min_size, max_size);
+  content::EnableAutoResizeMode(render_view(), min_size, max_size);
 }
 
-void WebKitTestRunner::disableAutoResizeMode(const WebSize& new_size) {
-  DisableAutoResizeMode(render_view(), new_size);
+void WebKitTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
+  content::DisableAutoResizeMode(render_view(), new_size);
   if (!new_size.isEmpty())
     ForceResizeRenderView(render_view(), new_size);
 }
 
-void WebKitTestRunner::clearDevToolsLocalStorage() {
+void WebKitTestRunner::ClearDevToolsLocalStorage() {
   Send(new ShellViewHostMsg_ClearDevToolsLocalStorage(routing_id()));
 }
 
-void WebKitTestRunner::showDevTools(const std::string& settings,
+void WebKitTestRunner::ShowDevTools(const std::string& settings,
                                     const std::string& frontend_url) {
   Send(new ShellViewHostMsg_ShowDevTools(
       routing_id(), settings, frontend_url));
 }
 
-void WebKitTestRunner::closeDevTools() {
+void WebKitTestRunner::CloseDevTools() {
   Send(new ShellViewHostMsg_CloseDevTools(routing_id()));
   WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
   if (agent)
     agent->detach();
 }
 
-void WebKitTestRunner::evaluateInWebInspector(long call_id,
+void WebKitTestRunner::EvaluateInWebInspector(long call_id,
                                               const std::string& script) {
   WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
   if (agent)
     agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
 }
 
-void WebKitTestRunner::clearAllDatabases() {
+void WebKitTestRunner::ClearAllDatabases() {
   Send(new ShellViewHostMsg_ClearAllDatabases(routing_id()));
 }
 
-void WebKitTestRunner::setDatabaseQuota(int quota) {
+void WebKitTestRunner::SetDatabaseQuota(int quota) {
   Send(new ShellViewHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
 blink::WebNotificationPresenter::Permission
-WebKitTestRunner::checkWebNotificationPermission(const GURL& origin) {
+WebKitTestRunner::CheckWebNotificationPermission(const GURL& origin) {
   int permission = blink::WebNotificationPresenter::PermissionNotAllowed;
   Send(new ShellViewHostMsg_CheckWebNotificationPermission(
           routing_id(),
@@ -421,25 +421,25 @@ WebKitTestRunner::checkWebNotificationPermission(const GURL& origin) {
   return static_cast<blink::WebNotificationPresenter::Permission>(permission);
 }
 
-void WebKitTestRunner::grantWebNotificationPermission(const GURL& origin,
+void WebKitTestRunner::GrantWebNotificationPermission(const GURL& origin,
                                                       bool permission_granted) {
   Send(new ShellViewHostMsg_GrantWebNotificationPermission(
       routing_id(), origin, permission_granted));
 }
 
-void WebKitTestRunner::clearWebNotificationPermissions() {
+void WebKitTestRunner::ClearWebNotificationPermissions() {
   Send(new ShellViewHostMsg_ClearWebNotificationPermissions(routing_id()));
 }
 
-void WebKitTestRunner::setDeviceScaleFactor(float factor) {
-  SetDeviceScaleFactor(render_view(), factor);
+void WebKitTestRunner::SetDeviceScaleFactor(float factor) {
+  content::SetDeviceScaleFactor(render_view(), factor);
 }
 
-void WebKitTestRunner::setDeviceColorProfile(const std::string& name) {
-  SetDeviceColorProfile(render_view(), name);
+void WebKitTestRunner::SetDeviceColorProfile(const std::string& name) {
+  content::SetDeviceColorProfile(render_view(), name);
 }
 
-void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
+void WebKitTestRunner::SetFocus(WebTestProxyBase* proxy, bool focus) {
   ProxyToRenderViewVisitor visitor(proxy);
   RenderView::ForEach(&visitor);
   if (!visitor.render_view()) {
@@ -466,11 +466,11 @@ void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
   }
 }
 
-void WebKitTestRunner::setAcceptAllCookies(bool accept) {
+void WebKitTestRunner::SetAcceptAllCookies(bool accept) {
   Send(new ShellViewHostMsg_AcceptAllCookies(routing_id(), accept));
 }
 
-std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
+std::string WebKitTestRunner::PathToLocalResource(const std::string& resource) {
 #if defined(OS_WIN)
   if (resource.find("/tmp/") == 0) {
     // We want a temp file.
@@ -486,14 +486,14 @@ std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
     result = result.substr(0, strlen("file:///")) +
              result.substr(strlen("file:////"));
   }
-  return rewriteLayoutTestsURL(result).spec();
+  return RewriteLayoutTestsURL(result).spec();
 }
 
-void WebKitTestRunner::setLocale(const std::string& locale) {
+void WebKitTestRunner::SetLocale(const std::string& locale) {
   setlocale(LC_ALL, locale.c_str());
 }
 
-void WebKitTestRunner::testFinished() {
+void WebKitTestRunner::TestFinished() {
   if (!is_main_window_) {
     Send(new ShellViewHostMsg_TestFinishedInSecondaryWindow(routing_id()));
     return;
@@ -510,39 +510,39 @@ void WebKitTestRunner::testFinished() {
   }
 }
 
-void WebKitTestRunner::closeRemainingWindows() {
+void WebKitTestRunner::CloseRemainingWindows() {
   NavigateAwayVisitor visitor(render_view());
   RenderView::ForEach(&visitor);
   Send(new ShellViewHostMsg_CloseRemainingWindows(routing_id()));
 }
 
-void WebKitTestRunner::deleteAllCookies() {
+void WebKitTestRunner::DeleteAllCookies() {
   Send(new ShellViewHostMsg_DeleteAllCookies(routing_id()));
 }
 
-int WebKitTestRunner::navigationEntryCount() {
+int WebKitTestRunner::NavigationEntryCount() {
   return GetLocalSessionHistoryLength(render_view());
 }
 
-void WebKitTestRunner::goToOffset(int offset) {
+void WebKitTestRunner::GoToOffset(int offset) {
   Send(new ShellViewHostMsg_GoToOffset(routing_id(), offset));
 }
 
-void WebKitTestRunner::reload() {
+void WebKitTestRunner::Reload() {
   Send(new ShellViewHostMsg_Reload(routing_id()));
 }
 
-void WebKitTestRunner::loadURLForFrame(const WebURL& url,
-                             const std::string& frame_name) {
+void WebKitTestRunner::LoadURLForFrame(const WebURL& url,
+                                       const std::string& frame_name) {
   Send(new ShellViewHostMsg_LoadURLForFrame(
       routing_id(), url, frame_name));
 }
 
-bool WebKitTestRunner::allowExternalPages() {
+bool WebKitTestRunner::AllowExternalPages() {
   return test_config_.allow_external_pages;
 }
 
-std::string WebKitTestRunner::dumpHistoryForWindow(WebTestProxyBase* proxy) {
+std::string WebKitTestRunner::DumpHistoryForWindow(WebTestProxyBase* proxy) {
   size_t pos = 0;
   std::vector<int>::iterator id;
   for (id = routing_ids_.begin(); id != routing_ids_.end(); ++id, ++pos) {
@@ -705,7 +705,7 @@ void WebKitTestRunner::OnSetTestConfiguration(
   ForceResizeRenderView(
       render_view(),
       WebSize(params.initial_size.width(), params.initial_size.height()));
-  setFocus(proxy_, true);
+  SetFocus(proxy_, true);
 
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();

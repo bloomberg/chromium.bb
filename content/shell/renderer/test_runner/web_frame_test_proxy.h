@@ -6,10 +6,10 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/test/test_media_stream_renderer_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -146,12 +146,12 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void runModalAlertDialog(const blink::WebString& message) {
-    base_proxy_->delegate_->printMessage(std::string("ALERT: ") +
+    base_proxy_->delegate_->PrintMessage(std::string("ALERT: ") +
                                          message.utf8().data() + "\n");
   }
 
   virtual bool runModalConfirmDialog(const blink::WebString& message) {
-    base_proxy_->delegate_->printMessage(std::string("CONFIRM: ") +
+    base_proxy_->delegate_->PrintMessage(std::string("CONFIRM: ") +
                                          message.utf8().data() + "\n");
     return true;
   }
@@ -159,7 +159,7 @@ class WebFrameTestProxy : public Base {
   virtual bool runModalPromptDialog(const blink::WebString& message,
                                     const blink::WebString& default_value,
                                     blink::WebString*) {
-    base_proxy_->delegate_->printMessage(
+    base_proxy_->delegate_->PrintMessage(
         std::string("PROMPT: ") + message.utf8().data() + ", default text: " +
         default_value.utf8().data() + "\n");
     return true;
@@ -167,7 +167,7 @@ class WebFrameTestProxy : public Base {
 
   virtual bool runModalBeforeUnloadDialog(bool is_reload,
                                           const blink::WebString& message) {
-    base_proxy_->delegate_->printMessage(std::string("CONFIRM NAVIGATION: ") +
+    base_proxy_->delegate_->PrintMessage(std::string("CONFIRM NAVIGATION: ") +
                                          message.utf8().data() + "\n");
     return !base_proxy_->test_interfaces_->GetTestRunner()
                 ->shouldStayOnPageAfterHandlingBeforeUnload();

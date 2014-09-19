@@ -5,7 +5,7 @@
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
@@ -219,7 +219,7 @@ void MockWebSpeechRecognizer::SetError(const blink::WebString& error,
 void MockWebSpeechRecognizer::StartTaskQueue() {
   if (task_queue_running_)
     return;
-  delegate_->postTask(new StepTask(this));
+  delegate_->PostTask(new StepTask(this));
   task_queue_running_ = true;
 }
 
@@ -247,7 +247,7 @@ void MockWebSpeechRecognizer::StepTask::RunIfValid() {
     return;
   }
 
-  object_->delegate_->postTask(new StepTask(object_));
+  object_->delegate_->PostTask(new StepTask(object_));
 }
 
 }  // namespace content

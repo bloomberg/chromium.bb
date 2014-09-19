@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/common/desktop_notification_messages.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -65,37 +65,37 @@ bool NotificationPresenter::show(const WebNotification& notification) {
   if (!notification.replaceId().isEmpty()) {
     std::string replaceId(notification.replaceId().utf8());
     if (replacements_.find(replaceId) != replacements_.end()) {
-      delegate_->printMessage(std::string("REPLACING NOTIFICATION ") +
+      delegate_->PrintMessage(std::string("REPLACING NOTIFICATION ") +
                               replacements_.find(replaceId)->second + "\n");
     }
     replacements_[replaceId] = notification.title().utf8();
   }
 
-  delegate_->printMessage("DESKTOP NOTIFICATION SHOWN: ");
+  delegate_->PrintMessage("DESKTOP NOTIFICATION SHOWN: ");
   if (!notification.title().isEmpty())
-    delegate_->printMessage(notification.title().utf8().data());
+    delegate_->PrintMessage(notification.title().utf8().data());
 
   if (notification.direction() == WebTextDirectionRightToLeft)
-    delegate_->printMessage(", RTL");
+    delegate_->PrintMessage(", RTL");
 
   // TODO(beverloo): WebNotification should expose the "lang" attribute's value.
 
   if (!notification.body().isEmpty()) {
-    delegate_->printMessage(std::string(", body: ") +
+    delegate_->PrintMessage(std::string(", body: ") +
                             notification.body().utf8().data());
   }
 
   if (!notification.replaceId().isEmpty()) {
-    delegate_->printMessage(std::string(", tag: ") +
+    delegate_->PrintMessage(std::string(", tag: ") +
                             notification.replaceId().utf8().data());
   }
 
   if (!notification.iconURL().isEmpty()) {
-    delegate_->printMessage(std::string(", icon: ") +
+    delegate_->PrintMessage(std::string(", icon: ") +
                             notification.iconURL().spec().data());
   }
 
-  delegate_->printMessage("\n");
+  delegate_->PrintMessage("\n");
 
   std::string title = notification.title().utf8();
   active_notifications_[title] = notification;
@@ -109,7 +109,7 @@ bool NotificationPresenter::show(const WebNotification& notification) {
 void NotificationPresenter::cancel(const WebNotification& notification) {
   std::string title = notification.title().utf8();
 
-  delegate_->printMessage(std::string("DESKTOP NOTIFICATION CLOSED: ") + title +
+  delegate_->PrintMessage(std::string("DESKTOP NOTIFICATION CLOSED: ") + title +
                           "\n");
 
   WebNotification event_target(notification);
@@ -126,7 +126,7 @@ void NotificationPresenter::objectDestroyed(
 
 WebNotificationPresenter::Permission NotificationPresenter::checkPermission(
     const WebSecurityOrigin& security_origin) {
-  return delegate_->checkWebNotificationPermission(
+  return delegate_->CheckWebNotificationPermission(
       GURL(security_origin.toString()));
 }
 

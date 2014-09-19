@@ -19,7 +19,7 @@ class WebTestRunner {
   // embedder should use this for all WebViews it creates.
   virtual blink::WebPermissionClient* GetWebPermissions() const = 0;
 
-  // After WebTestDelegate::testFinished was invoked, the following methods
+  // After WebTestDelegate::TestFinished was invoked, the following methods
   // can be used to determine what kind of dump the main WebTestProxy can
   // provide.
 

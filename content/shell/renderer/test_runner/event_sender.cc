@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/page_zoom.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_spell_check.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -1344,7 +1344,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // We just simulate the same behavior here.
   std::string edit_command;
   if (GetEditCommand(event_down, &edit_command))
-    delegate_->setEditCommand(edit_command, "");
+    delegate_->SetEditCommand(edit_command, "");
 
   view_->handleInputEvent(event_down);
 
@@ -1360,7 +1360,7 @@ void EventSender::KeyDown(const std::string& code_str,
     FinishDragAndDrop(event, blink::WebDragOperationNone);
   }
 
-  delegate_->clearEditCommand();
+  delegate_->ClearEditCommand();
 
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;
@@ -1540,7 +1540,7 @@ void EventSender::DumpFilenameBeingDragged() {
       break;
     }
   }
-  delegate_->printMessage(std::string("Filename being dragged: ") +
+  delegate_->PrintMessage(std::string("Filename being dragged: ") +
                           filename.utf8().data() + "\n");
 }
 
@@ -1615,12 +1615,12 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   for (size_t i = 0; i < files.size(); ++i) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = delegate_->getAbsoluteWebStringFromUTF8Path(files[i]);
+    item.filenameData = delegate_->GetAbsoluteWebStringFromUTF8Path(files[i]);
     current_drag_data_.addItem(item);
     absolute_filenames[i] = item.filenameData;
   }
   current_drag_data_.setFilesystemId(
-      delegate_->registerIsolatedFileSystem(absolute_filenames));
+      delegate_->RegisterIsolatedFileSystem(absolute_filenames));
   current_drag_effects_allowed_ = blink::WebDragOperationCopy;
 
   // Provide a drag source.
@@ -1876,18 +1876,18 @@ void EventSender::MouseMomentumEnd() {
 }
 
 void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
-  delegate_->postTask(new MouseDownTask(this, button_number, modifiers));
-  delegate_->postTask(new MouseUpTask(this, button_number, modifiers));
+  delegate_->PostTask(new MouseDownTask(this, button_number, modifiers));
+  delegate_->PostTask(new MouseUpTask(this, button_number, modifiers));
 }
 
 void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
                                               int modifiers,
                                               KeyLocationCode location) {
-  delegate_->postTask(new KeyDownTask(this, code_str, modifiers, location));
+  delegate_->PostTask(new KeyDownTask(this, code_str, modifiers, location));
 }
 
 double EventSender::GetCurrentEventTimeSec() {
-  return (delegate_->getCurrentTimeInMillisecond() + time_offset_ms_) / 1000.0;
+  return (delegate_->GetCurrentTimeInMillisecond() + time_offset_ms_) / 1000.0;
 }
 
 void EventSender::DoLeapForward(int milliseconds) {

@@ -5,7 +5,7 @@
 #include "content/shell/renderer/test_runner/mock_webrtc_dtmf_sender_handler.h"
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandlerClient.h"
 
@@ -61,8 +61,8 @@ bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones,
     return false;
 
   tone_buffer_ = tones;
-  delegate_->postTask(new DTMFSenderToneTask(this, client_));
-  delegate_->postTask(new DTMFSenderToneTask(this, client_));
+  delegate_->PostTask(new DTMFSenderToneTask(this, client_));
+  delegate_->PostTask(new DTMFSenderToneTask(this, client_));
   return true;
 }
 

@@ -10,7 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -86,7 +86,7 @@ void PrintTouchList(WebTestDelegate* delegate,
                     const blink::WebTouchPoint* points,
                     int length) {
   for (int i = 0; i < length; ++i) {
-    delegate->printMessage(base::StringPrintf("* %.2f, %.2f: %s\n",
+    delegate->PrintMessage(base::StringPrintf("* %.2f, %.2f: %s\n",
                                               points[i].position.x,
                                               points[i].position.y,
                                               PointState(points[i].state)));
@@ -103,11 +103,11 @@ void PrintEventDetails(WebTestDelegate* delegate,
              event.type == blink::WebInputEvent::MouseWheel) {
     const blink::WebMouseEvent& mouse =
         static_cast<const blink::WebMouseEvent&>(event);
-    delegate->printMessage(base::StringPrintf("* %d, %d\n", mouse.x, mouse.y));
+    delegate->PrintMessage(base::StringPrintf("* %d, %d\n", mouse.x, mouse.y));
   } else if (blink::WebInputEvent::isGestureEventType(event.type)) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);
-    delegate->printMessage(
+    delegate->PrintMessage(
         base::StringPrintf("* %d, %d\n", gesture.x, gesture.y));
   }
 }
@@ -193,7 +193,7 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
       print_user_gesture_status_ = ParseBoolean(attribute_value);
   }
   if (can_create_without_renderer_)
-    delegate_->printMessage(
+    delegate_->PrintMessage(
         std::string("TestPlugin: canCreateWithoutRenderer\n"));
 }
 
@@ -681,18 +681,18 @@ bool TestPlugin::handleInputEvent(const blink::WebInputEvent& event,
       break;
   }
 
-  delegate_->printMessage(std::string("Plugin received event: ") +
+  delegate_->PrintMessage(std::string("Plugin received event: ") +
                           (event_name ? event_name : "unknown") + "\n");
   if (print_event_details_)
     PrintEventDetails(delegate_, event);
   if (print_user_gesture_status_)
-    delegate_->printMessage(
+    delegate_->PrintMessage(
         std::string("* ") +
         (blink::WebUserGestureIndicator::isProcessingUserGesture() ? ""
                                                                    : "not ") +
         "handling user gesture\n");
   if (is_persistent_)
-    delegate_->printMessage(std::string("TestPlugin: isPersistent\n"));
+    delegate_->PrintMessage(std::string("TestPlugin: isPersistent\n"));
   return false;
 }
 
@@ -719,7 +719,7 @@ bool TestPlugin::handleDragStatusUpdate(
     case blink::WebDragStatusUnknown:
       NOTREACHED();
   }
-  delegate_->printMessage(std::string("Plugin received event: ") +
+  delegate_->PrintMessage(std::string("Plugin received event: ") +
                           drag_status_name + "\n");
   return false;
 }

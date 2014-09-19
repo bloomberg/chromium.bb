@@ -9,13 +9,13 @@
 #include "base/logging.h"
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/binding_helpers.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_permissions.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
@@ -1470,9 +1470,9 @@ void TestRunner::WorkQueue::ProcessWorkSoon() {
 
   if (!queue_.empty()) {
     // We delay processing queued work to avoid recursion problems.
-    controller_->delegate_->postTask(new WorkQueueTask(this));
+    controller_->delegate_->PostTask(new WorkQueueTask(this));
   } else if (!controller_->wait_until_done_) {
-    controller_->delegate_->testFinished();
+    controller_->delegate_->TestFinished();
   }
 }
 
@@ -1504,7 +1504,7 @@ void TestRunner::WorkQueue::ProcessWork() {
   }
 
   if (!controller_->wait_until_done_ && !controller_->topLoadingFrame())
-    controller_->delegate_->testFinished();
+    controller_->delegate_->TestFinished();
 }
 
 void TestRunner::WorkQueue::WorkQueueTask::RunIfValid() {
@@ -1579,15 +1579,15 @@ void TestRunner::Reset() {
 
   if (delegate_) {
     // Reset the default quota for each origin to 5MB
-    delegate_->setDatabaseQuota(5 * 1024 * 1024);
-    delegate_->setDeviceColorProfile("reset");
-    delegate_->setDeviceScaleFactor(1);
-    delegate_->setAcceptAllCookies(false);
-    delegate_->setLocale("");
-    delegate_->useUnfortunateSynchronousResizeMode(false);
-    delegate_->disableAutoResizeMode(WebSize());
-    delegate_->deleteAllCookies();
-    delegate_->resetScreenOrientation();
+    delegate_->SetDatabaseQuota(5 * 1024 * 1024);
+    delegate_->SetDeviceColorProfile("reset");
+    delegate_->SetDeviceScaleFactor(1);
+    delegate_->SetAcceptAllCookies(false);
+    delegate_->SetLocale("");
+    delegate_->UseUnfortunateSynchronousResizeMode(false);
+    delegate_->DisableAutoResizeMode(WebSize());
+    delegate_->DeleteAllCookies();
+    delegate_->ResetScreenOrientation();
     ResetBatteryStatus();
     ResetDeviceLight();
   }
@@ -1643,7 +1643,7 @@ void TestRunner::Reset() {
   work_queue_.Reset();
 
   if (close_remaining_windows_ && delegate_)
-    delegate_->closeRemainingWindows();
+    delegate_->CloseRemainingWindows();
   else
     close_remaining_windows_ = true;
 }
@@ -1653,7 +1653,7 @@ void TestRunner::SetTestIsRunning(bool running) {
 }
 
 void TestRunner::InvokeCallback(scoped_ptr<InvokeCallbackTask> task) {
-  delegate_->postTask(task.release());
+  delegate_->PostTask(task.release());
 }
 
 bool TestRunner::shouldDumpEditingCallbacks() const {
@@ -1830,7 +1830,7 @@ WebFrame* TestRunner::topLoadingFrame() const {
 
 void TestRunner::policyDelegateDone() {
   DCHECK(wait_until_done_);
-  delegate_->testFinished();
+  delegate_->TestFinished();
   wait_until_done_ = false;
 }
 
@@ -1861,7 +1861,7 @@ WebNotificationPresenter* TestRunner::notification_presenter() const {
 bool TestRunner::RequestPointerLock() {
   switch (pointer_lock_planned_result_) {
     case PointerLockWillSucceed:
-      delegate_->postDelayedTask(
+      delegate_->PostDelayedTask(
           new HostMethodTask(this, &TestRunner::DidAcquirePointerLockInternal),
           0);
       return true;
@@ -1878,7 +1878,7 @@ bool TestRunner::RequestPointerLock() {
 }
 
 void TestRunner::RequestPointerUnlock() {
-  delegate_->postDelayedTask(
+  delegate_->PostDelayedTask(
       new HostMethodTask(this, &TestRunner::DidLosePointerLockInternal), 0);
 }
 
@@ -1894,13 +1894,13 @@ bool TestRunner::midiAccessorResult() {
   return midi_accessor_result_;
 }
 
-void TestRunner::clearDevToolsLocalStorage() {
-  delegate_->clearDevToolsLocalStorage();
+void TestRunner::ClearDevToolsLocalStorage() {
+  delegate_->ClearDevToolsLocalStorage();
 }
 
-void TestRunner::showDevTools(const std::string& settings,
+void TestRunner::ShowDevTools(const std::string& settings,
                               const std::string& frontend_url) {
-  delegate_->showDevTools(settings, frontend_url);
+  delegate_->ShowDevTools(settings, frontend_url);
 }
 
 class WorkItemBackForward : public TestRunner::WorkItem {
@@ -1908,7 +1908,7 @@ class WorkItemBackForward : public TestRunner::WorkItem {
   WorkItemBackForward(int distance) : distance_(distance) {}
 
   virtual bool Run(WebTestDelegate* delegate, WebView*) OVERRIDE {
-    delegate->goToOffset(distance_);
+    delegate->GoToOffset(distance_);
     return true; // FIXME: Did it really start a navigation?
   }
 
@@ -1941,7 +1941,7 @@ void TestRunner::QueueForwardNavigation(int how_far_forward) {
 class WorkItemReload : public TestRunner::WorkItem {
  public:
   virtual bool Run(WebTestDelegate* delegate, WebView*) OVERRIDE {
-    delegate->reload();
+    delegate->Reload();
     return true;
   }
 };
@@ -1994,7 +1994,7 @@ class WorkItemLoad : public TestRunner::WorkItem {
       : url_(url), target_(target) {}
 
   virtual bool Run(WebTestDelegate* delegate, WebView*) OVERRIDE {
-    delegate->loadURLForFrame(url_, target_);
+    delegate->LoadURLForFrame(url_, target_);
     return true; // FIXME: Did it really start a navigation?
   }
 
@@ -2275,7 +2275,7 @@ void TestRunner::SetTextDirection(const std::string& direction_name) {
 }
 
 void TestRunner::UseUnfortunateSynchronousResizeMode() {
-  delegate_->useUnfortunateSynchronousResizeMode(true);
+  delegate_->UseUnfortunateSynchronousResizeMode(true);
 }
 
 bool TestRunner::EnableAutoResizeMode(int min_width,
@@ -2284,22 +2284,22 @@ bool TestRunner::EnableAutoResizeMode(int min_width,
                                       int max_height) {
   WebSize min_size(min_width, min_height);
   WebSize max_size(max_width, max_height);
-  delegate_->enableAutoResizeMode(min_size, max_size);
+  delegate_->EnableAutoResizeMode(min_size, max_size);
   return true;
 }
 
 bool TestRunner::DisableAutoResizeMode(int new_width, int new_height) {
   WebSize new_size(new_width, new_height);
-  delegate_->disableAutoResizeMode(new_size);
+  delegate_->DisableAutoResizeMode(new_size);
   return true;
 }
 
 void TestRunner::SetMockDeviceLight(double value) {
-  delegate_->setDeviceLightData(value);
+  delegate_->SetDeviceLightData(value);
 }
 
 void TestRunner::ResetDeviceLight() {
-  delegate_->setDeviceLightData(-1);
+  delegate_->SetDeviceLightData(-1);
 }
 
 void TestRunner::SetMockDeviceMotion(
@@ -2348,7 +2348,7 @@ void TestRunner::SetMockDeviceMotion(
   // interval
   motion.interval = interval;
 
-  delegate_->setDeviceMotionData(motion);
+  delegate_->SetDeviceMotionData(motion);
 }
 
 void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
@@ -2373,7 +2373,7 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
   orientation.hasAbsolute = has_absolute;
   orientation.absolute = absolute;
 
-  delegate_->setDeviceOrientationData(orientation);
+  delegate_->SetDeviceOrientationData(orientation);
 }
 
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
@@ -2389,7 +2389,7 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = WebScreenOrientationLandscapeSecondary;
   }
 
-  delegate_->setScreenOrientation(orientation);
+  delegate_->SetScreenOrientation(orientation);
 }
 
 void TestRunner::DidChangeBatteryStatus(bool charging,
@@ -2401,12 +2401,12 @@ void TestRunner::DidChangeBatteryStatus(bool charging,
   status.chargingTime = chargingTime;
   status.dischargingTime = dischargingTime;
   status.level = level;
-  delegate_->didChangeBatteryStatus(status);
+  delegate_->DidChangeBatteryStatus(status);
 }
 
 void TestRunner::ResetBatteryStatus() {
   blink::WebBatteryStatus status;
-  delegate_->didChangeBatteryStatus(status);
+  delegate_->DidChangeBatteryStatus(status);
 }
 
 void TestRunner::DidAcquirePointerLock() {
@@ -2430,34 +2430,34 @@ void TestRunner::SetPointerLockWillRespondAsynchronously() {
 }
 
 void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  delegate_->preferences()->java_script_can_open_windows_automatically =
+  delegate_->Preferences()->java_script_can_open_windows_automatically =
       !block_popups;
-  delegate_->applyPreferences();
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {
-  delegate_->preferences()->java_script_can_access_clipboard = can_access;
-  delegate_->applyPreferences();
+  delegate_->Preferences()->java_script_can_access_clipboard = can_access;
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::SetXSSAuditorEnabled(bool enabled) {
-  delegate_->preferences()->xss_auditor_enabled = enabled;
-  delegate_->applyPreferences();
+  delegate_->Preferences()->xss_auditor_enabled = enabled;
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::SetAllowUniversalAccessFromFileURLs(bool allow) {
-  delegate_->preferences()->allow_universal_access_from_file_urls = allow;
-  delegate_->applyPreferences();
+  delegate_->Preferences()->allow_universal_access_from_file_urls = allow;
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
-  delegate_->preferences()->allow_file_access_from_file_urls = allow;
-  delegate_->applyPreferences();
+  delegate_->Preferences()->allow_file_access_from_file_urls = allow;
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::OverridePreference(const std::string key,
                                     v8::Handle<v8::Value> value) {
-  TestPreferences* prefs = delegate_->preferences();
+  TestPreferences* prefs = delegate_->Preferences();
   if (key == "WebKitDefaultFontSize") {
     prefs->default_font_size = value->Int32Value();
   } else if (key == "WebKitMinimumFontSize") {
@@ -2499,9 +2499,9 @@ void TestRunner::OverridePreference(const std::string key,
   } else {
     std::string message("Invalid name for preference: ");
     message.append(key);
-    delegate_->printMessage(std::string("CONSOLE MESSAGE: ") + message + "\n");
+    delegate_->PrintMessage(std::string("CONSOLE MESSAGE: ") + message + "\n");
   }
-  delegate_->applyPreferences();
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
@@ -2509,8 +2509,8 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
-  delegate_->preferences()->plugins_enabled = enabled;
-  delegate_->applyPreferences();
+  delegate_->Preferences()->plugins_enabled = enabled;
+  delegate_->ApplyPreferences();
 }
 
 void TestRunner::DumpEditingCallbacks() {
@@ -2670,7 +2670,7 @@ void TestRunner::SetUseMockTheme(bool use) {
 
 void TestRunner::ShowWebInspector(const std::string& str,
                                   const std::string& frontend_url) {
-  showDevTools(str, frontend_url);
+  ShowDevTools(str, frontend_url);
 }
 
 void TestRunner::WaitUntilExternalURLLoad() {
@@ -2678,7 +2678,7 @@ void TestRunner::WaitUntilExternalURLLoad() {
 }
 
 void TestRunner::CloseWebInspector() {
-  delegate_->closeDevTools();
+  delegate_->CloseDevTools();
 }
 
 bool TestRunner::IsChooserShown() {
@@ -2687,43 +2687,43 @@ bool TestRunner::IsChooserShown() {
 
 void TestRunner::EvaluateInWebInspector(int call_id,
                                         const std::string& script) {
-  delegate_->evaluateInWebInspector(call_id, script);
+  delegate_->EvaluateInWebInspector(call_id, script);
 }
 
 void TestRunner::ClearAllDatabases() {
-  delegate_->clearAllDatabases();
+  delegate_->ClearAllDatabases();
 }
 
 void TestRunner::SetDatabaseQuota(int quota) {
-  delegate_->setDatabaseQuota(quota);
+  delegate_->SetDatabaseQuota(quota);
 }
 
 void TestRunner::SetAlwaysAcceptCookies(bool accept) {
-  delegate_->setAcceptAllCookies(accept);
+  delegate_->SetAcceptAllCookies(accept);
 }
 
 void TestRunner::SetWindowIsKey(bool value) {
-  delegate_->setFocus(proxy_, value);
+  delegate_->SetFocus(proxy_, value);
 }
 
 std::string TestRunner::PathToLocalResource(const std::string& path) {
-  return delegate_->pathToLocalResource(path);
+  return delegate_->PathToLocalResource(path);
 }
 
 void TestRunner::SetBackingScaleFactor(double value,
                                        v8::Handle<v8::Function> callback) {
-  delegate_->setDeviceScaleFactor(value);
-  delegate_->postTask(new InvokeCallbackTask(this, callback));
+  delegate_->SetDeviceScaleFactor(value);
+  delegate_->PostTask(new InvokeCallbackTask(this, callback));
 }
 
 void TestRunner::SetColorProfile(const std::string& name,
                                  v8::Handle<v8::Function> callback) {
-  delegate_->setDeviceColorProfile(name);
-  delegate_->postTask(new InvokeCallbackTask(this, callback));
+  delegate_->SetDeviceColorProfile(name);
+  delegate_->PostTask(new InvokeCallbackTask(this, callback));
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {
-  delegate_->setLocale(locale);
+  delegate_->SetLocale(locale);
 }
 
 void TestRunner::SetMIDIAccessorResult(bool result) {
@@ -2739,11 +2739,11 @@ void TestRunner::SetMIDISysexPermission(bool value) {
 
 void TestRunner::GrantWebNotificationPermission(const GURL& origin,
                                                 bool permission_granted) {
-  delegate_->grantWebNotificationPermission(origin, permission_granted);
+  delegate_->GrantWebNotificationPermission(origin, permission_granted);
 }
 
 void TestRunner::ClearWebNotificationPermissions() {
-  delegate_->clearWebNotificationPermissions();
+  delegate_->ClearWebNotificationPermissions();
 }
 
 bool TestRunner::SimulateWebNotificationClick(const std::string& value) {
@@ -2876,7 +2876,7 @@ void TestRunner::SetMockPushClientError(const std::string& message) {
 }
 
 void TestRunner::LocationChangeDone() {
-  web_history_item_count_ = delegate_->navigationEntryCount();
+  web_history_item_count_ = delegate_->NavigationEntryCount();
 
   // No more new work after the first complete load.
   work_queue_.set_frozen(true);
@@ -2900,7 +2900,7 @@ void TestRunner::CheckResponseMimeType() {
 
 void TestRunner::CompleteNotifyDone() {
   if (wait_until_done_ && !topLoadingFrame() && work_queue_.is_empty())
-    delegate_->testFinished();
+    delegate_->TestFinished();
   wait_until_done_ = false;
 }
 

@@ -4,7 +4,7 @@
 
 #include "content/shell/renderer/test_runner/mock_color_chooser.h"
 
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 
 namespace content {
@@ -41,7 +41,8 @@ MockColorChooser::~MockColorChooser() {
 void MockColorChooser::setSelectedColor(const blink::WebColor color) {}
 
 void MockColorChooser::endChooser() {
-  delegate_->postDelayedTask(new HostMethodTask(this, &MockColorChooser::InvokeDidEndChooser), 0);
+  delegate_->PostDelayedTask(
+      new HostMethodTask(this, &MockColorChooser::InvokeDidEndChooser), 0);
 }
 
 void MockColorChooser::InvokeDidEndChooser() {

@@ -82,9 +82,9 @@ class TestRunner : public WebTestRunner,
   bool shouldDumpChildFrameScrollPositions() const;
   bool shouldDumpChildFramesAsMarkup() const;
   bool shouldDumpChildFramesAsText() const;
-  void showDevTools(const std::string& settings,
+  void ShowDevTools(const std::string& settings,
                     const std::string& frontend_url);
-  void clearDevToolsLocalStorage();
+  void ClearDevToolsLocalStorage();
   void setShouldDumpAsText(bool);
   void setShouldDumpAsMarkup(bool);
   void setCustomTextOutput(std::string text);

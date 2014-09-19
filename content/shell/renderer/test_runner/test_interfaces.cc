@@ -112,7 +112,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   }
   if (spec.find("/inspector/") != std::string::npos ||
       spec.find("/inspector-enabled/") != std::string::npos)
-    test_runner_->clearDevToolsLocalStorage();
+    test_runner_->ClearDevToolsLocalStorage();
   if (spec.find("/inspector/") != std::string::npos) {
     // Subfolder name determines default panel to open.
     std::string settings = "";
@@ -122,7 +122,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
       settings = base::StringPrintf("{\"lastActivePanel\":\"\\\"%s\\\"\"}",
                                     test_path.substr(0, slash_index).c_str());
     }
-    test_runner_->showDevTools(settings, std::string());
+    test_runner_->ShowDevTools(settings, std::string());
   }
   if (spec.find("/viewsource/") != std::string::npos) {
     test_runner_->setShouldEnableViewSource(true);

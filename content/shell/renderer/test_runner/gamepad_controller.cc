@@ -4,7 +4,7 @@
 
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -141,7 +141,7 @@ base::WeakPtr<GamepadController> GamepadController::Create(WebTestDelegate* dele
   CHECK(delegate);
 
   GamepadController* controller = new GamepadController();
-  delegate->setGamepadProvider(scoped_ptr<RendererGamepadProvider>(controller));
+  delegate->SetGamepadProvider(scoped_ptr<RendererGamepadProvider>(controller));
   return controller->weak_factory_.GetWeakPtr();
 }
 

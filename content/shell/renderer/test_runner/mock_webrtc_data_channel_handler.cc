@@ -5,7 +5,7 @@
 #include "content/shell/renderer/test_runner/mock_webrtc_data_channel_handler.h"
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 
 using namespace blink;
@@ -46,7 +46,7 @@ void MockWebRTCDataChannelHandler::setClient(
     WebRTCDataChannelHandlerClient* client) {
   client_ = client;
   if (client_)
-    delegate_->postTask(new DataChannelReadyStateTask(
+    delegate_->PostTask(new DataChannelReadyStateTask(
         this, client_, WebRTCDataChannelHandlerClient::ReadyStateOpen));
 }
 
@@ -100,7 +100,7 @@ bool MockWebRTCDataChannelHandler::sendRawData(const char* data, size_t size) {
 
 void MockWebRTCDataChannelHandler::close() {
   DCHECK(client_);
-  delegate_->postTask(new DataChannelReadyStateTask(
+  delegate_->PostTask(new DataChannelReadyStateTask(
       this, client_, WebRTCDataChannelHandlerClient::ReadyStateClosed));
 }
 
