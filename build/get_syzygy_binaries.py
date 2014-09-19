@@ -358,16 +358,52 @@ def _ParseCommandLine():
   return options
 
 
-def main():
-  # We only care about Windows platforms, as the Syzygy binaries aren't used
-  # elsewhere.
-  if sys.platform not in ('win32', 'cygwin'):
+def _RemoveOrphanedFiles(options):
+  """This is run on non-Windows systems to remove orphaned files that may have
+  been downloaded by a previous version of this script.
+  """
+  # Reconfigure logging to output info messages. This will allow inspection of
+  # cleanup status on non-Windows buildbots.
+  _LOGGER.setLevel(logging.INFO)
+
+  output_dir = os.path.abspath(options.output_dir)
+
+  # We only want to clean up the folder in 'src/third_party/syzygy', and we
+  # expect to be called with that as an output directory. This is an attempt to
+  # not start deleting random things if the script is run from an alternate
+  # location, or not called from the gclient hooks.
+  expected_syzygy_dir = os.path.abspath(os.path.join(
+      os.path.dirname(__file__), '..', 'third_party', 'syzygy'))
+  expected_output_dir = os.path.join(expected_syzygy_dir, 'binaries')
+  if expected_output_dir != output_dir:
+    _LOGGER.info('Unexpected output directory, skipping cleanup.')
     return
 
+  if not os.path.isdir(expected_syzygy_dir):
+    _LOGGER.info('Output directory does not exist, skipping cleanup.')
+    return
+
+  def OnError(function, path, excinfo):
+    """Logs error encountered by shutil.rmtree."""
+    _LOGGER.error('Error when running %s(%s)', function, path, exc_info=excinfo)
+
+  _LOGGER.info('Removing orphaned files from %s', expected_syzygy_dir)
+  if not options.dry_run:
+    shutil.rmtree(expected_syzygy_dir, True, OnError)
+
+
+def main():
   options = _ParseCommandLine()
 
   if options.dry_run:
     _LOGGER.debug('Performing a dry-run.')
+
+  # We only care about Windows platforms, as the Syzygy binaries aren't used
+  # elsewhere. However, there was a short period of time where this script
+  # wasn't gated on OS types, and those OSes downloaded and installed binaries.
+  # This will cleanup orphaned files on those operating systems.
+  if sys.platform not in ('win32', 'cygwin'):
+    return _RemoveOrphanedFiles(options)
 
   # Load the current installation state, and validate it against the
   # requested installation.
