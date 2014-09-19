@@ -393,7 +393,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another renderer?
             RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
             CompositingReasons reflectionCompositingReason = willBeCompositedOrSquashed ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
-            reflectionLayer->setCompositingReasons(reflectionLayer->compositingReasons() | reflectionCompositingReason);
+            reflectionLayer->setCompositingReasons(reflectionCompositingReason, CompositingReasonReflectionOfCompositedParent);
         }
 
         if (willBeCompositedOrSquashed && layer->renderer()->hasBlendMode())

@@ -179,8 +179,7 @@ RenderLayer::~RenderLayer()
 String RenderLayer::debugName() const
 {
     if (isReflection()) {
-        ASSERT(m_reflectionInfo);
-        return m_reflectionInfo->debugName();
+        return renderer()->parent()->debugName() + " (reflection)";
     }
     return renderer()->debugName();
 }
