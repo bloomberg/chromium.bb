@@ -14,6 +14,7 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache_internal.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
@@ -305,4 +306,36 @@ void NaClAddCodeIdentity(uint8_t *data,
     /* Hash all the code. */
     cache->AddData(query, data, size);
   }
+}
+
+struct NaClDesc *NaClDescCreateWithFilePathMetadata(NaClHandle handle,
+                                                    const char *file_path) {
+  struct NaClDesc *desc = NaClDescIoDescFromHandleAllocCtor(handle,
+                                                            NACL_ABI_O_RDONLY);
+  char *alloc_file_path;
+  size_t file_path_length = strlen(file_path);
+
+  struct NaClRichFileInfo info;
+
+  if (desc == NULL)
+    return NULL;
+
+  /* Mark the desc as OK for mmapping. */
+  NaClDescMarkSafeForMmap(desc);
+
+  alloc_file_path = (char *) malloc(file_path_length + 1);
+  if (alloc_file_path == NULL) {
+    NaClDescUnref(desc);
+    return NULL;
+  }
+  memcpy(alloc_file_path, file_path, file_path_length + 1);
+
+  /* Provide metadata for validation. */
+  NaClRichFileInfoCtor(&info);
+  info.known_file = 1;
+  info.file_path = alloc_file_path;  /* Takes ownership. */
+  info.file_path_length = (uint32_t) file_path_length;
+  NaClSetFileOriginInfo(desc, &info);
+  NaClRichFileInfoDtor(&info);
+  return desc;
 }
