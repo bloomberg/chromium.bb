@@ -15,11 +15,11 @@
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/client_video_dispatcher.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace remoting {
@@ -197,8 +197,9 @@ void ConnectionToHost::OnSessionStateChange(
           base::Bind(&ConnectionToHost::OnChannelInitialized,
                      base::Unretained(this)));
 
-      video_reader_ = VideoReader::Create(session_->config());
-      video_reader_->Init(session_.get(), monitored_video_stub_.get(),
+      video_dispatcher_.reset(
+          new ClientVideoDispatcher(monitored_video_stub_.get()));
+      video_dispatcher_->Init(session_.get(), session_->config().video_config(),
                           base::Bind(&ConnectionToHost::OnChannelInitialized,
                                      base::Unretained(this)));
 
@@ -263,7 +264,7 @@ void ConnectionToHost::NotifyIfChannelsReady() {
     return;
   if (!event_dispatcher_.get() || !event_dispatcher_->is_connected())
     return;
-  if (!video_reader_.get() || !video_reader_->is_connected())
+  if (!video_dispatcher_.get() || !video_dispatcher_->is_connected())
     return;
   if ((!audio_reader_.get() || !audio_reader_->is_connected()) &&
       session_->config().is_audio_enabled()) {
@@ -288,7 +289,7 @@ void ConnectionToHost::CloseChannels() {
   event_dispatcher_.reset();
   clipboard_forwarder_.set_clipboard_stub(NULL);
   event_forwarder_.set_input_stub(NULL);
-  video_reader_.reset();
+  video_dispatcher_.reset();
   audio_reader_.reset();
 }
 

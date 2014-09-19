@@ -42,7 +42,7 @@ class HostStub;
 class InputStub;
 class SessionConfig;
 class TransportFactory;
-class VideoReader;
+class ClientVideoDispatcher;
 class VideoStub;
 
 class ConnectionToHost : public SignalStrategy::Listener,
@@ -173,7 +173,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
   scoped_ptr<Session> session_;
   scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
 
-  scoped_ptr<VideoReader> video_reader_;
+  scoped_ptr<ClientVideoDispatcher> video_dispatcher_;
   scoped_ptr<AudioReader> audio_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
   scoped_ptr<ClientEventDispatcher> event_dispatcher_;

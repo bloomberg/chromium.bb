@@ -14,17 +14,18 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/audio_writer.h"
 #include "remoting/protocol/session.h"
-#include "remoting/protocol/video_writer.h"
 
 namespace remoting {
 namespace protocol {
 
 class ClientStub;
 class ClipboardStub;
-class HostStub;
-class InputStub;
 class HostControlDispatcher;
 class HostEventDispatcher;
+class HostStub;
+class HostVideoDispatcher;
+class InputStub;
+class VideoStub;
 
 // This class represents a remote viewer connection to the chromoting
 // host. It sets up all protocol channels and connects them to the
@@ -128,7 +129,7 @@ class ConnectionToClient : public base::NonThreadSafe,
 
   scoped_ptr<HostControlDispatcher> control_dispatcher_;
   scoped_ptr<HostEventDispatcher> event_dispatcher_;
-  scoped_ptr<VideoWriter> video_writer_;
+  scoped_ptr<HostVideoDispatcher> video_dispatcher_;
   scoped_ptr<AudioWriter> audio_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClient);

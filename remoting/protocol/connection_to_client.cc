@@ -12,6 +12,7 @@
 #include "remoting/protocol/host_control_dispatcher.h"
 #include "remoting/protocol/host_event_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/host_video_dispatcher.h"
 #include "remoting/protocol/input_stub.h"
 
 namespace remoting {
@@ -56,7 +57,7 @@ void ConnectionToClient::UpdateSequenceNumber(int64 sequence_number) {
 
 VideoStub* ConnectionToClient::video_stub() {
   DCHECK(CalledOnValidThread());
-  return video_writer_.get();
+  return video_dispatcher_.get();
 }
 
 AudioStub* ConnectionToClient::audio_stub() {
@@ -134,9 +135,11 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       event_dispatcher_->set_sequence_number_callback(base::Bind(
           &ConnectionToClient::UpdateSequenceNumber, base::Unretained(this)));
 
-      video_writer_ = VideoWriter::Create(session_->config());
-      video_writer_->Init(session_.get(), base::Bind(
-          &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+      video_dispatcher_.reset(new HostVideoDispatcher());
+      video_dispatcher_->Init(
+          session_.get(), session_->config().video_config(),
+          base::Bind(&ConnectionToClient::OnChannelInitialized,
+                     base::Unretained(this)));
 
       audio_writer_ = AudioWriter::Create(session_->config());
       if (audio_writer_.get()) {
@@ -186,7 +189,7 @@ void ConnectionToClient::NotifyIfChannelsReady() {
     return;
   if (!event_dispatcher_.get() || !event_dispatcher_->is_connected())
     return;
-  if (!video_writer_.get() || !video_writer_->is_connected())
+  if (!video_dispatcher_.get() || !video_dispatcher_->is_connected())
     return;
   if ((!audio_writer_.get() || !audio_writer_->is_connected()) &&
       session_->config().is_audio_enabled()) {
@@ -203,7 +206,7 @@ void ConnectionToClient::Close(ErrorCode error) {
 void ConnectionToClient::CloseChannels() {
   control_dispatcher_.reset();
   event_dispatcher_.reset();
-  video_writer_.reset();
+  video_dispatcher_.reset();
   audio_writer_.reset();
 }
 
