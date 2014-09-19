@@ -107,14 +107,6 @@ class MojoStructType(type):
       return serialization_object.Serialize(self, handle_offset)
     dictionary['Serialize'] = Serialize
 
-    def Deserialize(cls, data, handles):
-      result = cls.__new__(cls)
-      fields = {}
-      serialization_object.Deserialize(fields, data, handles)
-      result._fields = fields
-      return result
-    dictionary['Deserialize'] = classmethod(Deserialize)
-
     return type.__new__(mcs, name, bases, dictionary)
 
   # Prevent adding new attributes, or mutating constants.

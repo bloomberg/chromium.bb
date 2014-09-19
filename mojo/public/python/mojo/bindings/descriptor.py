@@ -7,7 +7,6 @@ The descriptors used to define generated elements of the mojo python bindings.
 """
 
 import array
-import itertools
 import struct
 
 # pylint: disable=F0401
@@ -56,7 +55,7 @@ class SerializableType(Type):
 
   def Serialize(self, value, data_offset, data, handle_offset):
     """
-    Serialize a value of this type.
+    Serialize an value of this type.
 
     Args:
       value: the value to serialize.
@@ -67,21 +66,6 @@ class SerializableType(Type):
 
     Returns a a tuple where the first element is the value to encode, and the
     second is the array of handles to add to the message.
-    """
-    raise NotImplementedError()
-
-  def Deserialize(self, value, data, handles):
-    """
-    Deserialize a value of this type.
-
-    Args:
-      value: the base value for this type. This is always a numeric type, and
-             corresponds to the first element in the tuple returned by
-             Serialize.
-      data: the bytearray to retrieve additional data from.
-      handles: the array of handles contained in the message to deserialize.
-
-    Returns the deserialized value.
     """
     raise NotImplementedError()
 
@@ -103,9 +87,6 @@ class NumericType(SerializableType):
 
   def Serialize(self, value, data_offset, data, handle_offset):
     return (value, [])
-
-  def Deserialize(self, value, data, handles):
-    return value
 
 
 class IntegerType(NumericType):
@@ -154,26 +135,13 @@ class PointerType(SerializableType):
   def Serialize(self, value, data_offset, data, handle_offset):
     if value is None and not self.nullable:
       raise serialization.SerializationException(
-          'Trying to serialize null for non nullable type.')
+          "Trying to serialize null for non nullable type.")
     if value is None:
       return (0, [])
     return self.SerializePointer(value, data_offset, data, handle_offset)
 
-  def Deserialize(self, value, data, handles):
-    if value == 0:
-      if not self.nullable:
-        raise serialization.DeserializationException(
-            'Trying to deserialize null for non nullable type.')
-      return None
-    pointed_data = buffer(data, value)
-    (size, nb_elements) = serialization.HEADER_STRUCT.unpack_from(pointed_data)
-    return self.DeserializePointer(size, nb_elements, pointed_data, handles)
-
   def SerializePointer(self, value, data_offset, data, handle_offset):
     """Serialize the not null value."""
-    raise NotImplementedError()
-
-  def DeserializePointer(self, size, nb_elements, data, handles):
     raise NotImplementedError()
 
 
@@ -202,11 +170,6 @@ class StringType(PointerType):
     return self._array_type.SerializeArray(
         string_array, data_offset, data, handle_offset)
 
-  def DeserializePointer(self, size, nb_elements, data, handles):
-    string_array = self._array_type.DeserializeArray(
-        size, nb_elements, data, handles)
-    return unicode(buffer(string_array), 'utf8')
-
 
 class HandleType(SerializableType):
   """Type object for handles."""
@@ -225,19 +188,10 @@ class HandleType(SerializableType):
   def Serialize(self, value, data_offset, data, handle_offset):
     if not value.IsValid() and not self.nullable:
       raise serialization.SerializationException(
-          'Trying to serialize null for non nullable type.')
+          "Trying to serialize null for non nullable type.")
     if not value.IsValid():
       return (-1, [])
     return (handle_offset, [value])
-
-  def Deserialize(self, value, data, handles):
-    if value == -1:
-      if not self.nullable:
-        raise serialization.DeserializationException(
-            'Trying to deserialize null for non nullable type.')
-      return mojo.system.Handle()
-    # TODO(qsr) validate handle order
-    return handles[value]
 
 
 class BaseArrayType(PointerType):
@@ -249,21 +203,12 @@ class BaseArrayType(PointerType):
 
   def SerializePointer(self, value, data_offset, data, handle_offset):
     if self.length != 0 and len(value) != self.length:
-      raise serialization.SerializationException('Incorrect array size')
+      raise serialization.SerializationException("Incorrect array size")
     return self.SerializeArray(value, data_offset, data, handle_offset)
 
   def SerializeArray(self, value, data_offset, data, handle_offset):
     """Serialize the not null array."""
     raise NotImplementedError()
-
-  def DeserializePointer(self, size, nb_elements, data, handles):
-    if self.length != 0 and size != self.length:
-      raise serialization.DeserializationException('Incorrect array size')
-    return self.DeserializeArray(size, nb_elements, data, handles)
-
-  def DeserializeArray(self, size, nb_elements, data, handles):
-    raise NotImplementedError()
-
 
 class BooleanArrayType(BaseArrayType):
 
@@ -279,17 +224,8 @@ class BooleanArrayType(BaseArrayType):
   def SerializeArray(self, value, data_offset, data, handle_offset):
     groups = [value[i:i+8] for i in range(0, len(value), 8)]
     converted = array.array('B', [_ConvertBooleansToByte(x) for x in groups])
-    return _SerializeNativeArray(converted, data_offset, data, len(value))
-
-  def DeserializeArray(self, size, nb_elements, data, handles):
-    converted = self._array_type.DeserializeArray(
-        size, nb_elements, data, handles)
-    elements = list(itertools.islice(
-        itertools.chain.from_iterable(
-            [_ConvertByteToBooleans(x, 8) for x in converted]),
-        0,
-        nb_elements))
-    return elements
+    return self._array_type.SerializeArray(
+        converted, data_offset, data, handle_offset)
 
 
 class GenericArrayType(BaseArrayType):
@@ -309,11 +245,12 @@ class GenericArrayType(BaseArrayType):
     size = (serialization.HEADER_STRUCT.size +
             self.sub_type.GetByteSize() * len(value))
     data_end = len(data)
-    position = len(data) + serialization.HEADER_STRUCT.size
+    position = len(data) - data_offset
     data.extend(bytearray(size +
                           serialization.NeededPaddingForAlignment(size)))
     returned_handles = []
     to_pack = []
+    position = position + 2
     for item in value:
       (new_data, new_handles) = self.sub_type.Serialize(
           item,
@@ -324,23 +261,11 @@ class GenericArrayType(BaseArrayType):
       returned_handles.extend(new_handles)
       position = position + self.sub_type.GetByteSize()
     serialization.HEADER_STRUCT.pack_into(data, data_end, size, len(value))
-    struct.pack_into('%d%s' % (len(value), self.sub_type.GetTypeCode()),
+    struct.pack_into("%d%s" % (len(value), self.sub_type.GetTypeCode()),
                      data,
                      data_end + serialization.HEADER_STRUCT.size,
                      *to_pack)
     return (data_offset, returned_handles)
-
-  def DeserializeArray(self, size, nb_elements, data, handles):
-    values = struct.unpack_from(
-        '%d%s' % (nb_elements, self.sub_type.GetTypeCode()),
-        buffer(data, serialization.HEADER_STRUCT.size))
-    result = []
-    position = serialization.HEADER_STRUCT.size
-    for value in values:
-      result.append(
-          self.sub_type.Deserialize(value, buffer(data, position), handles))
-      position += self.sub_type.GetByteSize()
-    return result
 
 
 class NativeArrayType(BaseArrayType):
@@ -359,14 +284,15 @@ class NativeArrayType(BaseArrayType):
     return array.array(self.array_typecode, value)
 
   def SerializeArray(self, value, data_offset, data, handle_offset):
-    return _SerializeNativeArray(value, data_offset, data, len(value))
-
-  def DeserializeArray(self, size, nb_elements, data, handles):
-    result = array.array(self.array_typecode)
-    result.fromstring(buffer(data,
-                             serialization.HEADER_STRUCT.size,
-                             size - serialization.HEADER_STRUCT.size))
-    return result
+    data_size = len(data)
+    data.extend(bytearray(serialization.HEADER_STRUCT.size))
+    data.extend(value.tostring())
+    data_length = len(data) - data_size
+    data.extend(bytearray(
+        serialization.NeededPaddingForAlignment(data_length)))
+    serialization.HEADER_STRUCT.pack_into(
+        data, data_size, data_length, len(value))
+    return (data_offset, [])
 
 
 class StructType(PointerType):
@@ -392,9 +318,6 @@ class StructType(PointerType):
     data.extend(new_data)
     return (data_offset, new_handles)
 
-  def DeserializePointer(self, size, nb_elements, data, handles):
-    return self.struct_type.Deserialize(data, handles)
-
 
 class NoneType(SerializableType):
   """Placeholder type, used temporarily until all mojo types are handled."""
@@ -407,9 +330,6 @@ class NoneType(SerializableType):
 
   def Serialize(self, value, data_offset, data, handle_offset):
     return (0, [])
-
-  def Deserialize(self, value, data, handles):
-    return None
 
 
 TYPE_NONE = NoneType()
@@ -472,9 +392,6 @@ class FieldGroup(object):
   def Serialize(self, obj, data_offset, data, handle_offset):
     raise NotImplementedError()
 
-  def Deserialize(self, value, data, handles):
-    raise NotImplementedError()
-
 
 class SingleFieldGroup(FieldGroup, FieldDescriptor):
   """A FieldGroup that contains a single FieldDescriptor."""
@@ -497,10 +414,6 @@ class SingleFieldGroup(FieldGroup, FieldDescriptor):
     value = getattr(obj, self.name)
     return self.field_type.Serialize(value, data_offset, data, handle_offset)
 
-  def Deserialize(self, value, data, handles):
-    entity = self.field_type.Deserialize(value, data, handles)
-    return { self.name: entity }
-
 
 class BooleanGroup(FieldGroup):
   """A FieldGroup to pack booleans."""
@@ -509,7 +422,7 @@ class BooleanGroup(FieldGroup):
     self.version = min([descriptor.field_number  for descriptor in descriptors])
 
   def GetTypeCode(self):
-    return 'B'
+    return "B"
 
   def GetByteSize(self):
     return 1
@@ -522,33 +435,7 @@ class BooleanGroup(FieldGroup):
         [getattr(obj, field.name) for field in self.GetDescriptors()])
     return (value, [])
 
-  def Deserialize(self, value, data, handles):
-    values =  itertools.izip_longest([x.name for x in self.descriptors],
-                                      _ConvertByteToBooleans(value),
-                                     fillvalue=False)
-    return dict(values)
-
-
-def _SerializeNativeArray(value, data_offset, data, length):
-  data_size = len(data)
-  data.extend(bytearray(serialization.HEADER_STRUCT.size))
-  data.extend(buffer(value))
-  data_length = len(data) - data_size
-  data.extend(bytearray(serialization.NeededPaddingForAlignment(data_length)))
-  serialization.HEADER_STRUCT.pack_into(data, data_size, data_length, length)
-  return (data_offset, [])
-
 
 def _ConvertBooleansToByte(booleans):
   """Pack a list of booleans into an integer."""
   return reduce(lambda x, y: x * 2 + y, reversed(booleans), 0)
-
-
-def _ConvertByteToBooleans(value, min_size=0):
-  "Unpack an integer into a list of booleans."""
-  res = []
-  while value:
-    res.append(bool(value&1))
-    value = value / 2
-  res.extend([False] * (min_size - len(res)))
-  return res
