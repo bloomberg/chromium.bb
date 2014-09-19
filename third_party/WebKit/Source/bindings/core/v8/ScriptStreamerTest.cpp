@@ -104,11 +104,15 @@ protected:
 
     void processTasksUntilStreamingComplete()
     {
+        WebThread* currentThread = blink::Platform::current()->currentThread();
         while (ScriptStreamerThread::shared()->isRunningTask()) {
-            WebThread* currentThread = blink::Platform::current()->currentThread();
             currentThread->postTask(new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
             currentThread->enterRunLoop();
         }
+        // Once more, because the "streaming complete" notification might only
+        // now be in the task queue.
+        currentThread->postTask(new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
+        currentThread->enterRunLoop();
     }
 
     V8TestingScope m_scope;

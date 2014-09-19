@@ -37,9 +37,17 @@ ScriptStreamerThread* ScriptStreamerThread::shared()
 void ScriptStreamerThread::postTask(WebThread::Task* task)
 {
     ASSERT(isMainThread());
+    MutexLocker locker(m_mutex);
     ASSERT(!m_runningTask);
     m_runningTask = true;
     platformThread().postTask(task);
+}
+
+void ScriptStreamerThread::taskDone()
+{
+    MutexLocker locker(m_mutex);
+    ASSERT(m_runningTask);
+    m_runningTask = false;
 }
 
 blink::WebThread& ScriptStreamerThread::platformThread()
@@ -59,8 +67,8 @@ void ScriptStreamingTask::run()
     m_v8Task->Run();
     // Post a task to the main thread to signal that V8 has completed the
     // streaming.
-    callOnMainThread(&ScriptStreamerThread::taskDone, 0);
     callOnMainThread(WTF::bind(&ScriptStreamer::streamingComplete, m_streamer));
+    ScriptStreamerThread::shared()->taskDone();
 }
 
 } // namespace blink

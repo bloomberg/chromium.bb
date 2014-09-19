@@ -18,6 +18,70 @@
 
 namespace blink {
 
+// For passing data between the main thread (producer) and the streamer thread
+// (consumer). The main thread prepares the data (copies it from Resource) and
+// the streamer thread feeds it to V8.
+class SourceStreamDataQueue {
+    WTF_MAKE_NONCOPYABLE(SourceStreamDataQueue);
+public:
+    SourceStreamDataQueue()
+        : m_finished(false) { }
+
+    ~SourceStreamDataQueue()
+    {
+        while (!m_data.isEmpty()) {
+            std::pair<const uint8_t*, size_t> next_data = m_data.takeFirst();
+            delete[] next_data.first;
+        }
+    }
+
+    void produce(const uint8_t* data, size_t length)
+    {
+        MutexLocker locker(m_mutex);
+        m_data.append(std::make_pair(data, length));
+        m_haveData.signal();
+    }
+
+    void finish()
+    {
+        MutexLocker locker(m_mutex);
+        m_finished = true;
+        m_haveData.signal();
+    }
+
+    void consume(const uint8_t** data, size_t* length)
+    {
+        MutexLocker locker(m_mutex);
+        if (tryGetData(data, length))
+            return;
+        m_haveData.wait(m_mutex);
+        bool success = tryGetData(data, length);
+        ASSERT_UNUSED(success, success);
+    }
+
+private:
+    bool tryGetData(const uint8_t** data, size_t* length)
+    {
+        if (!m_data.isEmpty()) {
+            std::pair<const uint8_t*, size_t> next_data = m_data.takeFirst();
+            *data = next_data.first;
+            *length = next_data.second;
+            return true;
+        }
+        if (m_finished) {
+            *length = 0;
+            return true;
+        }
+        return false;
+    }
+
+    WTF::Deque<std::pair<const uint8_t*, size_t> > m_data;
+    bool m_finished;
+    Mutex m_mutex;
+    ThreadCondition m_haveData;
+};
+
+
 // SourceStream implements the streaming interface towards V8. The main
 // functionality is preparing the data to give to V8 on main thread, and
 // actually giving the data (via GetMoreData which is called on a background
@@ -28,13 +92,8 @@ public:
     SourceStream(ScriptStreamer* streamer)
         : v8::ScriptCompiler::ExternalSourceStream()
         , m_streamer(streamer)
-        , m_backgroundThreadWaitingForData(false)
-        , m_dataPointer(0)
-        , m_dataLength(0)
-        , m_dataPosition(0)
-        , m_loadingFinished(false)
         , m_cancelled(false)
-        , m_allDataReturned(false) { }
+        , m_dataPosition(0) { }
 
     virtual ~SourceStream() { }
 
@@ -43,42 +102,26 @@ public:
     virtual size_t GetMoreData(const uint8_t** src) OVERRIDE
     {
         ASSERT(!isMainThread());
-        MutexLocker locker(m_mutex);
-        if (m_cancelled || m_allDataReturned)
-            return 0;
-        // The main thread might be modifying the data buffer of the Resource,
-        // so we cannot read it here. Post a task to the main thread and wait
-        // for it to complete.
-        m_backgroundThreadWaitingForData = true;
-        m_dataPointer = src;
-        m_dataLength = 0;
-        callOnMainThread(WTF::bind(&SourceStream::prepareDataOnMainThread, this));
-        m_condition.wait(m_mutex);
-        if (m_cancelled || m_allDataReturned)
-            return 0;
-        return m_dataLength;
+        {
+            MutexLocker locker(m_mutex);
+            if (m_cancelled)
+                return 0;
+        }
+        size_t length = 0;
+        // This will wait until there is data.
+        m_dataQueue.consume(src, &length);
+        {
+            MutexLocker locker(m_mutex);
+            if (m_cancelled)
+                return 0;
+        }
+        return length;
     }
 
     void didFinishLoading()
     {
         ASSERT(isMainThread());
-        if (m_streamer->resource()->errorOccurred()) {
-            // The background thread might be waiting for data. Wake it up. V8
-            // will perceive this as EOS and call the completion callback. At
-            // that point we will resume the normal "script loaded" code path
-            // (see HTMLScriptRunner::notifyFinished which doesn't differentiate
-            // between scripts which loaded successfully and scripts which
-            // failed to load).
-            cancel();
-            return;
-        }
-        {
-            MutexLocker locker(m_mutex);
-            m_loadingFinished = true;
-            if (!m_backgroundThreadWaitingForData)
-                return;
-        }
-        prepareDataOnMainThread();
+        m_dataQueue.finish();
     }
 
     void didReceiveData()
@@ -95,25 +138,17 @@ public:
         // 0, which will be interpreted as EOS by V8 and the parsing will
         // fail. ScriptStreamer::streamingComplete will be called, and at that
         // point we will release the references to SourceStream.
-        MutexLocker locker(m_mutex);
-        m_cancelled = true;
-        m_backgroundThreadWaitingForData = false;
-        m_condition.signal();
+        {
+            MutexLocker locker(m_mutex);
+            m_cancelled = true;
+        }
+        m_dataQueue.finish();
     }
 
 private:
     void prepareDataOnMainThread()
     {
         ASSERT(isMainThread());
-        MutexLocker locker(m_mutex);
-        if (!m_backgroundThreadWaitingForData) {
-            // It's possible that the background thread is not waiting. This
-            // happens when 1) data arrives but V8 hasn't requested data yet, 2)
-            // we have previously scheduled prepareDataOnMainThread, but some
-            // other event (load cancelled or finished) already retrieved the
-            // data and set m_backgroundThreadWaitingForData to false.
-            return;
-        }
         // The Resource must still be alive; otherwise we should've cancelled
         // the streaming (if we have cancelled, the background thread is not
         // waiting).
@@ -124,28 +159,19 @@ private:
             // parse the code. Cancel the streaming and resume the non-streaming
             // code path.
             m_streamer->suppressStreaming();
-            m_cancelled = true;
-            m_backgroundThreadWaitingForData = false;
-            m_condition.signal();
+            {
+                MutexLocker locker(m_mutex);
+                m_cancelled = true;
+            }
+            m_dataQueue.finish();
             return;
         }
 
         if (!m_resourceBuffer) {
             // We don't have a buffer yet. Try to get it from the resource.
             SharedBuffer* buffer = m_streamer->resource()->resourceBuffer();
-            if (!buffer) {
-                // The Resource hasn't created its SharedBuffer yet. At some
-                // point (at latest when the script loading finishes) this
-                // function will be called again and we will have data.
-                if (m_loadingFinished) {
-                    // This happens only in special cases (e.g., involving empty
-                    // scripts).
-                    m_allDataReturned = true;
-                    m_backgroundThreadWaitingForData = false;
-                    m_condition.signal();
-                }
+            if (!buffer)
                 return;
-            }
             m_resourceBuffer = RefPtr<SharedBuffer>(buffer);
         }
 
@@ -153,54 +179,39 @@ private:
         const char* data = 0;
         Vector<const char*> chunks;
         Vector<unsigned> chunkLengths;
+        size_t dataLength = 0;
         while (unsigned length = m_resourceBuffer->getSomeData(data, m_dataPosition)) {
             // FIXME: Here we can limit based on the total length, if it turns
             // out that we don't want to give all the data we have (memory
             // vs. speed).
             chunks.append(data);
             chunkLengths.append(length);
-            m_dataLength += length;
+            dataLength += length;
             m_dataPosition += length;
         }
         // Copy the data chunks into a new buffer, since we're going to give the
         // data to a background thread.
-        if (m_dataLength > 0) {
-            uint8_t* copiedData = new uint8_t[m_dataLength];
+        if (dataLength > 0) {
+            uint8_t* copiedData = new uint8_t[dataLength];
             unsigned offset = 0;
             for (size_t i = 0; i < chunks.size(); ++i) {
                 memcpy(copiedData + offset, chunks[i], chunkLengths[i]);
                 offset += chunkLengths[i];
             }
-            *m_dataPointer = copiedData;
-            m_backgroundThreadWaitingForData = false;
-            m_condition.signal();
-        } else if (m_loadingFinished) {
-            // We need to return data length 0 to V8 to signal that the data
-            // ends.
-            m_allDataReturned = true;
-            m_backgroundThreadWaitingForData = false;
-            m_condition.signal();
+            m_dataQueue.produce(copiedData, dataLength);
         }
-        // Otherwise, we had scheduled prepareDataOnMainThread but we didn't
-        // have any data to return. It will be scheduled again when the data
-        // arrives.
     }
 
     ScriptStreamer* m_streamer;
 
     // For coordinating between the main thread and background thread tasks.
     // Guarded by m_mutex.
-    bool m_backgroundThreadWaitingForData;
-    const uint8_t** m_dataPointer;
-    unsigned m_dataLength;
-    unsigned m_dataPosition;
-    bool m_loadingFinished;
     bool m_cancelled;
-    bool m_allDataReturned;
-    RefPtr<SharedBuffer> m_resourceBuffer; // Only used by the main thread.
-
-    ThreadCondition m_condition;
     Mutex m_mutex;
+
+    unsigned m_dataPosition; // Only used by the main thread.
+    RefPtr<SharedBuffer> m_resourceBuffer; // Only used by the main thread.
+    SourceStreamDataQueue m_dataQueue; // Thread safe.
 };
 
 

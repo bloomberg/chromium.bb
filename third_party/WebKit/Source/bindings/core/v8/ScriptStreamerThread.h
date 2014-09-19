@@ -27,20 +27,17 @@ public:
 
     bool isRunningTask() const
     {
+        MutexLocker locker(m_mutex);
         return m_runningTask;
     }
 
-    static void taskDone(void*)
-    {
-        ASSERT(shared()->m_runningTask);
-        shared()->m_runningTask = false;
-    }
+    void taskDone();
 
 private:
     ScriptStreamerThread()
         : m_runningTask(false) { }
 
-    bool isRunning()
+    bool isRunning() const
     {
         return !!m_thread;
     }
@@ -56,6 +53,7 @@ private:
     // at a time. FIXME: Use a thread pool and stream multiple scripts.
     WTF::OwnPtr<blink::WebThread> m_thread;
     bool m_runningTask;
+    mutable Mutex m_mutex; // Guards m_runningTask.
 };
 
 class ScriptStreamingTask : public WebThread::Task {
