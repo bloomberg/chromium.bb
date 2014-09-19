@@ -2885,8 +2885,6 @@
         ['OS != "ios"', {
           'dependencies': [
             'apps',
-            'browser/extensions/api/api_registration.gyp:chrome_api_registration',
-            'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',
             '../third_party/re2/re2.gyp:re2',
@@ -3012,6 +3010,8 @@
         ['enable_extensions==1', {
           'dependencies': [
             'browser_extensions',
+            'browser/extensions/api/api_registration.gyp:chrome_api_registration',
+            'common/extensions/api/api.gyp:chrome_api',
             'sync_file_system_drive_proto',
           ],
           'sources': [ '<@(chrome_browser_extensions_sources)' ],
