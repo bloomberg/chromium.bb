@@ -66,9 +66,7 @@ cr.define('options', function() {
       };
     },
 
-    /**
-     * Called by the options page when this page has been shown.
-     */
+    /** @override */
     didShowPage: function() {
       // The fonts list may be large so we only load it when this page is
       // loaded for the first time.  This makes opening the options window

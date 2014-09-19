@@ -185,10 +185,8 @@ cr.define('cr.ui.pageManager', function() {
 
       // Notify pages if they will be hidden.
       this.forEachPage_(!isRootPageLocked, function(page) {
-        if (page.willHidePage && page.name != pageName &&
-            !this.isAncestorOfPage(page, targetPage)) {
+        if (page.name != pageName && !this.isAncestorOfPage(page, targetPage))
           page.willHidePage();
-        }
       });
 
       // Update the page's hash.
@@ -213,7 +211,7 @@ cr.define('cr.ui.pageManager', function() {
 
       // Notify pages if they were shown.
       this.forEachPage_(!isRootPageLocked, function(page) {
-        if (!targetPageWasVisible && page.didShowPage &&
+        if (!targetPageWasVisible &&
             (page.name == pageName ||
              this.isAncestorOfPage(page, targetPage))) {
           page.didShowPage();
@@ -333,9 +331,8 @@ cr.define('cr.ui.pageManager', function() {
         return;
 
       overlay.visible = false;
+      overlay.didClosePage();
 
-      if (overlay.didClosePage)
-        overlay.didClosePage();
       this.updateHistoryState_(false);
       this.updateTitle_();
 
@@ -422,7 +419,7 @@ cr.define('cr.ui.pageManager', function() {
                     this.defaultPage_;
       if (currentOverlay && !this.isAncestorOfPage(currentOverlay, newPage)) {
         currentOverlay.visible = false;
-        if (currentOverlay.didClosePage) currentOverlay.didClosePage();
+        currentOverlay.didClosePage();
       }
       this.showPageByName(pageName, false, {hash: hash});
     },
@@ -442,7 +439,7 @@ cr.define('cr.ui.pageManager', function() {
      */
     willClose: function() {
       var overlay = this.getVisibleOverlay_();
-      if (overlay && overlay.didClosePage)
+      if (overlay)
         overlay.didClosePage();
     },
 
@@ -500,8 +497,7 @@ cr.define('cr.ui.pageManager', function() {
       overlay.hash = hash;
       if (!overlay.visible) {
         overlay.visible = true;
-        if (overlay.didShowPage)
-          overlay.didShowPage();
+        overlay.didShowPage();
       } else {
         overlay.didChangeHash();
       }

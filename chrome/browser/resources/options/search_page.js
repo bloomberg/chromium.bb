@@ -164,13 +164,11 @@ cr.define('options', function() {
       return true;
     },
 
-    /**
-     * Called after this page has shown.
-     */
+    /** @override */
     didShowPage: function() {
-      // This method is called by the Options page after all pages have
-      // had their visibilty attribute set.  At this point we can perform the
-      // search specific DOM manipulation.
+      // This method is called by the PageManager after all pages have had their
+      // visibility attribute set. At this point we can perform the
+      // search-specific DOM manipulation.
       this.setSearchActive_(true);
     },
 
@@ -179,14 +177,11 @@ cr.define('options', function() {
       this.setSearchActive_(true);
     },
 
-    /**
-     * Called before this page will be hidden.
-     */
+    /** @override */
     willHidePage: function() {
-      // This method is called by the Options page before all pages have
-      // their visibilty attribute set.  Before that happens, we need to
-      // undo the search specific DOM manipulation that was performed in
-      // didShowPage.
+      // This method is called by the PageManager before all pages have their
+      // visibility attribute set. Before that happens, we need to undo the
+      // search-specific DOM manipulation that was performed in didShowPage.
       this.setSearchActive_(false);
     },
 

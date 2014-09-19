@@ -104,9 +104,7 @@ cr.define('options', function() {
       chrome.send('onChangePicturePageInitialized');
     },
 
-    /**
-     * Called right after the page has been shown to user.
-     */
+    /** @override */
     didShowPage: function() {
       var imageGrid = $('user-image-grid');
       // Reset camera element.
@@ -115,9 +113,7 @@ cr.define('options', function() {
       chrome.send('onChangePicturePageShown');
     },
 
-    /**
-     * Called right before the page is hidden.
-     */
+    /** @override */
     willHidePage: function() {
       var imageGrid = $('user-image-grid');
       imageGrid.blur();  // Make sure the image grid is not active.
@@ -130,10 +126,10 @@ cr.define('options', function() {
     },
 
     /**
-     * Called right after the page has been hidden.
+     * Either willHidePage or didClosePage may be called depending on the way
+     * the page was closed.
+     * @override
      */
-    // TODO(ivankr): both callbacks are required as only one of them is called
-    // depending on the way the page was closed, see http://crbug.com/118923.
     didClosePage: function() {
       this.willHidePage();
     },

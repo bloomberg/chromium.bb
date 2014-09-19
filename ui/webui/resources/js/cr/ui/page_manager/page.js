@@ -138,6 +138,22 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
+     * Called after the page has been shown.
+     */
+    didShowPage: function() {},
+
+    /**
+     * Called before the page will be hidden, e.g., when a different root page
+     * will be shown.
+     */
+    willHidePage: function() {},
+
+    /**
+     * Called after the overlay has been closed.
+     */
+    didClosePage: function() {},
+
+    /**
      * Gets the container div for this page if it is an overlay.
      * @type {HTMLDivElement}
      */
