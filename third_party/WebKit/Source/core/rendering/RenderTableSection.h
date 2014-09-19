@@ -30,6 +30,9 @@
 
 namespace blink {
 
+// This variable is used to balance the memory consumption vs the paint invalidation time on big tables.
+const float gMaxAllowedOverflowingCellRatioForFastPaintPath = 0.1f;
+
 enum CollapsedBorderSide {
     CBSBefore,
     CBSAfter,
@@ -224,6 +227,14 @@ public:
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
+    // Flip the rect so it aligns with the coordinates used by the rowPos and columnPos vectors.
+    LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
+
+    CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
+    CellSpan dirtiedColumns(const LayoutRect& paintInvalidationRect) const;
+    WillBeHeapHashSet<RawPtrWillBeMember<RenderTableCell> >& overflowingCells() { return m_overflowingCells; }
+    bool hasMultipleCellLevels() { return m_hasMultipleCellLevels; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
@@ -240,7 +251,6 @@ private:
 
     virtual void layout() OVERRIDE;
 
-    void paintCell(RenderTableCell*, PaintInfo&, const LayoutPoint&);
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
@@ -268,16 +278,11 @@ private:
     void updateBaselineForCell(RenderTableCell*, unsigned row, LayoutUnit& baselineDescent);
 
     bool hasOverflowingCell() const { return m_overflowingCells.size() || m_forceSlowPaintPathWithOverflowingCell; }
+
     void computeOverflowFromCells(unsigned totalRows, unsigned nEffCols);
 
     CellSpan fullTableRowSpan() const { return CellSpan(0, m_grid.size()); }
     CellSpan fullTableColumnSpan() const { return CellSpan(0, table()->columns().size()); }
-
-    // Flip the rect so it aligns with the coordinates used by the rowPos and columnPos vectors.
-    LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
-
-    CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
-    CellSpan dirtiedColumns(const LayoutRect& paintInvalidationRect) const;
 
     // These two functions take a rectangle as input that has been flipped by logicalRectForWritingModeAndDirection.
     // The returned span of rows or columns is end-exclusive, and empty if start==end.

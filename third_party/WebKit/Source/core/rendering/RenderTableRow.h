@@ -49,8 +49,6 @@ public:
     RenderTableSection* section() const { return toRenderTableSection(parent()); }
     RenderTable* table() const { return toRenderTable(parent()->parent()); }
 
-    void paintOutlineForRowIfNeeded(PaintInfo&, const LayoutPoint&);
-
     static RenderTableRow* createAnonymous(Document*);
     static RenderTableRow* createAnonymousWithParentRenderer(const RenderObject*);
     virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const OVERRIDE

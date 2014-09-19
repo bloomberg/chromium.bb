@@ -244,7 +244,10 @@ public:
         m_collapsedBordersValid = false;
         m_collapsedBorders.clear();
     }
+
+    // FIXME: This method should be moved into TablePainter.
     const CollapsedBorderValue* currentBorderValue() const { return m_currentBorder; }
+    void setCurrentBorderValue(const CollapsedBorderValue* val) { m_currentBorder = val; }
 
     bool hasSections() const { return m_head || m_foot || m_firstBody; }
 
@@ -268,6 +271,15 @@ public:
     void addColumn(const RenderTableCol*);
     void removeColumn(const RenderTableCol*);
 
+    // FIXME: this method should be moved into TablePainter.
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
+
+    virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
+
+    const CollapsedBorderValues& collapsedBorders() { return m_collapsedBorders; }
+    void subtractCaptionRect(LayoutRect&) const;
+    void recalcCollapsedBorders();
+
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
     virtual void simplifiedNormalFlowLayout() OVERRIDE;
@@ -279,8 +291,6 @@ private:
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void layout() OVERRIDE;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
@@ -304,9 +314,6 @@ private:
 
     virtual void addOverflowFromChildren() OVERRIDE;
 
-    void subtractCaptionRect(LayoutRect&) const;
-
-    void recalcCollapsedBorders();
     void recalcSections() const;
     void layoutCaption(RenderTableCaption*);
 

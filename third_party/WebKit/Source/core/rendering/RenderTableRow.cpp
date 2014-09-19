@@ -27,6 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/fetch/ImageResource.h"
+#include "core/paint/TableRowPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
@@ -219,27 +220,9 @@ bool RenderTableRow::nodeAtPoint(const HitTestRequest& request, HitTestResult& r
     return false;
 }
 
-void RenderTableRow::paintOutlineForRowIfNeeded(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
-    PaintPhase paintPhase = paintInfo.phase;
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && style()->visibility() == VISIBLE)
-        paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, size()));
-}
-
 void RenderTableRow::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(hasSelfPaintingLayer());
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    paintOutlineForRowIfNeeded(paintInfo, paintOffset);
-    for (RenderTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
-        // Paint the row background behind the cell.
-        if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground)
-            cell->paintBackgroundsBehindCell(paintInfo, paintOffset, this);
-        if (!cell->hasSelfPaintingLayer())
-            cell->paint(paintInfo, paintOffset);
-    }
+    TableRowPainter(*this).paint(paintInfo, paintOffset);
 }
 
 void RenderTableRow::imageChanged(WrappedImagePtr, const IntRect*)
