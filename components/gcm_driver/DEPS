@@ -1,5 +1,6 @@
 include_rules = [
   "+components/os_crypt",
+  "+components/pref_registry",
   # TODO(johnme): Fix this layering violation.
   "!content/public/android/java",
   "+google_apis/gaia",

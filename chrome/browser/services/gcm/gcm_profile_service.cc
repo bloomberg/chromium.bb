@@ -166,6 +166,7 @@ GCMProfileService::GCMProfileService(
 
   driver_ = CreateGCMDriverDesktop(
       gcm_client_factory.Pass(),
+      profile_->GetPrefs(),
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
       profile_->GetRequestContext());
 

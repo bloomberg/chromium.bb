@@ -136,7 +136,7 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatus) {
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_FALSE(enabled_);
   EXPECT_EQ(
-      GCMChannelStatusRequest::default_poll_interval_seconds_for_testing(),
+      GCMChannelStatusRequest::default_poll_interval_seconds(),
       poll_interval_seconds_);
 }
 
@@ -148,7 +148,7 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithEnabledStatus) {
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(enabled_);
   EXPECT_EQ(
-      GCMChannelStatusRequest::default_poll_interval_seconds_for_testing(),
+      GCMChannelStatusRequest::default_poll_interval_seconds(),
       poll_interval_seconds_);
 }
 
@@ -156,8 +156,7 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithPollInterval) {
   // Setting a poll interval 15 minutes longer than the minimum interval we
   // enforce.
   int poll_interval_seconds =
-      GCMChannelStatusRequest::min_poll_interval_seconds_for_testing() +
-      15 * 60;
+      GCMChannelStatusRequest::min_poll_interval_seconds() + 15 * 60;
   StartRequest();
   SetResponseProtoData(NOT_SPECIFIED, poll_interval_seconds);
   CompleteFetch();
@@ -171,22 +170,20 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithShortPollInterval) {
   // Setting a poll interval 15 minutes shorter than the minimum interval we
   // enforce.
   int poll_interval_seconds =
-      GCMChannelStatusRequest::min_poll_interval_seconds_for_testing() -
-      15 * 60;
+      GCMChannelStatusRequest::min_poll_interval_seconds() - 15 * 60;
   StartRequest();
   SetResponseProtoData(NOT_SPECIFIED, poll_interval_seconds);
   CompleteFetch();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(enabled_);
-  EXPECT_EQ(GCMChannelStatusRequest::min_poll_interval_seconds_for_testing(),
+  EXPECT_EQ(GCMChannelStatusRequest::min_poll_interval_seconds(),
             poll_interval_seconds_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatusAndPollInterval) {
   int poll_interval_seconds =
-      GCMChannelStatusRequest::min_poll_interval_seconds_for_testing() +
-      15 * 60;
+      GCMChannelStatusRequest::min_poll_interval_seconds() + 15 * 60;
   StartRequest();
   SetResponseProtoData(GCM_DISABLED, poll_interval_seconds);
   CompleteFetch();
