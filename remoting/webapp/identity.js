@@ -124,13 +124,12 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
 
   // If not, pass an error back to the callback(s) if we've already prompted the
   // user for permission.
-  // TODO(jamiewalch): Figure out what to do with the error in this case.
   if (interactive) {
     console.error(chrome.runtime.lastError);
     while (this.pendingCallbacks_.length > 0) {
       var callback = /** @type {remoting.Identity.Callbacks} */
           this.pendingCallbacks_.shift();
-      callback.onError(remoting.Error.UNEXPECTED);
+      callback.onError(remoting.Error.NOT_AUTHENTICATED);
     }
     return;
   }
