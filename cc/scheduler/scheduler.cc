@@ -458,13 +458,19 @@ void Scheduler::BeginRetroFrame() {
   // up, our fallback should be to lower our frame rate.
   base::TimeTicks now = Now();
   base::TimeDelta draw_duration_estimate = client_->DrawDurationEstimate();
-  while (!begin_retro_frame_args_.empty() &&
-         now > AdjustedBeginImplFrameDeadline(begin_retro_frame_args_.front(),
-                                              draw_duration_estimate)) {
-    TRACE_EVENT1("cc",
-                 "Scheduler::BeginRetroFrame discarding",
-                 "frame_time",
-                 begin_retro_frame_args_.front().frame_time);
+  while (!begin_retro_frame_args_.empty()) {
+    base::TimeTicks adjusted_deadline = AdjustedBeginImplFrameDeadline(
+        begin_retro_frame_args_.front(), draw_duration_estimate);
+    if (now <= adjusted_deadline)
+      break;
+
+    TRACE_EVENT_INSTANT2("cc",
+                         "Scheduler::BeginRetroFrame discarding",
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "deadline - now",
+                         (adjusted_deadline - now).InMicroseconds(),
+                         "BeginFrameArgs",
+                         begin_retro_frame_args_.front().AsValue());
     begin_retro_frame_args_.pop_front();
   }
 
