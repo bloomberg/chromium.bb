@@ -6,8 +6,7 @@
     "text": {
       "types": [
         "text/*"
-      ],
-      "title": "Text editor"
+      ]
     },
     "image": {
       "types": [
@@ -16,8 +15,7 @@
       "extensions": [
         ".png",
         ".gif"
-      ],
-      "title": "Image editor"
+      ]
     }
   }
 }

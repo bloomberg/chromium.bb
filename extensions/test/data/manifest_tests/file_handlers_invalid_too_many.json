@@ -110,8 +110,7 @@
         "97/*",
         "98/*",
         "99/*"
-      ],
-      "title": "Text editor"
+      ]
     },
     "image": {
       "types": [
@@ -219,8 +218,7 @@
       "extensions": [
         ".png",
         ".gif"
-      ],
-      "title": "Image editor"
+      ]
     }
   }
 }

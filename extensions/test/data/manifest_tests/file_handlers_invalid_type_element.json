@@ -11,8 +11,7 @@
     "text": {
       "types": [
         42
-      ],
-      "title": "Text editor"
+      ]
     },
     "image": {
       "types": [
@@ -21,8 +20,7 @@
       "extensions": [
         ".png",
         ".gif"
-      ],
-      "title": "Image editor"
+      ]
     }
   }
 }

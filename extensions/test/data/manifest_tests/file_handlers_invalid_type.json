@@ -11,16 +11,14 @@
     "text": {
       "types": [
         "text/*"
-      ],
-      "title": "Text editor"
+      ]
     },
     "image": {
       "types": "bar",
       "extensions": [
         ".png",
         ".gif"
-      ],
-      "title": "Image editor"
+      ]
     }
   }
 }
