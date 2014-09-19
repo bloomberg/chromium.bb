@@ -59,11 +59,7 @@ menu > [hidden] {
   display: none;
 }
 
-menu > :not(hr)[selected] {
-  background-color: rgba(0, 0, 0, .06);
-}
-
-menu > :not(hr)[selected]:active {
+menu > :not(hr):-webkit-any([selected], :active) {
   background-color: rgba(0, 0, 0, .06);
 }
 
