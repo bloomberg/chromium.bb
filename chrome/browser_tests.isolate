@@ -78,9 +78,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
         ],
         'isolate_dependency_untracked': [
           '../third_party/bidichecker/',
@@ -91,6 +88,9 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/lib64/',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
         ],
       },
     }],
