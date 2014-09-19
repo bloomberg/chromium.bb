@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/memory.h"
@@ -116,7 +117,8 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     return scoped_refptr<MessagePipeDispatcher>();
   }
   MessageInTransit::EndpointId local_id =
-      channel->AttachMessagePipeEndpoint(remote_message_pipe.second, 1);
+      channel->AttachEndpoint(make_scoped_refptr(
+          new ChannelEndpoint(remote_message_pipe.second.get(), 1)));
   if (local_id == MessageInTransit::kInvalidEndpointId) {
     LOG(ERROR) << "Failed to deserialize message pipe dispatcher (failed to "
                   "attach; remote ID = " << remote_id << ")";
@@ -249,8 +251,8 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
   message_pipe_->ConvertLocalToProxy(port_);
 
   // Attach the new proxy endpoint to the channel.
-  MessageInTransit::EndpointId endpoint_id =
-      channel->AttachMessagePipeEndpoint(message_pipe_, port_);
+  MessageInTransit::EndpointId endpoint_id = channel->AttachEndpoint(
+      make_scoped_refptr(new ChannelEndpoint(message_pipe_.get(), port_)));
   // Note: It's okay to get an endpoint ID of |kInvalidEndpointId|. (It's
   // possible that the other endpoint -- the one that we're not sending -- was
   // closed in the intervening time.) In that case, we need to deserialize a

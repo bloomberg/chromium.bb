@@ -110,11 +110,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
     : public base::RefCountedThreadSafe<ChannelEndpoint> {
  public:
   // TODO(vtl): More comments....
-  // The caller must keep |channel| alive until the |Channel| has taken
-  // ownership of a reference to the created object. (TODO(vtl): Convert
-  // |Channel::AttachMessagePipeEndpoint()| to a |Channel::AttachEndpoint()|
-  // that takes a |ChannelEndpoint|, and move |ChannelEndpoint| creation out of
-  // |Channel|.)
   ChannelEndpoint(MessagePipe* message_pipe, unsigned port);
 
   // Methods called by |MessagePipe| (via |ProxyMessagePipeEndpoint|):

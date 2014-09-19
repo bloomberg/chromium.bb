@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/waiter.h"
 
 namespace mojo {
@@ -82,7 +83,8 @@ void ChannelThread::InitChannelOnIOThread(
   // receive/process messages (which it can do as soon as it's hooked up to
   // the IO thread message loop, and that message loop runs) before the
   // message pipe endpoint is attached.
-  CHECK_EQ(channel_->AttachMessagePipeEndpoint(message_pipe, 1),
+  CHECK_EQ(channel_->AttachEndpoint(
+               make_scoped_refptr(new ChannelEndpoint(message_pipe.get(), 1))),
            Channel::kBootstrapEndpointId);
   CHECK(channel_->RunMessagePipeEndpoint(Channel::kBootstrapEndpointId,
                                          Channel::kBootstrapEndpointId));

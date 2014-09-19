@@ -10,6 +10,7 @@
 #include "base/test/test_io_thread.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/simple_platform_support.h"
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/raw_channel.h"
@@ -195,8 +196,8 @@ TEST_F(ChannelTest, CloseBeforeRun) {
 
   scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
 
-  MessageInTransit::EndpointId local_id =
-      channel()->AttachMessagePipeEndpoint(mp, 1);
+  MessageInTransit::EndpointId local_id = channel()->AttachEndpoint(
+      make_scoped_refptr(new ChannelEndpoint(mp.get(), 1)));
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
   mp->Close(0);
@@ -204,9 +205,9 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   // TODO(vtl): Currently, the |Close()| above won't detach (since it thinks
   // we're still expecting a "run" message from the other side), so the
   // |RunMessagePipeEndpoint()| below will return true. We need to refactor
-  // |AttachMessagePipeEndpoint()| to indicate whether |Run...()| will
-  // necessarily be called or not. (Then, in the case that it may not be called,
-  // this will return false.)
+  // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
+  // called or not. (Then, in the case that it may not be called, this will
+  // return false.)
   EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
                                                 Channel::kBootstrapEndpointId));
 
@@ -233,15 +234,15 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
 
   scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
 
-  MessageInTransit::EndpointId local_id =
-      channel()->AttachMessagePipeEndpoint(mp, 1);
+  MessageInTransit::EndpointId local_id = channel()->AttachEndpoint(
+      make_scoped_refptr(new ChannelEndpoint(mp.get(), 1)));
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
   // TODO(vtl): Currently, we always "expect" a |RunMessagePipeEndpoint()| after
-  // an |AttachMessagePipeEndpoint()| (which is actually incorrect). We need to
-  // refactor |AttachMessagePipeEndpoint()| to indicate whether |Run...()| will
-  // necessarily be called or not. (Then, in the case that it may not be called,
-  // we should test a |Shutdown()| without the |Run...()|.)
+  // an |AttachEndpoint()| (which is actually incorrect). We need to refactor
+  // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
+  // called or not. (Then, in the case that it may not be called, we should test
+  // a |Shutdown()| without the |Run...()|.)
   EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
                                                 Channel::kBootstrapEndpointId));
 
@@ -283,8 +284,8 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
 
   scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
 
-  MessageInTransit::EndpointId local_id =
-      channel()->AttachMessagePipeEndpoint(mp, 1);
+  MessageInTransit::EndpointId local_id = channel()->AttachEndpoint(
+      make_scoped_refptr(new ChannelEndpoint(mp.get(), 1)));
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
   EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,

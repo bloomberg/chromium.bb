@@ -44,19 +44,9 @@ class ChannelEndpoint;
 // reference is kept on its creation thread and is released after |Shutdown()|
 // is called, but other threads may have temporarily "dangling" references).
 //
-// Note that |MessagePipe| calls into |Channel| and the former's |lock_| must be
-// acquired before the latter's. When |Channel| wants to call into a
-// |MessagePipe|, it must obtain a reference to the |MessagePipe| (from
-// |local_id_to_endpoint_info_map_|) under |Channel::lock_| and then release the
-// lock.
-//
-// Also, care must be taken with respect to references: While a |Channel| has
-// references to |MessagePipe|s, |MessagePipe|s (via |ProxyMessagePipeEndpoint|)
-// may also have references to |Channel|s. These references are set up by
-// calling |AttachMessagePipeEndpoint()|. The reference to |MessagePipe| owned
-// by |Channel| must be removed by calling |DetachMessagePipeEndpoint()| (which
-// is done by |MessagePipe|/|ProxyMessagePipeEndpoint|, which simultaneously
-// removes its reference to |Channel|).
+// Note the lock order (in order of allowable acquisition): |MessagePipe|,
+// |ChannelEndpoint|, |Channel|. Thus |Channel| may not call into
+// |ChannelEndpoint| with |Channel|'s lock held.
 class MOJO_SYSTEM_IMPL_EXPORT Channel
     : public base::RefCountedThreadSafe<Channel>,
       public RawChannel::Delegate {
@@ -84,14 +74,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // may be called multiple times, or not at all.)
   void WillShutdownSoon();
 
-  // TODO(vtl): Write comment here.
-  MessageInTransit::EndpointId AttachEndpoint(
-      scoped_refptr<ChannelEndpoint> endpoint);
-
-  // TODO(vtl): Remove this version.
-  // Attaches the given message pipe/port's endpoint (which must be a
-  // |ProxyMessagePipeEndpoint|) to this channel. This assigns it a local ID,
-  // which it returns. The first message pipe endpoint attached will always have
+  // Attaches the given endpoint to this channel. This assigns it a local ID,
+  // which it returns. The first endpoint attached will always have
   // |kBootstrapEndpointId| as its local ID. (For bootstrapping, this occurs on
   // both sides, so one should use |kBootstrapEndpointId| for the remote ID for
   // the first message pipe across a channel.) Returns |kInvalidEndpointId| on
@@ -99,9 +83,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // TODO(vtl): This should be combined with "run", and it should take a
   // |ChannelEndpoint| instead.
   // TODO(vtl): Maybe limit the number of attached message pipes.
-  MessageInTransit::EndpointId AttachMessagePipeEndpoint(
-      scoped_refptr<MessagePipe> message_pipe,
-      unsigned port);
+  MessageInTransit::EndpointId AttachEndpoint(
+      scoped_refptr<ChannelEndpoint> endpoint);
 
   // Runs the message pipe with the given |local_id| (previously attached), with
   // the given |remote_id| (negotiated using some other means, e.g., over an
@@ -130,8 +113,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // This removes the message pipe/port's endpoint (with the given local ID and
   // given remote ID, which should be |kInvalidEndpointId| if not yet running),
-  // returned by |AttachMessagePipeEndpoint()| from this channel. After this is
-  // called, |local_id| may be reused for another message pipe.
+  // returned by |AttachEndpoint()| from this channel. After this is called,
+  // |local_id| may be reused for another message pipe.
   void DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                  MessageInTransit::EndpointId remote_id);
 

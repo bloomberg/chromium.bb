@@ -26,6 +26,7 @@
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/platform_handle_dispatcher.h"
@@ -137,10 +138,10 @@ class RemoteMessagePipeTest : public testing::Test {
     if (!channels_[1].get())
       CreateAndInitChannel(1);
 
-    MessageInTransit::EndpointId local_id0 =
-        channels_[0]->AttachMessagePipeEndpoint(mp0, 1);
-    MessageInTransit::EndpointId local_id1 =
-        channels_[1]->AttachMessagePipeEndpoint(mp1, 0);
+    MessageInTransit::EndpointId local_id0 = channels_[0]->AttachEndpoint(
+        make_scoped_refptr(new ChannelEndpoint(mp0.get(), 1)));
+    MessageInTransit::EndpointId local_id1 = channels_[1]->AttachEndpoint(
+        make_scoped_refptr(new ChannelEndpoint(mp1.get(), 0)));
 
     CHECK(channels_[0]->RunMessagePipeEndpoint(local_id0, local_id1));
     CHECK(channels_[1]->RunMessagePipeEndpoint(local_id1, local_id0));
@@ -155,7 +156,8 @@ class RemoteMessagePipeTest : public testing::Test {
 
     CreateAndInitChannel(channel_index);
     MessageInTransit::EndpointId endpoint_id =
-        channels_[channel_index]->AttachMessagePipeEndpoint(mp, port);
+        channels_[channel_index]->AttachEndpoint(
+            make_scoped_refptr(new ChannelEndpoint(mp.get(), port)));
     if (endpoint_id == MessageInTransit::kInvalidEndpointId)
       return;
 

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_support.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/core.h"
 #include "mojo/system/entrypoints.h"
 #include "mojo/system/message_in_transit.h"
@@ -58,12 +59,12 @@ scoped_refptr<system::Channel> MakeChannel(
   // |Shutdown()| will have to be called on it).
 
   // Attach the message pipe endpoint.
-  system::MessageInTransit::EndpointId endpoint_id =
-      channel->AttachMessagePipeEndpoint(message_pipe, 1);
+  system::MessageInTransit::EndpointId endpoint_id = channel->AttachEndpoint(
+      make_scoped_refptr(new system::ChannelEndpoint(message_pipe.get(), 1)));
   if (endpoint_id == system::MessageInTransit::kInvalidEndpointId) {
     // This means that, e.g., the other endpoint of the message pipe was closed
     // first. But it's not necessarily an error per se.
-    DVLOG(2) << "Channel::AttachMessagePipeEndpoint() failed";
+    DVLOG(2) << "Channel::AttachEndpoint() failed";
     return channel;
   }
   CHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);

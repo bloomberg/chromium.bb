@@ -105,7 +105,7 @@ MessageInTransit::EndpointId Channel::AttachEndpoint(
     base::AutoLock locker(lock_);
 
     DLOG_IF(WARNING, is_shutting_down_)
-        << "AttachMessagePipeEndpoint() while shutting down";
+        << "AttachEndpoint() while shutting down";
 
     while (next_local_id_ == MessageInTransit::kInvalidEndpointId ||
            local_id_to_endpoint_map_.find(next_local_id_) !=
@@ -134,7 +134,7 @@ MessageInTransit::EndpointId Channel::AttachEndpoint(
         it->second->port_ == endpoint->port_) {
       DCHECK_EQ(it->second->state_, ChannelEndpoint::STATE_NORMAL);
       // TODO(vtl): FIXME -- This is wrong. We need to specify (to
-      // |AttachMessagePipeEndpoint()| who's going to be responsible for calling
+      // |AttachEndpoint()| who's going to be responsible for calling
       // |RunMessagePipeEndpoint()| ("us", or the remote by sending us a
       // |kSubtypeChannelRunMessagePipeEndpoint|). If the remote is going to
       // run, then we'll get messages to an "invalid" local ID (for running, for
@@ -144,16 +144,6 @@ MessageInTransit::EndpointId Channel::AttachEndpoint(
   }
   endpoint->DetachFromChannel();
   return MessageInTransit::kInvalidEndpointId;
-}
-
-MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
-    scoped_refptr<MessagePipe> message_pipe,
-    unsigned port) {
-  DCHECK(message_pipe.get());
-  DCHECK(port == 0 || port == 1);
-
-  return AttachEndpoint(
-      make_scoped_refptr(new ChannelEndpoint(message_pipe.get(), port)));
 }
 
 bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
