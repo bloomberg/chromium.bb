@@ -423,7 +423,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
                                                bool threaded)
     : threaded_(threaded),
       widget_(widget),
-      send_v8_idle_notification_after_commit_(false) {
+      send_v8_idle_notification_after_commit_(true) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
   if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
@@ -817,7 +817,8 @@ void RenderWidgetCompositor::DidCommit() {
       // Convert to 32-bit microseconds first to avoid costly 64-bit division.
       int32 idle_time_in_us = idle_time.InMicroseconds();
       int32 idle_time_in_ms = idle_time_in_us / 1000;
-      blink::mainThreadIsolate()->IdleNotification(idle_time_in_ms);
+      if (idle_time_in_ms)
+        blink::mainThreadIsolate()->IdleNotification(idle_time_in_ms);
     }
   }
 
