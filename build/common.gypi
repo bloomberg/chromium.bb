@@ -3055,14 +3055,15 @@
                   'VCCLCompilerTool': { 'WarnAsError': 'false' },
                 }
               }],
+              [ 'component=="shared_library"', {
+              # TODO(darin): Unfortunately, some third_party code depends on base.
+                'msvs_disabled_warnings': [
+                  4251,  # class 'std::xx' needs to have dll-interface.
+                 ],
+              }],
             ],
           }],
-          # TODO(darin): Unfortunately, some third_party code depends on base.
-          [ 'OS=="win" and component=="shared_library"', {
-            'msvs_disabled_warnings': [
-              4251,  # class 'std::xx' needs to have dll-interface.
-            ],
-          }],
+
           [ 'OS=="mac" or OS=="ios"', {
             'xcode_settings': {
               'WARNING_CFLAGS!': ['-Wall', '-Wextra'],
