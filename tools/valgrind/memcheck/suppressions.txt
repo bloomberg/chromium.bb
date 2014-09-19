@@ -2825,15 +2825,6 @@
    fun:_ZN10extensions16UserScriptMaster7ObserveEiRKN7content18NotificationSourceERKNS1_19NotificationDetailsE
 }
 {
-   bug_233541
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN22DiskCacheTestWithCache13CreateBackendEjPN4base6ThreadE
-   fun:_ZN22DiskCacheTestWithCache13InitDiskCacheEv
-   fun:_ZN22DiskCacheTestWithCache9InitCacheEv
-   fun:*DiskCacheBackendTest_SimpleDoom*
-}
-{
    bug_234845
    Memcheck:Leak
    fun:malloc
@@ -2861,20 +2852,6 @@
    fun:_ZN3ash4test53FocusCyclerTest_CycleFocusThroughWindowWithPanes_Test8TestBodyEv
 }
 {
-   bug_238547
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN4base11PendingTaskEE8allocateEmPKv
-   fun:_ZNSt11_Deque_baseIN4base11PendingTaskESaIS1_EE15_M_allocate_mapEm
-   fun:_ZNSt5dequeIN4base11PendingTaskESaIS1_EE17_M_reallocate_mapEmb
-   fun:_ZNSt5dequeIN4base11PendingTaskESaIS1_EE22_M_reserve_map_at_backEm
-   fun:_ZNSt5dequeIN4base11PendingTaskESaIS1_EE16_M_push_back_auxERKS1_
-   fun:_ZNSt5dequeIN4base11PendingTaskESaIS1_EE9push_backERKS1_
-   fun:_ZNSt5queueIN4base11PendingTaskESt5dequeIS1_SaIS1_EEE4pushERKS1_
-   ...
-   fun:_ZN4base*MessageLoop*15PostDelayedTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEENS_9TimeDeltaE
-}
-{
    bug_239141
    Memcheck:Leak
    fun:malloc
@@ -2886,15 +2863,6 @@
    fun:_ZN5blink10UseCounter17recordMeasurementENS0_7FeatureE
 }
 {
-   bug_241044
-   Memcheck:Uninitialized
-   fun:_ZN5blink8Settings29setOpenGLMultisamplingEnabledEb
-   fun:_ZN5blink15WebSettingsImpl29setOpenGLMultisamplingEnabledEb
-   fun:_ZN7content19ApplyWebPreferencesERK14WebPreferencesPN5blink7WebViewE
-   fun:_ZN7content14RenderViewImpl22OnUpdateWebPreferencesERK14WebPreferences
-   fun:_ZN7content14RenderViewImpl20SetWebkitPreferencesERK14WebPreferences
-}
-{
    bug_242672
    Memcheck:Leak
    fun:malloc
@@ -2904,27 +2872,6 @@
    fun:_ZN3WTF9BitVector10ensureSizeEm
    fun:_ZN5blink10UseCounterC1Ev
    fun:_ZN5blink4PageC1ERNS0_11PageClientsE
-}
-{
-   bug_243132
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10StringImpl19createUninitializedEjRPh
-   ...
-   fun:_ZN5blinkL24valueForGridTrackBreadthERKNS_10GridLengthEPKNS_11RenderStyleEPNS_10RenderViewE
-   fun:_ZN5blinkL21valueForGridTrackSizeERKNS_13GridTrackSizeEPKNS_11RenderStyleEPNS_10RenderViewE
-   fun:_ZN5blinkL21valueForGridTrackListERKN3WTF6VectorINS_13GridTrackSizeELm0EEERKNS0_7HashMap*
-   fun:_ZNK7blink27CSSComputedStyleDeclaration19getPropertyCSSValueENS_13CSSPropertyIDENS_13EUpdateLayoutE
-   fun:_ZNK7blink27CSSComputedStyleDeclaration19getPropertyCSSValueENS_13CSSPropertyIDE
-   fun:_ZNK7blink27CSSComputedStyleDeclaration16getPropertyValueENS_13CSSPropertyIDE
-   fun:_ZN5blink27CSSComputedStyleDeclaration16getPropertyValueERKN3WTF6StringE
-}
-{
-   bug_243753
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7fileapi28SandboxFileSystemBackendTest11GetRootPathERK4GURLNS_14FileSystemTypeEbPN4base8FilePathE
 }
 {
    bug_245714
