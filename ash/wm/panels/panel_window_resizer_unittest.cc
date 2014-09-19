@@ -273,6 +273,38 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
   DetachReattachTest(window.get(), 0, 1);
 }
 
+// Tests that a drag continues when the shelf is hidden. This occurs as part of
+// the animation when switching profiles. http://crbug.com/393047.
+TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
+  if (!SupportsHostWindowResize())
+    return;
+  scoped_ptr<aura::Window> window(
+      CreatePanelWindow(gfx::Point(0, 0)));
+  wm::WindowState* state = wm::GetWindowState(window.get());
+  gfx::Rect expected_bounds = window->GetBoundsInScreen();
+  expected_bounds.set_y(expected_bounds.y() - 100);
+  DragStart(window.get());
+  DragMove(0, -100);
+  EXPECT_FALSE(state->IsMinimized());
+
+  // Hide the shelf. This minimizes all attached windows but should ignore
+  // the dragged window.
+  ShelfLayoutManager* shelf = RootWindowController::ForWindow(window.get())->
+      shelf()->shelf_layout_manager();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  shelf->UpdateVisibilityState();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(state->IsMinimized());
+  EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
+  DragEnd();
+
+  // When the drag ends the window should be detached and placed where it was
+  // dragged to.
+  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_FALSE(state->IsMinimized());
+  EXPECT_EQ(expected_bounds.ToString(), window->GetBoundsInScreen().ToString());
+}
+
 TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
   if (!SupportsMultipleDisplays())
     return;
