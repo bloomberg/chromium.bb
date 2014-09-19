@@ -95,3 +95,7 @@ chrome.browserAction.onClicked.addListener(function() {
 chrome.runtime.onStartup.addListener(function() {
   loadSavedState(function(state) { setState(state); });
 });
+
+chrome.runtime.onInstalled.addListener(function(details) {
+  loadSavedState(function(state) { setState(state); });
+});
