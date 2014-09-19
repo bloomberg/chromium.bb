@@ -2497,18 +2497,6 @@
    fun:_ZN3gpu5gles216GLES2DecoderImpl26InitializeShaderTranslatorEv
 }
 {
-   bug_162828
-   Memcheck:Leak
-   fun:malloc
-   fun:_Z15sk_malloc_flagsmj
-   fun:_Z15sk_malloc_throwm
-   fun:_ZN6SkMask10AllocImageEm
-   fun:_ZL17drawRectsIntoMaskPK6SkRectiP6SkMask
-   fun:_ZN20SkBlurMaskFilterImpl17filterRectsToNineEPK6SkRectiRK8SkMatrixRK7SkIRectPN12SkMaskFilter9NinePatchE
-   fun:_ZN12SkMaskFilter10filterPathERK6SkPathRK8SkMatrixRK12SkRasterClipP9SkBounderP9SkBlitterN7SkPaint5StyleE
-   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
-}
-{
    bug_163922
    Memcheck:Leak
    fun:_Znw*
@@ -2562,81 +2550,6 @@
    fun:_ZN18WebResourceService10StartFetchEv
 }
 {
-   bug_164198
-   Memcheck:Uninitialized
-   fun:_ZN5blink9RenderBox15paintFillLayersERKNS_9PaintInfoERKNS_5ColorEPKNS_9FillLayerERKNS_10LayoutRectENS_24BackgroundBleedAvoidanceENS_17CompositeOperatorEPNS_12RenderObjectE
-   ...
-   fun:_ZN5blink11RenderBlock11paintObjectERNS_9PaintInfoERKNS_11LayoutPointE
-   fun:_ZN5blink11RenderBlock5paintERNS_9PaintInfoERKNS_11LayoutPointE
-   fun:_ZN5blink11RenderLayer18paintLayerContentsEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-   fun:_ZN5blink11RenderLayer31paintLayerContentsAndReflectionEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-   fun:_ZN5blink11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-   fun:_ZN5blink11RenderLayer9paintListEPN3WTF6VectorIPS0_Lm0EEEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-   fun:_ZN5blink11RenderLayer18paintLayerContentsEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-   fun:_ZN5blink11RenderLayer31paintLayerContentsAndReflectionEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-   fun:_ZN5blink11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
-}
-{
-   bug_166470
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN11dom_storage17DomStorageContextEFvRK4GURLE13scoped_refptrIS2_ES3_EENS_8CallbackINS_8internal9BindStateINSB_13FunctorTraitsIT_E12RunnableTypeENSF_7RunTypeEFvNSB_19CallbackParamTraitsIT0_E11StorageTypeENSI_IT1_E11StorageTypeEEE14UnboundRunTypeEEESE_RKSJ_RKSM_
-   fun:_ZN7content21DOMStorageContextImpl18DeleteLocalStorageERK4GURL
-  ...
-   fun:_ZN10extensions11DataDeleter13StartDeletingEP7ProfileRKSsRK4GURL
-   fun:_ZN16ExtensionService18UninstallExtensionESsbPSbItN4base20string16_char_traitsESaItEE
-}
-{
-   bug_166470c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
-   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
-}
-{
-   bug_166470d
-   Memcheck:Leak
-   ...
-   fun:_ZN7fileapi26GetOriginIdentifierFromURLERK4GURL
-   fun:_ZN11dom_storage14DomStorageArea26DatabaseFileNameFromOriginERK4GURL
-   fun:_ZN11dom_storage14DomStorageAreaC1E*
-   fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
-   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
-}
-{
-   bug_166709
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMNS_12_GLOBAL__N_121PostTaskAndReplyRelayEFvvENS_8internal17UnretainedWrapper*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8Location*
-   ...
-   fun:_ZN16ExtensionService12AddExtensionEPKN10extensions9ExtensionE
-   fun:_ZN52BackgroundApplicationListModelTest_ExplicitTest_Test8TestBodyEv
-}
-{
-   bug_166709b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base12_GLOBAL__N_112CreateThreadEmbPNS_14PlatformThread8DelegateEPmNS_14ThreadPriorityE
-   fun:_ZN4base14PlatformThread6CreateEmPNS0_8DelegateEPm
-   fun:_ZN4base12SimpleThread5StartEv
-   fun:_ZN4base19SequencedWorkerPool6WorkerC1ERK13scoped_refptrIS0_EiRKSs
-   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
-   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
-   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
-   fun:_ZN4base12SimpleThread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-}
-{
-   bug_166709c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN7content13BrowserThread28PostBlockingPoolTaskAndReplyERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESA_
-   fun:_ZN10extensions11ImageLoader15LoadImagesAsyncEPKNS_9ExtensionERKSt6vectorINS0_19ImageRepresentationESaIS5_EERKN4base8CallbackIFvRKN3gfx5ImageEEEE
-}
-{
    bug_166819
    Memcheck:Leak
    fun:_Znw*
@@ -2658,34 +2571,6 @@
    fun:_ZN7history17ShortcutsDatabase11EnsureTableEv
    fun:_ZN7history17ShortcutsDatabase4InitEv
    fun:_ZN7history16ShortcutsBackend12InitInternalEv
-}
-{
-   bug_166976a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
-   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
-   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
-   fun:_ZN4base12SimpleThread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-}
-{
-   bug_166976b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeIPN4base13WaitableEvent6WaiterEEE8allocateEmPKv
-   fun:_ZNSt10_List_baseIPN4base13WaitableEvent6WaiterESaIS3_EE11_M_get_nodeEv
-   fun:_ZNSt4listIPN4base13WaitableEvent6WaiterESaIS3_EE14_M_create_nodeERKS3_
-   fun:_ZNSt4listIPN4base13WaitableEvent6WaiterESaIS3_EE9_M_insertESt14_List_iteratorIS3_ERKS3_
-   fun:_ZNSt4listIPN4base13WaitableEvent6WaiterESaIS3_EE9push_backERKS3_
-   fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
-   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
-   fun:_ZN4base13WaitableEvent4WaitEv
-   ...
-   fun:_ZN4base19SequencedWorkerPool6WorkerC1ERK13scoped_refptrIS0_EiRKSs
-   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
-   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
-   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
 }
 {
    bug_167175a
