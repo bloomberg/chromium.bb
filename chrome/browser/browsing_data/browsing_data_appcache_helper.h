@@ -13,10 +13,8 @@
 #include "net/base/completion_callback.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace content {
-class AppCacheService;
+class BrowserContext;
 }
 
 // This class fetches appcache information on behalf of a caller
@@ -26,7 +24,7 @@ class BrowsingDataAppCacheHelper
  public:
   typedef std::map<GURL, content::AppCacheInfoVector> OriginAppCacheInfoMap;
 
-  explicit BrowsingDataAppCacheHelper(Profile* profile);
+  explicit BrowsingDataAppCacheHelper(content::BrowserContext* browser_context);
 
   virtual void StartFetching(const base::Closure& completion_callback);
   virtual void DeleteAppCacheGroup(const GURL& manifest_url);
@@ -58,7 +56,8 @@ class BrowsingDataAppCacheHelper
 // a parameter during construction.
 class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
  public:
-  explicit CannedBrowsingDataAppCacheHelper(Profile* profile);
+  explicit CannedBrowsingDataAppCacheHelper(
+      content::BrowserContext* browser_context);
 
   // Add an appcache to the set of canned caches that is returned by this
   // helper.

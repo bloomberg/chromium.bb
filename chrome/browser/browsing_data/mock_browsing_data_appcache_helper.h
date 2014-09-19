@@ -11,7 +11,8 @@
 class MockBrowsingDataAppCacheHelper
     : public BrowsingDataAppCacheHelper {
  public:
-  explicit MockBrowsingDataAppCacheHelper(Profile* profile);
+  explicit MockBrowsingDataAppCacheHelper(
+      content::BrowserContext* browser_context);
 
   virtual void StartFetching(const base::Closure& completion_callback) OVERRIDE;
   virtual void DeleteAppCacheGroup(const GURL& manifest_url) OVERRIDE;

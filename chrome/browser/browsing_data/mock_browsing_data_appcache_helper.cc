@@ -8,8 +8,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataAppCacheHelper::MockBrowsingDataAppCacheHelper(
-  Profile* profile)
-  : BrowsingDataAppCacheHelper(profile) {
+    content::BrowserContext* browser_context)
+    : BrowsingDataAppCacheHelper(browser_context) {
 }
 
 MockBrowsingDataAppCacheHelper::~MockBrowsingDataAppCacheHelper() {
