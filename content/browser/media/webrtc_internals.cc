@@ -22,6 +22,10 @@ using std::string;
 namespace content {
 
 namespace {
+
+static base::LazyInstance<WebRTCInternals>::Leaky g_webrtc_internals =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Makes sure that |dict| has a ListValue under path "log".
 static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
   base::ListValue* log = NULL;
@@ -61,7 +65,7 @@ WebRTCInternals::~WebRTCInternals() {
 }
 
 WebRTCInternals* WebRTCInternals::GetInstance() {
-  return Singleton<WebRTCInternals>::get();
+  return g_webrtc_internals.Pointer();
 }
 
 void WebRTCInternals::OnAddPeerConnection(int render_process_id,

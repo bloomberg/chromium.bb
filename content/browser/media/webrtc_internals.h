@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/values.h"
@@ -102,7 +102,7 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   void ResetForTesting();
 
  private:
-  friend struct DefaultSingletonTraits<WebRTCInternals>;
+  friend struct base::DefaultLazyInstanceTraits<WebRTCInternals>;
   FRIEND_TEST_ALL_PREFIXES(WebRtcAecDumpBrowserTest, CallWithAecDump);
   FRIEND_TEST_ALL_PREFIXES(WebRtcAecDumpBrowserTest,
                            CallWithAecDumpEnabledThenDisabled);
