@@ -1,72 +1,72 @@
-#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs a test repeatedly to measure its flakiness. The return code is non-zero
-if the failure rate is higher than the specified threshold, but is not 100%."""
+"""Unit tests for is_flaky."""
 
-import argparse
+import is_flaky
 import subprocess
 import sys
-import time
-
-def load_options():
-  parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--retries', default=1000, type=int,
-                      help='Number of test retries to measure flakiness.')
-  parser.add_argument('--threshold', default=0.05, type=float,
-                      help='Minimum flakiness level at which test is '
-                           'considered flaky.')
-  parser.add_argument('--jobs', '-j', type=int, default=1,
-                      help='Number of parallel jobs to run tests.')
-  parser.add_argument('command', nargs='+', help='Command to run test.')
-  return parser.parse_args()
+import threading
+import unittest
 
 
-def process_finished(running, num_passed, num_failed):
-  finished = [p for p in running if p.poll() is not None]
-  running[:] = [p for p in running if p.poll() is None]
-  num_passed += len([p for p in finished if p.returncode == 0])
-  num_failed += len([p for p in finished if p.returncode != 0])
-  print '%d processed finished. Total passed: %d. Total failed: %d' % (
-      len(finished), num_passed, num_failed)
-  return num_passed, num_failed
+class IsFlakyTest(unittest.TestCase):
 
+  def setUp(self):
+    self.original_subprocess_check_call = subprocess.check_call
+    subprocess.check_call = self.mock_check_call
+    self.check_call_calls = []
+    self.check_call_results = []
+    is_flaky.load_options = self.mock_load_options
 
-def main():
-  options = load_options()
-  num_passed = num_failed = 0
-  running = []
+  def tearDown(self):
+    subprocess.check_call = self.original_subprocess_check_call
 
-  # Start all retries, while limiting total number of running processes.
-  for attempt in range(options.retries):
-    print 'Starting retry %d out of %d\n' % (attempt + 1, options.retries)
-    running.append(subprocess.Popen(options.command, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT))
-    while len(running) >= options.jobs:
-      print 'Waiting for previous retries to finish before starting new ones...'
-      time.sleep(0.1)
-      num_passed, num_failed = process_finished(running, num_passed, num_failed)
+  def mock_check_call(self, command, stdout, stderr):
+    self.check_call_calls.append(command)
+    if self.check_call_results:
+      return self.check_call_results.pop(0)
+    else:
+      return 0
 
+  def mock_load_options(self):
+    class MockOptions():
+      jobs = 2
+      retries = 10
+      threshold = 0.3
+      command = ['command', 'param1', 'param2']
+    return MockOptions()
 
-  # Wait for the remaining retries to finish.
-  print 'Waiting for the remaining retries to finish...'
-  for process in running:
-    process.wait()
+  def testExecutesTestCorrectNumberOfTimes(self):
+    is_flaky.main()
+    self.assertEqual(len(self.check_call_calls), 10)
 
-  num_passed, num_failed = process_finished(running, num_passed, num_failed)
-  if num_passed == 0 or num_failed == 0:
-    flakiness = 0
-  else:
-    flakiness = num_failed / float(options.retries)
+  def testExecutesTestWithCorrectArguments(self):
+    is_flaky.main()
+    for call in self.check_call_calls:
+      self.assertEqual(call, ['command', 'param1', 'param2'])
 
-  print 'Flakiness is %.2f' % flakiness
-  if flakiness > options.threshold:
-    return 1
-  else:
-    return 0
+  def testReturnsNonFlakyForAllSuccesses(self):
+    self.check_call_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ret_code = is_flaky.main()
+    self.assertEqual(ret_code, 0)
+
+  def testReturnsNonFlakyForAllFailures(self):
+    self.check_call_results = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ret_code = is_flaky.main()
+    self.assertEqual(ret_code, 0)
+
+  def testReturnsNonFlakyForSmallNumberOfFailures(self):
+    self.check_call_results = [1, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    ret_code = is_flaky.main()
+    self.assertEqual(ret_code, 0)
+
+  def testReturnsFlakyForLargeNumberOfFailures(self):
+    self.check_call_results = [1, 1, 1, 0, 1, 0, 0, 0, 0, 0]
+    ret_code = is_flaky.main()
+    self.assertEqual(ret_code, 1)
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  unittest.main()
