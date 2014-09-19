@@ -742,12 +742,12 @@ InjectedScript.prototype = {
             var prefix = "";
             var suffix = "";
             if (injectCommandLineAPI) {
-                inspectedWindow.__commandLineAPI = new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null);
+                InjectedScriptHost.setNonEnumProperty(inspectedWindow, "__commandLineAPI", new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null));
                 prefix = "with (__commandLineAPI || { __proto__: null }) {";
                 suffix = "}";
             }
             if (injectScopeChain) {
-                inspectedWindow.__scopeChainForEval = scopeChain;
+                InjectedScriptHost.setNonEnumProperty(inspectedWindow, "__scopeChainForEval", scopeChain);
                 for (var i = 0; i < scopeChain.length; ++i) {
                     prefix = "with (__scopeChainForEval[" + i + "] || { __proto__: null }) {" + (suffix ? " " : "") + prefix;
                     if (suffix)

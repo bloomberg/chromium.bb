@@ -53,6 +53,7 @@
     [NotEnumerable, Unforgeable, Custom] void unmonitorFunction(any fn);
     [NotEnumerable, Unforgeable, Custom] any callFunction(any fn, any receiver, any[] argv);
     [NotEnumerable, Unforgeable, Custom] any suppressWarningsAndCallFunction(any fn, any receiver, any[] argv);
+    [NotEnumerable, Unforgeable, Custom] void setNonEnumProperty(any obj, DOMString key, any value);
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
     [NotEnumerable, Unforgeable, Custom] any setFunctionVariableValue(any functionObject, long scopeIndex, DOMString variableName, any newValue);

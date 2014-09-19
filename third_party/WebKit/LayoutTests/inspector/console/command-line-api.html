@@ -5,6 +5,13 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
+function assertNoBoundCommandLineAPI()
+{
+    ["__commandLineAPI", "__scopeChainForEval"].forEach(function(name) {
+        console.assert(!(name in window), "FAIL: Should be no " + name);
+    });
+}
+
 var test = function()
 {
     var expressions = [
@@ -18,22 +25,32 @@ var test = function()
         "String($('#foo', $('#bar')))",
         "String($$('p#foo'))",
         "String($$('p#foo', document.body))",
-        "String($('foo'))"
+        "String($('foo'))",
+        "console.assert(keys(window).indexOf('__commandLineAPI') === -1)"
     ];
 
     InspectorTest.selectNodeWithId("foo", step1);
 
     function step1(node)
     {
-        if (!expressions.length) {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
+        var expression = expressions.shift();
+        if (!expression) {
+            step2();
             return;
         }
-        var expression = expressions[0];
-        expressions.splice(0, 1);
-        WebInspector.console.log("\n");
+        WebInspector.console.log("");
         InspectorTest.evaluateInConsole(expression, step1);
+    }
+
+    function step2()
+    {
+        InspectorTest.evaluateInPage("assertNoBoundCommandLineAPI()", step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
     }
 }
 

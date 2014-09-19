@@ -500,4 +500,13 @@ void V8InjectedScriptHost::suppressWarningsAndCallFunctionMethodCustom(const v8:
     debugServer.unmuteWarningsAndDeprecations();
 }
 
+void V8InjectedScriptHost::setNonEnumPropertyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 3 || !info[0]->IsObject() || !info[1]->IsString())
+        return;
+
+    v8::Local<v8::Object> object = info[0]->ToObject();
+    object->ForceSet(info[1], info[2], v8::DontEnum);
+}
+
 } // namespace blink
