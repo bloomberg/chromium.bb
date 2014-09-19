@@ -448,6 +448,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Interactions with the App Launcher promo dialog.</summary>
 </histogram>
 
+<histogram name="Apps.AppListCreationTime" units="milliseconds">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The amount of time it takes to build the app list UI. This is logged each
+    time the app list is built from scratch.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListHowEnabled" enum="AppListEnableSource">
   <owner>tapted@chromium.org</owner>
   <summary>

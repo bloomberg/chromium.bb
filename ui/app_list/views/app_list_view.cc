@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 #include "ui/app_list/app_list_constants.h"
@@ -319,6 +320,8 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                                        views::BubbleBorder::Arrow arrow,
                                        bool border_accepts_events,
                                        const gfx::Vector2d& anchor_offset) {
+  base::Time start_time = base::Time::Now();
+
   app_list_main_view_ =
       new AppListMainView(delegate_, initial_apps_page, parent);
   AddChildView(app_list_main_view_);
@@ -407,6 +410,9 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
 
   if (delegate_)
     delegate_->ViewInitialized();
+
+  UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
+                      base::Time::Now() - start_time);
 }
 
 void AppListView::OnBeforeBubbleWidgetInit(
