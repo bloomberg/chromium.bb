@@ -107,6 +107,9 @@ class TestApplicationLoader : public ApplicationLoader,
 
   void set_context(TestContext* context) { context_ = context; }
   int num_loads() const { return num_loads_; }
+  std::vector<std::string> GetArgs() {
+    return test_app_->args().To<std::vector<std::string> >();
+  }
 
  private:
   // ApplicationLoader implementation.
@@ -466,6 +469,46 @@ TEST_F(ApplicationManagerTest, Basic) {
   EXPECT_EQ(std::string("test"), context_.last_test_string);
 }
 
+// Confirm that no arguments are sent to an application by default.
+TEST_F(ApplicationManagerTest, NoArgs) {
+  ApplicationManager am;
+  GURL test_url("test:test");
+  TestContext context;
+  TestApplicationLoader* loader = new TestApplicationLoader;
+  loader->set_context(&context);
+  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url);
+  TestServicePtr test_service;
+  am.ConnectToService(test_url, &test_service);
+  TestClientImpl test_client(test_service.Pass());
+  test_client.Test("test");
+  loop_.Run();
+  std::vector<std::string> app_args = loader->GetArgs();
+  EXPECT_EQ(0U, app_args.size());
+}
+
+// Confirm that arguments are sent to an application.
+TEST_F(ApplicationManagerTest, Args) {
+  ApplicationManager am;
+  GURL test_url("test:test");
+  std::vector<std::string> args;
+  args.push_back("test_arg1");
+  args.push_back("test_arg2");
+  am.SetArgsForURL(args, test_url);
+  TestContext context;
+  TestApplicationLoader* loader = new TestApplicationLoader;
+  loader->set_context(&context);
+  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url);
+  TestServicePtr test_service;
+  am.ConnectToService(test_url, &test_service);
+  TestClientImpl test_client(test_service.Pass());
+  test_client.Test("test");
+  loop_.Run();
+  std::vector<std::string> app_args = loader->GetArgs();
+  ASSERT_EQ(args.size(), app_args.size());
+  EXPECT_EQ(args[0], app_args[0]);
+  EXPECT_EQ(args[1], app_args[1]);
+}
+
 TEST_F(ApplicationManagerTest, ClientError) {
   test_client_->Test("test");
   EXPECT_TRUE(HasFactoryForTestURL());
@@ -479,7 +522,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager sm;
+    ApplicationManager am;
     TestApplicationLoader* default_loader = new TestApplicationLoader;
     default_loader->set_context(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader;
@@ -490,14 +533,14 @@ TEST_F(ApplicationManagerTest, Deletes) {
     TestApplicationLoader* scheme_loader2 = new TestApplicationLoader;
     scheme_loader1->set_context(&context_);
     scheme_loader2->set_context(&context_);
-    sm.set_default_loader(scoped_ptr<ApplicationLoader>(default_loader));
-    sm.SetLoaderForURL(scoped_ptr<ApplicationLoader>(url_loader1),
+    am.set_default_loader(scoped_ptr<ApplicationLoader>(default_loader));
+    am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(url_loader1),
                        GURL("test:test1"));
-    sm.SetLoaderForURL(scoped_ptr<ApplicationLoader>(url_loader2),
+    am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(url_loader2),
                        GURL("test:test1"));
-    sm.SetLoaderForScheme(scoped_ptr<ApplicationLoader>(scheme_loader1),
+    am.SetLoaderForScheme(scoped_ptr<ApplicationLoader>(scheme_loader1),
                           "test");
-    sm.SetLoaderForScheme(scoped_ptr<ApplicationLoader>(scheme_loader2),
+    am.SetLoaderForScheme(scoped_ptr<ApplicationLoader>(scheme_loader2),
                           "test");
   }
   EXPECT_EQ(5, context_.num_loader_deletes);
@@ -505,7 +548,6 @@ TEST_F(ApplicationManagerTest, Deletes) {
 
 // Confirm that both urls and schemes can have their loaders explicitly set.
 TEST_F(ApplicationManagerTest, SetLoaders) {
-  ApplicationManager sm;
   TestApplicationLoader* default_loader = new TestApplicationLoader;
   TestApplicationLoader* url_loader = new TestApplicationLoader;
   TestApplicationLoader* scheme_loader = new TestApplicationLoader;

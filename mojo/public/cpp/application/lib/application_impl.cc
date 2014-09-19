@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/lib/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 
@@ -28,13 +29,13 @@ class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  ScopedMessagePipeHandle shell_handle)
-    : delegate_(delegate), shell_watch_(NULL) {
+    : initialized_(false), delegate_(delegate), shell_watch_(NULL) {
   BindShell(shell_handle.Pass());
 }
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  MojoHandle shell_handle)
-    : delegate_(delegate), shell_watch_(NULL) {
+    : initialized_(false), delegate_(delegate), shell_watch_(NULL) {
   BindShell(MakeScopedHandle(MessagePipeHandle(shell_handle)));
 }
 
@@ -54,8 +55,16 @@ ApplicationImpl::~ApplicationImpl() {
   delete shell_watch_;
 }
 
+void ApplicationImpl::Initialize(Array<String> args) {
+  MOJO_CHECK(!initialized_);
+  initialized_ = true;
+  args_ = args.Pass();
+  delegate_->Initialize(this);
+}
+
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
     const String& application_url) {
+  MOJO_CHECK(initialized_);
   ServiceProviderPtr out_service_provider;
   shell_->ConnectToApplication(application_url, Get(&out_service_provider));
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
@@ -75,7 +84,6 @@ void ApplicationImpl::BindShell(ScopedMessagePipeHandle shell_handle) {
   shell_.Bind(shell_handle.Pass());
   shell_.set_client(this);
   shell_.set_error_handler(shell_watch_);
-  delegate_->Initialize(this);
 }
 
 void ApplicationImpl::AcceptConnection(const String& requestor_url,

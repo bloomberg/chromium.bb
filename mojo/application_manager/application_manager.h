@@ -92,6 +92,10 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   // Sets a Loader to be used for a specific url scheme.
   void SetLoaderForScheme(scoped_ptr<ApplicationLoader> loader,
                           const std::string& scheme);
+  // These strings will be passed to the Initialize() method when an
+  // Application is instantiated.
+  void SetArgsForURL(const std::vector<std::string>& args, const GURL& url);
+
   // Allows to interpose a debugger to service connections.
   void SetInterceptor(Interceptor* interceptor);
 
@@ -109,6 +113,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   typedef std::map<GURL, ApplicationLoader*> URLToLoaderMap;
   typedef std::map<GURL, ShellImpl*> URLToShellImplMap;
   typedef std::map<GURL, ContentHandlerConnection*> URLToContentHandlerMap;
+  typedef std::map<GURL, std::vector<std::string> > URLToArgsMap;
 
   void ConnectToClient(ShellImpl* shell_impl,
                        const GURL& url,
@@ -143,6 +148,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
 
   URLToShellImplMap url_to_shell_impl_;
   URLToContentHandlerMap url_to_content_handler_;
+  URLToArgsMap url_to_args_;
 
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 

@@ -220,9 +220,14 @@ void ApplicationManager::RegisterLoadedApplication(
     shell_impl = iter->second;
   } else {
     MessagePipe pipe;
+    URLToArgsMap::const_iterator args_it = url_to_args_.find(url);
+    Array<String> args;
+    if (args_it != url_to_args_.end())
+      args = Array<String>::From(args_it->second);
     shell_impl = WeakBindToPipe(new ShellImpl(this, url), pipe.handle1.Pass());
     url_to_shell_impl_[url] = shell_impl;
     *shell_handle = pipe.handle0.Pass();
+    shell_impl->client()->Initialize(args.Pass());
   }
 
   ConnectToClient(shell_impl, url, requestor_url, service_provider.Pass());
@@ -265,6 +270,11 @@ void ApplicationManager::SetLoaderForScheme(
   if (it != scheme_to_loader_.end())
     delete it->second;
   scheme_to_loader_[scheme] = loader.release();
+}
+
+void ApplicationManager::SetArgsForURL(const std::vector<std::string>& args,
+                                       const GURL& url) {
+  url_to_args_[url] = args;
 }
 
 void ApplicationManager::SetInterceptor(Interceptor* interceptor) {

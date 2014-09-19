@@ -10,6 +10,9 @@ module mojo {
 // implement Interfaces.
 [Client=Shell]
 interface Application {
+  // Initialize is guaranteed to be called before any AcceptConnection calls.
+  Initialize(string[]? args);
+
   AcceptConnection(string? requestor_url, ServiceProvider? provider);
 };
 
