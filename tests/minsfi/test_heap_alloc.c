@@ -39,15 +39,31 @@ void test_sbrk(void) {
   ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
   ASSERT_EQ(ret_val, sb->mem_layout.heap.offset + 19);
 
+  /* Decrement by 19 */
+  argv_sbrk[1] = "-19";
+  ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
+  ASSERT_EQ(ret_val, sb->mem_layout.heap.offset);
+
+  /*
+   * Check that attempts to decrement further will fail, and that the program
+   * break remains unchanged.
+   */
+  argv_sbrk[1] = "-1";
+  ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
+  ASSERT_EQ((int) ret_val, -1);
+  argv_sbrk[1] = "0";
+  ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
+  ASSERT_EQ(ret_val, sb->mem_layout.heap.offset);
+
   /* Increment by the maximum possible amount. We might have to do this in
    * two steps if the increment value does not fit into a signed integer. */
   argv_sbrk[1] = buf;
-  inc = sb->mem_layout.heap.length - 19;
+  inc = sb->mem_layout.heap.length;
   if (inc > INT_MAX) {
     inc -= INT_MAX;
     sprintf(buf, "%d", INT_MAX);
     ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
-    ASSERT_EQ(ret_val, sb->mem_layout.heap.offset + 19 + INT_MAX);
+    ASSERT_EQ(ret_val, sb->mem_layout.heap.offset + INT_MAX);
   }
   sprintf(buf, "%d", inc);
   ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
@@ -57,6 +73,9 @@ void test_sbrk(void) {
   argv_sbrk[1] = "1";
   ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
   ASSERT_EQ((int) ret_val, -1);
+  argv_sbrk[1] = "0";
+  ret_val = MinsfiInvokeSandbox(2, argv_sbrk);
+  ASSERT_EQ(ret_val, sb->mem_layout.heap.offset + sb->mem_layout.heap.length);
 
   /* Clean up. */
   MinsfiDestroySandbox();
