@@ -6942,6 +6942,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_UNOFFICIAL" desc="unofficial build on the about:version page">
         Developer Build
       </message>
+      <message name="IDS_ABOUT_VERSION_REVISION" desc="label for the revision on the about:version page">
+        Revision
+      </message>
       <message name="IDS_ABOUT_VERSION_OS" desc="label for the OS on the about:version page">
         OS
       </message>

@@ -86,6 +86,7 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
       "copyright",
       l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
                                  base::IntToString16(exploded_time.year)));
+  html_source->AddLocalizedString("revision", IDS_ABOUT_VERSION_REVISION);
   html_source->AddString("cl", version_info.LastChange());
   html_source->AddLocalizedString("official",
       version_info.IsOfficialBuild() ? IDS_ABOUT_VERSION_OFFICIAL :
