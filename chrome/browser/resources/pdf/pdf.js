@@ -234,6 +234,16 @@ PDFViewer.prototype = {
           e.preventDefault();
         }
         return;
+      case 219:  // left bracket.
+        this.plugin_.postMessage({
+          type: 'rotateCounterclockwise',
+        });
+        return;
+      case 221:  // right bracket.
+        this.plugin_.postMessage({
+          type: 'rotateClockwise',
+        });
+        return;
     }
   },
 
