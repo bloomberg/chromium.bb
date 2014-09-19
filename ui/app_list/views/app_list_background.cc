@@ -87,16 +87,11 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
       const gfx::Rect contents_view_view_bounds =
           contents_view->ConvertRectToWidget(contents_view->GetLocalBounds());
       gfx::Rect separator_rect(contents_rect);
+      separator_rect.Inset(
+          kExperimentalWindowPadding + main_view_->GetInsets().left(), 0);
       separator_rect.set_y(contents_view_view_bounds.bottom());
       separator_rect.set_height(kBottomSeparatorSize);
       canvas->FillRect(separator_rect, kBottomSeparatorColor);
-      int contents_switcher_top = separator_rect.bottom();
-      gfx::Rect contents_switcher_rect(bounds.x(),
-                                       contents_switcher_top,
-                                       bounds.width(),
-                                       bounds.bottom() - contents_switcher_top);
-      paint.setColor(kContentsSwitcherBackgroundColor);
-      canvas->DrawRect(contents_switcher_rect, paint);
     }
   }
 

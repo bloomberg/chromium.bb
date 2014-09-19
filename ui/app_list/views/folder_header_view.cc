@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -26,8 +27,8 @@ namespace {
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
 const int kIconDimension = 24;
-const int kPadding = 14;
-const int kBottomSeparatorPadding = 9;
+const int kBackButtonPadding = 14;
+const int kBottomSeparatorPadding = 9;  // Non-experimental app list only.
 const int kBottomSeparatorHeight = 1;
 const int kMaxFolderNameWidth = 300;
 
@@ -158,7 +159,13 @@ void FolderHeaderView::Layout() {
     return;
 
   gfx::Rect back_bounds(rect);
-  back_bounds.set_width(kIconDimension + 2 * kPadding);
+  back_bounds.set_width(kIconDimension + 2 * kBackButtonPadding);
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    // Align the left edge of the button image with the left margin of the
+    // launcher window. Note that this means the physical button dimensions
+    // extends slightly into the margin.
+    back_bounds.set_x(kExperimentalWindowPadding - kBackButtonPadding);
+  }
   back_button_->SetBoundsRect(back_bounds);
 
   gfx::Rect text_bounds(rect);
@@ -192,7 +199,10 @@ void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   // Draw bottom separator line.
-  rect.Inset(kBottomSeparatorPadding, 0);
+  int horizontal_padding = app_list::switches::IsExperimentalAppListEnabled()
+                               ? kExperimentalWindowPadding
+                               : kBottomSeparatorPadding;
+  rect.Inset(horizontal_padding, 0);
   rect.set_y(rect.bottom() - kBottomSeparatorHeight);
   rect.set_height(kBottomSeparatorHeight);
   canvas->FillRect(rect, kTopSeparatorColor);

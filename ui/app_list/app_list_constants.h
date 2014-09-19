@@ -13,7 +13,6 @@
 namespace app_list {
 
 APP_LIST_EXPORT extern const SkColor kContentsBackgroundColor;
-APP_LIST_EXPORT extern const SkColor kContentsSwitcherBackgroundColor;
 APP_LIST_EXPORT extern const SkColor kSearchBoxBackground;
 APP_LIST_EXPORT extern const SkColor kTopSeparatorColor;
 APP_LIST_EXPORT extern const SkColor kBottomSeparatorColor;
@@ -58,6 +57,8 @@ APP_LIST_EXPORT extern const int kExperimentalPreferredCols;
 APP_LIST_EXPORT extern const int kExperimentalPreferredRows;
 
 APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
+
+APP_LIST_EXPORT extern const int kExperimentalWindowPadding;
 
 APP_LIST_EXPORT extern const int kContentsSwitcherSeparatorHeight;
 

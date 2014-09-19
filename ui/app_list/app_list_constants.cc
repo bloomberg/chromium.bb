@@ -7,7 +7,6 @@
 namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xFB, 0xFB, 0xFB);
-const SkColor kContentsSwitcherBackgroundColor = SK_ColorWHITE;
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 const SkColor kBottomSeparatorColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
@@ -77,6 +76,9 @@ const int kExperimentalPreferredRows = 4;
 
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;
+
+// The padding around the outside of the experimental app list (top and sides).
+const int kExperimentalWindowPadding = 23;
 
 // Height of separator between the main view and contents switcher and of
 // the launcher page indicator.

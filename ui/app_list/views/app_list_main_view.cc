@@ -42,9 +42,6 @@ const int kPadding = 1;
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
 
-// The padding around the search box in the experimental app list.
-const int kSearchBoxViewPadding = 23;
-
 // A view that holds another view and takes its preferred size. This is used for
 // wrapping the search box view so it still gets laid out while hidden. This is
 // a separate class so it can notify the main view on search box visibility
@@ -118,17 +115,18 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       contents_view_(NULL),
       contents_switcher_view_(NULL),
       weak_ptr_factory_(this) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, kPadding, kPadding, 0));
+  SetBorder(
+      views::Border::CreateEmptyBorder(kPadding, kPadding, kPadding, kPadding));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   search_box_view_ = new SearchBoxView(this, delegate);
   views::View* container = new SearchBoxContainerView(this, search_box_view_);
   if (switches::IsExperimentalAppListEnabled()) {
     container->SetBorder(
-        views::Border::CreateEmptyBorder(kSearchBoxViewPadding,
-                                         kSearchBoxViewPadding,
+        views::Border::CreateEmptyBorder(kExperimentalWindowPadding,
+                                         kExperimentalWindowPadding,
                                          0,
-                                         kSearchBoxViewPadding));
+                                         kExperimentalWindowPadding));
   }
   AddChildView(container);
   AddContentsViews();
