@@ -16,18 +16,49 @@
 
 namespace crypto {
 
+namespace {
+
+const EVP_MD* ToOpenSSLDigest(SignatureCreator::HashAlgorithm hash_alg) {
+  switch (hash_alg) {
+    case SignatureCreator::SHA1:
+      return EVP_sha1();
+    case SignatureCreator::SHA256:
+      return EVP_sha256();
+  }
+  return NULL;
+}
+
+int ToOpenSSLDigestType(SignatureCreator::HashAlgorithm hash_alg) {
+  switch (hash_alg) {
+    case SignatureCreator::SHA1:
+      return NID_sha1;
+    case SignatureCreator::SHA256:
+      return NID_sha256;
+  }
+  return NID_undef;
+}
+
+}  // namespace
+
 // static
-SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
+SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key,
+                                           HashAlgorithm hash_alg) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   scoped_ptr<SignatureCreator> result(new SignatureCreator);
   result->key_ = key;
-  if (!EVP_SignInit_ex(result->sign_context_, EVP_sha1(), NULL))
+  const EVP_MD* const digest = ToOpenSSLDigest(hash_alg);
+  DCHECK(digest);
+  if (!digest) {
+    return NULL;
+  }
+  if (!EVP_SignInit_ex(result->sign_context_, digest, NULL))
     return NULL;
   return result.release();
 }
 
 // static
 bool SignatureCreator::Sign(RSAPrivateKey* key,
+                            HashAlgorithm hash_alg,
                             const uint8* data,
                             int data_len,
                             std::vector<uint8>* signature) {
@@ -37,8 +68,8 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
   signature->resize(RSA_size(rsa_key.get()));
 
   unsigned int len = 0;
-  bool success = RSA_sign(NID_sha1, data, data_len, vector_as_array(signature),
-                          &len, rsa_key.get());
+  bool success = RSA_sign(ToOpenSSLDigestType(hash_alg), data, data_len,
+                          vector_as_array(signature), &len, rsa_key.get());
   if (!success) {
     signature->clear();
     return false;

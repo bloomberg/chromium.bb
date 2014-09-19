@@ -295,7 +295,8 @@ void PolicyBuilder::SignData(const std::string& data,
                              crypto::RSAPrivateKey* key,
                              std::string* signature) {
   scoped_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(key));
+      crypto::SignatureCreator::Create(key,
+                                       crypto::SignatureCreator::SHA1));
   signature_creator->Update(reinterpret_cast<const uint8*>(data.c_str()),
                             data.size());
   std::vector<uint8> signature_bytes;

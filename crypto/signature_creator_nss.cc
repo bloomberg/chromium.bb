@@ -15,6 +15,30 @@
 
 namespace crypto {
 
+namespace {
+
+SECOidTag ToNSSSigOid(SignatureCreator::HashAlgorithm hash_alg) {
+  switch (hash_alg) {
+    case SignatureCreator::SHA1:
+      return SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+    case SignatureCreator::SHA256:
+      return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+  }
+  return SEC_OID_UNKNOWN;
+}
+
+SECOidTag ToNSSHashOid(SignatureCreator::HashAlgorithm hash_alg) {
+  switch (hash_alg) {
+    case SignatureCreator::SHA1:
+      return SEC_OID_SHA1;
+    case SignatureCreator::SHA256:
+      return SEC_OID_SHA256;
+  }
+  return SEC_OID_UNKNOWN;
+}
+
+}  // namespace
+
 SignatureCreator::~SignatureCreator() {
   if (sign_context_) {
     SGN_DestroyContext(sign_context_, PR_TRUE);
@@ -23,12 +47,12 @@ SignatureCreator::~SignatureCreator() {
 }
 
 // static
-SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
+SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key,
+                                           HashAlgorithm hash_alg) {
   scoped_ptr<SignatureCreator> result(new SignatureCreator);
   result->key_ = key;
 
-  result->sign_context_ = SGN_NewContext(SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION,
-      key->key());
+  result->sign_context_ = SGN_NewContext(ToNSSSigOid(hash_alg), key->key());
   if (!result->sign_context_) {
     NOTREACHED();
     return NULL;
@@ -45,6 +69,7 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
 
 // static
 bool SignatureCreator::Sign(RSAPrivateKey* key,
+                            HashAlgorithm hash_alg,
                             const uint8* data,
                             int data_len,
                             std::vector<uint8>* signature) {
@@ -54,7 +79,7 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
   data_item.len = data_len;
 
   SECItem signature_item;
-  SECStatus rv = SGN_Digest(key->key(), SEC_OID_SHA1, &signature_item,
+  SECStatus rv = SGN_Digest(key->key(), ToNSSHashOid(hash_alg), &signature_item,
                             &data_item);
   if (rv != SECSuccess) {
     NOTREACHED();

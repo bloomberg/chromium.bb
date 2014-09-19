@@ -78,7 +78,8 @@ std::string RsaKeyPair::GetPublicKey() const {
 
 std::string RsaKeyPair::SignMessage(const std::string& message) const {
   scoped_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(key_.get()));
+      crypto::SignatureCreator::Create(key_.get(),
+                                       crypto::SignatureCreator::SHA1));
   signature_creator->Update(reinterpret_cast<const uint8*>(message.c_str()),
                             message.length());
   std::vector<uint8> signature_buf;

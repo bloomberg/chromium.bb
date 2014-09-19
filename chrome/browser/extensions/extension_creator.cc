@@ -211,7 +211,8 @@ bool ExtensionCreator::SignZip(const base::FilePath& zip_path,
                                crypto::RSAPrivateKey* private_key,
                                std::vector<uint8>* signature) {
   scoped_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(private_key));
+      crypto::SignatureCreator::Create(private_key,
+                                       crypto::SignatureCreator::SHA1));
   base::ScopedFILE zip_handle(base::OpenFile(zip_path, "rb"));
   size_t buffer_size = 1 << 16;
   scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);

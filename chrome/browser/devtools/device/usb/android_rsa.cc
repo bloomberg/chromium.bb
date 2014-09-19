@@ -262,8 +262,9 @@ std::string AndroidRSASign(crypto::RSAPrivateKey* key,
                            const std::string& body) {
   std::vector<uint8> digest(body.begin(), body.end());
   std::vector<uint8> result;
-  if (!crypto::SignatureCreator::Sign(key, vector_as_array(&digest),
-                                      digest.size(), &result)) {
+  if (!crypto::SignatureCreator::Sign(key, crypto::SignatureCreator::SHA1,
+                                      vector_as_array(&digest), digest.size(),
+                                      &result)) {
     return std::string();
   }
   return std::string(result.begin(), result.end());

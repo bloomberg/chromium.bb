@@ -32,7 +32,8 @@ std::string AssembleAndSignPolicy(scoped_ptr<em::PolicyData> policy,
 
   // Generate the signature.
   scoped_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(private_key));
+      crypto::SignatureCreator::Create(private_key,
+                                       crypto::SignatureCreator::SHA1));
   signature_creator->Update(
       reinterpret_cast<const uint8*>(policy_response.policy_data().c_str()),
       policy_response.policy_data().size());

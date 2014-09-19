@@ -24,18 +24,27 @@ namespace crypto {
 class RSAPrivateKey;
 
 // Signs data using a bare private key (as opposed to a full certificate).
-// Currently can only sign data using SHA-1 with RSA encryption.
+// Currently can only sign data using SHA-1 or SHA-256 with RSA PKCS#1v1.5.
 class CRYPTO_EXPORT SignatureCreator {
  public:
+  // The set of supported hash functions. Extend as required.
+  enum HashAlgorithm {
+    SHA1,
+    SHA256,
+  };
+
   ~SignatureCreator();
 
   // Create an instance. The caller must ensure that the provided PrivateKey
-  // instance outlives the created SignatureCreator.
-  static SignatureCreator* Create(RSAPrivateKey* key);
+  // instance outlives the created SignatureCreator. Uses the HashAlgorithm
+  // specified.
+  static SignatureCreator* Create(RSAPrivateKey* key, HashAlgorithm hash_alg);
 
-  // Signs the precomputed SHA-1 digest |data| using private |key| as
+
+  // Signs the precomputed |hash_alg| digest |data| using private |key| as
   // specified in PKCS #1 v1.5.
   static bool Sign(RSAPrivateKey* key,
+                   HashAlgorithm hash_alg,
                    const uint8* data,
                    int data_len,
                    std::vector<uint8>* signature);
