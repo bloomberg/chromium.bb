@@ -18,23 +18,24 @@ component("webview") {
   defines = [ "WEBVIEW_IMPLEMENTATION" ]
 
   deps = [
-    "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
-    "//content/public/browser",
+    "//ipc",
     "//skia",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",
     "//ui/events:events_base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
     "//ui/web_dialogs",
-    "//ui/views",
     "//url",
   ]
 
-  forward_dependent_configs_from = [
+  public_deps = [
+    "//base",
+    "//content/public/browser",
+    "//ui/aura",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//ui/views",
   ]
 }
@@ -46,8 +47,10 @@ source_set("test_support") {
     "../../test/webview_test_helper.h",
   ]
 
-  deps = [
+  public_deps = [
     ":webview",
+  ]
+  deps = [
     "//base",
     "//content",
     "//content/test:test_support",

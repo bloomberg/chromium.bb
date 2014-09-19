@@ -64,6 +64,9 @@ component("test_util") {
 
   defines = [ "DISPLAY_IMPLEMENTATION" ]
 
+  public_deps = [
+    ":display",
+  ]
   deps = [
     "//base",
     "//ui/gfx",
@@ -85,6 +88,8 @@ test("display_unittests") {
   ]
 
   deps = [
+    ":test_util",
+    "//base",
     "//base/test:run_all_unittests",
     "//testing/gtest",
     "//ui/display/util",
@@ -94,7 +99,6 @@ test("display_unittests") {
   if (is_chromeos) {
     deps += [
       ":display",
-      ":test_util",
       "//ui/display/types",
     ]
   }

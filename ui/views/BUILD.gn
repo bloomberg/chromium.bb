@@ -17,22 +17,13 @@ component("views") {
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
-    "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//third_party/icu",
     "//third_party/wtl",
     "//ui/accessibility",
-    "//ui/accessibility:ax_gen",
     "//ui/aura",
-    "//ui/base",
-    "//ui/compositor",
-    "//ui/events",
-    "//ui/events:events_base",
-    "//ui/events/platform",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
@@ -40,7 +31,17 @@ component("views") {
     "//url",
   ]
 
-  forward_dependent_configs_from = [ "//ui/accessibility:ax_gen" ]
+  public_deps = [
+    "//base",
+    "//ui/accessibility:ax_gen",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
 
   if (use_x11 && !is_chromeos) {
     deps += [ "//ui/display/util" ]
@@ -85,6 +86,7 @@ component("views") {
     ]
     deps += [
       "//ui/events/platform/x11",
+      "//ui/gfx/x",
     ]
   }
 
@@ -107,8 +109,10 @@ static_library("test_support") {
   testonly = true
   sources = gypi_values.views_test_support_sources
 
-  deps = [
+  public_deps = [
     ":views",
+  ]
+  deps = [
     "//base",
     "//ipc:test_support",
     "//skia",
@@ -136,6 +140,9 @@ static_library("test_support") {
     sources += gypi_values.views_test_support_aura_sources
     deps += [ "//ui/aura:test_support" ]
   }
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
 }
 
 test("views_unittests") {
@@ -143,7 +150,6 @@ test("views_unittests") {
 
   deps = [
     ":test_support",
-    ":views",
     "//base",
     "//base:i18n",
     "//base/allocator",
@@ -155,13 +161,15 @@ test("views_unittests") {
     "//ui/aura",
     "//ui/base",
     "//ui/base:test_support",
-    "//ui/compositor",
-    "//ui/events",
+    "//ui/compositor:test_support",
+    "//ui/events:test_support",
     "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/resources",
+    "//ui/strings",
     "//ui/wm",
     "//url",
   ]
@@ -199,6 +207,7 @@ test("views_unittests") {
     ]
     deps += [
       "//ui/events/platform/x11",
+      "//ui/gfx/x",
     ]
   }
 
@@ -210,7 +219,10 @@ test("views_unittests") {
     }
   }
   if (use_x11) {
-    deps += [ "//ui/events/platform/x11" ]
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
   }
 
   if (is_mac) {

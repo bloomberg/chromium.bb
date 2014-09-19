@@ -203,6 +203,15 @@ static_library("content_shell_lib") {
 
   defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
 
+  public_deps = [
+    # This exposes all public content APIs.
+    "//content/public/app:both",
+    "//content/public/browser",
+    "//content/public/common",
+    "//content/public/plugin",
+    "//content/public/renderer",
+    "//content/public/utility",
+  ]
   deps = [
     ":resources",
     "//base",
@@ -216,12 +225,6 @@ static_library("content_shell_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/gpu",
-    "//content/public/app:both",
-    "//content/public/browser",
-    "//content/public/common",
-    "//content/public/plugin",
-    "//content/public/renderer",
-    "//content/public/utility",
     "//content/test:layouttest_support",
     "//gin",
     "//gpu",

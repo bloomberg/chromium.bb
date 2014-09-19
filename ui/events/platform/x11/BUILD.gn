@@ -12,15 +12,11 @@ component("x11") {
     "x11_event_source_libevent.cc",
   ]
 
-  defines = [
-    "EVENTS_IMPLEMENTATION",
-  ]
+  defines = [ "EVENTS_IMPLEMENTATION" ]
 
-  configs += [
-    "//build/config/linux:x11",
-  ]
+  configs += [ "//build/config/linux:x11" ]
 
-  deps = [
+  public_deps = [
     "//ui/events",
     "//ui/events:events_base",
     "//ui/events/platform",
@@ -28,16 +24,10 @@ component("x11") {
   ]
 
   if (is_linux) {
-    sources -= [
-      "x11_event_source_libevent.cc",
-    ]
+    sources -= [ "x11_event_source_libevent.cc" ]
 
-    configs += [
-      "//build/config/linux:glib",
-    ]
+    configs += [ "//build/config/linux:glib" ]
   } else {
-    sources -= [
-      "x11_event_source_glib.cc",
-    ]
+    sources -= [ "x11_event_source_glib.cc" ]
   }
 }

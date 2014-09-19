@@ -118,18 +118,17 @@ component("gl") {
 
   deps = [
     ":generate_gl_bindings",
-    "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/common",
-    "//third_party/mesa:mesa_headers",
     "//skia",
+  ]
+  public_deps = [
+    "//base",
+    "//third_party/mesa:mesa_headers",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  # TODO(GYP) hook up once this is converted.
-  forward_dependent_configs_from = [ "//third_party/mesa:mesa_headers" ]
 
   if (is_win || is_android || is_linux) {
     sources += [
@@ -342,7 +341,6 @@ if (is_android) {
 
   generate_jni("gl_jni_headers") {
     deps = [ ":surface_jni_headers" ]
-    forward_dependent_configs_from = [ ":surface_jni_headers" ]
     sources = [
       "../android/java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
       "../android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",

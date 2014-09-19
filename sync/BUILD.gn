@@ -5,11 +5,10 @@
 import("//build/config/features.gni")
 
 component("sync") {
-  deps = [
+  public_deps = [
     ":sync_core",
     "//sync/protocol",
   ]
-  forward_dependent_configs_from = [ "//sync/protocol" ]
 }
 
 # GYP version: sync/sync.gyp:sync_core

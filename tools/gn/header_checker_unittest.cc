@@ -56,8 +56,8 @@ class HeaderCheckerTest : public testing::Test {
 
   TestWithScope setup_;
 
-  // Some headers that are automatically set up with a dependency chain.
-  // a -> b -> c
+  // Some headers that are automatically set up with a public dependency chain.
+  // a -> b -> c. D is unconnected.
   Target a_;
   Target b_;
   Target c_;
@@ -86,57 +86,58 @@ TEST_F(HeaderCheckerTest, IsDependencyOf) {
   a_.public_deps().push_back(LabelTargetPair(&p));
 
   // A does not depend on itself.
-  bool is_public = false;
-  std::vector<const Target*> chain;
-  EXPECT_FALSE(checker->IsDependencyOf(&a_, &a_, &chain, &is_public));
+  bool is_permitted = false;
+  HeaderChecker::Chain chain;
+  EXPECT_FALSE(checker->IsDependencyOf(&a_, &a_, &chain, &is_permitted));
 
-  // A depends on B.
+  // A depends publicly on B.
   chain.clear();
-  is_public = false;
-  EXPECT_TRUE(checker->IsDependencyOf(&b_, &a_, &chain, &is_public));
+  is_permitted = false;
+  EXPECT_TRUE(checker->IsDependencyOf(&b_, &a_, &chain, &is_permitted));
   ASSERT_EQ(2u, chain.size());
-  EXPECT_EQ(&b_, chain[0]);
-  EXPECT_EQ(&a_, chain[1]);
-  EXPECT_TRUE(is_public);
+  EXPECT_EQ(HeaderChecker::ChainLink(&b_, true), chain[0]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&a_, true), chain[1]);
+  EXPECT_TRUE(is_permitted);
 
   // A indirectly depends on C. The "public" dependency path through B should
   // be identified.
   chain.clear();
-  is_public = false;
-  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_public));
+  is_permitted = false;
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_permitted));
   ASSERT_EQ(3u, chain.size());
-  EXPECT_EQ(&c_, chain[0]);
-  EXPECT_EQ(&b_, chain[1]);
-  EXPECT_EQ(&a_, chain[2]);
-  EXPECT_TRUE(is_public);
+  EXPECT_EQ(HeaderChecker::ChainLink(&c_, true), chain[0]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&b_, true), chain[1]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&a_, true), chain[2]);
+  EXPECT_TRUE(is_permitted);
 
   // C does not depend on A.
   chain.clear();
-  is_public = false;
-  EXPECT_FALSE(checker->IsDependencyOf(&a_, &c_, &chain, &is_public));
+  is_permitted = false;
+  EXPECT_FALSE(checker->IsDependencyOf(&a_, &c_, &chain, &is_permitted));
   EXPECT_TRUE(chain.empty());
-  EXPECT_FALSE(is_public);
+  EXPECT_FALSE(is_permitted);
 
-  // Add a private A -> C dependency. This should not be detected since it's
-  // private, even though it's shorter than the A -> B -> C one.
+  // Remove the B -> C public dependency, leaving P's private dep on C the only
+  // path from A to C. This should now be found.
   chain.clear();
-  is_public = false;
-  a_.private_deps().push_back(LabelTargetPair(&c_));
-  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_public));
-  EXPECT_EQ(&c_, chain[0]);
-  EXPECT_EQ(&b_, chain[1]);
-  EXPECT_EQ(&a_, chain[2]);
-  EXPECT_TRUE(is_public);
-
-  // Remove the B -> C public dependency, leaving A's private dep on C the only
-  // path. This should now be found.
-  chain.clear();
-  EXPECT_EQ(&c_, b_.public_deps()[0].ptr); // Validate it's the right one.
+  EXPECT_EQ(&c_, b_.public_deps()[0].ptr);  // Validate it's the right one.
   b_.public_deps().erase(b_.public_deps().begin());
-  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_public));
-  EXPECT_EQ(&c_, chain[0]);
-  EXPECT_EQ(&a_, chain[1]);
-  EXPECT_FALSE(is_public);
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_permitted));
+  EXPECT_EQ(3u, chain.size());
+  EXPECT_EQ(HeaderChecker::ChainLink(&c_, false), chain[0]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&p, true), chain[1]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&a_, true), chain[2]);
+  EXPECT_FALSE(is_permitted);
+
+  // P privately depends on C. That dependency should be OK since it's only
+  // one hop.
+  chain.clear();
+  is_permitted = false;
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &p, &chain, &is_permitted));
+  ASSERT_EQ(2u, chain.size());
+  EXPECT_EQ(HeaderChecker::ChainLink(&c_, false), chain[0]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&p, true), chain[1]);
+  EXPECT_TRUE(is_permitted);
 }
 
 TEST_F(HeaderCheckerTest, CheckInclude) {
@@ -161,7 +162,6 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   c_.public_headers().push_back(c_public);
   c_.set_all_headers_public(false);
 
-  targets_.push_back(&d_);
   scoped_refptr<HeaderChecker> checker(
       new HeaderChecker(setup_.build_settings(), targets_));
 
@@ -188,6 +188,51 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   EXPECT_TRUE(checker->CheckInclude(&a_, input_file, SourceFile("//random.h"),
                                     range, &err));
   EXPECT_FALSE(err.has_error());
+}
+
+// A public chain of dependencies should always be identified first, even if
+// it is longer than a private one.
+TEST_F(HeaderCheckerTest, PublicFirst) {
+  // Now make a A -> Z -> D private dependency chain (one shorter than the
+  // public one to get to D).
+  Target z(setup_.settings(), Label(SourceDir("//a/"), "a"));
+  z.set_output_type(Target::SOURCE_SET);
+  Err err;
+  EXPECT_TRUE(z.SetToolchain(setup_.toolchain(), &err));
+  z.private_deps().push_back(LabelTargetPair(&d_));
+  EXPECT_TRUE(z.OnResolved(&err));
+  targets_.push_back(&z);
+
+  a_.private_deps().push_back(LabelTargetPair(&z));
+
+  // Check that D can be found from A, but since it's private, it will be
+  // marked as not permitted.
+  bool is_permitted = false;
+  HeaderChecker::Chain chain;
+  scoped_refptr<HeaderChecker> checker(
+      new HeaderChecker(setup_.build_settings(), targets_));
+  EXPECT_TRUE(checker->IsDependencyOf(&d_, &a_, &chain, &is_permitted));
+
+  EXPECT_FALSE(is_permitted);
+  ASSERT_EQ(3u, chain.size());
+  EXPECT_EQ(HeaderChecker::ChainLink(&d_, false), chain[0]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&z, false), chain[1]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&a_, true), chain[2]);
+
+  // Hook up D to the existing public A -> B -> C chain to make a long one, and
+  // search for D again.
+  c_.public_deps().push_back(LabelTargetPair(&d_));
+  checker = new HeaderChecker(setup_.build_settings(), targets_);
+  chain.clear();
+  EXPECT_TRUE(checker->IsDependencyOf(&d_, &a_, &chain, &is_permitted));
+
+  // This should have found the long public one.
+  EXPECT_TRUE(is_permitted);
+  ASSERT_EQ(4u, chain.size());
+  EXPECT_EQ(HeaderChecker::ChainLink(&d_, true), chain[0]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&c_, true), chain[1]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&b_, true), chain[2]);
+  EXPECT_EQ(HeaderChecker::ChainLink(&a_, true), chain[3]);
 }
 
 // Checks that the allow_circular_includes_from list works.

@@ -15,6 +15,7 @@ component("accelerometer") {
   defines = [ "UI_ACCELEROMETER_IMPLEMENTATION" ]
 
   deps = [
+    "//base",
     "//ui/gfx/geometry",
   ]
 }

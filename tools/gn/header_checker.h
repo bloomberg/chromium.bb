@@ -30,6 +30,23 @@ class MessageLoop;
 
 class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
  public:
+  // Represents a dependency chain.
+  struct ChainLink {
+    ChainLink() : target(NULL), is_public(false) {}
+    ChainLink(const Target* t, bool p) : target(t), is_public(p) {}
+
+    const Target* target;
+
+    // True when the dependency on this target is public.
+    bool is_public;
+
+    // Used for testing.
+    bool operator==(const ChainLink& other) const {
+      return target == other.target && is_public == other.is_public;
+    }
+  };
+  typedef std::vector<ChainLink> Chain;
+
   HeaderChecker(const BuildSettings* build_settings,
                 const std::vector<const Target*>& targets);
 
@@ -49,12 +66,9 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
  private:
   friend class base::RefCountedThreadSafe<HeaderChecker>;
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, IsDependencyOf);
-  FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest,
-                           IsDependencyOf_ForwardsDirectDependentConfigs);
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, CheckInclude);
+  FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, PublicFirst);
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, CheckIncludeAllowCircular);
-  FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest,
-                           GetDependentConfigChainProblemIndex);
   ~HeaderChecker();
 
   struct TargetInfo {
@@ -115,21 +129,25 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   // dependency chain from the dest target (chain[0] = search_for) to the src
   // target (chain[chain.size() - 1] = search_from).
   //
-  // Chains with public dependencies will be considered first. If a public
-  // match is found, *is_public will be set to true. A chain with non-public
-  // dependencies will only be considered if there are no public chains. In
-  // this case, *is_public will be false.
+  // Chains with permitted dependencies will be considered first. If a
+  // permitted match is found, *is_permitted will be set to true. A chain with
+  // indirect, non-public dependencies will only be considered if there are no
+  // public or direct chains. In this case, *is_permitted will be false.
+  //
+  // A permitted dependency is a sequence of public dependencies. The first
+  // one may be private, since a direct dependency always allows headers to be
+  // included.
   bool IsDependencyOf(const Target* search_for,
                       const Target* search_from,
-                      std::vector<const Target*>* chain,
-                      bool* is_public) const;
+                      Chain* chain,
+                      bool* is_permitted) const;
 
   // For internal use by the previous override of IsDependencyOf.  If
   // require_public is true, only public dependency chains are searched.
   bool IsDependencyOf(const Target* search_for,
                       const Target* search_from,
-                      bool require_public,
-                      std::vector<const Target*>* chain) const;
+                      bool require_permitted,
+                      Chain* chain) const;
 
   // Non-locked variables ------------------------------------------------------
   //

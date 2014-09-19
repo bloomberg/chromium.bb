@@ -46,15 +46,16 @@ component("events_base") {
 
   deps = [
     ":dom4_keycode_converter",
-    "//base",
     "//base/third_party/dynamic_annotations",
     "//skia",
+  ]
+
+  public_deps = [
+    "//base",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  forward_dependent_configs_from = [ "//ui/gfx" ]
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
@@ -73,6 +74,8 @@ component("events_base") {
       "x/touch_factory_x11.cc",
       "x/touch_factory_x11.h",
     ]
+
+    deps += [ "//ui/gfx/x" ]
   }
 }
 
@@ -104,14 +107,15 @@ component("events") {
     "gestures/gesture_recognizer_impl_mac.cc",
     "gestures/gesture_types.h",
     "win/events_win.cc",
-    "x/events_x.cc",
   ]
 
   defines = [ "EVENTS_IMPLEMENTATION" ]
 
+  public_deps = [
+    ":events_base",
+  ]
   deps = [
     ":dom4_keycode_converter",
-    ":events_base",
     ":gesture_detection",
     "//base/third_party/dynamic_annotations",
     "//skia",
@@ -122,14 +126,12 @@ component("events") {
   forward_dependent_configs_from = [ ":events_base" ]
 
   if (use_x11) {
+    sources += [ "x/events_x.cc" ]
     configs += [
       "//build/config/linux:glib",
       "//build/config/linux:x11",
     ]
-  } else {
-    sources -= [
-      "x/events_x.cc",
-    ]
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (!is_chromeos && is_linux) {
@@ -225,8 +227,6 @@ source_set("test_support") {
     "test/event_generator.h",
     "test/events_test_utils.cc",
     "test/events_test_utils.h",
-    "test/events_test_utils_x11.cc",
-    "test/events_test_utils_x11.h",
     "test/mock_motion_event.cc",
     "test/mock_motion_event.h",
     "test/platform_event_waiter.cc",
@@ -239,10 +239,12 @@ source_set("test_support") {
     "test/test_event_target.h",
   ]
 
-  deps = [
+  public_deps = [
     ":events",
     ":events_base",
     ":gesture_detection",
+  ]
+  deps = [
     "//base",
     "//skia",
     "//ui/events/platform",
@@ -256,11 +258,12 @@ source_set("test_support") {
     ]
   }
 
-  if (!use_x11) {
-    sources -= [
+  if (use_x11) {
+    sources += [
       "test/events_test_utils_x11.cc",
       "test/events_test_utils_x11.h",
     ]
+    deps += [ "//ui/gfx/x" ]
   }
 }
 

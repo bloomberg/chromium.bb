@@ -6,8 +6,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
 component("message_center") {
-  defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
-
   deps = [
     "//base",
     "//base:i18n",
@@ -18,9 +16,13 @@ component("message_center") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
+    "//url",
   ]
+
+  defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
   if (enable_notifications) {
     sources = [
@@ -159,8 +161,11 @@ static_library("test_support") {
     "fake_notifier_settings_provider.cc",
   ]
 
-  deps = [
+  public_deps = [
     ":message_center",
+  ]
+
+  deps = [
     "//base",
     "//base/test:test_support",
     "//skia",

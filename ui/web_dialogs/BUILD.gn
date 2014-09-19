@@ -22,6 +22,7 @@ component("web_dialogs") {
     "//content/public/common",
     "//skia",
     "//ui/base",
+    "//url",
   ]
 }
 
@@ -33,10 +34,13 @@ static_library("test_support") {
     "test/test_web_dialog_delegate.h",
   ]
 
-  deps = [
+  public_deps = [
     ":web_dialogs",
+  ]
+  deps = [
     "//base",
     "//content/public/browser",
     "//skia",
+    "//url",
   ]
 }

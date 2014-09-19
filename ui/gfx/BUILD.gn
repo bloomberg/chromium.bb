@@ -221,19 +221,20 @@ component("gfx") {
 
   deps = [
     ":gfx_export",
-    "//base",
     "//base:i18n",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//third_party/harfbuzz-ng",
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
     "//third_party/libpng",
     "//third_party/zlib",
     "//ui/gfx/geometry",
   ]
-  forward_dependent_configs_from = [ "//skia" ]
+  public_deps = [
+    "//base",
+    "//skia",
+    "//third_party/icu",
+  ]
 
   # Text rendering conditions (complicated so separated out).
   if (is_android || is_ios) {
@@ -378,8 +379,11 @@ source_set("test_support") {
     "test/ui_cocoa_test_helper.mm",
   ]
 
-  deps = [
+  public_deps = [
     ":gfx",
+  ]
+
+  deps = [
     "//base",
     "//base/test:test_support",
     "//skia",
@@ -464,6 +468,7 @@ test("gfx_unittests") {
     "//skia",
     "//third_party/icu:icuuc",
     "//third_party/libpng",
+    "//third_party/zlib",
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx/geometry",

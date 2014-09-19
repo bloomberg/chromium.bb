@@ -624,6 +624,9 @@ source_set("test_support") {
     "test",
   ]
 
+  public_deps = [
+    ":cc",
+  ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",

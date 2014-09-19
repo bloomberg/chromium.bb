@@ -73,6 +73,7 @@ component("views_examples_lib") {
     "//ui/gfx/geometry",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
+    "//ui/views",
   ]
 
   if (is_win) {
@@ -102,13 +103,18 @@ executable("views_examples_exe") {
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/gfx",
+    "//ui/gl",
     "//ui/resources:ui_test_pak",
     "//ui/views",
     "//ui/views:test_support",
+    "//ui/wm",
   ]
 
   if (use_aura) {
     deps += [ "//ui/aura" ]
+  }
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
   }
 }
 

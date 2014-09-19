@@ -172,11 +172,12 @@ source_set("test_support") {
     "test/window_test_api.h",
   ]
 
-  deps = [
+  public_deps = [
     ":aura",
+  ]
+  deps = [
     "//skia",
     "//testing/gtest",
-    "//ui/base",
     "//ui/base:test_support",
     "//ui/compositor:test_support",
     "//ui/events",
@@ -248,7 +249,6 @@ executable("bench") {
   ]
 
   deps = [
-    ":aura",
     ":test_support",
     "//base",
     "//base:i18n",
@@ -283,18 +283,14 @@ test("unittests") {
   ]
 
   deps = [
-    ":aura",
     ":test_support",
     "//base/allocator",
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",
-    "//ui/base",
     "//ui/base:test_support",
-    "//ui/compositor",
     "//ui/compositor:test_support",
-    "//ui/events",
-    "//ui/events:events_base",
+    "//ui/events:test_support",
     "//ui/events:gesture_detection",
     "//ui/gfx",
     "//ui/gfx/geometry",

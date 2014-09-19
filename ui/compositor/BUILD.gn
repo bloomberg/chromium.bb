@@ -103,9 +103,11 @@ source_set("test_support") {
     "test/test_utils.h",
   ]
 
-  deps = [
+  public_deps = [
     ":compositor",
-    "//base",
+  ]
+  deps = [
+    "//base/test:test_support",
     "//cc",
     "//cc:test_support",
     "//skia",

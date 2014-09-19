@@ -176,13 +176,12 @@ template("generated_extensions_api") {
   source_set(target_name) {
     sources = []
     deps = []
-    
+    public_deps = []
+
     if (schemas) {
       sources += get_target_outputs(":$schema_generator_name")
-      deps += [
-        ":$schema_generator_name",
-        "//tools/json_schema_compiler:generated_api_util",
-      ]
+      public_deps += [ ":$schema_generator_name" ]
+      deps += [ "//tools/json_schema_compiler:generated_api_util" ]
     }
 
     if (bundle) {

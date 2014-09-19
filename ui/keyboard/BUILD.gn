@@ -83,8 +83,7 @@ grit("resources_grit") {
 copy("resources") {
   sources = [ "$target_gen_dir/keyboard_resources.pak" ]
   outputs = [ "$root_out_dir/keyboard_resources.pak" ]
-  deps = [ ":resources_grit" ]
-  forward_dependent_configs_from = deps
+  public_deps = [ ":resources_grit" ]
 }
 
 test("keyboard_unittests") {
@@ -101,11 +100,10 @@ test("keyboard_unittests") {
     "//content",
     "//skia",
     "//testing/gtest",
-    "//ui/aura",
     "//ui/aura:test_support",
-    "//ui/base",
-    "//ui/compositor",
+    "//ui/base:test_support",
     "//ui/compositor:test_support",
+    "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

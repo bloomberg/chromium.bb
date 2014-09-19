@@ -550,6 +550,8 @@ template("component") {
       if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
       if (defined(invoker.output_name)) { output_name = invoker.output_name }
       if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
       if (defined(invoker.sources)) { sources = invoker.sources }
       if (defined(invoker.testonly)) { testonly = invoker.testonly }
       if (defined(invoker.visibility)) { visibility = invoker.visibility }
@@ -584,6 +586,8 @@ template("component") {
       if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
       if (defined(invoker.output_name)) { output_name = invoker.output_name }
       if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
       if (defined(invoker.sources)) { sources = invoker.sources }
       if (defined(invoker.testonly)) { testonly = invoker.testonly }
       if (defined(invoker.visibility)) { visibility = invoker.visibility }
@@ -632,6 +636,8 @@ template("test") {
       if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
       if (defined(invoker.output_name)) { output_name = invoker.output_name }
       if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
       if (defined(invoker.sources)) { sources = invoker.sources }
       if (defined(invoker.visibility)) { visibility = invoker.visibility }
     }
@@ -667,6 +673,8 @@ template("test") {
       if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
       if (defined(invoker.output_name)) { output_name = invoker.output_name }
       if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
       if (defined(invoker.sources)) { sources = invoker.sources }
       if (defined(invoker.visibility)) { visibility = invoker.visibility }
     }

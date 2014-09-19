@@ -37,7 +37,7 @@ struct PublicGeneratedPair {
 SourceFile RemoveRootGenDirFromFile(const Target* target,
                                     const SourceFile& file) {
   const SourceDir& gen = target->settings()->toolchain_gen_dir();
-  if (StartsWithASCII(file.value(), gen.value(), true))
+  if (!gen.is_null() && StartsWithASCII(file.value(), gen.value(), true))
     return SourceFile("//" + file.value().substr(gen.value().size()));
   return file;
 }
@@ -71,12 +71,20 @@ LocationRange CreatePersistentRange(const InputFile& input_file,
 // being used by chain[end] and not all deps are public, returns the string
 // describing the error.
 std::string GetDependencyChainPublicError(
-    const std::vector<const Target*>& chain) {
-  std::string ret = "The target " +
-      chain[chain.size() - 1]->label().GetUserVisibleName(false) + "\n" +
-      "is including a file in " + chain[0]->label().GetUserVisibleName(false) +
+    const HeaderChecker::Chain& chain) {
+  std::string ret = "The target:\n  " +
+      chain[chain.size() - 1].target->label().GetUserVisibleName(false) +
+      "\nis including a file from the target:\n  " +
+      chain[0].target->label().GetUserVisibleName(false) +
       "\n";
-  if (chain.size() > 2) {
+
+  // Invalid chains should always be 0 (no chain) or more than two
+  // (intermediate private dependencies). 1 and 2 are impossible because a
+  // target can always include headers from itself and its direct dependents.
+  DCHECK(chain.size() != 1 && chain.size() != 2);
+  if (chain.empty()) {
+    ret += "There is no dependency chain between these targets.";
+  } else {
     // Indirect dependency chain, print the chain.
     ret += "\nIt's usually best to depend directly on the destination target.\n"
         "In some cases, the destination target is considered a subcomponent\n"
@@ -84,12 +92,20 @@ std::string GetDependencyChainPublicError(
         "should depend publicly on the destination to forward the ability\n"
         "to include headers.\n"
         "\n"
-        "Dependency chain (there may be others):\n";
+        "Dependency chain (there may also be others):\n";
 
     for (int i = static_cast<int>(chain.size()) - 1; i >= 0; i--) {
-      ret.append("  " + chain[i]->label().GetUserVisibleName(false));
-      if (i != 0)
-        ret.append(" ->");
+      ret.append("  " + chain[i].target->label().GetUserVisibleName(false));
+      if (i != 0) {
+        // Identify private dependencies so the user can see where in the
+        // dependency chain things went bad. Don't list this for the first link
+        // in the chain since direct dependencies are OK, and listing that as
+        // "private" may make people feel like they need to fix it.
+        if (i == static_cast<int>(chain.size()) - 1 || chain[i - 1].is_public)
+          ret.append(" -->");
+        else
+          ret.append(" --[private]-->");
+      }
       ret.append("\n");
     }
   }
@@ -146,15 +162,17 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
       continue;
 
     // Do a first pass to find if this should be skipped. All targets including
-    // this source file must exclude it from checking, or it must be generated.
+    // this source file must exclude it from checking, or any target
+    // must mark it as generated (for cases where one target generates a file,
+    // and another lists it as a source to compile it).
     if (!force_check) {
       bool check_includes = false;
+      bool is_generated = false;
       for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i) {
-        check_includes |=
-            vect[vect_i].target->check_includes() &&
-            !vect[vect_i].is_generated;
+        check_includes |= vect[vect_i].target->check_includes();
+        is_generated |= vect[vect_i].is_generated;
       }
-      if (!check_includes)
+      if (!check_includes || is_generated)
         continue;
     }
 
@@ -184,19 +202,28 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   // Files in the sources have this public bit by default.
   bool default_public = target->all_headers_public();
 
-  // First collect the normal files, they get the default visibility.
   std::map<SourceFile, PublicGeneratedPair> files_to_public;
+
+  // First collect the normal files, they get the default visibility. Always
+  // trim the root gen dir if it exists. This will only exist on outputs of an
+  // action, but those are often then wired into the sources of a compiled
+  // target to actually compile generated code. If you depend on the compiled
+  // target, it should be enough to be able to include the header.
   const Target::FileList& sources = target->sources();
-  for (size_t i = 0; i < sources.size(); i++)
-    files_to_public[sources[i]].is_public = default_public;
+  for (size_t i = 0; i < sources.size(); i++) {
+    SourceFile file = RemoveRootGenDirFromFile(target, sources[i]);
+    files_to_public[file].is_public = default_public;
+  }
 
   // Add in the public files, forcing them to public. This may overwrite some
   // entries, and it may add new ones.
   const Target::FileList& public_list = target->public_headers();
   if (default_public)
     DCHECK(public_list.empty());  // List only used when default is not public.
-  for (size_t i = 0; i < public_list.size(); i++)
-    files_to_public[public_list[i]].is_public = true;
+  for (size_t i = 0; i < public_list.size(); i++) {
+    SourceFile file = RemoveRootGenDirFromFile(target, public_list[i]);
+    files_to_public[file].is_public = true;
+  }
 
   // Add in outputs from actions. These are treated as public (since if other
   // targets can't use them, then there wouldn't be any point in outputting).
@@ -256,7 +283,8 @@ bool HeaderChecker::CheckFile(const Target* from_target,
   std::string contents;
   if (!base::ReadFileToString(path, &contents)) {
     *err = Err(from_target->defined_from(), "Source file not found.",
-        "This target includes as a source:\n  " + file.value() +
+        "The target:\n  " + from_target->label().GetUserVisibleName(false) +
+        "\nhas a source file:\n  " + file.value() +
         "\nwhich was not found.");
     return false;
   }
@@ -300,11 +328,17 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     return true;
 
   const TargetVector& targets = found->second;
-  std::vector<const Target*> chain;  // Prevent reallocating in the loop.
+  Chain chain;  // Prevent reallocating in the loop.
 
   // For all targets containing this file, we require that at least one be
-  // a dependency of the current target, and all targets that are dependencies
-  // must have the file listed in the public section.
+  // a direct or public dependency of the current target, and that the header
+  // is public within the target.
+  //
+  // If there is more than one target containing this header, we may encounter
+  // some error cases before finding a good one. This error stores the previous
+  // one encountered, which we may or may not throw away.
+  Err last_error;
+
   bool found_dependency = false;
   for (size_t i = 0; i < targets.size(); i++) {
     // We always allow source files in a target to include headers also in that
@@ -313,40 +347,49 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     if (to_target == from_target)
       return true;
 
-    bool is_public_dep_chain = false;
-    if (IsDependencyOf(to_target, from_target, &chain, &is_public_dep_chain)) {
+    bool is_permitted_chain = false;
+    if (IsDependencyOf(to_target, from_target, &chain, &is_permitted_chain)) {
       DCHECK(chain.size() >= 2);
-      DCHECK(chain[0] == to_target);
-      DCHECK(chain[chain.size() - 1] == from_target);
-
-      // The file must be public in the target.
-      if (!targets[i].is_public) {
-        // Danger: must call CreatePersistentRange to put in Err.
-        *err = Err(CreatePersistentRange(source_file, range),
-                   "Including a private header.",
-                   "This file is private to the target " +
-                       targets[i].target->label().GetUserVisibleName(false));
-        return false;
-      }
-
-      // The dependency chain must be public.
-      if (!is_public_dep_chain) {
-        *err = Err(CreatePersistentRange(source_file, range),
-                   "Can't include this header from here.",
-                   GetDependencyChainPublicError(chain));
-        return false;
-      }
+      DCHECK(chain[0].target == to_target);
+      DCHECK(chain[chain.size() - 1].target == from_target);
 
       found_dependency = true;
+
+      if (targets[i].is_public && is_permitted_chain) {
+        // This one is OK, we're done.
+        last_error = Err();
+        break;
+      }
+
+      // Diagnose the error.
+      if (!targets[i].is_public) {
+        // Danger: must call CreatePersistentRange to put in Err.
+        last_error = Err(
+            CreatePersistentRange(source_file, range),
+            "Including a private header.",
+            "This file is private to the target " +
+                targets[i].target->label().GetUserVisibleName(false));
+      } else if (!is_permitted_chain) {
+        last_error = Err(
+            CreatePersistentRange(source_file, range),
+            "Can't include this header from here.",
+                GetDependencyChainPublicError(chain));
+      } else {
+        NOTREACHED();
+      }
     } else if (
         to_target->allow_circular_includes_from().find(from_target->label()) !=
         to_target->allow_circular_includes_from().end()) {
       // Not a dependency, but this include is whitelisted from the destination.
       found_dependency = true;
+      last_error = Err();
+      break;
     }
   }
 
   if (!found_dependency) {
+    DCHECK(!last_error.has_error());
+
     std::string msg = "It is not in any dependency of " +
         from_target->label().GetUserVisibleName(false);
     msg += "\nThe include file is in the target(s):\n";
@@ -362,6 +405,11 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
                "Include not allowed.", msg);
     return false;
   }
+  if (last_error.has_error()) {
+    // Found at least one dependency chain above, but it had an error.
+    *err = last_error;
+    return false;
+  }
 
   // One thing we didn't check for is targets that expose their dependents
   // headers in their own public headers.
@@ -372,11 +420,10 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
   // header from B that in turn includes a header from C.
   //
   // There are two ways to solve this:
-  //  - If a public header in B includes C, force B to forward C's direct
-  //    dependent configs. This is possible to check, but might be super
-  //    annoying because most targets (especially large leaf-node targets)
-  //    don't declare public/private headers and you'll get lots of false
-  //    positives.
+  //  - If a public header in B includes C, force B to publicly depend on C.
+  //    This is possible to check, but might be super annoying because most
+  //    targets (especially large leaf-node targets) don't declare
+  //    public/private headers and you'll get lots of false positives.
   //
   //  - Save the includes found in each file and actually compute the graph of
   //    includes to detect when A implicitly includes C's header. This will not
@@ -387,34 +434,34 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
 
 bool HeaderChecker::IsDependencyOf(const Target* search_for,
                                    const Target* search_from,
-                                   std::vector<const Target*>* chain,
-                                   bool* is_public) const {
+                                   Chain* chain,
+                                   bool* is_permitted) const {
   if (search_for == search_from) {
     // A target is always visible from itself.
-    *is_public = true;
+    *is_permitted = true;
     return false;
   }
 
   // Find the shortest public dependency chain.
   if (IsDependencyOf(search_for, search_from, true, chain)) {
-    *is_public = true;
+    *is_permitted = true;
     return true;
   }
 
   // If not, try to find any dependency chain at all.
   if (IsDependencyOf(search_for, search_from, false, chain)) {
-    *is_public = false;
+    *is_permitted = false;
     return true;
   }
 
-  *is_public = false;
+  *is_permitted = false;
   return false;
 }
 
 bool HeaderChecker::IsDependencyOf(const Target* search_for,
                                    const Target* search_from,
-                                   bool require_public,
-                                   std::vector<const Target*>* chain) const {
+                                   bool require_permitted,
+                                   Chain* chain) const {
   // This method conducts a breadth-first search through the dependency graph
   // to find a shortest chain from search_from to search_for.
   //
@@ -429,40 +476,47 @@ bool HeaderChecker::IsDependencyOf(const Target* search_for,
   // a shortest dependency chain (in reverse order) from search_from to
   // search_for.
 
-  std::map<const Target*, const Target*> breadcrumbs;
-  std::queue<const Target*> work_queue;
-  work_queue.push(search_from);
+  std::map<const Target*, ChainLink> breadcrumbs;
+  std::queue<ChainLink> work_queue;
+  work_queue.push(ChainLink(search_from, true));
 
+  bool first_time = true;
   while (!work_queue.empty()) {
-    const Target* target = work_queue.front();
+    ChainLink cur_link = work_queue.front();
+    const Target* target = cur_link.target;
     work_queue.pop();
 
     if (target == search_for) {
       // Found it! Reconstruct the chain.
       chain->clear();
       while (target != search_from) {
-        chain->push_back(target);
-        target = breadcrumbs[target];
+        chain->push_back(cur_link);
+        cur_link = breadcrumbs[target];
+        target = cur_link.target;
       }
-      chain->push_back(search_from);
+      chain->push_back(ChainLink(search_from, true));
       return true;
     }
 
     // Always consider public dependencies as possibilities.
     const LabelTargetVector& public_deps = target->public_deps();
     for (size_t i = 0; i < public_deps.size(); i++) {
-      if (breadcrumbs.insert(std::make_pair(public_deps[i].ptr, target)).second)
-        work_queue.push(public_deps[i].ptr);
+      if (breadcrumbs.insert(
+              std::make_pair(public_deps[i].ptr, cur_link)).second)
+        work_queue.push(ChainLink(public_deps[i].ptr, true));
     }
 
-    if (!require_public) {
+    if (first_time || !require_permitted) {
       // Consider all dependencies since all target paths are allowed, so add
-      // in private ones.
+      // in private ones. Also do this the first time through the loop, since
+      // a target can include headers from its direct deps regardless of
+      // public/private-ness.
+      first_time = false;
       const LabelTargetVector& private_deps = target->private_deps();
       for (size_t i = 0; i < private_deps.size(); i++) {
-        if (breadcrumbs.insert(std::make_pair(private_deps[i].ptr, target))
-            .second)
-          work_queue.push(private_deps[i].ptr);
+        if (breadcrumbs.insert(
+                std::make_pair(private_deps[i].ptr, cur_link)).second)
+          work_queue.push(ChainLink(private_deps[i].ptr, false));
       }
     }
   }

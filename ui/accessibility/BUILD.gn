@@ -34,9 +34,7 @@ component("accessibility") {
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
 
-  forward_dependent_configs_from = [ ":ax_gen" ]
-
-  deps = [
+  public_deps = [
     ":ax_gen",
     "//base",
     "//ui/gfx",
