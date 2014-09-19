@@ -356,13 +356,6 @@
                 '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
               ],
               'conditions': [
-                ['incremental_chrome_dll==1', {
-                  'msvs_settings': {
-                    'VCLinkerTool': {
-                      'UseLibraryDependencyInputs': 'true',
-                    },
-                  },
-                }],
                 ['chrome_pgo_phase==1', {
                   'msvs_settings': {
                     'VCLinkerTool': {
