@@ -486,14 +486,15 @@ void PictureLayerImpl::UpdateTilePriorities(
   if (!tiling_needs_update)
     return;
 
-  gfx::Rect visible_layer_rect = GetViewportForTilePriorityInContentSpace();
+  gfx::Rect viewport_rect_in_layer_space =
+      GetViewportForTilePriorityInContentSpace();
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     // Pass |occlusion_in_content_space| for |occlusion_in_layer_space| since
     // they are the same space in picture lbayer, as contents scale is always 1.
     tilings_->tiling_at(i)->UpdateTilePriorities(tree,
-                                                 visible_layer_rect,
+                                                 viewport_rect_in_layer_space,
                                                  ideal_contents_scale_,
                                                  current_frame_time_in_seconds,
                                                  occlusion_in_content_space);
@@ -519,12 +520,8 @@ gfx::Rect PictureLayerImpl::GetViewportForTilePriorityInContentSpace() const {
       visible_rect_in_content_space =
           gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
               view_to_layer, viewport_rect_for_tile_priority_));
-
-      visible_rect_in_content_space.Intersect(gfx::Rect(content_bounds()));
     }
   }
-
-  visible_rect_in_content_space.Intersect(visible_content_rect());
   return visible_rect_in_content_space;
 }
 
@@ -793,6 +790,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   // can be independently overridden by embedders like Android WebView with
   // SetExternalDrawConstraints.
   gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
+  rect.Intersect(visible_content_rect());
 
   float min_acceptable_scale =
       std::min(raster_contents_scale_, ideal_contents_scale_);

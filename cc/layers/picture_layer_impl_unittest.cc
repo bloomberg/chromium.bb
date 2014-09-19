@@ -397,6 +397,10 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
   bool success = transform_for_tile_priority.GetInverse(&screen_to_view);
   EXPECT_TRUE(success);
 
+  // Note that we don't clip this to the layer bounds, since it is expected that
+  // the rect will sometimes be outside of the layer bounds. If we clip to
+  // bounds, then tile priorities will end up being incorrect in cases of fully
+  // offscreen layer.
   viewport_rect_for_tile_priority_in_view_space =
       gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
           screen_to_view, viewport_rect_for_tile_priority));
@@ -405,10 +409,6 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
   EXPECT_EQ(active_layer_->viewport_rect_for_tile_priority(),
             viewport_rect_for_tile_priority_in_view_space);
 
-  // Interset viewport_rect_for_tile_priority_in_view_space with the layer
-  // bounds and the result should be used in PictureLayerTiling.
-  viewport_rect_for_tile_priority_in_view_space.Intersect(
-      gfx::Rect(layer_bounds));
   tilings = active_layer_->tilings();
   for (size_t i = 0; i < tilings->num_tilings(); i++) {
     PictureLayerTiling* tiling = tilings->tiling_at(i);

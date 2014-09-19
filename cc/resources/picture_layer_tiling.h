@@ -237,7 +237,7 @@ class CC_EXPORT PictureLayerTiling {
   void Reset();
 
   void UpdateTilePriorities(WhichTree tree,
-                            const gfx::Rect& visible_layer_rect,
+                            const gfx::Rect& viewport_in_layer_space,
                             float ideal_contents_scale,
                             double current_frame_time_in_seconds,
                             const Occlusion& occlusion_in_layer_space);
