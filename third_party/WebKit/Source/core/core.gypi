@@ -1484,6 +1484,8 @@
             'page/scrolling/ScrollingCoordinator.h',
             'paint/BlockPainter.cpp',
             'paint/BlockPainter.h',
+            'paint/BlockFlowPainter.cpp',
+            'paint/BlockFlowPainter.h',
             'paint/BoxDecorationData.h',
             'paint/BoxDecorationData.cpp',
             'paint/BoxPainter.cpp',

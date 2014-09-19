@@ -186,6 +186,24 @@ public:
 
     virtual bool avoidsFloats() const OVERRIDE;
 
+    LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
+    {
+        if (isHorizontalWritingMode())
+            return child->x() + child->renderer()->marginLeft();
+
+        return child->x() + marginBeforeForChild(child->renderer());
+    }
+
+    LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
+    {
+        if (isHorizontalWritingMode())
+            return child->y() + marginBeforeForChild(child->renderer());
+
+        return child->y() + child->renderer()->marginTop();
+    }
+
+    LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
+
 protected:
     void rebuildFloatsFromIntruding();
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);
@@ -220,24 +238,6 @@ private:
     void layoutBlockChild(RenderBox* child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom);
     void adjustPositionedBlock(RenderBox* child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
-
-    LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
-
-    LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
-    {
-        if (isHorizontalWritingMode())
-            return child->x() + child->renderer()->marginLeft();
-
-        return child->x() + marginBeforeForChild(child->renderer());
-    }
-
-    LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
-    {
-        if (isHorizontalWritingMode())
-            return child->y() + marginBeforeForChild(child->renderer());
-
-        return child->y() + child->renderer()->marginTop();
-    }
 
     LayoutPoint computeLogicalLocationForFloat(const FloatingObject*, LayoutUnit logicalTopOffset) const;
 
@@ -392,6 +392,9 @@ public:
         bool m_discardMarginAfter : 1;
     };
     LayoutUnit marginOffsetForSelfCollapsingBlock();
+
+    FloatingObjects* floatingObjects() { return m_floatingObjects.get(); }
+
 
 protected:
     LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : RenderBlockFlowRareData::positiveMarginBeforeDefault(this); }

@@ -992,7 +992,7 @@ int RenderTableCell::borderHalfAfter(bool outer) const
 void RenderTableCell::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase != PaintPhaseCollapsedTableBorders);
-    RenderBlockFlow::paint(paintInfo, paintOffset);
+    RenderBlock::paint(paintInfo, paintOffset);
 }
 
 static EBorderStyle collapsedBorderStyle(EBorderStyle style)
