@@ -111,9 +111,6 @@ source_set("browser") {
 
   configs += [
     "//content:content_implementation",
-
-    # TODO(GYP) remove this when libjingle_webrtc is working.
-    "//third_party/libjingle:jingle_direct_dependent_configs",  # TODO(GYP)
   ]
 
   if (toolkit_views) {
@@ -157,7 +154,7 @@ source_set("browser") {
                            ".", "//content")
     deps += [ "//jingle:jingle_glue" ]
     if (is_linux) {
-      #deps += [ "//third_party/libjingle:libjingle_webrtc" ]  TODO(GYP)
+      deps += [ "//third_party/libjingle:libjingle_webrtc" ]
     }
     if (is_linux || is_mac || is_win) {
       sources += [

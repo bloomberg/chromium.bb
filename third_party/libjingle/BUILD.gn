@@ -249,10 +249,12 @@ static_library("libjingle") {
     "source/talk/p2p/base/constants.cc",
     "source/talk/p2p/base/constants.h",
   ]
+  public_deps = [
+    ":jingle_deps"
+  ]
   deps = [
     "//third_party/webrtc/base:webrtc_base",
     ":libjingle_p2p_constants",
-    ":jingle_deps"
   ]
 
   # From libjingle_common.gypi's conditions list.
@@ -260,13 +262,10 @@ static_library("libjingle") {
     cflags = [ "/wd4005", "/wd4267" ]
   }
 
-  forward_dependent_configs_from = [
-    ":jingle_deps"
-  ]
   configs += [
     ":jingle_unexported_configs"
   ]
-  direct_dependent_configs = [
+  public_configs = [
     ":jingle_direct_dependent_configs",
   ]
   all_dependent_configs = [
@@ -288,16 +287,13 @@ static_library("libjingle_p2p_constants") {
     "source/talk/p2p/base/constants.cc",
     "source/talk/p2p/base/constants.h",
   ]
-  deps = [
-    ":jingle_deps",
-  ]
-  forward_dependent_configs_from = [
+  public_deps = [
     ":jingle_deps",
   ]
   configs += [
     ":jingle_unexported_configs"
   ]
-  direct_dependent_configs = [
+  public_configs = [
     ":jingle_direct_dependent_configs",
   ]
   all_dependent_configs = [
@@ -320,17 +316,17 @@ source_set("peerconnnection_server") {
   include_dirs = [
     "source",
   ]
-  deps = [
-    ":libjingle",
+  public_deps = [
     ":jingle_deps",
   ]
-  forward_dependent_configs_from = [
+  deps = [
+    ":libjingle",
     ":jingle_deps",
   ]
   configs += [
     ":jingle_unexported_configs"
   ]
-  direct_dependent_configs = [
+  public_configs = [
     ":jingle_direct_dependent_configs",
   ]
   all_dependent_configs = [
@@ -349,6 +345,8 @@ if (enable_webrtc) {
       "overrides/init_webrtc.cc",
       "overrides/init_webrtc.h",
     ]
+    configs += [ ":jingle_unexported_configs" ]
+    public_configs = [ ":jingle_direct_dependent_configs" ]
     deps = [ ":libjingle_webrtc_common" ]
   }
 
@@ -507,7 +505,7 @@ if (enable_webrtc) {
     ]
 
     configs += [ ":jingle_unexported_configs" ]
-    direct_dependent_configs = [ ":jingle_direct_dependent_configs" ]
+    public_configs = [ ":jingle_direct_dependent_configs" ]
 
     deps = [
       "//third_party/libsrtp",
@@ -546,7 +544,7 @@ if (enable_webrtc) {
     ]
 
     configs += [ ":jingle_unexported_configs" ]
-    direct_dependent_configs = [ ":jingle_direct_dependent_configs" ]
+    public_configs = [ ":jingle_direct_dependent_configs" ]
 
     deps = [
       ":libjingle_webrtc_common",
