@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -41,6 +42,15 @@ bool NET_EXPORT ParsePrincipalValueByNID(X509_NAME* name,
                                          std::string* value);
 
 bool NET_EXPORT ParseDate(ASN1_TIME* x509_time, base::Time* time);
+
+// DER-encodes |x509|, caching the encoding in a structure owned by
+// the X509. On success, returns true, and sets |*out_der| to point to
+// the encoding. The StringPiece is valid as long as |x509| is not
+// freed.
+//
+// Note: this caches the encoding, so |x509| must not be modified
+// after the first call to this function.
+bool NET_EXPORT GetDER(X509* x509, base::StringPiece* out_der);
 
 } // namespace x509_util
 

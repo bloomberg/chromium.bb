@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
@@ -127,6 +128,22 @@ X509* CreateCertificate(EVP_PKEY* key,
   return cert.release();
 }
 
+// DER-encodes |x509|. On success, returns true and writes the
+// encoding to |*out_der|.
+bool DerEncodeCert(X509* x509, std::string* out_der) {
+  int len = i2d_X509(x509, NULL);
+  if (len < 0)
+    return false;
+
+  uint8_t* ptr = reinterpret_cast<uint8_t*>(WriteInto(out_der, len + 1));
+  if (i2d_X509(x509, &ptr) < 0) {
+    NOTREACHED();
+    out_der->clear();
+    return false;
+  }
+  return true;
+}
+
 bool SignAndDerEncodeCert(X509* cert,
                           EVP_PKEY* key,
                           DigestAlgorithm alg,
@@ -145,17 +162,7 @@ bool SignAndDerEncodeCert(X509* cert,
   }
 
   // Convert it into a DER-encoded string copied to |der_encoded|.
-  int der_data_length = i2d_X509(cert, NULL);
-  if (der_data_length < 0)
-    return false;
-
-  der_encoded->resize(der_data_length);
-  unsigned char* der_data =
-      reinterpret_cast<unsigned char*>(&(*der_encoded)[0]);
-  if (i2d_X509(cert, &der_data) < 0)
-    return false;
-
-  return true;
+  return DerEncodeCert(cert, der_encoded);
 }
 
 // There is no OpenSSL NID for the 'originBoundCertificate' extension OID yet,
@@ -187,6 +194,36 @@ ASN1_OBJECT* GetDomainBoundOid() {
       LAZY_INSTANCE_INITIALIZER;
   return s_lazy.Get().obj();
 }
+
+
+struct DERCache {
+  std::string data;
+};
+
+void DERCache_free(void* parent, void* ptr, CRYPTO_EX_DATA* ad, int idx,
+                   long argl, void* argp) {
+  DERCache* der_cache = static_cast<DERCache*>(ptr);
+  delete der_cache;
+}
+
+class DERCacheInitSingleton {
+ public:
+  DERCacheInitSingleton() {
+    crypto::EnsureOpenSSLInit();
+    der_cache_ex_index_ = X509_get_ex_new_index(0, 0, 0, 0, DERCache_free);
+    DCHECK_NE(-1, der_cache_ex_index_);
+  }
+
+  int der_cache_ex_index() const { return der_cache_ex_index_; }
+
+ private:
+  int der_cache_ex_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(DERCacheInitSingleton);
+};
+
+base::LazyInstance<DERCacheInitSingleton>::Leaky g_der_cache_singleton =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -354,6 +391,30 @@ bool ParseDate(ASN1_TIME* x509_time, base::Time* time) {
   CertDateFormat format = x509_time->type == V_ASN1_UTCTIME ?
       CERT_DATE_FORMAT_UTC_TIME : CERT_DATE_FORMAT_GENERALIZED_TIME;
   return ParseCertificateDate(str_date, format, time);
+}
+
+// Returns true if |der_cache| points to valid data, false otherwise.
+// (note: the DER-encoded data in |der_cache| is owned by |cert|, callers should
+// not free it).
+bool GetDER(X509* x509, base::StringPiece* der_cache) {
+  int x509_der_cache_index =
+      g_der_cache_singleton.Get().der_cache_ex_index();
+
+  // Re-encoding the DER data via i2d_X509 is an expensive operation,
+  // but it's necessary for comparing two certificates. Re-encode at
+  // most once per certificate and cache the data within the X509 cert
+  // using X509_set_ex_data.
+  DERCache* internal_cache = static_cast<DERCache*>(
+      X509_get_ex_data(x509, x509_der_cache_index));
+  if (!internal_cache) {
+    scoped_ptr<DERCache> new_cache(new DERCache);
+    if (!DerEncodeCert(x509, &new_cache->data))
+      return false;
+    internal_cache = new_cache.get();
+    X509_set_ex_data(x509, x509_der_cache_index, new_cache.release());
+  }
+  *der_cache = base::StringPiece(internal_cache->data);
+  return true;
 }
 
 }  // namespace x509_util

@@ -122,7 +122,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int DoVerifyCert(int result);
   int DoVerifyCertComplete(int result);
   void DoConnectCallback(int result);
-  X509Certificate* UpdateServerCert();
+  void UpdateServerCert();
   void VerifyCT();
 
   void OnHandshakeIOComplete(int result);

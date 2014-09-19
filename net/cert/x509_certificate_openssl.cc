@@ -17,6 +17,7 @@
 #include "base/pickle.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -135,21 +136,6 @@ void ParseSubjectAltName(X509Certificate::OSCertHandle cert,
   }
 }
 
-struct DERCache {
-  unsigned char* data;
-  int data_length;
-};
-
-void DERCache_free(void* parent, void* ptr, CRYPTO_EX_DATA* ad, int idx,
-                   long argl, void* argp) {
-  DERCache* der_cache = static_cast<DERCache*>(ptr);
-  if (!der_cache)
-      return;
-  if (der_cache->data)
-      OPENSSL_free(der_cache->data);
-  OPENSSL_free(der_cache);
-}
-
 class X509InitSingleton {
  public:
   static X509InitSingleton* GetInstance() {
@@ -159,7 +145,6 @@ class X509InitSingleton {
     return Singleton<X509InitSingleton,
                      LeakySingletonTraits<X509InitSingleton> >::get();
   }
-  int der_cache_ex_index() const { return der_cache_ex_index_; }
   X509_STORE* store() const { return store_.get(); }
 
   void ResetCertStore() {
@@ -173,62 +158,13 @@ class X509InitSingleton {
   friend struct DefaultSingletonTraits<X509InitSingleton>;
   X509InitSingleton() {
     crypto::EnsureOpenSSLInit();
-    der_cache_ex_index_ = X509_get_ex_new_index(0, 0, 0, 0, DERCache_free);
-    DCHECK_NE(der_cache_ex_index_, -1);
     ResetCertStore();
   }
 
-  int der_cache_ex_index_;
   crypto::ScopedOpenSSL<X509_STORE, X509_STORE_free>::Type store_;
 
   DISALLOW_COPY_AND_ASSIGN(X509InitSingleton);
 };
-
-// Takes ownership of |data| (which must have been allocated by OpenSSL).
-DERCache* SetDERCache(X509Certificate::OSCertHandle cert,
-                      int x509_der_cache_index,
-                      unsigned char* data,
-                      int data_length) {
-  DERCache* internal_cache = static_cast<DERCache*>(
-      OPENSSL_malloc(sizeof(*internal_cache)));
-  if (!internal_cache) {
-    // We took ownership of |data|, so we must free if we can't add it to
-    // |cert|.
-    OPENSSL_free(data);
-    return NULL;
-  }
-
-  internal_cache->data = data;
-  internal_cache->data_length = data_length;
-  X509_set_ex_data(cert, x509_der_cache_index, internal_cache);
-  return internal_cache;
-}
-
-// Returns true if |der_cache| points to valid data, false otherwise.
-// (note: the DER-encoded data in |der_cache| is owned by |cert|, callers should
-// not free it).
-bool GetDERAndCacheIfNeeded(X509Certificate::OSCertHandle cert,
-                            DERCache* der_cache) {
-  int x509_der_cache_index =
-      X509InitSingleton::GetInstance()->der_cache_ex_index();
-
-  // Re-encoding the DER data via i2d_X509 is an expensive operation, but it's
-  // necessary for comparing two certificates. We re-encode at most once per
-  // certificate and cache the data within the X509 cert using X509_set_ex_data.
-  DERCache* internal_cache = static_cast<DERCache*>(
-      X509_get_ex_data(cert, x509_der_cache_index));
-  if (!internal_cache) {
-    unsigned char* data = NULL;
-    int data_length = i2d_X509(cert, &data);
-    if (data_length <= 0 || !data)
-      return false;
-    internal_cache = SetDERCache(cert, x509_der_cache_index, data, data_length);
-    if (!internal_cache)
-      return false;
-  }
-  *der_cache = *internal_cache;
-  return true;
-}
 
 // Used to free a list of X509_NAMEs and the objects it points to.
 void sk_X509_NAME_free_all(STACK_OF(X509_NAME)* sk) {
@@ -301,11 +237,11 @@ SHA1HashValue X509Certificate::CalculateCAFingerprint(
 
   SHA_CTX sha1_ctx;
   SHA1_Init(&sha1_ctx);
-  DERCache der_cache;
+  base::StringPiece der;
   for (size_t i = 0; i < intermediates.size(); ++i) {
-    if (!GetDERAndCacheIfNeeded(intermediates[i], &der_cache))
+    if (!x509_util::GetDER(intermediates[i], &der))
       return sha1;
-    SHA1_Update(&sha1_ctx, der_cache.data, der_cache.data_length);
+    SHA1_Update(&sha1_ctx, der.data(), der.length());
   }
   SHA1_Final(sha1.data, &sha1_ctx);
 
@@ -320,8 +256,8 @@ X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
   crypto::EnsureOpenSSLInit();
   const unsigned char* d2i_data =
       reinterpret_cast<const unsigned char*>(data);
-  // Don't cache this data via SetDERCache as this wire format may be not be
-  // identical from the i2d_X509 roundtrip.
+  // Don't cache this data for x509_util::GetDER as this wire format
+  // may be not be identical from the i2d_X509 roundtrip.
   X509* cert = d2i_X509(NULL, &d2i_data, length);
   return cert;
 }
@@ -372,11 +308,10 @@ X509_STORE* X509Certificate::cert_store() {
 // static
 bool X509Certificate::GetDEREncoded(X509Certificate::OSCertHandle cert_handle,
                                     std::string* encoded) {
-  DERCache der_cache;
-  if (!GetDERAndCacheIfNeeded(cert_handle, &der_cache))
+  base::StringPiece der;
+  if (!x509_util::GetDER(cert_handle, &der))
     return false;
-  encoded->assign(reinterpret_cast<const char*>(der_cache.data),
-                  der_cache.data_length);
+  encoded->assign(der.data(), der.length());
   return true;
 }
 
@@ -390,12 +325,11 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
   // X509_cmp only checks the fingerprint, but we want to compare the whole
   // DER data. Encoding it from OSCertHandle is an expensive operation, so we
   // cache the DER (if not already cached via X509_set_ex_data).
-  DERCache der_cache_a, der_cache_b;
+  base::StringPiece der_a, der_b;
 
-  return GetDERAndCacheIfNeeded(a, &der_cache_a) &&
-      GetDERAndCacheIfNeeded(b, &der_cache_b) &&
-      der_cache_a.data_length == der_cache_b.data_length &&
-      memcmp(der_cache_a.data, der_cache_b.data, der_cache_a.data_length) == 0;
+  return x509_util::GetDER(a, &der_a) &&
+      x509_util::GetDER(b, &der_b) &&
+      der_a == der_b;
 }
 
 // static
@@ -412,13 +346,11 @@ X509Certificate::ReadOSCertHandleFromPickle(PickleIterator* pickle_iter) {
 // static
 bool X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
                                                 Pickle* pickle) {
-  DERCache der_cache;
-  if (!GetDERAndCacheIfNeeded(cert_handle, &der_cache))
+  base::StringPiece der;
+  if (!x509_util::GetDER(cert_handle, &der))
     return false;
 
-  return pickle->WriteData(
-      reinterpret_cast<const char*>(der_cache.data),
-      der_cache.data_length);
+  return pickle->WriteData(der.data(), der.length());
 }
 
 // static
