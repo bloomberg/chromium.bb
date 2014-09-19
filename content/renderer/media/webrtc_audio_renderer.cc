@@ -29,6 +29,11 @@ namespace content {
 
 namespace {
 
+// We add a UMA histogram measuring the execution time of the Render() method
+// every |kNumCallbacksBetweenRenderTimeHistograms| callback. Assuming 10ms
+// between each callback leads to one UMA update each 100ms.
+const int kNumCallbacksBetweenRenderTimeHistograms = 10;
+
 // This is a simple wrapper class that's handed out to users of a shared
 // WebRtcAudioRenderer instance.  This class maintains the per-user 'playing'
 // and 'started' states to avoid problems related to incorrect usage which
@@ -190,7 +195,8 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                    media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
                    frames_per_buffer,
-                   GetCurrentDuckingFlag(source_render_frame_id)) {
+                   GetCurrentDuckingFlag(source_render_frame_id)),
+      render_callback_count_(0) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_view_id=%d"
       ", session_id=%d, sample_rate=%d, frames_per_buffer=%d, effects=%i",
@@ -321,6 +327,7 @@ void WebRtcAudioRenderer::Play() {
     return;
 
   playing_state_.set_playing(true);
+  render_callback_count_ = 0;
 
   OnPlayStateChanged(media_stream_, &playing_state_);
 }
@@ -440,6 +447,7 @@ void WebRtcAudioRenderer::OnRenderError() {
 // Called by AudioPullFifo when more data is necessary.
 void WebRtcAudioRenderer::SourceCallback(
     int fifo_frame_delay, media::AudioBus* audio_bus) {
+  base::TimeTicks start_time = base::TimeTicks::Now() ;
   DVLOG(2) << "WebRtcAudioRenderer::SourceCallback("
            << fifo_frame_delay << ", "
            << audio_bus->frames() << ")";
@@ -458,6 +466,12 @@ void WebRtcAudioRenderer::SourceCallback(
   // return here and ensure that the returned value in Render() is 0.
   if (state_ != PLAYING)
     audio_bus->Zero();
+
+  if (++render_callback_count_ == kNumCallbacksBetweenRenderTimeHistograms) {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+    render_callback_count_ = 0;
+    UMA_HISTOGRAM_TIMES("WebRTC.AudioRenderTimes", elapsed);
+  }
 }
 
 void WebRtcAudioRenderer::UpdateSourceVolume(

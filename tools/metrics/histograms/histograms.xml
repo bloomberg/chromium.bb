@@ -37685,6 +37685,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Duration in milliseconds of WebRTC audio render session.</summary>
 </histogram>
 
+<histogram name="WebRTC.AudioRenderTimes" units="milliseconds">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Measures the time spent in WebRtcAudioRenderer::SourceCallback. Sampled 10
+    times per second.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
   <owner>perkj@chromium.org</owner>
   <summary>

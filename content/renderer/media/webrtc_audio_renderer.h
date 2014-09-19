@@ -230,6 +230,10 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // before being destructed (PlayingState object goes out of scope).
   SourcePlayingStates source_playing_states_;
 
+  // Used for triggering new UMA histogram. Counts number of render
+  // callbacks modulo |kNumCallbacksBetweenRenderTimeHistograms|.
+  int render_callback_count_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };
 
