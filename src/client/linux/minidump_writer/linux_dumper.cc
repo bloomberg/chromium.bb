@@ -54,6 +54,7 @@
 
 static const char kMappedFileUnsafePrefix[] = "/dev/";
 static const char kDeletedSuffix[] = " (deleted)";
+static const char kReservedFlags[] = " ---p";
 
 inline static bool IsMappedFileOpenUnsafe(
     const google_breakpad::MappingInfo& mapping) {
@@ -291,6 +292,23 @@ bool LinuxDumper::EnumerateMappings() {
             if ((start_addr == module->start_addr + module->size) &&
                 (my_strlen(name) == my_strlen(module->name)) &&
                 (my_strncmp(name, module->name, my_strlen(name)) == 0)) {
+              module->size = end_addr - module->start_addr;
+              line_reader->PopLine(line_len);
+              continue;
+            }
+          }
+          // Also merge mappings that result from address ranges that the
+          // linker reserved but which a loaded library did not use. These
+          // appear as an anonymous private mapping with no access flags set
+          // and which directly follow an executable mapping.
+          if (!name && !mappings_.empty()) {
+            MappingInfo* module = mappings_.back();
+            if ((start_addr == module->start_addr + module->size) &&
+                module->exec &&
+                module->name && module->name[0] == '/' &&
+                offset == 0 && my_strncmp(i2,
+                                          kReservedFlags,
+                                          sizeof(kReservedFlags) - 1) == 0) {
               module->size = end_addr - module->start_addr;
               line_reader->PopLine(line_len);
               continue;
