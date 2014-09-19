@@ -120,9 +120,7 @@ class GFX_EXPORT Transform {
   bool IsIdentity() const { return matrix_.isIdentity(); }
 
   // Returns true if the matrix is either identity or pure translation.
-  bool IsIdentityOrTranslation() const {
-    return !(matrix_.getType() & ~SkMatrix44::kTranslate_Mask);
-  }
+  bool IsIdentityOrTranslation() const { return matrix_.isTranslate(); }
 
   // Returns true if the matrix is either identity or pure translation,
   // allowing for an amount of inaccuracy as specified by the parameter.
@@ -146,10 +144,7 @@ class GFX_EXPORT Transform {
   }
 
   // Returns true if the matrix is has only scaling and translation components.
-  bool IsScaleOrTranslation() const {
-    int mask = SkMatrix44::kScale_Mask | SkMatrix44::kTranslate_Mask;
-    return (matrix_.getType() & ~mask) == 0;
-  }
+  bool IsScaleOrTranslation() const { return matrix_.isScaleTranslate(); }
 
   // Returns true if axis-aligned 2d rects will remain axis-aligned after being
   // transformed by this matrix.
@@ -157,9 +152,7 @@ class GFX_EXPORT Transform {
 
   // Returns true if the matrix has any perspective component that would
   // change the w-component of a homogeneous point.
-  bool HasPerspective() const {
-    return (matrix_.getType() & SkMatrix44::kPerspective_Mask) != 0;
-  }
+  bool HasPerspective() const { return matrix_.hasPerspective(); }
 
   // Returns true if this transform is non-singular.
   bool IsInvertible() const { return matrix_.invert(NULL); }
