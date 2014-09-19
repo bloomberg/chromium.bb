@@ -46,7 +46,7 @@ SVGFitToViewBox::SVGFitToViewBox(SVGElement* element, PropertyMapPolicy property
 
 AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio, float viewWidth, float viewHeight)
 {
-    if (!viewBoxRect.width() || !viewBoxRect.height())
+    if (!viewBoxRect.width() || !viewBoxRect.height() || !viewWidth || !viewHeight)
         return AffineTransform();
 
     return preserveAspectRatio->getCTM(viewBoxRect.x(), viewBoxRect.y(), viewBoxRect.width(), viewBoxRect.height(), viewWidth, viewHeight);
