@@ -907,10 +907,14 @@ void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
         asyncCallStackTracker().didFireAsyncCall();
 }
 
+bool InspectorDebuggerAgent::v8AsyncTaskEventsEnabled() const
+{
+    return asyncCallStackTracker().isEnabled();
+}
+
 void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
 {
-    if (!asyncCallStackTracker().isEnabled())
-        return;
+    ASSERT(asyncCallStackTracker().isEnabled());
     if (eventType == v8AsyncTaskEventEnqueue)
         asyncCallStackTracker().didEnqueueV8AsyncTask(context, eventName, id, scriptDebugServer().currentCallFramesForAsyncStack());
     else if (eventType == v8AsyncTaskEventWillHandle)
@@ -921,10 +925,14 @@ void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* contex
         ASSERT_NOT_REACHED();
 }
 
+bool InspectorDebuggerAgent::v8PromiseEventsEnabled() const
+{
+    return promiseTracker().isEnabled();
+}
+
 void InspectorDebuggerAgent::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status)
 {
-    if (!promiseTracker().isEnabled())
-        return;
+    ASSERT(promiseTracker().isEnabled());
     promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
 }
 

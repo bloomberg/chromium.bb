@@ -230,7 +230,9 @@ private:
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
     virtual void didParseSource(const String& scriptId, const Script&, CompileResult) OVERRIDE FINAL;
+    virtual bool v8AsyncTaskEventsEnabled() const OVERRIDE FINAL;
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) OVERRIDE FINAL;
+    virtual bool v8PromiseEventsEnabled() const OVERRIDE FINAL;
     virtual void didReceiveV8PromiseEvent(ScriptState*, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status) OVERRIDE FINAL;
 
     void setPauseOnExceptionsImpl(ErrorString*, int);

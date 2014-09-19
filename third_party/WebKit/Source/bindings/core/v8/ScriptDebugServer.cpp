@@ -518,9 +518,11 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             ASSERT(hitBreakpoints->IsArray());
             handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         } else if (event == v8::AsyncTaskEvent) {
-            handleV8AsyncTaskEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
+            if (listener->v8AsyncTaskEventsEnabled())
+                handleV8AsyncTaskEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
         } else if (event == v8::PromiseEvent) {
-            handleV8PromiseEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
+            if (listener->v8PromiseEventsEnabled())
+                handleV8PromiseEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
         }
     }
 }
