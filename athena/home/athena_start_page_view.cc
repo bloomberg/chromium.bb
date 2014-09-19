@@ -47,6 +47,11 @@ const int kSearchBoxCornerRadius = 2;
 const int kSearchBoxWidth = kIconSize * 6 + kIconMargin * 7;
 const int kSearchBoxHeight = 40;
 
+gfx::Size GetIconContainerSize() {
+  return gfx::Size(kIconSize *  kMaxIconNum + kIconMargin * (kMaxIconNum - 1),
+                   kIconSize);
+}
+
 class PlaceHolderButton : public views::ImageButton,
                           public views::ButtonListener {
  public:
@@ -208,7 +213,7 @@ AthenaStartPageView::AthenaStartPageView(
       view_delegate->GetModel()->top_level_item_list();
   for (size_t i = 0; i < std::min(top_level->item_count(), kMaxIconNum); ++i)
     app_icon_container_->AddChildView(new AppIconButton(top_level->item_at(i)));
-  app_icon_container_->SetSize(app_icon_container_->GetPreferredSize());
+  app_icon_container_->SetSize(GetIconContainerSize());
 
   control_icon_container_ = new views::View();
   control_icon_container_->SetPaintToLayer(true);
@@ -218,7 +223,7 @@ AthenaStartPageView::AthenaStartPageView(
       views::BoxLayout::kHorizontal, 0, 0, kIconMargin));
   for (size_t i = 0; i < kMaxIconNum; ++i)
     control_icon_container_->AddChildView(new PlaceHolderButton());
-  control_icon_container_->SetSize(control_icon_container_->GetPreferredSize());
+  control_icon_container_->SetSize(GetIconContainerSize());
 
   search_box_view_ = new app_list::SearchBoxView(this, view_delegate);
   search_box_view_->set_contents_view(this);
