@@ -2588,7 +2588,9 @@ _AddGroupConfig('rambi-c', 'squawks', (
     'candy',
 ))
 
-_AddGroupConfig('rambi-d', 'cranky', ())
+_AddGroupConfig('rambi-d', 'cranky', (),
+    important=False,
+)
 
 # daisy-based boards
 _AddGroupConfig('daisy', 'daisy', (
