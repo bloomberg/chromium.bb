@@ -438,7 +438,7 @@ def RunHostLD(infile, outfile):
     driver_tools.Run(['objcopy', '--redefine-sym', '_start=_user_start',
                       infile])
   lib_dir = (env.getone('BASE_LIB_NATIVE')
-             + 'x86-32-%s' % env.getone('TARGET_OS'))
+             + 'x86-32-%s/lib' % env.getone('TARGET_OS'))
   args = ['gcc', '-m32', infile, '-o', outfile,
           os.path.join(lib_dir, 'unsandboxed_irt.o'),
           os.path.join(lib_dir, 'irt_query_list.o'),

@@ -88,7 +88,7 @@ CHROME_CLANGXX = CHROME_CLANG + '++'
 ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
               'x86-32-nonsfi', 'arm-nonsfi')
 # MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
-BITCODE_BIASES = tuple(bias for bias in ('portable', 'x86-32', 'x86-64', 'arm'))
+BITCODE_BIASES = tuple(bias for bias in ('le32', 'x86-32', 'x86-64', 'arm'))
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 

@@ -27,42 +27,44 @@ INITIAL_ENV = {
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
+  'CLANG_VER'       : '3.4', # Included in path to compiler-owned libs/headers.
   'BPREFIXES'       : '', # Prefixes specified using the -B flag.
   'BASE_LLVM'       : '${@FindBaseHost:clang}',
   'BASE_BINUTILS'   : '${@FindBaseHost:le32-nacl-ar}',
 
-  'BASE_LIB_NATIVE' : '${BASE}/lib-',
+  'BASE_LIB_NATIVE' : '${BASE}/translator/',
 
-  'BASE_USR'        : '${BASE}/usr',
+  'BASE_USR'        : '${BASE}/le32-nacl',
   'BASE_SDK'        : '${BASE}/sdk',
-  'BASE_LIB'        : '${BASE}/lib',
+  'BASE_LIB'        : '${BASE}/lib/clang/${CLANG_VER}/lib/le32-nacl',
   'BASE_USR_ARCH'   : '${BASE_USR_%BCLIB_ARCH%}',
-  'BASE_USR_X8632'  : '${BASE}/usr-bc-x86-32',
-  'BASE_USR_X8664'  : '${BASE}/usr-bc-x86-64',
-  'BASE_USR_ARM'    : '${BASE}/usr-bc-arm',
+  'BASE_USR_X8632'  : '${BASE}/x86-32_bc-nacl',
+  'BASE_USR_X8664'  : '${BASE}/x86-64_bc-nacl',
+  'BASE_USR_ARM'    : '${BASE}/arm_bc-nacl',
   'BASE_LIB_ARCH'   : '${BASE_LIB_%BCLIB_ARCH%}',
-  'BASE_LIB_X8632'  : '${BASE}/lib-bc-x86-32',
-  'BASE_LIB_X8664'  : '${BASE}/lib-bc-x86-64',
-  'BASE_LIB_ARM'    : '${BASE}/lib-bc-arm',
+  'BASE_LIB_X8632'  : '${BASE}/lib/clang/${CLANG_VER}/lib/x86-32_bc-nacl',
+  'BASE_LIB_X8664'  : '${BASE}/lib/clang/${CLANG_VER}/lib/x86-64_bc-nacl',
+  'BASE_LIB_ARM'    : '${BASE}/lib/clang/${CLANG_VER}/lib/arm_bc-nacl',
 
   'LIBS_NATIVE_ARCH' : '${LIBS_NATIVE_%ARCH%}',
-  'LIBS_NATIVE_ARM' : '${BASE_LIB_NATIVE}arm',
-  'LIBS_NATIVE_ARM_NONSFI' : '${BASE_LIB_NATIVE}arm-nonsfi',
-  'LIBS_NATIVE_X8632' : '${BASE_LIB_NATIVE}x86-32',
-  'LIBS_NATIVE_X8632_NONSFI' : '${BASE_LIB_NATIVE}x86-32-nonsfi',
-  'LIBS_NATIVE_X8664' : '${BASE_LIB_NATIVE}x86-64',
-  'LIBS_NATIVE_MIPS32' : '${BASE_LIB_NATIVE}mips32',
+  'LIBS_NATIVE_ARM' : '${BASE_LIB_NATIVE}arm/lib',
+  'LIBS_NATIVE_ARM_NONSFI' : '${BASE_LIB_NATIVE}arm-nonsfi/lib',
+  'LIBS_NATIVE_X8632' : '${BASE_LIB_NATIVE}x86-32/lib',
+  'LIBS_NATIVE_X8632_NONSFI' : '${BASE_LIB_NATIVE}x86-32-nonsfi/lib',
+  'LIBS_NATIVE_X8664' : '${BASE_LIB_NATIVE}x86-64/lib',
+  'LIBS_NATIVE_MIPS32' : '${BASE_LIB_NATIVE}mips32/lib',
 
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
   'TRANSLATOR_BIN'  :
-    '${BASE_TOOLCHAIN}/pnacl_translator/${STANDARD_ARCH}/bin',
+    '${BASE_TOOLCHAIN}/pnacl_translator/translator/${TRANSLATOR_ARCH}/bin',
 
-  # TODO(pdox): Unify this with ARCH.
-  'STANDARD_ARCH'       : '${STANDARD_ARCH_%ARCH%}',
-  'STANDARD_ARCH_X8632' : 'i686',
-  'STANDARD_ARCH_X8664' : 'x86_64',
-  'STANDARD_ARCH_ARM'   : 'armv7',
-  'STANDARD_ARCH_MIPS32': 'mips32',
+  # TODO(dschuff): Switch these directories to be triple-style arches,
+  # to match the main toolchain?
+  'TRANSLATOR_ARCH'       : '${TRANSLATOR_ARCH_%ARCH%}',
+  'TRANSLATOR_ARCH_X8632' : 'x86-32',
+  'TRANSLATOR_ARCH_X8664' : 'x86-64',
+  'TRANSLATOR_ARCH_ARM'   : 'arm',
+  'TRANSLATOR_ARCH_MIPS32': 'mips32',
 
   'SCONS_OUT'       : '${BASE_NACL}/scons-out',
 

@@ -102,7 +102,7 @@ EXTRA_ENV = {
     '${BASE_USR}/include ' +
     '${BASE_SDK}/include ',
 
-  'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.4/include',
+  'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/${CLANG_VER}/include',
 
   'ISYSTEM_CXX' :
     '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_include_paths}}',

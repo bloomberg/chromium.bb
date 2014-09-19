@@ -248,8 +248,8 @@ def _SetEnvForPnacl(env, root):
     pnacl_translate_flags += ' -sfi-zero-based-sandbox'
 
   env.Replace(# Replace header and lib paths.
-              NACL_SDK_INCLUDE=os.path.join(root, 'usr', 'include'),
-              NACL_SDK_LIB=os.path.join(root, 'lib'),
+              NACL_SDK_INCLUDE=os.path.join(root, 'le32-nacl', 'include'),
+              NACL_SDK_LIB=os.path.join(root, 'le32-nacl', 'lib'),
               # Remove arch-specific flags (if any)
               BASE_LINKFLAGS='',
               BASE_CFLAGS='',

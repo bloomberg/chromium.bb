@@ -132,11 +132,11 @@ INSTALL_LIB="${INSTALL_ROOT}/lib"
 
 # Native nacl lib directories
 # The pattern `${INSTALL_LIB_NATIVE}${arch}' is used in many places.
-readonly INSTALL_LIB_NATIVE="${INSTALL_ROOT}/lib-"
-readonly INSTALL_LIB_ARM="${INSTALL_LIB_NATIVE}arm"
-readonly INSTALL_LIB_X8632="${INSTALL_LIB_NATIVE}x86-32"
-readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64"
-readonly INSTALL_LIB_MIPS32="${INSTALL_LIB_NATIVE}mips32"
+readonly INSTALL_LIB_NATIVE="${INSTALL_ROOT}/translator/"
+readonly INSTALL_LIB_ARM="${INSTALL_LIB_NATIVE}arm/lib"
+readonly INSTALL_LIB_X8632="${INSTALL_LIB_NATIVE}x86-32/lib"
+readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64/lib"
+readonly INSTALL_LIB_MIPS32="${INSTALL_LIB_NATIVE}mips32/lib"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly INSTALL_TRANSLATOR="${TOOLCHAIN_BASE}/pnacl_translator"
@@ -558,7 +558,8 @@ translator-all() {
   fi
 
   # Copy native libs to translator install dir.
-  cp -a ${INSTALL_LIB_NATIVE}* ${INSTALL_TRANSLATOR}
+  mkdir -p ${INSTALL_TRANSLATOR}/translator
+  cp -a ${INSTALL_LIB_NATIVE}* ${INSTALL_TRANSLATOR}/translator
 
   driver-install-translator
 
@@ -1986,8 +1987,14 @@ GetTranslatorBuildDir() {
 }
 
 GetTranslatorInstallDir() {
-  local arch="$1"
-  echo "${INSTALL_TRANSLATOR}"/${arch}
+  local arch
+  case $1 in
+    i686) arch=x86-32 ;;
+    x86_64) arch=x86-64 ;;
+    armv7) arch=arm ;;
+    default) arch=$1 ;;
+  esac
+  echo "${INSTALL_TRANSLATOR}"/translator/${arch}
 }
 
 ### Sandboxed version of gold.
