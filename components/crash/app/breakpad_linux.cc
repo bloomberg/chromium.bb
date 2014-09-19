@@ -1082,11 +1082,17 @@ void HandleCrashReportId(const char* buf, size_t bytes_read,
   WriteNewline();
   if (!IsValidCrashReportId(buf, bytes_read, expected_len)) {
 #if defined(OS_CHROMEOS)
-    static const char msg[] = "Crash_reporter failed to process crash report";
+    static const char msg[] =
+        "System crash-reporter failed to process crash report.";
 #else
     static const char msg[] = "Failed to get crash dump id.";
 #endif
     WriteLog(msg, sizeof(msg) - 1);
+    WriteNewline();
+
+    static const char id_msg[] = "Report Id: ";
+    WriteLog(id_msg, sizeof(id_msg) - 1);
+    WriteLog(buf, bytes_read);
     WriteNewline();
     return;
   }
