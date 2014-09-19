@@ -49,10 +49,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     return initially_focused_view_;
   }
 
-  bool IsFadingAway() const {
-    return fadeout_observer_;
-  }
-
  private:
   class BlacklistedView;
   class ConfirmNeverView;
@@ -93,23 +89,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
 
   // views::WidgetDelegate
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-
-  // views::View methods.
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-
-  // Starts animating the bubble.
-  void StartFadingOut();
-
-  // Cancel fading out if it's active.
-  void CancelFadingOut();
-
-  // Called when the bubble completely faded out.
-  void OnBubbleDisappeared();
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);
@@ -133,10 +115,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // A helper to intercept mouse click events on the web contents.
   class WebContentMouseHandler;
   scoped_ptr<WebContentMouseHandler> mouse_handler_;
-
-  // A helper to get a notification when the bubble fades out completely.
-  class FadeOutObserver;
-  scoped_ptr<FadeOutObserver> fadeout_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };
