@@ -72,7 +72,6 @@
   DCHECK(theWindow);
   if ((self = [super initWithWindow:theWindow])) {
     parentWindow_ = parentWindow;
-    anchor_ = anchoredAt;
     shouldOpenAsKeyWindow_ = YES;
     shouldCloseOnResignKey_ = YES;
 
@@ -86,6 +85,7 @@
 
     [self registerForNotifications];
     [self awakeFromNib];
+    [self setAnchorPoint:anchoredAt];
   }
   return self;
 }

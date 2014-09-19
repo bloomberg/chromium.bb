@@ -403,6 +403,11 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 }
 
 - (void)onWindowChanged {
+  // The window is positioned before creating the host, to ensure the host is
+  // created with the correct screen information.
+  if (!host_)
+    return;
+
   ExtensionViewMac* extensionView =
       static_cast<ExtensionViewMac*>(host_->view());
   // Let the extension view know, so that it can tell plugins.

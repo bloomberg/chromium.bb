@@ -232,6 +232,20 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignCenterArrow) {
   EXPECT_GE(NSMaxY(frame), kAnchorPointY);
 }
 
+// Test that the window is given an initial position before being shown. This
+// ensures offscreen initialization is done using correct screen metrics.
+TEST_F(BaseBubbleControllerTest, PositionedBeforeShow) {
+  // Verify default alignment settings, used when initialized in SetUp().
+  EXPECT_EQ(info_bubble::kTopRight, [[controller_ bubble] arrowLocation]);
+  EXPECT_EQ(info_bubble::kAlignArrowToAnchor, [[controller_ bubble] alignment]);
+
+  // Verify the default frame (positioned relative to the test_window() origin).
+  NSRect frame = [[controller_ window] frame];
+  EXPECT_EQ(NSMaxX(frame) - info_bubble::kBubbleArrowXOffset -
+      floorf(info_bubble::kBubbleArrowWidth / 2.0), kAnchorPointX);
+  EXPECT_EQ(NSMaxY(frame), kAnchorPointY);
+}
+
 // Tests that when a new window gets key state (and the bubble resigns) that
 // the key window changes.
 TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
