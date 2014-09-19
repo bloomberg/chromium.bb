@@ -2738,39 +2738,11 @@
    fun:_ZN4base58WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtrBase_Test8TestBodyEv
 }
 {
-   bug_180381
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4base8FilePath31StripTrailingSeparatorsInternalEv
-   fun:_ZNK4base8FilePath7DirNameEv
-   fun:_ZN11dom_storage18DomStorageDatabase18GetJournalFilePathERKN4base8FilePathE
-   fun:_ZN11dom_storage27LocalStorageDatabaseAdapter11DeleteFilesEv
-   fun:_ZN11dom_storage14DomStorageArea12DeleteOriginEv
-   fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
-   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
-}
-{
    bug_181680b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN5blink11ScriptState10forContextEN2v86HandleINS1_7ContextEEE
    fun:_ZN5blink17ScriptDebugServer18handleProgramBreakEN2v86HandleINS1_6ObjectEEENS2_INS1_5ValueEEENS2_INS1_5ArrayEEE
-}
-{
-   bug_184264
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink24createDragImageFromImageEPNS_5ImageENS_27RespectImageOrientationEnumE
-   fun:_ZN5blink5Frame21dragImageForSelectionEv
-   fun:_ZN5blink27createDragImageForSelectionEPNS_5FrameE
-   fun:_ZN5blink14DragController9startDragEPNS_5FrameERKNS_9DragStateENS_13DragOperationERKNS_18PlatformMouseEventERKNS_8IntPointE
-   fun:_ZN5blink12EventHandler10handleDragERKNS_28MouseEventWithHitTestResultsENS_19CheckDragHysteresisE
-   fun:_ZN5blink12EventHandler23handleMouseDraggedEventERKNS_28MouseEventWithHitTestResultsE
-   fun:_ZN5blink12EventHandler20handleMouseMoveEventERKNS_18PlatformMouseEventEPNS_13HitTestResultEb
-   fun:_ZN5blink12EventHandler28passMouseMoveEventToSubframeERNS_28MouseEventWithHitTestResultsEPNS_5FrameEPNS_13HitTestResultE
-   fun:_ZN5blink12EventHandler20handleMouseMoveEventERKNS_18PlatformMouseEventEPNS_13HitTestResultEb
-   fun:_ZN5blink12EventHandler10mouseMovedERKNS_18PlatformMouseEventE
 }
 {
    bug_195160_a
@@ -2815,12 +2787,6 @@
    fun:_ZN20ManagedModeURLFilter14LoadWhitelistsE12ScopedVectorI19ManagedModeSiteListE
 }
 {
-   bug_222363
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18WebDatabaseService12LoadDatabaseERKN4base8CallbackIFvN3sql10InitStatusEEEE
-}
-{
    bug_222876
    Memcheck:Leak
    fun:_Znw*
@@ -2842,40 +2808,12 @@
    fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollector*
 }
 {
-   bug_222898
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
-   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
-   fun:_ZN3WTF9BitVector10ensureSizeEm
-   fun:_ZN3WTF9BitVectorC1Em
-   fun:_ZN5blink10UseCounter10didObserveENS0_7FeatureE
-   fun:_ZN5blink10UseCounter7observeEPNS_8DocumentENS0_7FeatureE
-}
-{
-   bug_224747
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   ...
-   fun:_ZN64BackgroundApplicationListModelTest_AddRemovePermissionsTest_Test8TestBodyEv
-}
-{
    bug_225028
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN31SafeBrowsingDatabaseFactoryImpl26CreateSafeBrowsingDatabaseEbbbb
    fun:_ZN20SafeBrowsingDatabase6CreateEbbbb
    fun:_ZN27SafeBrowsingDatabaseManager11GetDatabaseEv
-}
-{
-   bug_225596
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos12input_method22InputMethodManagerImpl4InitERK13scoped_refptrIN4base19SequencedTaskRunnerEES7_
-   fun:_ZN8chromeos12input_method10InitializeERK13scoped_refptrIN4base19SequencedTaskRunnerEES6_
-   fun:_ZN8chromeos12input_method48InputMethodConfigurationTest_TestInitialize_Test8TestBodyEv
 }
 {
    bug_226254
