@@ -6,8 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_gles2_service
 source_set("gles2") {
-  deps = [
+  public_deps = [
     ":bindings",
+  ]
+  deps = [
     "//base",
     "//gpu/command_buffer/service",
     "//ui/gfx",
@@ -37,8 +39,13 @@ source_set("bindings") {
     "mojo_buffer_backing.h",
   ]
 
-  deps = [
+  public_deps = [
     ":interfaces",
+  ]
+  deps = [
+    "//base",
     "//gpu/command_buffer/common",
+    "//mojo/public/cpp/bindings",
+    "//mojo/services/gles2:interfaces",
   ]
 }

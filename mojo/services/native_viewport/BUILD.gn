@@ -11,10 +11,12 @@ static_library("native_viewport") {
   deps = [
     "//base",
     "//cc/surfaces",
+    "//gpu/command_buffer/service",
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/services/gles2",
+    "//mojo/services/gles2:interfaces",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/surfaces",
@@ -25,6 +27,8 @@ static_library("native_viewport") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/platform_window",
   ]
 
   sources = [

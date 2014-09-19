@@ -6,9 +6,11 @@
 component("clipboard") {
   deps = [
     "//base",
+    "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/public/interfaces/clipboard",
     "//ui/base",
   ]
