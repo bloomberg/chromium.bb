@@ -966,4 +966,4 @@ Position HTMLTextFormControlElement::endOfSentence(const Position& position)
     return endOfInnerText(textFormControl);
 }
 
-} // namespace Webcore
+} // namespace blink

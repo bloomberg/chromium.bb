@@ -52,4 +52,4 @@ void LabelableElement::trace(Visitor* visitor)
     HTMLElement::trace(visitor);
 }
 
-} // namespace Webcore
+} // namespace blink
