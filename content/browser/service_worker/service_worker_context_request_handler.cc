@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_read_from_cache_job.h"
@@ -89,7 +90,10 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
 
 void ServiceWorkerContextRequestHandler::GetExtraResponseInfo(
     bool* was_fetched_via_service_worker,
-    GURL* original_url_via_service_worker) const {
+    GURL* original_url_via_service_worker,
+    base::TimeTicks* fetch_start_time,
+    base::TimeTicks* fetch_ready_time,
+    base::TimeTicks* fetch_end_time) const {
   *was_fetched_via_service_worker = false;
   *original_url_via_service_worker = GURL();
 }

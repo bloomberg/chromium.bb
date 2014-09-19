@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/resource_request_body.h"
@@ -88,6 +89,12 @@ void ServiceWorkerURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   if (!http_info())
     return;
   *info = *http_info();
+  info->response_time = response_time_;
+}
+
+void ServiceWorkerURLRequestJob::GetLoadTimingInfo(
+    net::LoadTimingInfo* load_timing_info) const {
+  *load_timing_info = load_timing_info_;
 }
 
 int ServiceWorkerURLRequestJob::GetResponseCode() const {
@@ -159,6 +166,7 @@ void ServiceWorkerURLRequestJob::OnBeforeNetworkStart(net::URLRequest* request,
 void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
   // TODO(falken): Add Content-Length, Content-Type if they were not provided in
   // the ServiceWorkerResponse.
+  response_time_ = base::Time::Now();
   CommitResponseHeader();
 }
 
@@ -184,7 +192,10 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
 
 void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
     bool* was_fetched_via_service_worker,
-    GURL* original_url_via_service_worker) const {
+    GURL* original_url_via_service_worker,
+    base::TimeTicks* fetch_start_time,
+    base::TimeTicks* fetch_ready_time,
+    base::TimeTicks* fetch_end_time) const {
   if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
     *was_fetched_via_service_worker = false;
     *original_url_via_service_worker = GURL();
@@ -192,6 +203,9 @@ void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
   }
   *was_fetched_via_service_worker = true;
   *original_url_via_service_worker = response_url_;
+  *fetch_start_time = fetch_start_time_;
+  *fetch_ready_time = fetch_ready_time_;
+  *fetch_end_time = fetch_end_time_;
 }
 
 
@@ -233,6 +247,8 @@ void ServiceWorkerURLRequestJob::StartRequest() {
                      weak_factory_.GetWeakPtr()),
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr())));
+      fetch_start_time_ = base::TimeTicks::Now();
+      load_timing_info_.send_start = fetch_start_time_;
       fetch_dispatcher_->Run();
       return;
   }
@@ -329,8 +345,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
 }
 
 void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
-  // TODO(shimazu): Set the timestamp to measure the time to launch SW
-  // This is related to this (http://crbug.com/401389)
+  fetch_ready_time_ = base::TimeTicks::Now();
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
@@ -371,6 +386,9 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
   }
 
+  fetch_end_time_ = base::TimeTicks::Now();
+  load_timing_info_.send_end = fetch_end_time_;
+
   // Set up a request for reading the blob.
   if (!response.blob_uuid.empty() && blob_storage_context_) {
     scoped_ptr<storage::BlobDataHandle> blob_data_handle =
@@ -388,6 +406,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   response_url_ = response.url;
   CreateResponseHeader(
       response.status_code, response.status_text, response.headers);
+  load_timing_info_.receive_headers_end = base::TimeTicks::Now();
   if (!blob_request_)
     CommitResponseHeader();
 }

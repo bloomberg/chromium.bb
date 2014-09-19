@@ -40,7 +40,10 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,
-      GURL* original_url_via_service_worker) const OVERRIDE;
+      GURL* original_url_via_service_worker,
+      base::TimeTicks* fetch_start_time,
+      base::TimeTicks* fetch_ready_time,
+      base::TimeTicks* fetch_end_time) const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,

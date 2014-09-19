@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/common/resource_type.h"
@@ -68,7 +69,10 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,
-      GURL* original_url_via_service_worker) const = 0;
+      GURL* original_url_via_service_worker,
+      base::TimeTicks* fetch_start_time,
+      base::TimeTicks* fetch_ready_time,
+      base::TimeTicks* fetch_end_time) const = 0;
 
  protected:
   ServiceWorkerRequestHandler(

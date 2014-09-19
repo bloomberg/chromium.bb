@@ -777,6 +777,13 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   if (!info.load_timing.receive_headers_end.is_null()) {
     WebURLLoadTiming timing;
     PopulateURLLoadTiming(info.load_timing, &timing);
+    const TimeTicks kNullTicks;
+    timing.setServiceWorkerFetchStart(
+        (info.service_worker_fetch_start - kNullTicks).InSecondsF());
+    timing.setServiceWorkerFetchReady(
+        (info.service_worker_fetch_ready - kNullTicks).InSecondsF());
+    timing.setServiceWorkerFetchEnd(
+        (info.service_worker_fetch_end - kNullTicks).InSecondsF());
     response->setLoadTiming(timing);
   }
 
