@@ -3052,27 +3052,6 @@
    fun:_ZN5ppapi*ThreadAwareCallback*Test_*
 }
 {
-   bug_259188
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink16V8PerIsolateData6createEPN2v87IsolateE
-   fun:_ZN5blink16V8PerIsolateData17ensureInitializedEPN2v87IsolateE
-   fun:_ZN5blink10initializeEPNS_8PlatformE
-}
-{
-   bug_259303
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC7Message23EnsureFileDescriptorSetEv
-   fun:_ZN3IPC7Message19file_descriptor_setEv
-   fun:_ZN3IPC7Channel11ChannelImpl24WillDispatchInputMessageEPNS_7MessageE
-   fun:_ZN3IPC8internal13ChannelReader17DispatchInputDataEPKci
-   fun:_ZN3IPC8internal13ChannelReader23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-}
-{
    bug_259357d
    Memcheck:Uninitialized
    ...
@@ -3100,87 +3079,11 @@
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
 }
 {
-   bug_259789
-   Memcheck:Uninitialized
-   fun:_ZN5blink12_GLOBAL__N_116adjustAttributesERKNS_17GraphicsContext3D10AttributesEPNS_8SettingsE
-   fun:_ZN5blink21WebGLRenderingContext19maybeRestoreContextEPNS_5TimerIS0_EE
-   fun:_ZN5blink5TimerINS_21WebGLRenderingContextEE5firedEv
-   fun:_ZN5blink12ThreadTimers24sharedTimerFiredInternalEv
-   fun:_ZN5blink12ThreadTimers16sharedTimerFiredEv
-   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
-}
-{
    bug_259789b
    Memcheck:Uninitialized
    fun:_ZN5blink12_GLOBAL__N_116adjustAttributesERKNS_17GraphicsContext3D10AttributesEPNS_8SettingsE
    fun:_ZN5blink21WebGLRenderingContext6createEPNS_17HTMLCanvasElementEPNS_22WebGLContextAttributesE
    fun:_ZN5blink17HTMLCanvasElement10getContextERKN3WTF6StringEPNS_23CanvasContextAttributesE
-}
-{
-   bug_259799
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink16EditorClientImpl23requestCheckingOfStringEN3WTF10PassRefPtrIN7blink19TextCheckingRequestEEE
-   fun:_ZN5blink12SpellChecker13invokeRequestEN3WTF10PassRefPtrINS_17SpellCheckRequestEEE
-   fun:_ZN5blink12SpellChecker18requestCheckingForEN3WTF10PassRefPtrINS_17SpellCheckRequestEEE
-   fun:_ZN5blink6Editor40markAllMisspellingsAndBadGrammarInRangesEjPNS_5RangeES2_
-   fun:_ZN5blink6Editor33markMisspellingsAfterTypingToWordERKNS_15VisiblePositionERKNS_16VisibleSelectionE
-   fun:_ZN5blink13TypingCommand27markMisspellingsAfterTypingENS0_14ETypingCommandE
-   fun:_ZN5blink13TypingCommand24typingAddedToOpenCommandENS0_14ETypingCommandE
-   fun:_ZN5blink13TypingCommand28insertTextRunWithoutNewlinesERKN3WTF6StringEb
-   fun:_ZNK7blink26TypingCommandLineOperationclEmmb
-}
-{
-   bug_262875
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   ...
-   fun:_ZN15webkit_database15DatabaseTracker23UpgradeToCurrentVersionEv
-   fun:_ZN15webkit_database15DatabaseTracker8LazyInitEv
-   fun:_ZN15webkit_database15DatabaseTracker23GetAllOriginIdentifiersEPSt6vectorISsSaISsEE
-   fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
-}
-{
-   bug_262934
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7GrGpuGL12ProgramCache10getProgramERK15GrGLProgramDescPPK13GrEffectStageS7_
-   fun:_ZN7GrGpuGL18flushGraphicsStateEN5GrGpu8DrawTypeEPK20GrDeviceCoordTexture
-   fun:_ZN5GrGpu22setupClipAndFlushStateENS_8DrawTypeEPK20GrDeviceCoordTexturePN11GrDrawState18AutoRestoreEffects*
-   fun:_ZN5GrGpu6onDrawERKN12GrDrawTarget8DrawInfoE
-   ...
-   fun:_ZN9GrContext22readRenderTargetPixelsEP14GrRenderTargetiiii13GrPixelConfigPvmj
-}
-{
-   bug_268258
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10StringImpl12createStaticEPKcjj
-   fun:_ZN5blink*Names*init*
-}
-{
-   bug_269201
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN4base8internal17IncomingTaskQueue18AddToIncomingQueueERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEENS_9TimeDeltaEb
-   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
-   fun:_ZN8printing8PrintJob21UpdatePrintedDocumentEPNS_15PrintedDocumentE
-   fun:_ZN8printing8PrintJob4StopEv
-}
-{
-   bug_269844
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN4base11PendingTaskEE8allocateEmPKv
-   fun:_ZNSt11_Deque_baseIN4base11PendingTaskESaIS1_EE15_M_allocate_mapEm
-   fun:_ZNSt5dequeIN4base11PendingTaskESaIS1_EE17_M_reallocate_mapEmb
-   ...
-   fun:_ZN4base8internal17IncomingTaskQueue15PostPendingTaskEPNS_11PendingTaskE
-   fun:_ZN4base8internal17IncomingTaskQueue18AddToIncomingQueueERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEENS_9TimeDeltaEb
-   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
 }
 {
    bug_273398
