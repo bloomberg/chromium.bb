@@ -9,12 +9,12 @@ namespace app_list {
 class AppListView;
 }
 
-class AppListControllerDelegate;
+class AppListViewDelegate;
 
 // Allows platform-specific hooks for the AppListShower.
 class AppListShowerDelegate {
  public:
-  virtual AppListControllerDelegate* GetControllerDelegateForCreate() = 0;
+  virtual AppListViewDelegate* GetViewDelegateForCreate() = 0;
   virtual void OnViewCreated() = 0;
   virtual void OnViewDismissed() = 0;
   virtual void MoveNearCursor(app_list::AppListView* view) = 0;

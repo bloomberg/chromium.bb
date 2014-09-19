@@ -99,11 +99,9 @@ bool AppListShower::HasView() const {
 }
 
 app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
-  // The view delegate will be owned by the app list view. The app list view
-  // manages its own lifetime.
-  AppListViewDelegate* view_delegate = new AppListViewDelegate(
-      profile_, delegate_->GetControllerDelegateForCreate());
-  app_list::AppListView* view = new app_list::AppListView(view_delegate);
+  // The app list view manages its own lifetime.
+  app_list::AppListView* view =
+      new app_list::AppListView(delegate_->GetViewDelegateForCreate());
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   view->InitAsBubbleAtFixedLocation(NULL,
                                     0,

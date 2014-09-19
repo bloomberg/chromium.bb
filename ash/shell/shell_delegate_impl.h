@@ -50,7 +50,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) OVERRIDE;
   virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
-  virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
+  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() OVERRIDE;
   virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
@@ -71,6 +71,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   ShelfDelegateImpl* shelf_delegate_;
   content::BrowserContext* browser_context_;
+  scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };

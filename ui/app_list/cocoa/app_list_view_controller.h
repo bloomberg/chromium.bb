@@ -46,7 +46,8 @@ APP_LIST_EXPORT
   // Progress indicator that is visible while the delegate is NULL.
   base::scoped_nsobject<NSProgressIndicator> loadingIndicator_;
 
-  scoped_ptr<app_list::AppListViewDelegate> delegate_;
+  app_list::AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
+
   scoped_ptr<app_list::AppListModelObserverBridge>
       app_list_model_observer_bridge_;
   BOOL showingSearchResults_;
@@ -56,7 +57,7 @@ APP_LIST_EXPORT
     searchBoxController;
 
 - (app_list::AppListViewDelegate*)delegate;
-- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate;
+- (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate;
 - (void)onProfilesChanged;
 
 @end

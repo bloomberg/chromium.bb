@@ -24,27 +24,26 @@ class AppListWindowControllerTest : public ui::CocoaTest {
   base::scoped_nsobject<AppListWindowController> controller_;
 
   app_list::test::AppListTestViewDelegate* delegate() {
-    return static_cast<app_list::test::AppListTestViewDelegate*>(
-        [[controller_ appListViewController] delegate]);
+    return delegate_.get();
   }
 
  private:
+  scoped_ptr<app_list::test::AppListTestViewDelegate> delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListWindowControllerTest);
 };
 
-AppListWindowControllerTest::AppListWindowControllerTest() {
+AppListWindowControllerTest::AppListWindowControllerTest()
+    : delegate_(new app_list::test::AppListTestViewDelegate) {
   Init();
-  scoped_ptr<app_list::AppListViewDelegate> delegate(
-      new app_list::test::AppListTestViewDelegate);
   controller_.reset([[AppListWindowController alloc] init]);
-  [[controller_ appListViewController] setDelegate:delegate.Pass()];
+  [[controller_ appListViewController] setDelegate:delegate()];
 }
 
 void AppListWindowControllerTest::TearDown() {
   EXPECT_TRUE(controller_.get());
   [[controller_ window] close];
-  [[controller_ appListViewController]
-     setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
+  [[controller_ appListViewController] setDelegate:NULL];
   controller_.reset();
   ui::CocoaTest::TearDown();
 }

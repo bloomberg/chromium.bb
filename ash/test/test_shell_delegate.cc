@@ -143,8 +143,10 @@ content::BrowserContext* TestShellDelegate::GetActiveBrowserContext() {
   return active_browser_context_.get();
 }
 
-app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
-  return new app_list::test::AppListTestViewDelegate;
+app_list::AppListViewDelegate* TestShellDelegate::GetAppListViewDelegate() {
+  if (!app_list_view_delegate_)
+    app_list_view_delegate_.reset(new app_list::test::AppListTestViewDelegate);
+  return app_list_view_delegate_.get();
 }
 
 ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {

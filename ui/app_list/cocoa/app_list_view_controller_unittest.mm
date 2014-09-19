@@ -19,39 +19,29 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
 
   virtual void SetUp() OVERRIDE {
     app_list_view_controller_.reset([[AppListViewController alloc] init]);
-    scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
-    [app_list_view_controller_
-        setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
+    delegate_.reset(new AppListTestViewDelegate);
+    [app_list_view_controller_ setDelegate:delegate_.get()];
     SetUpWithGridController([app_list_view_controller_ appsGridController]);
     [[test_window() contentView] addSubview:[app_list_view_controller_ view]];
   }
 
   virtual void TearDown() OVERRIDE {
-    [app_list_view_controller_
-        setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
+    [app_list_view_controller_ setDelegate:NULL];
     app_list_view_controller_.reset();
     AppsGridControllerTestHelper::TearDown();
   }
 
   void ReplaceTestModel(int item_count) {
-    [app_list_view_controller_
-        setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
-    scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
-    delegate->ReplaceTestModel(item_count);
-    [app_list_view_controller_
-        setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
+    [app_list_view_controller_ setDelegate:NULL];
+    delegate_.reset(new AppListTestViewDelegate);
+    delegate_->ReplaceTestModel(item_count);
+    [app_list_view_controller_ setDelegate:delegate_.get()];
   }
 
-  AppListTestViewDelegate* delegate() {
-    return static_cast<AppListTestViewDelegate*>(
-        [app_list_view_controller_ delegate]);
-  }
-
-  AppListTestModel* model() {
-    return delegate()->GetTestModel();
-  }
+  AppListTestModel* model() { return delegate_->GetTestModel(); }
 
  protected:
+  scoped_ptr<AppListTestViewDelegate> delegate_;
   base::scoped_nsobject<AppListViewController> app_list_view_controller_;
 
  private:

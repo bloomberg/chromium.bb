@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/profile_loader.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/common/chrome_constants.h"
@@ -249,6 +250,13 @@ AppListServiceImpl::AppListServiceImpl(const CommandLine& command_line,
 
 AppListServiceImpl::~AppListServiceImpl() {}
 
+AppListViewDelegate* AppListServiceImpl::GetViewDelegate(Profile* profile) {
+  if (!view_delegate_)
+    view_delegate_.reset(new AppListViewDelegate(GetControllerDelegate()));
+  view_delegate_->SetProfile(profile);
+  return view_delegate_.get();
+}
+
 void AppListServiceImpl::SetAppListNextPaintCallback(void (*callback)()) {}
 
 void AppListServiceImpl::HandleFirstRun() {}
@@ -300,14 +308,19 @@ void AppListServiceImpl::OnProfileWillBeRemoved(
   local_state_->SetString(prefs::kAppListProfile,
                           local_state_->GetString(prefs::kProfileLastUsed));
 
-  // The Chrome AppListViewDelegate now needs to be torn down, because:
+  // If the app list was never shown, there won't be a |view_delegate_| yet.
+  if (!view_delegate_)
+    return;
+
+  // The Chrome AppListViewDelegate now needs its profile cleared, because:
   //  1. it has many references to the profile and can't be profile-keyed, and
   //  2. the last used profile might not be loaded yet.
   //    - this loading is sometimes done by the ProfileManager asynchronously,
   //      so the app list can't just switch to that.
-  // Currently, the AppListViewDelegate is owned by the platform-specific
-  // AppListView, so just force-close the window.
+  // Only Mac supports showing the app list with a NULL profile, so tear down
+  // the view.
   DestroyAppList();
+  view_delegate_->SetProfile(NULL);
 }
 
 void AppListServiceImpl::Show() {

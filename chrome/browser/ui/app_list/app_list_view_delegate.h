@@ -55,16 +55,16 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public SigninManagerFactory::Observer,
                             public content::NotificationObserver {
  public:
-  // Constructs Chrome's AppListViewDelegate, initially for |profile|.
+  // Constructs Chrome's AppListViewDelegate with a NULL Profile.
   // Does not take ownership of |controller|. TODO(tapted): It should.
-  AppListViewDelegate(Profile* profile,
-                      AppListControllerDelegate* controller);
+  explicit AppListViewDelegate(AppListControllerDelegate* controller);
   virtual ~AppListViewDelegate();
 
- private:
   // Configure the AppList for the given |profile|.
   void SetProfile(Profile* profile);
+  Profile* profile() { return profile_; }
 
+ private:
   // Updates the speech webview and start page for the current |profile_|.
   void SetUpSearchUI();
 

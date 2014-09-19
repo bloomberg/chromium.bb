@@ -74,7 +74,6 @@ void AppListServiceViews::DestroyAppList() {
   DCHECK(!shower_.HasView());
 }
 
-AppListControllerDelegate*
-AppListServiceViews::GetControllerDelegateForCreate() {
-  return controller_delegate_.get();
+AppListViewDelegate* AppListServiceViews::GetViewDelegateForCreate() {
+  return GetViewDelegate(shower_.profile());
 }

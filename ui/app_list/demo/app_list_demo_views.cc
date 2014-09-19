@@ -61,7 +61,6 @@ app_list::AppListView* DemoAppListViewDelegate::InitView(
   container = window_context;
 #endif
 
-  // Note AppListView takes ownership of |this| on the next line.
   view_ = new app_list::AppListView(this);
   view_->InitAsBubbleAtFixedLocation(container,
                                      0,
@@ -87,9 +86,9 @@ void DemoAppListViewDelegate::Dismiss() {
 }
 
 void DemoAppListViewDelegate::ViewClosing() {
-  web_contents_.reset();
-  view_ = NULL;
-  base::MessageLoopForUI::current()->Quit();
+  base::MessageLoop* message_loop = base::MessageLoopForUI::current();
+  message_loop->DeleteSoon(FROM_HERE, this);
+  message_loop->QuitWhenIdle();
 }
 
 views::View* DemoAppListViewDelegate::CreateStartPageWebView(

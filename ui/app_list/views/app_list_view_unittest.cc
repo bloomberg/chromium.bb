@@ -130,7 +130,7 @@ class AppListViewTestContext {
   const TestType test_type_;
   scoped_ptr<base::RunLoop> run_loop_;
   app_list::AppListView* view_;  // Owned by native widget.
-  app_list::test::AppListTestViewDelegate* delegate_;  // Owned by |view_|;
+  scoped_ptr<app_list::test::AppListTestViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewTestContext);
 };
@@ -175,8 +175,8 @@ AppListViewTestContext::AppListViewTestContext(int test_type,
       break;
   }
 
-  delegate_ = new UnitTestViewDelegate(this);
-  view_ = new app_list::AppListView(delegate_);
+  delegate_.reset(new UnitTestViewDelegate(this));
+  view_ = new app_list::AppListView(delegate_.get());
 
   // Initialize centered around a point that ensures the window is wholly shown.
   view_->InitAsBubbleAtFixedLocation(parent,

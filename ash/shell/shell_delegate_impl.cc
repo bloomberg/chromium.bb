@@ -22,6 +22,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_info_impl.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/input_method_event_filter.h"
 
@@ -212,8 +213,10 @@ content::BrowserContext* ShellDelegateImpl::GetActiveBrowserContext() {
   return browser_context_;
 }
 
-app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
-  return ash::shell::CreateAppListViewDelegate();
+app_list::AppListViewDelegate* ShellDelegateImpl::GetAppListViewDelegate() {
+  if (!app_list_view_delegate_)
+    app_list_view_delegate_.reset(ash::shell::CreateAppListViewDelegate());
+  return app_list_view_delegate_.get();
 }
 
 ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {

@@ -111,9 +111,9 @@ class ASH_EXPORT ShellDelegate {
   // in chrome.
   virtual content::BrowserContext* GetActiveBrowserContext() = 0;
 
-  // Invoked to create an AppListViewDelegate. Shell takes the ownership of
-  // the created delegate.
-  virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;
+  // Get the AppListViewDelegate, creating one if it does not yet exist.
+  // Ownership stays with Chrome's AppListService, or the ShellDelegate.
+  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() = 0;
 
   // Creates a new ShelfDelegate. Shell takes ownership of the returned
   // value.

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/profile_loader.h"
 
+class AppListViewDelegate;
 class ProfileStore;
 
 namespace base {
@@ -37,6 +38,10 @@ class AppListServiceImpl : public AppListService,
   AppListServiceImpl(const base::CommandLine& command_line,
                      PrefService* local_state,
                      scoped_ptr<ProfileStore> profile_store);
+
+  // Lazily create the Chrome AppListViewDelegate and ensure it is set to the
+  // given |profile|.
+  AppListViewDelegate* GetViewDelegate(Profile* profile);
 
   void RecordAppListLaunch();
   static void RecordAppListAppLaunch();
@@ -90,6 +95,7 @@ class AppListServiceImpl : public AppListService,
   base::CommandLine command_line_;
   PrefService* local_state_;
   scoped_ptr<ProfileLoader> profile_loader_;
+  scoped_ptr<AppListViewDelegate> view_delegate_;
 
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
 

@@ -157,7 +157,6 @@ TEST_F(AppListServiceUnitTest,
        RemovedProfileResetsToLastUsedProfileIfExists) {
   local_state_->SetString(prefs::kProfileLastUsed, "last-used");
   EnableAppList();
-  EXPECT_EQ(0, service_->destroy_app_list_call_count());
   profile_store_->RemoveProfile(profile1_.get());
 
   base::FilePath last_used_profile_path =
@@ -165,10 +164,9 @@ TEST_F(AppListServiceUnitTest,
   EXPECT_EQ(last_used_profile_path,
             service_->GetProfilePath(profile_store_->GetUserDataDir()));
 
-  // Ensure a tear-down was triggered, since there would be references to the
-  // destroyed Profile, and the last-used profile could be getting loaded
-  // asynchronously.
-  EXPECT_EQ(1, service_->destroy_app_list_call_count());
+  // For this test, the AppListViewDelegate is not created because the
+  // app list is never shown, so there is nothing to destroy.
+  EXPECT_EQ(0, service_->destroy_app_list_call_count());
 }
 
 TEST_F(AppListServiceUnitTest, SwitchingProfilesPersists) {

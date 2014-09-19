@@ -187,10 +187,10 @@ void AppListController::Show(aura::Window* window) {
   if (view_) {
     ScheduleAnimation();
   } else {
-    // AppListModel and AppListViewDelegate are owned by AppListView. They
-    // will be released with AppListView on close.
+    // Note the AppListViewDelegate outlives the AppListView. For Ash, the view
+    // is destroyed when dismissed.
     app_list::AppListView* view = new app_list::AppListView(
-        Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
+        Shell::GetInstance()->delegate()->GetAppListViewDelegate());
     aura::Window* root_window = window->GetRootWindow();
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);

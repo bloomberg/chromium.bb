@@ -147,8 +147,7 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
 
 }  // namespace
 
-AppListViewDelegate::AppListViewDelegate(Profile* profile,
-                                         AppListControllerDelegate* controller)
+AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(NULL),
       model_(NULL),
@@ -181,7 +180,6 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
 #endif
-  SetProfile(profile);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,

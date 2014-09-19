@@ -320,7 +320,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                                        bool border_accepts_events,
                                        const gfx::Vector2d& anchor_offset) {
   app_list_main_view_ =
-      new AppListMainView(delegate_.get(), initial_apps_page, parent);
+      new AppListMainView(delegate_, initial_apps_page, parent);
   AddChildView(app_list_main_view_);
   app_list_main_view_->SetPaintToLayer(true);
   app_list_main_view_->SetFillsBoundsOpaquely(false);
@@ -328,7 +328,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
 
   // Speech recognition is available only when the start page exists.
   if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {
-    speech_view_ = new SpeechView(delegate_.get());
+    speech_view_ = new SpeechView(delegate_);
     speech_view_->SetVisible(false);
     speech_view_->SetPaintToLayer(true);
     speech_view_->SetFillsBoundsOpaquely(false);

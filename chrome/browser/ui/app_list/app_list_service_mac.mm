@@ -392,9 +392,8 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   if (!window_controller_)
     window_controller_.reset([[AppListWindowController alloc] init]);
 
-  scoped_ptr<app_list::AppListViewDelegate> delegate(
-      new AppListViewDelegate(profile_, GetControllerDelegate()));
-  [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
+  [[window_controller_ appListViewController]
+      setDelegate:GetViewDelegate(profile_)];
 }
 
 void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
@@ -457,8 +456,7 @@ void AppListServiceMac::DestroyAppList() {
   // but mac supports a visible app list with a NULL profile, so there's also no
   // need to tear it down completely.
   DismissAppList();
-  [[window_controller_ appListViewController]
-      setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
+  [[window_controller_ appListViewController] setDelegate:NULL];
 
   profile_ = NULL;
 }

@@ -75,8 +75,8 @@ class AppListShowerUnitTest : public testing::Test,
     return make_scoped_ptr(new FakeProfile(name));
   }
 
-  // AppListCreatorDelegate:
-  virtual AppListControllerDelegate* GetControllerDelegateForCreate() OVERRIDE {
+  // AppListShowerDelegate:
+  virtual AppListViewDelegate* GetViewDelegateForCreate() OVERRIDE {
     return NULL;
   }
 

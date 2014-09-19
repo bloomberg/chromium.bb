@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -20,6 +21,7 @@ class AppListServiceImplTestApi {
   explicit AppListServiceImplTestApi(AppListServiceImpl* impl) : impl_(impl) {}
 
   ProfileLoader* profile_loader() { return impl_->profile_loader_.get(); }
+  AppListViewDelegate* view_delegate() { return impl_->view_delegate_.get(); }
 
  private:
   AppListServiceImpl* impl_;
@@ -101,4 +103,48 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowLoadedProfiles) {
   EXPECT_EQ(profile2->GetPath(), service_->GetProfilePath(user_data_dir));
   EXPECT_EQ(profile2, service_->GetCurrentAppListProfile());
 #endif
+}
+
+// Tests that the AppListViewDelegate is created lazily.
+IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
+  EXPECT_FALSE(test_api_->view_delegate());
+  service_->ShowForProfile(browser()->profile());
+  EXPECT_TRUE(test_api_->view_delegate());
+}
+
+// Tests that deleting a profile properly clears the app list view delegate, but
+// doesn't destroy it. Disabled on ChromeOS, since profiles can't be deleted
+// this way (the second profile isn't signed in, so the test fails when creating
+// UserCloudPolicyManagerChromeOS).
+#if defined(OS_CHROMEOS)
+#define MAYBE_DeletingProfileUpdatesViewDelegate \
+    DISABLED_DeletingProfileUpdatesViewDelegate
+#else
+#define MAYBE_DeletingProfileUpdatesViewDelegate \
+    DeletingProfileUpdatesViewDelegate
+#endif
+IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
+                       MAYBE_DeletingProfileUpdatesViewDelegate) {
+  Profile* second_profile = test::CreateSecondProfileAsync();
+  service_->ShowForProfile(second_profile);
+  AppListViewDelegate* view_delegate = test_api_->view_delegate();
+
+  EXPECT_TRUE(view_delegate);
+  EXPECT_EQ(view_delegate->profile(), second_profile);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Delete the profile being used by the app list.
+  profile_manager->ScheduleProfileForDeletion(second_profile->GetPath(),
+                                              ProfileManager::CreateCallback());
+
+  // View delegate doesn't change when changing profiles.
+  EXPECT_EQ(view_delegate, test_api_->view_delegate());
+
+  // But the profile gets cleared until shown again.
+  EXPECT_FALSE(view_delegate->profile());
+  service_->ShowForProfile(browser()->profile());
+
+  EXPECT_EQ(view_delegate, test_api_->view_delegate());
+  EXPECT_EQ(view_delegate->profile(), browser()->profile());
 }

@@ -48,7 +48,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) OVERRIDE;
   virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
-  virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
+  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() OVERRIDE;
   virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
@@ -76,6 +76,7 @@ class TestShellDelegate : public ShellDelegate {
   bool multi_profiles_enabled_;
 
   scoped_ptr<content::BrowserContext> active_browser_context_;
+  scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
 
   ObserverList<ash::VirtualKeyboardStateObserver> keyboard_state_observer_list_;
 
