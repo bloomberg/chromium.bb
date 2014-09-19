@@ -1702,7 +1702,7 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     // and they change size but don't have anything to paint. This is
     // a pretty common case for <body> as we add / remove children
     // (and the default background is done by FrameView).
-    if (skipInvalidationWhenLaidOutChildren() && !mayNeedPaintInvalidation())
+    if (skipInvalidationWhenLaidOutChildren())
         return InvalidationNone;
 
     return InvalidationIncremental;
