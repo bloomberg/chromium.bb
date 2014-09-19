@@ -40,7 +40,9 @@ class SSLErrorClassification : public content::NotificationObserver {
   // using a version of Chrome which is more than 1 year old.
   static bool IsUserClockInTheFuture(const base::Time& time_now);
 
-  static bool IsWindowsVersionSP3OrLower();
+  // Returns true if the Windows platform is likely to not have SHA-256 support.
+  // On other platforms, returns false always.
+  static bool MaybeWindowsLacksSHA256Support();
 
   // A function which calculates the severity score when the ssl error is
   // |CERT_DATE_INVALID|. The calculated score is between 0.0 and 1.0, higher

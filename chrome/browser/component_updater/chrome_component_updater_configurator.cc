@@ -12,6 +12,9 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif  // OS_WIN
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
@@ -47,10 +50,13 @@ const char kSwitchUrlSource[] = "url-source";
 #define COMPONENT_UPDATER_SERVICE_ENDPOINT \
   "//clients2.google.com/service/update2"
 
-// The default url for the v3 protocol service endpoint.
+// The default URL for the v3 protocol service endpoint. In some cases, the
+// component updater is allowed to fall back to and alternate URL source, if
+// the request to the default URL source fails.
 // The value of |kDefaultUrlSource| can be overridden with
 // --component-updater=url-source=someurl.
 const char kDefaultUrlSource[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
+const char kAltUrlSource[] = "http:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
@@ -65,6 +71,19 @@ bool HasSwitchValue(const std::vector<std::string>& vec, const char* test) {
   if (vec.empty())
     return 0;
   return (std::find(vec.begin(), vec.end(), test) != vec.end());
+}
+
+// Returns true if falling back on an alternate, unsafe, service URL is
+// allowed. In the fallback case, the security of the component update relies
+// only on the integrity of the CRX payloads, which is self-validating.
+// This is allowed only for some of the pre-Windows Vista versions not including
+// Windows XP SP3. As a side note, pings could be sent to the alternate URL too.
+bool CanUseAltUrlSource() {
+#if defined(OS_WIN)
+  return !base::win::MaybeHasSHA256Support();
+#else
+  return false;
+#endif  // OS_WIN
 }
 
 // If there is an element of |vec| of the form |test|=.*, returns the right-
@@ -127,6 +146,7 @@ class ChromeConfigurator : public Configurator {
   bool pings_enabled_;
   bool deltas_enabled_;
   bool background_downloads_enabled_;
+  bool fallback_to_alt_source_url_enabled_;
 };
 
 ChromeConfigurator::ChromeConfigurator(
@@ -136,7 +156,8 @@ ChromeConfigurator::ChromeConfigurator(
       fast_update_(false),
       pings_enabled_(false),
       deltas_enabled_(false),
-      background_downloads_enabled_(false) {
+      background_downloads_enabled_(false),
+      fallback_to_alt_source_url_enabled_(false) {
   // Parse comma-delimited debug flags.
   std::vector<std::string> switch_values;
   Tokenize(cmdline->GetSwitchValueASCII(switches::kComponentUpdater),
@@ -162,6 +183,8 @@ ChromeConfigurator::ChromeConfigurator(
 
   if (HasSwitchValue(switch_values, kSwitchRequestParam))
     extra_info_ += "testrequest=\"1\"";
+
+  fallback_to_alt_source_url_enabled_ = CanUseAltUrlSource();
 }
 
 int ChromeConfigurator::InitialDelay() const {
@@ -194,6 +217,9 @@ std::vector<GURL> ChromeConfigurator::UpdateUrl() const {
     urls.push_back(GURL(url_source_override_));
   } else {
     urls.push_back(GURL(kDefaultUrlSource));
+    if (fallback_to_alt_source_url_enabled_) {
+      urls.push_back(GURL(kAltUrlSource));
+    }
   }
   return urls;
 }

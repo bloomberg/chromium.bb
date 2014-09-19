@@ -30,6 +30,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -366,14 +367,12 @@ bool SSLErrorClassification::IsUserClockInTheFuture(
   return false;
 }
 
-bool SSLErrorClassification::IsWindowsVersionSP3OrLower() {
+bool SSLErrorClassification::MaybeWindowsLacksSHA256Support() {
 #if defined(OS_WIN)
-  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
-  base::win::OSInfo::ServicePack service_pack = os_info->service_pack();
-  if (os_info->version() < base::win::VERSION_VISTA && service_pack.major < 3)
-    return true;
-#endif
+  return !base::win::MaybeHasSHA256Support();
+#else
   return false;
+#endif
 }
 
 bool SSLErrorClassification::IsHostNameKnownTLD(const std::string& host_name) {

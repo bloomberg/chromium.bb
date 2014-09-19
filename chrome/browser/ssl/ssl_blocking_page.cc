@@ -471,7 +471,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
     SSLErrorInfo::ErrorType type =
         SSLErrorInfo::NetErrorToErrorType(cert_error_);
     if (type == SSLErrorInfo::CERT_INVALID && SSLErrorClassification::
-        IsWindowsVersionSP3OrLower()) {
+        MaybeWindowsLacksSHA256Support()) {
       load_time_data.SetString(
           "explanationParagraph",
           l10n_util::GetStringFUTF16(
