@@ -38,6 +38,7 @@
 namespace blink {
 
 class WebServiceWorkerContextClient;
+class WebServiceWorkerResponse;
 class WebURL;
 
 class ServiceWorkerGlobalScopeClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
@@ -52,7 +53,8 @@ public:
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) OVERRIDE;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) OVERRIDE;
-    virtual void didHandleFetchEvent(int fetchEventID, Response*) OVERRIDE;
+    virtual void didHandleFetchEvent(int fetchEventID) OVERRIDE;
+    virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) OVERRIDE;
     virtual void didHandleSyncEvent(int syncEventID) OVERRIDE;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) OVERRIDE;
 
