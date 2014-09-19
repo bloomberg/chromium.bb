@@ -155,36 +155,6 @@ private:
     BooleanValue();
 };
 
-ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scriptState, const String& pattern)
-{
-    ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "No associated provider is available"));
-        return promise;
-    }
-
-    // FIXME: This should use the container's execution context, not
-    // the callers.
-    RefPtr<SecurityOrigin> documentOrigin = scriptState->executionContext()->securityOrigin();
-    String errorMessage;
-    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
-        resolver->reject(DOMException::create(NotSupportedError, errorMessage));
-        return promise;
-    }
-
-    KURL patternURL = scriptState->executionContext()->completeURL(pattern);
-    patternURL.removeFragmentIdentifier();
-    if (!pattern.isEmpty() && !documentOrigin->canRequest(patternURL)) {
-        resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
-        return promise;
-    }
-    m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<BooleanValue, ServiceWorkerError>(resolver));
-    return promise;
-}
-
 ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, const String& documentURL)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());

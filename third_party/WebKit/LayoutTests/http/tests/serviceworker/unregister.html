@@ -4,18 +4,6 @@
 <script src="resources/test-helpers.js"></script>
 <script>
 async_test(function(t) {
-    navigator.serviceWorker.unregister('http://example.com/')
-      .then(function() {
-        assert_unreached('unregistering out of origin should fail');
-      }, function(reason) {
-        assert_equals(reason.name, 'SecurityError',
-                      'unregistering out of origin scope should fail');
-        t.done();
-      })
-      .catch(unreached_rejection(t));
-  }, 'Unregistering out of origin');
-
-async_test(function(t) {
     var scope = 'scope/unregister-twice';
     var registration;
     navigator.serviceWorker.register('resources/empty-worker.js',
@@ -49,32 +37,4 @@ async_test(function(t) {
         })
       .catch(unreached_rejection(t));
   }, 'Register then unregister');
-
-// FIXME: Remove this test when ServiceWorkerContainer.unregister() is removed.
-async_test(function(t) {
-    var state_promise;
-    navigator.serviceWorker.unregister()
-      .then(function() {
-          return navigator.serviceWorker.register('resources/empty-worker.js');
-        })
-      .then(function(registration) {
-          return wait_for_update(t, registration);
-        })
-      .then(function(sw) {
-          state_promise = wait_for_state(t, sw, 'redundant');
-          return navigator.serviceWorker.unregister();
-        })
-      .then(function(value) {
-          assert_equals(value, true,
-                        'unregister with default scope should succeed');
-          return state_promise;
-        })
-      .then(function(state) {
-          assert_equals(state, 'redundant',
-                        'service worker registered with default scope ' +
-                        'should be unregistered');
-          t.done();
-        })
-      .catch(unreached_rejection(t));
-  }, 'ServiceWorkerContainer.unregister() with default scope');
 </script>
