@@ -17,7 +17,7 @@
         ],
       },
     }],
-    ['OS=="mac"', {
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/content_shell.pak',
