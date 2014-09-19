@@ -27,7 +27,7 @@ const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
 const int kIconDimension = 24;
 const int kPadding = 14;
-const int kBottomSeparatorWidth = 380;
+const int kBottomSeparatorPadding = 9;
 const int kBottomSeparatorHeight = 1;
 const int kMaxFolderNameWidth = 300;
 
@@ -192,9 +192,8 @@ void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   // Draw bottom separator line.
-  rect.set_x((rect.width() - kBottomSeparatorWidth) / 2 + rect.x());
-  rect.set_y(rect.y() + rect.height() - kBottomSeparatorHeight);
-  rect.set_width(kBottomSeparatorWidth);
+  rect.Inset(kBottomSeparatorPadding, 0);
+  rect.set_y(rect.bottom() - kBottomSeparatorHeight);
   rect.set_height(kBottomSeparatorHeight);
   canvas->FillRect(rect, kTopSeparatorColor);
 }
