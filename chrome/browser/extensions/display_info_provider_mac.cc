@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/display_info_provider_mac.h"
 
+#include "ui/gfx/screen.h"
+
 namespace extensions {
 
 DisplayInfoProviderMac::DisplayInfoProviderMac() {
@@ -27,7 +29,7 @@ void DisplayInfoProviderMac::UpdateDisplayUnitInfoForPlatform(
 }
 
 gfx::Screen* DisplayInfoProviderMac::GetActiveScreen() {
-  return NULL;
+  return gfx::Screen::GetNativeScreen();
 }
 
 // static

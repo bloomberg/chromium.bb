@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/display_info_provider_aura.h"
 
+#include "ui/gfx/screen.h"
+
 namespace extensions {
 
 DisplayInfoProviderAura::DisplayInfoProviderAura() {
@@ -27,7 +29,7 @@ void DisplayInfoProviderAura::UpdateDisplayUnitInfoForPlatform(
 }
 
 gfx::Screen* DisplayInfoProviderAura::GetActiveScreen() {
-  return NULL;
+  return gfx::Screen::GetNativeScreen();
 }
 
 // static

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -81,7 +82,8 @@ void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
 }
 
 gfx::Screen* DisplayInfoProviderWin::GetActiveScreen() {
-  return NULL;
+  // TODO(scottmg): native screen is wrong http://crbug.com/133312
+  return gfx::Screen::GetNativeScreen();
 }
 
 // static
