@@ -566,46 +566,43 @@ bool FileManagerPrivateCancelFileTransfersFunction::RunAsync() {
   if (!integration_service || !integration_service->IsMounted())
     return false;
 
-  // Create the mapping from file path to job ID.
   drive::JobListInterface* job_list = integration_service->job_list();
   DCHECK(job_list);
   std::vector<drive::JobInfo> jobs = job_list->GetJobInfoList();
 
-  typedef std::map<base::FilePath, std::vector<drive::JobID> > PathToIdMap;
-  PathToIdMap path_to_id_map;
-  for (size_t i = 0; i < jobs.size(); ++i) {
-    if (drive::IsActiveFileTransferJobInfo(jobs[i]))
-      path_to_id_map[jobs[i].file_path].push_back(jobs[i].job_id);
-  }
-
-  // Cancel by Job ID.
-  std::vector<linked_ptr<api::file_manager_private::
-                         FileTransferCancelStatus> > responses;
-  for (size_t i = 0; i < params->file_urls.size(); ++i) {
-    base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-        render_view_host(), GetProfile(), GURL(params->file_urls[i]));
-    if (file_path.empty())
-      continue;
-
-    DCHECK(drive::util::IsUnderDriveMountPoint(file_path));
-    file_path = drive::util::ExtractDrivePath(file_path);
-
-    // Cancel all the jobs for the file.
-    PathToIdMap::iterator it = path_to_id_map.find(file_path);
-    if (it != path_to_id_map.end()) {
-      for (size_t i = 0; i < it->second.size(); ++i)
-        job_list->CancelJob(it->second[i]);
+  // If file_urls are empty, cancel all jobs.
+  if (!params->file_urls.get()) {
+    for (size_t i = 0; i < jobs.size(); ++i) {
+      if (drive::IsActiveFileTransferJobInfo(jobs[i]))
+        job_list->CancelJob(jobs[i].job_id);
     }
-    linked_ptr<api::file_manager_private::FileTransferCancelStatus> result(
-        new api::file_manager_private::FileTransferCancelStatus);
-    result->canceled = it != path_to_id_map.end();
-    // TODO(kinaba): simplify cancelFileTransfer() to take single URL each time,
-    // and eliminate this field; it is just returning a copy of the argument.
-    result->file_url = params->file_urls[i];
-    responses.push_back(result);
+  } else {
+    // Create the mapping from file path to job ID.
+    std::vector<std::string> file_urls(*params->file_urls.get());
+    typedef std::map<base::FilePath, std::vector<drive::JobID> > PathToIdMap;
+    PathToIdMap path_to_id_map;
+    for (size_t i = 0; i < jobs.size(); ++i) {
+      if (drive::IsActiveFileTransferJobInfo(jobs[i]))
+        path_to_id_map[jobs[i].file_path].push_back(jobs[i].job_id);
+    }
+
+    for (size_t i = 0; i < file_urls.size(); ++i) {
+      base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
+          render_view_host(), GetProfile(), GURL(file_urls[i]));
+      if (file_path.empty())
+        continue;
+
+      file_path = drive::util::ExtractDrivePath(file_path);
+      DCHECK(file_path.empty());
+
+      // Cancel all the jobs for the file.
+      PathToIdMap::iterator it = path_to_id_map.find(file_path);
+      if (it != path_to_id_map.end()) {
+        for (size_t i = 0; i < it->second.size(); ++i)
+          job_list->CancelJob(it->second[i]);
+      }
+    }
   }
-  results_ = api::file_manager_private::CancelFileTransfers::Results::Create(
-      responses);
   SendResponse(true);
   return true;
 }

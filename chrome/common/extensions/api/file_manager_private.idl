@@ -665,8 +665,9 @@ interface Functions {
 
   // Cancels ongoing file transfers for selected files.
   // |fileUrls| Array of files for which ongoing transfer should be canceled.
+  //     If this is absent, all jobs are canceled. 
   // |callback|
-  static void cancelFileTransfers(DOMString[] fileUrls,
+  static void cancelFileTransfers(optional DOMString[] fileUrls,
                                   CancelFileTransfersCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
