@@ -651,6 +651,40 @@ static int do_utimes_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+/* Rename test. */
+static int do_rename_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_rename_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+  fclose(fp);
+
+  if (0 != rename(TEST_FILE, TEST_FILE2)) {
+    irt_ext_test_print("do_rename_test: rename was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node != NULL) {
+    irt_ext_test_print("do_rename_test: old file still exists.\n");
+    return 1;
+  }
+
+  file_node = find_inode_path(file_desc_env, TEST_FILE2,
+                              &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_rename_test: renamed file does not exists.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
 static int do_link_test(struct file_desc_environment *file_desc_env) {
   FILE *fp = fopen(TEST_FILE, "w+");
   if (fp == NULL) {
@@ -1000,6 +1034,9 @@ static const TYPE_file_test g_file_tests[] = {
   do_chmod_test,
   do_access_test,
   do_utimes_test,
+
+  /* Rename test. */
+  do_rename_test,
 
   /* Link tests. */
   do_link_test,

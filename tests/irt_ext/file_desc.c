@@ -613,6 +613,41 @@ static int my_link(const char *oldpath, const char *newpath) {
 }
 
 static int my_rename(const char *oldpath, const char *newpath) {
+  if (g_activated_env) {
+    struct inode_data *old_parent = NULL;
+    struct inode_data *old_path_item = find_inode_path(g_activated_env,
+                                                       oldpath, &old_parent);
+
+    struct inode_data *new_parent = NULL;
+    struct inode_data *new_path_item = find_inode_path(g_activated_env,
+                                                       newpath, &new_parent);
+
+    const char *filename = strrchr(newpath, '/');
+    if (filename == NULL)
+      filename = newpath;
+    else
+      filename = filename + 1;
+
+    if (old_parent == NULL || new_parent == NULL)
+      return ENOTDIR;
+
+    if (old_path_item == NULL)
+      return EACCES;
+
+    if (S_ISDIR(old_path_item->mode))
+      return EISDIR;
+
+    if (new_path_item)
+      return EEXIST;
+
+    const size_t file_len = strlen(filename) + 1;
+    if (file_len > NACL_ARRAY_SIZE(old_path_item->name))
+      return ENAMETOOLONG;
+
+    old_path_item->parent_dir = new_parent;
+    memcpy(old_path_item->name, filename, file_len);
+    return 0;
+  }
   return ENOSYS;
 }
 
