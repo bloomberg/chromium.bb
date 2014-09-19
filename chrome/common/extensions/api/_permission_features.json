@@ -424,7 +424,10 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component",
-    "platforms": ["chromeos"]
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "397F221E63F86BE34C30165613E95B6CC8D22A52"  // http://crbug.com/415846
+    ]
   },
   "fileSystem": [{
     "channel": "stable",
