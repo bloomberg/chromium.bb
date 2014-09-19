@@ -46,7 +46,7 @@ void HostPairingScreen::PrepareToShow() {
 void HostPairingScreen::Show() {
   if (actor_)
     actor_->Show();
-  controller_->StartPairing();
+  PairingStageChanged(controller_->GetCurrentStage());
 }
 
 void HostPairingScreen::Hide() {
@@ -59,8 +59,6 @@ std::string HostPairingScreen::GetName() const {
 }
 
 void HostPairingScreen::PairingStageChanged(Stage new_stage) {
-  DCHECK(new_stage != current_stage_);
-
   std::string desired_page;
   switch (new_stage) {
     case HostPairingController::STAGE_NONE:

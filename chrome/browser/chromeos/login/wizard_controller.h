@@ -30,6 +30,7 @@ class DictionaryValue;
 }
 
 namespace pairing_chromeos {
+class SharkConnectionListener;
 class ControllerPairingController;
 class HostPairingController;
 }
@@ -302,6 +303,18 @@ class WizardController : public ScreenObserver, public ScreenManager {
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
 
+  // Returns true for pairing remora OOBE.
+  bool IsHostPairingOobe() const;
+
+  // Starts listening for an incoming shark controller connection, if we are
+  // running remora OOBE.
+  void MaybeStartListeningForSharkConnection();
+
+  // Called when a connection to controller has been established. Wizard
+  // controller takes the ownership of |pairing_controller| after that call.
+  void OnSharkConnected(
+      scoped_ptr<pairing_chromeos::HostPairingController> pairing_controller);
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -396,6 +409,15 @@ class WizardController : public ScreenObserver, public ScreenManager {
   // Tests check result of timezone resolve.
   bool timezone_resolved_;
   base::Closure on_timezone_resolved_for_testing_;
+
+  // True if shark device initiated connection to this device.
+  bool shark_controller_detected_;
+
+  // Listens for incoming connection from a shark controller if a regular (not
+  // pairing) remora OOBE is active. If connection is established, wizard
+  // conroller swithces to a pairing OOBE.
+  scoped_ptr<pairing_chromeos::SharkConnectionListener>
+      shark_connection_listener_;
 
   base::WeakPtrFactory<WizardController> weak_factory_;
 

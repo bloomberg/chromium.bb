@@ -35,6 +35,8 @@
         'pairing/message_buffer.h',
         'pairing/proto_decoder.cc',
         'pairing/proto_decoder.h',
+        'pairing/shark_connection_listener.cc',
+        'pairing/shark_connection_listener.h',
       ],
     },
     {

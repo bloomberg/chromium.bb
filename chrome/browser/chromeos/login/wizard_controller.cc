@@ -75,6 +75,7 @@
 #include "components/crash/app/breakpad_linux.h"
 #include "components/pairing/bluetooth_controller_pairing_controller.h"
 #include "components/pairing/bluetooth_host_pairing_controller.h"
+#include "components/pairing/shark_connection_listener.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -108,16 +109,6 @@ bool CanShowHIDDetectionScreen() {
         chromeos::switches::kDisableHIDDetectionOnOOBE);
 }
 
-// Checks if we are a remora waiting for a shark.
-bool ShouldShowHostPairingScreen() {
-  const bool is_remora =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-      GetDeviceCloudPolicyManager()->IsRemoraRequisition();
-  const bool pairing_demo = CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kShowHostPairingDemo);
-  return is_remora && pairing_demo;
-}
-
 bool IsResumableScreen(const std::string& screen) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kResumableScreens); ++i) {
     if (screen == kResumableScreens[i])
@@ -140,6 +131,13 @@ void RecordUMAHistogramForOOBEStepCompletionTime(std::string screen_name,
       50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTime(step_time);
+}
+
+bool IsRemoraRequisition() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetDeviceCloudPolicyManager()
+      ->IsRemoraRequisition();
 }
 
 }  // namespace
@@ -211,6 +209,7 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       login_screen_started_(false),
       user_image_screen_return_to_previous_hack_(false),
       timezone_resolved_(false),
+      shark_controller_detected_(false),
       weak_factory_(this) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
@@ -269,9 +268,9 @@ void WizardController::Init(
   // Use the saved screen preference from Local State.
   const std::string screen_pref =
       GetLocalState()->GetString(prefs::kOobeScreenPending);
-  if (is_out_of_box_ && !screen_pref.empty() &&
-      !ShouldShowHostPairingScreen() && (first_screen_name.empty() ||
-      first_screen_name == WizardController::kTestNoScreenName)) {
+  if (is_out_of_box_ && !screen_pref.empty() && !IsHostPairingOobe() &&
+      (first_screen_name.empty() ||
+       first_screen_name == WizardController::kTestNoScreenName)) {
     first_screen_name_ = screen_pref;
   }
 
@@ -341,6 +340,7 @@ WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
     if (!host_pairing_controller_) {
       host_pairing_controller_.reset(
           new pairing_chromeos::BluetoothHostPairingController());
+      host_pairing_controller_->StartPairing();
     }
     return new HostPairingScreen(this,
                                  oobe_display_->GetHostPairingScreenActor(),
@@ -355,6 +355,8 @@ void WizardController::ShowNetworkScreen() {
   // in. Keep it visible if the user goes back to the existing network screen.
   SetStatusAreaVisible(HasScreen(kNetworkScreenName));
   SetCurrentScreen(GetScreen(kNetworkScreenName));
+
+  MaybeStartListeningForSharkConnection();
 }
 
 void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
@@ -498,6 +500,7 @@ void WizardController::ShowHIDDetectionScreen() {
   VLOG(1) << "Showing HID discovery screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetScreen(kHIDDetectionScreenName));
+  MaybeStartListeningForSharkConnection();
 }
 
 void WizardController::ShowControllerPairingScreen() {
@@ -572,11 +575,10 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  // TODO(dzhioev): place checks related to pairing in a proper place.
-  const bool is_shark =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-      GetDeviceCloudPolicyManager()->IsSharkRequisition();
-
+  const bool is_shark = g_browser_process->platform_part()
+                            ->browser_policy_connector_chromeos()
+                            ->GetDeviceCloudPolicyManager()
+                            ->IsSharkRequisition();
   if (is_shark) {
     ShowControllerPairingScreen();
   } else if (!auth_token_.empty()) {
@@ -638,8 +640,7 @@ void WizardController::EnableUserImageScreenReturnToPreviousHack() {
   user_image_screen_return_to_previous_hack_ = true;
 }
 
-void WizardController::OnEnrollmentAuthTokenReceived(
-    const std::string& token) {
+void WizardController::OnEnrollmentAuthTokenReceived(const std::string& token) {
   VLOG(1) << "OnEnrollmentAuthTokenReceived " << token;
   if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment()) {
     StartupUtils::MarkEulaAccepted();
@@ -908,7 +909,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
-      if (ShouldShowHostPairingScreen()) {
+      if (IsHostPairingOobe()) {
         ShowHostPairingScreen();
       } else if (CanShowHIDDetectionScreen()) {
         base::Callback<void(bool)> on_check = base::Bind(
@@ -1238,6 +1239,36 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 
   on_timezone_resolved_for_testing_ = callback;
   return true;
+}
+
+bool WizardController::IsHostPairingOobe() const {
+  return IsRemoraRequisition() &&
+    (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHostPairingOobe) ||
+     shark_controller_detected_);
+}
+
+void WizardController::MaybeStartListeningForSharkConnection() {
+  if (!IsRemoraRequisition())
+    return;
+
+  // We shouldn't be here if we are running pairing OOBE already.
+  DCHECK(!IsHostPairingOobe());
+
+  if (!shark_connection_listener_) {
+    shark_connection_listener_.reset(
+        new pairing_chromeos::SharkConnectionListener(
+            base::Bind(&WizardController::OnSharkConnected,
+                       weak_factory_.GetWeakPtr())));
+  }
+}
+
+void WizardController::OnSharkConnected(
+    scoped_ptr<pairing_chromeos::HostPairingController> pairing_controller) {
+  host_pairing_controller_ = pairing_controller.Pass();
+  base::MessageLoop::current()->DeleteSoon(
+      FROM_HERE, shark_connection_listener_.release());
+  shark_controller_detected_ = true;
+  ShowHostPairingScreen();
 }
 
 }  // namespace chromeos

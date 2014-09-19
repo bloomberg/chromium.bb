@@ -154,6 +154,9 @@ const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[]           = "homedir";
 
+// With this switch, start remora OOBE with the pairing screen.
+const char kHostPairingOobe[] = "host-pairing-oobe";
+
 // If true, profile selection in UserManager will always return active user's
 // profile.
 // TODO(nkostlyev): http://crbug.com/364604 - Get rid of this switch after we
@@ -212,10 +215,6 @@ const char kPowerStub[] = "power-stub";
 //  'cellular=1' - Cellular is initially connected
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
-
-// If this switch is set, controller pairing process is displayed after update
-// stage of OOBE.
-const char kShowHostPairingDemo[] = "show-host-pairing-demo";
 
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
