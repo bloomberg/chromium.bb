@@ -1,4 +1,14 @@
 
+crbug.com/409885 compositing/iframes/become-overlapped-iframe.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/iframes/connect-compositing-iframe.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/iframes/connect-compositing-iframe2.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/iframes/enter-compositing-iframe.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/iframes/iframe-resize.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/iframes/iframe-size-from-zero.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/iframes/overlapped-iframe.html [ NeedsRebaseline ]
+crbug.com/409885 compositing/video/video-poster.html [ NeedsRebaseline ]
+crbug.com/409885 media/video-paint-invalidation.html [ NeedsRebaseline ]
+
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
