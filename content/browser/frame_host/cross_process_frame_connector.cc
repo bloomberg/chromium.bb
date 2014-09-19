@@ -30,7 +30,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_BuffersSwappedACK, OnBuffersSwappedACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CompositorFrameSwappedACK,
                         OnCompositorFrameSwappedACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ReclaimCompositorResources,
@@ -65,20 +64,6 @@ void CrossProcessFrameConnector::RenderProcessGone() {
       frame_proxy_in_parent_renderer_->GetRoutingID()));
 }
 
-void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& gpu_params,
-    int gpu_host_id) {
-
-  FrameMsg_BuffersSwapped_Params params;
-  params.size = gpu_params.size;
-  params.mailbox = gpu_params.mailbox;
-  params.gpu_route_id = gpu_params.route_id;
-  params.gpu_host_id = gpu_host_id;
-
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_BuffersSwapped(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), params));
-}
-
 void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
     uint32 output_surface_id,
     int host_id,
@@ -91,18 +76,6 @@ void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
   params.producing_host_id = host_id;
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_CompositorFrameSwapped(
       frame_proxy_in_parent_renderer_->GetRoutingID(), params));
-}
-
-void CrossProcessFrameConnector::OnBuffersSwappedACK(
-    const FrameHostMsg_BuffersSwappedACK_Params& params) {
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox = params.mailbox;
-  ack_params.sync_point = params.sync_point;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.gpu_route_id,
-                                                 params.gpu_host_id,
-                                                 ack_params);
-
-  // TODO(kenrb): Special case stuff for Win + Mac.
 }
 
 void CrossProcessFrameConnector::OnCompositorFrameSwappedACK(

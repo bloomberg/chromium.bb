@@ -16,10 +16,8 @@ namespace IPC {
 class Message;
 }
 
-struct FrameHostMsg_BuffersSwappedACK_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 
 namespace content {
 class RenderFrameProxyHost;
@@ -78,13 +76,6 @@ class CrossProcessFrameConnector {
 
   void RenderProcessGone();
 
-  // 'Platform' functionality exposed to RenderWidgetHostViewChildFrame.
-  // These methods can forward messages to the child frame proxy in the parent
-  // frame's renderer or attempt to handle them within the browser process.
-  void ChildFrameBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-      int gpu_host_id);
-
   void ChildFrameCompositorFrameSwapped(uint32 output_surface_id,
                                         int host_id,
                                         int route_id,
@@ -94,8 +85,6 @@ class CrossProcessFrameConnector {
 
  private:
   // Handlers for messages received from the parent frame.
-  void OnBuffersSwappedACK(
-      const FrameHostMsg_BuffersSwappedACK_Params& params);
   void OnCompositorFrameSwappedACK(
       const FrameHostMsg_CompositorFrameSwappedACK_Params& params);
   void OnReclaimCompositorResources(

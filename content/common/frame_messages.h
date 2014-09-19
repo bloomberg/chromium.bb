@@ -335,16 +335,6 @@ IPC_STRUCT_END()
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
-// When HW accelerated buffers are swapped in an out-of-process child frame
-// renderer, the message is forwarded to the embedding frame to notify it of
-// a new texture available for compositing. When the buffer has finished
-// presenting, a FrameHostMsg_BuffersSwappedACK should be sent back to
-// gpu host that produced this buffer.
-//
-// This is used in the non-ubercomp HW accelerated compositing path.
-IPC_MESSAGE_ROUTED1(FrameMsg_BuffersSwapped,
-                    FrameMsg_BuffersSwapped_Params /* params */)
-
 // Notifies the embedding frame that a new CompositorFrame is ready to be
 // presented. When the frame finishes presenting, a matching
 // FrameHostMsg_CompositorFrameSwappedACK should be sent back to the
@@ -647,14 +637,6 @@ IPC_SYNC_MESSAGE_CONTROL4_2(FrameHostMsg_OpenChannelToPlugin,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
                             content::WebPluginInfo /* info */)
-
-// Acknowledge that we presented a HW buffer and provide a sync point
-// to specify the location in the command stream when the compositor
-// is no longer using it.
-//
-// See FrameMsg_BuffersSwapped.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_BuffersSwappedACK,
-                    FrameHostMsg_BuffersSwappedACK_Params /* params */)
 
 // Acknowledge that we presented an ubercomp frame.
 //

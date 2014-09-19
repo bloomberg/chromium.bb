@@ -209,15 +209,6 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CopyFromCompositingSurface,
                      gfx::Rect  /* source_rect */,
                      gfx::Size  /* dest_size */)
 
-// Guest renders into an FBO with textures provided by the embedder.
-// BrowserPlugin shares mostly the same logic as out-of-process RenderFrames but
-// because BrowserPlugins implement custom a second level of routing logic,
-// the IPCs need to be annotated with an extra browser_plugin_instance_id. These
-// messages provide that extra id.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_BuffersSwapped,
-                     int /* browser_plugin_instance_id */,
-                     FrameMsg_BuffersSwapped_Params /* params */)
-
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_CompositorFrameSwapped,
                      int /* browser_plugin_instance_id */,
                      FrameMsg_CompositorFrameSwapped_Params /* params */)
@@ -226,12 +217,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_CompositorFrameSwapped,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
                      int /* browser_plugin_instance_id */,
                      bool /* enable */)
-
-// See comment about BrowserPluginMsg_BuffersSwapped and
-// BrowserPluginMsg_CompositorFrameSwapped for how these related
-// to the FrameHostMsg variants.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_BuffersSwappedACK,
-                    FrameHostMsg_BuffersSwappedACK_Params /* params */)
 
 // Acknowledge that we presented an ubercomp frame.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_CompositorFrameSwappedACK,

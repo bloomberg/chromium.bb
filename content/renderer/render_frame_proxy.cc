@@ -149,7 +149,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
-    IPC_MESSAGE_HANDLER(FrameMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
@@ -187,21 +186,6 @@ void RenderFrameProxy::OnDeleteProxy() {
 void RenderFrameProxy::OnChildFrameProcessGone() {
   if (compositing_helper_.get())
     compositing_helper_->ChildFrameGone();
-}
-
-void RenderFrameProxy::OnBuffersSwapped(
-    const FrameMsg_BuffersSwapped_Params& params) {
-  if (!compositing_helper_.get()) {
-    compositing_helper_ =
-        ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
-    compositing_helper_->EnableCompositing(true);
-  }
-  compositing_helper_->OnBuffersSwapped(
-      params.size,
-      params.mailbox,
-      params.gpu_route_id,
-      params.gpu_host_id,
-      web_frame()->view()->deviceScaleFactor());
 }
 
 void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {

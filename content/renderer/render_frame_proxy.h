@@ -111,7 +111,6 @@ class CONTENT_EXPORT RenderFrameProxy
   // IPC handlers
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
-  void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnDisownOpener();
 

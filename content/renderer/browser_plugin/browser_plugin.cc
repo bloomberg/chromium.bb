@@ -102,7 +102,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_Attach_ACK, OnAttachACK)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(message))
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_CopyFromCompositingSurface,
@@ -222,18 +221,6 @@ void BrowserPlugin::OnAttachACK(int browser_plugin_instance_id) {
   DCHECK(!attached());
   attached_ = true;
   attach_pending_ = false;
-}
-
-void BrowserPlugin::OnBuffersSwapped(
-    int instance_id,
-    const FrameMsg_BuffersSwapped_Params& params) {
-  EnableCompositing(true);
-
-  compositing_helper_->OnBuffersSwapped(params.size,
-                                        params.mailbox,
-                                        params.gpu_route_id,
-                                        params.gpu_host_id,
-                                        GetDeviceScaleFactor());
 }
 
 void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
@@ -497,7 +484,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
   switch (message.type()) {
     case BrowserPluginMsg_Attach_ACK::ID:
     case BrowserPluginMsg_AdvanceFocus::ID:
-    case BrowserPluginMsg_BuffersSwapped::ID:
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_CopyFromCompositingSurface::ID:
     case BrowserPluginMsg_GuestGone::ID:

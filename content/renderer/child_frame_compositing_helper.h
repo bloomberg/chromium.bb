@@ -13,7 +13,6 @@
 #include "base/memory/shared_memory.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
 
 namespace base {
@@ -25,7 +24,6 @@ class CompositorFrame;
 class CopyOutputResult;
 class Layer;
 class SolidColorLayer;
-class TextureLayer;
 class DelegatedFrameProvider;
 class DelegatedFrameResourceCollection;
 class DelegatedRendererLayer;
@@ -67,11 +65,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void DidCommitCompositorFrame();
   void EnableCompositing(bool);
   void OnContainerDestroy();
-  void OnBuffersSwapped(const gfx::Size& size,
-                        const gpu::Mailbox& mailbox,
-                        int gpu_route_id,
-                        int gpu_host_id,
-                        float device_scale_factor);
   void OnCompositorFrameSwapped(scoped_ptr<cc::CompositorFrame> frame,
                                 int route_id,
                                 uint32 output_surface_id,
@@ -95,23 +88,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       RenderFrameProxy* render_frame_proxy,
       int host_routing_id);
 
-  enum SwapBuffersType {
-    TEXTURE_IMAGE_TRANSPORT,
-    GL_COMPOSITOR_FRAME,
-    SOFTWARE_COMPOSITOR_FRAME,
-  };
-  struct SwapBuffersInfo {
-    SwapBuffersInfo();
-
-    gpu::Mailbox name;
-    SwapBuffersType type;
-    gfx::Size size;
-    int route_id;
-    uint32 output_surface_id;
-    int host_id;
-    unsigned software_frame_id;
-    base::SharedMemory* shared_memory;
-  };
   virtual ~ChildFrameCompositingHelper();
 
   BrowserPluginManager* GetBrowserPluginManager();
@@ -120,19 +96,11 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   void SendCompositorFrameSwappedACKToBrowser(
       FrameHostMsg_CompositorFrameSwappedACK_Params& params);
-  void SendBuffersSwappedACKToBrowser(
-      FrameHostMsg_BuffersSwappedACK_Params& params);
   void SendReclaimCompositorResourcesToBrowser(
       FrameHostMsg_ReclaimCompositorResources_Params& params);
   void CheckSizeAndAdjustLayerProperties(const gfx::Size& new_size,
                                          float device_scale_factor,
                                          cc::Layer* layer);
-  void OnBuffersSwappedPrivate(const SwapBuffersInfo& mailbox,
-                               unsigned sync_point,
-                               float device_scale_factor);
-  void MailboxReleased(SwapBuffersInfo mailbox,
-                       unsigned sync_point,
-                       bool lost_resource);
   void SendReturnedDelegatedResources();
   void CopyFromCompositingSurfaceHasResult(
       int request_id,
@@ -143,11 +111,8 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   int last_route_id_;
   uint32 last_output_surface_id_;
   int last_host_id_;
-  bool last_mailbox_valid_;
   bool ack_pending_;
-  bool software_ack_pending_;
   bool opaque_;
-  std::vector<unsigned> unacked_software_frames_;
 
   gfx::Size buffer_size_;
 
@@ -161,7 +126,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
 
   scoped_refptr<cc::SolidColorLayer> background_layer_;
-  scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
   blink::WebFrame* frame_;

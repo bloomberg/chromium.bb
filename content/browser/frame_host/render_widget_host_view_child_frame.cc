@@ -207,8 +207,7 @@ void RenderWidgetHostViewChildFrame::AcceleratedSurfaceInitialized(int host_id,
 void RenderWidgetHostViewChildFrame::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  if (frame_connector_)
-    frame_connector_->ChildFrameBuffersSwapped(params, gpu_host_id);
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewChildFrame::AcceleratedSurfacePostSubBuffer(

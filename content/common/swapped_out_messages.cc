@@ -40,7 +40,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_Detach::ID:
     case FrameHostMsg_DomOperationResponse::ID:
     case FrameHostMsg_CompositorFrameSwappedACK::ID:
-    case FrameHostMsg_BuffersSwappedACK::ID:
     case FrameHostMsg_ReclaimCompositorResources::ID:
     // Input events propagate from parent to child.
     case FrameHostMsg_ForwardInputEvent::ID:

@@ -189,8 +189,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnAttachACK(int browser_plugin_instance_id);
-  void OnBuffersSwapped(int instance_id,
-                        const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnCopyFromCompositingSurface(int instance_id,
                                     int request_id,

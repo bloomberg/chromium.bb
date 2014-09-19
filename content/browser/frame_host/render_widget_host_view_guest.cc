@@ -196,17 +196,7 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  if (!guest_)
-    return;
-
-  FrameMsg_BuffersSwapped_Params guest_params;
-  guest_params.size = params.size;
-  guest_params.mailbox = params.mailbox;
-  guest_params.gpu_route_id = params.route_id;
-  guest_params.gpu_host_id = gpu_host_id;
-  guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_BuffersSwapped(guest_->browser_plugin_instance_id(),
-                                          guest_params));
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(

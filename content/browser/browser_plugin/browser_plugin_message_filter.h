@@ -34,8 +34,6 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
 
   void ForwardMessageToGuest(const IPC::Message& message);
 
-  void OnSwapBuffersACK(const FrameHostMsg_BuffersSwappedACK_Params& params);
-
   int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginMessageFilter);
