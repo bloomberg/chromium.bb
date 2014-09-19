@@ -656,9 +656,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
-// Flaky on Windows: http://crbug.com/159000
-#if defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+// Flaky on Windows, Linux, CrOS: http://crbug.com/159000
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_MouseLockSilentAfterTargetUnlock \
   DISABLED_MouseLockSilentAfterTargetUnlock
 #else
