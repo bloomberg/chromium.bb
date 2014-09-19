@@ -544,6 +544,7 @@
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
+            '../gpu/gpu.gyp:gpu_unittests',
             '../tools/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
@@ -579,6 +580,7 @@
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
+            '../gpu/gpu.gyp:gpu_unittests',
             '../tools/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
