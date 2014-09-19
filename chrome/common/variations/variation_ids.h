@@ -345,10 +345,14 @@ enum ReservedVariationID {
   SDCH_ENABLED_ALL = 3312478,
   SDCH_ENABLED_HTTP_ONLY = 3312479,
 
+  // TCP FastOpen field trial.
+  TCP_FASTOPEN_CONTROL = 3312480,
+  TCP_FASTOPEN_ENABLED_HTTPS_ONLY = 3312481,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312480,
+  NEXT_ID = 3312482,
 
   // USABLE IDs END HERE.
   //
