@@ -29,6 +29,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
@@ -398,7 +399,7 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
 
   host->AddFilter(new ChromeExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionMessageFilter(id, profile));
-  SendExtensionWebRequestStatusToHost(host);
+  extension_web_request_api_helpers::SendExtensionWebRequestStatusToHost(host);
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(

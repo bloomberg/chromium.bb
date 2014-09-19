@@ -4,8 +4,8 @@
 
 // Helper classes and functions used for the WebRequest API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
+#ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
+#define EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
 
 #include <list>
 #include <set>
@@ -24,6 +24,10 @@
 namespace base {
 class ListValue;
 class Value;
+}
+
+namespace content {
+class RenderProcessHost;
 }
 
 namespace extensions {
@@ -312,6 +316,10 @@ void NotifyWebRequestAPIUsed(
     void* browser_context_id,
     scoped_refptr<const extensions::Extension> extension);
 
+// Send updates to |host| with information about what webRequest-related
+// extensions are installed.
+void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
+
 }  // namespace extension_web_request_api_helpers
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
+#endif  // EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_

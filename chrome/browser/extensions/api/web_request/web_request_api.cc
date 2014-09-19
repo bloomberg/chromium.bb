@@ -22,9 +22,7 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/web_request_constants.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,13 +39,13 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_api_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
@@ -57,8 +55,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -2472,23 +2468,4 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
 bool WebRequestHandlerBehaviorChangedFunction::RunSync() {
   helpers::ClearCacheOnNavigation();
   return true;
-}
-
-void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
-  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  if (!profile)
-    return;
-
-  bool webrequest_used = false;
-  const extensions::ExtensionSet& extensions =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
-  extensions::RuntimeData* runtime_data =
-      extensions::ExtensionSystem::Get(profile)->runtime_data();
-  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
-       !webrequest_used && it != extensions.end();
-       ++it) {
-    webrequest_used |= runtime_data->HasUsedWebRequest(it->get());
-  }
-
-  host->Send(new ExtensionMsg_UsingWebRequestAPI(webrequest_used));
 }

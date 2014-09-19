@@ -23,6 +23,7 @@ source_set("browser") {
     "//extensions/strings",
     "//skia",
     "//third_party/leveldatabase",
+    "//third_party/re2"
   ]
 
   if (enable_extensions) {
@@ -103,12 +104,16 @@ source_set("browser") {
       "api/declarative/test_rules_registry.h",
       "api/declarative_webrequest/request_stage.cc",
       "api/declarative_webrequest/request_stage.h",
+      "api/declarative_webrequest/webrequest_action.cc",
+      "api/declarative_webrequest/webrequest_action.h",
       "api/declarative_webrequest/webrequest_condition_attribute.cc",
       "api/declarative_webrequest/webrequest_condition_attribute.h",
       "api/declarative_webrequest/webrequest_condition.cc",
       "api/declarative_webrequest/webrequest_condition.h",
       "api/declarative_webrequest/webrequest_constants.cc",
       "api/declarative_webrequest/webrequest_constants.h",
+      "api/declarative_webrequest/webrequest_rules_registry.cc",
+      "api/declarative_webrequest/webrequest_rules_registry.h",
       "api/dns/dns_api.cc",
       "api/dns/dns_api.h",
       "api/dns/host_resolver_wrapper.cc",
@@ -212,8 +217,12 @@ source_set("browser") {
       "api/usb_private/usb_private_api.h",
       "api/web_request/web_request_api_constants.cc",
       "api/web_request/web_request_api_constants.h",
+      "api/web_request/web_request_api_helpers.cc",
+      "api/web_request/web_request_api_helpers.h",
       "api/web_request/web_request_api_utils.cc",
       "api/web_request/web_request_api_utils.h",
+      "api/web_request/web_request_permissions.cc",
+      "api/web_request/web_request_permissions.h",
       "api/web_view/web_view_internal_api.cc",
       "api/web_view/web_view_internal_api.h",
       "api_activity_monitor.h",

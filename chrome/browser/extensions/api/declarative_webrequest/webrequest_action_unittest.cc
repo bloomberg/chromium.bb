@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_action.h"
 
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -13,7 +13,6 @@
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
@@ -21,6 +20,7 @@
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
 #include "net/base/request_priority.h"

@@ -15,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
-#include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -39,7 +39,6 @@ class StringValue;
 
 namespace content {
 class BrowserContext;
-class RenderProcessHost;
 }
 
 namespace net {
@@ -521,9 +520,5 @@ class WebRequestHandlerBehaviorChangedFunction
   virtual void OnQuotaExceeded(const std::string& error) OVERRIDE;
   virtual bool RunSync() OVERRIDE;
 };
-
-// Send updates to |host| with information about what webRequest-related
-// extensions are installed.
-void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_H_

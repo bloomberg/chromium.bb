@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
 
 #include <cmath>
 
@@ -12,13 +12,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/warning_set.h"
+#include "extensions/common/extension_messages.h"
 #include "net/base/net_log.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -1176,6 +1178,25 @@ void NotifyWebRequestAPIUsed(
     if (host->GetBrowserContext() == browser_context)
       SendExtensionWebRequestStatusToHost(host);
   }
+}
+
+void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
+  content::BrowserContext* browser_context = host->GetBrowserContext();
+  if (!browser_context)
+    return;
+
+  bool webrequest_used = false;
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
+  extensions::RuntimeData* runtime_data =
+      extensions::ExtensionSystem::Get(browser_context)->runtime_data();
+  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
+       !webrequest_used && it != extensions.end();
+       ++it) {
+    webrequest_used |= runtime_data->HasUsedWebRequest(it->get());
+  }
+
+  host->Send(new ExtensionMsg_UsingWebRequestAPI(webrequest_used));
 }
 
 }  // namespace extension_web_request_api_helpers

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 
 #include <string>
 #include <vector>
@@ -15,11 +15,11 @@
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "components/url_matcher/url_matcher_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"

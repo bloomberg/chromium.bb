@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 
 #include <algorithm>
 #include <limits>
@@ -10,10 +10,10 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
-#include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"

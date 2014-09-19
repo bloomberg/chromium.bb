@@ -3,6 +3,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/sessions",
   "+components/storage_monitor",
+  "+components/web_cache",
   "+components/web_modal",
   "+content/public/browser",
   "+device/bluetooth",
@@ -12,6 +13,7 @@ include_rules = [
   "+storage/browser/fileapi",
   "+sync",
   "+third_party/leveldatabase",
+  "+third_party/re2",
   "+third_party/skia/include",
   "+third_party/WebKit/public/web",
 ]
