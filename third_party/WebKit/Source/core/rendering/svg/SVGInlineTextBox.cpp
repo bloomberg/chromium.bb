@@ -662,7 +662,7 @@ void SVGInlineTextBox::paintText(GraphicsContext* context, RenderStyle* style,
     if (style != selectionStyle) {
         StyleDifference diff;
         diff.setNeedsPaintInvalidationObject();
-        SVGResourcesCache::clientStyleChanged(&parent()->renderer(), diff, selectionStyle);
+        SVGResourcesCache::clientStyleChanged(&parent()->renderer(), diff, style);
     }
 
     // Eventually draw text using regular style from the end position of the selection to the end of the current chunk part
