@@ -172,7 +172,8 @@ private:
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
         unsigned char flags, double timestamp);
 
-    void enqueueEvent(const TraceEvent&);
+    void enqueueEvent(double timestamp, char phase, const char* name, unsigned long long id, ThreadIdentifier,
+        int argumentCount, const char* const* argumentNames, const unsigned char* argumentTypes, const unsigned long long* argumentValues);
     void processBackgroundEventsTask();
 
     Mutex m_mutex;

@@ -49,16 +49,20 @@ void TraceEventDispatcher::dispatchEventOnAnyThread(char phase, const unsigned c
         if (self->m_listeners->find(std::make_pair(name, phase)) == self->m_listeners->end())
             return;
     }
-    self->enqueueEvent(TraceEvent(timestamp, phase, name, id, currentThread(), numArgs, argNames, argTypes, argValues));
+    self->enqueueEvent(timestamp, phase, name, id, currentThread(), numArgs, argNames, argTypes, argValues);
     if (isMainThread())
         self->processBackgroundEvents();
 }
 
-void TraceEventDispatcher::enqueueEvent(const TraceEvent& event)
+void TraceEventDispatcher::enqueueEvent(double timestamp, char phase, const char* name, unsigned long long id, ThreadIdentifier threadIdentifier,
+    int argumentCount, const char* const* argumentNames, const unsigned char* argumentTypes, const unsigned long long* argumentValues)
 {
     const float eventProcessingThresholdInSeconds = 0.1;
     {
         MutexLocker locker(m_mutex);
+        // TraceEvent object is created here, rather than created in the callers of enqueEvent and passed as an argument of enqueEvent.
+        // http://crbug.com/394706
+        TraceEvent event(timestamp, phase, name, id, threadIdentifier, argumentCount, argumentNames, argumentTypes, argumentValues);
         m_backgroundEvents.append(event);
         if (m_processEventsTaskInFlight || event.timestamp() - m_lastEventProcessingTime <= eventProcessingThresholdInSeconds)
             return;
