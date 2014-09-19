@@ -30,7 +30,10 @@ StreamHandleImpl::StreamHandleImpl(
       url_(stream->url()),
       original_url_(original_url),
       mime_type_(mime_type),
-      response_headers_(response_headers),
+      // Make a copy of the response headers so it is safe to pass this across
+      // threads.
+      response_headers_(
+          new net::HttpResponseHeaders(response_headers->raw_headers())),
       stream_message_loop_(base::MessageLoopProxy::current().get()) {}
 
 StreamHandleImpl::~StreamHandleImpl() {
