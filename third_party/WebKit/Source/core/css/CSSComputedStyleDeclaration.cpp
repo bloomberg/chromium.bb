@@ -2842,6 +2842,7 @@ unsigned CSSComputedStyleDeclaration::length() const
     if (!node)
         return 0;
 
+    node->document().updateLayoutIgnorePendingStylesheets();
     RenderStyle* style = node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
         return 0;
