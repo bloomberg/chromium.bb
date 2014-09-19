@@ -6,9 +6,9 @@
  * @fileoverview The class to Manage both offline / online speech recognition.
  */
 
-<include src="plugin_manager.js"/>
-<include src="audio_manager.js"/>
-<include src="speech_recognition_manager.js"/>
+<include src="plugin_manager.js">
+<include src="audio_manager.js">
+<include src="speech_recognition_manager.js">
 
 cr.define('speech', function() {
   'use strict';

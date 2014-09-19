@@ -6,8 +6,8 @@
  * @fileoverview App launcher start page implementation.
  */
 
-<include src="recommended_apps.js"/>
-<include src="speech_manager.js"/>
+<include src="recommended_apps.js">
+<include src="speech_manager.js">
 
 cr.define('appList.startPage', function() {
   'use strict';
