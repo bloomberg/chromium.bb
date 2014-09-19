@@ -67,6 +67,13 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
 IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, DISABLED_CloudPrintPolicyFlag) {
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
+  // This is important for the test as the way the browser process is launched
+  // here causes the predictor databases to be initialized multiple times. This
+  // is not an issue for production where the process is launched as a service
+  // and a Profile is not created. See http://crbug.com/140466 for more details.
+  new_command_line.AppendSwitchASCII(
+      switches::kSpeculativeResourcePrefetching,
+      switches::kSpeculativeResourcePrefetchingDisabled);
 
   base::ProcessHandle handle;
   bool launched =
