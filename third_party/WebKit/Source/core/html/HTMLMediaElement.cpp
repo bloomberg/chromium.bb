@@ -3516,6 +3516,8 @@ void HTMLMediaElement::stop()
 
     // Stop the playback without generating events
     m_playing = false;
+    m_paused = true;
+    m_seeking = false;
     setPausedInternal(true);
 
     if (renderer())
@@ -3525,14 +3527,14 @@ void HTMLMediaElement::stop()
     cancelPendingEventsAndCallbacks();
 
     m_asyncEventQueue->close();
+
+    // Ensure that hasPendingActivity() is not preventing garbage collection, since otherwise this
+    // media element will simply leak.
+    ASSERT(!hasPendingActivity());
 }
 
 bool HTMLMediaElement::hasPendingActivity() const
 {
-    // After the document becomes inactive, no events can ever be fired.
-    if (!document().isActive())
-        return false;
-
     // The delaying-the-load-event flag is set by resource selection algorithm when looking for a
     // resource to load, before networkState has reached to NETWORK_LOADING.
     if (m_shouldDelayLoadEvent)
