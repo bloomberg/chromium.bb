@@ -2021,7 +2021,9 @@ public class ContentViewCore
             default:
                 assert false : "Invalid selection event type.";
         }
-        getContentViewClient().onSelectionEvent(eventType);
+
+        final float scale = mRenderCoordinates.getDeviceScaleFactor();
+        getContentViewClient().onSelectionEvent(eventType, posXDip * scale, posYDip * scale);
     }
 
     private void hideTextHandles() {
