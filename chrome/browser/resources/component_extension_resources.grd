@@ -144,7 +144,7 @@
       </if>
       <if expr="enable_plugins">
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" flattenhtml="true" />
-        <include name="IDR_PDF_JS" file="pdf/pdf.js" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" flattenhtml="true" />
         <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />
         <include name="IDR_PDF_INCLUDES_JS" file="pdf/includes.js" type="BINDATA" flattenhtml="true" />
 

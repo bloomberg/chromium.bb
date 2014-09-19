@@ -4,11 +4,6 @@
 
 'use strict';
 
-<include src="../../../../ui/webui/resources/js/util.js">
-<include src="open_pdf_params_parser.js">
-<include src="pdf_scripting_api.js">
-<include src="viewport.js">
-
 /**
  * @return {number} Width of a scrollbar in pixels
  */
@@ -34,8 +29,11 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
 /**
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
+ * @param {Object} streamDetails The stream object which points to the data
+ *     contained in the PDF.
  */
-function PDFViewer() {
+function PDFViewer(streamDetails) {
+  this.streamDetails = streamDetails;
   this.loaded = false;
 
   // The sizer element is placed behind the plugin element to cause scrollbars
@@ -76,28 +74,6 @@ function PDFViewer() {
   window.addEventListener('message', this.handleScriptingMessage_.bind(this),
                           false);
   this.sendScriptingMessage_({type: 'readyToReceive'});
-
-  // If the viewer is started from a MIME type request, there will be a
-  // background page and stream details object with the details of the request.
-  // Otherwise, we take the query string of the URL to indicate the URL of the
-  // PDF to load. This is used for print preview in particular.
-  if (chrome.extension.getBackgroundPage &&
-      chrome.extension.getBackgroundPage()) {
-    this.streamDetails =
-        chrome.extension.getBackgroundPage().popStreamDetails();
-  }
-
-  if (!this.streamDetails) {
-    // The URL of this page will be of the form
-    // "chrome-extension://<extension id>?<pdf url>". We pull out the <pdf url>
-    // part here.
-    var url = window.location.search.substring(1);
-    this.streamDetails = {
-      streamUrl: url,
-      originalUrl: url,
-      responseHeaders: ''
-    };
-  }
 
   this.plugin_.setAttribute('src', this.streamDetails.originalUrl);
   this.plugin_.setAttribute('stream-url', this.streamDetails.streamUrl);
@@ -182,7 +158,7 @@ PDFViewer.prototype = {
         position.y -= this.viewport.size.height;
         this.viewport.position = position;
       }
-    };
+    }.bind(this);
     var pageDownHandler = function() {
       // Go to the next page if we are fit-to-page.
       if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
@@ -193,7 +169,7 @@ PDFViewer.prototype = {
         position.y += this.viewport.size.height;
         this.viewport.position = position;
       }
-    };
+    }.bind(this);
 
     switch (e.keyCode) {
       case 32:  // Space key.
@@ -573,5 +549,3 @@ PDFViewer.prototype = {
     return this.viewport_;
   }
 };
-
-var viewer = new PDFViewer();
