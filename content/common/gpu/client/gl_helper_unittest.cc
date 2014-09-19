@@ -118,7 +118,11 @@ class GLHelperTest : public testing::Test {
         CHECK(item->GetAsDictionary(&dict));
         std::string name;
         CHECK(dict->GetString("name", &name));
-        (*event_counts)[name]++;
+        std::string trace_type;
+        CHECK(dict->GetString("ph", &trace_type));
+        // Count all except END traces, as they come in BEGIN/END pairs.
+        if (trace_type != "E")
+          (*event_counts)[name]++;
         VLOG(1) << "trace name: " << name;
       }
     }

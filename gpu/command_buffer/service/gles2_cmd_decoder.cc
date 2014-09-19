@@ -570,6 +570,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                   int num_entries,
                                   int* entries_processed) OVERRIDE;
 
+  template <bool DebugImpl>
+  error::Error DoCommandsImpl(unsigned int num_commands,
+                              const void* buffer,
+                              int num_entries,
+                              int* entries_processed);
+
   // Overridden from AsyncAPIInterface.
   virtual const char* GetCommandName(unsigned int command_id) const OVERRIDE;
 
@@ -1809,8 +1815,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   scoped_ptr<GPUTracer> gpu_tracer_;
   scoped_ptr<GPUStateTracer> gpu_state_tracer_;
+  const unsigned char* cb_command_trace_category_;
   int gpu_trace_level_;
   bool gpu_trace_commands_;
+  bool gpu_debug_commands_;
 
   std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
 
@@ -2320,6 +2328,11 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       texture_state_(group_->feature_info()
                          ->workarounds()
                          .texsubimage2d_faster_than_teximage2d),
+      cb_command_trace_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+          TRACE_DISABLED_BY_DEFAULT("cb_command"))),
+      gpu_trace_level_(2),
+      gpu_trace_commands_(false),
+      gpu_debug_commands_(false),
       validation_texture_(0),
       validation_fbo_multisample_(0),
       validation_fbo_(0) {
@@ -2359,9 +2372,6 @@ bool GLES2DecoderImpl::Initialize(
   set_initialized();
   gpu_tracer_.reset(new GPUTracer(this));
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
-  // TODO(vmiura): Enable changing gpu_trace_level_ at runtime
-  gpu_trace_level_ = 2;
-  gpu_trace_commands_ = false;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUDebugging)) {
@@ -3329,6 +3339,8 @@ Logger* GLES2DecoderImpl::GetLogger() {
 void GLES2DecoderImpl::BeginDecoding() {
   gpu_tracer_->BeginDecoding();
   gpu_trace_commands_ = gpu_tracer_->IsTracing();
+  gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_ ||
+                        (*cb_command_trace_category_ != 0);
 }
 
 void GLES2DecoderImpl::EndDecoding() {
@@ -3751,10 +3763,11 @@ error::Error GLES2DecoderImpl::DoCommand(unsigned int command,
 // it should operate on a copy of them.
 // NOTE: This is duplicating code from AsyncAPIInterface::DoCommands() in the
 // interest of performance in this critical execution loop.
-error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
-                                          const void* buffer,
-                                          int num_entries,
-                                          int* entries_processed) {
+template <bool DebugImpl>
+error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
+                                              const void* buffer,
+                                              int num_entries,
+                                              int* entries_processed) {
   commands_to_process_ = num_commands;
   error::Error result = error::kNoError;
   const CommandBufferEntry* cmd_data =
@@ -3777,12 +3790,14 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
       break;
     }
 
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
-                 GetCommandName(command));
+    if (DebugImpl) {
+      TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
+                         GetCommandName(command));
 
-    if (log_commands()) {
-      LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
-                 << "cmd: " << GetCommandName(command);
+      if (log_commands()) {
+        LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
+                   << "cmd: " << GetCommandName(command);
+      }
     }
 
     const unsigned int arg_count = size - 1;
@@ -3793,7 +3808,7 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
           (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
         bool doing_gpu_trace = false;
-        if (gpu_trace_commands_) {
+        if (DebugImpl && gpu_trace_commands_) {
           if (CMD_FLAG_GET_TRACE_LEVEL(info.cmd_flags) <= gpu_trace_level_) {
             doing_gpu_trace = true;
             gpu_tracer_->Begin(GetCommandName(command), kTraceDecoder);
@@ -3805,10 +3820,10 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
 
         result = (this->*info.cmd_handler)(immediate_data_size, cmd_data);
 
-        if (doing_gpu_trace)
+        if (DebugImpl && doing_gpu_trace)
           gpu_tracer_->End(kTraceDecoder);
 
-        if (debug()) {
+        if (DebugImpl && debug()) {
           GLenum error;
           while ((error = glGetError()) != GL_NO_ERROR) {
             LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "
@@ -3823,6 +3838,12 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
     } else {
       result = DoCommonCommand(command, arg_count, cmd_data);
     }
+
+    if (DebugImpl) {
+      TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
+                       GetCommandName(command));
+    }
+
     if (result == error::kNoError &&
         current_decoder_error_ != error::kNoError) {
       result = current_decoder_error_;
@@ -3844,6 +3865,19 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
   }
 
   return result;
+}
+
+error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
+                                          const void* buffer,
+                                          int num_entries,
+                                          int* entries_processed) {
+  if (gpu_debug_commands_) {
+    return DoCommandsImpl<true>(
+        num_commands, buffer, num_entries, entries_processed);
+  } else {
+    return DoCommandsImpl<false>(
+        num_commands, buffer, num_entries, entries_processed);
+  }
 }
 
 void GLES2DecoderImpl::RemoveBuffer(GLuint client_id) {
