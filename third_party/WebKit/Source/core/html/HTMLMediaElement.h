@@ -272,8 +272,6 @@ public:
     void sourceWasRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
 
-    bool isPlaying() const { return m_playing; }
-
     // ActiveDOMObject functions.
     virtual bool hasPendingActivity() const OVERRIDE FINAL;
     virtual void contextDestroyed() OVERRIDE FINAL;
