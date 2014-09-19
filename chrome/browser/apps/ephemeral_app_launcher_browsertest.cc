@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 
 using extensions::Extension;
@@ -198,10 +199,8 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
     WebstoreInstallerTest::SetUpCommandLine(command_line);
 
     // Make event pages get suspended immediately.
-    command_line->AppendSwitchASCII(extensions::switches::kEventPageIdleTime,
-                                    "10");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "10");
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+    extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
 
     // Enable ephemeral apps flag.
     command_line->AppendSwitch(switches::kEnableEphemeralApps);

@@ -12,19 +12,16 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 
 class SystemIndicatorApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
     // Set shorter delays to prevent test timeouts in tests that need to wait
     // for the event page to unload.
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1000");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1000");
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+    extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   }
 
   const extensions::Extension* LoadExtensionAndWait(

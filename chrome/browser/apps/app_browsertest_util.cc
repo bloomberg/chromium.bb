@@ -18,6 +18,7 @@
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 
 using content::WebContents;
@@ -41,8 +42,8 @@ void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 
   // Make event pages get suspended quicker.
-  command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1000");
-  command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1000");
+  ProcessManager::SetEventPageIdleTimeForTesting(1000);
+  ProcessManager::SetEventPageSuspendingTimeForTesting(1000);
 }
 
 // static

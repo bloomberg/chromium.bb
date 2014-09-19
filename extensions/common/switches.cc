@@ -60,14 +60,6 @@ const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 // them in the chrome:extensions page.
 const char kErrorConsole[] = "error-console";
 
-// The time in milliseconds that an extension event page can be idle before it
-// is shut down.
-const char kEventPageIdleTime[] = "event-page-idle-time";
-
-// The time in milliseconds that an extension event page has between being
-// notified of its impending unload and that unload happening.
-const char kEventPageSuspendingTime[] = "event-page-unloading-time";
-
 // Whether to switch to extension action redesign mode (experimental).
 const char kExtensionActionRedesign[] = "extension-action-redesign";
 

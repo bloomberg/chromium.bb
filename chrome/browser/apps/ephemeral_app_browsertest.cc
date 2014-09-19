@@ -199,10 +199,8 @@ void EphemeralAppTestBase::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 
   // Make event pages get suspended immediately.
-  command_line->AppendSwitchASCII(
-      extensions::switches::kEventPageIdleTime, "10");
-  command_line->AppendSwitchASCII(
-      extensions::switches::kEventPageSuspendingTime, "10");
+  extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+  extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
 
   // Enable ephemeral apps flag.
   command_line->AppendSwitch(switches::kEnableEphemeralApps);

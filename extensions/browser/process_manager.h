@@ -148,6 +148,16 @@ class ProcessManager : public content::NotificationObserver {
   void SetKeepaliveImpulseDecrementCallbackForTesting(
       const ImpulseCallbackForTesting& callback);
 
+  // Sets the time in milliseconds that an extension event page can
+  // be idle before it is shut down; must be > 0.
+  static void SetEventPageIdleTimeForTesting(unsigned idle_time_msec);
+
+  // Sets the time in milliseconds that an extension event page has
+  // between being notified of its impending unload and that unload
+  // happening.
+  static void SetEventPageSuspendingTimeForTesting(
+      unsigned suspending_time_msec);
+
   // Creates a non-incognito instance for tests. |registry| allows unit tests
   // to inject an ExtensionRegistry that is not managed by the usual
   // BrowserContextKeyedServiceFactory system.
@@ -247,14 +257,6 @@ class ProcessManager : public content::NotificationObserver {
   ExtensionRenderViews all_extension_views_;
 
   BackgroundPageDataMap background_page_data_;
-
-  // The time to delay between an extension becoming idle and
-  // sending a ShouldSuspend message; read from command-line switch.
-  base::TimeDelta event_page_idle_time_;
-
-  // The time to delay between sending a ShouldSuspend message and
-  // sending a Suspend message; read from command-line switch.
-  base::TimeDelta event_page_suspending_time_;
 
   // True if we have created the startup set of background hosts.
   bool startup_background_hosts_created_;

@@ -41,7 +41,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/one_shot_event.h"
-#include "extensions/common/switches.h"
 
 using content::BrowserContext;
 using content::RenderViewHost;
@@ -57,6 +56,16 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
 namespace extensions {
 
 namespace {
+
+// The time to delay between an extension becoming idle and
+// sending a ShouldSuspend message.
+// Note: Must be sufficiently larger (e.g. 2x) than
+// kKeepaliveThrottleIntervalInSeconds in ppapi/proxy/plugin_globals.
+unsigned g_event_page_idle_time_msec = 10000;
+
+// The time to delay between sending a ShouldSuspend message and
+// sending a Suspend message.
+unsigned g_event_page_suspending_time_msec = 5000;
 
 std::string GetExtensionID(RenderViewHost* render_view_host) {
   // This works for both apps and extensions because the site has been
@@ -267,24 +276,6 @@ ProcessManager::ProcessManager(BrowserContext* context,
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
 
-  // Note: event_page_idle_time_ must be sufficiently larger (e.g. 2x) than
-  // kKeepaliveThrottleIntervalInSeconds in ppapi/proxy/plugin_globals.
-  event_page_idle_time_ = base::TimeDelta::FromSeconds(10);
-  unsigned idle_time_msec = 0;
-  if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          extensions::switches::kEventPageIdleTime), &idle_time_msec)) {
-    CHECK_GT(idle_time_msec, 0u);  // OnKeepaliveImpulseCheck requires non zero.
-    event_page_idle_time_ = base::TimeDelta::FromMilliseconds(idle_time_msec);
-  }
-  event_page_suspending_time_ = base::TimeDelta::FromSeconds(5);
-  unsigned suspending_time_msec = 0;
-  if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                             extensions::switches::kEventPageSuspendingTime),
-                         &suspending_time_msec)) {
-    event_page_suspending_time_ =
-        base::TimeDelta::FromMilliseconds(suspending_time_msec);
-  }
-
   content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
 
   OnKeepaliveImpulseCheck();
@@ -465,7 +456,7 @@ void ProcessManager::DecrementLazyKeepaliveCount(
                    weak_ptr_factory_.GetWeakPtr(),
                    extension_id,
                    last_background_close_sequence_id_),
-        event_page_idle_time_);
+        base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
   }
 }
 
@@ -534,11 +525,12 @@ void ProcessManager::OnKeepaliveFromPlugin(int render_process_id,
 }
 
 // DecrementLazyKeepaliveCount is called when no calls to KeepaliveImpulse
-// have been made for at least event_page_idle_time_. In the best case an
+// have been made for at least g_event_page_idle_time_msec. In the best case an
 // impulse was made just before being cleared, and the decrement will occur
-// event_page_idle_time_ later, causing a 2 * event_page_idle_time_ total time
-// for extension to be shut down based on impulses. Worst case is an impulse
-// just after a clear, adding one check cycle and resulting in 3x total time.
+// g_event_page_idle_time_msec later, causing a 2 * g_event_page_idle_time_msec
+// total time for extension to be shut down based on impulses. Worst case is
+// an impulse just after a clear, adding one check cycle and resulting in 3x
+// total time.
 void ProcessManager::OnKeepaliveImpulseCheck() {
   for (BackgroundPageDataMap::iterator i = background_page_data_.begin();
        i != background_page_data_.end();
@@ -563,7 +555,7 @@ void ProcessManager::OnKeepaliveImpulseCheck() {
         FROM_HERE,
         base::Bind(&ProcessManager::OnKeepaliveImpulseCheck,
                    weak_ptr_factory_.GetWeakPtr()),
-        event_page_idle_time_);
+        base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
   }
 }
 
@@ -608,8 +600,10 @@ void ProcessManager::OnSuspendAck(const std::string& extension_id) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ProcessManager::CloseLazyBackgroundPageNow,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, sequence_id),
-      event_page_suspending_time_);
+                 weak_ptr_factory_.GetWeakPtr(),
+                 extension_id,
+                 sequence_id),
+      base::TimeDelta::FromMilliseconds(g_event_page_suspending_time_msec));
 }
 
 void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
@@ -675,6 +669,18 @@ void ProcessManager::SetKeepaliveImpulseCallbackForTesting(
 void ProcessManager::SetKeepaliveImpulseDecrementCallbackForTesting(
     const ImpulseCallbackForTesting& callback) {
   keepalive_impulse_decrement_callback_for_testing_ = callback;
+}
+
+// static
+void ProcessManager::SetEventPageIdleTimeForTesting(unsigned idle_time_msec) {
+  CHECK_GT(idle_time_msec, 0u);  // OnKeepaliveImpulseCheck requires non zero.
+  g_event_page_idle_time_msec = idle_time_msec;
+}
+
+// static
+void ProcessManager::SetEventPageSuspendingTimeForTesting(
+    unsigned suspending_time_msec) {
+  g_event_page_suspending_time_msec = suspending_time_msec;
 }
 
 void ProcessManager::Observe(int type,

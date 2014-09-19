@@ -10,17 +10,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
 
 class NotificationIdleTest : public ExtensionApiTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
 
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1000");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1000");
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+    extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   }
 
   const extensions::Extension* LoadExtensionAndWait(

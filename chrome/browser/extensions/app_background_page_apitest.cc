@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -128,15 +129,13 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
   virtual ~AppBackgroundPageNaClTest() {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    AppBackgroundPageApiTest::SetUpCommandLine(command_line);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    AppBackgroundPageApiTest::SetUpOnMainThread();
 #if !defined(DISABLE_NACL)
     nacl::NaClProcessHost::SetPpapiKeepAliveThrottleForTesting(50);
 #endif
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1000");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1000");
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(1000);
+    extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1000);
   }
 
   const Extension* extension() { return extension_; }
@@ -146,7 +145,7 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
     base::FilePath app_dir;
     PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir);
     app_dir = app_dir.AppendASCII(
-        "ppapi/tests/extensions/background_keepalive/newlib");    
+        "ppapi/tests/extensions/background_keepalive/newlib");
     extension_ = LoadExtension(app_dir);
     ASSERT_TRUE(extension_);
   }
@@ -651,4 +650,3 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
   idle_impulse_counter.Wait();
 #endif
 }
-

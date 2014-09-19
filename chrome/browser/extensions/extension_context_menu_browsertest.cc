@@ -14,9 +14,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/models/menu_model.h"
 
@@ -552,13 +552,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Enabled) {
 
 class ExtensionContextMenuBrowserLazyTest :
     public ExtensionContextMenuBrowserTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionContextMenuBrowserTest::SetUpCommandLine(command_line);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionContextMenuBrowserTest::SetUpOnMainThread();
     // Set shorter delays to prevent test timeouts.
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "0");
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+    extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(0);
   }
 };
 
