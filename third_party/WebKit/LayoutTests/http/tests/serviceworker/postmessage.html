@@ -12,7 +12,7 @@ async_test(function(t) {
         t, 'resources/postmessage-worker.js', scope)
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
+          return get_newest_worker(registration);
         })
       .then(function(sw) {
           worker = sw;
@@ -36,22 +36,27 @@ async_test(function(t) {
       if (message === 'quit') {
         assert_array_equals(result, expected,
                             'Worker should post back expected values.');
-        var sawRedundant = new Promise(t.step_func(function(resolve) {
-            worker.onstatechange = t.step_func(function() {
-                assert_equals(worker.state, 'redundant');
-                assert_throws(
-                  {name:'InvalidStateError'},
-                  function() { worker.postMessage(""); },
-                  'Calling postMessage on a redundant ServiceWorker should ' +
-                  'throw InvalidStateError.');
-                resolve();
-              });
-          }));
-        registration.unregister();
-        sawRedundant.then(t.step_func(function() { t.done(); }));
+        postMessageToRedundantWorker();
       } else {
         result.push(message);
       }
     };
+
+    function postMessageToRedundantWorker() {
+      registration.unregister(scope)
+        .then(function() {
+            return wait_for_state(t, worker, 'redundant');
+          })
+        .then(function() {
+            assert_equals(worker.state, 'redundant');
+            assert_throws(
+              {name:'InvalidStateError'},
+              function() { worker.postMessage(''); },
+              'Calling postMessage on a redundant ServiceWorker should ' +
+                  'throw InvalidStateError.');
+            t.done();
+          })
+        .catch(unreached_rejection(t));
+    }
   }, 'postMessage to a ServiceWorker (and back via MessagePort)');
 </script>
