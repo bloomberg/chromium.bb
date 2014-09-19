@@ -45,6 +45,7 @@ ViewCacheHelper::ViewCacheHelper()
     : context_(NULL),
       disk_cache_(NULL),
       entry_(NULL),
+      iter_(NULL),
       buf_len_(0),
       index_(0),
       data_(NULL),
@@ -241,11 +242,9 @@ int ViewCacheHelper::DoGetBackendComplete(int result) {
 
 int ViewCacheHelper::DoOpenNextEntry() {
   next_state_ = STATE_OPEN_NEXT_ENTRY_COMPLETE;
-  if (!iter_)
-    iter_ = disk_cache_->CreateIterator();
-  return
-      iter_->OpenNextEntry(&entry_, base::Bind(&ViewCacheHelper::OnIOComplete,
-                                               base::Unretained(this)));
+  return disk_cache_->OpenNextEntry(
+      &iter_, &entry_,
+      base::Bind(&ViewCacheHelper::OnIOComplete, base::Unretained(this)));
 }
 
 int ViewCacheHelper::DoOpenNextEntryComplete(int result) {

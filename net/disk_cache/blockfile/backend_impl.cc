@@ -1250,27 +1250,16 @@ int BackendImpl::DoomEntriesSince(const base::Time initial_time,
   return net::ERR_IO_PENDING;
 }
 
-class BackendImpl::IteratorImpl : public Backend::Iterator {
- public:
-  explicit IteratorImpl(base::WeakPtr<InFlightBackendIO> background_queue)
-      : background_queue_(background_queue), data_(NULL) {
-  }
+int BackendImpl::OpenNextEntry(void** iter, Entry** next_entry,
+                               const CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  background_queue_.OpenNextEntry(iter, next_entry, callback);
+  return net::ERR_IO_PENDING;
+}
 
-  virtual int OpenNextEntry(Entry** next_entry,
-                            const net::CompletionCallback& callback) OVERRIDE {
-    if (!background_queue_)
-      return net::ERR_FAILED;
-    background_queue_->OpenNextEntry(&data_, next_entry, callback);
-    return net::ERR_IO_PENDING;
-  }
-
- private:
-  const base::WeakPtr<InFlightBackendIO> background_queue_;
-  void* data_;
-};
-
-scoped_ptr<Backend::Iterator> BackendImpl::CreateIterator() {
-  return scoped_ptr<Backend::Iterator>(new IteratorImpl(GetBackgroundQueue()));
+void BackendImpl::EndEnumeration(void** iter) {
+  background_queue_.EndEnumeration(*iter);
+  *iter = NULL;
 }
 
 void BackendImpl::GetStats(StatsItems* stats) {

@@ -11,7 +11,11 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
-#include "net/disk_cache/disk_cache.h"
+
+namespace disk_cache {
+class Backend;
+class Entry;
+}  // namespace disk_cache
 
 namespace net {
 
@@ -98,7 +102,7 @@ class NET_EXPORT ViewCacheHelper {
   const URLRequestContext* context_;
   disk_cache::Backend* disk_cache_;
   disk_cache::Entry* entry_;
-  scoped_ptr<disk_cache::Backend::Iterator> iter_;
+  void* iter_;
   scoped_refptr<IOBuffer> buf_;
   int buf_len_;
   int index_;
