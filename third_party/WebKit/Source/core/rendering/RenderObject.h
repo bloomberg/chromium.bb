@@ -123,7 +123,7 @@ enum InvalidationReason {
     InvalidationScroll,
     InvalidationSelection,
     InvalidationLayer,
-    InvalidationPaint,
+    InvalidationRendererRemoval,
     InvalidationPaintRectangle
 };
 
@@ -1154,10 +1154,6 @@ protected:
     virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
 
 private:
-    // Invalidate the paint of the entire object. This is only used when a renderer is to be removed.
-    // For other cases, the caller should call setShouldDoFullPaintInvalidation() instead.
-    void invalidatePaintForWholeRenderer() const;
-
     void invalidatePaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
 
     const RenderLayerModelObject* enclosingCompositedContainer() const;

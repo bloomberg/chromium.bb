@@ -1540,35 +1540,6 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     }
 }
 
-void RenderObject::invalidatePaintForWholeRenderer() const
-{
-    if (!isRooted())
-        return;
-
-    if (view()->document().printing())
-        return; // Don't invalidate paints if we're printing.
-
-    if (isText()) {
-        // The parent invalidates for RenderText.
-        parent()->setShouldDoFullPaintInvalidation(true);
-        return;
-    }
-
-    // FIXME: really, we're in the paint invalidation phase here, and the following queries are legal.
-    // Until those states are fully fledged, I'll just disable the ASSERTS.
-    DisableCompositingQueryAsserts disabler;
-    const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
-
-    // FIXME: We should invalidate only previousPaintInvalidationRect, but for now we invalidate both the previous
-    // and current paint rects to meet the expectations of some callers in some cases (crbug.com/397555):
-    // - transform style change without a layout - crbug.com/394004;
-    // - some objects don't save previousPaintInvalidationRect - crbug.com/394133.
-    LayoutRect paintInvalidationRect = boundsRectForPaintInvalidation(paintInvalidationContainer);
-    invalidatePaintUsingContainer(paintInvalidationContainer, paintInvalidationRect, InvalidationPaint);
-    if (paintInvalidationRect != previousPaintInvalidationRect())
-        invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect(), InvalidationPaint);
-}
-
 LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (!paintInvalidationContainer)
@@ -1618,8 +1589,8 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
         return "selection";
     case InvalidationLayer:
         return "layer";
-    case InvalidationPaint:
-        return "invalidate paint";
+    case InvalidationRendererRemoval:
+        return "renderer removal";
     case InvalidationPaintRectangle:
         return "invalidate paint rectangle";
     }
