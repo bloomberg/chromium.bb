@@ -802,12 +802,21 @@ bool TabsQueryFunction::RunSync() {
   bool loading = params->query_info.status ==
       tabs::Query::Params::QueryInfo::STATUS_LOADING;
 
-  // It is o.k. to use URLPattern::SCHEME_ALL here because this function does
-  // not grant access to the content of the tabs, only to seeing their URLs and
-  // meta data.
-  URLPattern url_pattern(URLPattern::SCHEME_ALL, "<all_urls>");
-  if (params->query_info.url.get())
-    url_pattern = URLPattern(URLPattern::SCHEME_ALL, *params->query_info.url);
+  URLPatternSet url_patterns;
+  if (params->query_info.url.get()) {
+    std::vector<std::string> url_pattern_strings;
+    if (params->query_info.url->as_string)
+      url_pattern_strings.push_back(*params->query_info.url->as_string);
+    else if (params->query_info.url->as_strings)
+      url_pattern_strings.swap(*params->query_info.url->as_strings);
+    // It is o.k. to use URLPattern::SCHEME_ALL here because this function does
+    // not grant access to the content of the tabs, only to seeing their URLs
+    // and meta data.
+    if (!url_patterns.Populate(url_pattern_strings, URLPattern::SCHEME_ALL,
+                               true, &error_)) {
+      return false;
+    }
+  }
 
   std::string title;
   if (params->query_info.title.get())
@@ -893,7 +902,8 @@ bool TabsQueryFunction::RunSync() {
                                           base::UTF8ToUTF16(title)))
         continue;
 
-      if (!url_pattern.MatchesURL(web_contents->GetURL()))
+      if (!url_patterns.is_empty() &&
+          !url_patterns.MatchesURL(web_contents->GetURL()))
         continue;
 
       if (loading_status_set && loading != web_contents->IsLoading())

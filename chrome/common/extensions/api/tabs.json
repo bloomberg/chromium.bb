@@ -374,9 +374,12 @@
                 "description": "Match page titles against a pattern."
               },
               "url": {
-                "type": "string",
+                "choices": [
+                  {"type": "string"},
+                  {"type": "array", "items": {"type": "string"}}
+                ],
                 "optional": true,
-                "description": "Match tabs against a <a href='match_patterns'>URL pattern</a>. Note that fragment identifiers are not matched."
+                "description": "Match tabs against one or more <a href='match_patterns'>URL patterns</a>. Note that fragment identifiers are not matched."
               },
               "windowId": {
                 "type": "integer",

@@ -11,7 +11,7 @@ var active_and_window_tabs = [];
 
 chrome.test.runTests([
   function setup() {
-    var tabs = ['http://example.org/a.html', 'http://google.com'];
+    var tabs = ['http://example.org/a.html', 'http://www.google.com/favicon.ico'];
     chrome.windows.create({url: tabs}, pass(function(window) {
       assertEq(2, window.tabs.length);
       testWindowId = window.id;
@@ -122,6 +122,21 @@ chrome.test.runTests([
     chrome.tabs.query({url: "http://*.example.org/*"}, pass(function(tabs) {
       assertEq(1, tabs.length);
       assertEq("http://example.org/a.html", tabs[0].url);
+    }));
+  },
+
+  function queryUrlAsArray() {
+    chrome.tabs.query({url: ["http://*.example.org/*"]}, pass(function(tabs) {
+      assertEq(1, tabs.length);
+      assertEq("http://example.org/a.html", tabs[0].url);
+    }));
+  },
+
+  function queryUrlAsArray2() {
+    chrome.tabs.query({url: ["http://*.example.org/*", "*://*.google.com/*"]}, pass(function(tabs) {
+      assertEq(2, tabs.length);
+      assertEq("http://example.org/a.html", tabs[0].url);
+      assertEq("http://www.google.com/favicon.ico", tabs[1].url);
     }));
   },
 
