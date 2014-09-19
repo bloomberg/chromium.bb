@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
@@ -95,7 +96,7 @@ PasswordFormManager::~PasswordFormManager() {
 int PasswordFormManager::GetActionsTaken() {
   return user_action_ + kUserActionMax * (manager_action_ +
          kManagerActionMax * submit_result_);
-};
+}
 
 // TODO(timsteele): use a hash of some sort in the future?
 PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
