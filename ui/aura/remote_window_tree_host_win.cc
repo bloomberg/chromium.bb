@@ -389,7 +389,7 @@ void RemoteWindowTreeHostWin::OnEdgeGesture() {
       0,
       0,
       ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE));
   SendEventToProcessor(&event);
 }
 

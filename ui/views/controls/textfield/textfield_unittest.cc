@@ -103,16 +103,8 @@ class TestTextfield : public views::Textfield {
 // Convenience to make constructing a GestureEvent simpler.
 class GestureEventForTest : public ui::GestureEvent {
  public:
-  GestureEventForTest(ui::EventType type,
-                      int x,
-                      int y,
-                      float delta_x,
-                      float delta_y)
-      : GestureEvent(x,
-                     y,
-                     0,
-                     base::TimeDelta(),
-                     ui::GestureEventDetails(type, delta_x, delta_y)) {}
+  GestureEventForTest(int x, int y, ui::GestureEventDetails details)
+      : GestureEvent(x, y, 0, base::TimeDelta(), details) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
@@ -329,23 +321,26 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   // Simulates a complete tap.
   void Tap(const gfx::Point& point) {
     GestureEventForTest begin(
-        ui::ET_GESTURE_BEGIN, point.x(), point.y(), 0.0f, 0.0f);
+        point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
     textfield_->OnGestureEvent(&begin);
 
     GestureEventForTest tap_down(
-        ui::ET_GESTURE_TAP_DOWN, point.x(), point.y(), 0.0f, 0.0f);
+        point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
     textfield_->OnGestureEvent(&tap_down);
 
     GestureEventForTest show_press(
-        ui::ET_GESTURE_SHOW_PRESS, point.x(), point.y(), 0.0f, 0.0f);
+        point.x(),
+        point.y(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SHOW_PRESS));
     textfield_->OnGestureEvent(&show_press);
 
-    GestureEventForTest tap(
-        ui::ET_GESTURE_TAP, point.x(), point.y(), 1.0f, 0.0f);
+    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
+    tap_details.set_tap_count(1);
+    GestureEventForTest tap(point.x(), point.y(), tap_details);
     textfield_->OnGestureEvent(&tap);
 
     GestureEventForTest end(
-        ui::ET_GESTURE_END, point.x(), point.y(), 0.0f, 0.0f);
+        point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_END));
     textfield_->OnGestureEvent(&end);
   }
 
@@ -1956,7 +1951,9 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
 
   // Tapping on the textfield should turn on the TouchSelectionController.
-  GestureEventForTest tap(ui::ET_GESTURE_TAP, x, 0, 1.0f, 0.0f);
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
+  tap_details.set_tap_count(1);
+  GestureEventForTest tap(x, 0, tap_details);
   textfield_->OnGestureEvent(&tap);
   EXPECT_TRUE(test_api_->touch_selection_controller());
 
@@ -1967,7 +1964,8 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
 
   // With touch editing enabled, long press should not show context menu.
   // Instead, select word and invoke TouchSelectionController.
-  GestureEventForTest long_press_1(ui::ET_GESTURE_LONG_PRESS, x, 0, 0.0f, 0.0f);
+  GestureEventForTest long_press_1(
+      x, 0, ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press_1);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
   EXPECT_TRUE(test_api_->touch_selection_controller());
@@ -1976,7 +1974,8 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   // With touch drag drop enabled, long pressing in the selected region should
   // start a drag and remove TouchSelectionController.
   ASSERT_TRUE(switches::IsTouchDragDropEnabled());
-  GestureEventForTest long_press_2(ui::ET_GESTURE_LONG_PRESS, x, 0, 0.0f, 0.0f);
+  GestureEventForTest long_press_2(
+      x, 0, ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press_2);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
   EXPECT_FALSE(test_api_->touch_selection_controller());
@@ -1987,7 +1986,8 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableTouchDragDrop);
   ASSERT_FALSE(switches::IsTouchDragDropEnabled());
-  GestureEventForTest long_press_3(ui::ET_GESTURE_LONG_PRESS, x, 0, 0.0f, 0.0f);
+  GestureEventForTest long_press_3(
+      x, 0, ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press_3);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
   EXPECT_FALSE(test_api_->touch_selection_controller());
@@ -2032,8 +2032,10 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
       switches::kEnableTouchDragDrop);
 
   // Create a long press event in the selected region should start a drag.
-  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS, kStringPoint.x(),
-                                 kStringPoint.y(), 0.0f, 0.0f);
+  GestureEventForTest long_press(
+      kStringPoint.x(),
+      kStringPoint.y(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press);
   EXPECT_TRUE(textfield_->CanStartDragForView(NULL, kStringPoint,
                                               kStringPoint));
