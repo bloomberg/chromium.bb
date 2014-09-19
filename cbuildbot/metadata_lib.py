@@ -352,12 +352,6 @@ class CBuildbotMetadata(object):
         details = {'gerrit_number': change.gerrit_number,
                    'patch_number': change.patch_number,
                    'internal': change.internal}
-        for latest_patchset_only in (False, True):
-          prefix = '' if latest_patchset_only else 'total_'
-          for status in (pool.STATUS_FAILED, pool.STATUS_PASSED):
-            count = pool.GetCLStatusCount(pool.bot, change, status,
-                                          latest_patchset_only)
-            details['%s%s' % (prefix, status.lower())] = count
         changes.append(details)
       metadata['changes'] = changes
 
