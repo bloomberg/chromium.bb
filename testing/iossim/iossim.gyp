@@ -18,7 +18,7 @@
             'xcode_version': '<!(xcodebuild -version | grep Xcode | awk \'{print $2}\')',
           },
           'conditions': [
-            ['xcode_version=="6.0"', {
+            ['xcode_version>="6.0"', {
               'variables': {
                 'iphone_sim_path': '<(developer_dir)/../SharedFrameworks',
               },
@@ -76,7 +76,7 @@
                   'message': 'Generating CoreSimulator.h',
                 },
               ],  # actions
-            }, {  # else: xcode_version!="6"
+            }, {  # else: xcode_version<"6.0"
               'variables': {
                 'iphone_sim_path': '<(developer_dir)/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks',
               },
