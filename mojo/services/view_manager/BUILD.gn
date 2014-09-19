@@ -4,9 +4,6 @@
 
 # GYP version: mojo/mojo_services.gypi:mojo_view_manager
 component("view_manager") {
-  public_deps = [
-    "//mojo/services/public/cpp/view_manager:common",
-  ]
   deps = [
     "//base",
     "//cc/surfaces",
@@ -14,11 +11,10 @@ component("view_manager") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/cpp/view_manager:common",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/input_events",
     "//mojo/services/public/interfaces/native_viewport",
@@ -64,13 +60,11 @@ component("view_manager") {
 # GYP version: mojo/mojo_services.gypi:mojo_view_manager_unittests
 test("mojo_view_manager_unittests") {
   deps = [
-    ":view_manager",
     "//base",
     "//base/test:test_support",
     "//mojo/application",
     "//mojo/application_manager",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/bindings",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/view_manager",
@@ -82,7 +76,6 @@ test("mojo_view_manager_unittests") {
     "//mojo/shell:test_support",
     "//mojo/system",
     "//testing/gtest",
-    "//ui/gfx/geometry",
   ]
 
   sources = [

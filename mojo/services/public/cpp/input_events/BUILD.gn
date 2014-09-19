@@ -3,17 +3,6 @@
 # found in the LICENSE file.
 
 component("input_events") {
-  sources = [
-    "lib/input_events_type_converters.cc",
-    "lib/mojo_extended_key_event_data.cc",
-    "lib/mojo_extended_key_event_data.h",
-    "mojo_input_events_export.h",
-  ]
-
-  defines = [
-    "MOJO_INPUT_EVENTS_IMPLEMENTATION",
-  ]
-
   deps = [
     "//base",
     "//ui/events",
@@ -23,5 +12,18 @@ component("input_events") {
     "//mojo/services/public/interfaces/input_events",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/cpp/geometry",
+  ]
+
+  defines = [
+    "MOJO_INPUT_EVENTS_IMPLEMENTATION",
+  ]
+
+  sources = [
+    "lib/input_events_type_converters.cc",
+    "lib/input_events_type_converters.h",
+    "lib/mojo_extended_key_event_data.cc",
+    "lib/mojo_extended_key_event_data.h",
+    "input_events_type_converters.h",
+    "mojo_input_events_export.h",
   ]
 }

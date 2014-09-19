@@ -21,31 +21,26 @@ component("application_manager") {
     "MOJO_APPLICATION_MANAGER_IMPLEMENTATION",
   ]
 
-  public_deps = [
-    "//base",
-    "//mojo/common",
-    "//mojo/public/cpp/application",
-    "//mojo/public/interfaces/application:application",
-    "//mojo/services/public/interfaces/network:network",
-    "//url",
-  ]
   deps = [
+    "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
     "//url",
+    "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/public/interfaces/application:application",
     "//mojo/services/public/interfaces/content_handler:content_handler",
+    "//mojo/services/public/interfaces/network:network",
     "//mojo/system",
+  ]
+
+  forward_dependent_configs_from = [
+    "//mojo/public/interfaces/application:application",
   ]
 }
 
 # GYP version: mojo.gyp:mojo_application_manager_unittests
 test("mojo_application_manager_unittests") {
-  sources = [
-    "application_manager_unittest.cc",
-    "background_shell_application_loader_unittest.cc",
-  ]
-
   deps = [
     ":application_manager",
     ":test_bindings",
@@ -57,6 +52,11 @@ test("mojo_application_manager_unittests") {
     "//mojo/public/cpp/bindings",
     "//testing/gtest",
     "//url",
+  ]
+
+  sources = [
+    "application_manager_unittest.cc",
+    "background_shell_application_loader_unittest.cc",
   ]
 }
 

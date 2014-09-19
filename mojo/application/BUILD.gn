@@ -9,12 +9,9 @@ source_set("application") {
     "application_runner_chromium.h",
   ]
 
-  public_deps = [
-    "//mojo/public/cpp/application",
-  ]
   deps = [
-    "//base",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/application",
   ]
 }
