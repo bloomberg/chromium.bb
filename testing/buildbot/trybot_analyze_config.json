@@ -2,13 +2,14 @@
   "base": {
     "exclusions": [
       "build/.*gyp[i]?",
-      "build/android/pylib",
+      "build/android/pylib/.*",
       "build/compiler_version.py",
       "build/get_landmines.py",
       "build/gyp_chromium",
       "build/linux/sysroot_ld_path.sh",
       "DEPS",
       "testing/buildbot/.*",
+      "tools/clang/blink_gc_plugin/CMakeLists.txt",
       "tools/whitespace.txt"
     ]
   },
