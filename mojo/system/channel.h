@@ -31,6 +31,8 @@ class PlatformSupport;
 
 namespace system {
 
+class ChannelEndpoint;
+
 // This class is mostly thread-safe. It must be created on an I/O thread.
 // |Init()| must be called on that same thread before it becomes thread-safe (in
 // particular, before references are given to any other thread) and |Shutdown()|
@@ -82,6 +84,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // may be called multiple times, or not at all.)
   void WillShutdownSoon();
 
+  // TODO(vtl): Write comment here.
+  MessageInTransit::EndpointId AttachEndpoint(
+      scoped_refptr<ChannelEndpoint> endpoint);
+
+  // TODO(vtl): Remove this version.
   // Attaches the given message pipe/port's endpoint (which must be a
   // |ProxyMessagePipeEndpoint|) to this channel. This assigns it a local ID,
   // which it returns. The first message pipe endpoint attached will always have

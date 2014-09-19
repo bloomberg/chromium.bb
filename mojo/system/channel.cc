@@ -92,13 +92,14 @@ void Channel::WillShutdownSoon() {
   is_shutting_down_ = true;
 }
 
-MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
-    scoped_refptr<MessagePipe> message_pipe,
-    unsigned port) {
-  DCHECK(message_pipe.get());
-  DCHECK(port == 0 || port == 1);
+// Note: |endpoint| being a |scoped_refptr| makes this function safe, since it
+// keeps the endpoint alive even after the lock is released. Otherwise, there's
+// the temptation to simply pass the result of |new ChannelEndpoint(...)|
+// directly to this function, which wouldn't be sufficient for safety.
+MessageInTransit::EndpointId Channel::AttachEndpoint(
+    scoped_refptr<ChannelEndpoint> endpoint) {
+  DCHECK(endpoint.get());
 
-  scoped_refptr<ChannelEndpoint> endpoint;
   MessageInTransit::EndpointId local_id;
   {
     base::AutoLock locker(lock_);
@@ -113,13 +114,12 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
 
     local_id = next_local_id_;
     next_local_id_++;
-    endpoint = new ChannelEndpoint(message_pipe.get(), port);
     local_id_to_endpoint_map_[local_id] = endpoint;
   }
 
   endpoint->AttachToChannel(this, local_id);
   // This might fail if that port got an |OnPeerClose()| before attaching.
-  if (message_pipe->Attach(port, endpoint.get()))
+  if (endpoint->message_pipe_->Attach(endpoint->port_, endpoint.get()))
     return local_id;
 
   // Note: If it failed, quite possibly the endpoint info was removed from that
@@ -130,8 +130,8 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
     base::AutoLock locker(lock_);
     IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
     if (it != local_id_to_endpoint_map_.end() &&
-        it->second->message_pipe_.get() == message_pipe.get() &&
-        it->second->port_ == port) {
+        it->second->message_pipe_.get() == endpoint->message_pipe_.get() &&
+        it->second->port_ == endpoint->port_) {
       DCHECK_EQ(it->second->state_, ChannelEndpoint::STATE_NORMAL);
       // TODO(vtl): FIXME -- This is wrong. We need to specify (to
       // |AttachMessagePipeEndpoint()| who's going to be responsible for calling
@@ -144,6 +144,16 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
   }
   endpoint->DetachFromChannel();
   return MessageInTransit::kInvalidEndpointId;
+}
+
+MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
+    scoped_refptr<MessagePipe> message_pipe,
+    unsigned port) {
+  DCHECK(message_pipe.get());
+  DCHECK(port == 0 || port == 1);
+
+  return AttachEndpoint(
+      make_scoped_refptr(new ChannelEndpoint(message_pipe.get(), port)));
 }
 
 bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,

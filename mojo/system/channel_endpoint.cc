@@ -26,20 +26,17 @@ bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
   DCHECK(message);
 
   base::AutoLock locker(lock_);
+
   if (!channel_) {
     // Generally, this should only happen if the channel is shut down for some
     // reason (with live message pipes on it).
     return false;
   }
-  DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
-  // TODO(vtl): Currently, we only support enqueueing messages when we're
-  // "running".
+
+  // TODO(vtl): Currently, this only works in the "running" case.
   DCHECK_NE(remote_id_, MessageInTransit::kInvalidEndpointId);
 
-  message->SerializeAndCloseDispatchers(channel_);
-  message->set_source_id(local_id_);
-  message->set_destination_id(remote_id_);
-  return channel_->WriteMessage(message.Pass());
+  return WriteMessageNoLock(message.Pass());
 }
 
 void ChannelEndpoint::DetachFromMessagePipe() {
@@ -97,6 +94,21 @@ ChannelEndpoint::~ChannelEndpoint() {
   DCHECK(!channel_);
   DCHECK_EQ(local_id_, MessageInTransit::kInvalidEndpointId);
   DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);
+}
+
+bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
+  DCHECK(message);
+
+  lock_.AssertAcquired();
+
+  DCHECK(channel_);
+  DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_NE(remote_id_, MessageInTransit::kInvalidEndpointId);
+
+  message->SerializeAndCloseDispatchers(channel_);
+  message->set_source_id(local_id_);
+  message->set_destination_id(remote_id_);
+  return channel_->WriteMessage(message.Pass());
 }
 
 }  // namespace system

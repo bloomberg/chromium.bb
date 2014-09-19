@@ -5,8 +5,6 @@
 #ifndef MOJO_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
 #define MOJO_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
 
-#include <stdint.h>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/message_in_transit.h"

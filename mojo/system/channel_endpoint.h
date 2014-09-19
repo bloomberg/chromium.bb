@@ -156,6 +156,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   friend class base::RefCountedThreadSafe<ChannelEndpoint>;
   ~ChannelEndpoint();
 
+  // Must be called with |lock_| held.
+  bool WriteMessageNoLock(scoped_ptr<MessageInTransit> message);
+
+  // TODO(vtl): Move these under lock.
   State state_;
   // TODO(vtl): When moved under lock, this can/should be made a raw pointer.
   scoped_refptr<MessagePipe> message_pipe_;
