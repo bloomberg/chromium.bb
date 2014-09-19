@@ -1192,7 +1192,24 @@ Running: testJsMethod
     examples : [
     ]
     methods : {
-        returnValueDescription : "The inserted node."
+        returnValueDescription : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : "The inserted node."
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
         returnValueName : "DOM Node"
     }
     parameters : [
@@ -1290,7 +1307,24 @@ Running: testEmptyParameters
     examples : [
     ]
     methods : {
-        returnValueDescription : "Returns the DOM node specified by the given ID. Case matters, and if there is more than one node with the given ID, which node is returned is uncertain."
+        returnValueDescription : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : "Returns the DOM node specified by the given ID. Case matters, and if there is more than one node with the given ID, which node is returned is uncertain."
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
         returnValueName : "DOM Node"
     }
     parameters : [
