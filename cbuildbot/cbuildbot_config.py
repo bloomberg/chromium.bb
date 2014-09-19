@@ -1102,6 +1102,9 @@ asan = _config(
   chroot_replace=True,
   profile='asan',
   disk_layout='2gb-rootfs',
+  # TODO(deymo): ASan builders generate bigger files, in particular a bigger
+  # Chrome binary, that update_engine can't handle in delta payloads due to
+  # memory limits. Remove the following line once crbug.com/329248 is fixed.
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
