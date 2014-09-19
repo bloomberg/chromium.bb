@@ -51,9 +51,7 @@ class ContentSecurityPolicyResponseHeaders;
 class ConsoleMessage;
 class CSPDirectiveList;
 class CSPSource;
-class DOMStringList;
 class Document;
-class JSONObject;
 class KURL;
 class SecurityOrigin;
 

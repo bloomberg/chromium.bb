@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class Page;
 class Settings;
 
 class SettingsDelegate {

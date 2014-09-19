@@ -51,7 +51,6 @@ class RenderBox;
 class RenderEmbeddedObject;
 class RenderObject;
 class RenderScrollbarPart;
-class RenderStyle;
 class RenderView;
 class RenderWidget;
 

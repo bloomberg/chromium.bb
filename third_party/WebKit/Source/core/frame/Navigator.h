@@ -38,7 +38,6 @@ namespace blink {
 class DOMMimeTypeArray;
 class DOMPluginArray;
 class LocalFrame;
-class PluginData;
 
 typedef int ExceptionCode;
 

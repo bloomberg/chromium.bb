@@ -10,7 +10,6 @@
 namespace blink {
 
 class ContentSecurityPolicy;
-class KURL;
 
 class CSPDirective {
     WTF_MAKE_NONCOPYABLE(CSPDirective);

@@ -47,7 +47,6 @@ namespace blink {
     class EventHandler;
     class FetchContext;
     class FloatSize;
-    class FloatRect;
     class FrameConsole;
     class FrameDestructionObserver;
     class FrameSelection;

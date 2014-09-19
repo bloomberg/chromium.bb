@@ -40,7 +40,6 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class DocumentLoader;
-class FrameHost;
 class ResourceResponse;
 class ScriptCallStack;
 class WorkerGlobalScopeProxy;
