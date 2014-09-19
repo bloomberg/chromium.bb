@@ -126,7 +126,9 @@
       'dependencies': [
         'athena_lib',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:native_app_window',
+        '../components/components.gyp:omnibox',
         '../components/components.gyp:renderer_context_menu',
         '../components/components.gyp:web_modal',
         '../extensions/extensions.gyp:extensions_browser',
@@ -154,6 +156,7 @@
         'content/public/app_registry.h',
         'content/public/content_activity_factory_creator.h',
         'content/public/dialogs.h',
+        'content/public/scheme_classifier_factory.h',
         'content/public/web_contents_view_delegate_creator.h',
         'content/render_view_context_menu_impl.cc',
         'content/render_view_context_menu_impl.h',
@@ -178,11 +181,14 @@
       'target_name': 'athena_chrome_lib',
       'type': 'static_library',
       'dependencies': [
+        '../components/components.gyp:component_metrics_proto',
         '../chrome/chrome.gyp:browser_extensions',
+        '../components/components.gyp:omnibox',
       ],
       'sources': [
         'content/chrome/content_activity_factory.cc',
         'content/chrome/dialogs.cc',
+        'content/chrome/scheme_classifier_factory.cc',
         'extensions/chrome/athena_chrome_app_delegate.cc',
         'extensions/chrome/athena_chrome_app_delegate.h',
         'extensions/chrome/athena_chrome_app_window_client.cc',
@@ -194,12 +200,15 @@
       'target_name': 'athena_app_shell_lib',
       'type': 'static_library',
       'dependencies': [
+        '../components/components.gyp:component_metrics_proto',
+        '../components/components.gyp:omnibox',
         '../extensions/shell/app_shell.gyp:app_shell_lib',
         '../skia/skia.gyp:skia',
       ],
       'sources': [
         'content/shell/content_activity_factory.cc',
         'content/shell/dialogs.cc',
+        'content/shell/scheme_classifier_factory.cc',
         'content/shell/shell_app_activity.cc',
         'content/shell/shell_app_activity.h',
         'extensions/shell/extensions_delegate_impl.cc',

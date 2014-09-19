@@ -6,13 +6,13 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/content/public/scheme_classifier_factory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_provider_client.h"
-#include "components/omnibox/autocomplete_scheme_classifier.h"
 #include "components/omnibox/search_provider.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -36,21 +36,6 @@ class AthenaSearchTermsData : public SearchTermsData {
   // SearchTermsData:
   virtual std::string GetSuggestClient() const OVERRIDE {
     return "chrome";
-  }
-};
-
-// The AutocompleteSchemeClassifier implementation for Athena.
-// TODO(mukai): Introduce supports of normal schemes like about: or blob:
-class AthenaSchemeClassifier : public AutocompleteSchemeClassifier {
- public:
-  AthenaSchemeClassifier() {}
-
-  // AutocompleteSchemeClassifier:
-  virtual metrics::OmniboxInputType::Type GetInputTypeForScheme(
-      const std::string& scheme) const OVERRIDE {
-    if (net::URLRequest::IsHandledProtocol(scheme))
-      return metrics::OmniboxInputType::URL;
-    return metrics::OmniboxInputType::INVALID;
   }
 };
 
@@ -82,7 +67,8 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
   explicit AthenaAutocompleteProviderClient(
       content::BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
+      : browser_context_(browser_context),
+        scheme_classifier_(CreateSchemeClassifier(browser_context)) {}
   virtual ~AthenaAutocompleteProviderClient() {}
 
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE {
@@ -98,7 +84,7 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
   virtual bool SearchSuggestEnabled() OVERRIDE { return true; }
   virtual bool ShowBookmarkBar() OVERRIDE { return false; }
   virtual const AutocompleteSchemeClassifier& SchemeClassifier() OVERRIDE {
-    return scheme_classifier_;
+    return *scheme_classifier_;
   }
   virtual void Classify(
       const base::string16& text,
@@ -116,7 +102,7 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
 
  private:
   content::BrowserContext* browser_context_;
-  AthenaSchemeClassifier scheme_classifier_;
+  scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaAutocompleteProviderClient);
 };
@@ -246,6 +232,8 @@ UrlSearchProvider::~UrlSearchProvider() {
 
 void UrlSearchProvider::Start(const base::string16& query) {
   const bool minimal_changes = query == input_.text();
+  scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier(
+      CreateSchemeClassifier(browser_context_));
   input_ = AutocompleteInput(query,
                              base::string16::npos /* cursor_position */,
                              base::string16() /* desired_tld */,
@@ -255,20 +243,12 @@ void UrlSearchProvider::Start(const base::string16& query) {
                              false /* prefer_keyword */,
                              true /* allow_extract_keyword_match */,
                              true /* want_asynchronous_matches */,
-                             AthenaSchemeClassifier());
+                             *scheme_classifier);
 
-  provider_->Start(input_, minimal_changes);
-}
-
-void UrlSearchProvider::Stop() {
-  provider_->Stop(false);
-}
-
-void UrlSearchProvider::OnProviderUpdate(bool updated_matches) {
-  if (!updated_matches)
-    return;
-
-  ClearResults();
+  // Clearing results here may cause unexpected results.
+  // TODO(mukai): fix this by fixing crbug.com/415500
+  if (!minimal_changes)
+    ClearResults();
 
   if (input_.type() == metrics::OmniboxInputType::URL) {
     // TODO(hashimoto): Componentize HistoryURLProvider and remove this code.
@@ -280,6 +260,17 @@ void UrlSearchProvider::OnProviderUpdate(bool updated_matches) {
     Add(scoped_ptr<app_list::SearchResult>(new UrlSearchResult(
         browser_context_, what_you_typed_match)));
   }
+
+  provider_->Start(input_, minimal_changes);
+}
+
+void UrlSearchProvider::Stop() {
+  provider_->Stop(false);
+}
+
+void UrlSearchProvider::OnProviderUpdate(bool updated_matches) {
+  if (!updated_matches)
+    return;
 
   const ACMatches& matches = provider_->matches();
   for (ACMatches::const_iterator it = matches.begin(); it != matches.end();
