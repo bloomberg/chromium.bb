@@ -133,13 +133,15 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     bool is_fallback = PNGContainsFallbackMarker(data->front(), data->size());
     // Create the image from the data.
     CGFloat target_scale = ui::GetScaleForScaleFactor(scale_factor);
-    CGFloat source_scale = is_fallback ? 1.0 : target_scale;
     // Hack: The 200P pak file is the only pak file loaded on iOS devices with
     // an @3x scale factor.  Force |source_scale| to be 2.0 to handle this case,
-    // since it cannot be anything else.
+    // since it cannot be anything else.  http://crbug.com/413300.
     // TODO(rohitrao): Support proper fallback by using the actual scale factor
     // of the source image, rather than assuming it is 1.0 or 2.0.
-    if (scale_factor == SCALE_FACTOR_300P) {
+    CGFloat source_scale = target_scale;
+    if (is_fallback) {
+      source_scale = 1.0;
+    } else if (scale_factor == SCALE_FACTOR_300P) {
       source_scale = 2.0;
     }
     base::scoped_nsobject<UIImage> ui_image(
