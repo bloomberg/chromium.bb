@@ -1660,6 +1660,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
+            'common/extensions/api/api.gyp:chrome_api',
             'plugin',
             'renderer',
             'utility',
@@ -1671,6 +1672,7 @@
             '../components/components.gyp:autofill_core_test_support',
             '../components/components.gyp:captive_portal_test_support',
             '../components/components.gyp:sessions_test_support',
+            '../extensions/extensions.gyp:extensions_test_support',
             '../google_apis/google_apis.gyp:google_apis_test_support',
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',
@@ -1784,8 +1786,6 @@
         ['enable_extensions==1', {
           'dependencies': [
             '../components/components.gyp:storage_monitor_test_support',
-            '../extensions/extensions.gyp:extensions_test_support',
-            'common/extensions/api/api.gyp:chrome_api',
           ],
           'sources': [
             'browser/drive/dummy_drive_service.cc',
@@ -1965,11 +1965,14 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
+            'common/extensions/api/api.gyp:chrome_api',
             '../components/components.gyp:autofill_content_test_support',
             '../components/components.gyp:component_metrics_proto',
             '../components/components.gyp:data_reduction_proxy_test_support',
             '../components/components_strings.gyp:components_strings',
             '../content/app/resources/content_resources.gyp:content_resources',
+            '../extensions/extensions_resources.gyp:extensions_resources',
+            '../extensions/extensions_strings.gyp:extensions_strings',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
@@ -2054,7 +2057,11 @@
             ['exclude', '^browser/extensions/'],
             ['exclude', '^browser/sync/glue/extensions_activity_monitor_unittest.cc'],
             ['exclude', '^browser/sync_file_system/'],
-            ['exclude', '^common/extensions/'],
+            ['exclude', '^common/extensions/api/'],
+            ['exclude', '^common/extensions/manifest_handlers/'],
+            ['exclude', '^common/extensions/manifest_tests/'],
+            # This test depends on manifest_tests.
+            ['exclude', '^common/extensions/permissions/settings_override_permission_unittest.cc'],
             ['exclude', '^utility/extensions/'],
             ['exclude', '^utility/image_writer/'],
             ['exclude', '^utility/media_galleries/'],
@@ -2086,12 +2093,6 @@
             'common/extensions/permissions/permissions_data_unittest.cc',
             'renderer/extensions/extension_localization_peer_unittest.cc',
             'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
-          ],
-        }, {  # enable_extensions==1
-          'dependencies': [
-            'common/extensions/api/api.gyp:chrome_api',
-            '../extensions/extensions_resources.gyp:extensions_resources',
-            '../extensions/extensions_strings.gyp:extensions_strings',
           ],
         }],
         ['use_ash==1', {

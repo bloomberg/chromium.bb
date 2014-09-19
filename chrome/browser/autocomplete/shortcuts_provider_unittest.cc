@@ -32,14 +32,11 @@
 #include "components/omnibox/autocomplete_result.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
-#endif
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 
@@ -822,7 +819,6 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
               backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
 }
 
-#if defined(ENABLE_EXTENSIONS)
 TEST_F(ShortcutsProviderTest, Extension) {
   // Try an input string that matches an extension URL.
   base::string16 text(ASCIIToUTF16("echo"));
@@ -851,4 +847,3 @@ TEST_F(ShortcutsProviderTest, Extension) {
   // Now the URL should have disappeared.
   RunTest(text, false, ExpectedURLs(), std::string(), base::string16());
 }
-#endif

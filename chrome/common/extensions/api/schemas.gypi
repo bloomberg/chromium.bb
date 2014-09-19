@@ -7,6 +7,13 @@
     '<@(schema_files)',
   ],
   'variables': {
+    # These duplicate other lists and are the only ones used on Android. They
+    # should be eliminated. See crbug.com/305852.
+    'android_schema_files': [
+      'manifest_types.json',
+    ],
+
+    # These are used everywhere except Android.
     'main_schema_files': [
       'accessibility_private.json',
       'activity_log_private.json',
@@ -135,9 +142,6 @@
     # Disable schema compiler to generate model extension API code.
     # Only register the extension functions in extension system.
     'conditions': [
-      # TODO(thestig): Remove this file from non-extensions build so the
-      # conditional and else branch goes away.
-      # Do the same for chrome/common/extensions/api/schemas.gni.
       ['enable_extensions==1', {
         'non_compiled_schema_files': [
           '<@(main_non_compiled_schema_files)',
@@ -157,6 +161,8 @@
         'schema_dependencies': [
         ],
         'schema_files': [
+          # These should be eliminated. See crbug.com/305852.
+          '<@(android_schema_files)',
         ],
       }],
       ['chromeos==1', {

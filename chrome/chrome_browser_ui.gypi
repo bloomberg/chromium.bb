@@ -2608,7 +2608,9 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
           ],
           'dependencies': [
+            'browser/extensions/api/api_registration.gyp:chrome_api_registration',
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
+            'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',
             '../components/components.gyp:autofill_content_risk_proto',
@@ -2958,8 +2960,6 @@
         ['enable_extensions==1', {
           'dependencies': [
             'browser_extensions',
-            'browser/extensions/api/api_registration.gyp:chrome_api_registration',
-            'common/extensions/api/api.gyp:chrome_api',
           ],
           'sources': [ '<@(chrome_browser_ui_extensions_sources)' ],
         }],
