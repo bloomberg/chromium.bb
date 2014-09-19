@@ -13,12 +13,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "components/onc/onc_constants.h"
-#include "crypto/scoped_test_nss_db.h"
+#include "crypto/nss_util_internal.h"
+#include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/crypto_module.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/nss_cert_database_chromeos.h"
@@ -64,39 +63,30 @@ net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
 
 class ONCCertificateImporterImplTest : public testing::Test {
  public:
-  ONCCertificateImporterImplTest() {}
-  virtual ~ONCCertificateImporterImplTest() {}
+  ONCCertificateImporterImplTest() : user_("username_hash"),
+                                     private_user_("private_user_hash") {}
 
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(public_nssdb_.is_open());
-    ASSERT_TRUE(private_nssdb_.is_open());
+  virtual void SetUp() {
+    ASSERT_TRUE(user_.constructed_successfully());
+    ASSERT_TRUE(private_user_.constructed_successfully());
 
-    task_runner_ = new base::TestSimpleTaskRunner();
-    thread_task_runner_handle_.reset(
-        new base::ThreadTaskRunnerHandle(task_runner_));
-
+    // By default test user will have the same public and private slot.
+    // Unfortunatelly, ONC importer should care about which slot certificates
+    // get imported to. To work around this, we create another NSS user whose
+    // public slot will act as the private slot.
+    // TODO(tbarzic): See if there's a better way to achieve this.
     test_nssdb_.reset(new net::NSSCertDatabaseChromeOS(
-        crypto::ScopedPK11Slot(public_nssdb_.slot()),
-        crypto::ScopedPK11Slot(private_nssdb_.slot())));
+        crypto::GetPublicSlotForChromeOSUser(user_.username_hash()),
+        crypto::GetPublicSlotForChromeOSUser(private_user_.username_hash())));
 
     // Test db should be empty at start of test.
     EXPECT_TRUE(ListCertsInPublicSlot().empty());
     EXPECT_TRUE(ListCertsInPrivateSlot().empty());
   }
 
-  virtual void TearDown() OVERRIDE {
-    thread_task_runner_handle_.reset();
-    task_runner_ = NULL;
-  }
+  virtual ~ONCCertificateImporterImplTest() {}
 
  protected:
-  void OnImportCompleted(bool expected_success,
-                         bool success,
-                         const net::CertificateList& onc_trusted_certificates) {
-    EXPECT_EQ(expected_success, success);
-    web_trust_certificates_ = onc_trusted_certificates;
-  }
-
   void AddCertificatesFromFile(std::string filename, bool expected_success) {
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
@@ -108,15 +98,14 @@ class ONCCertificateImporterImplTest : public testing::Test {
     onc_certificates_.reset(certificates);
 
     web_trust_certificates_.clear();
-    CertificateImporterImpl importer(task_runner_, test_nssdb_.get());
-    importer.ImportCertificates(
-        *certificates,
-        ::onc::ONC_SOURCE_USER_IMPORT,  // allow web trust
-        base::Bind(&ONCCertificateImporterImplTest::OnImportCompleted,
-                   base::Unretained(this),
-                   expected_success));
-
-    task_runner_->RunUntilIdle();
+    imported_server_and_ca_certs_.clear();
+    CertificateImporterImpl importer(test_nssdb_.get());
+    EXPECT_EQ(
+        expected_success,
+        importer.ParseAndStoreCertificates(true,  // allow web trust
+                                           *certificates,
+                                           &web_trust_certificates_,
+                                           &imported_server_and_ca_certs_));
 
     public_list_ = ListCertsInPublicSlot();
     private_list_ = ListCertsInPrivateSlot();
@@ -130,29 +119,25 @@ class ONCCertificateImporterImplTest : public testing::Test {
       guid = &guid_temporary;
 
     AddCertificatesFromFile(filename, true);
-
-    if (expected_type == net::SERVER_CERT || expected_type == net::CA_CERT) {
-      ASSERT_EQ(1u, public_list_.size());
+    ASSERT_EQ(1ul, public_list_.size() + private_list_.size());
+    if (!public_list_.empty())
       EXPECT_EQ(expected_type, GetCertType(public_list_[0]->os_cert_handle()));
-      EXPECT_TRUE(private_list_.empty());
-    } else {  // net::USER_CERT
-      EXPECT_TRUE(public_list_.empty());
-      ASSERT_EQ(1u, private_list_.size());
+    if (!private_list_.empty())
       EXPECT_EQ(expected_type, GetCertType(private_list_[0]->os_cert_handle()));
-    }
 
     base::DictionaryValue* certificate = NULL;
     onc_certificates_->GetDictionary(0, &certificate);
     certificate->GetStringWithoutPathExpansion(::onc::certificate::kGUID, guid);
+
+    if (expected_type == net::SERVER_CERT || expected_type == net::CA_CERT) {
+      EXPECT_EQ(1u, imported_server_and_ca_certs_.size());
+      EXPECT_TRUE(
+          imported_server_and_ca_certs_[*guid]->Equals(public_list_[0].get()));
+    } else {  // net::USER_CERT
+      EXPECT_TRUE(imported_server_and_ca_certs_.empty());
+    }
   }
 
-  // Certificates and the NSSCertDatabase depend on these test DBs. Destroy them
-  // last.
-  crypto::ScopedTestNSSDB public_nssdb_;
-  crypto::ScopedTestNSSDB private_nssdb_;
-
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
   scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
   scoped_ptr<base::ListValue> onc_certificates_;
   // List of certs in the nssdb's public slot.
@@ -160,14 +145,15 @@ class ONCCertificateImporterImplTest : public testing::Test {
   // List of certs in the nssdb's "private" slot.
   net::CertificateList private_list_;
   net::CertificateList web_trust_certificates_;
+  CertificateImporterImpl::CertsByGUID imported_server_and_ca_certs_;
 
  private:
   net::CertificateList ListCertsInPublicSlot() {
-    return ListCertsInSlot(public_nssdb_.slot());
+    return ListCertsInSlot(test_nssdb_->GetPublicSlot().get());
   }
 
   net::CertificateList ListCertsInPrivateSlot() {
-    return ListCertsInSlot(private_nssdb_.slot());
+    return ListCertsInSlot(test_nssdb_->GetPrivateSlot().get());
   }
 
   net::CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
@@ -185,13 +171,16 @@ class ONCCertificateImporterImplTest : public testing::Test {
     std::sort(result.begin(), result.end(), net::X509Certificate::LessThan());
     return result;
   }
+
+  crypto::ScopedTestNSSChromeOSUser user_;
+  crypto::ScopedTestNSSChromeOSUser private_user_;
 };
 
 TEST_F(ONCCertificateImporterImplTest, MultipleCertificates) {
   AddCertificatesFromFile("managed_toplevel2.onc", true);
   EXPECT_EQ(onc_certificates_->GetSize(), public_list_.size());
   EXPECT_TRUE(private_list_.empty());
-  EXPECT_EQ(2ul, public_list_.size());
+  EXPECT_EQ(2ul, imported_server_and_ca_certs_.size());
 }
 
 TEST_F(ONCCertificateImporterImplTest, MultipleCertificatesWithFailures) {
@@ -199,6 +188,7 @@ TEST_F(ONCCertificateImporterImplTest, MultipleCertificatesWithFailures) {
   EXPECT_EQ(3ul, onc_certificates_->GetSize());
   EXPECT_EQ(1ul, private_list_.size());
   EXPECT_TRUE(public_list_.empty());
+  EXPECT_TRUE(imported_server_and_ca_certs_.empty());
 }
 
 TEST_F(ONCCertificateImporterImplTest, AddClientCertificate) {
@@ -209,7 +199,7 @@ TEST_F(ONCCertificateImporterImplTest, AddClientCertificate) {
   EXPECT_TRUE(public_list_.empty());
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(private_nssdb_.slot(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_TRUE(privkey_list);
   if (privkey_list) {
     SECKEYPrivateKeyListNode* node = PRIVKEY_LIST_HEAD(privkey_list);
@@ -226,7 +216,7 @@ TEST_F(ONCCertificateImporterImplTest, AddClientCertificate) {
   }
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(private_nssdb_.slot(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_TRUE(pubkey_list);
   if (pubkey_list) {
     SECKEYPublicKeyListNode* node = PUBKEY_LIST_HEAD(pubkey_list);
@@ -244,11 +234,11 @@ TEST_F(ONCCertificateImporterImplTest, AddServerCertificateWithWebTrust) {
   AddCertificateFromFile("certificate-server.onc", net::SERVER_CERT, NULL);
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(private_nssdb_.slot(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_FALSE(privkey_list);
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(private_nssdb_.slot(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_FALSE(pubkey_list);
 
   ASSERT_EQ(1u, web_trust_certificates_.size());
@@ -262,11 +252,11 @@ TEST_F(ONCCertificateImporterImplTest, AddWebAuthorityCertificateWithWebTrust) {
   AddCertificateFromFile("certificate-web-authority.onc", net::CA_CERT, NULL);
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(private_nssdb_.slot(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_FALSE(privkey_list);
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(private_nssdb_.slot(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_FALSE(pubkey_list);
 
   ASSERT_EQ(1u, web_trust_certificates_.size());
@@ -281,11 +271,11 @@ TEST_F(ONCCertificateImporterImplTest, AddAuthorityCertificateWithoutWebTrust) {
   EXPECT_TRUE(web_trust_certificates_.empty());
 
   SECKEYPrivateKeyList* privkey_list =
-      PK11_ListPrivKeysInSlot(private_nssdb_.slot(), NULL, NULL);
+      PK11_ListPrivKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL, NULL);
   EXPECT_FALSE(privkey_list);
 
   SECKEYPublicKeyList* pubkey_list =
-      PK11_ListPublicKeysInSlot(private_nssdb_.slot(), NULL);
+      PK11_ListPublicKeysInSlot(test_nssdb_->GetPrivateSlot().get(), NULL);
   EXPECT_FALSE(pubkey_list);
 }
 

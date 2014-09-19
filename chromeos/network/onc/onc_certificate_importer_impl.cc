@@ -9,14 +9,7 @@
 #include <pk11pub.h>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -27,94 +20,64 @@
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
 
+#define ONC_LOG_WARNING(message)                                \
+  NET_LOG_DEBUG("ONC Certificate Import Warning", message)
+#define ONC_LOG_ERROR(message)                                  \
+  NET_LOG_ERROR("ONC Certificate Import Error", message)
+
 namespace chromeos {
 namespace onc {
 
-namespace {
-
-void CallBackOnOriginLoop(
-    const scoped_refptr<base::SingleThreadTaskRunner>& origin_loop,
-    const CertificateImporter::DoneCallback& callback,
-    bool success,
-    const net::CertificateList& onc_trusted_certificates) {
-  origin_loop->PostTask(
-      FROM_HERE, base::Bind(callback, success, onc_trusted_certificates));
-}
-
-}  // namespace
-
 CertificateImporterImpl::CertificateImporterImpl(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     net::NSSCertDatabase* target_nssdb)
-    : io_task_runner_(io_task_runner),
-      target_nssdb_(target_nssdb),
-      weak_factory_(this) {
+    : target_nssdb_(target_nssdb) {
   CHECK(target_nssdb);
 }
 
-CertificateImporterImpl::~CertificateImporterImpl() {
-}
-
-void CertificateImporterImpl::ImportCertificates(
+bool CertificateImporterImpl::ImportCertificates(
     const base::ListValue& certificates,
     ::onc::ONCSource source,
-    const DoneCallback& done_callback) {
+    net::CertificateList* onc_trusted_certificates) {
   VLOG(2) << "ONC file has " << certificates.GetSize() << " certificates";
-  // |done_callback| must only be called as long as |this| still exists.
-  // Thereforce, call back to |this|. This check of |this| must happen last and
-  // on the origin thread.
-  DoneCallback callback_to_this =
-      base::Bind(&CertificateImporterImpl::RunDoneCallback,
-                 weak_factory_.GetWeakPtr(),
-                 done_callback);
 
-  // |done_callback| must be called on the origin thread.
-  DoneCallback callback_on_origin_loop =
-      base::Bind(&CallBackOnOriginLoop,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 callback_to_this);
-
-  // This is the actual function that imports the certificates.
-  base::Closure import_certs_callback =
-      base::Bind(&ParseAndStoreCertificates,
-                 source,
-                 callback_on_origin_loop,
-                 base::Owned(certificates.DeepCopy()),
-                 target_nssdb_);
-
-  // The NSSCertDatabase must be accessed on |io_task_runner_|
-  io_task_runner_->PostTask(FROM_HERE, import_certs_callback);
-}
-
-// static
-void CertificateImporterImpl::ParseAndStoreCertificates(
-    ::onc::ONCSource source,
-    const DoneCallback& done_callback,
-    base::ListValue* certificates,
-    net::NSSCertDatabase* nssdb) {
   // Web trust is only granted to certificates imported by the user.
   bool allow_trust_imports = source == ::onc::ONC_SOURCE_USER_IMPORT;
-  net::CertificateList onc_trusted_certificates;
+  if (!ParseAndStoreCertificates(allow_trust_imports,
+                                 certificates,
+                                 onc_trusted_certificates,
+                                 NULL)) {
+    LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
+               << onc::GetSourceAsString(source);
+    return false;
+  }
+  return true;
+}
+
+bool CertificateImporterImpl::ParseAndStoreCertificates(
+    bool allow_trust_imports,
+    const base::ListValue& certificates,
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   bool success = true;
-  for (size_t i = 0; i < certificates->GetSize(); ++i) {
+  for (size_t i = 0; i < certificates.GetSize(); ++i) {
     const base::DictionaryValue* certificate = NULL;
-    certificates->GetDictionary(i, &certificate);
+    certificates.GetDictionary(i, &certificate);
     DCHECK(certificate != NULL);
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
 
     if (!ParseAndStoreCertificate(allow_trust_imports,
                                   *certificate,
-                                  nssdb,
-                                  &onc_trusted_certificates)) {
+                                  onc_trusted_certificates,
+                                  imported_server_and_ca_certs)) {
       success = false;
-      LOG(ERROR) << "Cannot parse certificate at index " << i;
+      ONC_LOG_ERROR(
+          base::StringPrintf("Cannot parse certificate at index %zu", i));
     } else {
       VLOG(2) << "Successfully imported certificate at index " << i;
     }
   }
-
-  done_callback.Run(success, onc_trusted_certificates);
+  return success;
 }
 
 // static
@@ -180,20 +143,11 @@ bool CertificateImporterImpl::DeleteCertAndKeyByNickname(
   return result;
 }
 
-void CertificateImporterImpl::RunDoneCallback(
-    const CertificateImporter::DoneCallback& callback,
-    bool success,
-    const net::CertificateList& onc_trusted_certificates) {
-  if (!success)
-    NET_LOG_ERROR("ONC Certificate Import Error", "");
-  callback.Run(success, onc_trusted_certificates);
-}
-
 bool CertificateImporterImpl::ParseAndStoreCertificate(
     bool allow_trust_imports,
     const base::DictionaryValue& certificate,
-    net::NSSCertDatabase* nssdb,
-    net::CertificateList* onc_trusted_certificates) {
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   // Get out the attributes of the given certificate.
   std::string guid;
   certificate.GetStringWithoutPathExpansion(::onc::certificate::kGUID, &guid);
@@ -202,8 +156,8 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
   bool remove = false;
   if (certificate.GetBooleanWithoutPathExpansion(::onc::kRemove, &remove) &&
       remove) {
-    if (!DeleteCertAndKeyByNickname(guid, nssdb)) {
-      LOG(ERROR) << "Unable to delete certificate";
+    if (!DeleteCertAndKeyByNickname(guid, target_nssdb_)) {
+      ONC_LOG_ERROR("Unable to delete certificate");
       return false;
     } else {
       return true;
@@ -220,10 +174,10 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
                                       cert_type,
                                       guid,
                                       certificate,
-                                      nssdb,
-                                      onc_trusted_certificates);
+                                      onc_trusted_certificates,
+                                      imported_server_and_ca_certs);
   } else if (cert_type == ::onc::certificate::kClient) {
-    return ParseClientCertificate(guid, certificate, nssdb);
+    return ParseClientCertificate(guid, certificate);
   }
 
   NOTREACHED();
@@ -235,8 +189,8 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     const std::string& cert_type,
     const std::string& guid,
     const base::DictionaryValue& certificate,
-    net::NSSCertDatabase* nssdb,
-    net::CertificateList* onc_trusted_certificates) {
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   bool web_trust_flag = false;
   const base::ListValue* trust_list = NULL;
   if (certificate.GetListWithoutPathExpansion(::onc::certificate::kTrustBits,
@@ -254,8 +208,8 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
       } else {
         // Trust bits should only increase trust and never restrict. Thus,
         // ignoring unknown bits should be safe.
-        LOG(WARNING) << "Certificate contains unknown trust type "
-                     << trust_type;
+        ONC_LOG_WARNING("Certificate contains unknown trust type " +
+                        trust_type);
       }
     }
   }
@@ -263,7 +217,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
   bool import_with_ssl_trust = false;
   if (web_trust_flag) {
     if (!allow_trust_imports)
-      LOG(WARNING) << "Web trust not granted for certificate: " << guid;
+      ONC_LOG_WARNING("Web trust not granted for certificate: " + guid);
     else
       import_with_ssl_trust = true;
   }
@@ -272,16 +226,17 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
   if (!certificate.GetStringWithoutPathExpansion(::onc::certificate::kX509,
                                                  &x509_data) ||
       x509_data.empty()) {
-    LOG(ERROR) << "Certificate missing appropriate certificate data for type: "
-               << cert_type;
+    ONC_LOG_ERROR(
+        "Certificate missing appropriate certificate data for type: " +
+        cert_type);
     return false;
   }
 
   scoped_refptr<net::X509Certificate> x509_cert =
       DecodePEMCertificate(x509_data);
   if (!x509_cert.get()) {
-    LOG(ERROR) << "Unable to create certificate from PEM encoding, type: "
-               << cert_type;
+    ONC_LOG_ERROR("Unable to create certificate from PEM encoding, type: " +
+                  cert_type);
     return false;
   }
 
@@ -295,19 +250,21 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
                                                  : net::CA_CERT;
     VLOG(1) << "Certificate is already installed.";
     net::NSSCertDatabase::TrustBits missing_trust_bits =
-        trust & ~nssdb->GetCertTrust(x509_cert.get(), net_cert_type);
+        trust & ~target_nssdb_->GetCertTrust(x509_cert.get(), net_cert_type);
     if (missing_trust_bits) {
       std::string error_reason;
       bool success = false;
-      if (nssdb->IsReadOnly(x509_cert.get())) {
+      if (target_nssdb_->IsReadOnly(x509_cert.get())) {
         error_reason = " Certificate is stored read-only.";
       } else {
-        success = nssdb->SetCertTrust(x509_cert.get(), net_cert_type, trust);
+        success = target_nssdb_->SetCertTrust(x509_cert.get(),
+                                              net_cert_type,
+                                              trust);
       }
       if (!success) {
-        LOG(ERROR) << "Certificate of type " << cert_type
-                   << " was already present, but trust couldn't be set."
-                   << error_reason;
+        ONC_LOG_ERROR("Certificate of type " + cert_type +
+                      " was already present, but trust couldn't be set." +
+                      error_reason);
       }
     }
   } else {
@@ -316,19 +273,21 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     net::NSSCertDatabase::ImportCertFailureList failures;
     bool success = false;
     if (cert_type == ::onc::certificate::kServer)
-      success = nssdb->ImportServerCert(cert_list, trust, &failures);
+      success = target_nssdb_->ImportServerCert(cert_list, trust, &failures);
     else  // Authority cert
-      success = nssdb->ImportCACerts(cert_list, trust, &failures);
+      success = target_nssdb_->ImportCACerts(cert_list, trust, &failures);
 
     if (!failures.empty()) {
       std::string error_string = net::ErrorToString(failures[0].net_error);
-      LOG(ERROR) << "Error ( " << error_string
-                 << " ) importing certificate of type " << cert_type;
+      ONC_LOG_ERROR(
+          base::StringPrintf("Error ( %s ) importing %s certificate",
+                             error_string.c_str(),
+                             cert_type.c_str()));
       return false;
     }
 
     if (!success) {
-      LOG(ERROR) << "Unknown error importing " << cert_type << " certificate.";
+      ONC_LOG_ERROR("Unknown error importing " + cert_type + " certificate.");
       return false;
     }
   }
@@ -336,53 +295,56 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
   if (web_trust_flag && onc_trusted_certificates)
     onc_trusted_certificates->push_back(x509_cert);
 
+  if (imported_server_and_ca_certs)
+    (*imported_server_and_ca_certs)[guid] = x509_cert;
+
   return true;
 }
 
 bool CertificateImporterImpl::ParseClientCertificate(
     const std::string& guid,
-    const base::DictionaryValue& certificate,
-    net::NSSCertDatabase* nssdb) {
+    const base::DictionaryValue& certificate) {
   std::string pkcs12_data;
   if (!certificate.GetStringWithoutPathExpansion(::onc::certificate::kPKCS12,
                                                  &pkcs12_data) ||
       pkcs12_data.empty()) {
-    LOG(ERROR) << "PKCS12 data is missing for client certificate.";
+    ONC_LOG_ERROR("PKCS12 data is missing for client certificate.");
     return false;
   }
 
   std::string decoded_pkcs12;
   if (!base::Base64Decode(pkcs12_data, &decoded_pkcs12)) {
-    LOG(ERROR) << "Unable to base64 decode PKCS#12 data: \"" << pkcs12_data
-               << "\".";
+    ONC_LOG_ERROR(
+        "Unable to base64 decode PKCS#12 data: \"" + pkcs12_data + "\".");
     return false;
   }
 
   // Since this has a private key, always use the private module.
-  crypto::ScopedPK11Slot private_slot(nssdb->GetPrivateSlot());
+  crypto::ScopedPK11Slot private_slot(target_nssdb_->GetPrivateSlot());
   if (!private_slot)
     return false;
   scoped_refptr<net::CryptoModule> module(
       net::CryptoModule::CreateFromHandle(private_slot.get()));
   net::CertificateList imported_certs;
 
-  int import_result = nssdb->ImportFromPKCS12(
+  int import_result = target_nssdb_->ImportFromPKCS12(
       module.get(), decoded_pkcs12, base::string16(), false, &imported_certs);
   if (import_result != net::OK) {
     std::string error_string = net::ErrorToString(import_result);
-    LOG(ERROR) << "Unable to import client certificate, error: "
-               << error_string;
+    ONC_LOG_ERROR(
+        base::StringPrintf("Unable to import client certificate (error %s)",
+                           error_string.c_str()));
     return false;
   }
 
   if (imported_certs.size() == 0) {
-    LOG(WARNING) << "PKCS12 data contains no importable certificates.";
+    ONC_LOG_WARNING("PKCS12 data contains no importable certificates.");
     return true;
   }
 
   if (imported_certs.size() != 1) {
-    LOG(WARNING) << "ONC File: PKCS12 data contains more than one certificate. "
-                    "Only the first one will be imported.";
+    ONC_LOG_WARNING("ONC File: PKCS12 data contains more than one certificate. "
+                    "Only the first one will be imported.");
   }
 
   scoped_refptr<net::X509Certificate> cert_result = imported_certs[0];
@@ -397,7 +359,7 @@ bool CertificateImporterImpl::ParseClientCertificate(
     PK11_SetPrivateKeyNickname(private_key, const_cast<char*>(guid.c_str()));
     SECKEY_DestroyPrivateKey(private_key);
   } else {
-    LOG(WARNING) << "Unable to find private key for certificate.";
+    ONC_LOG_WARNING("Unable to find private key for certificate.");
   }
   return true;
 }
