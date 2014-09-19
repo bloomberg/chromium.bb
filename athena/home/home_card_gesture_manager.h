@@ -44,13 +44,16 @@ class ATHENA_EXPORT HomeCardGestureManager {
   void ProcessGestureEvent(ui::GestureEvent* event);
 
  private:
-  // Get the closest state from the last position.
-  HomeCard::State GetClosestState() const;
+  // Get the final state from the last position.
+  HomeCard::State GetFinalState() const;
 
   // Update the current position and emits OnGestureProgressed().
   void UpdateScrollState(const ui::GestureEvent& event);
 
   Delegate* delegate_;  // Not owned.
+
+  // The state when the gesture starts.
+  HomeCard::State original_state_;
 
   // The offset from the top edge of the home card and the initial position of
   // gesture.

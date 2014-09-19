@@ -9,9 +9,31 @@
 
 namespace athena {
 
+namespace {
+
+// The maximum height, in pixels, of a home card with final state
+// VISIBLE_MINIMIZED.
+const int kMinimizedFinalStateMaxHeight = 50 + kHomeCardMinimizedHeight;
+
+// The maximum height, in pixels, of an initially centered home card with final
+// state VISIBLE_MINIMIZED.
+const int kMinimizedFinalStateMaxHeightInitiallyCentered =
+    90 + kHomeCardMinimizedHeight;
+
+// The minimum height, as a percentage of the screen height, of a home card with
+// final state VISIBLE_CENTERED.
+const float kCenteredFinalStateMinScreenRatio = 0.5f;
+
+// The minimum height, as a percentage of the screen height, of an initially
+// minimized home card with final state VISIBLE_CENTERED.
+const float kCenteredFinalStateMinScreenRatioInitiallyMinimized = 0.3f;
+
+}
+
 HomeCardGestureManager::HomeCardGestureManager(Delegate* delegate,
                                                const gfx::Rect& screen_bounds)
     : delegate_(delegate),
+      original_state_(HomeCard::HIDDEN),
       y_offset_(0),
       last_estimated_height_(0),
       screen_bounds_(screen_bounds) {}
@@ -22,11 +44,13 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       y_offset_ = event->location().y();
+      original_state_ = HomeCard::Get()->GetState();
+      DCHECK_NE(HomeCard::HIDDEN, original_state_);
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_END:
       event->SetHandled();
-      delegate_->OnGestureEnded(GetClosestState());
+      delegate_->OnGestureEnded(GetFinalState());
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       UpdateScrollState(*event);
@@ -34,8 +58,18 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START: {
       const ui::GestureEventDetails& details = event->details();
       const float kFlingCompletionVelocity = 100.0f;
-      HomeCard::State final_state = GetClosestState();
-      if (::fabs(details.velocity_y()) > kFlingCompletionVelocity) {
+      HomeCard::State final_state = GetFinalState();
+
+      // When the user does not drag far enough to switch the final state, but
+      // a fling happens at the end of the gesture, the state should change
+      // based on the direction of the fling.
+      // Checking |final_state| == |original_state| may cause unexpected results
+      // for gestures where the user flings in the opposite direction that they
+      // moved the home card (e.g. drag home card up from minimized state and
+      // then fling down)
+      // TODO(mukai): Consider this case once reported.
+      if (final_state == original_state_ &&
+          ::fabs(details.velocity_y()) > kFlingCompletionVelocity) {
         if (details.velocity_y() > 0) {
           final_state = std::min(HomeCard::VISIBLE_MINIMIZED,
                                  static_cast<HomeCard::State>(final_state + 1));
@@ -53,18 +87,19 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-HomeCard::State HomeCardGestureManager::GetClosestState() const {
-  const int kMinimizedHomeBufferSize = 50;
-  if (last_estimated_height_ <=
-      kHomeCardMinimizedHeight + kMinimizedHomeBufferSize) {
+HomeCard::State HomeCardGestureManager::GetFinalState() const {
+  int max_height = (original_state_ == HomeCard::VISIBLE_CENTERED)
+      ? kMinimizedFinalStateMaxHeightInitiallyCentered
+      : kMinimizedFinalStateMaxHeight;
+  if (last_estimated_height_ < max_height)
     return HomeCard::VISIBLE_MINIMIZED;
-  }
 
-  int centered_height = screen_bounds_.height();
-  if (last_estimated_height_ - kHomeCardHeight <=
-      (centered_height - kHomeCardHeight) / 3) {
+  float ratio = (original_state_ == HomeCard::VISIBLE_MINIMIZED)
+      ? kCenteredFinalStateMinScreenRatioInitiallyMinimized
+      : kCenteredFinalStateMinScreenRatio;
+  if (last_estimated_height_ < screen_bounds_.height() * ratio)
     return HomeCard::VISIBLE_BOTTOM;
-  }
+
   return HomeCard::VISIBLE_CENTERED;
 }
 

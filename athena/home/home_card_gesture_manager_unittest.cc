@@ -66,11 +66,16 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
     last_y_ = y;
     return event.handled();
   }
+
   void ProcessFlingGesture(float velocity) {
     ui::GestureEvent event(0, last_y_, ui::EF_NONE, base::TimeDelta(),
                            ui::GestureEventDetails(
                                ui::ET_SCROLL_FLING_START, 0, velocity));
     gesture_manager_->ProcessGestureEvent(&event);
+  }
+
+  int screen_height() const {
+    return screen_bounds().height();
   }
 
   HomeCard::State final_state_;
@@ -180,9 +185,41 @@ TEST_F(HomeCardGestureManagerTest, StartCentered) {
   EXPECT_GT(1.0f, last_progress_);
   EXPECT_LT(0.0f, last_progress_);
 
-  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 1000));
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 960);
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 960));
+  EXPECT_EQ(1, GetEndCountAndReset());
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, final_state_);
+}
+
+// Test gesture progress when the gesture is initiated when the home card is in
+// the centered state.
+TEST_F(HomeCardGestureManagerTest, StartBottom) {
+  HomeCard::Get()->SetState(HomeCard::VISIBLE_BOTTOM);
+
+  // No changes for slight moves.
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 950));
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 960);
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 960));
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 950));
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 800));
+  EXPECT_EQ(1, GetEndCountAndReset());
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+
+  // State change for the bigger moves.
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 950));
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1000);
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 1000));
+  EXPECT_EQ(1, GetEndCountAndReset());
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, final_state_);
+
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 950));
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 300);
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 300));
+  EXPECT_EQ(1, GetEndCountAndReset());
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, final_state_);
 }
 
 TEST_F(HomeCardGestureManagerTest, FlingUpAtEnd) {
@@ -193,22 +230,20 @@ TEST_F(HomeCardGestureManagerTest, FlingUpAtEnd) {
   EXPECT_EQ(0, GetProgressCountAndReset());
 
   ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1010);
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 800);
   ProcessFlingGesture(-150.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
-  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, final_state_);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
 }
 
 TEST_F(HomeCardGestureManagerTest, FlingDownAtEnd) {
-  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  HomeCard::Get()->SetState(HomeCard::VISIBLE_CENTERED);
 
-  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 1020));
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 20));
   EXPECT_EQ(0, GetEndCountAndReset());
   EXPECT_EQ(0, GetProgressCountAndReset());
 
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1010);
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 800);
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 200);
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 30);
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 100);
   ProcessFlingGesture(150.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
@@ -222,8 +257,28 @@ TEST_F(HomeCardGestureManagerTest, WeakFling) {
   EXPECT_EQ(0, GetProgressCountAndReset());
 
   ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1010);
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 800);
   ProcessFlingGesture(-30.0f);
+  EXPECT_EQ(1, GetEndCountAndReset());
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, final_state_);
+}
+
+// Test the situation where the user intends a single fling but the finger
+// touches the screen long enough, so that the home card becomes bigger than the
+// height of VISIBLE_BOTTOM state due to the scroll events.
+// In this case the fling event should not change the final state from
+// VISIBLE_BOTTOM to VISIBLE_CENTERED because the user's intention was a single
+// fling. See http://crbug.com/415211
+TEST_F(HomeCardGestureManagerTest, FastFling) {
+  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 1020));
+  EXPECT_EQ(0, GetEndCountAndReset());
+  EXPECT_EQ(0, GetProgressCountAndReset());
+
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1010);
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE,
+                      screen_height() - kHomeCardHeight);
+  ProcessFlingGesture(-150.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
 }
