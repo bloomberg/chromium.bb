@@ -1464,6 +1464,19 @@
     ]
   },
 
+  "ImportAutofillFormData": {
+    "os": ["win", "mac", "linux"],
+    "can_be_recommended": true,
+    "test_policy": { "ImportAutofillFormData": false },
+    "pref_mappings": [
+      { "pref": "import_autofill_form_data",
+        "indicator_tests": [
+          { "policy": { "ImportAutofillFormData": false } }
+        ]
+      }
+    ]
+  },
+
   "MaxConnectionsPerProxy": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "MaxConnectionsPerProxy": 16 },

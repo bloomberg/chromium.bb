@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 276
+#   For your editing convenience: highest ID currently used: 277
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3475,6 +3475,26 @@
 
       If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
       'label': '''Import saved passwords from default browser on first run''',
+    },
+    {
+      'name': 'ImportAutofillFormData',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:39-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 277,
+      'caption': '''Import autofill form data from default browser on first run''',
+      'desc': '''This policy forces the autofill form data to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialog.
+
+      If disabled, the autofill form data is not imported.
+
+      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      'label': '''Import autofill form data from default browser on first run''',
     },
     {
       'name': 'MaxConnectionsPerProxy',
