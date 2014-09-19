@@ -47,6 +47,11 @@ public:
     WebString method() const;
 
     void setHeader(const WebString& key, const WebString& value);
+
+    // If the key already exists, the value is appended to the existing value
+    // with a comma delimiter between them.
+    void appendHeader(const WebString& key, const WebString& value);
+
     void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
     void setBlob(const WebString& uuid, long long size);

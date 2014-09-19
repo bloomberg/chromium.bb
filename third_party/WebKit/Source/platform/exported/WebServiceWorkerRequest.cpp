@@ -62,7 +62,16 @@ void WebServiceWorkerRequest::setHeader(const WebString& key, const WebString& v
 {
     if (equalIgnoringCase(key, "referer"))
         return;
-    m_private->m_headers.add(key, value);
+    m_private->m_headers.set(key, value);
+}
+
+void WebServiceWorkerRequest::appendHeader(const WebString& key, const WebString& value)
+{
+    if (equalIgnoringCase(key, "referer"))
+        return;
+    HTTPHeaderMap::AddResult result = m_private->m_headers.add(key, value);
+    if (!result.isNewEntry)
+        result.storedValue->value = result.storedValue->value + ", " + String(value);
 }
 
 void WebServiceWorkerRequest::visitHTTPHeaderFields(WebHTTPHeaderVisitor* headerVisitor) const

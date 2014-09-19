@@ -36,7 +36,7 @@ public:
 
     virtual bool handleItem(const String& value, const String& key, Headers*)
     {
-        m_webRequest->setHeader(key, value);
+        m_webRequest->appendHeader(key, value);
         return true;
     }
 
