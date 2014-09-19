@@ -14,6 +14,10 @@
 
 class PrefService;
 
+namespace base {
+class TaskRunner;
+}
+
 namespace metrics {
 class MetricsService;
 class MetricsStateManager;
@@ -31,6 +35,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   virtual ~CastMetricsServiceClient();
 
   static CastMetricsServiceClient* Create(
+      base::TaskRunner* io_task_runner,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context);
 
@@ -55,6 +60,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 
  private:
   CastMetricsServiceClient(
+      base::TaskRunner* io_task_runner,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context);
 

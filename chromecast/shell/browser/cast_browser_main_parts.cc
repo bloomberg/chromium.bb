@@ -17,6 +17,7 @@
 #include "chromecast/shell/browser/devtools/remote_debugging_server.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "chromecast/shell/browser/webui/webui_cast.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_ANDROID)
@@ -93,6 +94,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       new CastBrowserContext(url_request_context_factory_));
   cast_browser_process_->SetMetricsServiceClient(
       metrics::CastMetricsServiceClient::Create(
+          content::BrowserThread::GetBlockingPool(),
           ChromecastConfig::GetInstance()->pref_service(),
           cast_browser_process_->browser_context()->GetRequestContext()));
   cast_browser_process_->SetRemoteDebuggingServer(new RemoteDebuggingServer());
