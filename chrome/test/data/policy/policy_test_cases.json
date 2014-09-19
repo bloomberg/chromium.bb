@@ -326,10 +326,7 @@
     "test_policy": { "MetricsReportingEnabled": false },
     "pref_mappings": [
       { "pref": "user_experience_metrics.reporting_enabled",
-        "local_state": true,
-        "indicator_tests": [
-          { "policy": { "MetricsReportingEnabled": false } }
-        ]
+        "local_state": true
       }
     ]
   },

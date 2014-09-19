@@ -178,7 +178,7 @@ class PolicyTestCase {
   void AddSupportedOs(const std::string& os) { supported_os_.push_back(os); }
 
   bool IsSupported() const {
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
     if (is_official_only())
       return false;
 #endif
