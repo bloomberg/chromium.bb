@@ -157,7 +157,7 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_PaintUpdate) {
   EXPECT_FALSE(GetOverlay()->received_paint_update_);
 
   ReceivePaintUpdate();
-  // Paint updates until the navigation is committed represent updates
+  // Paint updates until the navigation is committed typically represent updates
   // for the previous page, so they shouldn't affect the flag.
   EXPECT_FALSE(GetOverlay()->received_paint_update_);
 
@@ -179,17 +179,13 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_LoadingUpdate) {
   // Navigation was started, so the loading status flag should be reset.
   EXPECT_FALSE(GetOverlay()->loading_complete_);
 
-  // Load updates until the navigation is committed represent updates for the
-  // previous page, so they shouldn't affect the flag.
+  // DidStopLoading for any navigation should always reset the load flag and
+  // dismiss the overlay even if the pending navigation wasn't committed -
+  // this is a "safety net" in case we mis-identify the destination webpage
+  // (which can happen if a new navigation is performed while while a GestureNav
+  // navigation is in progress).
   contents()->TestSetIsLoading(true);
   contents()->TestSetIsLoading(false);
-  EXPECT_FALSE(GetOverlay()->loading_complete_);
-
-  contents()->CommitPendingNavigation();
-  contents()->TestSetIsLoading(true);
-  contents()->TestSetIsLoading(false);
-  // Navigation was committed and the load update was received - the flag
-  // should now be updated.
   EXPECT_TRUE(GetOverlay()->loading_complete_);
 
   EXPECT_FALSE(GetOverlay()->web_contents());

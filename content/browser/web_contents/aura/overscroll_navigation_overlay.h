@@ -101,10 +101,10 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   bool loading_complete_;
   bool received_paint_update_;
 
-  // Unique ID of the NavigationEntry we are navigating to. This is needed to
+  // URL of the NavigationEntry we are navigating to. This is needed to
   // filter on WebContentsObserver callbacks and is used to dismiss the overlay
   // when the relevant page loads and paints.
-  int pending_entry_id_;
+  GURL pending_entry_url_;
 
   // The |WindowSlider| that allows sliding history layers while the page is
   // being reloaded.
