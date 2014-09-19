@@ -55,8 +55,6 @@ deps = {
         Var('git_url') + '/external/gyp.git@0ff4e1aa19641cda58e3ed98399e0d96e6ccd7c2',
     'tools/valgrind':
         Var('git_url') + '/chromium/src/tools/valgrind.git@4989a1b19c3a33c828e385d3a07e83e202e1e651',
-    'validator_snapshots':
-        Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
 
 deps_os = {
