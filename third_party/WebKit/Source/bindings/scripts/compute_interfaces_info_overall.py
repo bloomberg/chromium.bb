@@ -160,6 +160,42 @@ def compute_inheritance_info(interface_name):
     })
 
 
+def compute_global_type_info():
+    ancestors = {}
+    dictionaries = {}
+    component_dirs = {}
+    implemented_as_interfaces = {}
+    will_be_garbage_collected_interfaces = set()
+    garbage_collected_interfaces = set()
+    callback_interfaces = set()
+
+    for interface_name, interface_info in interfaces_info.iteritems():
+        component_dirs[interface_name] = interface_info['component_dir']
+
+        if interface_info['ancestors']:
+            ancestors[interface_name] = interface_info['ancestors']
+        if interface_info['is_callback_interface']:
+            callback_interfaces.add(interface_name)
+        if interface_info['is_dictionary']:
+            dictionaries[interface_name] = interface_info['is_dictionary']
+        if interface_info['implemented_as']:
+            implemented_as_interfaces[interface_name] = interface_info['implemented_as']
+
+        inherited_extended_attributes = interface_info['inherited_extended_attributes']
+        if 'WillBeGarbageCollected' in inherited_extended_attributes:
+            will_be_garbage_collected_interfaces.add(interface_name)
+        if 'GarbageCollected' in inherited_extended_attributes:
+            garbage_collected_interfaces.add(interface_name)
+
+    interfaces_info['ancestors'] = ancestors
+    interfaces_info['callback_interfaces'] = callback_interfaces
+    interfaces_info['dictionaries'] = dictionaries
+    interfaces_info['implemented_as_interfaces'] = implemented_as_interfaces
+    interfaces_info['garbage_collected_interfaces'] = garbage_collected_interfaces
+    interfaces_info['will_be_garbage_collected_interfaces'] = will_be_garbage_collected_interfaces
+    interfaces_info['component_dirs'] = component_dirs
+
+
 def compute_interfaces_info_overall(info_individuals):
     """Compute information about IDL files.
 
@@ -246,6 +282,10 @@ def compute_interfaces_info_overall(info_individuals):
         del interface_info['extended_attributes']
         del interface_info['is_legacy_treat_as_partial_interface']
         del interface_info['parent']
+
+    # Compute global_type_info to interfaces_info so that idl_compiler does
+    # not need to always calculate the info in __init__.
+    compute_global_type_info()
 
 
 ################################################################################
