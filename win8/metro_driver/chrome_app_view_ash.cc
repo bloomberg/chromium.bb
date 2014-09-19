@@ -970,6 +970,9 @@ void ChromeAppViewAsh::OnMetroExit(MetroTerminateMethod method) {
 
     globals.app_exit->Exit();
   }
+
+  // Try really hard, see http://crbug.com/411147 for details.
+  ::TerminateProcess(::GetCurrentProcess(), 0);
 }
 
 void ChromeAppViewAsh::OnInputSourceChanged() {
