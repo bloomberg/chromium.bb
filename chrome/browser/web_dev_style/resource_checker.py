@@ -17,7 +17,7 @@ class ResourceChecker(object):
 
   def IncludeCheck(self, line_number, line):
     return regex_check.RegexCheck(self.input_api.re, line_number, line,
-        "(</include>)", "</include> is unnecessary. Please remove.")
+        "(</include>|<include.*/>)", "Closing <include> tags is unnecessary.")
 
   def RunChecks(self):
     """Check for violations of the Chromium web development style guide. See

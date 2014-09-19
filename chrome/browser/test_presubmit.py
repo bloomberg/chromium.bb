@@ -42,7 +42,8 @@ class ResourceStyleGuideTest(SuperMoxTestBase):
     error = self.checker.IncludeCheck(1, line)
     self.assertNotEqual('', error,
         'Should be flagged as style error: ' + line)
-    self.assertEqual(GetHighlight(line, error), '</include>')
+    highlight = GetHighlight(line, error).strip()
+    self.assertTrue('include' in highlight and highlight[0] == '<')
 
   def ShouldPassIncludeCheck(self, line):
     """Checks that the '</include>' checker doesn't flag |line| as an error."""
@@ -54,6 +55,8 @@ class ResourceStyleGuideTest(SuperMoxTestBase):
         "</include>   ",
         "    </include>",
         "    </include>   ",
+        '  <include src="blah.js" />   ',
+        '<include src="blee.js"/>',
     ]
     for line in lines:
       self.ShouldFailIncludeCheck(line)
