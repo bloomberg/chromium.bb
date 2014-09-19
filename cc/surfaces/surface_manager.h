@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "cc/surfaces/surface_damage_observer.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
@@ -40,6 +41,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
   SurfaceMap surface_map_;
   ObserverList<SurfaceDamageObserver> observer_list_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };
