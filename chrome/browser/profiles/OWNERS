@@ -13,3 +13,5 @@ ajwong@chromium.org
 
 per-file incognito_mode_policy_handler*=dconnelly@chromium.org
 per-file incognito_mode_policy_handler*=joaodasilva@chromium.org
+
+per-file profile_metrics*=mlerman@chromium.org
