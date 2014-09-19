@@ -32,11 +32,11 @@ class SYNC_EXPORT AttachmentServiceProxyForTest
         scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory);
 
    private:
+    virtual ~OwningCore();
+
     scoped_ptr<AttachmentService> wrapped_;
     // WeakPtrFactory for wrapped_.  See Create() for why this is a scoped_ptr.
     scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory_;
-
-    virtual ~OwningCore();
 
     DISALLOW_COPY_AND_ASSIGN(OwningCore);
   };
