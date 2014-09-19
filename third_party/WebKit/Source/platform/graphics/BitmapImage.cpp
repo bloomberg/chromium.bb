@@ -187,14 +187,6 @@ IntSize BitmapImage::sizeRespectingOrientation() const
     return m_sizeRespectingOrientation;
 }
 
-IntSize BitmapImage::currentFrameSize() const
-{
-    if (!m_currentFrame || m_hasUniformFrameSize)
-        return size();
-    IntSize frameSize = m_source.frameSizeAtIndex(m_currentFrame);
-    return frameSize;
-}
-
 bool BitmapImage::getHotSpot(IntPoint& hotSpot) const
 {
     bool result = m_source.getHotSpot(hotSpot);

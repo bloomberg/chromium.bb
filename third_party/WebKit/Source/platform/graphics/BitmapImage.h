@@ -51,10 +51,12 @@ public:
     {
         return adoptRef(new BitmapImage(nativeImage, observer));
     }
+
     static PassRefPtr<BitmapImage> create(ImageObserver* observer = 0)
     {
         return adoptRef(new BitmapImage(observer));
     }
+
     virtual ~BitmapImage();
 
     virtual bool isBitmapImage() const OVERRIDE;
@@ -63,13 +65,11 @@ public:
 
     virtual IntSize size() const OVERRIDE;
     IntSize sizeRespectingOrientation() const;
-    IntSize currentFrameSize() const;
     virtual bool getHotSpot(IntPoint&) const OVERRIDE;
-
+    virtual String filenameExtension() const OVERRIDE;
     virtual bool dataChanged(bool allDataReceived) OVERRIDE;
     bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;
-    virtual String filenameExtension() const OVERRIDE;
 
     // It may look unusual that there is no start animation call as public API.  This is because
     // we start and stop animating lazily.  Animation begins whenever someone draws the image.  It will
