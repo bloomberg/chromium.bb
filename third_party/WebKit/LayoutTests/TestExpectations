@@ -269,14 +269,6 @@ crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout
 
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
-crbug.com/397555 fast/repaint/table-outer-border.html [ NeedsRebaseline ]
-crbug.com/397555 svg/carto.net/tabgroup.svg [ NeedsRebaseline ]
-crbug.com/397555 fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
-crbug.com/397555 fast/repaint/overflow-into-content.html [ NeedsRebaseline ]
-crbug.com/397555 fast/box-shadow/negative-shadow-box-shrink.html [ NeedsRebaseline ]
-crbug.com/397555 compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
-crbug.com/397555 fast/repaint/remove-block-after-layout.html [ NeedsRebaseline ]
-
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-overflow.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
