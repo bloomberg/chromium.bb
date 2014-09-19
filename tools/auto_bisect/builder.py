@@ -40,7 +40,8 @@ class Builder(object):
               'Path to visual studio could not be determined.')
       else:
         SetBuildSystemDefault(opts.build_preference, opts.use_goma,
-                              opts.goma_dir)
+                              # Need to re-escape goma dir, see crbug.com/394990
+                              opts.goma_dir.encode('string_escape'))
     else:
       if not opts.build_preference:
         if 'ninja' in os.getenv('GYP_GENERATORS', default=''):
