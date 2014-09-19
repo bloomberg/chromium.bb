@@ -45,9 +45,15 @@ class MEDIA_EXPORT AudioBlockFifo {
   // Number of unfilled frames in the whole FIFO.
   int GetUnfilledFrames() const;
 
+  // Dynamically increase |blocks| of memory to the FIFO.
+  void IncreaseCapacity(int blocks);
+
  private:
   // The actual FIFO is a vector of audio buses.
   ScopedVector<AudioBus> audio_blocks_;
+
+  // Number of channels in AudioBus.
+  const int channels_;
 
   // Maximum number of frames of data one block of memory can contain.
   // This value is set by |frames| in the constructor.

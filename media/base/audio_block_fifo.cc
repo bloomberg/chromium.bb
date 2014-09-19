@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "media/base/audio_block_fifo.h"
 
 #include "base/logging.h"
@@ -9,17 +11,13 @@
 namespace media {
 
 AudioBlockFifo::AudioBlockFifo(int channels, int frames, int blocks)
-    : block_frames_(frames),
+    : channels_(channels),
+      block_frames_(frames),
       write_block_(0),
       read_block_(0),
       available_blocks_(0),
       write_pos_(0) {
-  // Create |blocks| of audio buses and push them to the containers.
-  audio_blocks_.reserve(blocks);
-  for (int i = 0; i < blocks; ++i) {
-    scoped_ptr<AudioBus> audio_bus = AudioBus::Create(channels, frames);
-    audio_blocks_.push_back(audio_bus.release());
-  }
+  IncreaseCapacity(blocks);
 }
 
 AudioBlockFifo::~AudioBlockFifo() {}
@@ -31,6 +29,7 @@ void AudioBlockFifo::Push(const void* source,
   DCHECK_GT(frames, 0);
   DCHECK_GT(bytes_per_sample, 0);
   DCHECK_LT(available_blocks_, static_cast<int>(audio_blocks_.size()));
+  CHECK_LE(frames, GetUnfilledFrames());
 
   const uint8* source_ptr = static_cast<const uint8*>(source);
   int frames_to_push = frames;
@@ -54,7 +53,7 @@ void AudioBlockFifo::Push(const void* source,
       ++available_blocks_;
     }
 
-    source_ptr += push_frames * bytes_per_sample * current_block->channels();
+    source_ptr += push_frames * bytes_per_sample * channels_;
     frames_to_push -= push_frames;
     DCHECK_GE(frames_to_push, 0);
   }
@@ -84,6 +83,36 @@ int AudioBlockFifo::GetUnfilledFrames() const {
       (audio_blocks_.size() - available_blocks_) * block_frames_ - write_pos_;
   DCHECK_GE(unfilled_frames, 0);
   return unfilled_frames;
+}
+
+void AudioBlockFifo::IncreaseCapacity(int blocks) {
+  DCHECK_GT(blocks, 0);
+
+  // Create |blocks| of audio buses and insert them to the containers.
+  audio_blocks_.reserve(audio_blocks_.size() + blocks);
+
+  const int original_size = audio_blocks_.size();
+  for (int i = 0; i < blocks; ++i) {
+    audio_blocks_.push_back(
+        AudioBus::Create(channels_, block_frames_).release());
+  }
+
+  if (!original_size)
+    return;
+
+  std::rotate(audio_blocks_.begin() + read_block_,
+              audio_blocks_.begin() + original_size,
+              audio_blocks_.end());
+
+  // Update the write pointer if it is on top of the new inserted blocks.
+  if (write_block_ >= read_block_)
+    write_block_ += blocks;
+
+  // Update the read pointers correspondingly.
+  read_block_ += blocks;
+
+  DCHECK_LT(read_block_, static_cast<int>(audio_blocks_.size()));
+  DCHECK_LT(write_block_, static_cast<int>(audio_blocks_.size()));
 }
 
 }  // namespace media

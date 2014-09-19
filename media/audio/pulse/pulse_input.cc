@@ -270,6 +270,15 @@ void PulseAudioInputStream::ReadData() {
       break;
 
     const int number_of_frames = length / params_.GetBytesPerFrame();
+    if (number_of_frames > fifo_.GetUnfilledFrames()) {
+      // Dynamically increase capacity to the FIFO to handle larger buffer got
+      // from Pulse.
+      const int increase_blocks_of_buffer = static_cast<int>(
+          (number_of_frames - fifo_.GetUnfilledFrames()) /
+              params_.frames_per_buffer()) + 1;
+      fifo_.IncreaseCapacity(increase_blocks_of_buffer);
+    }
+
     fifo_.Push(data, number_of_frames, params_.bits_per_sample() / 8);
 
     // Checks if we still have data.
