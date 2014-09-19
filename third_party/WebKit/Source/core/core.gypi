@@ -1606,7 +1606,6 @@
             'rendering/RenderLayerFilterInfo.h',
             'rendering/RenderLayerModelObject.cpp',
             'rendering/RenderLayerReflectionInfo.cpp',
-            'rendering/RenderLayerRepainter.cpp',
             'rendering/RenderLayerScrollableArea.cpp',
             'rendering/RenderLayerStackingNode.cpp',
             'rendering/RenderLayerStackingNodeIterator.cpp',

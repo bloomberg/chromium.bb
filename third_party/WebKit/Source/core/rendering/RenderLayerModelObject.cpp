@@ -28,6 +28,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 namespace blink {
 
@@ -189,6 +190,29 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
     if (reason == InvalidationLocationChange || reason == InvalidationFull)
         childTreeWalkState.setForceCheckForPaintInvalidation();
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
+}
+
+void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r) const
+{
+    // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
+    // so assert but check that the layer is composited.
+    ASSERT(compositingState() != NotComposited);
+
+    WebInvalidationDebugAnnotations annotations = WebInvalidationDebugAnnotationsNone;
+    if (!hadPaintInvalidation())
+        annotations = WebInvalidationDebugAnnotationsFirstPaint;
+    // FIXME: The callers assume they are calling a const function but this function has a side effect.
+    const_cast<RenderLayerModelObject*>(this)->setHadPaintInvalidation();
+
+    // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
+    if (layer()->groupedMapping()) {
+        LayoutRect paintInvalidationRect = r;
+        paintInvalidationRect.move(layer()->subpixelAccumulation());
+        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
+            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), annotations);
+    } else {
+        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, annotations);
+    }
 }
 
 } // namespace blink

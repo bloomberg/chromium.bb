@@ -416,7 +416,7 @@ void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidation
     ASSERT(layer()->compositingState() == PaintsIntoOwnBacking || !frame()->ownerRenderer());
 
     if (layer()->compositingState() == PaintsIntoOwnBacking) {
-        layer()->paintInvalidator().setBackingNeedsPaintInvalidationInRect(paintInvalidationRect);
+        setBackingNeedsPaintInvalidationInRect(paintInvalidationRect);
     } else {
         m_frameView->contentRectangleForPaintInvalidation(pixelSnappedIntRect(paintInvalidationRect));
     }

@@ -137,7 +137,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_potentialCompositingReasonsFromStyle(CompositingReasonNone)
     , m_compositingReasons(CompositingReasonNone)
     , m_groupedMapping(0)
-    , m_paintInvalidator(*renderer)
     , m_clipper(*renderer)
 {
     updateStackingNode();

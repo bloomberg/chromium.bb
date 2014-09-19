@@ -1286,7 +1286,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
-        renderView()->layer()->paintInvalidator().setBackingNeedsPaintInvalidationInRect(updateRect);
+        renderView()->invalidatePaintRectangle(updateRect);
     }
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {
