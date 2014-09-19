@@ -70,7 +70,7 @@ remoting.MenuButton = function(container, opt_onShow, opt_onHide) {
     if (that.onShow_) {
       that.onShow_();
     }
-    that.button_.classList.toggle(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
+    that.button_.classList.add(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
     document.body.addEventListener('click', closeHandler, false);
     event.stopPropagation();
   };
