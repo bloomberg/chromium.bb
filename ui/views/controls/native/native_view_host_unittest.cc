@@ -7,55 +7,23 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
+#include "ui/views/controls/native/native_view_host_test_base.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
-class NativeViewHostTest : public ViewsTestBase {
+class NativeViewHostTest : public test::NativeViewHostTestBase {
  public:
   NativeViewHostTest() {
   }
 
   virtual void SetUp() OVERRIDE {
     ViewsTestBase::SetUp();
-
-    // Create the top level widget.
-    toplevel_.reset(new Widget);
-    Widget::InitParams toplevel_params =
-        CreateParams(Widget::InitParams::TYPE_WINDOW);
-    toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    toplevel_->Init(toplevel_params);
-  }
-
-  // Create a child widget whose native parent is |native_parent_view|, uses
-  // |contents_view|, and is attached to |host| which is added as a child to
-  // |parent_view|.
-  Widget* CreateChildForHost(gfx::NativeView native_parent_view,
-                             View* parent_view,
-                             View* contents_view,
-                             NativeViewHost* host) {
-    Widget* child = new Widget;
-    Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
-    child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    child_params.parent = native_parent_view;
-    child->Init(child_params);
-    child->SetContentsView(contents_view);
-
-    // Owned by |parent_view|.
-    parent_view->AddChildView(host);
-    host->Attach(child->GetNativeView());
-
-    return child;
-  }
-
-  Widget* toplevel() {
-    return toplevel_.get();
+    CreateTopLevel();
   }
 
  private:
-  scoped_ptr<Widget> toplevel_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostTest);
 };
 

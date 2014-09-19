@@ -11,8 +11,10 @@
 #include "ui/views/view.h"
 
 namespace views {
+namespace test {
+class NativeViewHostTestBase;
+}
 
-class NativeViewHostAuraTest;
 class NativeViewHostWrapper;
 
 // If a NativeViewHost's native view is a Widget, this native window
@@ -93,7 +95,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   virtual const char* GetClassName() const OVERRIDE;
 
  private:
-  friend class NativeViewHostAuraTest;
+  friend class test::NativeViewHostTestBase;
 
   // Detach the native view. |destroyed| is true if the native view is
   // detached because it's being destroyed, or false otherwise.

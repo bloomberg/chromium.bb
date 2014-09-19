@@ -10,29 +10,12 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/controls/native/native_view_host_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
-
-// Testing wrapper of the NativeViewHost
-class NativeViewHostTesting : public NativeViewHost {
- public:
-  NativeViewHostTesting() {}
-  virtual ~NativeViewHostTesting() { destroyed_count_++; }
-
-  static void ResetDestroyedCount() { destroyed_count_ = 0; }
-
-  static int destroyed_count() { return destroyed_count_; }
-
- private:
-  static int destroyed_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeViewHostTesting);
-};
-int NativeViewHostTesting::destroyed_count_ = 0;
 
 // Observer watching for window visibility and bounds change events. This is
 // used to verify that the child and clipping window operations are done in the
@@ -91,21 +74,13 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostWindowObserver);
 };
 
-class NativeViewHostAuraTest : public ViewsTestBase {
+class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
  public:
   NativeViewHostAuraTest() {
   }
 
   NativeViewHostAura* native_host() {
-    return static_cast<NativeViewHostAura*>(host_->native_wrapper_.get());
-  }
-
-  Widget* toplevel() {
-    return toplevel_.get();
-  }
-
-  NativeViewHost* host() {
-    return host_.get();
+    return static_cast<NativeViewHostAura*>(GetNativeWrapper());
   }
 
   Widget* child() {
@@ -115,38 +90,15 @@ class NativeViewHostAuraTest : public ViewsTestBase {
   aura::Window* clipping_window() { return &(native_host()->clipping_window_); }
 
   void CreateHost() {
-    // Create the top level widget.
-    toplevel_.reset(new Widget);
-    Widget::InitParams toplevel_params =
-        CreateParams(Widget::InitParams::TYPE_WINDOW);
-    toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    toplevel_->Init(toplevel_params);
-
-    // And the child widget.
-    child_.reset(new Widget);
-    Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
-    child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    child_params.parent = toplevel_->GetNativeView();
-    child_->Init(child_params);
-    child_->SetContentsView(new View);
-
-    // Owned by |toplevel|.
-    host_.reset(new NativeViewHostTesting);
-    toplevel_->GetRootView()->AddChildView(host_.get());
-    host_->Attach(child_->GetNativeView());
+    CreateTopLevel();
+    CreateTestingHost();
+    child_.reset(CreateChildForHost(toplevel()->GetNativeView(),
+                                    toplevel()->GetRootView(),
+                                    new View,
+                                    host()));
   }
-
-  void DestroyHost() {
-    host_.reset();
-  }
-
-  NativeViewHostTesting* ReleaseHost() { return host_.release(); }
-
-  void DestroyTopLevel() { toplevel_.reset(); }
 
  private:
-  scoped_ptr<Widget> toplevel_;
-  scoped_ptr<NativeViewHostTesting> host_;
   scoped_ptr<Widget> child_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostAuraTest);
@@ -207,12 +159,12 @@ TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
 // NativeViewHost works correctly. Specifically the associated NVH should be
 // destroyed and there shouldn't be any errors.
 TEST_F(NativeViewHostAuraTest, DestroyWidget) {
-  NativeViewHostTesting::ResetDestroyedCount();
+  ResetHostDestroyedCount();
   CreateHost();
   ReleaseHost();
-  EXPECT_EQ(0, NativeViewHostTesting::destroyed_count());
+  EXPECT_EQ(0, host_destroyed_count());
   DestroyTopLevel();
-  EXPECT_EQ(1, NativeViewHostTesting::destroyed_count());
+  EXPECT_EQ(1, host_destroyed_count());
 }
 
 // Test that the fast resize path places the clipping and content windows were
