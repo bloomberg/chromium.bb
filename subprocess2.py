@@ -34,8 +34,8 @@ SUBPROCESS_CLEANUP_HACKED = False
 class CalledProcessError(subprocess.CalledProcessError):
   """Augment the standard exception with more data."""
   def __init__(self, returncode, cmd, cwd, stdout, stderr):
-    super(CalledProcessError, self).__init__(returncode, cmd)
-    self.stdout = stdout
+    super(CalledProcessError, self).__init__(returncode, cmd, output=stdout)
+    self.stdout = self.output  # for backward compatibility.
     self.stderr = stderr
     self.cwd = cwd
 
