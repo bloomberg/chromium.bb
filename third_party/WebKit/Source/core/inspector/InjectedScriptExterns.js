@@ -128,12 +128,22 @@ InjectedScriptHostClass.prototype.unmonitorFunction = function(fn) { }
  */
 InjectedScriptHostClass.prototype.setFunctionVariableValue = function(fun, scopeNumber, variableName, newValue) { }
 
+/**
+ * @param {!Object} obj
+ * @param {string} key
+ * @param {*} value
+ */
+InjectedScriptHostClass.prototype.setNonEnumProperty = function(obj, key, value) { }
+
+
 /** @type {!InjectedScriptHostClass} */
 var InjectedScriptHost;
 /** @type {!Window} */
 var inspectedWindow;
 /** @type {number} */
 var injectedScriptId;
+var __commandLineAPI;
+var __scopeChainForEval;
 
 /**
  * @constructor
