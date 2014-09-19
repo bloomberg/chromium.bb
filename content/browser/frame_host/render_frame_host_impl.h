@@ -479,14 +479,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   ServiceRegistryImpl service_registry_;
 
-  base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
-
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   // Callback when an event is received, for testing.
   base::Callback<void(ui::AXEvent, int)> accessibility_testing_callback_;
   // The most recently received accessibility tree - for testing only.
   scoped_ptr<ui::AXTree> ax_tree_for_testing_;
+
+  // NOTE: This must be the last member.
+  base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };
