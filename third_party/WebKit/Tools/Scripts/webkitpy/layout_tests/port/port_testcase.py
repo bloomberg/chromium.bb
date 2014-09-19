@@ -325,8 +325,6 @@ class PortTestCase(unittest.TestCase):
         port = self.make_port()
 
         generic_path = port.path_to_generic_test_expectations_file()
-        chromium_overrides_path = port.path_from_chromium_base(
-            'webkit', 'tools', 'layout_tests', 'test_expectations.txt')
         never_fix_tests_path = port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests')
         stale_tests_path = port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations')
         slow_tests_path = port._filesystem.join(port.layout_tests_dir(), 'SlowTests')
@@ -340,13 +338,13 @@ class PortTestCase(unittest.TestCase):
         self.assertEqual(port.expectations_files(),
                          [generic_path, skia_overrides_path,
                           never_fix_tests_path, stale_tests_path, slow_tests_path,
-                          flaky_tests_path, chromium_overrides_path])
+                          flaky_tests_path])
 
         port._options.builder_name = 'builder (deps)'
         self.assertEqual(port.expectations_files(),
                          [generic_path, skia_overrides_path,
                           never_fix_tests_path, stale_tests_path, slow_tests_path,
-                          flaky_tests_path, chromium_overrides_path])
+                          flaky_tests_path])
 
         # A builder which does NOT observe the Chromium test_expectations,
         # but still observes the Skia test_expectations...

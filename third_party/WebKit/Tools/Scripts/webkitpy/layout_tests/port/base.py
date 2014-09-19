@@ -1246,9 +1246,6 @@ class Port(object):
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'FlakyTests'))
 
-        builder_name = self.get_option('builder_name', 'DUMMY_BUILDER_NAME')
-        if builder_name == 'DUMMY_BUILDER_NAME' or '(deps)' in builder_name or builder_name in self.try_builder_names:
-            paths.append(self.path_from_chromium_base('webkit', 'tools', 'layout_tests', 'test_expectations.txt'))
         return paths
 
     def expectations_dict(self):
