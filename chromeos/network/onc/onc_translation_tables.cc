@@ -108,6 +108,8 @@ const FieldTranslationEntry vpn_fields[] = {
 const FieldTranslationEntry wifi_fields[] = {
     { ::onc::wifi::kAutoConnect, shill::kAutoConnectProperty},
     { ::onc::wifi::kBSSID, shill::kWifiBSsid},
+    // This dictionary is converted during translation, see onc_translator_*.
+    // { ::onc::wifi::kEAP, shill::kEap*},
     { ::onc::wifi::kFrequency, shill::kWifiFrequency},
     { ::onc::wifi::kFrequencyList, shill::kWifiFrequencyListProperty},
     { ::onc::wifi::kHiddenSSID, shill::kWifiHiddenSsid},
@@ -121,6 +123,8 @@ const FieldTranslationEntry wifi_fields[] = {
 
 const FieldTranslationEntry wimax_fields[] = {
     { ::onc::wimax::kAutoConnect, shill::kAutoConnectProperty},
+    // This dictionary is converted during translation, see onc_translator_*.
+    // { ::onc::wimax::kEAP, shill::kEap*},
     { ::onc::wimax::kSignalStrength, shill::kSignalStrengthProperty},
     {NULL}};
 

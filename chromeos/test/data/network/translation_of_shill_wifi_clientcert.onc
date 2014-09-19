@@ -3,6 +3,11 @@
   "Name":"",
   "Type":"WiFi",
   "WiFi":{
+    "EAP": {
+      "Identity": "abc ${LOGIN_ID}@my.domain.com",
+      "SaveCredentials": true,
+      "UseSystemCAs": true
+    },
     "SSID":"SomeWifi-XY",
     "Security":"WPA-EAP"
   }

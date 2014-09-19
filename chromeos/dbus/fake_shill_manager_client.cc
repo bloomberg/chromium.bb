@@ -723,6 +723,12 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty("/service/wimax1",
                                  shill::kConnectableProperty,
                                  base::FundamentalValue(true));
+    base::FundamentalValue strength_value(80);
+    services->SetServiceProperty(
+        "/service/wimax1", shill::kSignalStrengthProperty, strength_value);
+    base::StringValue identity_value("test.identity");
+    services->SetServiceProperty(
+        "/service/wimax1", shill::kEapIdentityProperty, identity_value);
   }
 
   // Cellular

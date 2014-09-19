@@ -40,7 +40,7 @@ cr.define('options.network', function() {
    */
   Constants.NETWORK_ORDER = ['Ethernet',
                              'WiFi',
-                             'Wimax',
+                             'WiMAX',
                              'Cellular',
                              'VPN',
                              'addConnection'];
@@ -550,7 +550,7 @@ cr.define('options.network', function() {
           }
         }
       }
-      if (this.data_.key == 'WiFi' || this.data_.key == 'Wimax' ||
+      if (this.data_.key == 'WiFi' || this.data_.key == 'WiMAX' ||
           this.data_.key == 'Cellular') {
         addendum.push({});
         if (this.data_.key == 'WiFi') {
@@ -562,12 +562,12 @@ cr.define('options.network', function() {
               chrome.send('disableNetworkType', ['WiFi']);
             },
             data: {}});
-        } else if (this.data_.key == 'Wimax') {
+        } else if (this.data_.key == 'WiMAX') {
           addendum.push({
             label: loadTimeData.getString('turnOffWimax'),
             command: function() {
               // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
-              chrome.send('disableNetworkType', ['Wimax']);
+              chrome.send('disableNetworkType', ['WiMAX']);
             },
             data: {}});
         } else if (this.data_.key == 'Cellular') {
@@ -1044,11 +1044,11 @@ cr.define('options.network', function() {
     // Only show wimax control if available. Uses cellular icons.
     if (data.wimaxAvailable) {
       if (data.wimaxEnabled)
-        loadData_('Wimax', data.wirelessList, data.rememberedList);
+        loadData_('WiMAX', data.wirelessList, data.rememberedList);
       else
-        addEnableNetworkButton_('Wimax');
+        addEnableNetworkButton_('WiMAX');
     } else {
-      networkList.deleteItem('Wimax');
+      networkList.deleteItem('WiMAX');
     }
 
     // Only show VPN control if there is at least one VPN configured.
@@ -1066,7 +1066,7 @@ cr.define('options.network', function() {
    */
   function addEnableNetworkButton_(type) {
     var subtitle = loadTimeData.getString('networkDisabled');
-    var icon = (type == 'Wimax') ? 'Cellular' : type;
+    var icon = (type == 'WiMAX') ? 'Cellular' : type;
     var enableNetwork = function() {
       if (type == 'WiFi')
         sendChromeMetricsAction('Options_NetworkWifiToggle');

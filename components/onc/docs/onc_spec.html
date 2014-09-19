@@ -356,6 +356,16 @@
       Wi-Fi settings.
     </dd>
 
+    <dt class="field">WiMAX</dt>
+    <dd>
+      <span class="field_meta">
+        (required if <span class="field">Type</span> is
+        <span class="value">WiMAX</span>, otherwise ignored)
+        <span class="type">WiMAX</span>
+      </span>
+      WiMAX settings.
+    </dd>
+
     <dt class="field">Cellular</dt>
     <dd>
       <span class="field_meta">
@@ -1860,6 +1870,52 @@
     <span class="rule_id"></span>
     At most one of <span class="field">ServerCARefs</span> and <span class="field">ServerCARef</span> can be set.
   </p>
+</section>
+
+<section>
+  <h1>WiMAX Networks</h1>
+  <p>
+    For WiMAX connections, <span class="field">Type</span> must be set to
+    <span class="value">WiMAX</span> and the
+    field <span class="field">WiMAX</span> must be set to an object of
+    type <span class="type">WiMAX</span>. Currently only used for
+    representing an existing configuration; ONC configuration of
+    of <span class="field">WiMAX</span> networks is not yet fully supported.
+    Contains the following fields:
+  </p>
+
+  <dl class="field_list">
+    <dt class="field">AutoConnect</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, defaults to <span class="value">false</span>)
+        <span class="type">boolean</span>
+      </span>
+      Indicating that the network should be connected to automatically when
+      possible.
+    </dd>
+
+    <dt class="field">EAP</dt>
+    <dd>
+      <span class="field_meta">
+        (required)
+        <span class="type">EAP</span>
+      </span>
+      EAP settings.
+    </dd>
+
+    <dt class="field">SignalStrength</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, read-only)
+        <span class="type">integer</span>
+      </span>
+      The current signal strength for this network in the range [0, 100],
+      provided by the system. If the network is not in range this field will
+      be set to '0' or not present.
+    </dd>
+  </dl>
+
 </section>
 
 <section>

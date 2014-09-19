@@ -461,7 +461,7 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wifi-details',
                    this.type_ != 'WiFi');
       updateHidden('#details-internet-page .wimax-details',
-                   this.type_ != 'Wimax');
+                   this.type_ != 'WiMAX');
       updateHidden('#details-internet-page .vpn-details', this.type_ != 'VPN');
       updateHidden('#details-internet-page .proxy-details', !this.showProxy_);
 
@@ -644,7 +644,7 @@ cr.define('options.internet', function() {
       var connectable = onc.getActiveValue('Connectable');
       if (connectState != 'Connected' &&
           (!connectable || onc.getWiFiSecurity() != 'None' ||
-          (this.type_ == 'Wimax' || this.type_ == 'VPN'))) {
+          (this.type_ == 'WiMAX' || this.type_ == 'VPN'))) {
         $('details-internet-configure').hidden = false;
       } else {
         $('details-internet-configure').hidden = true;
@@ -667,7 +667,7 @@ cr.define('options.internet', function() {
       var showActivate = false;
       if (type == 'WiFi') {
         $('wifi-connection-state').textContent = connectionStateString;
-      } else if (type == 'Wimax') {
+      } else if (type == 'WiMAX') {
         $('wimax-connection-state').textContent = connectionStateString;
       } else if (type == 'Cellular') {
         $('activation-state').textContent =
@@ -710,7 +710,7 @@ cr.define('options.internet', function() {
         typeKey = 'ethernetTitle';
       else if (type == 'WiFi')
         typeKey = 'wifiTitle';
-      else if (type == 'Wimax')
+      else if (type == 'WiMAX')
         typeKey = 'wimaxTitle';
       else if (type == 'Cellular')
         typeKey = 'cellularTitle';
@@ -1076,7 +1076,7 @@ cr.define('options.internet', function() {
                            'setAutoConnect',
                            'auto-connect-network-wifi',
                            'Options_NetworkAutoConnect');
-    } else if (type == 'Wimax') {
+    } else if (type == 'WiMAX') {
       sendCheckedIfEnabled(servicePath,
                            'setAutoConnect',
                            'auto-connect-network-wimax',
@@ -1398,9 +1398,9 @@ cr.define('options.internet', function() {
 
     var networkName = onc.getTranslatedValue('Name');
 
-    // Signal strength as percentage (for WiFi and Wimax).
+    // Signal strength as percentage (for WiFi and WiMAX).
     var signalStrength;
-    if (type == 'WiFi' || type == 'Wimax')
+    if (type == 'WiFi' || type == 'WiMAX')
       signalStrength = onc.getActiveValue(type + '.SignalStrength');
     if (!signalStrength)
       signalStrength = 0;
@@ -1433,14 +1433,14 @@ cr.define('options.internet', function() {
       $('auto-connect-network-wifi').checked =
           onc.getActiveValue('WiFi.AutoConnect');
       $('auto-connect-network-wifi').disabled = !remembered;
-    } else if (type == 'Wimax') {
+    } else if (type == 'WiMAX') {
       OptionsPage.showTab($('wimax-network-nav-tab'));
       $('wimax-restricted-connectivity').textContent = restrictedString;
 
       $('auto-connect-network-wimax').checked =
-          onc.getActiveValue('Wimax.AutoConnect');
+          onc.getActiveValue('WiMAX.AutoConnect');
       $('auto-connect-network-wimax').disabled = !remembered;
-      var identity = onc.getActiveValue('Wimax.EAP.Identity');
+      var identity = onc.getActiveValue('WiMAX.EAP.Identity');
       setOrHideParent('wimax-eap-identity', identity);
       $('wimax-signal-strength').textContent = strengthString;
     } else if (type == 'Cellular') {
