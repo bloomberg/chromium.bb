@@ -7,7 +7,7 @@ found in the LICENSE file.
 <link rel="import" href="../ct-results-detail.html">
 
 <link rel="import" href="../../lib/network-simulator.html">
-<link rel="import" href="../../model/ct-failure.html">
+<link rel="import" href="../../model/ct-step-failure.html">
 
 <script>
 (function () {
@@ -37,7 +37,7 @@ describe('ct-results-detail', function() {
       };
 
       // FIXME: Use a proper mock model object.
-      var failure = new CTFailure(
+      var failure = new CTStepFailure(
         "testName", "dummy/test.html",
         {
           "dummy builder": {
@@ -89,7 +89,7 @@ describe('ct-results-detail', function() {
 
         assert.lengthOf(resultsDetail.shadowRoot.querySelectorAll('ct-test-output'), 1);
         assert.lengthOf(resultsDetail.shadowRoot.querySelectorAll('ct-results-comparison'), 0);
-      }); 
+      });
     });
   });
 
@@ -117,7 +117,7 @@ describe('ct-results-detail', function() {
             masterUrl: 'http://masterurl/'
           },
         };
-        result.failure = new CTFailure('foo_step', 'test.html', resultsByBuilder, 123, 124);
+        result.failure = new CTStepFailure('foo_step', 'test.html', resultsByBuilder, 123, 124);
         expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/stdio';
 
         setTimeout(done);
@@ -137,7 +137,7 @@ describe('ct-results-detail', function() {
             masterUrl: 'http://masterurl/'
           },
         };
-        result.failure = new CTFailure('foo_step', 'TestSuite.TestName', resultsByBuilder, 123, 124);
+        result.failure = new CTStepFailure('foo_step', 'TestSuite.TestName', resultsByBuilder, 123, 124);
         expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/TestName';
 
         setTimeout(done);

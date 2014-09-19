@@ -5,7 +5,7 @@ found in the LICENSE file.
 -->
 
 <script>
-function CTFailure(step, reason, resultsByBuilder) {
+function CTStepFailure(step, reason, resultsByBuilder) {
   this.key = step + '::' + reason;
   this.step = step;
   // FIXME: Rename this to reason.
@@ -15,7 +15,7 @@ function CTFailure(step, reason, resultsByBuilder) {
   this.resultNodesByBuilder = resultsByBuilder;
 }
 
-CTFailure.prototype.flakinessDashboardURL = function(tree) {
+CTStepFailure.prototype.flakinessDashboardURL = function(tree) {
   var testType = this.step;
 
   // FIXME: Replace the flakiness dashboard's sense of groups with sheriff-o-matic's
@@ -40,11 +40,11 @@ CTFailure.prototype.flakinessDashboardURL = function(tree) {
     });
 }
 
-CTFailure.prototype.embeddedFlakinessDashboardURL = function(tree) {
+CTStepFailure.prototype.embeddedFlakinessDashboardURL = function(tree) {
   return this.flakinessDashboardURL(tree) + '&showChrome=false';
 }
 
-CTFailure.prototype.reasonGroupName = function() {
+CTStepFailure.prototype.reasonGroupName = function() {
   if (!this.testName)
     return undefined;
   if (this.step == 'webkit_tests')
@@ -52,11 +52,11 @@ CTFailure.prototype.reasonGroupName = function() {
   return this.testName.substr(0, this.testName.lastIndexOf('.'));
 };
 
-CTFailure.prototype.keys = function() {
+CTStepFailure.prototype.keys = function() {
   return Object.values(this.resultNodesByBuilder).map('key');
 };
 
-CTFailure.prototype.annotations = function() {
+CTStepFailure.prototype.annotations = function() {
   var annotations = [];
   Object.values(this.resultNodesByBuilder, function(result) {
     annotations.push(result.annotation ? result.annotation : {});
@@ -65,7 +65,7 @@ CTFailure.prototype.annotations = function() {
 };
 
 // FIXME: This should just be provided as part of the alerts feed.
-CTFailure.createKey = function(alert) {
+CTStepFailure.createKey = function(alert) {
   function normalize(str) {
     str = str == null ? '' : String(str);
     return str.replace(/:/g, '_');

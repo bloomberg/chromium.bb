@@ -4,7 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="../ct-failure.html">
+<link rel="import" href="../ct-step-failure.html">
 
 <script>
 (function () {
@@ -14,17 +14,17 @@ var assert = chai.assert;
 describe('ct-failure model', function() {
   var tests = [
     {
-      failure: new CTFailure('browser_tests', 'FooTest.Bar', {}, 123, 123),
+      failure: new CTStepFailure('browser_tests', 'FooTest.Bar', {}, 123, 123),
       expectedGroupName: 'FooTest',
       expectedKey: 'browser_tests::FooTest.Bar',
     },
     {
-      failure: new CTFailure('webkit_tests', 'fast/text/foo.html', {}, 123, 123),
+      failure: new CTStepFailure('webkit_tests', 'fast/text/foo.html', {}, 123, 123),
       expectedGroupName: 'fast/text',
       expectedKey: 'webkit_tests::fast/text/foo.html',
     },
     {
-      failure: new CTFailure('compile', undefined, {}, 123, 123),
+      failure: new CTStepFailure('compile', undefined, {}, 123, 123),
       expectedGroupName: undefined,
       expectedKey: 'compile::undefined',
     }

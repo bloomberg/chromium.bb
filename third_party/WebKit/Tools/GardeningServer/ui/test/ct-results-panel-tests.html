@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-results-panel.html">
 
-<link rel="import" href="../../model/ct-failure.html">
+<link rel="import" href="../../model/ct-step-failure.html">
 
 <script>
 (function () {
@@ -14,7 +14,7 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 var kExampleFailures = [
-  new CTFailure("testName", "plugins/gesture-events-scrolled.html",
+  new CTStepFailure("testName", "plugins/gesture-events-scrolled.html",
     {
       "WebKit Win7 (dbg)": {
         "expected": "PASS",
@@ -39,7 +39,7 @@ var kExampleFailures = [
     },
     177164, 177165
   ),
-  new CTFailure("testName", "plugins/transformed-events.html",
+  new CTStepFailure("testName", "plugins/transformed-events.html",
     {
       "WebKit Win7 (dbg)": {
         "expected": "PASS",
@@ -64,7 +64,7 @@ var kExampleFailures = [
     },
     177164, 177165
   ),
-  new CTFailure("testName", "plugins/gesture-events.html",
+  new CTStepFailure("testName", "plugins/gesture-events.html",
     {
       "WebKit Win7 (dbg)": {
         "expected": "PASS",

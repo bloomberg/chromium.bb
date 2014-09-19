@@ -6,10 +6,11 @@ found in the LICENSE file.
 
 <link rel="import" href="../lib/net.html">
 <link rel="import" href="../lib/update-util.html">
-<link rel="import" href="ct-failure.html">
+<link rel="import" href="ct-builder-failure.html">
+<link rel="import" href="ct-step-failure.html">
 <link rel="import" href="ct-failure-group.html">
 <link rel="import" href="ct-builder-failure-group-data.html">
-<link rel="import" href="ct-sheriff-failure-group-data.html">
+<link rel="import" href="ct-step-failure-group-data.html">
 <link rel="import" href="ct-trooper-failure-group-data.html">
 <link rel="import" href="ct-commit-list.html">
 
@@ -25,7 +26,7 @@ function CTFailures(commitLog) {
 (function() {
 'use strict';
 
-// FIXME: This could potentially move onto CTSheriffFailureGroupData as it isn't relevant to
+// FIXME: This could potentially move onto CTStepFailureGroupData as it isn't relevant to
 // trooper failures.
 // Reverse sorting order, if a > b, return a negative number.
 CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
@@ -153,7 +154,7 @@ CTFailures.prototype._groupFailuresByTreeAndReason = function(failures, annotati
   var failuresByTree = {};
   failures.forEach(function(failure) {
     // Establish the key to uniquely identify a failure by reason.
-    var failureKey = CTFailure.createKey(failure);
+    var failureKey = CTStepFailure.createKey(failure);
 
     var reasonKey = JSON.stringify({
       step: failure.step_name,
@@ -196,14 +197,14 @@ CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, range
     Object.keys(resultsByReason, function(reasonKey, resultsByBuilder) {
       var failure = JSON.parse(reasonKey);
       treeFailures.push(
-          new CTFailure(failure.step, failure.reason, resultsByBuilder));
+          new CTStepFailure(failure.step, failure.reason, resultsByBuilder));
     })
     treeFailures.sort(this._failureComparator);
 
     if (!newFailures[tree])
       newFailures[tree] = [];
     var commitList = new CTCommitList(this.commitLog, rangeGroup.likely_revisions);
-    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, new CTSheriffFailureGroupData(treeFailures, commitList)));
+    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, new CTStepFailureGroupData(treeFailures, commitList)));
   }.bind(this));
 };
 
@@ -219,23 +220,15 @@ CTFailures.prototype._checkBuildersForFailures = function(newFailures) {
       var tree = "blink";
       Object.keys(builders, function(builder, builderInfo) {
         var timeSinceLastUpdate = (this.lastUpdateDate.valueOf() / 1000)  - builderInfo.lastUpdateTime;
-        var alert;
-        // This alert logic should live on the buildbot.
-        if (timeSinceLastUpdate > timeThreshold[builderInfo.state] && builderInfo.state != "idle")
-          alert = (timeSinceLastUpdate / (60 * 60)).toFixed(2) + " hours ";
-
-        var resultsByBuilder = { };
-        resultsByBuilder[builder] = {
-          "actual": "UNKNOWN",
-          "masterUrl": "http://build.chromium.org/p/" + master
-        }
-        if (alert) {
+        // FIXME: This alert logic should live on the buildbot.
+        if (timeSinceLastUpdate > timeThreshold[builderInfo.state] && builderInfo.state != "idle") {
+          var alert = (timeSinceLastUpdate / (60 * 60)).toFixed(2) + " hours ";
+          var masterUrl = "http://build.chromium.org/p/" + master;
           if (!newFailures[tree])
             newFailures[tree] = [];
-          var key = master + "::" + builder + "::" + builderInfo.state;
-          var failure = new CTFailure(builderInfo.state, alert, resultsByBuilder);
+          var failure = new CTBuilderFailure(masterUrl, builder, builderInfo.state, alert);
           var data = new CTBuilderFailureGroupData(failure, builder, "http://build.chromium.org/p/" + master + "/builders/" + builder);
-          newFailures[tree].push(new CTFailureGroup(key, data, 'builders'));
+          newFailures[tree].push(new CTFailureGroup(failure.key, data, 'builders'));
         }
       }.bind(this));
     }

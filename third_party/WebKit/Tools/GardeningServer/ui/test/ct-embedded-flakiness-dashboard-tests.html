@@ -21,7 +21,7 @@ describe('ct-embedded-flakiness-dashboard', function() {
     });
 
     it('should point the iframe to the dashboard', function(done) {
-      var failure = new CTFailure('foo_tests', 'foo/bar.html');
+      var failure = new CTStepFailure('foo_tests', 'foo/bar.html');
       failure.embeddedFlakinessDashboardURL = function(tree) {
         return 'placeholder.html?' + this.flakinessDashboardURL(tree) + '&showChrome=false';
       }

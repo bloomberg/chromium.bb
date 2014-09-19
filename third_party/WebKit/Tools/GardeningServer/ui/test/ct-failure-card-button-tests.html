@@ -4,8 +4,8 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="../ct-bot-failure-card.html">
 <link rel="import" href="../ct-failure-card-buttons.html">
+<link rel="import" href="../ct-step-failure-card.html">
 
 <link rel="import" href="../../model/ct-commit-list-mock.html">
 <link rel="import" href="../../model/ct-commit-log-mock.html">
@@ -24,8 +24,8 @@ describe('ct-failure-card-buttons', function() {
   beforeEach(function(done) {
     card = document.createElement('ct-failure-card-buttons');
     var cl = new CTCommitListMock();
-    group = new CTFailureGroup('', new CTSheriffFailureGroupData([
-        new CTFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
+    group = new CTFailureGroup('', new CTStepFailureGroupData([
+        new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
                       {'blink':158544})], cl));
     card.group = group;
     setTimeout(done);

@@ -11,12 +11,13 @@ function CTBuilderFailureGroupData(failure, bot, url) {
   this.bot = bot;
   this.failure = failure;
   this.url = url;
-  this.builderList = new CTBuilderList(failure);
+  this.builder = new CTBuilder(failure.masterUrl, failure.builder);
   this.category = 'builder';
 };
 
 CTBuilderFailureGroupData.prototype.getAnnotations = function() {
-  return [this.failure.annotations()];
+  // FIXME: Merge in annotations! crbug.com/413499
+  return [];
 };
 
 // FIXME: This function should be replaced and callers should just pass the original object.
@@ -25,6 +26,6 @@ CTBuilderFailureGroupData.prototype.dataToExamine = function() {
 };
 
 CTBuilderFailureGroupData.prototype.failureKeys = function() {
-  return [this.failure.keys()];
+  return [this.failure.key];
 };
 </script>

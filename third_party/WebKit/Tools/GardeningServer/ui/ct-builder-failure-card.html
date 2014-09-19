@@ -12,28 +12,17 @@ found in the LICENSE file.
   <template>
     <style>
       :host {
-        display: flex;
-      }
-
-      ct-builder-grid {
-        margin-right: 10px;
-        width: 250px;
-      }
-
-      #failure {
-        flex: 1;
+        display: block;
       }
     </style>
-    <ct-builder-grid builderList="{{ group.builderList }}"></ct-builder-grid>
-    <div id="failure">
-      <template if="{{ group.failure.step == 'building' }}">
-        Running
-      </template>
-      <template if="{{ group.failure.step == 'offline' }}">
-        Offline
-      </template>
-      for {{ group.failure.testName }}
-    </div>
+    <ct-builder builder="{{ group.builder }}"></ct-builder>
+    <template if="{{ group.failure.state == 'building' }}">
+      running
+    </template>
+    <template if="{{ group.failure.state == 'offline' }}">
+      offline
+    </template>
+    for {{ group.failure.alert }}
   </template>
 </polymer-element>
 

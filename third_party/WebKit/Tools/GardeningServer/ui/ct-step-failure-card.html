@@ -8,31 +8,25 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
 
-<polymer-element name="ct-bot-failure-card" attributes="group commitLog" noscript>
+<polymer-element name="ct-step-failure-card" attributes="group commitLog" noscript>
   <template>
     <style>
       :host {
-        display: flex;
-      }
-
-      ct-builder-grid {
-        margin-right: 10px;
-        width: 250px;
+        display: block;
       }
 
       ct-commit-list {
         margin-top: 15px;
       }
 
-      #failure {
-        flex: 1;
+      ct-builder-grid {
+        display: block;
+        margin-top: 10px;
       }
     </style>
+    <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
     <ct-builder-grid builderList="{{ group.builderList }}"></ct-builder-grid>
-    <div id="failure">
-      <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
-      <ct-commit-list commitList="{{ group.commitList }}"></ct-commit-list>
-    </div>
+    <ct-commit-list commitList="{{ group.commitList }}"></ct-commit-list>
   </template>
   <script>
     Polymer({

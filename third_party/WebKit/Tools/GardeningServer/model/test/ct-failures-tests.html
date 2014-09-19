@@ -10,7 +10,7 @@ found in the LICENSE file.
 <link rel="import" href="../ct-commit-list.html">
 <link rel="import" href="../ct-commit-log-mock.html">
 <link rel="import" href="../ct-failure-group.html">
-<link rel="import" href="../ct-failure.html">
+<link rel="import" href="../ct-step-failure.html">
 
 <script>
 (function () {
@@ -24,10 +24,10 @@ describe('ct-failures', function() {
       var analyzer = new CTFailures(new CTCommitList(undefined, []));
 
       var resultsByBuilder = {};
-      var failure1 = new CTFailure("step1", "reason1", resultsByBuilder, 123, 123);
-      var failure2 = new CTFailure("step1", "reason2", resultsByBuilder, 123, 123);
-      var failure3 = new CTFailure("step1", "reason3", resultsByBuilder, 123, 123);
-      var failure4 = new CTFailure("step2", "reason1", resultsByBuilder, 123, 123);
+      var failure1 = new CTStepFailure("step1", "reason1", resultsByBuilder, 123, 123);
+      var failure2 = new CTStepFailure("step1", "reason2", resultsByBuilder, 123, 123);
+      var failure3 = new CTStepFailure("step1", "reason3", resultsByBuilder, 123, 123);
+      var failure4 = new CTStepFailure("step2", "reason1", resultsByBuilder, 123, 123);
 
       var failures = [failure4, failure3, failure2, failure1];
       var expectedFailures = [failure1, failure2, failure3, failure4];
@@ -43,10 +43,10 @@ describe('ct-failures', function() {
       var cl2 = new CTCommitList(undefined, ['chromium:2', 'blink:1']);
       var cl3 = new CTCommitList(undefined, ['chromium:2', 'blink:2']);
       var cl4 = new CTCommitList(undefined, []);
-      var group1 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl1));
-      var group2 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl2));
-      var group3 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl3));
-      var group4 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl4));
+      var group1 = new CTFailureGroup('', new CTStepFailureGroupData([], cl1));
+      var group2 = new CTFailureGroup('', new CTStepFailureGroupData([], cl2));
+      var group3 = new CTFailureGroup('', new CTStepFailureGroupData([], cl3));
+      var group4 = new CTFailureGroup('', new CTStepFailureGroupData([], cl4));
 
       // Sort by last revision first.
       assert(analyzer._failureByTreeListComparator('chromium', group1, group2) > 0);
@@ -308,7 +308,7 @@ describe('ct-failures', function() {
           assert.equal(group.key, 'linux: Linux Tests (dbg)(1)');
           assert.lengthOf(group.data.failures, 1);
           var failure = group.data.failures[0];
-          assert.equal(failure.constructor, CTFailure);
+          assert.equal(failure.constructor, CTStepFailure);
           assert.equal(failure.key, 'compile::null');
           assert.equal(failure.step, 'compile');
           assert.equal(failure.testName, null);
@@ -442,8 +442,10 @@ describe('ct-failures', function() {
       assert.ok('blink' in newFailures);
       var blinkFailures = newFailures['blink'];
       assert.lengthOf(blinkFailures, 2);
-      assert.equal(blinkFailures[0].key, "chromium.webkit::Win Tests::building");
-      assert.equal(blinkFailures[1].key, "chromium.webkit::Win ASAN::offline");
+      assert.equal(blinkFailures[0].key,
+          "http://build.chromium.org/p/chromium.webkit::Win Tests::building");
+      assert.equal(blinkFailures[1].key,
+          "http://build.chromium.org/p/chromium.webkit::Win ASAN::offline");
     });
   });
 

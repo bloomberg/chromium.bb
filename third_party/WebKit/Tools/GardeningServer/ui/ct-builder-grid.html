@@ -8,20 +8,11 @@ found in the LICENSE file.
 <link rel="import" href="../model/ct-builder-list.html">
 <link rel="import" href="ct-builder.html">
 
-<polymer-element name="ct-builder-grid" attributes="builderList">
+<polymer-element name="ct-builder-grid" attributes="builderList" noscript>
   <template>
-    <style>
-      ct-builder {
-        display: block;
-      }
-    </style>
+    <span style="font-weight: bold">Bots:</span>
     <template repeat="{{ builder in builderList.builders }}">
       <ct-builder builder="{{ builder }}"></ct-builder>
     </template>
   </template>
-  <script>
-    Polymer({
-      builderList: null,
-    });
-  </script>
 </polymer-element>

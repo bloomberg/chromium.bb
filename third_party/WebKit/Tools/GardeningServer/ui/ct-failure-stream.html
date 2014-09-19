@@ -4,9 +4,9 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="ct-bot-failure-card.html">
 <link rel="import" href="ct-builder-failure-card.html">
 <link rel="import" href="ct-failure-card-buttons.html">
+<link rel="import" href="ct-step-failure-card.html">
 <link rel="import" href="ct-trooper-card.html">
 
 <polymer-element name="ct-failure-stream" attributes="groups commitLog tree category title" noscript>
@@ -49,8 +49,8 @@ found in the LICENSE file.
       <template if="{{ group.category == category }}">
         <div> <!-- FIXME: Remove when we have a better title solution. -->
           <div class="card">
-            <template if="{{ group.data.category == 'sheriff' }}">
-              <ct-bot-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}" commitLog="{{ commitLog }}"></ct-bot-failure-card>
+            <template if="{{ group.data.category == 'step' }}">
+              <ct-step-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}" commitLog="{{ commitLog }}"></ct-step-failure-card>
             </template>
             <template if="{{ group.data.category == 'builder' }}">
               <ct-builder-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-builder-failure-card>

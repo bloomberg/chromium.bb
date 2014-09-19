@@ -26,11 +26,11 @@ describe('ct-failure-stream', function() {
       // ct-failure-stream will give these values to ct-commit-data,
       // which will hit the network unless we figure out how to mock
       // out ct-commit-data in a better way.
-      stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])),
-          new CTFailureGroup('', new CTSheriffFailureGroupData([]))];
+      stream.groups = [new CTFailureGroup('', new CTStepFailureGroupData([])),
+          new CTFailureGroup('', new CTStepFailureGroupData([]))];
       stream.category = 'default';
       setTimeout(function() {
-        var cards = stream.shadowRoot.querySelectorAll('ct-bot-failure-card');
+        var cards = stream.shadowRoot.querySelectorAll('ct-step-failure-card');
         assert.equal(cards.length, 2);
         done();
       });
@@ -40,12 +40,12 @@ describe('ct-failure-stream', function() {
   describe('category', function() {
 
     it('should only show failure groups for the specified category', function(done) {
-      var failures = [new CTFailure('step', 'reason', [{key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}}])];
-      var snoozed = new CTFailureGroup('', new CTSheriffFailureGroupData(failures));
-      stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])), snoozed];
+      var failures = [new CTStepFailure('step', 'reason', [{key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}}])];
+      var snoozed = new CTFailureGroup('', new CTStepFailureGroupData(failures));
+      stream.groups = [new CTFailureGroup('', new CTStepFailureGroupData([])), snoozed];
       stream.category = 'snoozed';
       setTimeout(function() {
-        var cards = stream.shadowRoot.querySelectorAll('ct-bot-failure-card');
+        var cards = stream.shadowRoot.querySelectorAll('ct-step-failure-card');
         assert.equal(cards.length, 1);
         assert.equal(cards[0].group, snoozed.data);
         done();
@@ -53,12 +53,12 @@ describe('ct-failure-stream', function() {
     });
 
     it('should select the correct card type', function(done) {
-      var failures = [new CTFailure('step', 'reason', [{key: 'a', annotation: {}}])];
-      var failureGroup = new CTFailureGroup('', new CTSheriffFailureGroupData(failures));
-      stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])), failureGroup];
+      var failures = [new CTStepFailure('step', 'reason', [{key: 'a', annotation: {}}])];
+      var failureGroup = new CTFailureGroup('', new CTStepFailureGroupData(failures));
+      stream.groups = [new CTFailureGroup('', new CTStepFailureGroupData([])), failureGroup];
       stream.category = 'default';
       setTimeout(function() {
-        assert(stream.shadowRoot.querySelector('ct-bot-failure-card') != null,
+        assert(stream.shadowRoot.querySelector('ct-step-failure-card') != null,
             'missing sheriff card');
         stream.groups = [new CTFailureGroup('', new CTTrooperFailureGroupData(
             'details', 'url', {percent_over_median_slo: '6%',

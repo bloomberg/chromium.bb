@@ -27,7 +27,7 @@ describe('ct-unexpected-failures', function() {
     var noFailuresForTree = document.createElement('ct-unexpected-failures');
     noFailuresForTree.failures = new CTFailures(new CTCommitList(undefined, []));
     noFailuresForTree.failures.failures = {
-      othertree: [new CTFailure('step', 'reason', [])]
+      othertree: [new CTStepFailure('step', 'reason', [])]
     };
     noFailuresForTree.tree = 'mocktree';
 
@@ -55,7 +55,7 @@ describe('ct-unexpected-failures', function() {
     var hasFailures = document.createElement('ct-unexpected-failures');
     hasFailures.failures = new CTFailures(new CTCommitList(undefined, []));
     hasFailures.failures.failures = {
-      mocktree: [new CTFailure('step', 'reason', [])]
+      mocktree: [new CTStepFailure('step', 'reason', [])]
     };
     hasFailures.tree = 'mocktree';
 

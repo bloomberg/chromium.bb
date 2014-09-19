@@ -7,7 +7,7 @@ found in the LICENSE file.
 <link rel="import" href="../ct-builder-list.html">
 
 <link rel="import" href="../ct-builder.html">
-<link rel="import" href="../ct-failure.html">
+<link rel="import" href="../ct-step-failure.html">
 
 <script>
 (function () {
@@ -15,7 +15,7 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 var kExampleFailures = [
-  new CTFailure('layout_tests', "plugins/gesture-events-scrolled.html",
+  new CTStepFailure('layout_tests', "plugins/gesture-events-scrolled.html",
     {
       "WebKit Win7 (dbg)": {
         "actual": "CRASH",
@@ -36,7 +36,7 @@ var kExampleFailures = [
         "failingBuildCount": 1,
       }
     }, 177164, 177165),
-  new CTFailure('layout_tests', "plugins/transformed-events.html",
+  new CTStepFailure('layout_tests', "plugins/transformed-events.html",
     {
       "WebKit Win7 (dbg)": {
         "actual": "TEXT",

@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-test-list.html">
 
-<link rel="import" href="../../model/ct-failure.html">
+<link rel="import" href="../../model/ct-step-failure.html">
 
 <script>
 (function () {
@@ -14,19 +14,19 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 var kExampleTests = [
-  new CTFailure("foo_step", "plugins/gesture-events-scrolled.html", {}, 177164, 177165),
-  new CTFailure("foo_step", "plugins/transformed-events.html", {}, 177164, 177165),
-  new CTFailure("foo_step", "plugins/gesture-events.html", {}, 177164, 177165),
+  new CTStepFailure("foo_step", "plugins/gesture-events-scrolled.html", {}, 177164, 177165),
+  new CTStepFailure("foo_step", "plugins/transformed-events.html", {}, 177164, 177165),
+  new CTStepFailure("foo_step", "plugins/gesture-events.html", {}, 177164, 177165),
 ];
 
 var kExampleTestsChromium = [
-  new CTFailure("browser_tests", "SomeTest.SubTest1", {}, 177164, 177165),
-  new CTFailure("browser_tests", "SomeTest.SubTest2", {}, 177164, 177165),
+  new CTStepFailure("browser_tests", "SomeTest.SubTest1", {}, 177164, 177165),
+  new CTStepFailure("browser_tests", "SomeTest.SubTest2", {}, 177164, 177165),
 ];
 
 var kExampleTestsBlink = [
-  new CTFailure("webkit_tests", "fast/events/foo.html", {}, 177164, 177165),
-  new CTFailure("webkit_tests", "fast/events/bar.html", {}, 177164, 177165),
+  new CTStepFailure("webkit_tests", "fast/events/foo.html", {}, 177164, 177165),
+  new CTStepFailure("webkit_tests", "fast/events/bar.html", {}, 177164, 177165),
 ];
 
 function createTestList(tests, tree) {

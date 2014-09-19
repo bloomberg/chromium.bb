@@ -95,7 +95,7 @@ found in the LICENSE file.
           this.currentFailures = [];
           state.currentFailures.forEach(function(failure) {
             this.currentFailures.push(
-              new CTFailure(failure.step, failure.testName, failure.resultNodesByBuilder));
+              new CTStepFailure(failure.step, failure.testName, failure.resultNodesByBuilder));
           }, this);
         }
         if ('currentCommitList' in state) {
