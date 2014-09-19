@@ -2412,10 +2412,14 @@ _AddReleaseConfigs()
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
   afdo_use=False,
+  signer_tests=True,
 )
 
 _brillo_release.add_config('duck-release',
   boards=['duck'],
+
+  # Need to verify before enabling.
+  signer_tests=False,
 
   # Hw Lab can't test, yet.
   paygen_skip_testing=True,
@@ -2427,6 +2431,7 @@ _brillo_release.add_config('gizmo-release',
 
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
+  signer_tests=False,
 )
 
 _brillo_release.add_config('lemmings-release',
@@ -2437,18 +2442,23 @@ _brillo_release.add_config('lemmings-release',
 
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
+  signer_tests=False,
 )
 
 _brillo_release.add_config('panther_embedded-minimal-release',
   boards=['panther_embedded'],
   profile='minimal',
   paygen=False,
+  signer_tests=False,
 )
 
 _arm_brillo_release = _brillo_release.derive(non_testable_builder)
 
 _arm_brillo_release.add_config('storm-release',
   boards=['storm'],
+
+  # Need to verify before enabling.
+  signer_tests=False,
 
   # Hw Lab can't test duck, yet.
   paygen_skip_testing=True,
@@ -2463,12 +2473,14 @@ _config.add_group('beaglebone-release-group',
 
     # This build doesn't generate signed images, so don't try to release them.
     paygen=False,
+    signer_tests=False,
   ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
 
     # This build doesn't generate signed images, so don't try to release them.
     paygen=False,
+    signer_tests=False,
   ).derive(_grouped_variant_config),
   important=True,
 )
