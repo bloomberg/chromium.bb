@@ -1,18 +1,11 @@
 // Adapter for testharness.js-style tests with Service Workers
 
-// Can only be used with a worker that installs successfully, since it
-// first registers to acquire a ServiceWorkerRegistration object to
-// unregister.
-// FIXME: Use getRegistration() when implemented.
 function service_worker_unregister_and_register(test, url, scope) {
   if (!scope || scope.length == 0)
     return Promise.reject(new Error('tests must define a scope'));
 
   var options = { scope: scope };
-  return navigator.serviceWorker.register(url, options)
-      .then(function(registration) {
-          return registration.unregister();
-        })
+  return service_worker_unregister(test, scope)
       .then(function() {
           return navigator.serviceWorker.register(url, options);
         })
