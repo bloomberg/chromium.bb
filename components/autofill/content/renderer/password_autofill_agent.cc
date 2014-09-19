@@ -965,6 +965,10 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   base::string16 username;
   base::string16 password;
 
+  // Don't fill username if password can't be set.
+  if (!IsElementAutocompletable(*password_element))
+    return false;
+
   // Look for any suitable matches to current field text.
   if (DoUsernamesMatch(fill_data.basic_data.fields[0].value,
                        current_username,
@@ -1010,11 +1014,6 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
 
   // TODO(tkent): Check maxlength and pattern for both username and password
   // fields.
-
-  // Don't fill username if password can't be set.
-  if (!IsElementAutocompletable(*password_element)) {
-    return false;
-  }
 
   // Input matches the username, fill in required values.
   if (IsElementAutocompletable(*username_element)) {
