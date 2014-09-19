@@ -556,6 +556,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   // http://crbug.com/292238.
   // Window is wide enough not to get docked right away.
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
+  window_->SetProperty(aura::client::kCanMaximizeKey, true);
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
 
   {
@@ -1415,6 +1416,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
 // Test that the user user moved window flag is getting properly set.
 TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
   window_->SetBounds(gfx::Rect( 0,  50, 400, 200));
+  window_->SetProperty(aura::client::kCanMaximizeKey, true);
 
   std::vector<aura::Window*> no_attached_windows;
   // Check that an abort doesn't change anything.

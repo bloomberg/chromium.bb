@@ -141,7 +141,15 @@ bool WindowState::IsDocked() const {
 }
 
 bool WindowState::CanMaximize() const {
-  return window_->GetProperty(aura::client::kCanMaximizeKey);
+  // Window must have the kCanMaximizeKey and have no maximum width or height.
+  if (!window()->GetProperty(aura::client::kCanMaximizeKey))
+    return false;
+
+  if (!window()->delegate())
+    return true;
+
+  gfx::Size max_size = window_->delegate()->GetMaximumSize();
+  return !max_size.width() && !max_size.height();
 }
 
 bool WindowState::CanMinimize() const {
@@ -168,10 +176,10 @@ bool WindowState::CanSnap() const {
   if (!CanResize() || window_->type() == ui::wm::WINDOW_TYPE_PANEL ||
       ::wm::GetTransientParent(window_))
     return false;
-  // If a window has a maximum size defined, snapping may make it too big.
-  // TODO(oshima): We probably should snap if possible.
-  return window_->delegate() ? window_->delegate()->GetMaximumSize().IsEmpty() :
-                              true;
+  // If a window cannot be maximized, assume it cannot snap either.
+  // TODO(oshima): We should probably snap if the maximum size is greater than
+  // the snapped size.
+  return CanMaximize();
 }
 
 bool WindowState::HasRestoreBounds() const {
