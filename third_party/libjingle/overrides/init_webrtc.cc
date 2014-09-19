@@ -32,6 +32,16 @@ void AddTraceEvent(char phase,
                                   NULL, flags);
 }
 
+// Define webrtc:field_trial::FindFullName to provide webrtc with a field trial
+// implementation.
+namespace webrtc {
+namespace field_trial {
+std::string FindFullName(const std::string& trial_name) {
+  return base::FieldTrialList::FindFullName(trial_name);
+}
+}  // namespace field_trial
+}  // namespace webrtc
+
 #if defined(LIBPEERCONNECTION_LIB)
 
 // libpeerconnection is being compiled as a static lib.  In this case
@@ -42,17 +52,6 @@ bool InitializeWebRtcModule() {
   webrtc::SetupEventTracer(&GetCategoryGroupEnabled, &AddTraceEvent);
   return true;
 }
-
-// Define webrtc:field_trial::FindFullName to provide webrtc with a field trial
-// implementation. When compiled as a static library this can be done directly
-// and without pointers to functions.
-namespace webrtc {
-namespace field_trial {
-std::string FindFullName(const std::string& trial_name) {
-  return base::FieldTrialList::FindFullName(trial_name);
-}
-}  // namespace field_trial
-}  // namespace webrtc
 
 #else  // !LIBPEERCONNECTION_LIB
 
@@ -127,13 +126,16 @@ bool InitializeWebRtcModule() {
   InitDiagnosticLoggingDelegateFunctionFunction init_diagnostic_logging = NULL;
   bool init_ok = initialize_module(*CommandLine::ForCurrentProcess(),
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-      &Allocate, &Dellocate,
+                                   &Allocate,
+                                   &Dellocate,
 #endif
-      &base::FieldTrialList::FindFullName,
-      logging::GetLogMessageHandler(),
-      &GetCategoryGroupEnabled, &AddTraceEvent,
-      &g_create_webrtc_media_engine, &g_destroy_webrtc_media_engine,
-      &init_diagnostic_logging);
+                                   &webrtc::field_trial::FindFullName,
+                                   logging::GetLogMessageHandler(),
+                                   &GetCategoryGroupEnabled,
+                                   &AddTraceEvent,
+                                   &g_create_webrtc_media_engine,
+                                   &g_destroy_webrtc_media_engine,
+                                   &init_diagnostic_logging);
 
   if (init_ok)
     rtc::SetExtraLoggingInit(init_diagnostic_logging);
