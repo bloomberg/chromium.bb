@@ -666,5 +666,51 @@ TEST(AnimationTest,
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(3.5)));
 }
 
+TEST(AnimationTest, InEffectFillMode) {
+  scoped_ptr<Animation> anim(CreateAnimation(1));
+  anim->set_fill_mode(Animation::FillModeNone);
+  EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+
+  anim->set_fill_mode(Animation::FillModeForwards);
+  EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+
+  anim->set_fill_mode(Animation::FillModeBackwards);
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+
+  anim->set_fill_mode(Animation::FillModeBoth);
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+}
+
+TEST(AnimationTest, InEffectFillModePlayback) {
+  scoped_ptr<Animation> anim(CreateAnimation(1, 1, -1));
+  anim->set_fill_mode(Animation::FillModeNone);
+  EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+
+  anim->set_fill_mode(Animation::FillModeForwards);
+  EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+
+  anim->set_fill_mode(Animation::FillModeBackwards);
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+
+  anim->set_fill_mode(Animation::FillModeBoth);
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
+}
+
 }  // namespace
 }  // namespace cc

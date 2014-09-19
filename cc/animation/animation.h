@@ -51,6 +51,13 @@ class CC_EXPORT Animation {
 
   enum Direction { Normal, Reverse, Alternate, AlternateReverse };
 
+  enum FillMode {
+    FillModeNone,
+    FillModeForwards,
+    FillModeBackwards,
+    FillModeBoth
+  };
+
   static scoped_ptr<Animation> Create(scoped_ptr<AnimationCurve> curve,
                                       int animation_id,
                                       int group_id,
@@ -94,6 +101,9 @@ class CC_EXPORT Animation {
   Direction direction() { return direction_; }
   void set_direction(Direction direction) { direction_ = direction; }
 
+  FillMode fill_mode() { return fill_mode_; }
+  void set_fill_mode(FillMode fill_mode) { fill_mode_ = fill_mode; }
+
   double playback_rate() { return playback_rate_; }
   void set_playback_rate(double playback_rate) {
     playback_rate_ = playback_rate;
@@ -105,6 +115,8 @@ class CC_EXPORT Animation {
         run_state_ == Aborted ||
         run_state_ == WaitingForDeletion;
   }
+
+  bool InEffect(base::TimeTicks monotonic_time) const;
 
   AnimationCurve* curve() { return curve_.get(); }
   const AnimationCurve* curve() const { return curve_.get(); }
@@ -157,6 +169,8 @@ class CC_EXPORT Animation {
             int group_id,
             TargetProperty target_property);
 
+  double ConvertToActiveTime(base::TimeTicks monotonic_time) const;
+
   scoped_ptr<AnimationCurve> curve_;
 
   // IDs are not necessarily unique.
@@ -176,6 +190,7 @@ class CC_EXPORT Animation {
   base::TimeTicks start_time_;
   Direction direction_;
   double playback_rate_;
+  FillMode fill_mode_;
 
   // The time offset effectively pushes the start of the animation back in time.
   // This is used for resuming paused animations -- an animation is added with a

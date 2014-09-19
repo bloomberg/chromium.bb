@@ -67,6 +67,7 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
       iteration_start_(0),
       direction_(Normal),
       playback_rate_(1),
+      fill_mode_(FillModeNone),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
       suspended_(false),
@@ -159,13 +160,13 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
                  .InSecondsF();
 }
 
-double Animation::TrimTimeToCurrentIteration(
-    base::TimeTicks monotonic_time) const {
-  base::TimeTicks trimmed = monotonic_time + time_offset_;
+bool Animation::InEffect(base::TimeTicks monotonic_time) const {
+  return ConvertToActiveTime(monotonic_time) >= 0 ||
+         (fill_mode_ == FillModeBoth || fill_mode_ == FillModeBackwards);
+}
 
-  // Check for valid parameters
-  DCHECK(playback_rate_);
-  DCHECK_GE(iteration_start_, 0);
+double Animation::ConvertToActiveTime(base::TimeTicks monotonic_time) const {
+  base::TimeTicks trimmed = monotonic_time + time_offset_;
 
   // If we're paused, time is 'stuck' at the pause time.
   if (run_state_ == Paused)
@@ -181,7 +182,16 @@ double Animation::TrimTimeToCurrentIteration(
       needs_synchronized_start_time())
     trimmed = base::TimeTicks() + time_offset_;
 
-  double active_time = (trimmed - base::TimeTicks()).InSecondsF();
+  return (trimmed - base::TimeTicks()).InSecondsF();
+}
+
+double Animation::TrimTimeToCurrentIteration(
+    base::TimeTicks monotonic_time) const {
+  // Check for valid parameters
+  DCHECK(playback_rate_);
+  DCHECK_GE(iteration_start_, 0);
+
+  double active_time = ConvertToActiveTime(monotonic_time);
 
   // Return 0 if we are before the start of the animation
   if (active_time < 0)
@@ -254,6 +264,7 @@ scoped_ptr<Animation> Animation::CloneAndInitialize(
   to_return->time_offset_ = time_offset_;
   to_return->direction_ = direction_;
   to_return->playback_rate_ = playback_rate_;
+  to_return->fill_mode_ = fill_mode_;
   DCHECK(!to_return->is_controlling_instance_);
   to_return->is_controlling_instance_ = true;
   return to_return.Pass();

@@ -144,6 +144,9 @@ void LayerAnimationController::AccumulatePropertyUpdates(
     if (!animation->is_impl_only())
       continue;
 
+    if (!animation->InEffect(monotonic_time))
+      continue;
+
     double trimmed = animation->TrimTimeToCurrentIteration(monotonic_time);
     switch (animation->target_property()) {
       case Animation::Opacity: {
@@ -835,6 +838,9 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
     if (animations_[i]->run_state() == Animation::Starting ||
         animations_[i]->run_state() == Animation::Running ||
         animations_[i]->run_state() == Animation::Paused) {
+      if (!animations_[i]->InEffect(monotonic_time))
+        continue;
+
       double trimmed =
           animations_[i]->TrimTimeToCurrentIteration(monotonic_time);
 

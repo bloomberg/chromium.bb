@@ -79,7 +79,6 @@ WebCompositorAnimationImpl::targetProperty() const {
       animation_->target_property());
 }
 
-#if WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS
 double WebCompositorAnimationImpl::iterations() const {
   return animation_->iterations();
 }
@@ -87,15 +86,6 @@ double WebCompositorAnimationImpl::iterations() const {
 void WebCompositorAnimationImpl::setIterations(double n) {
   animation_->set_iterations(n);
 }
-#else
-int WebCompositorAnimationImpl::iterations() const {
-  return animation_->iterations();
-}
-
-void WebCompositorAnimationImpl::setIterations(int n) {
-  animation_->set_iterations(n);
-}
-#endif
 
 double WebCompositorAnimationImpl::iterationStart() const {
   return animation_->iteration_start();
@@ -164,6 +154,41 @@ void WebCompositorAnimationImpl::setPlaybackRate(double playback_rate) {
   animation_->set_playback_rate(playback_rate);
 }
 
+#if WEB_ANIMATION_SUPPORTS_FILL_MODE
+blink::WebCompositorAnimation::FillMode WebCompositorAnimationImpl::fillMode()
+    const {
+  switch (animation_->fill_mode()) {
+    case cc::Animation::FillModeNone:
+      return FillModeNone;
+    case cc::Animation::FillModeForwards:
+      return FillModeForwards;
+    case cc::Animation::FillModeBackwards:
+      return FillModeBackwards;
+    case cc::Animation::FillModeBoth:
+      return FillModeBoth;
+    default:
+      NOTREACHED();
+  }
+  return FillModeNone;
+}
+
+void WebCompositorAnimationImpl::setFillMode(FillMode fill_mode) {
+  switch (fill_mode) {
+    case FillModeNone:
+      animation_->set_fill_mode(cc::Animation::FillModeNone);
+      break;
+    case FillModeForwards:
+      animation_->set_fill_mode(cc::Animation::FillModeForwards);
+      break;
+    case FillModeBackwards:
+      animation_->set_fill_mode(cc::Animation::FillModeBackwards);
+      break;
+    case FillModeBoth:
+      animation_->set_fill_mode(cc::Animation::FillModeBoth);
+      break;
+  }
+}
+#endif
 scoped_ptr<cc::Animation> WebCompositorAnimationImpl::PassAnimation() {
   animation_->set_needs_synchronized_start_time(true);
   return animation_.Pass();

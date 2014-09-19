@@ -31,13 +31,8 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
   // blink::WebCompositorAnimation implementation
   virtual int id();
   virtual TargetProperty targetProperty() const;
-#if WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS
   virtual double iterations() const;
   virtual void setIterations(double iterations);
-#else
-  virtual int iterations() const;
-  virtual void setIterations(int iterations);
-#endif
   virtual double iterationStart() const;
   virtual void setIterationStart(double iteration_start);
   virtual double startTime() const;
@@ -48,7 +43,10 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
   virtual void setDirection(Direction);
   virtual double playbackRate() const;
   virtual void setPlaybackRate(double playback_rate);
-
+#if WEB_ANIMATION_SUPPORTS_FILL_MODE
+  virtual FillMode fillMode() const;
+  virtual void setFillMode(blink::WebCompositorAnimation::FillMode fill_mode);
+#endif
   scoped_ptr<cc::Animation> PassAnimation();
 
  private:
