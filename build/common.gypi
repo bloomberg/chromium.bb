@@ -1931,11 +1931,11 @@
           ['asan==1', {
             'win_use_allocator_shim%': 0,
           }],
-          ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
-            # Only enabled by default for ninja because it's buggy in VS.
-            # Not enabled for component=static_library because some targets
-            # are too large and the toolchain fails due to the size of the
-            # .obj files.
+          ['buildtype!="Official"', {
+            # Not enabled in Official because it adds padding to builds.
+            # Enabled for both shared_library and static_library on an
+            # experimental basis to see if it improves windows cycle times,
+            # see http://crbug.com/404809.
             'incremental_chrome_dll%': 1,
           }],
           # Don't do incremental linking for large modules on 32-bit or when
@@ -3371,6 +3371,17 @@
             # information is used by the Syzygy optimization tool when
             # decomposing the release image.
             'Profile': 'true',
+
+            'conditions': [
+              ['incremental_chrome_dll', {
+                # During bring-up of Release incremental, have the linker emit
+                # a one line diagnostic describing why incremental linking
+                # failed, when it does. http://crbug.com/404809.
+                'AdditionalOptions': [
+                  '/verbose:incr',
+                ],
+              }],
+            ],
           },
         },
         'conditions': [
