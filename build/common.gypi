@@ -804,6 +804,7 @@
           'safe_browsing%': 0,
           'enable_managed_users%': 0,
           'enable_task_manager%': 0,
+          'use_system_libcxx%': 1,
         }],
 
         # Use GPU accelerated cross process image transport by default
@@ -1505,12 +1506,6 @@
     'use_chromevox_next%': 0,
 
     'conditions': [
-      # The version of clang shipped upstream does not find C++ headers when
-      # using -stdlib=libc++ so we instead need to use the version of clang
-      # coming with Xcode.
-      ['OS=="ios" and use_system_libcxx==1', {
-        'clang_xcode%': 1,
-      }],
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {
         'syzygy_optimize%': 1,
