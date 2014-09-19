@@ -1390,10 +1390,10 @@ int HttpCache::Transaction::DoAddToEntry() {
     if (bypass_lock_for_test_) {
       OnAddToEntryTimeout(entry_lock_waiting_since_);
     } else {
-      int timeout_secs = 20;
+      int timeout_milliseconds = 20 * 1000;
       if (partial_ && new_entry_->writer &&
           new_entry_->writer->range_requested_) {
-        // Immediately timeout and bypass the cache if we're a range request and
+        // Quickly timeout and bypass the cache if we're a range request and
         // we're blocked by the reader/writer lock. Doing so eliminates a long
         // running issue, http://crbug.com/31014, where two of the same media
         // resources could not be played back simultaneously due to one locking
@@ -1403,13 +1403,17 @@ int HttpCache::Transaction::DoAddToEntry() {
         // entirely for all range requests to a resource beyond the first. This
         // is however a much more succinct solution than the alternatives, which
         // would require somewhat significant changes to the http caching logic.
-        timeout_secs = 0;
+        //
+        // Allow some timeout slack for the entry addition to complete in case
+        // the writer lock is imminently released; we want to avoid skipping
+        // the cache if at all possible. See http://crbug.com/408765
+        timeout_milliseconds = 25;
       }
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&HttpCache::Transaction::OnAddToEntryTimeout,
                      weak_factory_.GetWeakPtr(), entry_lock_waiting_since_),
-          TimeDelta::FromSeconds(timeout_secs));
+          TimeDelta::FromMilliseconds(timeout_milliseconds));
     }
   }
   return rv;
