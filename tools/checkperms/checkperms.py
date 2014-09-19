@@ -270,7 +270,7 @@ def has_shebang_or_is_elf(full_path):
   """
   with open(full_path, 'rb') as f:
     data = f.read(4)
-    return (data[:3] == '#!/', data == '\x7fELF')
+    return (data[:3] == '#!/' or data == '#! /', data == '\x7fELF')
 
 
 def check_file(root_path, rel_path):
