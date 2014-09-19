@@ -55,6 +55,15 @@
           # test applications and libjingle.
           'CPU_CISC',
         ],
+        # TODO(jiayl): There seems to be a bug in the compiler that causes a
+        # crash (crbug/414919) using -O3. Remove this change once the compiler
+        # is fixed.
+        'cflags!': [
+          '-O3',
+        ],
+        'cflags': [
+          '-O2',
+        ],
       }],
       ['target_arch=="mipsel" or target_arch=="mips64el"', {
         'defines': [
