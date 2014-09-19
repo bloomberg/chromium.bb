@@ -96,6 +96,6 @@ class TabSwitching(page_test.PageTest):
         first_histogram)
 
     results.AddSummaryValue(
-        histogram.HistogramValue(None, display_name, '',
+        histogram.HistogramValue(None, display_name, 'ms',
                                  raw_value_json=diff_histogram,
                                  important=False))
