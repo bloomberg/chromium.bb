@@ -29,6 +29,7 @@ public:
     explicit Body(ExecutionContext*);
     virtual ~Body() { }
     enum ResponseType {
+        ResponseUnknown,
         ResponseAsArrayBuffer,
         ResponseAsBlob,
         ResponseAsFormData,
@@ -51,6 +52,9 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
+    // Copy constructor for clone() implementations
+    explicit Body(const Body&);
+
     // Sets the bodyUsed flag to true. This signifies that the contents of the
     // body have been consumed and cannot be accessed again.
     void setBodyUsed();

@@ -26,7 +26,7 @@ namespace blink {
 
 class FetchManager::Loader : public ThreadableLoaderClient {
 public:
-    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, FetchRequestData*);
+    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, const FetchRequestData*);
     ~Loader();
     virtual void didReceiveResponse(unsigned long, const ResourceResponse&);
     virtual void didFinishLoading(unsigned long, double);
@@ -57,7 +57,7 @@ private:
     bool m_failed;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolver> resolver, FetchRequestData* request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
     : m_executionContext(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
@@ -351,7 +351,7 @@ FetchManager::~FetchManager()
     }
 }
 
-ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* request)
+ScriptPromise FetchManager::fetch(ScriptState* scriptState, const FetchRequestData* request)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();

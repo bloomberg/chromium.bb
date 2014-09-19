@@ -32,6 +32,9 @@ public:
     static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
     static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);
+    // The 'FetchResponseData' object is shared between responses, as it is
+    // immutable to the user after Response creation. Headers are copied.
+    static Response* create(const Response&);
 
     String type() const;
     String url() const;
@@ -39,19 +42,22 @@ public:
     String statusText() const;
     Headers* headers() const;
 
+    Response* clone() const;
+
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
+    explicit Response(const Response&);
     explicit Response(ExecutionContext*);
     Response(ExecutionContext*, FetchResponseData*);
     Response(ExecutionContext*, const WebServiceWorkerResponse&);
 
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
 
-    Member<FetchResponseData> m_response;
-    Member<Headers> m_headers;
+    const Member<FetchResponseData> m_response;
+    const Member<Headers> m_headers;
 };
 
 } // namespace blink

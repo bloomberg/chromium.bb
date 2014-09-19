@@ -20,7 +20,7 @@ class FetchManager {
 public:
     FetchManager(ExecutionContext*);
     ~FetchManager();
-    ScriptPromise fetch(ScriptState*, FetchRequestData*);
+    ScriptPromise fetch(ScriptState*, const FetchRequestData*);
 
 private:
     class Loader;

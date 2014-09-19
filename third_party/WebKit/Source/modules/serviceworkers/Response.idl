@@ -24,6 +24,8 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque" };
     readonly attribute unsigned short status;
     readonly attribute ByteString statusText;
     readonly attribute Headers headers;
+
+    Response clone();
 };
 
 Response implements Body;

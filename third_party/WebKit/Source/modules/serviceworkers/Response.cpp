@@ -154,6 +154,13 @@ Response* Response::create(ExecutionContext* context, const WebServiceWorkerResp
     return r;
 }
 
+Response* Response::create(const Response& copyFrom)
+{
+    Response* r = new Response(copyFrom);
+    r->suspendIfNeeded();
+    return r;
+}
+
 String Response::type() const
 {
     // "The type attribute's getter must return response's type."
@@ -203,6 +210,11 @@ Headers* Response::headers() const
     return m_headers;
 }
 
+Response* Response::clone() const
+{
+    return Response::create(*this);
+}
+
 void Response::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
 {
     m_response->populateWebServiceWorkerResponse(response);
@@ -214,6 +226,13 @@ Response::Response(ExecutionContext* context)
     , m_headers(Headers::create(m_response->headerList()))
 {
     m_headers->setGuard(Headers::ResponseGuard);
+}
+
+Response::Response(const Response& copy_from)
+    : Body(copy_from)
+    , m_response(copy_from.m_response)
+    , m_headers(copy_from.m_headers->createCopy())
+{
 }
 
 Response::Response(ExecutionContext* context, FetchResponseData* response)

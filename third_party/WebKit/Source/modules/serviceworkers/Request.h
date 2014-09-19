@@ -33,8 +33,11 @@ public:
     static Request* create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
     static Request* create(ExecutionContext*, FetchRequestData*);
     static Request* create(ExecutionContext*, const WebServiceWorkerRequest&);
+    // The 'FetchRequestData' object is shared between requests, as it is
+    // immutable to the user after Request creation. Headers are copied.
+    static Request* create(const Request&);
 
-    FetchRequestData* request() { return m_request; }
+    const FetchRequestData* request() { return m_request; }
 
     String method() const;
     String url() const;
@@ -43,6 +46,8 @@ public:
     String mode() const;
     String credentials() const;
 
+    Request* clone() const;
+
     void populateWebServiceWorkerRequest(WebServiceWorkerRequest&);
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
@@ -50,13 +55,17 @@ public:
     virtual void trace(Visitor*)  OVERRIDE;
 
 private:
+    explicit Request(const Request&);
     Request(ExecutionContext*, FetchRequestData*);
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
 
+    static Request* createRequestWithRequestData(ExecutionContext*, FetchRequestData*, const RequestInit&, FetchRequestData::Mode, FetchRequestData::Credentials, ExceptionState&);
+    void clearHeaderList();
+
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
 
-    Member<FetchRequestData> m_request;
-    Member<Headers> m_headers;
+    const Member<FetchRequestData> m_request;
+    const Member<Headers> m_headers;
 };
 
 } // namespace blink

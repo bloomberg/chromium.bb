@@ -44,7 +44,9 @@ private:
     WebServiceWorkerRequest* m_webRequest;
 };
 
-Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestData* request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
+} // namespace
+
+Request* Request::createRequestWithRequestData(ExecutionContext* context, FetchRequestData* request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
 {
     // "7. Let |mode| be |init|'s mode member if it is present, and
     // |fallbackMode| otherwise."
@@ -107,7 +109,7 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
         headers = r->headers()->createCopy();
     }
     // "15. Empty |r|'s request's header list."
-    r->request()->headerList()->clearList();
+    r->clearHeaderList();
 
     // "16. If |r|'s request's mode is no CORS, run these substeps:
     if (r->request()->mode() == FetchRequestData::NoCORSMode) {
@@ -156,8 +158,6 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
     // "20. Return |r|."
     return r;
 }
-
-} // namespace
 
 Request* Request::create(ExecutionContext* context, const String& input, ExceptionState& exceptionState)
 {
@@ -238,6 +238,13 @@ Request* Request::create(ExecutionContext* context, const WebServiceWorkerReques
     return r;
 }
 
+Request* Request::create(const Request& copyFrom)
+{
+    Request* r = new Request(copyFrom);
+    r->suspendIfNeeded();
+    return r;
+}
+
 Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
     : Body(context)
     , m_request(FetchRequestData::create(webRequest))
@@ -245,6 +252,14 @@ Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRe
 {
     m_headers->setGuard(Headers::RequestGuard);
 }
+
+Request::Request(const Request& copy_from)
+    : Body(copy_from)
+    , m_request(copy_from.m_request)
+    , m_headers(copy_from.m_headers->createCopy())
+{
+}
+
 
 String Request::method() const
 {
@@ -304,6 +319,11 @@ String Request::credentials() const
     return "";
 }
 
+Request* Request::clone() const
+{
+    return Request::create(*this);
+}
+
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest)
 {
     webRequest.setMethod(method());
@@ -317,6 +337,11 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
 void Request::setBodyBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
     m_request->setBlobDataHandle(blobDataHandle);
+}
+
+void Request::clearHeaderList()
+{
+    m_request->headerList()->clearList();
 }
 
 PassRefPtr<BlobDataHandle> Request::blobDataHandle()

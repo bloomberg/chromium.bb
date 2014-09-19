@@ -289,7 +289,6 @@ test(function() {
   });
 }, 'Request method names are normalized');
 
-
 test(function() {
     var req = new Request(URL);
     assert_false(req.bodyUsed,
@@ -303,6 +302,31 @@ test(function() {
     assert_throws(new TypeError(), function() { new Request(req); },
       "Request cannot be constructed with a request that has been flagged as used.");
   }, 'Request construction behavior regarding "used" body flag and exceptions.');
+
+promise_test(function() {
+  var headers = new Headers;
+  headers.set('Content-Language', 'ja');
+  var req = new Request(URL, {
+    method: 'GET',
+    headers: headers,
+    body: new Blob(['Test Blob'], {type: 'test/type'})
+  });
+  var req2 = req.clone();
+  // Change headers and of original request.
+  req.headers.set('Content-Language', 'en');
+  assert_equals(
+    req2.headers.get('Content-Language'), 'ja', 'Headers of cloned request ' +
+    'should not change when original request headers are changed.');
+
+  return req.text()
+    .then(function(text) {
+        assert_equals(text, 'Test Blob', 'Body of request should match.');
+        return req2.text();
+      })
+    .then(function(text) {
+        assert_equals(text, 'Test Blob', 'Cloned request body should match.');
+      });
+  }, 'Test clone behavior with loading content from Request.');
 
 async_test(function(t) {
     var getContentType = function(headers) {

@@ -24,6 +24,8 @@ enum RequestCredentials { "omit", "same-origin", "include" };
     readonly attribute RequestMode mode;
     readonly attribute RequestCredentials credentials;
 
+    Request clone();
+
     // FIXME: Implement the following:
     // readonly attribute RequestContext context;
 };

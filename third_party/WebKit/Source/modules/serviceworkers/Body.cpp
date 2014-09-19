@@ -127,6 +127,14 @@ bool Body::hasPendingActivity() const
 Body::Body(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_bodyUsed(false)
+    , m_responseType(ResponseType::ResponseUnknown)
+{
+}
+
+Body::Body(const Body& copy_from)
+    : ActiveDOMObject(copy_from.lifecycleContext())
+    , m_bodyUsed(copy_from.bodyUsed())
+    , m_responseType(ResponseType::ResponseUnknown)
 {
 }
 
