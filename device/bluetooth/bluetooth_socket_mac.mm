@@ -762,7 +762,7 @@ void BluetoothSocketMac::Send(scoped_refptr<net::IOBuffer> buffer,
   // multiple write operations if buffer_size > mtu.
   uint16_t mtu = channel_->GetOutgoingMTU();
   scoped_refptr<net::DrainableIOBuffer> send_buffer(
-      new net::DrainableIOBuffer(buffer, buffer_size));
+      new net::DrainableIOBuffer(buffer.get(), buffer_size));
   while (send_buffer->BytesRemaining() > 0) {
     int byte_count = send_buffer->BytesRemaining();
     if (byte_count > mtu)

@@ -147,7 +147,7 @@ void GetCollectionInfos(IOHIDDeviceRef device,
 HidServiceMac::HidServiceMac() {
   DCHECK(thread_checker_.CalledOnValidThread());
   message_loop_ = base::MessageLoopProxy::current();
-  DCHECK(message_loop_);
+  DCHECK(message_loop_.get());
   hid_manager_.reset(IOHIDManagerCreate(NULL, 0));
   if (!hid_manager_) {
     LOG(ERROR) << "Failed to initialize HidManager";
