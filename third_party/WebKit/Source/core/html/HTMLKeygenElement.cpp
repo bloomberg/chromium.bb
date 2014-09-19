@@ -33,7 +33,9 @@
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "platform/SSLKeyGenerator.h"
+#include "platform/text/PlatformLocale.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebLocalizedString.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace blink;
@@ -59,7 +61,9 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
 
     Vector<String> keys;
-    getSupportedKeySizes(locale(), keys);
+    keys.reserveCapacity(2);
+    keys.append(locale().queryString(WebLocalizedString::KeygenMenuHighGradeKeySize));
+    keys.append(locale().queryString(WebLocalizedString::KeygenMenuMediumGradeKeySize));
 
     // Create a select element with one option element for each key size.
     RefPtrWillBeRawPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());
@@ -88,7 +92,7 @@ bool HTMLKeygenElement::appendFormData(FormDataList& encoding, bool)
     const AtomicString& keyType = fastGetAttribute(keytypeAttr);
     if (!keyType.isNull() && !equalIgnoringCase(keyType, "rsa"))
         return false;
-    String value = signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL());
+    String value = Platform::current()->signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL());
     if (value.isNull())
         return false;
     encoding.appendData(name(), value.utf8());

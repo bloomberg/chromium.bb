@@ -109,8 +109,6 @@
       'PurgeableVector.cpp',
       'PurgeableVector.h',
       'RefCountedSupplement.h',
-      'SSLKeyGenerator.cpp',
-      'SSLKeyGenerator.h',
       'ScriptForbiddenScope.cpp',
       'ScriptForbiddenScope.h',
       'SecureTextInput.cpp',
