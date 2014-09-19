@@ -1334,10 +1334,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([folderController_ parentButton] == sender)
     return;
 
-  [self performSelector:@selector(openBookmarkFolderFromButtonAndCloseOldOne:)
-             withObject:sender
-             afterDelay:bookmarks::kHoverOpenDelay
-                inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
+  // If right click was done immediately on entering a button, then open the
+  // folder without delay so that context menu appears over the folder menu.
+  if ([event type] == NSRightMouseDown)
+    [self openBookmarkFolderFromButtonAndCloseOldOne:sender];
+  else
+    [self performSelector:@selector(openBookmarkFolderFromButtonAndCloseOldOne:)
+               withObject:sender
+               afterDelay:bookmarks::kHoverOpenDelay
+                  inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 }
 
 // Called from the BookmarkButton
