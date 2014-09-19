@@ -30,7 +30,14 @@ class ExtensionOptionsApiTest : public ExtensionApiTest {
   scoped_ptr<FeatureSwitch::ScopedOverride> enable_options_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest, ExtensionCanEmbedOwnOptions) {
+// crbug/415949.
+#if defined(OS_MACOSX)
+#define MAYBE_ExtensionCanEmbedOwnOptions DISABLED_ExtensionCanEmbedOwnOptions
+#else
+#define MAYBE_ExtensionCanEmbedOwnOptions ExtensionCanEmbedOwnOptions
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest,
+                       MAYBE_ExtensionCanEmbedOwnOptions) {
   base::FilePath extension_dir =
       test_data_dir_.AppendASCII("extension_options").AppendASCII("embed_self");
   ASSERT_TRUE(LoadExtension(extension_dir));
