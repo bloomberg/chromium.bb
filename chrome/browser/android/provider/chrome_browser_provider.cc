@@ -1613,7 +1613,7 @@ void ChromeBrowserProvider::Observe(
     ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
     if (obj.is_null())
       return;
-    Java_ChromeBrowserProvider_onBookmarkChanged(env, obj.obj());
+    Java_ChromeBrowserProvider_onHistoryChanged(env, obj.obj());
   } else if (type ==
       chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED) {
     JNIEnv* env = AttachCurrentThread();

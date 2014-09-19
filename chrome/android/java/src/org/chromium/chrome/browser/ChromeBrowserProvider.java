@@ -1045,6 +1045,11 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     @CalledByNative
+    private void onHistoryChanged() {
+        notifyChange(buildAPIContentUri(getContext(), HISTORY_PATH));
+    }
+
+    @CalledByNative
     private void onSearchTermChanged() {
         notifyChange(buildAPIContentUri(getContext(), SEARCHES_PATH));
     }
