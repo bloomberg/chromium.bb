@@ -76,7 +76,8 @@ class ATHENA_EXPORT HomeCardImpl
                                   const ui::Accelerator& accelerator) OVERRIDE;
 
   // HomeCardGestureManager::Delegate:
-  virtual void OnGestureEnded(HomeCard::State final_state) OVERRIDE;
+  virtual void OnGestureEnded(HomeCard::State final_state,
+                              bool is_fling) OVERRIDE;
   virtual void OnGestureProgressed(
       HomeCard::State from_state,
       HomeCard::State to_state,

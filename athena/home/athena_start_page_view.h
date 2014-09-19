@@ -8,6 +8,7 @@
 #include "athena/athena_export.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/views/view.h"
 
 namespace app_list {
@@ -33,7 +34,8 @@ class ATHENA_EXPORT AthenaStartPageView
 
   // Updates the layout state and move the subviews to the target location with
   // animation.
-  void SetLayoutStateWithAnimation(float layout_state);
+  void SetLayoutStateWithAnimation(float layout_state,
+                                   gfx::Tween::Type tween_type);
 
  private:
   friend class AthenaStartPageViewTest;

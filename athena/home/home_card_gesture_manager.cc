@@ -50,7 +50,7 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_SCROLL_END:
       event->SetHandled();
-      delegate_->OnGestureEnded(GetFinalState());
+      delegate_->OnGestureEnded(GetFinalState(), false);
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       UpdateScrollState(*event);
@@ -68,8 +68,8 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
       // moved the home card (e.g. drag home card up from minimized state and
       // then fling down)
       // TODO(mukai): Consider this case once reported.
-      if (final_state == original_state_ &&
-          ::fabs(details.velocity_y()) > kFlingCompletionVelocity) {
+      bool is_fling = ::fabs(details.velocity_y()) > kFlingCompletionVelocity;
+      if (final_state == original_state_ && is_fling) {
         if (details.velocity_y() > 0) {
           final_state = std::min(HomeCard::VISIBLE_MINIMIZED,
                                  static_cast<HomeCard::State>(final_state + 1));
@@ -78,7 +78,7 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
                                  static_cast<HomeCard::State>(final_state - 1));
         }
       }
-      delegate_->OnGestureEnded(final_state);
+      delegate_->OnGestureEnded(final_state, is_fling);
       break;
     }
     default:

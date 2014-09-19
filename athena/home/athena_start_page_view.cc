@@ -246,7 +246,9 @@ void AthenaStartPageView::SetLayoutState(float layout_state) {
   Layout();
 }
 
-void AthenaStartPageView::SetLayoutStateWithAnimation(float layout_state) {
+void AthenaStartPageView::SetLayoutStateWithAnimation(
+    float layout_state,
+    gfx::Tween::Type tween_type) {
   ui::ScopedLayerAnimationSettings system_info(
       system_info_view_->layer()->GetAnimator());
   ui::ScopedLayerAnimationSettings logo(logo_->layer()->GetAnimator());
@@ -257,11 +259,11 @@ void AthenaStartPageView::SetLayoutStateWithAnimation(float layout_state) {
   ui::ScopedLayerAnimationSettings controls(
       control_icon_container_->layer()->GetAnimator());
 
-  system_info.SetTweenType(gfx::Tween::EASE_IN_OUT);
-  logo.SetTweenType(gfx::Tween::EASE_IN_OUT);
-  search_box.SetTweenType(gfx::Tween::EASE_IN_OUT);
-  icons.SetTweenType(gfx::Tween::EASE_IN_OUT);
-  controls.SetTweenType(gfx::Tween::EASE_IN_OUT);
+  system_info.SetTweenType(tween_type);
+  logo.SetTweenType(tween_type);
+  search_box.SetTweenType(tween_type);
+  icons.SetTweenType(tween_type);
+  controls.SetTweenType(tween_type);
 
   SetLayoutState(layout_state);
 }

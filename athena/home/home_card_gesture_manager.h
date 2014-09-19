@@ -21,8 +21,10 @@ class ATHENA_EXPORT HomeCardGestureManager {
   class Delegate {
    public:
     // Called when the gesture has ended. The state of the home card will
-    // end up with |final_state|.
-    virtual void OnGestureEnded(HomeCard::State final_state) = 0;
+    // end up with |final_state|. |is_fling| is true only when the gesture has
+    // ended with a fling action.
+    virtual void OnGestureEnded(HomeCard::State final_state,
+                                bool is_fling) = 0;
 
     // Called when the gesture position is updated so that |delegate| updates
     // the visual. The arguments indicate that the gesture is switching between

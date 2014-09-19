@@ -21,6 +21,7 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
         last_from_state_(HomeCard::HIDDEN),
         last_to_state_(HomeCard::HIDDEN),
         last_progress_(0.0f),
+        was_fling_(false),
         last_y_(0),
         progress_count_(0),
         end_count_(0) {}
@@ -87,6 +88,7 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
   HomeCard::State last_from_state_;
   HomeCard::State last_to_state_;
   float last_progress_;
+  bool was_fling_;
 
  private:
   gfx::Rect screen_bounds() const {
@@ -94,8 +96,10 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
   }
 
   // HomeCardGestureManager::Delegate:
-  virtual void OnGestureEnded(HomeCard::State final_state) OVERRIDE {
+  virtual void OnGestureEnded(HomeCard::State final_state,
+                              bool is_fling) OVERRIDE {
     final_state_ = final_state;
+    was_fling_ = is_fling;
     ++end_count_;
   }
 
@@ -167,6 +171,7 @@ TEST_F(HomeCardGestureManagerTest, Basic) {
   EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 810));
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+  EXPECT_FALSE(was_fling_);
 }
 
 // Test gesture progress when the gesture is initiated when the home card is in
@@ -225,6 +230,7 @@ TEST_F(HomeCardGestureManagerTest, StartBottom) {
   EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 300));
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, final_state_);
+  EXPECT_FALSE(was_fling_);
 }
 
 TEST_F(HomeCardGestureManagerTest, FlingUpAtEnd) {
@@ -238,6 +244,7 @@ TEST_F(HomeCardGestureManagerTest, FlingUpAtEnd) {
   ProcessFlingGesture(-150.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+  EXPECT_TRUE(was_fling_);
 }
 
 TEST_F(HomeCardGestureManagerTest, FlingDownAtEnd) {
@@ -252,6 +259,7 @@ TEST_F(HomeCardGestureManagerTest, FlingDownAtEnd) {
   ProcessFlingGesture(150.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+  EXPECT_TRUE(was_fling_);
 }
 
 TEST_F(HomeCardGestureManagerTest, WeakFling) {
@@ -265,6 +273,7 @@ TEST_F(HomeCardGestureManagerTest, WeakFling) {
   ProcessFlingGesture(-30.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, final_state_);
+  EXPECT_FALSE(was_fling_);
 }
 
 // Test the situation where the user intends a single fling but the finger
@@ -286,6 +295,7 @@ TEST_F(HomeCardGestureManagerTest, FastFling) {
   ProcessFlingGesture(-150.0f);
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+  EXPECT_TRUE(was_fling_);
 }
 
 }  // namespace athena

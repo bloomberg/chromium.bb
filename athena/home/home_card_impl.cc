@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -74,7 +75,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
 
   virtual ~HomeCardLayoutManager() {}
 
-  void Layout(bool animate) {
+  void Layout(bool animate, gfx::Tween::Type tween_type) {
     // |home_card| could be detached from the root window (e.g. when it is being
     // destroyed).
     if (!home_card_ || !home_card_->IsVisible() || !home_card_->GetRootWindow())
@@ -84,7 +85,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
     if (animate) {
       settings.reset(new ui::ScopedLayerAnimationSettings(
           home_card_->layer()->GetAnimator()));
-      settings->SetTweenType(gfx::Tween::EASE_IN_OUT);
+      settings->SetTweenType(tween_type);
     }
     SetChildBoundsDirect(home_card_, GetBoundsForState(
         home_card_->GetRootWindow()->bounds(), HomeCard::Get()->GetState()));
@@ -106,13 +107,13 @@ class HomeCardLayoutManager : public aura::LayoutManager {
 
   // aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE {
-    Layout(false);
+    Layout(false, gfx::Tween::LINEAR);
     UpdateMinimizedHomeBounds();
   }
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
     if (!home_card_) {
       home_card_ = child;
-      Layout(false);
+      Layout(false, gfx::Tween::LINEAR);
     }
   }
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
@@ -124,7 +125,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visible) OVERRIDE {
     if (home_card_ == child)
-      Layout(false);
+      Layout(false, gfx::Tween::LINEAR);
   }
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE {
@@ -165,7 +166,8 @@ class HomeCardView : public views::WidgetDelegateView {
     UpdateShadow(true);
   }
 
-  void SetStateWithAnimation(HomeCard::State state) {
+  void SetStateWithAnimation(HomeCard::State state,
+                             gfx::Tween::Type tween_type) {
     UpdateShadow(state != HomeCard::VISIBLE_MINIMIZED);
     if (state == HomeCard::VISIBLE_CENTERED)
       main_view_->RequestFocusOnSearchBox();
@@ -173,7 +175,7 @@ class HomeCardView : public views::WidgetDelegateView {
       GetWidget()->GetFocusManager()->ClearFocus();
 
     main_view_->SetLayoutStateWithAnimation(
-        (state == HomeCard::VISIBLE_CENTERED) ? 1.0f : 0.0f);
+        (state == HomeCard::VISIBLE_CENTERED) ? 1.0f : 0.0f, tween_type);
   }
 
   void ClearGesture() {
@@ -328,8 +330,8 @@ void HomeCardImpl::SetState(HomeCard::State state) {
       home_card_widget_->ShowInactive();
     else
       home_card_widget_->Show();
-    home_card_view_->SetStateWithAnimation(state);
-    layout_manager_->Layout(true);
+    home_card_view_->SetStateWithAnimation(state, gfx::Tween::EASE_IN_OUT);
+    layout_manager_->Layout(true, gfx::Tween::EASE_IN_OUT);
   }
 }
 
@@ -372,7 +374,7 @@ bool HomeCardImpl::OnAcceleratorFired(int command_id,
   return true;
 }
 
-void HomeCardImpl::OnGestureEnded(State final_state) {
+void HomeCardImpl::OnGestureEnded(State final_state, bool is_fling) {
   home_card_view_->ClearGesture();
   if (state_ != final_state &&
       (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
@@ -380,8 +382,13 @@ void HomeCardImpl::OnGestureEnded(State final_state) {
     WindowManager::GetInstance()->ToggleOverview();
   } else {
     state_ = final_state;
-    home_card_view_->SetStateWithAnimation(state_);
-    layout_manager_->Layout(true);
+    // When the animation happens after a fling, EASE_IN_OUT would cause weird
+    // slow-down right after the finger release because of slow-in. Therefore
+    // EASE_OUT is better.
+    gfx::Tween::Type tween_type =
+        is_fling ? gfx::Tween::EASE_OUT : gfx::Tween::EASE_IN_OUT;
+    home_card_view_->SetStateWithAnimation(state_, tween_type);
+    layout_manager_->Layout(true, tween_type);
   }
 }
 
