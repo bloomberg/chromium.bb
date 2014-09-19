@@ -8,14 +8,18 @@
 var scope = 'imports_bust_memcache_scope/';
 var script = 'worker_with_one_import.js';
 
-navigator.serviceWorker.unregister(scope)
+navigator.serviceWorker.getRegistration(scope)
+.then(function(registration) {
+  if (registration)
+    return registration.unregister();
+})
 .then(function(_) {
   console.log('initial unregistration done');
   return navigator.serviceWorker.register(script, {scope: scope});
 })
-.then(function(_) {
+.then(function(registration) {
    console.log('initial registration done');
-   return navigator.serviceWorker.unregister(scope);
+   return registration.unregister();
 })
 .then(function(_) {
   console.log('unregistration done');
