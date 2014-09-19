@@ -37,14 +37,19 @@ Case: Displaying movie
       "drawsContent": true,
       "children": [
         {
+          "position": [8, 8],
+          "bounds": [352, 288]
+        },
+        {
           "children": [
             {
               "position": [8, 8],
-              "bounds": [352, 288]
+              "bounds": [352, 288],
+              "drawsContent": true
             },
             {
               "position": [8, 8],
-              "bounds": [352, 288],
+              "bounds": [352, 253],
               "drawsContent": true
             }
           ]

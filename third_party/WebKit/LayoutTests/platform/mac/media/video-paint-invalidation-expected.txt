@@ -7,14 +7,19 @@
       "drawsContent": true,
       "children": [
         {
+          "position": [8, 8],
+          "bounds": [320, 240]
+        },
+        {
           "children": [
             {
               "position": [8, 8],
-              "bounds": [320, 240]
+              "bounds": [320, 240],
+              "drawsContent": true
             },
             {
               "position": [8, 8],
-              "bounds": [320, 240],
+              "bounds": [320, 235],
               "drawsContent": true,
               "repaintRects": [
                 [194, 205, 35, 30],
