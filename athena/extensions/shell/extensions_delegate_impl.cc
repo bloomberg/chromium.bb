@@ -4,7 +4,7 @@
 
 #include "athena/extensions/public/extensions_delegate.h"
 
-#include "athena/extensions/shell/athena_shell_apps_client.h"
+#include "athena/extensions/shell/athena_shell_app_window_client.h"
 #include "base/macros.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/shell/browser/shell_extension_system.h"
@@ -18,11 +18,11 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
       : context_(context),
         extension_system_(static_cast<extensions::ShellExtensionSystem*>(
             extensions::ExtensionSystem::Get(context))),
-        apps_client_(context) {
-    extensions::AppsClient::Set(&apps_client_);
+        app_window_client_(context) {
+    extensions::AppWindowClient::Set(&app_window_client_);
   }
 
-  virtual ~ShellExtensionsDelegate() { extensions::AppsClient::Set(NULL); }
+  virtual ~ShellExtensionsDelegate() { extensions::AppWindowClient::Set(NULL); }
 
  private:
   // ExtensionsDelegate:
@@ -46,7 +46,7 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
   extensions::ShellExtensionSystem* extension_system_;
   extensions::ExtensionSet shell_extensions_;
 
-  AthenaShellAppsClient apps_client_;
+  AthenaShellAppWindowClient app_window_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsDelegate);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APPS_CLIENT_H_
-#define EXTENSIONS_BROWSER_APP_WINDOW_APPS_CLIENT_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CLIENT_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CLIENT_H_
 
 #include <vector>
 
@@ -20,13 +20,12 @@ namespace extensions {
 class Extension;
 class NativeAppWindow;
 
-// Sets up global state for the apps system. Should be Set() once in each
-// process. This should be implemented by the client of the apps system.
-// TODO(hashimoto): Move some functions to ExtensionsClient and rename this to
-// AppWindowClient.
-class AppsClient {
+// Sets up global state for the app window system. Should be Set() once in each
+// process. This should be implemented by the client of the app window system.
+// TODO(hashimoto): Move some functions to ExtensionsClient.
+class AppWindowClient {
  public:
-  virtual ~AppsClient() {}
+  virtual ~AppWindowClient() {}
 
   // Get all loaded browser contexts.
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts() = 0;
@@ -53,13 +52,13 @@ class AppsClient {
   // Returns true if the current channel is older than dev.
   virtual bool IsCurrentChannelOlderThanDev() = 0;
 
-  // Return the apps client.
-  static AppsClient* Get();
+  // Return the app window client.
+  static AppWindowClient* Get();
 
-  // Initialize the apps system with this apps client.
-  static void Set(AppsClient* client);
+  // Initialize the app window system with this app window client.
+  static void Set(AppWindowClient* client);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APPS_CLIENT_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CLIENT_H_

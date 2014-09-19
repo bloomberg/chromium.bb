@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/extensions/chrome/athena_chrome_apps_client.h"
+#include "athena/extensions/chrome/athena_chrome_app_window_client.h"
 
 #include "athena/extensions/chrome/athena_chrome_app_delegate.h"
 #include "base/memory/singleton.h"
@@ -14,28 +14,28 @@
 
 namespace athena {
 
-AthenaChromeAppsClient::AthenaChromeAppsClient() {
+AthenaChromeAppWindowClient::AthenaChromeAppWindowClient() {
 }
 
-AthenaChromeAppsClient::~AthenaChromeAppsClient() {
+AthenaChromeAppWindowClient::~AthenaChromeAppWindowClient() {
 }
 
 std::vector<content::BrowserContext*>
-AthenaChromeAppsClient::GetLoadedBrowserContexts() {
+AthenaChromeAppWindowClient::GetLoadedBrowserContexts() {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   return std::vector<content::BrowserContext*>(profiles.begin(),
                                                profiles.end());
 }
 
-extensions::AppWindow* AthenaChromeAppsClient::CreateAppWindow(
+extensions::AppWindow* AthenaChromeAppWindowClient::CreateAppWindow(
     content::BrowserContext* context,
     const extensions::Extension* extension) {
   return new extensions::AppWindow(
       context, new AthenaChromeAppDelegate, extension);
 }
 
-void AthenaChromeAppsClient::OpenDevToolsWindow(
+void AthenaChromeAppWindowClient::OpenDevToolsWindow(
     content::WebContents* web_contents,
     const base::Closure& callback) {
   // TODO(oshima): Figure out what to do.
@@ -44,7 +44,7 @@ void AthenaChromeAppsClient::OpenDevToolsWindow(
   devtools_window->SetLoadCompletedCallback(callback);
 }
 
-bool AthenaChromeAppsClient::IsCurrentChannelOlderThanDev() {
+bool AthenaChromeAppWindowClient::IsCurrentChannelOlderThanDev() {
   return extensions::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
 }
 

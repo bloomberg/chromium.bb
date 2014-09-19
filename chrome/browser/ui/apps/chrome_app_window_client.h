@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APPS_CHROME_APPS_CLIENT_H_
-#define CHROME_BROWSER_UI_APPS_CHROME_APPS_CLIENT_H_
+#ifndef CHROME_BROWSER_UI_APPS_CHROME_APP_WINDOW_CLIENT_H_
+#define CHROME_BROWSER_UI_APPS_CHROME_APP_WINDOW_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "extensions/browser/app_window/apps_client.h"
+#include "extensions/browser/app_window/app_window_client.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
 
-// The implementation of AppsClient for Chrome.
-class ChromeAppsClient : public extensions::AppsClient {
+// The implementation of AppWindowClient for Chrome.
+class ChromeAppWindowClient : public extensions::AppWindowClient {
  public:
-  ChromeAppsClient();
-  virtual ~ChromeAppsClient();
+  ChromeAppWindowClient();
+  virtual ~ChromeAppWindowClient();
 
-  // Get the LazyInstance for ChromeAppsClient.
-  static ChromeAppsClient* GetInstance();
+  // Get the LazyInstance for ChromeAppWindowClient.
+  static ChromeAppWindowClient* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeAppsClient>;
+  friend struct DefaultSingletonTraits<ChromeAppWindowClient>;
 
-  // extensions::AppsClient
+  // extensions::AppWindowClient
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
       OVERRIDE;
   virtual extensions::AppWindow* CreateAppWindow(
@@ -44,7 +44,7 @@ class ChromeAppsClient : public extensions::AppsClient {
       extensions::AppWindow* window,
       const extensions::AppWindow::CreateParams& params);
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppsClient);
+  DISALLOW_COPY_AND_ASSIGN(ChromeAppWindowClient);
 };
 
-#endif  // CHROME_BROWSER_UI_APPS_CHROME_APPS_CLIENT_H_
+#endif  // CHROME_BROWSER_UI_APPS_CHROME_APP_WINDOW_CLIENT_H_

@@ -15,7 +15,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/apps_client.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -208,7 +208,7 @@ bool AppWindowRegistry::HadDevToolsAttached(
 AppWindow* AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
     gfx::NativeWindow window) {
   std::vector<content::BrowserContext*> contexts =
-      AppsClient::Get()->GetLoadedBrowserContexts();
+      AppWindowClient::Get()->GetLoadedBrowserContexts();
   for (std::vector<content::BrowserContext*>::const_iterator i =
            contexts.begin();
        i != contexts.end();
@@ -230,7 +230,7 @@ AppWindow* AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
 bool AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
     int window_type_mask) {
   std::vector<content::BrowserContext*> contexts =
-      AppsClient::Get()->GetLoadedBrowserContexts();
+      AppWindowClient::Get()->GetLoadedBrowserContexts();
   for (std::vector<content::BrowserContext*>::const_iterator i =
            contexts.begin();
        i != contexts.end();
@@ -259,7 +259,7 @@ bool AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
 // static
 void AppWindowRegistry::CloseAllAppWindows() {
   std::vector<content::BrowserContext*> contexts =
-      AppsClient::Get()->GetLoadedBrowserContexts();
+      AppWindowClient::Get()->GetLoadedBrowserContexts();
   for (std::vector<content::BrowserContext*>::const_iterator i =
            contexts.begin();
        i != contexts.end();

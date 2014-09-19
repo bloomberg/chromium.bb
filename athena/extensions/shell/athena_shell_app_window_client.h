@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_EXTENSIONS_CHROME_ATHENA_CHROME_APPS_CLIENT_H_
-#define ATHENA_EXTENSIONS_CHROME_ATHENA_CHROME_APPS_CLIENT_H_
+#ifndef ATHENA_EXTENSIONS_SHELL_ATHENA_SHELL_APP_WINDOW_CLIENT_H_
+#define ATHENA_EXTENSIONS_SHELL_ATHENA_SHELL_APP_WINDOW_CLIENT_H_
 
-#include "athena/extensions/athena_apps_client_base.h"
+#include "athena/extensions/athena_app_window_client_base.h"
 #include "base/macros.h"
 
 namespace athena {
 
-// The implementation of AppsClient for Athena.
-class AthenaChromeAppsClient : public AthenaAppsClientBase {
+class AthenaShellAppWindowClient : public AthenaAppWindowClientBase {
  public:
-  AthenaChromeAppsClient();
-  virtual ~AthenaChromeAppsClient();
+  AthenaShellAppWindowClient(content::BrowserContext* context);
+  virtual ~AthenaShellAppWindowClient();
 
  private:
-  // extensions::AppsClient
+  // extensions::AppWindowClient
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
       OVERRIDE;
   virtual extensions::AppWindow* CreateAppWindow(
@@ -27,9 +26,11 @@ class AthenaChromeAppsClient : public AthenaAppsClientBase {
                                   const base::Closure& callback) OVERRIDE;
   virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(AthenaChromeAppsClient);
+  content::BrowserContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(AthenaShellAppWindowClient);
 };
 
 }  // namespace athena
 
-#endif  // ATHENA_EXTENSIONS_CHROME_ATHENA_CHROME_APPS_CLIENT_H_
+#endif  // ATHENA_EXTENSIONS_SHELL_ATHENA_SHELL_APP_WINDOW_CLIENT_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/extensions/athena_apps_client_base.h"
+#include "athena/extensions/athena_app_window_client_base.h"
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
@@ -11,13 +11,13 @@
 
 namespace athena {
 
-AthenaAppsClientBase::AthenaAppsClientBase() {
+AthenaAppWindowClientBase::AthenaAppWindowClientBase() {
 }
 
-AthenaAppsClientBase::~AthenaAppsClientBase() {
+AthenaAppWindowClientBase::~AthenaAppWindowClientBase() {
 }
 
-extensions::NativeAppWindow* AthenaAppsClientBase::CreateNativeAppWindow(
+extensions::NativeAppWindow* AthenaAppWindowClientBase::CreateNativeAppWindow(
     extensions::AppWindow* app_window,
     const extensions::AppWindow::CreateParams& params) {
   AthenaNativeAppWindowViews* native_window = new AthenaNativeAppWindowViews;
@@ -28,11 +28,11 @@ extensions::NativeAppWindow* AthenaAppsClientBase::CreateNativeAppWindow(
   return native_window;
 }
 
-void AthenaAppsClientBase::IncrementKeepAliveCount() {
+void AthenaAppWindowClientBase::IncrementKeepAliveCount() {
   // No need to keep track of KeepAlive count on ChromeOS.
 }
 
-void AthenaAppsClientBase::DecrementKeepAliveCount() {
+void AthenaAppWindowClientBase::DecrementKeepAliveCount() {
   // No need to keep track of KeepAlive count on ChromeOS.
 }
 

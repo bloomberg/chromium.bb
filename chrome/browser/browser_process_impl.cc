@@ -60,7 +60,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/ui/apps/chrome_apps_client.h"
+#include "chrome/browser/ui/apps/chrome_app_window_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -202,7 +202,7 @@ BrowserProcessImpl::BrowserProcessImpl(
 #if defined(ENABLE_EXTENSIONS)
 #if !defined(USE_ATHENA)
   // Athena sets its own instance during Athena's init process.
-  extensions::AppsClient::Set(ChromeAppsClient::GetInstance());
+  extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
 #endif
 
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;

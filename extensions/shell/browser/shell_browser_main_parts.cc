@@ -13,7 +13,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
-#include "extensions/browser/app_window/apps_client.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.cc"

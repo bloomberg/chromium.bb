@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_EXTENSIONS_ATHENA_APPS_CLIENT_BASE_H_
-#define ATHENA_EXTENSIONS_ATHENA_APPS_CLIENT_BASE_H_
+#ifndef ATHENA_EXTENSIONS_ATHENA_APP_WINDOW_CLIENT_BASE_H_
+#define ATHENA_EXTENSIONS_ATHENA_APP_WINDOW_CLIENT_BASE_H_
 
-#include "extensions/browser/app_window/apps_client.h"
 #include "base/macros.h"
+#include "extensions/browser/app_window/app_window_client.h"
 
 namespace athena {
 
-// Athena's base impl of AppsClient.
-class AthenaAppsClientBase : public extensions::AppsClient {
+// Athena's base impl of AppWindowClient.
+class AthenaAppWindowClientBase : public extensions::AppWindowClient {
  public:
-  AthenaAppsClientBase();
-  virtual ~AthenaAppsClientBase();
+  AthenaAppWindowClientBase();
+  virtual ~AthenaAppWindowClientBase();
 
  private:
-  // extensions::AppsClient
+  // extensions::AppWindowClient
   virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
       const extensions::AppWindow::CreateParams& params) OVERRIDE;
   virtual void IncrementKeepAliveCount() OVERRIDE;
   virtual void DecrementKeepAliveCount() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(AthenaAppsClientBase);
+  DISALLOW_COPY_AND_ASSIGN(AthenaAppWindowClientBase);
 };
 
 }  // namespace athena
 
-#endif  // ATHENA_EXTENSIONS_ATHENA_APPS_CLIENT_BASE_H_
+#endif  // ATHENA_EXTENSIONS_ATHENA_APP_WINDOW_CLIENT_BASE_H_

@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/common/api/app_current_window_internal.h"
@@ -294,7 +294,7 @@ bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
 }
 
 bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
-  if (AppsClient::Get()->IsCurrentChannelOlderThanDev() &&
+  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev() &&
       extension()->location() != extensions::Manifest::COMPONENT) {
     error_ = kDevChannelOnly;
     return false;
@@ -314,7 +314,7 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
 
 bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
     AppWindow* window) {
-  if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
+  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
     error_ = kDevChannelOnly;
     return false;
   }
@@ -333,7 +333,7 @@ bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalClearBadgeFunction::RunWithWindow(
     AppWindow* window) {
-  if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
+  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
     error_ = kDevChannelOnly;
     return false;
   }
@@ -400,7 +400,7 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::RunWithWindow(
     AppWindow* window) {
-  if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
+  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
     error_ = kDevChannelOnly;
     return false;
   }

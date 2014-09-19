@@ -23,9 +23,9 @@
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/app_window/app_web_contents_helper.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/browser/extension_registry.h"
@@ -272,9 +272,9 @@ void AppWindow::Init(const GURL& url,
 
   requested_alpha_enabled_ = new_params.alpha_enabled;
 
-  AppsClient* apps_client = AppsClient::Get();
+  AppWindowClient* app_window_client = AppWindowClient::Get();
   native_app_window_.reset(
-      apps_client->CreateNativeAppWindow(this, new_params));
+      app_window_client->CreateNativeAppWindow(this, new_params));
 
   helper_.reset(new AppWebContentsHelper(
       browser_context_, extension_id_, web_contents, app_delegate_.get()));
@@ -284,7 +284,7 @@ void AppWindow::Init(const GURL& url,
   popup_manager_->RegisterWith(web_contents);
 
   // Prevent the browser process from shutting down while this window exists.
-  apps_client->IncrementKeepAliveCount();
+  app_window_client->IncrementKeepAliveCount();
   UpdateExtensionAppIcon();
   AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 
@@ -335,7 +335,7 @@ AppWindow::~AppWindow() {
   ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
 
   // Remove shutdown prevention.
-  AppsClient::Get()->DecrementKeepAliveCount();
+  AppWindowClient::Get()->DecrementKeepAliveCount();
 }
 
 void AppWindow::RequestMediaAccessPermission(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/app_window/apps_client.h"
+#include "extensions/browser/app_window/app_window_client.h"
 
 #include "base/basictypes.h"
 
@@ -10,15 +10,15 @@ namespace extensions {
 
 namespace {
 
-AppsClient* g_client = NULL;
+AppWindowClient* g_client = NULL;
 
 }  // namespace
 
-AppsClient* AppsClient::Get() {
+AppWindowClient* AppWindowClient::Get() {
   return g_client;
 }
 
-void AppsClient::Set(AppsClient* client) {
+void AppWindowClient::Set(AppWindowClient* client) {
   // This can happen in unit tests, where the utility thread runs in-process.
   if (g_client)
     return;

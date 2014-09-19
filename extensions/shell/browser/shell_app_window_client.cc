@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/browser/shell_apps_client.h"
+#include "extensions/shell/browser/shell_app_window_client.h"
 
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/shell/browser/desktop_controller.h"
@@ -10,24 +10,25 @@
 
 namespace extensions {
 
-ShellAppsClient::ShellAppsClient() {
+ShellAppWindowClient::ShellAppWindowClient() {
 }
 
-ShellAppsClient::~ShellAppsClient() {
+ShellAppWindowClient::~ShellAppWindowClient() {
 }
 
 std::vector<content::BrowserContext*>
-ShellAppsClient::GetLoadedBrowserContexts() {
+ShellAppWindowClient::GetLoadedBrowserContexts() {
   NOTIMPLEMENTED();
   return std::vector<content::BrowserContext*>();
 }
 
-AppWindow* ShellAppsClient::CreateAppWindow(content::BrowserContext* context,
-                                            const Extension* extension) {
+AppWindow* ShellAppWindowClient::CreateAppWindow(
+    content::BrowserContext* context,
+    const Extension* extension) {
   return DesktopController::instance()->CreateAppWindow(context, extension);
 }
 
-NativeAppWindow* ShellAppsClient::CreateNativeAppWindow(
+NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
       AppWindow* window,
       const AppWindow::CreateParams& params) {
   ShellNativeAppWindow* native_app_window =
@@ -37,20 +38,21 @@ NativeAppWindow* ShellAppsClient::CreateNativeAppWindow(
   return native_app_window;
 }
 
-void ShellAppsClient::IncrementKeepAliveCount() {
+void ShellAppWindowClient::IncrementKeepAliveCount() {
   NOTIMPLEMENTED();
 }
 
-void ShellAppsClient::DecrementKeepAliveCount() {
+void ShellAppWindowClient::DecrementKeepAliveCount() {
   NOTIMPLEMENTED();
 }
 
-void ShellAppsClient::OpenDevToolsWindow(content::WebContents* web_contents,
-                                         const base::Closure& callback) {
+void ShellAppWindowClient::OpenDevToolsWindow(
+    content::WebContents* web_contents,
+    const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 
-bool ShellAppsClient::IsCurrentChannelOlderThanDev() {
+bool ShellAppWindowClient::IsCurrentChannelOlderThanDev() {
   return false;
 }
 

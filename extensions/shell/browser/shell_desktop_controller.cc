@@ -11,7 +11,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
-#include "extensions/shell/browser/shell_apps_client.h"
+#include "extensions/shell/browser/shell_app_window_client.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -160,8 +160,8 @@ class AppsFocusRules : public wm::BaseFocusRules {
 }  // namespace
 
 ShellDesktopController::ShellDesktopController()
-    : apps_client_(new ShellAppsClient), app_window_(NULL) {
-  extensions::AppsClient::Set(apps_client_.get());
+    : app_window_client_(new ShellAppWindowClient), app_window_(NULL) {
+  extensions::AppWindowClient::Set(app_window_client_.get());
 
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
@@ -181,7 +181,7 @@ ShellDesktopController::~ShellDesktopController() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RemoveObserver(this);
 #endif
-  extensions::AppsClient::Set(NULL);
+  extensions::AppWindowClient::Set(NULL);
 }
 
 aura::WindowTreeHost* ShellDesktopController::GetHost() {

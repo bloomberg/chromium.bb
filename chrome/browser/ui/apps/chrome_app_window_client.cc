@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/apps/chrome_apps_client.h"
+#include "chrome/browser/ui/apps/chrome_app_window_client.h"
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
@@ -19,27 +19,27 @@
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #endif
 
-ChromeAppsClient::ChromeAppsClient() {
+ChromeAppWindowClient::ChromeAppWindowClient() {
 }
 
-ChromeAppsClient::~ChromeAppsClient() {
+ChromeAppWindowClient::~ChromeAppWindowClient() {
 }
 
 // static
-ChromeAppsClient* ChromeAppsClient::GetInstance() {
-  return Singleton<ChromeAppsClient,
-                   LeakySingletonTraits<ChromeAppsClient> >::get();
+ChromeAppWindowClient* ChromeAppWindowClient::GetInstance() {
+  return Singleton<ChromeAppWindowClient,
+                   LeakySingletonTraits<ChromeAppWindowClient> >::get();
 }
 
 std::vector<content::BrowserContext*>
-ChromeAppsClient::GetLoadedBrowserContexts() {
+ChromeAppWindowClient::GetLoadedBrowserContexts() {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   return std::vector<content::BrowserContext*>(profiles.begin(),
                                                profiles.end());
 }
 
-extensions::AppWindow* ChromeAppsClient::CreateAppWindow(
+extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(
     content::BrowserContext* context,
     const extensions::Extension* extension) {
 #if defined(OS_ANDROID)
@@ -49,7 +49,7 @@ extensions::AppWindow* ChromeAppsClient::CreateAppWindow(
 #endif
 }
 
-extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindow(
+extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindow(
     extensions::AppWindow* window,
     const extensions::AppWindow::CreateParams& params) {
 #if defined(OS_ANDROID)
@@ -59,25 +59,26 @@ extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindow(
 #endif
 }
 
-void ChromeAppsClient::IncrementKeepAliveCount() {
+void ChromeAppWindowClient::IncrementKeepAliveCount() {
 #if !defined(OS_ANDROID)
   chrome::IncrementKeepAliveCount();
 #endif
 }
 
-void ChromeAppsClient::DecrementKeepAliveCount() {
+void ChromeAppWindowClient::DecrementKeepAliveCount() {
 #if !defined(OS_ANDROID)
   chrome::DecrementKeepAliveCount();
 #endif
 }
 
-void ChromeAppsClient::OpenDevToolsWindow(content::WebContents* web_contents,
-                                          const base::Closure& callback) {
+void ChromeAppWindowClient::OpenDevToolsWindow(
+    content::WebContents* web_contents,
+    const base::Closure& callback) {
   DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(
       web_contents, DevToolsToggleAction::ShowConsole());
   devtools_window->SetLoadCompletedCallback(callback);
 }
 
-bool ChromeAppsClient::IsCurrentChannelOlderThanDev() {
+bool ChromeAppWindowClient::IsCurrentChannelOlderThanDev() {
   return extensions::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
 }

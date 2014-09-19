@@ -16,9 +16,9 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -287,7 +287,7 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
                                     &error));
   EXPECT_TRUE(extension.get()) << error;
   // Increment the apps count to avoid a DCHECK later.
-  extensions::AppsClient::Get()->IncrementKeepAliveCount();
+  extensions::AppWindowClient::Get()->IncrementKeepAliveCount();
 
   Profile* current_profile =
       profile_manager_->CreateTestingProfile("Test user");

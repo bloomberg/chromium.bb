@@ -16,9 +16,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_util.h"
@@ -194,7 +194,7 @@ bool AppWindowCreateFunction::RunAsync() {
     if (!GetBoundsSpec(*options, &create_params, &error_))
       return false;
 
-    if (!AppsClient::Get()->IsCurrentChannelOlderThanDev() ||
+    if (!AppWindowClient::Get()->IsCurrentChannelOlderThanDev() ||
         extension()->location() == extensions::Manifest::COMPONENT) {
       if (options->type == app_window::WINDOW_TYPE_PANEL) {
         create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
@@ -219,7 +219,7 @@ bool AppWindowCreateFunction::RunAsync() {
         "F16F23C83C5F6DAD9B65A120448B34056DD80691",
         "0F585FB1D0FDFBEBCE1FEB5E9DFFB6DA476B8C9B"
       };
-      if (AppsClient::Get()->IsCurrentChannelOlderThanDev() &&
+      if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev() &&
           !extensions::SimpleFeature::IsIdInList(
               extension_id(),
               std::set<std::string>(whitelist,
@@ -265,7 +265,7 @@ bool AppWindowCreateFunction::RunAsync() {
       create_params.focused = *options->focused.get();
 
     if (options->visible_on_all_workspaces.get()) {
-      if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
+      if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
         error_ = app_window_constants::kVisibleOnAllWorkspacesWrongChannel;
         return false;
       }
@@ -295,7 +295,7 @@ bool AppWindowCreateFunction::RunAsync() {
       render_view_host_->GetProcess()->GetID();
 
   AppWindow* app_window =
-      AppsClient::Get()->CreateAppWindow(browser_context(), extension());
+      AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());
   app_window->Init(url, new AppWindowContentsImpl(app_window), create_params);
 
   if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
@@ -317,7 +317,7 @@ bool AppWindowCreateFunction::RunAsync() {
 
   if (AppWindowRegistry::Get(browser_context())
           ->HadDevToolsAttached(created_view)) {
-    AppsClient::Get()->OpenDevToolsWindow(
+    AppWindowClient::Get()->OpenDevToolsWindow(
         app_window->web_contents(),
         base::Bind(&AppWindowCreateFunction::SendResponse, this, true));
     return true;

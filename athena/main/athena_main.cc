@@ -18,7 +18,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/apps_client.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/shell/app/shell_main_delegate.h"
 #include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_app_delegate.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/apps/chrome_apps_client.h"
+#include "chrome/browser/ui/apps/chrome_app_window_client.h"
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
 // static
-extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindowImpl(
+extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindowImpl(
     extensions::AppWindow* app_window,
     const extensions::AppWindow::CreateParams& params) {
   ChromeNativeAppWindowViews* window = new ChromeNativeAppWindowViews;
