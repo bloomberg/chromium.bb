@@ -1017,20 +1017,24 @@ void RenderThreadImpl::IdleHandler() {
     continue_timer = true;
   }
 
-  // Schedule next invocation.
+  // Schedule next invocation. When the tab is originally hidden, an invocation
+  // is scheduled for kInitialIdleHandlerDelayMs in
+  // RenderThreadImpl::WidgetHidden in order to race to a minimal heap.
+  // After that, idle calls can be much less frequent, so run at a maximum of
+  // once every kLongIdleHandlerDelayMs.
   // Dampen the delay using the algorithm (if delay is in seconds):
   //    delay = delay + 1 / (delay + 2)
   // Using floor(delay) has a dampening effect such as:
-  //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
+  //    30s, 30, 30, 31, 31, 31, 31, 32, 32, ...
   // If the delay is in milliseconds, the above formula is equivalent to:
   //    delay_ms / 1000 = delay_ms / 1000 + 1 / (delay_ms / 1000 + 2)
   // which is equivalent to
   //    delay_ms = delay_ms + 1000*1000 / (delay_ms + 2000).
-  // Note that idle_notification_delay_in_ms_ would be reset to
-  // kInitialIdleHandlerDelayMs in RenderThreadImpl::WidgetHidden.
   if (continue_timer) {
-    ScheduleIdleHandler(idle_notification_delay_in_ms_ +
-                        1000000 / (idle_notification_delay_in_ms_ + 2000));
+    ScheduleIdleHandler(
+        std::max(kLongIdleHandlerDelayMs,
+                 idle_notification_delay_in_ms_ +
+                 1000000 / (idle_notification_delay_in_ms_ + 2000)));
 
   } else {
     idle_timer_.Stop();
