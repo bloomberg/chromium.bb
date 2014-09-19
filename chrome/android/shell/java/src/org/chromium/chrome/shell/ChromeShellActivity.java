@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -291,6 +292,12 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         ChromeShellTab activeTab = getActiveTab();
+        if (activeTab != null) {
+            ViewGroup containerView = activeTab.getContentViewCore().getContainerView();
+            if (containerView.isFocusable() && containerView.isFocusableInTouchMode()) {
+                containerView.requestFocus();
+            }
+        }
         switch (item.getItemId()) {
             case R.id.signin:
                 if (ChromeSigninController.get(this).isSignedIn()) {
