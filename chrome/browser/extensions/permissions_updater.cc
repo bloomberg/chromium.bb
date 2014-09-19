@@ -110,7 +110,12 @@ void SegregateUrlPermissions(const URLPatternSet& url_patterns,
 }  // namespace
 
 PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context), init_flag_(INIT_FLAG_NONE) {
+}
+
+PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context,
+                                       InitFlag init_flag)
+    : browser_context_(browser_context), init_flag_(init_flag) {
 }
 
 PermissionsUpdater::~PermissionsUpdater() {}
@@ -164,17 +169,28 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
 }
 
 void PermissionsUpdater::InitializePermissions(const Extension* extension) {
-  scoped_refptr<const PermissionSet> active_permissions =
-      ExtensionPrefs::Get(browser_context_)
-          ->GetActivePermissions(extension->id());
-  scoped_refptr<const PermissionSet> bounded_active =
-      GetBoundedActivePermissions(extension, active_permissions);
+  scoped_refptr<const PermissionSet> active_permissions(NULL);
+  scoped_refptr<const PermissionSet> bounded_active(NULL);
+  // If |extension| is a transient dummy extension, we do not want to look for
+  // it in preferences.
+  if (init_flag_ & INIT_FLAG_TRANSIENT) {
+    bounded_active = active_permissions =
+        extension->permissions_data()->active_permissions();
+  } else {
+    active_permissions = ExtensionPrefs::Get(browser_context_)
+                             ->GetActivePermissions(extension->id());
+    bounded_active = GetBoundedActivePermissions(extension, active_permissions);
+  }
 
-  // Withhold permissions only if the switch applies to this extension and the
-  // extension doesn't have the preference to allow scripting on all urls.
+  // Withhold permissions if the switch applies to this extension.
+  // Non-transient extensions also must not have the preference to allow
+  // scripting on all urls.
   bool should_withhold_permissions =
-      util::ScriptsMayRequireActionForExtension(extension) &&
-      !util::AllowedScriptingOnAllUrls(extension->id(), browser_context_);
+      util::ScriptsMayRequireActionForExtension(extension);
+  if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
+    should_withhold_permissions &=
+        !util::AllowedScriptingOnAllUrls(extension->id(), browser_context_);
+  }
 
   URLPatternSet granted_explicit_hosts;
   URLPatternSet withheld_explicit_hosts;
@@ -286,8 +302,10 @@ void PermissionsUpdater::SetPermissions(
   withheld = withheld.get() ? withheld
                  : extension->permissions_data()->withheld_permissions();
   extension->permissions_data()->SetPermissions(active, withheld);
-  ExtensionPrefs::Get(browser_context_)->SetActivePermissions(
-      extension->id(), active.get());
+  if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
+    ExtensionPrefs::Get(browser_context_)
+        ->SetActivePermissions(extension->id(), active.get());
+  }
 }
 
 void PermissionsUpdater::DispatchEvent(
@@ -311,6 +329,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
     EventType event_type,
     const Extension* extension,
     const PermissionSet* changed) {
+  DCHECK((init_flag_ & INIT_FLAG_TRANSIENT) == 0);
   if (!changed || changed->IsEmpty())
     return;
 

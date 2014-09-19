@@ -129,12 +129,14 @@ void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
 
 void ExtensionInstallDialogViewTestBase::SetPromptPermissions(
     std::vector<base::string16> permissions) {
-  prompt_->SetPermissions(permissions);
+  prompt_->SetPermissions(permissions,
+                          ExtensionInstallPrompt::REGULAR_PERMISSIONS);
 }
 
 void ExtensionInstallDialogViewTestBase::SetPromptDetails(
     std::vector<base::string16> details) {
-  prompt_->SetPermissionsDetails(details);
+  prompt_->SetPermissionsDetails(details,
+                                 ExtensionInstallPrompt::REGULAR_PERMISSIONS);
 }
 
 void ExtensionInstallDialogViewTestBase::SetPromptRetainedFiles(

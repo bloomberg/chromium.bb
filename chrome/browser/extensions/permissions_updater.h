@@ -27,7 +27,14 @@ class PermissionSet;
 // and notifies interested parties of the changes.
 class PermissionsUpdater {
  public:
+  enum InitFlag {
+    INIT_FLAG_NONE = 0,
+    INIT_FLAG_TRANSIENT = 1 << 0,
+  };
+
   explicit PermissionsUpdater(content::BrowserContext* browser_context);
+  PermissionsUpdater(content::BrowserContext* browser_context,
+                     InitFlag init_flag);
   ~PermissionsUpdater();
 
   // Adds the set of |permissions| to the |extension|'s active permission set
@@ -86,6 +93,10 @@ class PermissionsUpdater {
 
   // The associated BrowserContext.
   content::BrowserContext* browser_context_;
+
+  // Initialization flag that determines whether prefs is consulted about the
+  // extension. Transient extensions should not have entries in prefs.
+  InitFlag init_flag_;
 };
 
 }  // namespace extensions

@@ -197,6 +197,15 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       checkbox_info_label_(NULL),
       unchecked_boxes_(0),
       handled_result_(false) {
+  InitView();
+}
+
+ExtensionInstallDialogView::~ExtensionInstallDialogView() {
+  if (!handled_result_)
+    delegate_->InstallUIAbort(true);
+}
+
+void ExtensionInstallDialogView::InitView() {
   // Possible grid layouts without ExtensionPermissionDialog experiment:
   // Inline install
   //      w/ permissions                 no permissions
@@ -278,7 +287,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // the dialog depending on the experiment group.
 
   int left_column_width =
-      (prompt->ShouldShowPermissions() + prompt->GetRetainedFileCount()) > 0
+      (prompt_->ShouldShowPermissions() + prompt_->GetRetainedFileCount()) > 0
           ? kPermissionsLeftColumnWidth
           : kNoPermissionsLeftColumnWidth;
   if (is_bundle_install())
@@ -298,8 +307,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scrollable_, left_column_width, column_set_id, false);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  if (prompt->ShouldShowPermissions() &&
-      prompt->experiment()->should_show_expandable_permission_list()) {
+  if (prompt_->ShouldShowPermissions() &&
+      prompt_->experiment()->should_show_expandable_permission_list()) {
     // If the experiment should hide the permission list initially, create a
     // simple layout that contains only the header, extension name and icon.
     scrollable_header_only_ = new CustomScrollableView();
@@ -316,28 +325,28 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   // Widen the dialog for experiment with checkboxes so that the information
   // label fits the area to the left of the buttons.
-  if (prompt->experiment()->show_checkboxes())
+  if (prompt_->experiment()->show_checkboxes())
     dialog_width += 4 * views::kPanelHorizMargin;
 
-  if (prompt->has_webstore_data()) {
+  if (prompt_->has_webstore_data()) {
     layout->StartRow(0, column_set_id);
     views::View* rating = new views::View();
     rating->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, 0, 0));
     layout->AddView(rating);
-    prompt->AppendRatingStars(AddResourceIcon, rating);
+    prompt_->AppendRatingStars(AddResourceIcon, rating);
 
     const gfx::FontList& small_font_list =
         rb.GetFontList(ui::ResourceBundle::SmallFont);
     views::Label* rating_count =
-        new views::Label(prompt->GetRatingCount(), small_font_list);
+        new views::Label(prompt_->GetRatingCount(), small_font_list);
     // Add some space between the stars and the rating count.
     rating_count->SetBorder(views::Border::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);
 
     layout->StartRow(0, column_set_id);
     views::Label* user_count =
-        new views::Label(prompt->GetUserCount(), small_font_list);
+        new views::Label(prompt_->GetUserCount(), small_font_list);
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
     layout->AddView(user_count);
@@ -351,7 +360,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   }
 
   if (is_bundle_install()) {
-    BundleInstaller::ItemList items = prompt->bundle()->GetItemsWithState(
+    BundleInstaller::ItemList items = prompt_->bundle()->GetItemsWithState(
         BundleInstaller::Item::STATE_PENDING);
     for (size_t i = 0; i < items.size(); ++i) {
       base::string16 extension_name =
@@ -368,100 +377,23 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     }
   }
 
-  if (prompt->ShouldShowPermissions()) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-    if (prompt->GetPermissionCount() > 0) {
-      if (is_inline_install()) {
-        layout->StartRow(0, column_set_id);
-        layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
-                        3, 1, views::GridLayout::FILL, views::GridLayout::FILL);
-        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-      }
-
-      layout->StartRow(0, column_set_id);
-      views::Label* permissions_header = NULL;
-      if (is_bundle_install()) {
-        // We need to pass the FontList in the constructor, rather than calling
-        // SetFontList later, because otherwise SizeToFit mis-judges the width
-        // of the line.
-        permissions_header =
-            new views::Label(prompt->GetPermissionsHeading(),
-                             rb.GetFontList(ui::ResourceBundle::MediumFont));
-      } else {
-        permissions_header = new views::Label(prompt->GetPermissionsHeading());
-      }
-      permissions_header->SetMultiLine(true);
-      permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      permissions_header->SizeToFit(left_column_width);
-      layout->AddView(permissions_header);
-
-      for (size_t i = 0; i < prompt->GetPermissionCount(); ++i) {
-        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-        layout->StartRow(0, column_set_id);
-        views::Label* permission_label =
-            new views::Label(prompt->GetPermission(i));
-
-        const SkColor kTextHighlight = SK_ColorRED;
-        const SkColor kBackgroundHighlight = SkColorSetRGB(0xFB, 0xF7, 0xA3);
-        if (prompt->experiment()->ShouldHighlightText(
-                prompt->GetPermission(i))) {
-          permission_label->SetAutoColorReadabilityEnabled(false);
-          permission_label->SetEnabledColor(kTextHighlight);
-        } else if (prompt->experiment()->ShouldHighlightBackground(
-                       prompt->GetPermission(i))) {
-          permission_label->SetLineHeight(18);
-          permission_label->set_background(
-              views::Background::CreateSolidBackground(kBackgroundHighlight));
-        }
-
-        permission_label->SetMultiLine(true);
-        permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-        if (prompt->experiment()->show_checkboxes()) {
-          permission_label->SizeToFit(left_column_width);
-          layout->AddView(new CheckboxedView(permission_label, this));
-          ++unchecked_boxes_;
-        } else {
-          permission_label->SizeToFit(left_column_width - kBulletWidth);
-          layout->AddView(new BulletedView(permission_label));
-        }
-
-        // If we have more details to provide, show them in collapsed form.
-        if (!prompt->GetPermissionsDetails(i).empty()) {
-          layout->StartRow(0, column_set_id);
-          PermissionDetails details;
-          details.push_back(
-              PrepareForDisplay(prompt->GetPermissionsDetails(i), false));
-          ExpandableContainerView* details_container =
-              new ExpandableContainerView(
-                  this, base::string16(), details, left_column_width,
-                  true, true, false);
-          layout->AddView(details_container);
-        }
-
-        if (prompt->experiment()->should_show_inline_explanations()) {
-          base::string16 explanation =
-              prompt->experiment()->GetInlineExplanation(
-                  prompt->GetPermission(i));
-          if (!explanation.empty()) {
-            PermissionDetails details;
-            details.push_back(explanation);
-            ExpandableContainerView* container =
-                new ExpandableContainerView(this, base::string16(), details,
-                                            left_column_width,
-                                            false, false, true);
-            // Inline explanations are expanded by default if there is
-            // no "Show details" link.
-            if (!prompt->experiment()->show_details_link())
-              container->ExpandWithoutAnimation();
-            layout->StartRow(0, column_set_id);
-            layout->AddView(container);
-            inline_explanations_.push_back(container);
-          }
-        }
-      }
-    } else {
+  bool has_permissions =
+      prompt_->GetPermissionCount(
+          ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS) > 0;
+  if (prompt_->ShouldShowPermissions()) {
+    AddPermissions(
+        layout,
+        rb,
+        column_set_id,
+        left_column_width,
+        ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS);
+    AddPermissions(
+        layout,
+        rb,
+        column_set_id,
+        left_column_width,
+        ExtensionInstallPrompt::PermissionsType::WITHHELD_PERMISSIONS);
+    if (!has_permissions) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);
       views::Label* permission_label = new views::Label(
@@ -473,13 +405,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     }
   }
 
-  if (prompt->GetRetainedFileCount()) {
+  if (prompt_->GetRetainedFileCount()) {
     // Slide in under the permissions, if there are any. If there are
     // either, the retained files prompt stretches all the way to the
     // right of the dialog. If there are no permissions, the retained
     // files prompt just takes up the left column.
     int space_for_files = left_column_width;
-    if (prompt->GetPermissionCount()) {
+    if (has_permissions) {
       space_for_files += kIconSize;
       views::ColumnSet* column_set = layout->AddColumnSet(++column_set_id);
       column_set->AddColumn(views::GridLayout::FILL,
@@ -494,7 +426,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     layout->StartRow(0, column_set_id);
     views::Label* retained_files_header = NULL;
-    retained_files_header = new views::Label(prompt->GetRetainedFilesHeading());
+    retained_files_header =
+        new views::Label(prompt_->GetRetainedFilesHeading());
     retained_files_header->SetMultiLine(true);
     retained_files_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     retained_files_header->SizeToFit(space_for_files);
@@ -502,8 +435,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     layout->StartRow(0, column_set_id);
     PermissionDetails details;
-    for (size_t i = 0; i < prompt->GetRetainedFileCount(); ++i)
-      details.push_back(prompt->GetRetainedFile(i));
+    for (size_t i = 0; i < prompt_->GetRetainedFileCount(); ++i)
+      details.push_back(prompt_->GetRetainedFile(i));
     ExpandableContainerView* issue_advice_view =
         new ExpandableContainerView(
             this, base::string16(), details, space_for_files,
@@ -511,13 +444,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->AddView(issue_advice_view);
   }
 
-  DCHECK(prompt->type() >= 0);
+  DCHECK(prompt_->type() >= 0);
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallPrompt.Type",
-                            prompt->type(),
+                            prompt_->type(),
                             ExtensionInstallPrompt::NUM_PROMPT_TYPES);
 
-  if (prompt->ShouldShowPermissions()) {
-    if (prompt->ShouldShowExplanationText()) {
+  if (prompt_->ShouldShowPermissions()) {
+    if (prompt_->ShouldShowExplanationText()) {
       views::ColumnSet* column_set = layout->AddColumnSet(++column_set_id);
       column_set->AddColumn(views::GridLayout::LEADING,
                             views::GridLayout::FILL,
@@ -530,23 +463,23 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
       layout->StartRow(0, column_set_id);
       views::Label* explanation =
-          new views::Label(prompt->experiment()->GetExplanationText());
+          new views::Label(prompt_->experiment()->GetExplanationText());
       explanation->SetMultiLine(true);
       explanation->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       explanation->SizeToFit(left_column_width + kIconSize);
       layout->AddView(explanation);
     }
 
-    if (prompt->experiment()->should_show_expandable_permission_list() ||
-        (prompt->experiment()->show_details_link() &&
-         prompt->experiment()->should_show_inline_explanations() &&
+    if (prompt_->experiment()->should_show_expandable_permission_list() ||
+        (prompt_->experiment()->show_details_link() &&
+         prompt_->experiment()->should_show_inline_explanations() &&
          !inline_explanations_.empty())) {
       // Don't show the "Show details" link if there are retained
       // files.  These have their own "Show details" links and having
       // multiple levels of links is confusing.
-      if (prompt->GetRetainedFileCount() == 0) {
+      if (prompt_->GetRetainedFileCount() == 0) {
         int text_id =
-            prompt->experiment()->should_show_expandable_permission_list()
+            prompt_->experiment()->should_show_expandable_permission_list()
                 ? IDS_EXTENSION_PROMPT_EXPERIMENT_SHOW_PERMISSIONS
                 : IDS_EXTENSION_PROMPT_EXPERIMENT_SHOW_DETAILS;
         show_details_link_ = new views::Link(
@@ -559,7 +492,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       }
     }
 
-    if (prompt->experiment()->show_checkboxes()) {
+    if (prompt_->experiment()->show_checkboxes()) {
       checkbox_info_label_ = new views::Label(
           l10n_util::GetStringUTF16(
               IDS_EXTENSION_PROMPT_EXPERIMENT_CHECKBOX_INFO));
@@ -589,9 +522,117 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   sampling_event_ = ExperienceSamplingEvent::Create(event_name);
 }
 
-ExtensionInstallDialogView::~ExtensionInstallDialogView() {
-  if (!handled_result_)
-    delegate_->InstallUIAbort(true);
+bool ExtensionInstallDialogView::AddPermissions(
+    views::GridLayout* layout,
+    ui::ResourceBundle& rb,
+    int column_set_id,
+    int left_column_width,
+    ExtensionInstallPrompt::PermissionsType perm_type) {
+  if (prompt_->GetPermissionCount(perm_type) == 0)
+    return false;
+
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  if (is_inline_install()) {
+    layout->StartRow(0, column_set_id);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
+                    3,
+                    1,
+                    views::GridLayout::FILL,
+                    views::GridLayout::FILL);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  }
+
+  layout->StartRow(0, column_set_id);
+  views::Label* permissions_header = NULL;
+  if (is_bundle_install()) {
+    // We need to pass the FontList in the constructor, rather than calling
+    // SetFontList later, because otherwise SizeToFit mis-judges the width
+    // of the line.
+    permissions_header =
+        new views::Label(prompt_->GetPermissionsHeading(perm_type),
+                         rb.GetFontList(ui::ResourceBundle::MediumFont));
+  } else {
+    permissions_header =
+        new views::Label(prompt_->GetPermissionsHeading(perm_type));
+  }
+  permissions_header->SetMultiLine(true);
+  permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  permissions_header->SizeToFit(left_column_width);
+  layout->AddView(permissions_header);
+
+  for (size_t i = 0; i < prompt_->GetPermissionCount(perm_type); ++i) {
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->StartRow(0, column_set_id);
+    views::Label* permission_label =
+        new views::Label(prompt_->GetPermission(i, perm_type));
+
+    const SkColor kTextHighlight = SK_ColorRED;
+    const SkColor kBackgroundHighlight = SkColorSetRGB(0xFB, 0xF7, 0xA3);
+    if (prompt_->experiment()->ShouldHighlightText(
+            prompt_->GetPermission(i, perm_type))) {
+      permission_label->SetAutoColorReadabilityEnabled(false);
+      permission_label->SetEnabledColor(kTextHighlight);
+    } else if (prompt_->experiment()->ShouldHighlightBackground(
+                   prompt_->GetPermission(i, perm_type))) {
+      permission_label->SetLineHeight(18);
+      permission_label->set_background(
+          views::Background::CreateSolidBackground(kBackgroundHighlight));
+    }
+
+    permission_label->SetMultiLine(true);
+    permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    if (prompt_->experiment()->show_checkboxes()) {
+      permission_label->SizeToFit(left_column_width);
+      layout->AddView(new CheckboxedView(permission_label, this));
+      ++unchecked_boxes_;
+    } else {
+      permission_label->SizeToFit(left_column_width - kBulletWidth);
+      layout->AddView(new BulletedView(permission_label));
+    }
+
+    // If we have more details to provide, show them in collapsed form.
+    if (!prompt_->GetPermissionsDetails(i, perm_type).empty()) {
+      layout->StartRow(0, column_set_id);
+      PermissionDetails details;
+      details.push_back(PrepareForDisplay(
+          prompt_->GetPermissionsDetails(i, perm_type), false));
+      ExpandableContainerView* details_container =
+          new ExpandableContainerView(this,
+                                      base::string16(),
+                                      details,
+                                      left_column_width,
+                                      true,
+                                      true,
+                                      false);
+      layout->AddView(details_container);
+    }
+
+    if (prompt_->experiment()->should_show_inline_explanations()) {
+      base::string16 explanation = prompt_->experiment()->GetInlineExplanation(
+          prompt_->GetPermission(i, perm_type));
+      if (!explanation.empty()) {
+        PermissionDetails details;
+        details.push_back(explanation);
+        ExpandableContainerView* container =
+            new ExpandableContainerView(this,
+                                        base::string16(),
+                                        details,
+                                        left_column_width,
+                                        false,
+                                        false,
+                                        true);
+        // Inline explanations are expanded by default if there is
+        // no "Show details" link.
+        if (!prompt_->experiment()->show_details_link())
+          container->ExpandWithoutAnimation();
+        layout->StartRow(0, column_set_id);
+        layout->AddView(container);
+        inline_explanations_.push_back(container);
+      }
+    }
+  }
+  return true;
 }
 
 views::GridLayout* ExtensionInstallDialogView::CreateLayout(
@@ -649,7 +690,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
         // Also span the rating, user_count and store_link rows.
         icon_row_span = 4;
       } else if (prompt_->ShouldShowPermissions()) {
-        size_t permission_count = prompt_->GetPermissionCount();
+        size_t permission_count = prompt_->GetPermissionCount(
+            ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS);
         // Also span the permission header and each of the permission rows (all
         // have a padding row above it). This also works for the 'no special
         // permissions' case.
