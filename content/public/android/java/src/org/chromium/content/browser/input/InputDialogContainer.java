@@ -16,7 +16,6 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TimePicker;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.content.R;
 import org.chromium.content.browser.input.DateTimePickerDialog.OnDateTimeSetListener;
 import org.chromium.content.browser.input.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
@@ -247,11 +246,11 @@ public class InputDialogContainer {
             mDialog = new WeekPickerDialog(mContext, new MonthOrWeekListener(dialogType),
                     year, week, min, max);
         }
-        if (ApiCompatibilityUtils.datePickerRequiresAccept()) {
-            mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                    mContext.getText(R.string.date_picker_dialog_set),
-                    (DialogInterface.OnClickListener) mDialog);
-        }
+
+        mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+                mContext.getText(R.string.date_picker_dialog_set),
+                (DialogInterface.OnClickListener) mDialog);
+
 
         mDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
                 mContext.getText(android.R.string.cancel),
