@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/containers/hash_tables.h"
-#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
@@ -230,12 +229,13 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
         api_resource_map_[id] = resource_ptr;
 
         const std::string& extension_id = api_resource->owner_extension_id();
-        if (extension_resource_map_.find(extension_id) ==
-            extension_resource_map_.end()) {
-          extension_resource_map_[extension_id] = base::hash_set<int>();
+        ExtensionToResourceMap::iterator it =
+            extension_resource_map_.find(extension_id);
+        if (it == extension_resource_map_.end()) {
+          it = extension_resource_map_.insert(
+              std::make_pair(extension_id, base::hash_set<int>())).first;
         }
-        extension_resource_map_[extension_id].insert(id);
-
+        it->second.insert(id);
         return id;
       }
       return 0;
@@ -243,10 +243,10 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
     void Remove(const std::string& extension_id, int api_resource_id) {
       DCHECK(ThreadingTraits::IsCalledOnValidThread());
-      if (GetOwnedResource(extension_id, api_resource_id) != NULL) {
-        DCHECK(extension_resource_map_.find(extension_id) !=
-               extension_resource_map_.end());
-        extension_resource_map_[extension_id].erase(api_resource_id);
+      if (GetOwnedResource(extension_id, api_resource_id)) {
+        ExtensionToResourceMap::iterator it =
+            extension_resource_map_.find(extension_id);
+        it->second.erase(api_resource_id);
         api_resource_map_.erase(api_resource_id);
       }
     }
@@ -325,11 +325,11 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
     base::hash_set<int>* GetOwnedResourceIds(const std::string& extension_id) {
       DCHECK(ThreadingTraits::IsCalledOnValidThread());
-      if (extension_resource_map_.find(extension_id) ==
-          extension_resource_map_.end())
+      ExtensionToResourceMap::iterator it =
+          extension_resource_map_.find(extension_id);
+      if (it == extension_resource_map_.end())
         return NULL;
-
-      return &extension_resource_map_[extension_id];
+      return &(it->second);
     }
 
     void CleanupResourcesFromUnloadedExtension(
@@ -346,14 +346,14 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
                                        bool remove_all) {
       DCHECK(ThreadingTraits::IsCalledOnValidThread());
 
-      if (extension_resource_map_.find(extension_id) ==
-          extension_resource_map_.end()) {
+      ExtensionToResourceMap::iterator it =
+          extension_resource_map_.find(extension_id);
+      if (it == extension_resource_map_.end())
         return;
-      }
 
       // Remove all resources, or the non persistent ones only if |remove_all|
       // is false.
-      base::hash_set<int>& resource_ids = extension_resource_map_[extension_id];
+      base::hash_set<int>& resource_ids = it->second;
       for (base::hash_set<int>::iterator it = resource_ids.begin();
            it != resource_ids.end();) {
         bool erase = false;

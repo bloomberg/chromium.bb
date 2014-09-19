@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 
+#include "base/lazy_instance.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_api_socket.h"

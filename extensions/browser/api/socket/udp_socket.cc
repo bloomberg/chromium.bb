@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/lazy_instance.h"
 #include "extensions/browser/api/api_resource.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"

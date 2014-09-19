@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 
+#include "base/lazy_instance.h"
+
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/serial/serial_event_dispatcher.h"
 
+#include "base/lazy_instance.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
