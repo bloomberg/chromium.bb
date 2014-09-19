@@ -355,10 +355,14 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     goto cleanup;
   }
 
-  if (0 == length) {
-    map_result = -NACL_ABI_EINVAL;
-    goto cleanup;
-  }
+  /*
+   * Round up to a page size multiple.
+   *
+   * Note that if length > 0xffff0000 (i.e. -NACL_MAP_PAGESIZE), rounding
+   * up the length will wrap around to 0.  We check for length == 0 *after*
+   * rounding up the length to simultaneously check for the length
+   * originally being 0 and check for the wraparound.
+   */
   alloc_rounded_length = NaClRoundAllocPage(length);
   if (alloc_rounded_length != length) {
     if (mapping_code) {
@@ -370,6 +374,19 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
             "NaClSysMmap: rounded length to 0x%"NACL_PRIxS"\n",
             alloc_rounded_length);
   }
+  if (0 == (uint32_t) alloc_rounded_length) {
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  /*
+   * Sanity check in case any later code behaves badly if
+   * |alloc_rounded_length| is >=4GB.  This check shouldn't fail
+   * because |length| was <4GB and we've already checked for overflow
+   * when rounding it up.
+   * TODO(mseaborn): Remove the need for this by using uint32_t for
+   * untrusted sizes more consistently.
+   */
+  CHECK(alloc_rounded_length == (uint32_t) alloc_rounded_length);
 
   if (NULL == ndp) {
     /*
