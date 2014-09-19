@@ -684,11 +684,6 @@ void NaClDescMarkSafeForMmap(struct NaClDesc *self) {
                    NACL_DESC_FLAGS_MMAP_EXEC_OK | NaClDescGetFlags(self));
 }
 
-void NaClDescMarkUnsafeForMmap(struct NaClDesc *self) {
-  NaClDescSetFlags(self,
-                   ~NACL_DESC_FLAGS_MMAP_EXEC_OK & NaClDescGetFlags(self));
-}
-
 int32_t NaClDescIsattyNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "Isatty method is not implemented for object of type %s\n",

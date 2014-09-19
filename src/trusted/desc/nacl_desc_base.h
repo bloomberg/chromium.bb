@@ -666,9 +666,6 @@ int NaClDescIsSafeForMmap(struct NaClDesc *self);
 
 void NaClDescMarkSafeForMmap(struct NaClDesc *self);
 
-void NaClDescMarkUnsafeForMmap(struct NaClDesc *self);
-
-
 EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_

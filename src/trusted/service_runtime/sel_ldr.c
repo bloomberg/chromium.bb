@@ -60,6 +60,7 @@
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
+#include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
 static int IsEnvironmentVariableSet(char const *env_name) {
@@ -1097,16 +1098,11 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   NaClXMutexLock(&nap->mu);
 
   /*
-   * Check and possibly mark the nexe binary as OK to attempt memory
-   * mapping.  We first clear the safe-for-mmap flag -- if we do not
-   * trust the renderer to really send us a safe-to-mmap descriptor
-   * and have to query the validation cache, then we also do not want
-   * to trust the metadata flag value that originated from the
-   * renderer.
+   * TODO(teravest): Remove this when file tokens are no longer used in |nexe|.
    */
-  NaClDescMarkUnsafeForMmap(nexe);
   NaClReplaceDescIfValidationCacheAssertsMappable(&nexe,
                                                   nap->validation_cache);
+
   /* Transfer ownership from nexe to nap->main_nexe_desc. */
   CHECK(nap->main_nexe_desc == NULL);
   nap->main_nexe_desc = nexe;
