@@ -766,6 +766,14 @@
                 '../third_party/icu/icu.gyp:icudata',
               ],
             }],
+            ['incremental_chrome_dll', {
+              'defines': [
+                # Used only to workaround a linker bug, do not use this
+                # otherwise, and don't make it broader scope. See
+                # http://crbug.com/251251.
+                'INCREMENTAL_LINKING',
+              ],
+            }],
           ],
         }, {  # OS != "win"
           'dependencies': [

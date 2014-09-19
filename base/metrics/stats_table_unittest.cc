@@ -101,7 +101,11 @@ void StatsTableThread::Run() {
 
 // Create a few threads and have them poke on their counters.
 // See http://crbug.com/10611 for more information.
-#if defined(OS_MACOSX) || defined(THREAD_SANITIZER)
+// It is disabled on Win x64 incremental linking pending resolution of
+// http://crbug.com/251251.
+#if defined(OS_MACOSX) || defined(THREAD_SANITIZER) || \
+    (defined(OS_WIN) && defined(ARCH_CPU_X86_64) &&    \
+     defined(INCREMENTAL_LINKING))
 #define MAYBE_MultipleThreads DISABLED_MultipleThreads
 #else
 #define MAYBE_MultipleThreads MultipleThreads

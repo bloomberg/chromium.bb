@@ -79,12 +79,17 @@ TEST(ThreadLocalStorageTest, Basics) {
   EXPECT_EQ(value, 123);
 }
 
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) ||                    \
+    (defined(OS_WIN) && defined(ARCH_CPU_X86_64) && \
+     defined(INCREMENTAL_LINKING))
 // Do not run the test under ThreadSanitizer. Because this test iterates its
 // own TSD destructor for the maximum possible number of times, TSan can't jump
 // in after the last destructor invocation, therefore the destructor remains
 // unsynchronized with the following users of the same TSD slot. This results
 // in race reports between the destructor and functions in other tests.
+//
+// It is disabled on Win x64 with incremental linking pending resolution of
+// http://crbug.com/251251.
 #define MAYBE_TLSDestructors DISABLED_TLSDestructors
 #else
 #define MAYBE_TLSDestructors TLSDestructors
