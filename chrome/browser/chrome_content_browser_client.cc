@@ -1712,11 +1712,11 @@ void ChromeContentBrowserClient::AllowCertificateError(
   // ownership of ssl_blocking_page.
   int options_mask = 0;
   if (overridable)
-    options_mask = SSLBlockingPage::OVERRIDABLE;
+    options_mask |= SSLBlockingPage::OVERRIDABLE;
   if (strict_enforcement)
-    options_mask = SSLBlockingPage::STRICT_ENFORCEMENT;
+    options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
   if (expired_previous_decision)
-    options_mask = SSLBlockingPage::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
+    options_mask |= SSLBlockingPage::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
   SSLBlockingPage* ssl_blocking_page = new SSLBlockingPage(
       tab, cert_error, ssl_info, request_url, options_mask, callback);
   ssl_blocking_page->Show();

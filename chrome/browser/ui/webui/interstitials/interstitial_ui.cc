@@ -76,9 +76,9 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
-    options_mask = SSLBlockingPage::OVERRIDABLE;
+    options_mask |= SSLBlockingPage::OVERRIDABLE;
   if (strict_enforcement)
-    options_mask = SSLBlockingPage::STRICT_ENFORCEMENT;
+    options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
   return new SSLBlockingPage(web_contents,
                              cert_error,
                              ssl_info,
