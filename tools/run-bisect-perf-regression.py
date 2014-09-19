@@ -351,6 +351,10 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
   Returns:
     The exit code of bisect-perf-regression.py: 0 on success, otherwise 1.
   """
+  if platform.release() == 'XP':
+    print 'Windows XP is not supported for perf try jobs because it lacks '
+    print 'goma support. Please refer to crbug.com/330900.'
+    return 1
   try:
     with Goma(path_to_goma) as _:
       config['use_goma'] = bool(path_to_goma)
