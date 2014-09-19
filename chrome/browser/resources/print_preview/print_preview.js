@@ -6,8 +6,8 @@
 
 var localStrings = new LocalStrings(templateData);
 
-<include src="component.js"/>
-<include src="print_preview_focus_manager.js"/>
+<include src="component.js">
+<include src="print_preview_focus_manager.js">
 
 cr.define('print_preview', function() {
   'use strict';
@@ -1218,76 +1218,76 @@ cr.define('print_preview', function() {
 });
 
 // Pull in all other scripts in a single shot.
-<include src="common/overlay.js"/>
-<include src="common/search_box.js"/>
-<include src="common/search_bubble.js"/>
+<include src="common/overlay.js">
+<include src="common/search_box.js">
+<include src="common/search_bubble.js">
 
-<include src="data/page_number_set.js"/>
-<include src="data/destination.js"/>
-<include src="data/local_parsers.js"/>
-<include src="data/cloud_parsers.js"/>
-<include src="data/destination_store.js"/>
-<include src="data/margins.js"/>
-<include src="data/document_info.js"/>
-<include src="data/printable_area.js"/>
-<include src="data/measurement_system.js"/>
-<include src="data/print_ticket_store.js"/>
-<include src="data/coordinate2d.js"/>
-<include src="data/size.js"/>
-<include src="data/capabilities_holder.js"/>
-<include src="data/user_info.js"/>
-<include src="data/app_state.js"/>
+<include src="data/page_number_set.js">
+<include src="data/destination.js">
+<include src="data/local_parsers.js">
+<include src="data/cloud_parsers.js">
+<include src="data/destination_store.js">
+<include src="data/margins.js">
+<include src="data/document_info.js">
+<include src="data/printable_area.js">
+<include src="data/measurement_system.js">
+<include src="data/print_ticket_store.js">
+<include src="data/coordinate2d.js">
+<include src="data/size.js">
+<include src="data/capabilities_holder.js">
+<include src="data/user_info.js">
+<include src="data/app_state.js">
 
-<include src="data/ticket_items/ticket_item.js"/>
+<include src="data/ticket_items/ticket_item.js">
 
-<include src="data/ticket_items/custom_margins.js"/>
-<include src="data/ticket_items/collate.js"/>
-<include src="data/ticket_items/color.js"/>
-<include src="data/ticket_items/copies.js"/>
-<include src="data/ticket_items/duplex.js"/>
-<include src="data/ticket_items/header_footer.js"/>
-<include src="data/ticket_items/media_size.js"/>
-<include src="data/ticket_items/landscape.js"/>
-<include src="data/ticket_items/margins_type.js"/>
-<include src="data/ticket_items/page_range.js"/>
-<include src="data/ticket_items/fit_to_page.js"/>
-<include src="data/ticket_items/css_background.js"/>
-<include src="data/ticket_items/selection_only.js"/>
-<include src="data/ticket_items/vendor_items.js"/>
+<include src="data/ticket_items/custom_margins.js">
+<include src="data/ticket_items/collate.js">
+<include src="data/ticket_items/color.js">
+<include src="data/ticket_items/copies.js">
+<include src="data/ticket_items/duplex.js">
+<include src="data/ticket_items/header_footer.js">
+<include src="data/ticket_items/media_size.js">
+<include src="data/ticket_items/landscape.js">
+<include src="data/ticket_items/margins_type.js">
+<include src="data/ticket_items/page_range.js">
+<include src="data/ticket_items/fit_to_page.js">
+<include src="data/ticket_items/css_background.js">
+<include src="data/ticket_items/selection_only.js">
+<include src="data/ticket_items/vendor_items.js">
 
-<include src="native_layer.js"/>
-<include src="print_preview_animations.js"/>
-<include src="cloud_print_interface.js"/>
-<include src="print_preview_utils.js"/>
-<include src="print_header.js"/>
-<include src="metrics.js"/>
+<include src="native_layer.js">
+<include src="print_preview_animations.js">
+<include src="cloud_print_interface.js">
+<include src="print_preview_utils.js">
+<include src="print_header.js">
+<include src="metrics.js">
 
-<include src="settings/settings_section.js"/>
-<include src="settings/page_settings.js"/>
-<include src="settings/copies_settings.js"/>
-<include src="settings/media_size_settings.js"/>
-<include src="settings/layout_settings.js"/>
-<include src="settings/color_settings.js"/>
-<include src="settings/margin_settings.js"/>
-<include src="settings/destination_settings.js"/>
-<include src="settings/other_options_settings.js"/>
-<include src="settings/advanced_options_settings.js"/>
-<include src="settings/advanced_settings/advanced_settings.js"/>
-<include src="settings/advanced_settings/advanced_settings_item.js"/>
-<include src="settings/more_settings.js"/>
+<include src="settings/settings_section.js">
+<include src="settings/page_settings.js">
+<include src="settings/copies_settings.js">
+<include src="settings/media_size_settings.js">
+<include src="settings/layout_settings.js">
+<include src="settings/color_settings.js">
+<include src="settings/margin_settings.js">
+<include src="settings/destination_settings.js">
+<include src="settings/other_options_settings.js">
+<include src="settings/advanced_options_settings.js">
+<include src="settings/advanced_settings/advanced_settings.js">
+<include src="settings/advanced_settings/advanced_settings_item.js">
+<include src="settings/more_settings.js">
 
-<include src="previewarea/margin_control.js"/>
-<include src="previewarea/margin_control_container.js"/>
-<include src="../pdf/pdf_scripting_api.js" />
-<include src="previewarea/preview_area.js"/>
-<include src="preview_generator.js"/>
+<include src="previewarea/margin_control.js">
+<include src="previewarea/margin_control_container.js">
+<include src="../pdf/pdf_scripting_api.js" >
+<include src="previewarea/preview_area.js">
+<include src="preview_generator.js">
 
-<include src="search/destination_list.js"/>
-<include src="search/cloud_destination_list.js"/>
-<include src="search/recent_destination_list.js"/>
-<include src="search/destination_list_item.js"/>
-<include src="search/destination_search.js"/>
-<include src="search/fedex_tos.js"/>
+<include src="search/destination_list.js">
+<include src="search/cloud_destination_list.js">
+<include src="search/recent_destination_list.js">
+<include src="search/destination_list_item.js">
+<include src="search/destination_search.js">
+<include src="search/fedex_tos.js">
 
 window.addEventListener('DOMContentLoaded', function() {
   printPreview = new print_preview.PrintPreview();
