@@ -297,8 +297,9 @@ class WindowManager
   void CloseWindow(Id view_id) {
     WindowVector::iterator iter = GetWindowByViewId(view_id);
     DCHECK(iter != windows_.end());
+    Window* window = *iter;
     windows_.erase(iter);
-    (*iter)->view()->Destroy();
+    window->view()->Destroy();
   }
 
   void ShowKeyboard(Id view_id, const gfx::Rect& bounds) {
