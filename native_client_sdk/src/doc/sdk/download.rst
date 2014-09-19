@@ -229,6 +229,6 @@ Help with the ``naclsdk`` utility
   information about the SDK and new bundles.
 * If you're just starting with Native Client, we recommend reading the 
   `Technical Overview <../overview>`_ and walking through the
-  `Getting Started Tutorial </devguide/tutorial/tutorial-part1>`_.
+  `Getting Started Tutorial <devguide/tutorial/tutorial-part1>`_.
 * If you'd rather dive into information about the toolchains, see
-  `Building Native Client Modules </devguide/devcycle/building>`_.
+  `Building Native Client Modules <devguide/devcycle/building>`_.
