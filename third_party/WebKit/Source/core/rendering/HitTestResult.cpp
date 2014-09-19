@@ -284,26 +284,15 @@ IntRect HitTestResult::imageRect() const
 
 KURL HitTestResult::absoluteImageURL() const
 {
-    return absoluteImageURLInternal(false);
-}
-
-KURL HitTestResult::absoluteImageURLIncludingCanvasDataURL() const
-{
-    return absoluteImageURLInternal(true);
-}
-
-KURL HitTestResult::absoluteImageURLInternal(bool allowCanvas) const
-{
     if (!m_innerNonSharedNode)
         return KURL();
 
     RenderObject* renderer = m_innerNonSharedNode->renderer();
-    if (!(renderer && (renderer->isImage() || renderer->isCanvas())))
+    if (!(renderer && renderer->isImage()))
         return KURL();
 
     AtomicString urlString;
-    if ((allowCanvas && isHTMLCanvasElement(*m_innerNonSharedNode))
-        || isHTMLEmbedElement(*m_innerNonSharedNode)
+    if (isHTMLEmbedElement(*m_innerNonSharedNode)
         || isHTMLImageElement(*m_innerNonSharedNode)
         || isHTMLInputElement(*m_innerNonSharedNode)
         || isHTMLObjectElement(*m_innerNonSharedNode)

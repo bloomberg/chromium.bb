@@ -36,7 +36,6 @@ namespace blink {
 enum NavigationPolicy {
     NavigationPolicyIgnore,
     NavigationPolicyDownload,
-    NavigationPolicyDownloadTo,
     NavigationPolicyCurrentTab,
     NavigationPolicyNewBackgroundTab,
     NavigationPolicyNewForegroundTab,

@@ -3328,8 +3328,10 @@ void WebViewImpl::copyImageAt(const WebPoint& point)
         return;
 
     HitTestResult result = hitTestResultForWindowPos(point);
+    Node* node = result.innerNonSharedNode();
+    ASSERT(node);
 
-    if (result.absoluteImageURLIncludingCanvasDataURL().isEmpty()) {
+    if (!isHTMLCanvasElement(*node) && result.absoluteImageURL().isEmpty()) {
         // There isn't actually an image at these coordinates.  Might be because
         // the window scrolled while the context menu was open or because the page
         // changed itself between when we thought there was an image here and when
