@@ -3091,7 +3091,7 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
             if (autoWidthShouldFitContent())
                 shrinkToFitWidth(availableSpace, logicalLeftValue, bordersPlusPadding, computedValues);
             else
-                computedValues.m_extent = availableSpace - (logicalLeftValue + valueForLength(logicalRight, containerLogicalWidth));
+                computedValues.m_extent = std::max<LayoutUnit>(0, availableSpace - (logicalLeftValue + valueForLength(logicalRight, containerLogicalWidth)));
         } else if (!logicalLeftIsAuto && !logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 6: (no need solve for right)
             logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
