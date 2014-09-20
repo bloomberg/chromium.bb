@@ -64,6 +64,11 @@ class WebstoreStandaloneInstaller
  protected:
   virtual ~WebstoreStandaloneInstaller();
 
+  // Runs the callback; primarily used for running a callback before it is
+  // cleared in AbortInstall().
+  void RunCallback(
+      bool success, const std::string& error, webstore_install::Result result);
+
   // Called when the install should be aborted. The callback is cleared.
   void AbortInstall();
 
@@ -146,6 +151,10 @@ class WebstoreStandaloneInstaller
   // Create an approval to pass installation parameters to the CrxInstaller.
   virtual scoped_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
+  // ExtensionInstallPrompt::Delegate interface implementation.
+  virtual void InstallUIProceed() OVERRIDE;
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+
   // Accessors to be used by subclasses.
   bool show_user_count() const { return show_user_count_; }
   const std::string& localized_user_count() const {
@@ -201,10 +210,6 @@ class WebstoreStandaloneInstaller
       const std::string& id,
       InstallHelperResultCode result_code,
       const std::string& error_message) OVERRIDE;
-
-  // ExtensionInstallPrompt::Delegate interface implementation.
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   // WebstoreInstaller::Delegate interface implementation.
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;

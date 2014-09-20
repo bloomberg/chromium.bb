@@ -1258,6 +1258,7 @@
         'browser/extensions/webstore_inline_installer_browsertest.cc',
         'browser/extensions/webstore_installer_test.cc',
         'browser/extensions/webstore_installer_test.h',
+        'browser/extensions/webstore_reinstaller_browsertest.cc',
         'browser/extensions/webstore_startup_installer_browsertest.cc',
         'browser/extensions/window_open_apitest.cc',
         'browser/external_extension_browsertest.cc',

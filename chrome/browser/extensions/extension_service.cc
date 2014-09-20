@@ -699,6 +699,7 @@ bool ExtensionService::UninstallExtension(
   // we don't do this.
   bool external_uninstall =
       (reason == extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
+      (reason == extensions::UNINSTALL_REASON_REINSTALL) ||
       (reason == extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
       (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE) ||
       (reason == extensions::UNINSTALL_REASON_SYNC &&
@@ -714,7 +715,10 @@ bool ExtensionService::UninstallExtension(
   }
 
   syncer::SyncChange sync_change;
-  if (extension_sync_service_) {
+  // Don't sync the uninstall if we're going to reinstall the extension
+  // momentarily.
+  if (extension_sync_service_ &&
+      reason != extensions::UNINSTALL_REASON_REINSTALL) {
      sync_change = extension_sync_service_->PrepareToSyncUninstallExtension(
         extension.get(), is_ready());
   }
@@ -755,7 +759,7 @@ bool ExtensionService::UninstallExtension(
   ExtensionRegistry::Get(profile_)
       ->TriggerOnUninstalled(extension.get(), reason);
 
-  if (extension_sync_service_) {
+  if (sync_change.IsValid()) {
     extension_sync_service_->ProcessSyncUninstallExtension(extension->id(),
                                                            sync_change);
   }

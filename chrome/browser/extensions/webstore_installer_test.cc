@@ -135,8 +135,6 @@ void WebstoreInstallerTest::RunTestAsync(
 }
 
 void WebstoreInstallerTest::AutoAcceptInstall() {
-  // TODO(tmdiep): Refactor and remove the use of the command line flag.
-  // See crbug.com/357774.
   ExtensionInstallPrompt::g_auto_confirm_for_tests =
       ExtensionInstallPrompt::ACCEPT;
 }

@@ -133,6 +133,8 @@
           <span class="extension-title"></span>
           <span class="extension-version"></span>
         </div>
+        <p class="corrupt-install-message"
+           i18n-content="extensionSettingsCorruptInstall" hidden></p>
         <p class="extension-description"></p>
         <div class="action-links">
           <button class="permissions-link link-button"
@@ -155,14 +157,6 @@
             <span i18n-content="extensionSettingsSuspiciousInstall"></span>
             <a target="_blank" class="learn-more-link"
                 i18n-values="href:extensionSettingsSuspiciousInstallHelpUrl"
-                i18n-content="extensionSettingsLearnMore"
-                href="#">
-            </a>
-          </div>
-          <div class="corrupt-install-message" hidden>
-            <span i18n-content="extensionSettingsCorruptInstall"></span>
-            <a target="_blank" class="learn-more-link"
-                i18n-values="href:extensionSettingsCorruptInstallHelpUrl"
                 i18n-content="extensionSettingsLearnMore"
                 href="#">
             </a>
@@ -229,8 +223,10 @@
         </div>
       </div>
       <div class="enable-controls">
-        <a class="terminated-reload-link" href="#"
-            i18n-content="extensionSettingsReloadTerminated" hidden></a>
+        <div class="terminated-reload-link link-button"
+            i18n-content="extensionSettingsReloadTerminated" hidden></div>
+        <div class="corrupted-repair-button link-button"
+            i18n-content="extensionSettingsRepairCorrupted" hidden></div>
         <div class="checkbox enable-checkbox" hidden><label>
           <input type="checkbox">
           <span class="enable-checkbox-text">

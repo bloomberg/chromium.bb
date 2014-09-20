@@ -213,11 +213,16 @@ html[dir='rtl'] .extension-list-item {
   font-weight: 400;
 }
 
-.extension-description {
+.extension-description,
+.corrupt-install-message {
   -webkit-padding-end: 5px;
   font-size: 13px;
   margin: 5px 0;
   white-space: normal;
+}
+
+.corrupt-install-message {
+  color: rgb(196, 42, 23);
 }
 
 .action-links {
@@ -250,6 +255,14 @@ html[dir='rtl'] .extension-list-item {
   position: relative;
 }
 
+/* We use x.link-button here so that we get higher specifity than the
+ * link-button rules without resorting to the Dark Side (!IMPORTANT). */
+.terminated-reload-link.link-button,
+.corrupted-repair-button.link-button {
+  /* Matches width of trash. */
+  -webkit-margin-end: 30px;
+}
+
 .checkbox {
   display: inline-block;
 }
@@ -269,8 +282,9 @@ html[dir='rtl'] .extension-list-item {
   word-wrap: break-word;
 }
 
-.terminated-reload-link {
-  -webkit-margin-end: 2.5em;
+.terminated-reload-link,
+.corrupted-repair-button {
+  display: inline-block;
   padding-top: 7px;
 }
 

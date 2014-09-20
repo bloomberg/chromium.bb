@@ -4101,6 +4101,12 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt window">
         Confirm Launch App
       </message>
+      <message name="IDS_EXTENSION_REPAIR_EXTENSION_PROMPT_TITLE" desc="Titlebar of the reinstall/repair extension prompt window.">
+        Repair Extension
+      </message>
+      <message name="IDS_EXTENSION_REPAIR_APP_PROMPT_TITLE" desc="Titlebar of the reinstall/repair app prompt window.">
+        Repair App
+      </message>
       <message name="IDS_EXTENSION_REMOTE_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app installation prompt window when an app was installed remotely">
         Confirm New App
       </message>
@@ -4139,6 +4145,9 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to enable a particular extension or app that was installed remotely.">
         Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
+      </message>
+      <message name="IDS_EXTENSION_REPAIR_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to update the extension/app.">
+        Repair "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
 
       <!-- Extension alerts. -->
@@ -4794,6 +4803,9 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_EXTENSIONS_RELOAD_TERMINATED" desc="The link for reloading extensions.">
           Reload
         </message>
+        <message name="IDS_EXTENSIONS_REPAIR_CORRUPTED" desc="The link for repairing corrupted extensions.">
+          Repair
+        </message>
         <message name="IDS_EXTENSIONS_LAUNCH" desc="The link for launching apps.">
           Launch
         </message>
@@ -4972,6 +4984,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt for a remotely installed extension">
         Enable
       </message>
+      <message name="IDS_EXTENSION_PROMPT_REPAIR_BUTTON" desc="Text for the install button on the extension reinstall prompt.">
+        Repair
+      </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
         Chrome Web Store
       </message>
@@ -5122,7 +5137,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.
       </message>
       <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION" desc="The warning for the user that an extension may have been tampered with on disk.">
-        This extension may have been corrupted by malware.
+        This extension may have been corrupted.
       </message>
       <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION_2" desc="The warning for the user that an extension may have been tampered with on disk.">
         This extension may have been corrupted. Try re-installing.

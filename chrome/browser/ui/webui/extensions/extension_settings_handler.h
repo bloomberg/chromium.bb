@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/requirements_checker.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -168,6 +169,9 @@ class ExtensionSettingsHandler
   // Callback for "reload" message.
   void HandleReloadMessage(const base::ListValue* args);
 
+  // Callback for "repair" message.
+  void HandleRepairMessage(const base::ListValue* args);
+
   // Callback for "enable" message.
   void HandleEnableMessage(const base::ListValue* args);
 
@@ -231,6 +235,11 @@ class ExtensionSettingsHandler
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
+
+  // Called when the reinstallation is complete.
+  void OnReinstallComplete(bool success,
+                           const std::string& error,
+                           webstore_install::Result result);
 
   // Callback for RequirementsChecker.
   void OnRequirementsChecked(std::string extension_id,

@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/extensions/webstore_reinstaller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -255,6 +256,9 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
       Manifest::IsUnpackedLocation(extension->location()));
+  extension_data->SetBoolean("isFromStore",
+                             extension->location() == Manifest::INTERNAL &&
+                                 ManifestURL::UpdatesFromGallery(extension));
   ExtensionRegistry* registry =
       ExtensionRegistry::Get(extension_service_->profile());
   extension_data->SetBoolean(
@@ -513,6 +517,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
   source->AddString("extensionSettingsReloadTerminated",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_TERMINATED));
+  source->AddString("extensionSettingsRepairCorrupted",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_REPAIR_CORRUPTED));
   source->AddString("extensionSettingsLaunch",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LAUNCH));
   source->AddString("extensionSettingsReloadUnpacked",
@@ -540,11 +546,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
   source->AddString("extensionSettingsLearnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  source->AddString("extensionSettingsCorruptInstallHelpUrl",
-                    base::ASCIIToUTF16(
-                        google_util::AppendGoogleLocaleParam(
-                            GURL(chrome::kCorruptExtensionURL),
-                            g_browser_process->GetApplicationLocale()).spec()));
   source->AddString("extensionSettingsSuspiciousInstallHelpUrl",
                     base::ASCIIToUTF16(
                         google_util::AppendGoogleLocaleParam(
@@ -633,6 +634,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsReload",
       base::Bind(&ExtensionSettingsHandler::HandleReloadMessage,
+                 AsWeakPtr()));
+  web_ui()->RegisterMessageCallback("extensionSettingsRepair",
+      base::Bind(&ExtensionSettingsHandler::HandleRepairMessage,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnable",
       base::Bind(&ExtensionSettingsHandler::HandleEnableMessage,
@@ -983,6 +987,18 @@ void ExtensionSettingsHandler::HandleReloadMessage(
   std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   extension_service_->ReloadExtensionWithQuietFailure(extension_id);
+}
+
+void ExtensionSettingsHandler::HandleRepairMessage(
+    const base::ListValue* args) {
+  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
+  CHECK(!extension_id.empty());
+  scoped_refptr<WebstoreReinstaller> reinstaller(new WebstoreReinstaller(
+      web_contents(),
+      extension_id,
+      base::Bind(&ExtensionSettingsHandler::OnReinstallComplete,
+                 AsWeakPtr())));
+  reinstaller->BeginReinstall();
 }
 
 void ExtensionSettingsHandler::HandleEnableMessage(
@@ -1408,6 +1424,13 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
 #else
   return NULL;
 #endif  // !defined(OS_ANDROID)
+}
+
+void ExtensionSettingsHandler::OnReinstallComplete(
+    bool success,
+    const std::string& error,
+    webstore_install::Result result) {
+  MaybeUpdateAfterNotification();
 }
 
 void ExtensionSettingsHandler::OnRequirementsChecked(

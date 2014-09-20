@@ -52,6 +52,12 @@ using extensions::PermissionSet;
 
 namespace {
 
+bool AllowWebstoreData(ExtensionInstallPrompt::PromptType type) {
+  return type == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT ||
+         type == ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT ||
+         type == ExtensionInstallPrompt::REPAIR_PROMPT;
+}
+
 static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     0,  // The regular install prompt depends on what's being installed.
     IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
@@ -62,6 +68,7 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE,
     IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE,
     0,  // The remote install prompt depends on what's being installed.
+    0,  // The repair install prompt depends on what's being installed.
 };
 static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_INSTALL_PROMPT_HEADING,
@@ -73,6 +80,7 @@ static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING,
     IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING,
     IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING,
+    IDS_EXTENSION_REPAIR_PROMPT_HEADING
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -82,6 +90,7 @@ static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_CANCEL,
+    ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
 };
@@ -95,6 +104,7 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON,
     IDS_EXTENSION_PROMPT_LAUNCH_BUTTON,
     IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON,
+    IDS_EXTENSION_PROMPT_REPAIR_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     0,  // These all use the platform's default cancel label.
@@ -105,6 +115,7 @@ static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
     IDS_CLOSE,
     0,  // Platform dependent cancel button.
+    0,
     0,
 };
 static const int
@@ -118,6 +129,7 @@ static const int
         IDS_EXTENSION_PROMPT_CAN_ACCESS,
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
+        IDS_EXTENSION_PROMPT_CAN_ACCESS,
 };
 
 // Returns bitmap for the default icon with size equal to the default icon's
@@ -205,6 +217,8 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "LAUNCH_PROMPT";
     case ExtensionInstallPrompt::REMOTE_INSTALL_PROMPT:
       return "REMOTE_INSTALL_PROMPT";
+    case ExtensionInstallPrompt::REPAIR_PROMPT:
+      return "REPAIR_PROMPT";
     case ExtensionInstallPrompt::UNSET_PROMPT_TYPE:
     case ExtensionInstallPrompt::NUM_PROMPT_TYPES:
       break;
@@ -266,7 +280,7 @@ void ExtensionInstallPrompt::Prompt::SetWebstoreData(
     bool show_user_count,
     double average_rating,
     int rating_count) {
-  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
+  CHECK(AllowWebstoreData(type_));
   localized_user_count_ = localized_user_count;
   show_user_count_ = show_user_count;
   average_rating_ = average_rating;
@@ -292,6 +306,11 @@ base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
       resource_id = IDS_EXTENSION_REMOTE_INSTALL_APP_PROMPT_TITLE;
     else
       resource_id = IDS_EXTENSION_REMOTE_INSTALL_EXTENSION_PROMPT_TITLE;
+  } else if (type_ == REPAIR_PROMPT) {
+    if (extension_->is_app())
+      resource_id = IDS_EXTENSION_REPAIR_APP_PROMPT_TITLE;
+    else
+      resource_id = IDS_EXTENSION_REPAIR_EXTENSION_PROMPT_TITLE;
   }
 
   return l10n_util::GetStringUTF16(resource_id);
@@ -408,7 +427,7 @@ bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
     StarAppender appender, void* data) const {
   CHECK(appender);
-  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
+  CHECK(AllowWebstoreData(type_));
   int rating_integer = floor(average_rating_);
   double rating_fractional = average_rating_ - rating_integer;
 
@@ -435,13 +454,13 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
-  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
+  CHECK(AllowWebstoreData(type_));
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_RATING_COUNT,
                                     base::IntToString16(rating_count_));
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
-  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
+  CHECK(AllowWebstoreData(type_));
 
   if (show_user_count_) {
     return l10n_util::GetStringFUTF16(IDS_EXTENSION_USER_COUNT,
@@ -859,7 +878,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case INSTALL_PROMPT:
     case LAUNCH_PROMPT:
     case POST_INSTALL_PERMISSIONS_PROMPT:
-    case REMOTE_INSTALL_PROMPT: {
+    case REMOTE_INSTALL_PROMPT:
+    case REPAIR_PROMPT: {
       prompt_->set_extension(extension_);
       prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
       break;

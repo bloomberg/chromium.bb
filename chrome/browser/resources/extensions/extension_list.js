@@ -31,6 +31,7 @@
  *            installWarnings: (Array|undefined),
  *            is_hosted_app: boolean,
  *            is_platform_app: boolean,
+ *            isFromStore: boolean,
  *            isUnpacked: boolean,
  *            kioskEnabled: boolean,
  *            kioskOnly: boolean,
@@ -319,7 +320,19 @@ cr.define('options', function() {
         }
       }
 
-      if (!extension.terminated) {
+      if (extension.terminated) {
+        var terminatedReload = node.querySelector('.terminated-reload-link');
+        terminatedReload.hidden = false;
+        terminatedReload.onclick = function() {
+          chrome.send('extensionSettingsReload', [extension.id]);
+        };
+      } else if (extension.corruptInstall && extension.isFromStore) {
+        var repair = node.querySelector('.corrupted-repair-button');
+        repair.hidden = false;
+        repair.onclick = function() {
+          chrome.send('extensionSettingsRepair', [extension.id]);
+        };
+      } else {
         // The 'Enabled' checkbox.
         var enable = node.querySelector('.enable-checkbox');
         enable.hidden = false;
@@ -350,12 +363,6 @@ cr.define('options', function() {
         }
 
         enable.querySelector('input').checked = extension.enabled;
-      } else {
-        var terminatedReload = node.querySelector('.terminated-reload-link');
-        terminatedReload.hidden = false;
-        terminatedReload.addEventListener('click', function(e) {
-          chrome.send('extensionSettingsReload', [extension.id]);
-        });
       }
 
       // 'Remove' button.

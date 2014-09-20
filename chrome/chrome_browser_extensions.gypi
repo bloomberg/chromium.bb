@@ -816,6 +816,8 @@
       'browser/extensions/webstore_install_with_prompt.h',
       'browser/extensions/webstore_installer.cc',
       'browser/extensions/webstore_installer.h',
+      'browser/extensions/webstore_reinstaller.cc',
+      'browser/extensions/webstore_reinstaller.h',
       'browser/extensions/webstore_standalone_installer.cc',
       'browser/extensions/webstore_standalone_installer.h',
       'browser/extensions/webstore_startup_installer.cc',

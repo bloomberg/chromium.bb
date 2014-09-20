@@ -557,9 +557,6 @@ const char kRemoveNonCWSExtensionURL[] =
     "https://support.google.com/chrome/answer/2811969?"
     "p=ui_remove_non_cws_extensions&rd=1";
 
-const char kCorruptExtensionURL[] =
-    "https://support.google.com/chrome/?p=settings_corrupt_extension";
-
 const char kNotificationsHelpURL[] =
     "https://support.google.com/chrome/?p=ui_notifications";
 
