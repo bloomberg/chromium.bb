@@ -55,6 +55,7 @@ class LibjingleTransport
 
  private:
   void DoStart();
+  void NotifyConnected();
 
   // Signal handlers for cricket::TransportChannel.
   void OnRequestSignaling(cricket::TransportChannelImpl* channel);
@@ -88,12 +89,13 @@ class LibjingleTransport
   int connect_attempts_left_;
   base::RepeatingTimer<LibjingleTransport> reconnect_timer_;
 
+  base::WeakPtrFactory<LibjingleTransport> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(LibjingleTransport);
 };
 
-LibjingleTransport::LibjingleTransport(
-    cricket::PortAllocator* port_allocator,
-    const NetworkSettings& network_settings)
+LibjingleTransport::LibjingleTransport(cricket::PortAllocator* port_allocator,
+                                       const NetworkSettings& network_settings)
     : port_allocator_(port_allocator),
       network_settings_(network_settings),
       event_handler_(NULL),
@@ -102,7 +104,8 @@ LibjingleTransport::LibjingleTransport(
       ice_password_(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)),
       can_start_(false),
       channel_was_writable_(false),
-      connect_attempts_left_(kMaxReconnectAttempts) {
+      connect_attempts_left_(kMaxReconnectAttempts),
+      weak_factory_(this) {
   DCHECK(!ice_username_fragment_.empty());
   DCHECK(!ice_password_.empty());
 }
@@ -180,7 +183,9 @@ void LibjingleTransport::DoStart() {
   reconnect_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kReconnectDelaySeconds),
       this, &LibjingleTransport::TryReconnect);
+}
 
+void LibjingleTransport::NotifyConnected() {
   // Create net::Socket adapter for the P2PTransportChannel.
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> socket(
       new jingle_glue::TransportChannelSocketAdapter(channel_.get()));
@@ -269,7 +274,13 @@ void LibjingleTransport::OnWritableState(
   DCHECK_EQ(channel, channel_.get());
 
   if (channel->writable()) {
-    channel_was_writable_ = true;
+    if (!channel_was_writable_) {
+      channel_was_writable_ = true;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&LibjingleTransport::NotifyConnected,
+                     weak_factory_.GetWeakPtr()));
+    }
     connect_attempts_left_ = kMaxReconnectAttempts;
     reconnect_timer_.Stop();
   } else if (!channel->writable() && channel_was_writable_) {
