@@ -448,17 +448,21 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
 void QuicCryptoClientStream::DoInitializeServerConfigUpdate(
     QuicCryptoClientConfig::CachedState* cached) {
+  bool update_ignored = false;
   if (!server_id_.is_https()) {
     // We don't check the certificates for insecure QUIC connections.
     SetCachedProofValid(cached);
     next_state_ = STATE_VERIFY_PROOF_DONE;
-    return;
-  }
-  if (!cached->IsEmpty() && !cached->signature().empty()) {
+  } else if (!cached->IsEmpty() && !cached->signature().empty()) {
     // Note that we verify the proof even if the cached proof is valid.
     DCHECK(crypto_config_->proof_verifier());
     next_state_ = STATE_VERIFY_PROOF;
+  } else {
+    update_ignored = true;
+    next_state_ = STATE_VERIFY_PROOF_DONE;
   }
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicNumServerConfig.UpdateMessagesIgnored",
+                        update_ignored);
 }
 
 QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(

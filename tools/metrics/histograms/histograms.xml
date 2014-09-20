@@ -16677,6 +16677,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicNumServerConfig.UpdateMessagesIgnored"
+    enum="BooleanIgnored">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>The number of times ServerConfigUpdateMessages ignored.</summary>
+</histogram>
+
 <histogram name="Net.QuicNumStreamFramesInPacket">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -38821,6 +38827,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanHttps" type="int">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
+</enum>
+
+<enum name="BooleanIgnored" type="int">
+  <int value="0" label="Not ignored"/>
+  <int value="1" label="Ignored"/>
 </enum>
 
 <enum name="BooleanLoaded" type="int">
