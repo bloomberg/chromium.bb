@@ -173,7 +173,9 @@ void VideoCaptureDeviceFactoryMac::EnumerateDeviceNames(const base::Callback<
     callback.Run(device_names.Pass());
   } else {
     DVLOG(1) << "Enumerating video capture devices using QTKit";
-    base::PostTaskAndReplyWithResult(ui_task_runner_, FROM_HERE,
+    base::PostTaskAndReplyWithResult(
+        ui_task_runner_.get(),
+        FROM_HERE,
         base::Bind(&EnumerateDevicesUsingQTKit),
         base::Bind(&RunDevicesEnumeratedCallback, callback));
   }
