@@ -12,9 +12,12 @@ shared_library("mojo_js") {
 
   deps = [
     ":js",
+    "//base",
     "//base:i18n",
+    "//gin",
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/cpp/application",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/utility",
     "//mojo/services/public/interfaces/content_handler",
@@ -23,16 +26,19 @@ shared_library("mojo_js") {
 
 # GYP version: part of mojo/mojo_apps.gypi:mojo_js_lib
 source_set("js") {
+  sources = [
+    "mojo_runner_delegate.cc",
+    "mojo_runner_delegate.h",
+  ]
+
+  public_deps = [
+    "//mojo/bindings/js",
+  ]
   deps = [
     "//base",
     "//gin",
     "//mojo/apps/js/bindings",
     "//mojo/apps/js/bindings/gl",
-    "//mojo/bindings/js",
     "//v8",
-  ]
-  sources = [
-    "mojo_runner_delegate.cc",
-    "mojo_runner_delegate.h",
   ]
 }

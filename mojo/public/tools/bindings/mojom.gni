@@ -12,10 +12,8 @@
 #       List of source .mojom files to compile.
 #
 #   deps (optional)
-#
+#   public_deps (optional)
 #   visibility (optional)
-#       Normal meaning. However, this must be a list (normal visibility
-#       allows a single string).
 template("mojom") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
@@ -85,7 +83,7 @@ template("mojom") {
     target_visibility = [ ":$target_name" ]
   }
 
-  generator_target_name = target_name + "_generator"
+  generator_target_name = target_name + "__generator"
   action_foreach(generator_target_name) {
     if (defined(invoker.visibility)) {
       visibility = target_visibility + invoker.visibility
@@ -117,6 +115,9 @@ template("mojom") {
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
     }
   }
 }

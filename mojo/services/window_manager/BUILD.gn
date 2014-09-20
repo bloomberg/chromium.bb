@@ -12,10 +12,14 @@ shared_library("window_manager") {
 
   sources = [ "main.cc" ]
 
-  deps = [
+  public_deps = [
     ":lib",
+  ]
+  deps = [
+    "//base",
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/services/public/cpp/view_manager",
   ]
 }
 
@@ -28,22 +32,25 @@ source_set("lib") {
     "window_manager_service_impl.h",
   ]
 
+  public_deps = [
+    "//mojo/aura",
+  ]
   deps = [
     "//base",
     "//mojo/application",
-    "//mojo/aura",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/window_manager",
+    "//ui/aura",
     "//ui/base",
+    "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/wm",
   ]
-
-  forward_dependent_configs_from = [ "//mojo/aura" ]
 }
 
 # GYP version: mojo/mojo_services.gypi:mojo_core_window_manager_unittests

@@ -22,18 +22,25 @@ source_set("view_manager") {
     "window_manager_delegate.h",
   ]
 
-  deps = [
+  public_deps = [
     ":common",
+    "//skia",
+  ]
+  deps = [
     "//base",
     "//cc/surfaces",
     "//gpu",
     "//mojo/application",
+    "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/gles2:for_shared_library",
     "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/gpu",
+    "//mojo/services/public/interfaces/input_events:input_events",
+    "//mojo/services/public/interfaces/surfaces:surface_id",
+    "//mojo/services/public/interfaces/surfaces:surfaces",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
     "//skia",
@@ -41,12 +48,13 @@ source_set("view_manager") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  forward_dependent_configs_from = [ "//skia" ]
 }
 
 source_set("common") {
   sources = [
     "types.h"
+  ]
+  public_deps = [
+    "//base",
   ]
 }

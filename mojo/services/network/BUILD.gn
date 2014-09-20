@@ -8,7 +8,10 @@ shared_library("network") {
 
   deps = [
     ":lib",
+    "//base",
+    "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/cpp/bindings:bindings",
     "//mojo/services/public/interfaces/network",
   ]
 

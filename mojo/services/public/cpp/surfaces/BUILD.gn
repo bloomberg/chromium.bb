@@ -6,32 +6,30 @@
 component("surfaces") {
   output_name = "mojo_surfaces_lib"
 
-  deps = [
-    "//base",
-    "//cc",
-    "//cc/surfaces",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
-    "//mojo/services/public/interfaces/surfaces",
-    "//mojo/services/public/cpp/geometry",
-  ]
-
-  forward_dependent_configs_from = [
-    "//mojo/services/public/cpp/geometry",
-    "//ui/gfx",
-  ]
-
-  defines = [
-    "MOJO_SURFACES_IMPLEMENTATION",
-  ]
-
   sources = [
     "lib/surfaces_type_converters.cc",
     "lib/surfaces_utils.cc",
     "mojo_surfaces_export.h",
     "surfaces_type_converters.h",
     "surfaces_utils.h",
+  ]
+
+  defines = [ "MOJO_SURFACES_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//mojo/services/public/cpp/geometry",
+    "//ui/gfx",
+  ]
+
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//gpu",
+    "//ui/gfx/geometry",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+    "//mojo/services/public/interfaces/surfaces:surface_id",
+    "//mojo/services/public/interfaces/surfaces",
   ]
 }
