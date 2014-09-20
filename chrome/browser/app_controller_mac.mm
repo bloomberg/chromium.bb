@@ -393,8 +393,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Check for active apps. If quitting is prevented, only close browsers and
   // sessions.
-  if (!browser_shutdown::IsTryingToQuit() &&
-      quitWithAppsController_ && !quitWithAppsController_->ShouldQuit()) {
+  if (!browser_shutdown::IsTryingToQuit() && quitWithAppsController_.get() &&
+      !quitWithAppsController_->ShouldQuit()) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
         content::NotificationService::AllSources(),

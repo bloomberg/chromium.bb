@@ -1376,7 +1376,7 @@ void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
 
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(!service_discovery_client_.get() ||
-         service_discovery_client_ == client);
+         service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;
   printer_lister_.reset(new local_discovery::PrivetLocalPrinterLister(
       service_discovery_client_.get(), profile->GetRequestContext(), this));

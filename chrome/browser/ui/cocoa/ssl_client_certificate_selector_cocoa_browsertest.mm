@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
   SSLClientCertificateSelectorCocoa* selector =
       [[SSLClientCertificateSelectorCocoa alloc]
           initWithNetworkSession:auth_requestor_->http_network_session_
-                 certRequestInfo:auth_requestor_->cert_request_info_
+                 certRequestInfo:auth_requestor_->cert_request_info_.get()
                         callback:base::Bind(&OnCertificateSelected,
                                             &cert,
                                             &count)];
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
   SSLClientCertificateSelectorCocoa* selector =
       [[SSLClientCertificateSelectorCocoa alloc]
           initWithNetworkSession:auth_requestor_->http_network_session_
-                 certRequestInfo:auth_requestor_->cert_request_info_
+                 certRequestInfo:auth_requestor_->cert_request_info_.get()
                         callback:chrome::SelectCertificateCallback()];
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

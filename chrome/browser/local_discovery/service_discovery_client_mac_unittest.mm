@@ -44,7 +44,7 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
  public:
   ServiceDiscoveryClientMacTest() : num_updates_(0), num_resolves_(0) {
     client_mac_ = new ServiceDiscoveryClientMac();
-    client_ = client_mac_;
+    client_ = client_mac_.get();
   }
 
   void OnServiceUpdated(

@@ -79,14 +79,14 @@ OriginChipDecoration::OriginChipDecoration(
   // May not be set for unit tests.
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
-  if (sb_service.get() && sb_service->ui_manager())
+  if (sb_service.get() && sb_service->ui_manager().get())
     sb_service->ui_manager()->AddObserver(this);
 }
 
 OriginChipDecoration::~OriginChipDecoration() {
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
-  if (sb_service.get() && sb_service->ui_manager())
+  if (sb_service.get() && sb_service->ui_manager().get())
     sb_service->ui_manager()->RemoveObserver(this);
 }
 
