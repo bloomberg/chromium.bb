@@ -13,7 +13,14 @@ namespace {
 const int kMinSchedulingDelayMs = 1;
 const int kNumAggressiveReportsSentAtStart = 100;
 
+// The additional number of frames that can be in-flight when input exceeds the
+// maximum frame rate.
+const int kMaxFrameBurst = 5;
+
 }  // namespace
+
+// Convenience macro used in logging statements throughout this file.
+#define SENDER_SSRC (is_audio_ ? "AUDIO[" : "VIDEO[") << ssrc_ << "] "
 
 FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          bool is_audio,
@@ -37,8 +44,8 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       last_sent_frame_id_(0),
       latest_acked_frame_id_(0),
       duplicate_ack_counter_(0),
-      rtp_timebase_(rtp_timebase),
       congestion_control_(congestion_control),
+      rtp_timebase_(rtp_timebase),
       is_audio_(is_audio),
       weak_factory_(this) {
   DCHECK(transport_sender_);
@@ -121,7 +128,8 @@ void FrameSender::ResendCheck() {
     if (latest_acked_frame_id_ == last_sent_frame_id_) {
       // Last frame acked, no point in doing anything
     } else {
-      VLOG(1) << "ACK timeout; last acked frame: " << latest_acked_frame_id_;
+      VLOG(1) << SENDER_SSRC << "ACK timeout; last acked frame: "
+              << latest_acked_frame_id_;
       ResendForKickstart();
     }
   }
@@ -146,8 +154,8 @@ void FrameSender::ScheduleNextResendCheck() {
 void FrameSender::ResendForKickstart() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(!last_send_time_.is_null());
-  VLOG(1) << "Resending last packet of frame " << last_sent_frame_id_
-          << " to kick-start.";
+  VLOG(1) << SENDER_SSRC << "Resending last packet of frame "
+          << last_sent_frame_id_ << " to kick-start.";
   last_send_time_ = cast_environment_->Clock()->NowTicks();
   transport_sender_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
 }
@@ -170,10 +178,28 @@ RtpTimestamp FrameSender::GetRecordedRtpTimestamp(uint32 frame_id) const {
   return frame_rtp_timestamps_[frame_id % arraysize(frame_rtp_timestamps_)];
 }
 
+int FrameSender::GetUnacknowledgedFrameCount() const {
+  const int count =
+      static_cast<int32>(last_sent_frame_id_ - latest_acked_frame_id_);
+  DCHECK_GE(count, 0);
+  return count;
+}
+
+base::TimeDelta FrameSender::GetAllowedInFlightMediaDuration() const {
+  // The total amount allowed in-flight media should equal the amount that fits
+  // within the entire playout delay window, plus the amount of time it takes to
+  // receive an ACK from the receiver.
+  // TODO(miu): Research is needed, but there is likely a better formula.
+  return target_playout_delay_ + (current_round_trip_time_ / 2);
+}
+
 void FrameSender::SendEncodedFrame(
     int requested_bitrate_before_encode,
     scoped_ptr<EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+  VLOG(2) << SENDER_SSRC << "About to send another frame: last_sent="
+          << last_sent_frame_id_ << ", latest_acked=" << latest_acked_frame_id_;
 
   const uint32 frame_id = encoded_frame->frame_id;
 
@@ -188,8 +214,8 @@ void FrameSender::SendEncodedFrame(
     ScheduleNextResendCheck();
   }
 
-  VLOG_IF(1, encoded_frame->dependency == EncodedFrame::KEY)
-      << "Send encoded key frame; frame_id: " << frame_id;
+  VLOG_IF(1, !is_audio_ && encoded_frame->dependency == EncodedFrame::KEY)
+      << SENDER_SSRC << "Sending encoded key frame, id=" << frame_id;
 
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       last_send_time_, FRAME_ENCODED,
@@ -222,7 +248,8 @@ void FrameSender::SendEncodedFrame(
     ++num_aggressive_rtcp_reports_sent_;
     const bool is_last_aggressive_report =
         (num_aggressive_rtcp_reports_sent_ == kNumAggressiveReportsSentAtStart);
-    VLOG_IF(1, is_last_aggressive_report) << "Sending last aggressive report.";
+    VLOG_IF(1, is_last_aggressive_report)
+        << SENDER_SSRC << "Sending last aggressive report.";
     SendRtcpReport(is_last_aggressive_report);
   }
 
@@ -247,7 +274,8 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     // based on it having received a report from here.  Therefore, ensure this
     // sender stops aggressively sending reports.
     if (num_aggressive_rtcp_reports_sent_ < kNumAggressiveReportsSentAtStart) {
-      VLOG(1) << "No longer a need to send reports aggressively (sent "
+      VLOG(1) << SENDER_SSRC
+              << "No longer a need to send reports aggressively (sent "
               << num_aggressive_rtcp_reports_sent_ << ").";
       num_aggressive_rtcp_reports_sent_ = kNumAggressiveReportsSentAtStart;
       ScheduleNextRtcpReport();
@@ -269,7 +297,8 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     }
     // TODO(miu): The values "2" and "3" should be derived from configuration.
     if (duplicate_ack_counter_ >= 2 && duplicate_ack_counter_ % 3 == 2) {
-      VLOG(1) << "Received duplicate ACK for frame " << latest_acked_frame_id_;
+      VLOG(1) << SENDER_SSRC << "Received duplicate ACK for frame "
+              << latest_acked_frame_id_;
       ResendForKickstart();
     }
   } else {
@@ -291,7 +320,8 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   const bool is_acked_out_of_order =
       static_cast<int32>(cast_feedback.ack_frame_id -
                              latest_acked_frame_id_) < 0;
-  VLOG(2) << "Received ACK" << (is_acked_out_of_order ? " out-of-order" : "")
+  VLOG(2) << SENDER_SSRC
+          << "Received ACK" << (is_acked_out_of_order ? " out-of-order" : "")
           << " for frame " << cast_feedback.ack_frame_id;
   if (!is_acked_out_of_order) {
     // Cancel resends of acked frames.
@@ -305,31 +335,47 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   }
 }
 
-bool FrameSender::ShouldDropNextFrame(base::TimeTicks capture_time) const {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  int frames_in_flight = 0;
-  base::TimeDelta duration_in_flight;
-  if (!last_send_time_.is_null()) {
-    frames_in_flight =
-        static_cast<int32>(last_sent_frame_id_ - latest_acked_frame_id_);
-    if (frames_in_flight > 0) {
-      const uint32 oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
-      duration_in_flight =
-          capture_time - GetRecordedReferenceTime(oldest_unacked_frame_id);
-    }
+bool FrameSender::ShouldDropNextFrame(base::TimeDelta frame_duration) const {
+  // Check that accepting the next frame won't cause more frames to become
+  // in-flight than the system's design limit.
+  const int count_frames_in_flight =
+      GetUnacknowledgedFrameCount() + GetNumberOfFramesInEncoder();
+  if (count_frames_in_flight >= kMaxUnackedFrames) {
+    VLOG(1) << SENDER_SSRC << "Dropping: Too many frames would be in-flight.";
+    return true;
   }
-  frames_in_flight += GetNumberOfFramesInEncoder();
-  VLOG(2) << frames_in_flight
-          << " frames in flight; last sent: " << last_sent_frame_id_
-          << "; latest acked: " << latest_acked_frame_id_
-          << "; frames in encoder: " << GetNumberOfFramesInEncoder()
-          << "; duration in flight: "
-          << duration_in_flight.InMicroseconds() << " usec ("
-          << (target_playout_delay_ > base::TimeDelta() ?
-                  100 * duration_in_flight / target_playout_delay_ :
-                  kint64max) << "%)";
-  return frames_in_flight >= max_unacked_frames_ ||
-      duration_in_flight >= target_playout_delay_;
+
+  // Check that accepting the next frame won't exceed the configured maximum
+  // frame rate, allowing for short-term bursts.
+  base::TimeDelta duration_in_flight = GetInFlightMediaDuration();
+  const double max_frames_in_flight =
+      max_frame_rate_ * duration_in_flight.InSecondsF();
+  if (count_frames_in_flight >= max_frames_in_flight + kMaxFrameBurst) {
+    VLOG(1) << SENDER_SSRC << "Dropping: Burst threshold would be exceeded.";
+    return true;
+  }
+
+  // Check that accepting the next frame won't exceed the allowed in-flight
+  // media duration.
+  const base::TimeDelta duration_would_be_in_flight =
+      duration_in_flight + frame_duration;
+  const base::TimeDelta allowed_in_flight = GetAllowedInFlightMediaDuration();
+  if (VLOG_IS_ON(1)) {
+    const int64 percent = allowed_in_flight > base::TimeDelta() ?
+        100 * duration_would_be_in_flight / allowed_in_flight : kint64max;
+    VLOG_IF(1, percent > 50)
+        << SENDER_SSRC
+        << duration_in_flight.InMicroseconds() << " usec in-flight + "
+        << frame_duration.InMicroseconds() << " usec for next frame --> "
+        << percent << "% of allowed in-flight.";
+  }
+  if (duration_would_be_in_flight > allowed_in_flight) {
+    VLOG(1) << SENDER_SSRC << "Dropping: In-flight duration would be too high.";
+    return true;
+  }
+
+  // Next frame is accepted.
+  return false;
 }
 
 }  // namespace cast

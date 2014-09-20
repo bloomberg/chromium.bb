@@ -110,7 +110,6 @@ class CastTransportSenderImplTest : public ::testing::Test {
     rtp_config.ssrc = kVideoSsrc;
     rtp_config.feedback_ssrc = 2;
     rtp_config.rtp_payload_type = 3;
-    rtp_config.stored_frames = 10;
     transport_sender_->InitializeVideo(rtp_config,
                                        RtcpCastMessageCallback(),
                                        RtcpRttCallback());
@@ -121,7 +120,6 @@ class CastTransportSenderImplTest : public ::testing::Test {
     rtp_config.ssrc = kAudioSsrc;
     rtp_config.feedback_ssrc = 3;
     rtp_config.rtp_payload_type = 4;
-    rtp_config.stored_frames = 10;
     transport_sender_->InitializeAudio(rtp_config,
                                        RtcpCastMessageCallback(),
                                        RtcpRttCallback());

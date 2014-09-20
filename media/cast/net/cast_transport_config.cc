@@ -8,7 +8,7 @@ namespace media {
 namespace cast {
 
 CastTransportRtpConfig::CastTransportRtpConfig()
-    : ssrc(0), feedback_ssrc(0), rtp_payload_type(0), stored_frames(0) {}
+    : ssrc(0), feedback_ssrc(0), rtp_payload_type(0) {}
 
 CastTransportRtpConfig::~CastTransportRtpConfig() {}
 

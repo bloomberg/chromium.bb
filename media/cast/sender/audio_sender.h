@@ -52,6 +52,7 @@ class AudioSender : public FrameSender,
 
  protected:
   virtual int GetNumberOfFramesInEncoder() const OVERRIDE;
+  virtual base::TimeDelta GetInFlightMediaDuration() const OVERRIDE;
   virtual void OnAck(uint32 frame_id) OVERRIDE;
 
  private:

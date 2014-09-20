@@ -6,36 +6,23 @@
 #define MEDIA_CAST_NET_RTP_SENDER_PACKET_STORAGE_PACKET_STORAGE_H_
 
 #include <deque>
-#include <list>
-#include <map>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
-#include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/pacing/paced_sender.h"
 
 namespace media {
 namespace cast {
 
-// Stores a list of frames. Each frame consists a list of packets.
-typedef std::deque<SendPacketVector> FrameQueue;
-
 class PacketStorage {
  public:
-  explicit PacketStorage(size_t stored_frames);
+  PacketStorage();
   virtual ~PacketStorage();
-
-  // Returns true if this class is configured correctly.
-  // (stored frames > 0 && stored_frames < kMaxStoredFrames)
-  bool IsValid() const;
 
   // Store all of the packets for a frame.
   void StoreFrame(uint32 frame_id, const SendPacketVector& packets);
+
+  // Release all of the packets for a frame.
+  void ReleaseFrame(uint32 frame_id);
 
   // Returns a list of packets for a frame indexed by a 8-bits ID.
   // It is the lowest 8 bits of a frame ID.
@@ -46,10 +33,12 @@ class PacketStorage {
   size_t GetNumberOfStoredFrames() const;
 
  private:
-  const size_t max_stored_frames_;
-  FrameQueue frames_;
+  std::deque<SendPacketVector> frames_;
   uint32 first_frame_id_in_list_;
-  uint32 last_frame_id_in_list_;
+
+  // The number of frames whose packets have been released, but the entry in the
+  // |frames_| queue has not yet been popped.
+  size_t zombie_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PacketStorage);
 };

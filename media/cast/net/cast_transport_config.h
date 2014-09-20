@@ -41,10 +41,6 @@ struct CastTransportRtpConfig {
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;
 
-  // The number of most-recent frames that must be stored in the transport
-  // layer, to facilitate re-transmissions.
-  int stored_frames;
-
   // The AES crypto key and initialization vector.  Each of these strings
   // contains the data in binary form, of size kAesKeySize.  If they are empty
   // strings, crypto is not being used.

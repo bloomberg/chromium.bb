@@ -6,16 +6,18 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/cast_defines.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
 
-static size_t kStoredFrames = 10;
+static const size_t kStoredFrames = 10;
 
 // Generate |number_of_frames| and store into |*storage|.
 // First frame has 1 packet, second frame has 2 packets, etc.
@@ -41,20 +43,22 @@ static void StoreFrames(size_t number_of_frames,
 }
 
 TEST(PacketStorageTest, NumberOfStoredFrames) {
-  PacketStorage storage(kStoredFrames);
+  PacketStorage storage;
 
   uint32 frame_id = 0;
   frame_id = ~frame_id; // The maximum value of uint32.
-  StoreFrames(200, frame_id, &storage);
-  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+  StoreFrames(kMaxUnackedFrames / 2, frame_id, &storage);
+  EXPECT_EQ(static_cast<size_t>(kMaxUnackedFrames / 2),
+            storage.GetNumberOfStoredFrames());
 }
 
 TEST(PacketStorageTest, GetFrameWrapAround8bits) {
-  PacketStorage storage(kStoredFrames);
+  PacketStorage storage;
 
   const uint32 kFirstFrameId = 250;
   StoreFrames(kStoredFrames, kFirstFrameId, &storage);
-  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+  EXPECT_EQ(std::min<size_t>(kMaxUnackedFrames, kStoredFrames),
+            storage.GetNumberOfStoredFrames());
 
   // Expect we get the correct frames by looking at the number of
   // packets.
@@ -67,12 +71,13 @@ TEST(PacketStorageTest, GetFrameWrapAround8bits) {
 }
 
 TEST(PacketStorageTest, GetFrameWrapAround32bits) {
-  PacketStorage storage(kStoredFrames);
+  PacketStorage storage;
 
   // First frame ID is close to the maximum value of uint32.
   uint32 first_frame_id = 0xffffffff - 5;
   StoreFrames(kStoredFrames, first_frame_id, &storage);
-  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+  EXPECT_EQ(std::min<size_t>(kMaxUnackedFrames, kStoredFrames),
+            storage.GetNumberOfStoredFrames());
 
   // Expect we get the correct frames by looking at the number of
   // packets.
@@ -84,29 +89,38 @@ TEST(PacketStorageTest, GetFrameWrapAround32bits) {
   }
 }
 
-TEST(PacketStorageTest, GetFrameTooOld) {
-  PacketStorage storage(kStoredFrames);
+TEST(PacketStorageTest, FramesReleased) {
+  PacketStorage storage;
 
-  // First frame ID is close to the maximum value of uint32.
-  uint32 first_frame_id = 0xffffffff - 5;
+  const uint32 kFirstFrameId = 0;
+  StoreFrames(5, kFirstFrameId, &storage);
+  EXPECT_EQ(std::min<size_t>(kMaxUnackedFrames, 5),
+            storage.GetNumberOfStoredFrames());
 
-  // Store two times the capacity.
-  StoreFrames(2 * kStoredFrames, first_frame_id, &storage);
-  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
-
-  uint32 frame_id = first_frame_id;
-  // Old frames are evicted.
-  for (size_t i = 0; i < kStoredFrames; ++i) {
-    EXPECT_FALSE(storage.GetFrame8(frame_id));
-    ++frame_id;
+  for (uint32 frame_id = kFirstFrameId; frame_id < kFirstFrameId + 5;
+       ++frame_id) {
+    EXPECT_TRUE(storage.GetFrame8(frame_id));
   }
-  // Check recent frames are there.
-  for (size_t i = 0; i < kStoredFrames; ++i) {
-    ASSERT_TRUE(storage.GetFrame8(frame_id));
-    EXPECT_EQ(kStoredFrames + i + 1,
-              storage.GetFrame8(frame_id)->size());
-    ++frame_id;
-  }
+
+  storage.ReleaseFrame(kFirstFrameId + 2);
+  EXPECT_EQ(4u, storage.GetNumberOfStoredFrames());
+  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 2));
+
+  storage.ReleaseFrame(kFirstFrameId + 0);
+  EXPECT_EQ(3u, storage.GetNumberOfStoredFrames());
+  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 0));
+
+  storage.ReleaseFrame(kFirstFrameId + 3);
+  EXPECT_EQ(2u, storage.GetNumberOfStoredFrames());
+  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 3));
+
+  storage.ReleaseFrame(kFirstFrameId + 4);
+  EXPECT_EQ(1u, storage.GetNumberOfStoredFrames());
+  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 4));
+
+  storage.ReleaseFrame(kFirstFrameId + 1);
+  EXPECT_EQ(0u, storage.GetNumberOfStoredFrames());
+  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 1));
 }
 
 }  // namespace cast

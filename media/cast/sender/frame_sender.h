@@ -34,6 +34,8 @@ class FrameSender {
               CongestionControl* congestion_control);
   virtual ~FrameSender();
 
+  int rtp_timebase() const { return rtp_timebase_; }
+
   // Calling this function is only valid if the receiver supports the
   // "extra_playout_delay", rtp extension.
   void SetTargetPlayoutDelay(base::TimeDelta new_target_playout_delay);
@@ -49,6 +51,10 @@ class FrameSender {
  protected:
   // Returns the number of frames in the encoder's backlog.
   virtual int GetNumberOfFramesInEncoder() const = 0;
+
+  // Returns the duration of the data in the encoder's backlog plus the duration
+  // of sent, unacknowledged frames.
+  virtual base::TimeDelta GetInFlightMediaDuration() const = 0;
 
   // Called when we get an ACK for a frame.
   virtual void OnAck(uint32 frame_id) = 0;
@@ -84,11 +90,9 @@ class FrameSender {
   // Protected for testability.
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
-  // Returns true if there are too many frames in flight, or if the media
-  // duration of the frames in flight would be too high by sending the next
-  // frame.  The latter metric is determined from the given |capture_time|
-  // for the next frame to be encoded and sent.
-  bool ShouldDropNextFrame(base::TimeTicks capture_time) const;
+  // Returns true if too many frames would be in-flight by encoding and sending
+  // the next frame having the given |frame_duration|.
+  bool ShouldDropNextFrame(base::TimeDelta frame_duration) const;
 
   // Record or retrieve a recent history of each frame's timestamps.
   // Warning: If a frame ID too far in the past is requested, the getters will
@@ -99,6 +103,9 @@ class FrameSender {
                                    RtpTimestamp rtp_timestamp);
   base::TimeTicks GetRecordedReferenceTime(uint32 frame_id) const;
   RtpTimestamp GetRecordedRtpTimestamp(uint32 frame_id) const;
+
+  // Returns the number of frames that were sent but not yet acknowledged.
+  int GetUnacknowledgedFrameCount() const;
 
   const base::TimeDelta rtcp_interval_;
 
@@ -151,9 +158,6 @@ class FrameSender {
   // STATUS_VIDEO_INITIALIZED.
   CastInitializationStatus cast_initialization_status_;
 
-  // RTP timestamp increment representing one second.
-  const int rtp_timebase_;
-
   // This object controls how we change the bitrate to make sure the
   // buffer doesn't overflow.
   scoped_ptr<CongestionControl> congestion_control_;
@@ -162,6 +166,13 @@ class FrameSender {
   base::TimeDelta current_round_trip_time_;
 
  private:
+  // Returns the maximum media duration currently allowed in-flight.  This
+  // fluctuates in response to the currently-measured network latency.
+  base::TimeDelta GetAllowedInFlightMediaDuration() const;
+
+  // RTP timestamp increment representing one second.
+  const int rtp_timebase_;
+
   const bool is_audio_;
 
   // Ring buffers to keep track of recent frame timestamps (both in terms of

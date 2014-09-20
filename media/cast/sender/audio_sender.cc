@@ -32,7 +32,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
         base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
         audio_config.frequency,
         audio_config.ssrc,
-        kAudioFrameRate * 2.0, // We lie to increase max outstanding frames.
+        kAudioFrameRate,
         audio_config.min_playout_delay,
         audio_config.max_playout_delay,
         NewFixedCongestionControl(audio_config.bitrate)),
@@ -62,11 +62,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   transport_config.ssrc = audio_config.ssrc;
   transport_config.feedback_ssrc = audio_config.incoming_feedback_ssrc;
   transport_config.rtp_payload_type = audio_config.rtp_payload_type;
-  transport_config.stored_frames =
-      std::min(kMaxUnackedFrames,
-               1 + static_cast<int>(max_playout_delay_ *
-                                    max_frame_rate_ /
-                                    base::TimeDelta::FromSeconds(1)));
   transport_config.aes_key = audio_config.aes_key;
   transport_config.aes_iv_mask = audio_config.aes_iv_mask;
 
@@ -89,13 +84,10 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
   }
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
 
-  // TODO(miu): An |audio_bus| that represents more duration than a single
-  // frame's duration can defeat our logic here, causing too much data to become
-  // enqueued.  This will be addressed in a soon-upcoming change.
-  if (ShouldDropNextFrame(recorded_time)) {
-    VLOG(1) << "Dropping frame due to too many frames currently in-flight.";
+  const base::TimeDelta next_frame_duration =
+      RtpDeltaToTimeDelta(audio_bus->frames(), rtp_timebase());
+  if (ShouldDropNextFrame(next_frame_duration))
     return;
-  }
 
   samples_in_encoder_ += audio_bus->frames();
 
@@ -106,6 +98,12 @@ int AudioSender::GetNumberOfFramesInEncoder() const {
   // Note: It's possible for a partial frame to be in the encoder, but returning
   // the floor() is good enough for the "design limit" check in FrameSender.
   return samples_in_encoder_ / audio_encoder_->GetSamplesPerFrame();
+}
+
+base::TimeDelta AudioSender::GetInFlightMediaDuration() const {
+  const int samples_in_flight = samples_in_encoder_ +
+      GetUnacknowledgedFrameCount() * audio_encoder_->GetSamplesPerFrame();
+  return RtpDeltaToTimeDelta(samples_in_flight, rtp_timebase());
 }
 
 void AudioSender::OnAck(uint32 frame_id) {

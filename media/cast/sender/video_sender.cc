@@ -19,15 +19,20 @@
 namespace media {
 namespace cast {
 
+namespace {
+
 // The following two constants are used to adjust the target
 // playout delay (when allowed). They were calculated using
 // a combination of cast_benchmark runs and manual testing.
-
+//
 // This is how many round trips we think we need on the network.
 const int kRoundTripsNeeded = 4;
-// This is an estimate of all the the constant time needed
-// independent of network quality.
+// This is an estimate of all the the constant time needed independent of
+// network quality (e.g., additional time that accounts for encode and decode
+// time).
 const int kConstantTimeMs = 75;
+
+}  // namespace
 
 // Note, we use a fixed bitrate value when external video encoder is used.
 // Some hardware encoder shows bad behavior if we set the bitrate too
@@ -95,11 +100,6 @@ VideoSender::VideoSender(
   transport_config.ssrc = video_config.ssrc;
   transport_config.feedback_ssrc = video_config.incoming_feedback_ssrc;
   transport_config.rtp_payload_type = video_config.rtp_payload_type;
-  transport_config.stored_frames =
-      std::min(kMaxUnackedFrames,
-               1 + static_cast<int>(max_playout_delay_ *
-                                    max_frame_rate_ /
-                                    base::TimeDelta::FromSeconds(1)));
   transport_config.aes_key = video_config.aes_key;
   transport_config.aes_iv_mask = video_config.aes_iv_mask;
 
@@ -141,8 +141,26 @@ void VideoSender::InsertRawVideoFrame(
       "timestamp", capture_time.ToInternalValue(),
       "rtp_timestamp", rtp_timestamp);
 
-  if (ShouldDropNextFrame(capture_time)) {
-    VLOG(1) << "Dropping frame due to too many frames currently in-flight.";
+  // Drop the frame if its reference timestamp is not an increase over the last
+  // frame's.  This protects: 1) the duration calculations that assume
+  // timestamps are monotonically non-decreasing, and 2) assumptions made deeper
+  // in the implementation where each frame's RTP timestamp needs to be unique.
+  if (!last_enqueued_frame_reference_time_.is_null() &&
+      capture_time <= last_enqueued_frame_reference_time_) {
+    VLOG(1) << "Dropping video frame: Reference time did not increase.";
+    return;
+  }
+
+  // Two video frames are needed to compute the exact media duration added by
+  // the next frame.  If there are no frames in the encoder, compute a guess
+  // based on the configured |max_frame_rate_|.  Any error introduced by this
+  // guess will be eliminated when |duration_in_encoder_| is updated in
+  // OnEncodedVideoFrame().
+  const base::TimeDelta duration_added_by_next_frame = frames_in_encoder_ > 0 ?
+      capture_time - last_enqueued_frame_reference_time_ :
+      base::TimeDelta::FromSecondsD(1.0 / max_frame_rate_);
+
+  if (ShouldDropNextFrame(duration_added_by_next_frame)) {
     base::TimeDelta new_target_delay = std::min(
         current_round_trip_time_ * kRoundTripsNeeded +
         base::TimeDelta::FromMilliseconds(kConstantTimeMs),
@@ -168,6 +186,8 @@ void VideoSender::InsertRawVideoFrame(
                      weak_factory_.GetWeakPtr(),
                      bitrate))) {
     frames_in_encoder_++;
+    duration_in_encoder_ += duration_added_by_next_frame;
+    last_enqueued_frame_reference_time_ = capture_time;
   } else {
     VLOG(1) << "Encoder rejected a frame.  Skipping...";
   }
@@ -175,6 +195,16 @@ void VideoSender::InsertRawVideoFrame(
 
 int VideoSender::GetNumberOfFramesInEncoder() const {
   return frames_in_encoder_;
+}
+
+base::TimeDelta VideoSender::GetInFlightMediaDuration() const {
+  if (GetUnacknowledgedFrameCount() > 0) {
+    const uint32 oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
+    return last_enqueued_frame_reference_time_ -
+        GetRecordedReferenceTime(oldest_unacked_frame_id);
+  } else {
+    return duration_in_encoder_;
+  }
 }
 
 void VideoSender::OnAck(uint32 frame_id) {
@@ -195,6 +225,9 @@ void VideoSender::OnEncodedVideoFrame(
 
   frames_in_encoder_--;
   DCHECK_GE(frames_in_encoder_, 0);
+
+  duration_in_encoder_ =
+      last_enqueued_frame_reference_time_ - encoded_frame->reference_time;
 
   SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
 }

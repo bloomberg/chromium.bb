@@ -58,6 +58,7 @@ class VideoSender : public FrameSender,
 
  protected:
   virtual int GetNumberOfFramesInEncoder() const OVERRIDE;
+  virtual base::TimeDelta GetInFlightMediaDuration() const OVERRIDE;
   virtual void OnAck(uint32 frame_id) OVERRIDE;
 
  private:
@@ -77,6 +78,12 @@ class VideoSender : public FrameSender,
 
   // The number of frames queued for encoding, but not yet sent.
   int frames_in_encoder_;
+
+  // The duration of video queued for encoding, but not yet sent.
+  base::TimeDelta duration_in_encoder_;
+
+  // The timestamp of the frame that was last enqueued in |video_encoder_|.
+  base::TimeTicks last_enqueued_frame_reference_time_;
 
   // Remember what we set the bitrate to before, no need to set it again if
   // we get the same value.

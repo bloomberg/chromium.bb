@@ -1398,6 +1398,32 @@ TEST_F(End2EndTest, EvilNetwork) {
   base::TimeTicks test_end = testing_clock_receiver_->NowTicks();
   RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
   EXPECT_GT(video_ticks_.size(), 100ul);
+  VLOG(1) << "Fully transmitted " << video_ticks_.size()
+          << " out of 10000 frames.";
+  EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
+}
+
+// Tests that a system configured for 30 FPS drops frames when input is provided
+// at a much higher frame rate.
+TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
+  Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000,
+            1);
+  receiver_to_sender_.SetPacketPipe(test::EvilNetwork().Pass());
+  sender_to_receiver_.SetPacketPipe(test::EvilNetwork().Pass());
+  Create();
+  StartBasicPlayer();
+
+  int frames_counter = 0;
+  for (; frames_counter < 10000; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(10 /* 10 ms, but 33.3 expected by system */);
+  }
+  base::TimeTicks test_end = testing_clock_receiver_->NowTicks();
+  RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_LT(100ul, video_ticks_.size());
+  EXPECT_GE(3334ul, video_ticks_.size());
+  VLOG(1) << "Fully transmitted " << video_ticks_.size()
+          << " out of 10000 frames.";
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 

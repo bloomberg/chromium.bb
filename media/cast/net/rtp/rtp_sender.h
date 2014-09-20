@@ -71,8 +71,8 @@ class RtpSender {
 
   base::TickClock* clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
+  PacketStorage storage_;
   scoped_ptr<RtpPacketizer> packetizer_;
-  scoped_ptr<PacketStorage> storage_;
   PacedSender* const transport_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
