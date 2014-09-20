@@ -708,7 +708,7 @@ ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     void* profile,
-    const RulesRegistryService::WebViewKey& webview_key,
+    const extensions::RulesRegistry::WebViewKey& webview_key,
     scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry) {
   RulesRegistryKey key(profile, webview_key);
   if (rules_registry.get())
@@ -1979,7 +1979,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   extensions::WebViewRendererState::WebViewInfo web_view_info;
   bool is_web_view_guest = GetWebViewInfo(request, &web_view_info);
 
-  RulesRegistryService::WebViewKey webview_key(
+  extensions::RulesRegistry::WebViewKey webview_key(
       is_web_view_guest ? web_view_info.embedder_process_id : 0,
       is_web_view_guest ? web_view_info.instance_id : 0);
   RulesRegistryKey rules_key(profile, webview_key);
