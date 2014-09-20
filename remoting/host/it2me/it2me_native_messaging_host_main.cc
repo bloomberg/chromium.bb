@@ -16,6 +16,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "remoting/host/logging.h"
+#include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_LINUX)
@@ -117,12 +118,11 @@ int StartIt2MeNativeMessagingHost() {
   scoped_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 
   // Set up the native messaging channel.
-  scoped_ptr<NativeMessagingChannel> channel(
-      new NativeMessagingChannel(read_file.Pass(), write_file.Pass()));
+  scoped_ptr<extensions::NativeMessagingChannel> channel(
+      new PipeMessagingChannel(read_file.Pass(), write_file.Pass()));
 
-  scoped_ptr<It2MeNativeMessagingHost> host(
-      new It2MeNativeMessagingHost(
-          task_runner, channel.Pass(), factory.Pass()));
+  scoped_ptr<It2MeNativeMessagingHost> host(new It2MeNativeMessagingHost(
+      task_runner, channel.Pass(), factory.Pass()));
   host->Start(run_loop.QuitClosure());
 
   // Run the loop until channel is alive.

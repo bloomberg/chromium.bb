@@ -8,9 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "extensions/browser/api/messaging/native_messaging_channel.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/it2me/it2me_host.h"
-#include "remoting/host/native_messaging/native_messaging_channel.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,17 +19,23 @@ class DictionaryValue;
 namespace remoting {
 
 // Implementation of the native messaging host process.
-class It2MeNativeMessagingHost : public It2MeHost::Observer {
+class It2MeNativeMessagingHost
+    : public It2MeHost::Observer,
+      public extensions::NativeMessagingChannel::EventHandler {
  public:
   It2MeNativeMessagingHost(
       scoped_refptr<AutoThreadTaskRunner> task_runner,
-      scoped_ptr<NativeMessagingChannel> channel,
+      scoped_ptr<extensions::NativeMessagingChannel> channel,
       scoped_ptr<It2MeHostFactory> factory);
   virtual ~It2MeNativeMessagingHost();
 
-  void Start(const base::Closure& quit_closure) const;
+  void Start(const base::Closure& quit_closure);
 
-  // It2MeHost::Observer implementation
+  // extensions::NativeMessagingChannel::EventHandler implementation.
+  virtual void OnMessage(scoped_ptr<base::Value> message) OVERRIDE;
+  virtual void OnDisconnect() OVERRIDE;
+
+  // It2MeHost::Observer implementation.
   virtual void OnClientAuthenticated(const std::string& client_username)
       OVERRIDE;
   virtual void OnStoreAccessCode(const std::string& access_code,
@@ -40,8 +46,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer {
   static std::string HostStateToString(It2MeHostState host_state);
 
  private:
-  void ProcessMessage(scoped_ptr<base::DictionaryValue> message);
-
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
@@ -54,9 +58,11 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer {
   void SendErrorAndExit(scoped_ptr<base::DictionaryValue> response,
                         const std::string& description) const;
 
+  base::Closure quit_closure_;
+
   scoped_refptr<AutoThreadTaskRunner> task_runner() const;
 
-  scoped_ptr<NativeMessagingChannel> channel_;
+  scoped_ptr<extensions::NativeMessagingChannel> channel_;
   scoped_ptr<It2MeHostFactory> factory_;
   scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<It2MeHost> it2me_host_;

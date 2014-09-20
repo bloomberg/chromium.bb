@@ -17,7 +17,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/native_messaging/native_messaging_channel.h"
+#include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/test_util.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -323,9 +323,9 @@ void Me2MeNativeMessagingHostTest::StartHost() {
       new SynchronousPairingRegistry(scoped_ptr<PairingRegistry::Delegate>(
           new MockPairingRegistryDelegate()));
 
-  scoped_ptr<NativeMessagingChannel> channel(
-      new NativeMessagingChannel(input_read_file.Pass(),
-                                 output_write_file.Pass()));
+  scoped_ptr<extensions::NativeMessagingChannel> channel(
+      new PipeMessagingChannel(input_read_file.Pass(),
+                               output_write_file.Pass()));
 
   host_.reset(new Me2MeNativeMessagingHost(
         false,

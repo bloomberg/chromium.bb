@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "remoting/host/native_messaging/native_messaging_channel.h"
+#include "extensions/browser/api/messaging/native_messaging_channel.h"
 #include "remoting/host/setup/daemon_controller.h"
 #include "remoting/host/setup/oauth_client.h"
 
@@ -34,14 +34,13 @@ class PairingRegistry;
 }  // namespace protocol
 
 // Implementation of the me2me native messaging host.
-class Me2MeNativeMessagingHost {
+class Me2MeNativeMessagingHost
+    : public extensions::NativeMessagingChannel::EventHandler {
  public:
-  typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
-
   Me2MeNativeMessagingHost(
       bool needs_elevation,
       intptr_t parent_window_handle,
-      scoped_ptr<NativeMessagingChannel> channel,
+      scoped_ptr<extensions::NativeMessagingChannel> channel,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
       scoped_ptr<OAuthClient> oauth_client);
@@ -49,11 +48,11 @@ class Me2MeNativeMessagingHost {
 
   void Start(const base::Closure& quit_closure);
 
- private:
-  // Callback to process messages from the native messaging client through
-  // |channel_|.
-  void ProcessRequest(scoped_ptr<base::DictionaryValue> message);
+  // extensions::NativeMessagingChannel::EventHandler implementation
+  virtual void OnMessage(scoped_ptr<base::Value> message) OVERRIDE;
+  virtual void OnDisconnect() OVERRIDE;
 
+ private:
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
@@ -131,20 +130,31 @@ class Me2MeNativeMessagingHost {
   bool DelegateToElevatedHost(scoped_ptr<base::DictionaryValue> message);
 
 #if defined(OS_WIN)
+  class ElevatedChannelEventHandler
+      : public extensions::NativeMessagingChannel::EventHandler {
+   public:
+    ElevatedChannelEventHandler(Me2MeNativeMessagingHost* host);
+
+    virtual void OnMessage(scoped_ptr<base::Value> message) OVERRIDE;
+    virtual void OnDisconnect() OVERRIDE;
+   private:
+    Me2MeNativeMessagingHost* parent_;
+  };
+
   // Create and connect to an elevated host process if necessary.
   // |elevated_channel_| will contain the native messaging channel to the
   // elevated host if the function succeeds.
   void Me2MeNativeMessagingHost::EnsureElevatedHostCreated();
 
-  // Callback to process messages from the elevated host through
-  // |elevated_channel_|.
-  void ProcessDelegateResponse(scoped_ptr<base::DictionaryValue> message);
-
   // Disconnect and shut down the elevated host.
   void DisconnectElevatedHost();
 
   // Native messaging channel used to communicate with the elevated host.
-  scoped_ptr<NativeMessagingChannel> elevated_channel_;
+  scoped_ptr<extensions::NativeMessagingChannel> elevated_channel_;
+
+  // Native messaging event handler used to process responses from the elevated
+  // host.
+  scoped_ptr<ElevatedChannelEventHandler> elevated_channel_event_handler_;
 
   // Timer to control the lifetime of the elevated host.
   base::OneShotTimer<Me2MeNativeMessagingHost> elevated_host_timer_;
@@ -159,7 +169,7 @@ class Me2MeNativeMessagingHost {
 
   // Native messaging channel used to communicate with the native message
   // client.
-  scoped_ptr<NativeMessagingChannel> channel_;
+  scoped_ptr<extensions::NativeMessagingChannel> channel_;
   scoped_refptr<DaemonController> daemon_controller_;
 
   // Used to load and update the paired clients for this host.

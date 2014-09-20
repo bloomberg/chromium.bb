@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/native_messaging/native_messaging_channel.h"
+#include "remoting/host/native_messaging/pipe_messaging_channel.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -43,34 +43,33 @@ base::File DuplicatePlatformFile(base::File file) {
 
 namespace remoting {
 
-NativeMessagingChannel::NativeMessagingChannel(
+PipeMessagingChannel::PipeMessagingChannel(
     base::File input,
     base::File output)
     : native_messaging_reader_(DuplicatePlatformFile(input.Pass())),
       native_messaging_writer_(new NativeMessagingWriter(
           DuplicatePlatformFile(output.Pass()))),
+      event_handler_(NULL),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
-NativeMessagingChannel::~NativeMessagingChannel() {
+PipeMessagingChannel::~PipeMessagingChannel() {
 }
 
-void NativeMessagingChannel::Start(const SendMessageCallback& received_message,
-                                   const base::Closure& quit_closure) {
+void PipeMessagingChannel::Start(EventHandler* event_handler) {
   DCHECK(CalledOnValidThread());
-  DCHECK(received_message_.is_null());
-  DCHECK(quit_closure_.is_null());
+  DCHECK(!event_handler_);
 
-  received_message_ = received_message;
-  quit_closure_ = quit_closure;
+  event_handler_ = event_handler;
+  DCHECK(event_handler_);
 
   native_messaging_reader_.Start(
-      base::Bind(&NativeMessagingChannel::ProcessMessage, weak_ptr_),
-      base::Bind(&NativeMessagingChannel::Shutdown, weak_ptr_));
+      base::Bind(&PipeMessagingChannel::ProcessMessage, weak_ptr_),
+      base::Bind(&PipeMessagingChannel::Shutdown, weak_ptr_));
 }
 
-void NativeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
+void PipeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
   DCHECK(CalledOnValidThread());
 
   if (message->GetType() != base::Value::TYPE_DICTIONARY) {
@@ -79,13 +78,12 @@ void NativeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> message_dict(
-      static_cast<base::DictionaryValue*>(message.release()));
-  received_message_.Run(message_dict.Pass());
+  if (event_handler_)
+    event_handler_->OnMessage(message.Pass());
 }
 
-void NativeMessagingChannel::SendMessage(
-    scoped_ptr<base::DictionaryValue> message) {
+void PipeMessagingChannel::SendMessage(
+    scoped_ptr<base::Value> message) {
   DCHECK(CalledOnValidThread());
 
   bool success = message && native_messaging_writer_;
@@ -99,11 +97,18 @@ void NativeMessagingChannel::SendMessage(
   }
 }
 
-void NativeMessagingChannel::Shutdown() {
+void PipeMessagingChannel::Shutdown() {
   DCHECK(CalledOnValidThread());
 
-  if (!quit_closure_.is_null())
-    base::ResetAndReturn(&quit_closure_).Run();
+  if (event_handler_) {
+    // Set event_handler_ to NULL to indicate the object is in a shutdown cycle.
+    // Since event_handler->OnDisconnect() will destroy the current object,
+    // |event_handler_| will become a dangling pointer after OnDisconnect()
+    // returns. Therefore, we set |event_handler_| to NULL beforehand.
+    EventHandler* handler = event_handler_;
+    event_handler_ = NULL;
+    handler->OnDisconnect();
+  }
 }
 
 }  // namespace remoting

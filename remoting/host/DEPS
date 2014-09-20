@@ -1,6 +1,7 @@
 include_rules = [
   "+ash",
   "+cc/output",
+  "+extensions/browser/api/messaging",
   "+jingle/glue",
   "+net",
   "+remoting/codec",
