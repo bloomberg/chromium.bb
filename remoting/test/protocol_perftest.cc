@@ -61,6 +61,16 @@ struct NetworkPerformanceParams {
   double out_of_order_rate;
 };
 
+class FakeCursorShapeStub : public protocol::CursorShapeStub {
+ public:
+  FakeCursorShapeStub() {}
+  virtual ~FakeCursorShapeStub() {}
+
+  // protocol::CursorShapeStub interface.
+  virtual void SetCursorShape(
+      const protocol::CursorShapeInfo& cursor_shape) OVERRIDE {};
+};
+
 class ProtocolPerfTest
     : public testing::Test,
       public testing::WithParamInterface<NetworkPerformanceParams>,
@@ -108,7 +118,7 @@ class ProtocolPerfTest
     return NULL;
   }
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE {
-    return NULL;
+    return &cursor_shape_stub_;
   }
 
   // VideoRenderer interface.
@@ -334,6 +344,8 @@ class ProtocolPerfTest
   base::Thread capture_thread_;
   base::Thread encode_thread_;
   FakeDesktopEnvironmentFactory desktop_environment_factory_;
+
+  FakeCursorShapeStub cursor_shape_stub_;
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
