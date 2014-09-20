@@ -33,7 +33,6 @@
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
-#include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
@@ -66,7 +65,6 @@ void RegisterChromeManifestHandlers() {
   (new PluginsHandler)->Register();
   (new RequirementsHandler)->Register();  // Depends on plugins.
   (new SettingsOverridesHandler)->Register();
-  (new SocketsManifestHandler)->Register();
   (new SpellcheckHandler)->Register();
   (new StorageSchemaManifestHandler)->Register();
   (new SupervisedUserHandler)->Register();

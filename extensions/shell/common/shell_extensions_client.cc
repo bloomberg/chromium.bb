@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "extensions/common/api/generated_schemas.h"
-#include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/api_feature.h"
@@ -85,12 +84,6 @@ ShellExtensionsClient::~ShellExtensionsClient() {
 
 void ShellExtensionsClient::Initialize() {
   RegisterCommonManifestHandlers();
-
-  // TODO(rockot): API manifest handlers which move out to src/extensions
-  // should either end up in RegisterCommonManifestHandlers or some new
-  // initialization step specifically for API manifest handlers.
-  (new SocketsManifestHandler)->Register();
-
   ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 
