@@ -480,6 +480,7 @@ class GSContext(object):
           'ResumableDownloadException',
           'ssl.SSLError: The read operation timed out',
           'Unable to find the server',
+          'doesn\'t match cloud-supplied digest',
       )
       if any(x in error for x in RESUMABLE_ERROR_MESSAGE):
         # Only remove the tracker files if we try to upload/download a file.
