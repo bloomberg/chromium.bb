@@ -233,7 +233,7 @@ v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState
     return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
 }
 
-void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, ExceptionState& exceptionState, v8::TryCatch& block)
+void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, ScriptState* scriptStateInUserScript, ExceptionState::Context errorContext, const char* propertyName, const char* interfaceName)
 {
     v8::Handle<v8::Value> exception = block.Exception();
     RELEASE_ASSERT(!exception.IsEmpty() && exception->IsObject());
@@ -252,6 +252,8 @@ void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, 
     if (exceptionName == "PrivateScriptException") {
         v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
         RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
+        ScriptState::Scope scope(scriptStateInUserScript);
+        ExceptionState exceptionState(errorContext, propertyName, interfaceName, scriptStateInUserScript->context()->Global(), scriptStateInUserScript->isolate());
         exceptionState.throwDOMException(toInt32(code), messageString);
         exceptionState.throwIfNeeded();
         return;
@@ -262,6 +264,8 @@ void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, 
     // error. A stack overflow error can happen in a valid private script
     // if user's script can create a recursion that involves the private script.
     if (exceptionName == "RangeError" && messageString.contains("Maximum call stack size exceeded")) {
+        ScriptState::Scope scope(scriptStateInUserScript);
+        ExceptionState exceptionState(errorContext, propertyName, interfaceName, scriptStateInUserScript->context()->Global(), scriptStateInUserScript->isolate());
         exceptionState.throwDOMException(V8RangeError, messageString);
         exceptionState.throwIfNeeded();
         return;

@@ -48,6 +48,17 @@ PASS privateScriptTest.stringAttributeInPartial is "foo"
 PASS event.bubbles is true
 PASS event.cancelable is true
 PASS event.valueInPrivateScript is undefined.
+PASS exception is an instance of function DOMException() { [native code] }
+PASS exception.code is 1
+PASS exception is an instance of function DOMException() { [native code] }
+PASS exception.code is 1
+PASS exception is an instance of function DOMException() { [native code] }
+PASS exception.code is 12
+PASS exception is an instance of function Error() { [native code] }
+PASS exception is an instance of function TypeError() { [native code] }
+PASS exception is an instance of function RangeError() { [native code] }
+PASS exception is an instance of function SyntaxError() { [native code] }
+PASS exception is an instance of function ReferenceError() { [native code] }
 PASS successfullyParsed is true
 
 TEST COMPLETE

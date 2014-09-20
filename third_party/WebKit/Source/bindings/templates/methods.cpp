@@ -519,10 +519,11 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -535,7 +536,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     {% if method.arguments %}
     v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
     {% else %}
-    {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
+    {# Empty array initializers are illegal, and don\t compile in MSVC. #}
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
@@ -543,14 +544,14 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     {% if method.idl_type == 'void' %}
     PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}");
         block.ReThrow();
         return false;
     }
     {% else %}
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}");
         block.ReThrow();
         return false;
     }

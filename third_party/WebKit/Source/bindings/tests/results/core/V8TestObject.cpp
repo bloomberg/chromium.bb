@@ -10585,10 +10585,11 @@ bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(Loc
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10600,7 +10601,7 @@ bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(Loc
     v8::TryCatch block;
     PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "voidMethodImplementedInPrivateScript", holder, 0, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "voidMethodImplementedInPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10613,10 +10614,11 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10628,7 +10630,7 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "shortMethodImplementedInPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10644,10 +10646,11 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10660,7 +10663,7 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10676,10 +10679,11 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10692,7 +10696,7 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript", holder, 1, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10708,10 +10712,11 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10724,7 +10729,7 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript", holder, 1, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10740,10 +10745,11 @@ bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPri
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10760,7 +10766,7 @@ bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPri
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript", holder, 5, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10776,10 +10782,11 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10793,7 +10800,7 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "methodForPrivateScriptOnly", holder, 2, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "methodForPrivateScriptOnly", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10809,10 +10816,11 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10823,7 +10831,7 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "readonlyShortAttribute", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "readonlyShortAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10839,10 +10847,11 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10853,7 +10862,7 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "shortAttribute", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "shortAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10869,10 +10878,11 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeSetter(LocalFrame* fram
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10883,7 +10893,7 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeSetter(LocalFrame* fram
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "shortAttribute", holder, v8::Integer::New(scriptState->isolate(), cppValue));
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "shortAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10896,10 +10906,11 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10910,7 +10921,7 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "stringAttribute", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "stringAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10926,10 +10937,11 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeSetter(LocalFrame* fra
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10940,7 +10952,7 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeSetter(LocalFrame* fra
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "stringAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10953,10 +10965,11 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10967,7 +10980,7 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "nodeAttribute", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "nodeAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -10983,10 +10996,11 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeSetter(LocalFrame* frame
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -10997,7 +11011,7 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeSetter(LocalFrame* frame
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "nodeAttribute", holder, toV8(cppValue, scriptState->context()->Global(), scriptState->isolate()));
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "nodeAttribute", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -11010,10 +11024,11 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -11024,7 +11039,7 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "attributeForPrivateScriptOnly", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "attributeForPrivateScriptOnly", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -11040,10 +11055,11 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeSetter(L
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -11054,7 +11070,7 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeSetter(L
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "attributeForPrivateScriptOnly", holder, v8String(scriptState->isolate(), cppValue));
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "attributeForPrivateScriptOnly", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -11067,10 +11083,11 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -11081,7 +11098,7 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "enumForPrivateScript", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "enumForPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }
@@ -11097,10 +11114,11 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(LocalFrame
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -11111,7 +11129,7 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(LocalFrame
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "enumForPrivateScript", holder, v8String(scriptState->isolate(), cppValue));
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "enumForPrivateScript", "TestObject");
         block.ReThrow();
         return false;
     }

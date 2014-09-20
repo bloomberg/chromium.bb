@@ -338,10 +338,11 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -352,7 +353,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "{{attribute.name}}", "{{cpp_class}}");
         block.ReThrow();
         return false;
     }
@@ -371,10 +372,11 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -385,7 +387,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "{{attribute.name}}", "{{cpp_class}}");
         block.ReThrow();
         return false;
     }

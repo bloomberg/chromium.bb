@@ -173,6 +173,7 @@ TEST_F(PageSerializerTest, InputImage)
 
 TEST_F(PageSerializerTest, XMLDeclaration)
 {
+    V8TestingScope scope(v8::Isolate::GetCurrent());
     setBaseFolder("pageserializer/xmldecl/");
 
     registerURL("xmldecl.xml", "text/xml");

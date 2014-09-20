@@ -2099,10 +2099,11 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -2115,7 +2116,7 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterfaceImplementation");
         block.ReThrow();
         return false;
     }
@@ -2131,10 +2132,11 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -2145,7 +2147,7 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder);
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation");
         block.ReThrow();
         return false;
     }
@@ -2161,10 +2163,11 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* 
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
+    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (contextInPrivateScript.IsEmpty())
         return false;
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
+    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
     if (!scriptState->executionContext())
         return false;
 
@@ -2175,7 +2178,7 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* 
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
     if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "stringAttribute", "TestInterfaceImplementation");
         block.ReThrow();
         return false;
     }
