@@ -127,7 +127,7 @@ void EasyUnlockServiceSignin::OnCryptohomeKeysFetched(
   remote_devices_ = devices;
   remote_devices_value_.reset(new base::ListValue);
   chromeos::EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
-      remote_devices_, remote_devices_value_.get());
+      user_id_, remote_devices_, remote_devices_value_.get());
 
   UpdateAppState();
 }

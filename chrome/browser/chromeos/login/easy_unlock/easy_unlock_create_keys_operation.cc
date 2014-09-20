@@ -303,7 +303,7 @@ void EasyUnlockCreateKeysOperation::CreateKeyForDeviceAtIndex(size_t index) {
   challenge_creator_.reset(new ChallengeCreator(
       user_key,
       raw_session_key,
-      kTpmPubKey,
+      std::string(kTpmPubKey, arraysize(kTpmPubKey)),
       device,
       base::Bind(&EasyUnlockCreateKeysOperation::OnChallengeCreated,
                  weak_ptr_factory_.GetWeakPtr(),

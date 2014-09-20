@@ -61,6 +61,7 @@ class EasyUnlockKeyManager {
   // conversion fails (missing required propery). Note that
   // EasyUnlockDeviceKeyData contains a sub set of the remote device dictionary.
   static void DeviceDataToRemoteDeviceDictionary(
+      const std::string& user_id,
       const EasyUnlockDeviceKeyData& data,
       base::DictionaryValue* dict);
   static bool RemoteDeviceDictionaryToDeviceData(
@@ -70,6 +71,7 @@ class EasyUnlockKeyManager {
   // Helpers to convert between EasyUnlockDeviceKeyDataList and remote devices
   // ListValue.
   static void DeviceDataListToRemoteDeviceList(
+      const std::string& user_id,
       const EasyUnlockDeviceKeyDataList& data_list,
       base::ListValue* device_list);
   static bool RemoteDeviceListToDeviceDataList(

@@ -16,11 +16,16 @@ namespace {
 
 const char kKeyBluetoothAddress[] = "bluetoothAddress";
 const char kKeyPermitRecord[] = "permitRecord";
-const char kKeyId[] = "id";
 const char kKeyPermitId[] = "permitRecord.id";
+const char kKeyPermitPermitId[] = "permitRecord.permitId";
+const char kKeyPermitData[] = "permitRecord.data";
+const char kKeyPermitType[] = "permitRecord.type";
 const char kKeyPsk[] = "psk";
 
 const char kKeyLabelPrefix[] = "easy-unlock-";
+
+const char kPermitPermitIdFormat[] = "permit://google.com/easyunlock/v1/%s";
+const char kPermitTypeLicence[] = "licence";
 
 }  // namespace
 
@@ -94,13 +99,19 @@ void EasyUnlockKeyManager::GetDeviceDataList(
 
 // static
 void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
+    const std::string& user_id,
     const EasyUnlockDeviceKeyData& data,
     base::DictionaryValue* dict) {
   dict->SetString(kKeyBluetoothAddress, data.bluetooth_address);
   dict->SetString(kKeyPsk, data.psk);
   scoped_ptr<base::DictionaryValue> permit_record(new base::DictionaryValue);
-  permit_record->SetString(kKeyId, data.public_key);
   dict->Set(kKeyPermitRecord, permit_record.release());
+  dict->SetString(kKeyPermitId, data.public_key);
+  dict->SetString(kKeyPermitData, data.public_key);
+  dict->SetString(kKeyPermitType, kPermitTypeLicence);
+  dict->SetString(kKeyPermitPermitId,
+                  base::StringPrintf(kPermitPermitIdFormat,
+                                     user_id.c_str()));
 }
 
 // static
@@ -125,12 +136,14 @@ bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
 
 // static
 void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
+    const std::string& user_id,
     const EasyUnlockDeviceKeyDataList& data_list,
     base::ListValue* device_list) {
   device_list->Clear();
   for (size_t i = 0; i < data_list.size(); ++i) {
     scoped_ptr<base::DictionaryValue> device_dict(new base::DictionaryValue);
-    DeviceDataToRemoteDeviceDictionary(data_list[i], device_dict.get());
+    DeviceDataToRemoteDeviceDictionary(
+        user_id, data_list[i], device_dict.get());
     device_list->Append(device_dict.release());
   }
 }
