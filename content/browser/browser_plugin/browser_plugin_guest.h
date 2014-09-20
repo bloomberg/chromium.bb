@@ -203,6 +203,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
                            int host_routing_id,
                            scoped_ptr<cc::CompositorFrame> frame);
 
+  void SetContentsOpaque(bool opaque);
+
  private:
   class EmbedderWebContentsObserver;
 
@@ -263,7 +265,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   void OnSetEditCommandsForNextKeyEvent(
       int instance_id,
       const std::vector<EditCommand>& edit_commands);
-  void OnSetContentsOpaque(int instance_id, bool opaque);
   // The guest WebContents is visible if both its embedder is visible and
   // the browser plugin element is visible. If either one is not then the
   // WebContents is marked as hidden. A hidden WebContents will consume
@@ -336,7 +337,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool mouse_locked_;
   bool pending_lock_request_;
   bool guest_visible_;
-  bool guest_opaque_;
   bool embedder_visible_;
 
   // Each copy-request is identified by a unique number. The unique number is

@@ -7,11 +7,14 @@
 namespace webview {
 
 // Attributes.
+const char kAttributeAllowTransparency[] = "allowtransparency";
 const char kAttributeAutoSize[] = "autosize";
 const char kAttributeMaxHeight[] = "maxheight";
 const char kAttributeMaxWidth[] = "maxwidth";
 const char kAttributeMinHeight[] = "minheight";
 const char kAttributeMinWidth[] = "minwidth";
+const char kAttributeName[] = "name";
+const char kAttributeSrc[] = "src";
 
 // API namespace.
 const char kAPINamespace[] = "webViewInternal";

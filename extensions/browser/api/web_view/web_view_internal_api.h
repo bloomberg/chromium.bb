@@ -150,6 +150,23 @@ class WebViewInternalSetNameFunction : public WebViewInternalExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetNameFunction);
 };
 
+class WebViewInternalSetAllowTransparencyFunction :
+    public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.setAllowTransparency",
+                             WEBVIEWINTERNAL_SETALLOWTRANSPARENCY);
+
+  WebViewInternalSetAllowTransparencyFunction();
+
+ protected:
+  virtual ~WebViewInternalSetAllowTransparencyFunction();
+
+ private:
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetAllowTransparencyFunction);
+};
+
 class WebViewInternalSetZoomFunction : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setZoom",

@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -244,7 +245,7 @@ void WebViewGuest::DidAttachToEmbedder() {
   SetUpAutoSize();
 
   std::string name;
-  if (attach_params()->GetString(webview::kName, &name)) {
+  if (attach_params()->GetString(webview::kAttributeName, &name)) {
     // If the guest window's name is empty, then the WebView tag's name is
     // assigned. Otherwise, the guest window's name takes precedence over the
     // WebView tag's name.
@@ -262,7 +263,7 @@ void WebViewGuest::DidAttachToEmbedder() {
   }
 
   std::string src;
-  if (attach_params()->GetString("src", &src) && !src.empty())
+  if (attach_params()->GetString(webview::kAttributeSrc, &src) && !src.empty())
     NavigateGuest(src);
 
   if (GetOpener()) {
@@ -284,6 +285,13 @@ void WebViewGuest::DidAttachToEmbedder() {
     // lifetime of the new guest is no longer managed by the opener guest.
     GetOpener()->pending_new_windows_.erase(this);
   }
+
+  bool allow_transparency = false;
+  attach_params()->GetBoolean(webview::kAttributeAllowTransparency,
+                              &allow_transparency);
+  // We need to set the background opaque flag after navigation to ensure that
+  // there is a RenderWidgetHostView available.
+  SetAllowTransparency(allow_transparency);
 }
 
 void WebViewGuest::DidInitialize() {
@@ -331,6 +339,13 @@ void WebViewGuest::GuestReady() {
   // The guest RenderView should always live in an isolated guest process.
   CHECK(web_contents()->GetRenderProcessHost()->IsIsolatedGuest());
   Send(new ExtensionMsg_SetFrameName(web_contents()->GetRoutingID(), name_));
+
+  // We don't want to accidentally set the opacity of an interstitial page.
+  // WebContents::GetRenderWidgetHostView will return the RWHV of an
+  // interstitial page if one is showing at this time. We only want opacity
+  // to apply to web pages.
+  web_contents()->GetRenderViewHost()->GetView()->
+      SetBackgroundOpaque(guest_opaque_);
 }
 
 void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
@@ -618,6 +633,7 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
     : GuestView<WebViewGuest>(browser_context, guest_instance_id),
       find_helper_(this),
       is_overriding_user_agent_(false),
+      guest_opaque_(true),
       javascript_dialog_helper_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
@@ -953,6 +969,17 @@ void WebViewGuest::SetName(const std::string& name) {
 void WebViewGuest::SetZoom(double zoom_factor) {
   if (web_view_guest_delegate_)
     web_view_guest_delegate_->OnSetZoom(zoom_factor);
+}
+
+void WebViewGuest::SetAllowTransparency(bool allow) {
+  if (guest_opaque_ != allow)
+    return;
+
+  guest_opaque_ = !allow;
+  if (!web_contents()->GetRenderViewHost()->GetView())
+    return;
+
+  web_contents()->GetRenderViewHost()->GetView()->SetBackgroundOpaque(!allow);
 }
 
 void WebViewGuest::AddNewContents(content::WebContents* source,

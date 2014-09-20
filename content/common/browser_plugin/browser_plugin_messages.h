@@ -50,7 +50,6 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
-  IPC_STRUCT_MEMBER(bool, opaque)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
   IPC_STRUCT_MEMBER(gfx::Point, origin)
@@ -136,11 +135,6 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
                     int /* browser_plugin_instance_id */,
                     bool /* visible */)
 
-// Tells the guest to change its background opacity.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetContentsOpaque,
-                    int /* browser_plugin_instance_id */,
-                    bool /* opaque */)
-
 // Tells the guest that a drag event happened on the plugin.
 IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
                     int /* browser_plugin_instance_id */,
@@ -197,6 +191,11 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ShouldAcceptTouchEvents,
                      int /* browser_plugin_instance_id */,
                      bool /* accept */)
+
+// Tells the guest to change its background opacity.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetContentsOpaque,
+                     int /* browser_plugin_instance_id */,
+                     bool /* opaque */)
 
 // Inform the embedder of the cursor the guest wishes to display.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,

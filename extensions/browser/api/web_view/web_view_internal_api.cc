@@ -180,12 +180,6 @@ WebViewInternalSetNameFunction::WebViewInternalSetNameFunction() {
 WebViewInternalSetNameFunction::~WebViewInternalSetNameFunction() {
 }
 
-WebViewInternalSetZoomFunction::WebViewInternalSetZoomFunction() {
-}
-
-WebViewInternalSetZoomFunction::~WebViewInternalSetZoomFunction() {
-}
-
 bool WebViewInternalSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::SetName::Params> params(
       webview::SetName::Params::Create(*args_));
@@ -193,6 +187,30 @@ bool WebViewInternalSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
   guest->SetName(params->frame_name);
   SendResponse(true);
   return true;
+}
+
+WebViewInternalSetAllowTransparencyFunction::
+WebViewInternalSetAllowTransparencyFunction() {
+}
+
+WebViewInternalSetAllowTransparencyFunction::
+~WebViewInternalSetAllowTransparencyFunction() {
+}
+
+bool WebViewInternalSetAllowTransparencyFunction::RunAsyncSafe(
+    WebViewGuest* guest) {
+  scoped_ptr<webview::SetAllowTransparency::Params> params(
+      webview::SetAllowTransparency::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  guest->SetAllowTransparency(params->allow);
+  SendResponse(true);
+  return true;
+}
+
+WebViewInternalSetZoomFunction::WebViewInternalSetZoomFunction() {
+}
+
+WebViewInternalSetZoomFunction::~WebViewInternalSetZoomFunction() {
 }
 
 bool WebViewInternalSetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {

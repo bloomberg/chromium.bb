@@ -80,7 +80,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       mouse_locked_(false),
       pending_lock_request_(false),
       guest_visible_(false),
-      guest_opaque_(true),
       embedder_visible_(true),
       copy_request_id_(0),
       has_render_view_(has_render_view),
@@ -183,8 +182,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetContentsOpaque,
-                        OnSetContentsOpaque)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
@@ -200,7 +197,6 @@ void BrowserPluginGuest::Initialize(
   browser_plugin_instance_id_ = browser_plugin_instance_id;
   focused_ = params.focused;
   guest_visible_ = params.visible;
-  guest_opaque_ = params.opaque;
   guest_window_rect_ = gfx::Rect(params.origin,
                                  params.resize_guest_params.view_size);
 
@@ -371,6 +367,12 @@ void BrowserPluginGuest::SwapCompositorFrame(
           browser_plugin_instance_id(), guest_params));
 }
 
+void BrowserPluginGuest::SetContentsOpaque(bool opaque) {
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_SetContentsOpaque(
+          browser_plugin_instance_id(), opaque));
+}
+
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
@@ -441,8 +443,6 @@ void BrowserPluginGuest::RenderViewReady() {
   Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
 
-  OnSetContentsOpaque(browser_plugin_instance_id(), guest_opaque_);
-
   RenderWidgetHostImpl::From(rvh)->set_hung_renderer_delay_ms(
       base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
@@ -484,7 +484,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
-    case BrowserPluginHostMsg_SetContentsOpaque::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
     case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
     case BrowserPluginHostMsg_UpdateGeometry::ID:
@@ -728,12 +727,6 @@ void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& edit_commands) {
   Send(new InputMsg_SetEditCommandsForNextKeyEvent(routing_id(),
                                                    edit_commands));
-}
-
-void BrowserPluginGuest::OnSetContentsOpaque(int browser_plugin_instance_id,
-                                             bool opaque) {
-  guest_opaque_ = opaque;
-  Send(new ViewMsg_SetBackgroundOpaque(routing_id(), guest_opaque_));
 }
 
 void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,

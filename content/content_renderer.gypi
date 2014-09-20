@@ -104,8 +104,6 @@
       'renderer/battery_status/battery_status_dispatcher.h',
       'renderer/browser_plugin/browser_plugin.cc',
       'renderer/browser_plugin/browser_plugin.h',
-      'renderer/browser_plugin/browser_plugin_bindings.cc',
-      'renderer/browser_plugin/browser_plugin_bindings.h',
       'renderer/browser_plugin/browser_plugin_manager_factory.h',
       'renderer/browser_plugin/browser_plugin_manager_impl.cc',
       'renderer/browser_plugin/browser_plugin_manager_impl.h',

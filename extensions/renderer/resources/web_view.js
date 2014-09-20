@@ -29,16 +29,12 @@ var AUTO_SIZE_ATTRIBUTES = [
   WEB_VIEW_ATTRIBUTE_MINWIDTH
 ];
 
+var WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY = "allowtransparency";
 var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
 
 var ERROR_MSG_ALREADY_NAVIGATED =
     'The object has already navigated, so its partition cannot be changed.';
 var ERROR_MSG_INVALID_PARTITION_ATTRIBUTE = 'Invalid partition attribute.';
-
-/** @type {Array.<string>} */
-var WEB_VIEW_ATTRIBUTES = [
-    'allowtransparency',
-];
 
 /** @class representing state of storage partition. */
 function Partition() {
@@ -128,23 +124,6 @@ WebViewInternal.prototype.createBrowserPluginNode = function() {
   // to attributes synchronously.
   var browserPluginNode = new WebViewInternal.BrowserPlugin();
   privates(browserPluginNode).internal = this;
-
-  $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
-    // Only copy attributes that have been assigned values, rather than copying
-    // a series of undefined attributes to BrowserPlugin.
-    if (this.webviewNode.hasAttribute(attributeName)) {
-      browserPluginNode.setAttribute(
-        attributeName, this.webviewNode.getAttribute(attributeName));
-    } else if (this.webviewNode[attributeName]){
-      // Reading property using has/getAttribute does not work on
-      // document.DOMContentLoaded event (but works on
-      // window.DOMContentLoaded event).
-      // So copy from property if copying from attribute fails.
-      browserPluginNode.setAttribute(
-        attributeName, this.webviewNode[attributeName]);
-    }
-  }, this);
-
   return browserPluginNode;
 };
 
@@ -195,12 +174,12 @@ WebViewInternal.prototype.setupFocusPropagation = function() {
   var self = this;
   this.webviewNode.addEventListener('focus', function(e) {
     // Focus the BrowserPlugin when the <webview> takes focus.
-    self.browserPluginNode.focus();
-  });
+    this.browserPluginNode.focus();
+  }.bind(this));
   this.webviewNode.addEventListener('blur', function(e) {
     // Blur the BrowserPlugin when the <webview> loses focus.
-    self.browserPluginNode.blur();
-  });
+    this.browserPluginNode.blur();
+  }.bind(this));
 };
 
 /**
@@ -329,19 +308,18 @@ WebViewInternal.prototype.insertCSS = function(var_args) {
 };
 
 WebViewInternal.prototype.setupAutoSizeProperties = function() {
-  var self = this;
   $Array.forEach(AUTO_SIZE_ATTRIBUTES, function(attributeName) {
     this[attributeName] = this.webviewNode.getAttribute(attributeName);
     Object.defineProperty(this.webviewNode, attributeName, {
       get: function() {
-        return self[attributeName];
-      },
+        return this[attributeName];
+      }.bind(this),
       set: function(value) {
-        self.webviewNode.setAttribute(attributeName, value);
-      },
+        this.webviewNode.setAttribute(attributeName, value);
+      }.bind(this),
       enumerable: true
     });
-  }, this);
+  }.bind(this), this);
 };
 
 /**
@@ -353,67 +331,16 @@ WebViewInternal.prototype.setupWebviewNodeProperties = function() {
         'when the page has finished loading.';
 
   this.setupAutoSizeProperties();
-  var self = this;
-  var browserPluginNode = this.browserPluginNode;
-  // Expose getters and setters for the attributes.
-  $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
-    Object.defineProperty(this.webviewNode, attributeName, {
-      get: function() {
-        if (browserPluginNode.hasOwnProperty(attributeName)) {
-          return browserPluginNode[attributeName];
-        } else {
-          return browserPluginNode.getAttribute(attributeName);
-        }
-      },
-      set: function(value) {
-        if (browserPluginNode.hasOwnProperty(attributeName)) {
-          // Give the BrowserPlugin first stab at the attribute so that it can
-          // throw an exception if there is a problem. This attribute will then
-          // be propagated back to the <webview>.
-          browserPluginNode[attributeName] = value;
-        } else {
-          browserPluginNode.setAttribute(attributeName, value);
-        }
-      },
-      enumerable: true
-    });
-  }, this);
 
-  // <webview> src does not quite behave the same as BrowserPlugin src, and so
-  // we don't simply keep the two in sync.
-  this.src = this.webviewNode.getAttribute('src');
-  Object.defineProperty(this.webviewNode, 'src', {
+  Object.defineProperty(this.webviewNode,
+                        WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY, {
     get: function() {
-      return self.src;
-    },
+      return this.allowtransparency;
+    }.bind(this),
     set: function(value) {
-      self.webviewNode.setAttribute('src', value);
-    },
-    // No setter.
-    enumerable: true
-  });
-
-  Object.defineProperty(this.webviewNode, 'name', {
-    get: function() {
-      return self.name;
-    },
-    set: function(value) {
-      self.webviewNode.setAttribute('name', value);
-    },
-    enumerable: true
-  });
-
-  Object.defineProperty(this.webviewNode, 'partition', {
-    get: function() {
-      return self.partition.toAttribute();
-    },
-    set: function(value) {
-      var result = self.partition.fromAttribute(value, self.hasNavigated());
-      if (result.error) {
-        throw result.error;
-      }
-      self.webviewNode.setAttribute('partition', value);
-    },
+      this.webviewNode.setAttribute(WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY,
+                                    value);
+    }.bind(this),
     enumerable: true
   });
 
@@ -425,6 +352,42 @@ WebViewInternal.prototype.setupWebviewNodeProperties = function() {
         return this.contentWindow;
       }
       window.console.error(ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
+    }.bind(this),
+    // No setter.
+    enumerable: true
+  });
+
+  Object.defineProperty(this.webviewNode, 'name', {
+    get: function() {
+      return this.name;
+    }.bind(this),
+    set: function(value) {
+      this.webviewNode.setAttribute('name', value);
+    }.bind(this),
+    enumerable: true
+  });
+
+  Object.defineProperty(this.webviewNode, 'partition', {
+    get: function() {
+      return this.partition.toAttribute();
+    }.bind(this),
+    set: function(value) {
+      var result = this.partition.fromAttribute(value, this.hasNavigated());
+      if (result.error) {
+        throw result.error;
+      }
+      this.webviewNode.setAttribute('partition', value);
+    }.bind(this),
+    enumerable: true
+  });
+
+  this.src = this.webviewNode.getAttribute('src');
+  Object.defineProperty(this.webviewNode, 'src', {
+    get: function() {
+      return this.src;
+    }.bind(this),
+    set: function(value) {
+      this.webviewNode.setAttribute('src', value);
     }.bind(this),
     // No setter.
     enumerable: true
@@ -495,6 +458,23 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
       }
     });
     return;
+  } else if (name == WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY) {
+    // We treat null attribute (attribute removed) and the empty string as
+    // one case.
+    oldValue = oldValue || '';
+    newValue = newValue || '';
+
+    if (oldValue === newValue) {
+      return;
+    }
+    this.allowtransparency = newValue != '';
+
+    if (!this.guestInstanceId) {
+      return;
+    }
+
+    WebView.setAllowTransparency(this.guestInstanceId, this.allowtransparency);
+    return;
   } else if (name == 'name') {
     // We treat null attribute (attribute removed) and the empty string as
     // one case.
@@ -543,17 +523,6 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
     // Note that throwing error here won't synchronously propagate.
     this.partition.fromAttribute(newValue, this.hasNavigated());
   }
-
-  // No <webview> -> <object> mutation propagation for these attributes.
-  if (name == 'src' || name == 'partition') {
-    return;
-  }
-
-  if (this.browserPluginNode.hasOwnProperty(name)) {
-    this.browserPluginNode[name] = newValue;
-  } else {
-    this.browserPluginNode.setAttribute(name, newValue);
-  }
 };
 
 /**
@@ -587,26 +556,6 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
     }
 
     return;
-  }
-
-  // This observer monitors mutations to attributes of the BrowserPlugin and
-  // updates the <webview> attributes accordingly.
-  // |newValue| is null if the attribute |name| has been removed.
-  if (newValue != null) {
-    // Update the <webview> attribute to match the BrowserPlugin attribute.
-    // Note: Calling setAttribute on <webview> will trigger its mutation
-    // observer which will then propagate that attribute to BrowserPlugin. In
-    // cases where we permit assigning a BrowserPlugin attribute the same value
-    // again (such as navigation when crashed), this could end up in an infinite
-    // loop. Thus, we avoid this loop by only updating the <webview> attribute
-    // if the BrowserPlugin attributes differs from it.
-    if (newValue != this.webviewNode.getAttribute(name)) {
-      this.webviewNode.setAttribute(name, newValue);
-    }
-  } else {
-    // If an attribute is removed from the BrowserPlugin, then remove it
-    // from the <webview> as well.
-    this.webviewNode.removeAttribute(name);
   }
 };
 
@@ -728,15 +677,13 @@ WebViewInternal.prototype.allocateInstanceId = function() {
   var params = {
     'storagePartitionId': storagePartitionId,
   };
-  var self = this;
   GuestViewInternal.createGuest(
       'webview',
       params,
       function(guestInstanceId) {
-        // TODO(lazyboy): Make sure this.autoNavigate_ stuff correctly updated
-        // |self.src| at this point.
-        self.attachWindow(guestInstanceId, false);
-      });
+        this.attachWindow(guestInstanceId, false);
+      }.bind(this)
+  );
 };
 
 WebViewInternal.prototype.onFrameNameChanged = function(name) {
@@ -768,7 +715,7 @@ WebViewInternal.prototype.setupEventProperty = function(eventName) {
     }.bind(this),
     set: function(value) {
       if (this.on[propertyName])
-        this.webviewNode.removeEventListener(eventName, self.on[propertyName]);
+        this.webviewNode.removeEventListener(eventName, this.on[propertyName]);
       this.on[propertyName] = value;
       if (value)
         this.webviewNode.addEventListener(eventName, value);
@@ -855,6 +802,7 @@ WebViewInternal.prototype.getZoom = function(callback) {
 
 WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
+    'allowtransparency': this.allowtransparency || false,
     'autosize': this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE),
     'instanceId': this.viewInstanceId,
     'maxheight': parseInt(this.maxheight || 0),

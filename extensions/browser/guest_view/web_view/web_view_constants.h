@@ -10,11 +10,14 @@
 namespace webview {
 
 // Attributes.
+extern const char kAttributeAllowTransparency[];
 extern const char kAttributeAutoSize[];
 extern const char kAttributeMaxHeight[];
 extern const char kAttributeMaxWidth[];
 extern const char kAttributeMinHeight[];
 extern const char kAttributeMinWidth[];
+extern const char kAttributeName[];
+extern const char kAttributeSrc[];
 
 // API namespace.
 // TODO(kalman): Consolidate this with the other API constants.

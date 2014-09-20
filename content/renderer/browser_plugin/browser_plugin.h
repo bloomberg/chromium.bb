@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
@@ -19,7 +18,6 @@
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
-struct BrowserPluginMsg_UpdateRect_Params;
 struct FrameMsg_BuffersSwapped_Params;
 
 namespace content {
@@ -50,24 +48,13 @@ class CONTENT_EXPORT BrowserPlugin :
   // |attribute_value|.
   void UpdateDOMAttribute(const std::string& attribute_name,
                           const std::string& attribute_value);
-  // Remove the DOM Node attribute with the name |attribute_name|.
-  void RemoveDOMAttribute(const std::string& attribute_name);
-  // Get Browser Plugin's DOM Node attribute |attribute_name|'s value.
-  std::string GetDOMAttributeValue(const std::string& attribute_name) const;
-  // Checks if the attribute |attribute_name| exists in the DOM.
-  bool HasDOMAttribute(const std::string& attribute_name) const;
-
-  // Get the allowtransparency attribute value.
-  bool GetAllowTransparencyAttribute() const;
-  // Parse the allowtransparency attribute and adjust transparency of
-  // BrowserPlugin accordingly.
-  void ParseAllowTransparencyAttribute();
 
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
 
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
+
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
 
@@ -93,8 +80,6 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual blink::WebPluginContainer* container() const OVERRIDE;
   virtual bool initialize(blink::WebPluginContainer* container) OVERRIDE;
   virtual void destroy() OVERRIDE;
-  virtual NPObject* scriptableObject() OVERRIDE;
-  virtual struct _NPP* pluginNPP() OVERRIDE;
   virtual bool supportsKeyboardFocus() const OVERRIDE;
   virtual bool supportsEditCommands() const OVERRIDE;
   virtual bool supportsInputMethod() const OVERRIDE;
@@ -195,6 +180,7 @@ class CONTENT_EXPORT BrowserPlugin :
                                     gfx::Rect source_rect,
                                     gfx::Size dest_size);
   void OnGuestGone(int instance_id);
+  void OnSetContentsOpaque(int instance_id, bool opaque);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
@@ -209,13 +195,11 @@ class CONTENT_EXPORT BrowserPlugin :
   // then we will attempt to access a NULL pointer.
   const int render_view_routing_id_;
   blink::WebPluginContainer* container_;
-  scoped_ptr<BrowserPluginBindings> bindings_;
   gfx::Rect plugin_rect_;
   float last_device_scale_factor_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;
-  int content_window_routing_id_;
   bool plugin_focused_;
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
@@ -234,11 +218,11 @@ class CONTENT_EXPORT BrowserPlugin :
   // Used for HW compositing.
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
-  // Used to identify the plugin to WebBindings.
-  scoped_ptr<struct _NPP> npp_;
-
   // URL for the embedder frame.
   int browser_plugin_instance_id_;
+
+  // Indicates whether the guest content is opaque.
+  bool contents_opaque_;
 
   std::vector<EditCommand> edit_commands_;
 

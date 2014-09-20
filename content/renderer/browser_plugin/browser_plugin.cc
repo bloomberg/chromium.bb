@@ -15,7 +15,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/cursor_utils.h"
@@ -23,8 +22,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
@@ -72,12 +69,12 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       last_device_scale_factor_(GetDeviceScaleFactor()),
       sad_guest_(NULL),
       guest_crashed_(false),
-      content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
+      contents_opaque_(true),
       delegate_(delegate.Pass()),
       weak_ptr_factory_(this) {
   browser_plugin_instance_id_ = browser_plugin_manager()->GetNextInstanceID();
@@ -107,6 +104,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_CopyFromCompositingSurface,
                         OnCopyFromCompositingSurface)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetContentsOpaque, OnSetContentsOpaque)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
@@ -124,56 +122,8 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
   blink::WebElement element = container()->element();
   blink::WebString web_attribute_name =
       blink::WebString::fromUTF8(attribute_name);
-  if (!HasDOMAttribute(attribute_name) ||
-      (std::string(element.getAttribute(web_attribute_name).utf8()) !=
-          attribute_value)) {
-    element.setAttribute(web_attribute_name,
-        blink::WebString::fromUTF8(attribute_value));
-  }
-}
-
-void BrowserPlugin::RemoveDOMAttribute(const std::string& attribute_name) {
-  if (!container())
-    return;
-
-  container()->element().removeAttribute(
-      blink::WebString::fromUTF8(attribute_name));
-}
-
-std::string BrowserPlugin::GetDOMAttributeValue(
-    const std::string& attribute_name) const {
-  if (!container())
-    return std::string();
-
-  return container()->element().getAttribute(
-      blink::WebString::fromUTF8(attribute_name)).utf8();
-}
-
-bool BrowserPlugin::HasDOMAttribute(const std::string& attribute_name) const {
-  if (!container())
-    return false;
-
-  return container()->element().hasAttribute(
-      blink::WebString::fromUTF8(attribute_name));
-}
-
-bool BrowserPlugin::GetAllowTransparencyAttribute() const {
-  return HasDOMAttribute(browser_plugin::kAttributeAllowTransparency);
-}
-
-void BrowserPlugin::ParseAllowTransparencyAttribute() {
-  if (!ready())
-    return;
-
-  bool opaque = !GetAllowTransparencyAttribute();
-
-  if (compositing_helper_.get())
-    compositing_helper_->SetContentsOpaque(opaque);
-
-  browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetContentsOpaque(
-        render_view_routing_id_,
-        browser_plugin_instance_id_,
-        opaque));
+  element.setAttribute(web_attribute_name,
+      blink::WebString::fromUTF8(attribute_value));
 }
 
 void BrowserPlugin::Attach() {
@@ -191,7 +141,6 @@ void BrowserPlugin::Attach() {
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
-  attach_params.opaque = !GetAllowTransparencyAttribute();
   attach_params.origin = plugin_rect().origin();
   gfx::Size view_size(width(), height());
   if (!view_size.IsEmpty()) {
@@ -277,6 +226,15 @@ void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void BrowserPlugin::OnSetContentsOpaque(int browser_plugin_instance_id,
+                                        bool opaque) {
+  if (contents_opaque_ == opaque)
+    return;
+  contents_opaque_ = opaque;
+  if (compositing_helper_.get())
+    compositing_helper_->SetContentsOpaque(opaque);
+}
+
 void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
                                 const WebCursor& cursor) {
   cursor_ = cursor;
@@ -356,11 +314,6 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   if (!container)
     return false;
 
-  // Tell |container| to allow this plugin to use script objects.
-  npp_.reset(new NPP_t);
-  container->allowScriptObjects();
-
-  bindings_.reset(new BrowserPluginBindings(this));
   container_ = container;
   container_->setWantsWheelEvents(true);
 
@@ -390,7 +343,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     }
   }
   compositing_helper_->EnableCompositing(enable);
-  compositing_helper_->SetContentsOpaque(!GetAllowTransparencyAttribute());
+  compositing_helper_->SetContentsOpaque(contents_opaque_);
 
   if (!enable) {
     DCHECK(compositing_helper_.get());
@@ -400,11 +353,8 @@ void BrowserPlugin::EnableCompositing(bool enable) {
 }
 
 void BrowserPlugin::destroy() {
-  // If the plugin was initialized then it has a valid |npp_| identifier, and
-  // the |container_| must clear references to the plugin's script objects.
-  DCHECK(!npp_ || container_);
   if (container_) {
-    container_->clearScriptObjects();
+    //container_->clearScriptObjects();
 
     // The BrowserPlugin's WebPluginContainer is deleted immediately after this
     // call returns, so let's not keep a reference to it around.
@@ -418,20 +368,6 @@ void BrowserPlugin::destroy() {
   if (render_view_)
     render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-NPObject* BrowserPlugin::scriptableObject() {
-  if (!bindings_)
-    return NULL;
-
-  NPObject* browser_plugin_np_object(bindings_->np_object());
-  // The object is expected to be retained before it is returned.
-  blink::WebBindings::retainObject(browser_plugin_np_object);
-  return browser_plugin_np_object;
-}
-
-NPP BrowserPlugin::pluginNPP() {
-  return npp_.get();
 }
 
 bool BrowserPlugin::supportsKeyboardFocus() const {
@@ -487,6 +423,7 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_CopyFromCompositingSurface::ID:
     case BrowserPluginMsg_GuestGone::ID:
+    case BrowserPluginMsg_SetContentsOpaque::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:

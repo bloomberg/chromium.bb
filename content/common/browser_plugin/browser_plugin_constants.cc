@@ -8,9 +8,6 @@ namespace content {
 
 namespace browser_plugin {
 
-// Attributes.
-const char kAttributeAllowTransparency[] = "allowtransparency";
-
 // Other.
 const int kInstanceIDNone = 0;
 

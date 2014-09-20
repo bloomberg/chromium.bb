@@ -93,6 +93,26 @@ embedder.test.assertFalse = function(condition) {
 
 // Tests begin.
 
+// This test verifies that the allowtransparency property cannot be changed
+// once set. The attribute can only be deleted.
+function testAllowTransparencyAttribute() {
+  var webview = document.createElement('webview');
+  webview.src = 'data:text/html,webview test';
+  webview.allowtransparency = true;
+
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
+    webview.allowtransparency = false;
+    embedder.test.assertTrue(webview.allowtransparency);
+    embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
+    webview.removeAttribute('allowtransparency');
+    embedder.test.assertFalse(webview.allowtransparency);
+    embedder.test.succeed();
+  });
+
+  document.body.appendChild(webview);
+}
+
 // This test verifies that a lengthy page with autosize enabled will report
 // the correct height in the sizechanged event.
 function testAutosizeHeight() {
@@ -1808,6 +1828,7 @@ function testFindAPI_findupdate() {
 };
 
 embedder.test.testList = {
+  'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,

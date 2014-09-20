@@ -74,6 +74,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Set the zoom factor.
   void SetZoom(double zoom_factor);
 
+  // Sets the transparency of the guest.
+  void SetAllowTransparency(bool allow);
+
   // GuestViewBase implementation.
   virtual const char* GetAPINamespace() const OVERRIDE;
   virtual int GetTaskPrefix() const OVERRIDE;
@@ -329,6 +332,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // Stores the window name of the main frame of the guest.
   std::string name_;
+
+  // Stores whether the contents of the guest can be transparent.
+  bool guest_opaque_;
 
   // Handles the JavaScript dialog requests.
   JavaScriptDialogHelper javascript_dialog_helper_;
