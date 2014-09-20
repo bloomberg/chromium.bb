@@ -17,13 +17,18 @@ set -eu
 declare -A special_tests
 special_tests=(
   # Tests that need to run inside the chroot.
+  ['cbuildbot/stages/test_stages_unittest.py']=inside
   ['cros/commands/cros_build_unittest.py']=inside
+  ['cros/commands/lint_unittest.py']=inside
+  ['lib/filetype_unittest.py']=inside
   ['lib/upgrade_table_unittest.py']=inside
   ['scripts/cros_list_modified_packages_unittest.py']=inside
   ['scripts/cros_mark_as_stable_unittest.py']=inside
   ['scripts/cros_mark_chrome_as_stable_unittest.py']=inside
   ['scripts/sync_package_status_unittest.py']=inside
   ['scripts/cros_portage_upgrade_unittest.py']=inside
+  ['scripts/dep_tracker_unittest.py']=inside
+  ['scripts/test_image_unittest.py']=inside
   ['scripts/upload_package_status_unittest.py']=inside
 
   # Tests that need to run outside the chroot.
