@@ -4199,6 +4199,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
   }
 
   virtual void SetupTree() OVERRIDE {
+    client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
         FakePictureLayer::Create(&client_);
     root_layer->SetBounds(gfx::Size(6000, 6000));

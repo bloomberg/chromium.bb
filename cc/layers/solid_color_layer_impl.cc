@@ -11,15 +11,52 @@
 
 namespace cc {
 
+namespace {
+const int kSolidQuadTileSize = 256;
+}
+
 SolidColorLayerImpl::SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id),
-      tile_size_(256) {}
+    : LayerImpl(tree_impl, id) {
+}
 
 SolidColorLayerImpl::~SolidColorLayerImpl() {}
 
 scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SolidColorLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+}
+
+void SolidColorLayerImpl::AppendSolidQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    SharedQuadState* shared_quad_state,
+    const gfx::Size& content_bounds,
+    const gfx::Transform& target_space_transform,
+    SkColor color) {
+  Occlusion occlusion =
+      occlusion_tracker.GetCurrentOcclusionForLayer(target_space_transform);
+
+  // We create a series of smaller quads instead of just one large one so that
+  // the culler can reduce the total pixels drawn.
+  int width = content_bounds.width();
+  int height = content_bounds.height();
+  for (int x = 0; x < width; x += kSolidQuadTileSize) {
+    for (int y = 0; y < height; y += kSolidQuadTileSize) {
+      gfx::Rect quad_rect(x,
+                          y,
+                          std::min(width - x, kSolidQuadTileSize),
+                          std::min(height - y, kSolidQuadTileSize));
+      gfx::Rect visible_quad_rect =
+          occlusion.GetUnoccludedContentRect(quad_rect);
+      if (visible_quad_rect.IsEmpty())
+        continue;
+
+      SolidColorDrawQuad* quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      quad->SetNew(
+          shared_quad_state, quad_rect, visible_quad_rect, color, false);
+    }
+  }
 }
 
 void SolidColorLayerImpl::AppendQuads(
@@ -33,33 +70,12 @@ void SolidColorLayerImpl::AppendQuads(
   AppendDebugBorderQuad(
       render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
-  Occlusion occlusion = occlusion_tracker.GetCurrentOcclusionForLayer(
-      draw_properties().target_space_transform);
-
-  // We create a series of smaller quads instead of just one large one so that
-  // the culler can reduce the total pixels drawn.
-  int width = content_bounds().width();
-  int height = content_bounds().height();
-  for (int x = 0; x < width; x += tile_size_) {
-    for (int y = 0; y < height; y += tile_size_) {
-      gfx::Rect quad_rect(x,
-                          y,
-                          std::min(width - x, tile_size_),
-                          std::min(height - y, tile_size_));
-      gfx::Rect visible_quad_rect =
-          occlusion.GetUnoccludedContentRect(quad_rect);
-      if (visible_quad_rect.IsEmpty())
-        continue;
-
-      SolidColorDrawQuad* quad =
-          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      quad->SetNew(shared_quad_state,
-                   quad_rect,
-                   visible_quad_rect,
-                   background_color(),
-                   false);
-    }
-  }
+  AppendSolidQuads(render_pass,
+                   occlusion_tracker,
+                   shared_quad_state,
+                   content_bounds(),
+                   draw_properties().target_space_transform,
+                   background_color());
 }
 
 const char* SolidColorLayerImpl::LayerTypeAsString() const {

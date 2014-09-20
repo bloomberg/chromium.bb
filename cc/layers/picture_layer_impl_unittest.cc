@@ -270,6 +270,8 @@ class PictureLayerImplTest : public testing::Test {
     }
   }
 
+  void TestQuadsForSolidColor(bool test_for_solid);
+
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
@@ -4220,6 +4222,152 @@ TEST_F(PictureLayerImplTest, RecycledTwinLayer) {
 
   host_impl_.ResetRecycleTreeForTesting();
   EXPECT_FALSE(active_layer_->GetRecycledTwinLayer());
+}
+
+void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+  gfx::Rect layer_rect(layer_bounds);
+
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(layer);
+  PicturePile* pile = layer->GetPicturePileForTesting();
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  int frame_number = 0;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+
+  client.set_fill_with_nonsolid_color(!test_for_solid);
+
+  Region invalidation(layer_rect);
+  pile->UpdateAndExpandInvalidation(&client,
+                                    &invalidation,
+                                    SK_ColorWHITE,
+                                    false,
+                                    false,
+                                    layer_bounds,
+                                    layer_rect,
+                                    frame_number++,
+                                    Picture::RECORD_NORMALLY,
+                                    &stats_instrumentation);
+
+  scoped_refptr<PicturePileImpl> pending_pile =
+      PicturePileImpl::CreateFromOther(pile);
+
+  SetupPendingTree(pending_pile);
+  ActivateTree();
+
+  if (test_for_solid) {
+    EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+  } else {
+    ASSERT_TRUE(active_layer_->tilings());
+    active_layer_->set_fixed_tile_size(tile_size);
+    host_impl_.active_tree()->UpdateDrawProperties();
+    ASSERT_GT(active_layer_->tilings()->num_tilings(), 0u);
+    std::vector<Tile*> tiles =
+        active_layer_->tilings()->tiling_at(0)->AllTilesForTesting();
+    EXPECT_FALSE(tiles.empty());
+    host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
+  }
+
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->DidDraw(NULL);
+
+  DrawQuad::Material expected = test_for_solid
+                                    ? DrawQuad::Material::SOLID_COLOR
+                                    : DrawQuad::Material::TILED_CONTENT;
+  EXPECT_EQ(expected, render_pass->quad_list.front()->material);
+}
+
+TEST_F(PictureLayerImplTest, DrawSolidQuads) {
+  TestQuadsForSolidColor(true);
+}
+
+TEST_F(PictureLayerImplTest, DrawNonSolidQuads) {
+  TestQuadsForSolidColor(false);
+}
+
+TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+  gfx::Rect layer_rect(layer_bounds);
+
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(layer);
+  PicturePile* pile = layer->GetPicturePileForTesting();
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  int frame_number = 0;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+
+  client.set_fill_with_nonsolid_color(true);
+
+  Region invalidation1(layer_rect);
+  pile->UpdateAndExpandInvalidation(&client,
+                                    &invalidation1,
+                                    SK_ColorWHITE,
+                                    false,
+                                    false,
+                                    layer_bounds,
+                                    layer_rect,
+                                    frame_number++,
+                                    Picture::RECORD_NORMALLY,
+                                    &stats_instrumentation);
+
+  scoped_refptr<PicturePileImpl> pending_pile1 =
+      PicturePileImpl::CreateFromOther(pile);
+
+  SetupPendingTree(pending_pile1);
+  ActivateTree();
+  host_impl_.active_tree()->UpdateDrawProperties();
+
+  // We've started with a solid layer that contains some tilings.
+  ASSERT_TRUE(active_layer_->tilings());
+  EXPECT_NE(0u, active_layer_->tilings()->num_tilings());
+
+  client.set_fill_with_nonsolid_color(false);
+
+  Region invalidation2(layer_rect);
+  pile->UpdateAndExpandInvalidation(&client,
+                                    &invalidation2,
+                                    SK_ColorWHITE,
+                                    false,
+                                    false,
+                                    layer_bounds,
+                                    layer_rect,
+                                    frame_number++,
+                                    Picture::RECORD_NORMALLY,
+                                    &stats_instrumentation);
+
+  scoped_refptr<PicturePileImpl> pending_pile2 =
+      PicturePileImpl::CreateFromOther(pile);
+
+  SetupPendingTree(pending_pile2);
+  ActivateTree();
+
+  // We've switched to a solid color, so we should end up with no tilings.
+  ASSERT_TRUE(active_layer_->tilings());
+  EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
 }
 
 }  // namespace

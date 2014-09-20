@@ -1234,8 +1234,8 @@ TEST_F(PicturePileTest, SolidRectangleIsSolid) {
   // If the client has no contents, the solid state will be true.
   Region invalidation1(tiling_rect());
   UpdateAndExpandInvalidation(&invalidation1, tiling_size(), tiling_rect());
-  EXPECT_TRUE(pile_->IsSolidColor());
-  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), pile_->GetSolidColor());
+  EXPECT_TRUE(pile_->is_solid_color());
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), pile_->solid_color());
 
   // If there is a single rect that covers the view, the solid
   // state will be true.
@@ -1244,8 +1244,8 @@ TEST_F(PicturePileTest, SolidRectangleIsSolid) {
   client_.add_draw_rect(tiling_rect(), paint);
   Region invalidation2(tiling_rect());
   UpdateAndExpandInvalidation(&invalidation2, tiling_size(), tiling_rect());
-  EXPECT_TRUE(pile_->IsSolidColor());
-  EXPECT_EQ(SK_ColorCYAN, pile_->GetSolidColor());
+  EXPECT_TRUE(pile_->is_solid_color());
+  EXPECT_EQ(SK_ColorCYAN, pile_->solid_color());
 
   // If a second smaller rect is draw that doesn't cover the viewport
   // completely, the solid state will be false.
@@ -1254,15 +1254,15 @@ TEST_F(PicturePileTest, SolidRectangleIsSolid) {
   client_.add_draw_rect(smallRect, paint);
   Region invalidation3(tiling_rect());
   UpdateAndExpandInvalidation(&invalidation3, tiling_size(), tiling_rect());
-  EXPECT_FALSE(pile_->IsSolidColor());
+  EXPECT_FALSE(pile_->is_solid_color());
 
   // If a third rect is drawn over everything, we should be solid again.
   paint.setColor(SK_ColorRED);
   client_.add_draw_rect(tiling_rect(), paint);
   Region invalidation4(tiling_rect());
   UpdateAndExpandInvalidation(&invalidation4, tiling_size(), tiling_rect());
-  EXPECT_TRUE(pile_->IsSolidColor());
-  EXPECT_EQ(SK_ColorRED, pile_->GetSolidColor());
+  EXPECT_TRUE(pile_->is_solid_color());
+  EXPECT_EQ(SK_ColorRED, pile_->solid_color());
 
   // If we draw too many, we don't bother doing the analysis and we should no
   // longer be in a solid state.  There are 8 rects, two clips and a translate.
@@ -1273,7 +1273,7 @@ TEST_F(PicturePileTest, SolidRectangleIsSolid) {
   client_.add_draw_rect(tiling_rect(), paint);
   Region invalidation5(tiling_rect());
   UpdateAndExpandInvalidation(&invalidation5, tiling_size(), tiling_rect());
-  EXPECT_FALSE(pile_->IsSolidColor());
+  EXPECT_FALSE(pile_->is_solid_color());
 }
 
 }  // namespace

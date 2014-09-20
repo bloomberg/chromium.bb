@@ -16,6 +16,7 @@
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/layers/solid_color_layer_impl.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -115,11 +116,16 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->pile_ = pile_;
 
+  DCHECK(!pile_->is_solid_color() || !tilings_->num_tilings());
   // Tilings would be expensive to push, so we swap.
   layer_impl->tilings_.swap(tilings_);
   layer_impl->tilings_->SetClient(layer_impl);
   if (tilings_)
     tilings_->SetClient(this);
+
+  // Ensure that the recycle tree doesn't have any unshared tiles.
+  if (tilings_ && pile_->is_solid_color())
+    tilings_->RemoveAllTilings();
 
   // Remove invalidated tiles from what will become a recycle tree.
   if (tilings_)
@@ -150,6 +156,25 @@ void PictureLayerImpl::AppendQuads(
     AppendQuadsData* append_quads_data) {
   DCHECK(!needs_post_commit_initialization_);
 
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
+
+  if (pile_->is_solid_color()) {
+    PopulateSharedQuadState(shared_quad_state);
+
+    AppendDebugBorderQuad(
+        render_pass, content_bounds(), shared_quad_state, append_quads_data);
+
+    SolidColorLayerImpl::AppendSolidQuads(
+        render_pass,
+        occlusion_tracker,
+        shared_quad_state,
+        content_bounds(),
+        draw_properties().target_space_transform,
+        pile_->solid_color());
+    return;
+  }
+
   float max_contents_scale = MaximumTilingContentsScale();
   gfx::Transform scaled_draw_transform = draw_transform();
   scaled_draw_transform.Scale(SK_MScalar1 / max_contents_scale,
@@ -164,8 +189,6 @@ void PictureLayerImpl::AppendQuads(
   Occlusion occlusion =
       occlusion_tracker.GetCurrentOcclusionForLayer(scaled_draw_transform);
 
-  SharedQuadState* shared_quad_state =
-      render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(scaled_draw_transform,
                             scaled_content_bounds,
                             scaled_visible_content_rect,
@@ -469,6 +492,8 @@ void PictureLayerImpl::UpdateTiles(
 
 void PictureLayerImpl::UpdateTilePriorities(
     const Occlusion& occlusion_in_content_space) {
+  DCHECK(!pile_->is_solid_color() || !tilings_->num_tilings());
+
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
   double current_frame_time_in_seconds =
@@ -567,6 +592,7 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                const gfx::Rect& content_rect) {
+  DCHECK(!pile_->is_solid_color());
   if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
     return scoped_refptr<Tile>();
 
@@ -1292,6 +1318,8 @@ void PictureLayerImpl::ResetRasterScale() {
 }
 
 bool PictureLayerImpl::CanHaveTilings() const {
+  if (pile_->is_solid_color())
+    return false;
   if (!DrawsContent())
     return false;
   if (!pile_->HasRecordings())

@@ -931,22 +931,8 @@ class LayerTreeHostReadbackDeviceScalePixelTest
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
-
-    FakePictureLayerImpl* background_impl =
-        static_cast<FakePictureLayerImpl*>(root_impl->children()[0]);
     EXPECT_EQ(device_scale_factor_,
-              background_impl->HighResTiling()->contents_scale());
-
-    FakePictureLayerImpl* green_impl =
-        static_cast<FakePictureLayerImpl*>(background_impl->children()[0]);
-    EXPECT_EQ(device_scale_factor_,
-              green_impl->HighResTiling()->contents_scale());
-
-    FakePictureLayerImpl* blue_impl =
-        static_cast<FakePictureLayerImpl*>(green_impl->children()[0]);
-    EXPECT_EQ(device_scale_factor_,
-              blue_impl->HighResTiling()->contents_scale());
+              host_impl->active_tree()->device_scale_factor());
   }
 
   float device_scale_factor_;

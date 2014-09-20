@@ -566,13 +566,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     EXPECT_VECTOR_EQ(gfx::Vector2d(),
                      expected_no_scroll_layer_impl->ScrollDelta());
 
-    // Ensure device scale factor is affecting the layers.
-    EXPECT_FLOAT_EQ(device_scale_factor_,
-                    root_scroll_layer_impl->HighResTiling()->contents_scale());
-
-    EXPECT_FLOAT_EQ(device_scale_factor_,
-                    child_layer_impl->HighResTiling()->contents_scale());
-
+    // Ensure device scale factor matches the active tree.
+    EXPECT_EQ(device_scale_factor_, impl->active_tree()->device_scale_factor());
     switch (impl->active_tree()->source_frame_number()) {
       case 0: {
         // Gesture scroll on impl thread.

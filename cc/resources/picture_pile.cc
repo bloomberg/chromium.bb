@@ -149,10 +149,7 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 
 namespace cc {
 
-PicturePile::PicturePile()
-    : is_suitable_for_gpu_rasterization_(true),
-      is_solid_color_(true),
-      solid_color_(SK_ColorTRANSPARENT) {
+PicturePile::PicturePile() : is_suitable_for_gpu_rasterization_(true) {
 }
 
 PicturePile::~PicturePile() {

@@ -34,6 +34,10 @@ class FakeContentLayerClient : public ContentLayerClient {
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
   virtual bool FillsBoundsCompletely() const OVERRIDE;
 
+  void set_fill_with_nonsolid_color(bool nonsolid) {
+    fill_with_nonsolid_color_ = nonsolid;
+  }
+
   void add_draw_rect(const gfx::RectF& rect, const SkPaint& paint) {
     draw_rects_.push_back(std::make_pair(rect, paint));
   }
@@ -58,6 +62,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   typedef std::vector<std::pair<gfx::RectF, SkPaint> > RectPaintVector;
   typedef std::vector<BitmapData> BitmapVector;
 
+  bool fill_with_nonsolid_color_;
   RectPaintVector draw_rects_;
   BitmapVector draw_bitmaps_;
   SkCanvas* last_canvas_;
