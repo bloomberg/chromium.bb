@@ -516,13 +516,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 }
 
 // Test is flaky. crbug.com/416128
-#if defined(OS_MACOSX)
-#define MAYBE_MediaGalleriesRead DISABLED_MediaGalleriesRead
-#else
-#define MAYBE_MediaGalleriesRead MediaGalleriesRead
-#endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       MAYBE_MediaGalleriesRead) {
+                       DISABLED_MediaGalleriesRead) {
   RemoveAllGalleries();
   MakeSingleFakeGallery(NULL);
   base::ListValue custom_args;
