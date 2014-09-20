@@ -59,7 +59,7 @@ TEST(SubstitutionWriter, ApplyPatternToSourceAsOutputFile) {
   ASSERT_EQ("gen/foo/bar/myfile.tmp", result.value());
 }
 
-TEST(SubstutitionWriter, WriteNinjaVariablesForSource) {
+TEST(SubstitutionWriter, WriteNinjaVariablesForSource) {
   TestWithScope setup;
 
   std::vector<SubstitutionType> types;
@@ -101,7 +101,7 @@ TEST(SubstitutionWriter, WriteWithNinjaVariables) {
       out.str());
 }
 
-TEST(SubstutitionWriter, SourceSubstitutions) {
+TEST(SubstitutionWriter, SourceSubstitutions) {
   TestWithScope setup;
 
   // Call to get substitutions relative to the build dir.

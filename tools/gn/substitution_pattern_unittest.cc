@@ -16,7 +16,7 @@ TEST(SubstitutionPattern, ParseLiteral) {
   EXPECT_EQ("This is a literal", pattern.ranges()[0].literal);
 }
 
-TEST(SubstitutionPatterm, ParseComplex) {
+TEST(SubstitutionPattern, ParseComplex) {
   SubstitutionPattern pattern;
   Err err;
   EXPECT_TRUE(pattern.Parse(
