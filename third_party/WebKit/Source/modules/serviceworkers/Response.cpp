@@ -36,7 +36,7 @@ Headers* createHeadersFromWebResponse(const WebServiceWorkerResponse& webRespons
 {
     Headers* headers = Headers::create();
     TrackExceptionState exceptionState;
-    for (HashMap<String, String>::const_iterator i = webResponse.headers().begin(), end = webResponse.headers().end(); i != end; ++i) {
+    for (HTTPHeaderMap::const_iterator i = webResponse.headers().begin(), end = webResponse.headers().end(); i != end; ++i) {
         headers->append(i->key, i->value, exceptionState);
         if (exceptionState.hadException())
             return 0;

@@ -20,6 +20,7 @@
 namespace blink {
 
 class BlobDataHandle;
+class HTTPHeaderMap;
 class WebHTTPHeaderVisitor;
 class WebServiceWorkerResponsePrivate;
 
@@ -50,6 +51,11 @@ public:
     WebString statusText() const;
 
     void setHeader(const WebString& key, const WebString& value);
+
+    // If the key already exists, appends the value to the same key (comma
+    // delimited) else creates a new entry.
+    void appendHeader(const WebString& key, const WebString& value);
+
     WebVector<WebString> getHeaderKeys() const;
     WebString getHeader(const WebString& key) const;
     void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
@@ -57,8 +63,7 @@ public:
     WebString blobUUID() const;
 
 #if INSIDE_BLINK
-    void setHeaders(const HashMap<String, String>&);
-    const HashMap<String, String>& headers() const;
+    const HTTPHeaderMap& headers() const;
 
     void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
     PassRefPtr<BlobDataHandle> blobDataHandle() const;

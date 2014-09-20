@@ -91,7 +91,7 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
     response.setStatusText(statusMessage());
     for (size_t i = 0; i < headerList()->size(); ++i) {
         const FetchHeaderList::Header* header = headerList()->list()[i].get();
-        response.setHeader(header->first, header->second);
+        response.appendHeader(header->first, header->second);
     }
     response.setBlobDataHandle(blobDataHandle());
 }
