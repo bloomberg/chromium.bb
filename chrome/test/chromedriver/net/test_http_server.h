@@ -62,7 +62,7 @@ class TestHttpServer : public net::HttpServer::Delegate {
 
   // Overridden from net::HttpServer::Delegate:
   virtual void OnHttpRequest(int connection_id,
-                             const net::HttpServerRequestInfo& info) OVERRIDE {}
+                             const net::HttpServerRequestInfo& info) OVERRIDE;
   virtual void OnWebSocketRequest(
       int connection_id,
       const net::HttpServerRequestInfo& info) OVERRIDE;

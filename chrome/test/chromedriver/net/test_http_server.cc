@@ -16,6 +16,8 @@
 #include "net/socket/tcp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+const int kBufferSize = 100 * 1024 * 1024;  // 100 MB
+
 TestHttpServer::TestHttpServer()
     : thread_("ServerThread"),
       all_closed_event_(false, true),
@@ -73,9 +75,19 @@ GURL TestHttpServer::web_socket_url() const {
   return web_socket_url_;
 }
 
+void TestHttpServer::OnHttpRequest(
+    int connection_id,
+    const net::HttpServerRequestInfo& info) {
+  server_->SetSendBufferSize(connection_id, kBufferSize);
+  server_->SetReceiveBufferSize(connection_id, kBufferSize);
+}
+
 void TestHttpServer::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
+  server_->SetSendBufferSize(connection_id, kBufferSize);
+  server_->SetReceiveBufferSize(connection_id, kBufferSize);
+
   WebSocketRequestAction action;
   {
     base::AutoLock lock(action_lock_);
@@ -99,6 +111,8 @@ void TestHttpServer::OnWebSocketRequest(
 
 void TestHttpServer::OnWebSocketMessage(int connection_id,
                                         const std::string& data) {
+  server_->SetSendBufferSize(connection_id, kBufferSize);
+  server_->SetReceiveBufferSize(connection_id, kBufferSize);
   WebSocketMessageAction action;
   {
     base::AutoLock lock(action_lock_);

@@ -87,7 +87,8 @@ class HttpServer : public net::HttpServer::Delegate {
     // the connection to close (e.g., python 2.7 urllib).
     response->AddHeader("Connection", "close");
     server_->SendResponse(connection_id, *response);
-    server_->Close(connection_id);
+    // Don't need to call server_->Close(), since SendResponse() will handle
+    // this for us.
   }
 
   HttpRequestHandlerFunc handle_request_func_;
