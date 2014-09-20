@@ -81,7 +81,9 @@ namespace blink {
         virtual void detach() OVERRIDE;
 
         void addDestructionObserver(FrameDestructionObserver*);
+#if !ENABLE(OILPAN)
         void removeDestructionObserver(FrameDestructionObserver*);
+#endif
 
         void willDetachFrameHost();
         void detachFromFrameHost();

@@ -39,14 +39,17 @@ FrameDestructionObserver::FrameDestructionObserver(LocalFrame* frame)
 #if !ENABLE(OILPAN)
 FrameDestructionObserver::~FrameDestructionObserver()
 {
-    observeFrame(0);
+    observeFrame(nullptr);
 }
 #endif
 
 void FrameDestructionObserver::observeFrame(LocalFrame* frame)
 {
+    ASSERT(!m_frame || !frame);
+#if !ENABLE(OILPAN)
     if (m_frame)
         m_frame->removeDestructionObserver(this);
+#endif
 
     m_frame = frame;
 

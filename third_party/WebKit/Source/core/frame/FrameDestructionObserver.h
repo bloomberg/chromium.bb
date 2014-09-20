@@ -55,9 +55,11 @@ protected:
 #if !ENABLE(OILPAN)
     virtual ~FrameDestructionObserver();
 #endif
-    void observeFrame(LocalFrame*);
 
     RawPtrWillBeWeakMember<LocalFrame> m_frame;
+
+private:
+    void observeFrame(LocalFrame*);
 };
 
 }

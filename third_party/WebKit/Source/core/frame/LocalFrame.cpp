@@ -308,10 +308,12 @@ void LocalFrame::addDestructionObserver(FrameDestructionObserver* observer)
     m_destructionObservers.add(observer);
 }
 
+#if !ENABLE(OILPAN)
 void LocalFrame::removeDestructionObserver(FrameDestructionObserver* observer)
 {
     m_destructionObservers.remove(observer);
 }
+#endif
 
 void LocalFrame::willDetachFrameHost()
 {
