@@ -874,7 +874,8 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
     customIconUrl: data.customIconUrl || '',
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe,
-    shared: data.shared
+    shared: data.shared,
+    thumbnailUrl: data.thumbnailUrl  // Thumbnail passed from external server.
   };
 
   result.filesystem = {
@@ -882,13 +883,15 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
     modificationTime: new Date(data.lastModifiedTime)
   };
 
-  if ('thumbnailUrl' in data) {
+  if (data.isPresent) {
+    // If the file is present, don't fill the thumbnail here and allow to
+    // generate it by next providers.
+    result.thumbnail = null;
+  } else if ('thumbnailUrl' in data) {
     result.thumbnail = {
       url: data.thumbnailUrl,
       transform: null
     };
-  } else if (data.isPresent) {
-    result.thumbnail = null;
   } else {
     // Not present in cache, so do not allow to generate it by next providers.
     result.thumbnail = {url: '', transform: null};

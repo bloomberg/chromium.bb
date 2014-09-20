@@ -315,8 +315,12 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
         .then(function(results) {
           var url = results[0];
           var token = results[1];
-          document.querySelector('#thumbnail').style.backgroundImage =
-              'url(' + url + '&access_token=' + token + ')';
+          if (url && token) {
+            document.querySelector('#thumbnail').style.backgroundImage =
+                'url(' + url + '&access_token=' + token + ')';
+          } else {
+            document.querySelector('#thumbnail').style.backgroundImage = '';
+          }
         })
         .catch(function() {
           // Shows no image on error.

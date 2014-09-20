@@ -50,11 +50,17 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     };
   }
 
-  if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&
+  if (((opt_metadata.thumbnail && opt_metadata.thumbnail.url) ||
+       (opt_metadata.external && opt_metadata.external.thumbnailUrl)) &&
       opt_useEmbedded === ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
-    this.thumbnailUrl_ = opt_metadata.thumbnail.url;
+    // If the thumbnail generated from the local cache (metadata.thumbnail.url)
+    // is available, use it. If not, use the one passed from the external
+    // provider (metadata.external.thumbnailUrl).
+    this.thumbnailUrl_ =
+        (opt_metadata.thumbnail && opt_metadata.thumbnail.url) ||
+        (opt_metadata.external && opt_metadata.external.thumbnailUrl);
     this.transform_ = externalTransform !== undefined ? externalTransform :
-        opt_metadata.thumbnail.transform;
+        (opt_metadata.thumbnail && opt_metadata.thumbnail.transform);
   } else if (FileType.isImage(entry)) {
     this.thumbnailUrl_ = entry.toURL();
     this.transform_ = externalTransform !== undefined ? externalTransform :
