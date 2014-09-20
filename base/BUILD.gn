@@ -883,6 +883,8 @@ component("base") {
     configs += linux_configs
     all_dependent_configs = linux_configs
 
+    defines += [ "USE_SYMBOLIZE" ]
+
     # These dependencies are not required on Android, and in the case
     # of xdg_mime must be excluded due to licensing restrictions.
     deps += [
