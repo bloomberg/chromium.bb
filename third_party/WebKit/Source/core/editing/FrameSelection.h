@@ -43,10 +43,6 @@ class CharacterData;
 class LocalFrame;
 class GraphicsContext;
 class HTMLFormElement;
-class MutableStylePropertySet;
-class RenderObject;
-class RenderView;
-class Settings;
 class Text;
 class VisiblePosition;
 

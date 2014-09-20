@@ -48,8 +48,6 @@ namespace blink {
 
 class CSSStyleDeclaration;
 class CSSComputedStyleDeclaration;
-class CSSPrimitiveValue;
-class CSSValue;
 class ContainerNode;
 class Document;
 class Element;

@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class CSSPrimitiveValue;
 class EditingStyle;
 class HTMLSpanElement;
 class StyleChange;

@@ -39,7 +39,6 @@
 namespace blink {
 
 class LocalFrame;
-class Node;
 class SpellCheckRequester;
 class TextCheckerClient;
 

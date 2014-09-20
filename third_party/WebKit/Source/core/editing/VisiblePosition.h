@@ -47,7 +47,6 @@ namespace blink {
 #define VP_UPSTREAM_IF_POSSIBLE UPSTREAM
 
 class InlineBox;
-class Node;
 class Range;
 
 class VisiblePosition FINAL {

@@ -34,7 +34,6 @@ namespace blink {
 
 class CompositeEditCommand;
 class Document;
-class Element;
 
 class EditCommand : public RefCountedWillBeGarbageCollectedFinalized<EditCommand> {
 public:

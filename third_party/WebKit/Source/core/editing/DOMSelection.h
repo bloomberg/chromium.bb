@@ -41,7 +41,6 @@
 namespace blink {
 
 class ExceptionState;
-class LocalFrame;
 class Node;
 class Position;
 class Range;

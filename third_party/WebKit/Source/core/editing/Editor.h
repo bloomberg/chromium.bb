@@ -42,21 +42,15 @@
 namespace blink {
 
 class CompositeEditCommand;
-class DataTransfer;
-class EditCommand;
 class EditCommandComposition;
 class EditorClient;
 class EditorInternalCommand;
 class LocalFrame;
-class HTMLElement;
 class HitTestResult;
 class KillRing;
 class Pasteboard;
-class SharedBuffer;
-class SimpleFontData;
 class SpellChecker;
 class StylePropertySet;
-class Text;
 class TextEvent;
 class UndoStack;
 

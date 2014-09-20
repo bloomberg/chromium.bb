@@ -34,7 +34,6 @@
 namespace blink {
 
 class Editor;
-class EditorClient;
 class LocalFrame;
 class Range;
 class Text;
