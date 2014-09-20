@@ -707,12 +707,19 @@ void RemoteDesktopBrowserTest::RunJavaScriptTest(
 void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
   ASSERT_TRUE(HtmlElementVisible(name));
 
-  ConditionalTimeoutWaiter waiter(
-        base::TimeDelta::FromSeconds(5),
-        base::TimeDelta::FromMilliseconds(500),
-        base::Bind(&RemoteDesktopBrowserTest::IsEnabled,
-          active_web_contents(), name));
-  ASSERT_TRUE(waiter.Wait());
+  std::string has_disabled_attribute =
+    "document.getElementById('" + name + "').hasAttribute('disabled')";
+
+  if (ExecuteScriptAndExtractBool(active_web_contents(),
+                                  has_disabled_attribute)) {
+    // This element has a disabled attribute. Wait for it become enabled.
+    ConditionalTimeoutWaiter waiter(
+          base::TimeDelta::FromSeconds(5),
+          base::TimeDelta::FromMilliseconds(500),
+          base::Bind(&RemoteDesktopBrowserTest::IsEnabled,
+            active_web_contents(), name));
+    ASSERT_TRUE(waiter.Wait());
+  }
 
   ExecuteScript("document.getElementById(\"" + name + "\").click();");
 }
