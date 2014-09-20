@@ -67,7 +67,7 @@ namespace fileSystemProvider {
 
     // Whether the file system supports operations which may change contents
     // of the file system (such as creating, deleting or writing to files).
-    [nodoc] boolean writable;
+    boolean writable;
   };
 
   // Options for the <code>mount()</code> method.
@@ -81,7 +81,7 @@ namespace fileSystemProvider {
 
     // Whether the file system supports operations which may change contents
     // of the file system (such as creating, deleting or writing to files).
-    [nodoc] boolean? writable;
+    boolean? writable;
   };
 
   // Options for the <code>unmount()</code> method.
@@ -409,7 +409,7 @@ namespace fileSystemProvider {
     // with the EXISTS error if the target directory already exists.
     // If <code>recursive</code> is true, then all of the missing directories
     // on the directory path must be created.
-    [maxListeners=1, nodoc] static void onCreateDirectoryRequested(
+    [maxListeners=1] static void onCreateDirectoryRequested(
         CreateDirectoryRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -417,7 +417,7 @@ namespace fileSystemProvider {
     // Raised when deleting an entry is requested. If <code>recursive</code> is
     // true, and the entry is a directory, then all of the entries inside
     // must be recursively deleted as well.
-    [maxListeners=1, nodoc] static void onDeleteEntryRequested(
+    [maxListeners=1] static void onDeleteEntryRequested(
         DeleteEntryRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -425,35 +425,35 @@ namespace fileSystemProvider {
     // Raised when creating a file is requested. If the file already exists,
     // then <code>errorCallback</code> must be called with the <code>EXISTS
     // </code> error code.
-    [maxListeners=1, nodoc] static void onCreateFileRequested(
+    [maxListeners=1] static void onCreateFileRequested(
         CreateFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when copying an entry (recursively if a directory) is requested.
     // If an error occurs, then <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onCopyEntryRequested(
+    [maxListeners=1] static void onCopyEntryRequested(
         CopyEntryRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when moving an entry (recursively if a directory) is requested.
     // If an error occurs, then <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onMoveEntryRequested(
+    [maxListeners=1] static void onMoveEntryRequested(
         MoveEntryRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when truncating a file to a desired length is requested.
     // If an error occurs, then <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onTruncateRequested(
+    [maxListeners=1] static void onTruncateRequested(
         TruncateRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when writing contents to a file opened previously with <code>
     // openRequestId</code> is requested.
-    [maxListeners=1, nodoc] static void onWriteFileRequested(
+    [maxListeners=1] static void onWriteFileRequested(
         WriteFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -465,7 +465,7 @@ namespace fileSystemProvider {
     // </code> must be called. Note, that callbacks of the aborted operation
     // must not be called, as they will be ignored. Despite calling <code>
     // errorCallback</code>, the request may be forcibly aborted. 
-    [maxListeners=1, nodoc] static void onAbortRequested(
+    [maxListeners=1] static void onAbortRequested(
         AbortRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
