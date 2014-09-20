@@ -796,6 +796,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     delegate_->OnProfilePrepared(profile);
 
   UpdateEasyUnlockKeys(profile);
+  user_context_.ClearSecrets();
 }
 
 void UserSessionManager::InitSessionRestoreStrategy() {
@@ -1002,6 +1003,13 @@ void UserSessionManager::UpdateEasyUnlockKeys(Profile* user_profile) {
   // Only update Easy unlock keys for regular user.
   if (user_context_.GetUserType() != user_manager::USER_TYPE_REGULAR)
     return;
+
+  // Bail if |user_context_| does not have secret.
+  if (user_context_.GetKey()->GetSecret().empty()) {
+    // Nagging if this is not crash restore case.
+    DCHECK(user_sessions_restored_);
+    return;
+  }
 
   // |user_context_| and |user_profile| must belong to the same user.
   DCHECK_EQ(SigninManagerFactory::GetForProfile(user_profile)
