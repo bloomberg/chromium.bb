@@ -95,7 +95,7 @@ class ShaderDiskReadHelper
 
   base::WeakPtr<ShaderDiskCache> cache_;
   OpType op_type_;
-  scoped_ptr<disk_cache::Backend::Iterator> iter_;
+  void* iter_;
   scoped_refptr<net::IOBufferWithSize> buf_;
   int host_id_;
   disk_cache::Entry* entry_;
@@ -243,6 +243,7 @@ ShaderDiskReadHelper::ShaderDiskReadHelper(
     int host_id)
     : cache_(cache),
       op_type_(OPEN_NEXT),
+      iter_(NULL),
       buf_(NULL),
       host_id_(host_id),
       entry_(NULL) {
@@ -290,10 +291,10 @@ int ShaderDiskReadHelper::OpenNextEntry() {
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
   op_type_ = OPEN_NEXT_COMPLETE;
-  if (!iter_)
-    iter_ = cache_->backend()->CreateIterator();
-  return iter_->OpenNextEntry(
-      &entry_, base::Bind(&ShaderDiskReadHelper::OnOpComplete, this));
+  return cache_->backend()->OpenNextEntry(
+      &iter_,
+      &entry_,
+      base::Bind(&ShaderDiskReadHelper::OnOpComplete, this));
 }
 
 int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
@@ -338,7 +339,8 @@ int ShaderDiskReadHelper::ReadComplete(int rv) {
 int ShaderDiskReadHelper::IterationComplete(int rv) {
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
-  iter_.reset();
+  cache_->backend()->EndEnumeration(&iter_);
+  iter_ = NULL;
   op_type_ = TERMINATE;
   return net::OK;
 }

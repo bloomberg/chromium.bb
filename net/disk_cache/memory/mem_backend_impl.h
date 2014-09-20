@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/weak_ptr.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/memory/mem_rankings.h"
 
@@ -77,15 +76,14 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
                                  const CompletionCallback& callback) OVERRIDE;
   virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
-  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
+  virtual int OpenNextEntry(void** iter, Entry** next_entry,
+                            const CompletionCallback& callback) OVERRIDE;
+  virtual void EndEnumeration(void** iter) OVERRIDE;
   virtual void GetStats(
       std::vector<std::pair<std::string, std::string> >* stats) OVERRIDE {}
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  class MemIterator;
-  friend class MemIterator;
-
   typedef base::hash_map<std::string, MemEntryImpl*> EntryMap;
 
   // Old Backend interface.
@@ -96,6 +94,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   bool DoomEntriesBetween(const base::Time initial_time,
                           const base::Time end_time);
   bool DoomEntriesSince(const base::Time initial_time);
+  bool OpenNextEntry(void** iter, Entry** next_entry);
 
   // Deletes entries from the cache until the current size is below the limit.
   // If empty is true, the whole cache will be trimmed, regardless of being in
@@ -112,8 +111,6 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   int32 current_size_;
 
   net::NetLog* net_log_;
-
-  base::WeakPtrFactory<MemBackendImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MemBackendImpl);
 };

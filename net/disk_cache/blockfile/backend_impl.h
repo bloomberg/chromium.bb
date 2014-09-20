@@ -273,21 +273,14 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
                                  const CompletionCallback& callback) OVERRIDE;
   virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
-  // NOTE: The blockfile Backend::Iterator::OpenNextEntry method does not modify
-  // the last_used field of the entry, and therefore it does not impact the
-  // eviction ranking of the entry. However, an enumeration will go through all
-  // entries on the cache only if the cache is not modified while the
-  // enumeration is taking place. Significantly altering the entry pointed by
-  // the iterator (for example, deleting the entry) will invalidate the
-  // iterator. Performing operations on an entry that modify the entry may
-  // result in loops in the iteration, skipped entries or similar.
-  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
+  virtual int OpenNextEntry(void** iter, Entry** next_entry,
+                            const CompletionCallback& callback) OVERRIDE;
+  virtual void EndEnumeration(void** iter) OVERRIDE;
   virtual void GetStats(StatsItems* stats) OVERRIDE;
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
   typedef base::hash_map<CacheAddr, EntryImpl*> EntriesMap;
-  class IteratorImpl;
 
   // Creates a new backing file for the cache index.
   bool CreateBackingStore(disk_cache::File* file);
