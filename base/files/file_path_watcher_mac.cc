@@ -34,13 +34,13 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   }
 
   virtual void Cancel() OVERRIDE {
-    if (impl_)
+    if (impl_.get())
       impl_->Cancel();
     set_cancelled();
   }
 
   virtual void CancelOnMessageLoopThread() OVERRIDE {
-    if (impl_)
+    if (impl_.get())
       impl_->Cancel();
     set_cancelled();
   }
