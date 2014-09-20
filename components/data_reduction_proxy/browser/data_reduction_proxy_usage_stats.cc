@@ -198,15 +198,20 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (triggering_request_) {
-    // We only record when audio or video triggers a bypass. We don't care
-    // about audio and video bypassed as collateral damage.
+  // Only record separate triggering request UMA for short, medium, and long
+  // bypass events.
+  if (triggering_request_ &&
+     (last_bypass_type_ ==  BYPASS_EVENT_TYPE_SHORT ||
+      last_bypass_type_ ==  BYPASS_EVENT_TYPE_MEDIUM ||
+      last_bypass_type_ ==  BYPASS_EVENT_TYPE_LONG)) {
     std::string mime_type;
     request.GetMimeType(&mime_type);
-    // MIME types are named by <media-type>/<subtype>. We check to see if the
-    // media type is audio or video.
-    if (mime_type.compare(0, 6, "audio/") == 0  ||
-        mime_type.compare(0, 6, "video/") == 0) {
+    // MIME types are named by <media-type>/<subtype>. Check to see if the
+    // media type is audio or video. Only record when triggered by short bypass,
+    // there isn't an audio or video bucket for medium or long bypasses.
+    if (last_bypass_type_ ==  BYPASS_EVENT_TYPE_SHORT &&
+       (mime_type.compare(0, 6, "audio/") == 0  ||
+        mime_type.compare(0, 6, "video/") == 0)) {
       RecordBypassedBytes(last_bypass_type_,
                           DataReductionProxyUsageStats::AUDIO_VIDEO,
                           content_length);
@@ -227,11 +232,11 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_params_->
-          AreDataReductionProxiesBypassed(request, NULL)) {
-      RecordBypassedBytes(last_bypass_type_,
-                          DataReductionProxyUsageStats::NETWORK_ERROR,
-                          content_length);
+  if (data_reduction_proxy_params_->AreDataReductionProxiesBypassed(request,
+                                                                    NULL)) {
+    RecordBypassedBytes(last_bypass_type_,
+                        DataReductionProxyUsageStats::NETWORK_ERROR,
+                        content_length);
   }
 }
 
