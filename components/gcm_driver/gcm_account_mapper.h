@@ -32,8 +32,7 @@ class GCMAccountMapper : public GCMAppHandler {
   explicit GCMAccountMapper(GCMDriver* gcm_driver);
   virtual ~GCMAccountMapper();
 
-  void Initialize(const AccountMappings& account_mappings,
-                  const std::string& registration_id);
+  void Initialize(const AccountMappings& account_mappings);
 
   // Called by AccountTracker, when a new list of account tokens is available.
   // This will cause a refresh of account mappings and sending updates to GCM.
@@ -57,6 +56,9 @@ class GCMAccountMapper : public GCMAppHandler {
 
   typedef std::map<std::string, GCMClient::OutgoingMessage> OutgoingMessages;
 
+  // Checks whether account mapper is ready to process new account tokens.
+  bool IsReady();
+
   // Informs GCM of an added or refreshed account mapping.
   void SendAddMappingMessage(AccountMapping& account_mapping);
 
@@ -69,6 +71,13 @@ class GCMAccountMapper : public GCMAppHandler {
   void OnSendFinished(const std::string& account_id,
                       const std::string& message_id,
                       GCMClient::Result result);
+
+  // Gets a registration for account mapper from GCM.
+  void GetRegistration();
+
+  // Callback for registering with GCM.
+  void OnRegisterFinished(const std::string& registration_id,
+                          GCMClient::Result result);
 
   // Checks whether the update can be triggered now. If the current time is
   // within reasonable time (6 hours) of when the update is due, we want to
@@ -97,6 +106,8 @@ class GCMAccountMapper : public GCMAppHandler {
 
   // Currnetly tracked account mappings.
   AccountMappings accounts_;
+
+  std::vector<GCMClient::AccountTokenInfo> pending_account_tokens_;
 
   // GCM Registration ID of the account mapper.
   std::string registration_id_;

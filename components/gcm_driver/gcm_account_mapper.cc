@@ -47,22 +47,26 @@ GCMAccountMapper::~GCMAccountMapper() {
 }
 
 void GCMAccountMapper::Initialize(
-    const std::vector<AccountMapping>& account_mappings,
-    const std::string& registration_id) {
+    const std::vector<AccountMapping>& account_mappings) {
   DCHECK(!initialized_);
   initialized_ = true;
-  registration_id_ = registration_id;
-
   accounts_ = account_mappings;
-
   gcm_driver_->AddAppHandler(kGCMAccountMapperAppId, this);
-
-  // TODO(fgorski): if no registration ID, get registration ID.
+  GetRegistration();
 }
 
 void GCMAccountMapper::SetAccountTokens(
     const std::vector<GCMClient::AccountTokenInfo> account_tokens) {
-  DCHECK(initialized_);
+  // If account mapper is not ready to handle tasks yet, save the latest
+  // account tokens and return.
+  if (!IsReady()) {
+    pending_account_tokens_ = account_tokens;
+    // If mapper is initialized, but still does not have registration ID,
+    // maybe the registration gave up. Retrying in case.
+    if (initialized_)
+      GetRegistration();
+    return;
+  }
 
   // Start from removing the old tokens, from all of the known accounts.
   for (AccountMappings::iterator iter = accounts_.begin();
@@ -214,6 +218,10 @@ bool GCMAccountMapper::CanHandle(const std::string& app_id) const {
   return app_id.compare(kGCMAccountMapperAppId) == 0;
 }
 
+bool GCMAccountMapper::IsReady() {
+  return initialized_ && !registration_id_.empty();
+}
+
 void GCMAccountMapper::SendAddMappingMessage(AccountMapping& account_mapping) {
   CreateAndSendMessage(account_mapping);
 }
@@ -257,7 +265,6 @@ void GCMAccountMapper::CreateAndSendMessage(
                                account_mapping.account_id));
 }
 
-
 void GCMAccountMapper::OnSendFinished(const std::string& account_id,
                                       const std::string& message_id,
                                       GCMClient::Result result) {
@@ -278,6 +285,29 @@ void GCMAccountMapper::OnSendFinished(const std::string& account_id,
   account_mapping->last_message_id = message_id;
 
   gcm_driver_->UpdateAccountMapping(*account_mapping);
+}
+
+void GCMAccountMapper::GetRegistration() {
+  DCHECK(registration_id_.empty());
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back(kGCMAccountMapperSenderId);
+  gcm_driver_->Register(kGCMAccountMapperAppId,
+                        sender_ids,
+                        base::Bind(&GCMAccountMapper::OnRegisterFinished,
+                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GCMAccountMapper::OnRegisterFinished(const std::string& registration_id,
+                                          GCMClient::Result result) {
+  if (result == GCMClient::SUCCESS)
+    registration_id_ = registration_id;
+
+  if (IsReady()) {
+    if (!pending_account_tokens_.empty()) {
+      SetAccountTokens(pending_account_tokens_);
+      pending_account_tokens_.clear();
+    }
+  }
 }
 
 bool GCMAccountMapper::CanTriggerUpdate(
