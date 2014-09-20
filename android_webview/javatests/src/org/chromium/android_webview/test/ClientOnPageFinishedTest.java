@@ -83,7 +83,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             void setAllowAboutBlank() {
                 mAllowAboutBlank = true;
             }
-        };
+        }
         LocalTestClient testContentsClient = new LocalTestClient();
         setTestAwContentsClient(testContentsClient);
 

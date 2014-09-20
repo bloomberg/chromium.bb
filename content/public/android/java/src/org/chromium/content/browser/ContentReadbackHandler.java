@@ -122,9 +122,9 @@ public abstract class ContentReadbackHandler {
 
     private native long nativeInit();
     private native void nativeDestroy(long nativeContentReadbackHandler);
-    private native void nativeGetContentBitmap(long nativeContentReadbackHandler, int readback_id,
+    private native void nativeGetContentBitmap(long nativeContentReadbackHandler, int readbackId,
             float scale, Bitmap.Config config, float x, float y, float width, float height,
             Object contentViewCore);
     private native void nativeGetCompositorBitmap(long nativeContentReadbackHandler,
-            int readback_id, long nativeWindowAndroid);
+            int readbackId, long nativeWindowAndroid);
 }

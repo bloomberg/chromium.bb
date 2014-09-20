@@ -49,7 +49,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 // The orientation should not change but might and the value could be anything.
                 return true;
             default:
-                return mObserver.mHasChanged == false;
+                return !mObserver.mHasChanged;
         }
     }
 

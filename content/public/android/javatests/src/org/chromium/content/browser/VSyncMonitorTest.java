@@ -15,6 +15,9 @@ import org.chromium.ui.VSyncMonitor;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
+/**
+ * Tests VSyncMonitor to make sure it generates correct VSync timestamps.
+ */
 public class VSyncMonitorTest extends InstrumentationTestCase {
     private static class VSyncDataCollector implements VSyncMonitor.Listener {
         public long mFramePeriods[];
@@ -40,8 +43,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
             mLastVSyncCpuTimeMillis = SystemClock.uptimeMillis();
             if (mPreviousVSyncTimeMicros == 0) {
                 mPreviousVSyncTimeMicros = vsyncTimeMicros;
-            }
-            else {
+            } else {
                 mFramePeriods[mFrameCount++] = vsyncTimeMicros - mPreviousVSyncTimeMicros;
                 mPreviousVSyncTimeMicros = vsyncTimeMicros;
             }

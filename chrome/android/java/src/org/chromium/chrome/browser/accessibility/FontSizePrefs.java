@@ -27,7 +27,7 @@ public class FontSizePrefs implements OnSharedPreferenceChangeListener {
     public static final String PREF_TEXT_SCALE = "text_scale";
     public static final String PREF_USER_SET_FORCE_ENABLE_ZOOM = "user_set_force_enable_zoom";
 
-    private static FontSizePrefs mFontSizePrefs;
+    private static FontSizePrefs sFontSizePrefs;
     private final long mFontSizePrefsAndroidPtr;
     private final SharedPreferences mSharedPreferences;
     private final Map<Observer, FontSizePrefsObserverWrapper> mObserverMap;
@@ -96,10 +96,10 @@ public class FontSizePrefs implements OnSharedPreferenceChangeListener {
      */
     public static FontSizePrefs getInstance(Context context) {
         ThreadUtils.assertOnUiThread();
-        if (mFontSizePrefs == null) {
-            mFontSizePrefs = new FontSizePrefs(context);
+        if (sFontSizePrefs == null) {
+            sFontSizePrefs = new FontSizePrefs(context);
         }
-        return mFontSizePrefs;
+        return sFontSizePrefs;
     }
 
     /**

@@ -214,7 +214,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 i.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
                 i.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
                 mContext.startActivity(i);
-            } catch (URISyntaxException ex) {}
+            } catch (URISyntaxException ex) {
+                // Do nothing intentionally.
+            }
         }
     }
 

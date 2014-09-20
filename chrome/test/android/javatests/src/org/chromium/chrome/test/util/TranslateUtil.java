@@ -35,7 +35,7 @@ public class TranslateUtil {
 
         SpannableString spannable = (SpannableString) text.getText();
         ClickableSpan[] clickable =
-            spannable.getSpans(0, spannable.length() -1, ClickableSpan.class);
+            spannable.getSpans(0, spannable.length() - 1, ClickableSpan.class);
         if (clickable.length <= 0) {
             return false;
         }

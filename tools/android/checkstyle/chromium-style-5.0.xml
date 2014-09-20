@@ -41,6 +41,12 @@
       <property name="severity" value="error"/>
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9_]{1,})*$"/>
     </module>
+    <module name="SimplifyBooleanExpression">
+      <property name="severity" value="error"/>
+    </module>
+    <module name="SimplifyBooleanReturn">
+      <property name="severity" value="error"/>
+    </module>
     <module name="TypeName">
       <property name="severity" value="error"/>
     </module>
@@ -128,6 +134,9 @@
       <property name="severity" value="error"/>
       <property name="allowLineBreaks" value="true"/>
       <property name="tokens" value="SEMI, DOT, POST_DEC, POST_INC"/>
+    </module>
+    <module name="EmptyStatement">
+      <property name="severity" value="error"/>
     </module>
     <module name="NoFinalizer">
       <property name="severity" value="warning"/>

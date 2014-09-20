@@ -161,7 +161,7 @@ class TtsPlatformImpl {
      */
     @CalledByNative
     private int getVoiceCount() {
-        assert mInitialized == true;
+        assert mInitialized;
         return mVoices.size();
     }
 
@@ -170,7 +170,7 @@ class TtsPlatformImpl {
      */
     @CalledByNative
     private String getVoiceName(int voiceIndex) {
-        assert mInitialized == true;
+        assert mInitialized;
         return mVoices.get(voiceIndex).mName;
     }
 
@@ -179,7 +179,7 @@ class TtsPlatformImpl {
      */
     @CalledByNative
     private String getVoiceLanguage(int voiceIndex) {
-        assert mInitialized == true;
+        assert mInitialized;
         return mVoices.get(voiceIndex).mLanguage;
     }
 

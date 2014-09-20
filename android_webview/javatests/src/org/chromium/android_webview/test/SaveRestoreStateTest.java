@@ -37,7 +37,7 @@ public class SaveRestoreStateTest extends AwTestBase {
     }
 
     private TestVars createNewView() throws Exception {
-        TestAwContentsClient contentsClient = new TestAwContentsClient();;
+        TestAwContentsClient contentsClient = new TestAwContentsClient();
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(contentsClient);
         return new TestVars(contentsClient, testView);
     }
