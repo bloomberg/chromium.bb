@@ -231,13 +231,20 @@ const AcceleratorData kDebugAcceleratorData[] = {
 
 const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
 
-const AcceleratorAction kReservedActions[] = {
+const AcceleratorAction kPreferredActions[] = {
   // Window cycling accelerators.
   CYCLE_BACKWARD_MRU,  // Shift+Alt+Tab
   CYCLE_FORWARD_MRU,  // Alt+Tab
+};
+
+const size_t kPreferredActionsLength = arraysize(kPreferredActions);
+
+const AcceleratorAction kReservedActions[] = {
 #if defined(OS_CHROMEOS)
   POWER_PRESSED,
   POWER_RELEASED,
+#else
+  DUMMY_FOR_RESERVED,
 #endif
 };
 

@@ -77,8 +77,14 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Returns true if the |accelerator| is registered.
   bool IsRegistered(const ui::Accelerator& accelerator) const;
 
-  // Returns true if the |accelerator| is one of the |reserved_actions_|.
-  bool IsReservedAccelerator(const ui::Accelerator& accelerator) const;
+  // Returns true if the |accelerator| is preferred. A preferred accelerator
+  // is handled before being passed to an window/web contents, unless
+  // the window is in fullscreen state.
+  bool IsPreferred(const ui::Accelerator& accelerator) const;
+
+  // Returns true if the |accelerator| is reserved. A reserved accelerator
+  // is always handled and will never be passed to an window/web contents.
+  bool IsReserved(const ui::Accelerator& accelerator) const;
 
   // Performs the specified action. The |accelerator| may provide additional
   // data the action needs. Returns whether an action was performed
@@ -164,6 +170,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::set<int> actions_allowed_at_lock_screen_;
   // Actions allowed when a modal window is up.
   std::set<int> actions_allowed_at_modal_window_;
+  // Preferred actions. See accelerator_table.h for details.
+  std::set<int> preferred_actions_;
   // Reserved actions. See accelerator_table.h for details.
   std::set<int> reserved_actions_;
   // Actions which will not be repeated while holding the accelerator key.

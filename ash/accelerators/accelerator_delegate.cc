@@ -59,26 +59,28 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
       root_windows.end())
     return true;
 
-  // A full screen window should be able to handle all key events including the
-  // reserved ones.
   aura::Window* top_level = ::wm::GetToplevelWindow(target);
+  Shell* shell = Shell::GetInstance();
 
+  // Reserved accelerators (such as Power button) always have a prority.
+  if (shell->accelerator_controller()->IsReserved(accelerator))
+    return true;
+
+  // A full screen window has a right to handle all key events including the
+  // reserved ones.
   if (top_level && wm::GetWindowState(top_level)->IsFullscreen()) {
-    // TODO(yusukes): On Chrome OS, only browser and flash windows can be full
-    // screen. Launching an app in "open full-screen" mode is not supported yet.
-    // That makes the IsWindowFullscreen() check above almost meaningless
-    // because a browser and flash window do handle Ash accelerators anyway
-    // before they're passed to a page or flash content.
+    // On ChromeOS, fullscreen windows are either browser or apps, which
+    // send key events to a web content first, then will process keys
+    // if the web content didn't consume them.
     return false;
   }
 
-  if (Shell::GetInstance()->GetAppListTargetVisibility())
+  // Handle preferred accelerators (such as ALT-TAB) before sending
+  // to the target.
+  if (shell->accelerator_controller()->IsPreferred(accelerator))
     return true;
 
-  // Unless |target| is in the full screen state, handle reserved accelerators
-  // such as Alt+Tab now.
-  return Shell::GetInstance()->accelerator_controller()->IsReservedAccelerator(
-      accelerator);
+  return shell->GetAppListTargetVisibility();
 }
 
 }  // namespace ash

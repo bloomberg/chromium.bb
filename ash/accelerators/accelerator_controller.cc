@@ -782,6 +782,8 @@ void AcceleratorController::Init() {
     actions_allowed_at_lock_screen_.insert(kActionsAllowedAtLockScreen[i]);
   for (size_t i = 0; i < kActionsAllowedAtModalWindowLength; ++i)
     actions_allowed_at_modal_window_.insert(kActionsAllowedAtModalWindow[i]);
+  for (size_t i = 0; i < kPreferredActionsLength; ++i)
+    preferred_actions_.insert(kPreferredActions[i]);
   for (size_t i = 0; i < kReservedActionsLength; ++i)
     reserved_actions_.insert(kReservedActions[i]);
   for (size_t i = 0; i < kNonrepeatableActionsLength; ++i)
@@ -840,7 +842,20 @@ bool AcceleratorController::IsRegistered(
   return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
 }
 
-bool AcceleratorController::IsReservedAccelerator(
+bool AcceleratorController::IsPreferred(
+    const ui::Accelerator& accelerator) const {
+  const ui::Accelerator remapped_accelerator = ime_control_delegate_.get() ?
+      ime_control_delegate_->RemapAccelerator(accelerator) : accelerator;
+
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerators_.find(remapped_accelerator);
+  if (iter == accelerators_.end())
+    return false;  // not an accelerator.
+
+  return preferred_actions_.find(iter->second) != preferred_actions_.end();
+}
+
+bool AcceleratorController::IsReserved(
     const ui::Accelerator& accelerator) const {
   const ui::Accelerator remapped_accelerator = ime_control_delegate_.get() ?
       ime_control_delegate_->RemapAccelerator(accelerator) : accelerator;

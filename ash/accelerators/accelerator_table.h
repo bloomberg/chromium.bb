@@ -12,12 +12,17 @@
 
 namespace ash {
 
-// There are four classes of accelerators in Ash:
+// There are five classes of accelerators in Ash:
 //
 // Ash (OS) reserved:
 // * Neither packaged apps nor web pages can cancel.
-// * For example, Alt-Tab window cycling.
+// * For example, power button.
 // * See kReservedActions below.
+//
+// Ash (OS) preferred:
+// * Fullscreen window can consume, but normal window can't.
+// * For example, Alt-Tab window cycling.
+// * See kPreferredActions below.
 //
 // Chrome OS system keys:
 // * For legacy reasons, v1 apps can process and cancel. Otherwise handled
@@ -136,6 +141,8 @@ enum AcceleratorAction {
   OPEN_FILE_MANAGER,
   SWITCH_TO_NEXT_USER,
   SWITCH_TO_PREVIOUS_USER,
+#else
+  DUMMY_FOR_RESERVED,
 #endif
 };
 
@@ -163,6 +170,10 @@ ASH_EXPORT extern const size_t kDebugAcceleratorDataLength;
 
 // Actions that should be handled very early in Ash unless the current target
 // window is full-screen.
+ASH_EXPORT extern const AcceleratorAction kPreferredActions[];
+ASH_EXPORT extern const size_t kPreferredActionsLength;
+
+// Actions that are always handled in Ash.
 ASH_EXPORT extern const AcceleratorAction kReservedActions[];
 ASH_EXPORT extern const size_t kReservedActionsLength;
 

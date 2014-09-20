@@ -18,11 +18,14 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
+#include "ash/test/test_session_state_animator.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -1057,23 +1060,99 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
   EXPECT_FALSE(GetController()->Process(shift_alt_space_press));
 }
 
-TEST_F(AcceleratorControllerTest, ReservedAccelerators) {
-  // (Shift+)Alt+Tab and Chrome OS top-row keys are reserved.
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
+TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 #if defined(OS_CHROMEOS)
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
+  // Power key is reserved on chromeos.
+  EXPECT_TRUE(GetController()->IsReserved(
+      ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
+  EXPECT_FALSE(GetController()->IsPreferred(
       ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
 #endif
-  // Others are not reserved.
-  EXPECT_FALSE(GetController()->IsReservedAccelerator(
+  // ALT+Tab are not reserved but preferred.
+  EXPECT_FALSE(GetController()->IsReserved(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
+  EXPECT_FALSE(GetController()->IsReserved(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
+  EXPECT_TRUE(GetController()->IsPreferred(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
+  EXPECT_TRUE(GetController()->IsPreferred(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
+
+  // Others are not reserved nor preferred
+  EXPECT_FALSE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
-  EXPECT_FALSE(GetController()->IsReservedAccelerator(
+  EXPECT_FALSE(GetController()->IsPreferred(
+      ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+  EXPECT_FALSE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE)));
-  EXPECT_FALSE(GetController()->IsReservedAccelerator(
+  EXPECT_FALSE(GetController()->IsPreferred(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE)));
+  EXPECT_FALSE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
+  EXPECT_FALSE(GetController()->IsPreferred(
+      ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
+}
+
+namespace {
+
+class PreferredReservedAcceleratorsTest : public test::AshTestBase {
+ public:
+  PreferredReservedAcceleratorsTest() {}
+  virtual ~PreferredReservedAcceleratorsTest() {}
+
+  // test::AshTestBase:
+  virtual void SetUp() OVERRIDE {
+    AshTestBase::SetUp();
+    Shell::GetInstance()->lock_state_controller()->
+        set_animator_for_test(new test::TestSessionStateAnimator);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PreferredReservedAcceleratorsTest);
+};
+
+}  // namespace
+
+TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
+  aura::Window* w1 = CreateTestWindowInShellWithId(0);
+  aura::Window* w2 = CreateTestWindowInShellWithId(1);
+  wm::ActivateWindow(w1);
+
+  wm::WMEvent fullscreen(wm::WM_EVENT_FULLSCREEN);
+  wm::WindowState* w1_state = wm::GetWindowState(w1);
+  w1_state->OnWMEvent(&fullscreen);
+  ASSERT_TRUE(w1_state->IsFullscreen());
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+#if defined(OS_CHROMEOS)
+  // Power key (reserved) should always be handled.
+  LockStateController::TestApi test_api(
+      Shell::GetInstance()->lock_state_controller());
+  EXPECT_FALSE(test_api.is_animating_lock());
+  generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
+  EXPECT_TRUE(test_api.is_animating_lock());
+#endif
+
+  // A fullscreen window can consume ALT-TAB (preferred).
+  ASSERT_EQ(w1, wm::GetActiveWindow());
+  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  ASSERT_EQ(w1, wm::GetActiveWindow());
+  ASSERT_NE(w2, wm::GetActiveWindow());
+
+  // ALT-TAB is non repeatable. Press A to cancel the
+  // repeat record.
+  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+
+  // A normal window shouldn't consume preferred accelerator.
+  wm::WMEvent normal(wm::WM_EVENT_NORMAL);
+  w1_state->OnWMEvent(&normal);
+  ASSERT_FALSE(w1_state->IsFullscreen());
+
+  EXPECT_EQ(w1, wm::GetActiveWindow());
+  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  ASSERT_NE(w1, wm::GetActiveWindow());
+  ASSERT_EQ(w2, wm::GetActiveWindow());
 }
 
 #if defined(OS_CHROMEOS)
