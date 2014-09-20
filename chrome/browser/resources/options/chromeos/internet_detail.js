@@ -445,9 +445,9 @@ cr.define('options.internet', function() {
      * Update details page controls.
      */
     updateControls: function() {
+      // Note: onc may be undefined when called from a pref update before
+      // initialized in sendNetworkDetails.
       var onc = this.onc_;
-      if (onc == undefined)
-        return;  // May get called from a pref update before initialized.
 
       // Always show the ipconfig section. TODO(stevenjb): Improve the display
       // for unconnected networks. Currently the IP address fields may be
@@ -466,7 +466,7 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .proxy-details', !this.showProxy_);
 
       // Cellular
-      if (this.type_ == 'Cellular') {
+      if (onc && this.type_ == 'Cellular') {
         // Hide gsm/cdma specific elements.
         if (onc.getActiveValue('Cellular.Family') == 'GSM')
           updateHidden('#details-internet-page .cdma-only', true);
@@ -481,10 +481,11 @@ cr.define('options.internet', function() {
                    this.type_ == 'VPN');
 
       // Password and shared.
-      var source = onc.getSource();
+      var source = onc ? onc.getSource() : 'None';
       var shared = (source == 'Device' || source == 'DevicePolicy');
+      var security = onc ? onc.getWiFiSecurity() : 'None';
       updateHidden('#details-internet-page #password-details',
-                   this.type_ != 'WiFi' || onc.getWiFiSecurity() == 'None');
+                   this.type_ != 'WiFi' || security == 'None');
       updateHidden('#details-internet-page #wifi-shared-network', !shared);
       updateHidden('#details-internet-page #prefer-network', source == 'None');
 
