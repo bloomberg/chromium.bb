@@ -112,26 +112,6 @@ bool CanChangeChannel() {
 
 #endif  // defined(OS_CHROMEOS)
 
-base::string16 BrowserVersionString(bool long_html) {
-  chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
-
-  std::string version = version_info.Version();
-
-  std::string modifier = chrome::VersionInfo::GetVersionStringModifier();
-  if (!modifier.empty())
-    version += " " + modifier;
-
-#if defined(ARCH_CPU_64_BITS)
-  version += " (64-bit)";
-#endif
-
-  if (long_html)
-    version += "<br>(" + version_info.LastChange() + ")";
-
-  return base::UTF8ToUTF16(version);
-}
-
 }  // namespace
 
 HelpHandler::HelpHandler()
@@ -234,11 +214,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
-                                 BrowserVersionString(false)));
-  localized_strings->SetString(
-      "browserVersionLongHtml",
-      l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
-                                 BrowserVersionString(true)));
+                                 BuildBrowserVersionString()));
 
   base::Time::Exploded exploded_time;
   base::Time::Now().LocalExplode(&exploded_time);
@@ -335,7 +311,20 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
 
 // static
 base::string16 HelpHandler::BuildBrowserVersionString() {
-  return BrowserVersionString(false);
+  chrome::VersionInfo version_info;
+  DCHECK(version_info.is_valid());
+
+  std::string version = version_info.Version();
+
+  std::string modifier = chrome::VersionInfo::GetVersionStringModifier();
+  if (!modifier.empty())
+    version += " " + modifier;
+
+#if defined(ARCH_CPU_64_BITS)
+  version += " (64-bit)";
+#endif
+
+  return base::UTF8ToUTF16(version);
 }
 
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {
