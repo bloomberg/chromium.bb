@@ -2,9 +2,18 @@ Name: Polymer
 Short Name: polymer
 URL: http://www.polymer-project.org
 Version: 0.3.5
-Revision: (See <component>/.bower.json)
+Revision: (See components/<component>/.bower.json)
 License: BSD
-License File: LICENSE
+License File: LICENSE.polymer
+Security Critical: no
+
+Name: Web Animations JS
+Short Name: web-animations-js
+URL: https://github.com/web-animations/web-animations-js
+Version: NA
+Revision: (See components/web-animations-js/.bower.json)
+License: Apache 2.0
+License File: components/web-animations-js/COPYING
 Security Critical: no
 
 Description:
@@ -12,11 +21,9 @@ This directory contains a copy of the following components which are a part of
 the Polymer project:
 -polymer
 -platform
-
-The directory can be updated by running "bower update". A now component can be
-installed by running "bower install Polymer/<component>". Be sure to add the
-.bower.json file to the repository as it includes the revision information of
-the polymer component.
+-all core elements and their dependencies
+-all paper elements and their dependencies
+See bower.json for a full list of components.
 
 The version can be found in header of polymer/polymer.js. The license can
 be found in polymer/LICENSE.
@@ -31,3 +38,17 @@ browsers begin to implement these new primitives, the polyfill platform layer
 becomes smaller and better over time.
 2. A next-generation web application framework built upon these core
 technologies called the Polymer.
+
+Also this directory contains a copy of Web Animations JS library, which is
+used by polymer "core-animation" element.
+
+Note on Bower:
+The directory can be updated by running "bower update". A new component can be
+installed by running "bower install -S Polymer/<component>#version". Be sure to
+add the .bower.json file to the repository as it includes the revision
+information of the polymer component.
+Also be sure that you listed all the added packages and **all their
+dependencies** in bower.json, and specified **exact** versions of every package
+explicitly. That is needed because Bower can't handle recursive dependencies
+correctly (see http://stackoverflow.com/q/25899532).
+
