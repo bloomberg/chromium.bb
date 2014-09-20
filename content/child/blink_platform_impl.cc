@@ -175,6 +175,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_CALENDAR_SHOW_NEXT_MONTH;
     case WebLocalizedString::AXCalendarShowPreviousMonth:
       return IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH;
+    case WebLocalizedString::AXCalendarWeekDescription:
+      return IDS_AX_CALENDAR_WEEK_DESCRIPTION;
     case WebLocalizedString::AXCheckedCheckBoxActionVerb:
       return IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB;
     case WebLocalizedString::AXDateTimeFieldEmptyValueText:
