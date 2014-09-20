@@ -39,6 +39,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/EventHandler.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/UserGestureIndicator.h"
 
@@ -442,6 +443,9 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
 
     m_fullScreenElement->didBecomeFullscreenElement();
 
+    if (document()->frame())
+        document()->frame()->eventHandler().scheduleHoverStateUpdate();
+
     m_eventQueueTimer.startOneShot(0, FROM_HERE);
 }
 
@@ -464,6 +468,9 @@ void Fullscreen::didExitFullScreenForElement(Element*)
 
     m_fullScreenElement = nullptr;
     document()->setNeedsStyleRecalc(SubtreeStyleChange);
+
+    if (document()->frame())
+        document()->frame()->eventHandler().scheduleHoverStateUpdate();
 
     // When fullyExitFullscreen is called, we call exitFullscreen on the topDocument(). That means
     // that the events will be queued there. So if we have no events here, start the timer on the
