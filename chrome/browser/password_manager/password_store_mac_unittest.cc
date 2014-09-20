@@ -1070,7 +1070,7 @@ class PasswordStoreMacTest : public testing::Test {
 
   virtual void TearDown() {
     store_->Shutdown();
-    EXPECT_FALSE(store_->GetBackgroundTaskRunner());
+    EXPECT_FALSE(store_->GetBackgroundTaskRunner().get());
   }
 
   void WaitForStoreUpdate() {
@@ -1082,7 +1082,7 @@ class PasswordStoreMacTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
-  scoped_refptr<TestPasswordStoreMac> store() { return store_; }
+  TestPasswordStoreMac* store() { return store_.get(); }
 
   MockAppleKeychain* keychain() { return keychain_; }
 
