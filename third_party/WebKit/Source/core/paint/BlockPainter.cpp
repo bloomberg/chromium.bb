@@ -11,6 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/InlinePainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -447,7 +448,7 @@ void BlockPainter::paintContinuationOutlines(PaintInfo& info, const LayoutPoint&
         if (!inlineEnclosedInSelfPaintingLayer && !m_renderBlock.hasLayer())
             cb->addContinuationWithOutline(inlineRenderer);
         else if (!inlineRenderer->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_renderBlock.hasLayer()))
-            inlineRenderer->paintOutline(info, paintOffset - m_renderBlock.locationOffset() + inlineRenderer->containingBlock()->location());
+            InlinePainter(*inlineRenderer).paintOutline(info, paintOffset - m_renderBlock.locationOffset() + inlineRenderer->containingBlock()->location());
     }
 
     ContinuationOutlineTableMap* table = continuationOutlineTable();
@@ -468,7 +469,7 @@ void BlockPainter::paintContinuationOutlines(PaintInfo& info, const LayoutPoint&
         for ( ; block && block != &m_renderBlock; block = block->containingBlock())
             accumulatedPaintOffset.moveBy(block->location());
         ASSERT(block);
-        flow->paintOutline(info, accumulatedPaintOffset);
+        InlinePainter(*flow).paintOutline(info, accumulatedPaintOffset);
     }
 }
 

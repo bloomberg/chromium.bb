@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/rendering/RenderLineBoxList.h"
 
+#include "core/paint/InlinePainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
@@ -226,7 +227,7 @@ void RenderLineBoxList::paint(RenderBoxModelObject* renderer, PaintInfo& paintIn
         ListHashSet<RenderInline*>::iterator end = info.outlineObjects()->end();
         for (ListHashSet<RenderInline*>::iterator it = info.outlineObjects()->begin(); it != end; ++it) {
             RenderInline* flow = *it;
-            flow->paintOutline(info, paintOffset);
+            InlinePainter(*flow).paintOutline(info, paintOffset);
         }
         info.outlineObjects()->clear();
     }

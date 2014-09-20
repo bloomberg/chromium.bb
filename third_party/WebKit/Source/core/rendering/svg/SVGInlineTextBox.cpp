@@ -27,6 +27,7 @@
 #include "core/editing/Editor.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/paint/InlinePainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
@@ -340,7 +341,7 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
 
     // finally, paint the outline if any
     if (style->hasOutline() && parentRenderer.isRenderInline())
-        toRenderInline(parentRenderer).paintOutline(paintInfo, paintOffset);
+        InlinePainter(toRenderInline(parentRenderer)).paintOutline(paintInfo, paintOffset);
 }
 
 class PaintingResourceScope {
