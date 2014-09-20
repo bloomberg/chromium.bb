@@ -533,6 +533,22 @@ static int my_getcwd(char *pathname, size_t len) {
 }
 
 static int my_unlink(const char *pathname) {
+  if (g_activated_env) {
+    struct inode_data *parent_dir = NULL;
+    struct inode_data *path_item = find_inode_path(g_activated_env,
+                                                   pathname, &parent_dir);
+    if (parent_dir == NULL)
+      return ENOTDIR;
+
+    if (path_item == NULL)
+      return ENOENT;
+
+    if (S_ISDIR(path_item->mode))
+      return EISDIR;
+
+    path_item->valid = false;
+    return 0;
+  }
   return ENOSYS;
 }
 

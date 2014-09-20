@@ -465,6 +465,7 @@ static int do_fread_stream_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+/* File stat tests. */
 static int do_stat_test(struct file_desc_environment *file_desc_env) {
   file_desc_env->current_time = TEST_TIME_VALUE;
 
@@ -685,6 +686,7 @@ static int do_rename_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+/* Link tests. */
 static int do_link_test(struct file_desc_environment *file_desc_env) {
   FILE *fp = fopen(TEST_FILE, "w+");
   if (fp == NULL) {
@@ -857,6 +859,60 @@ static int do_readlink_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+static int do_unlink_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_unlink_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+  fclose(fp);
+
+  if (0 != unlink(TEST_FILE)) {
+    irt_ext_test_print("do_unlink_test: unlink was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env,
+                                                 TEST_FILE, &file_node_parent);
+  if (file_node != NULL) {
+    irt_ext_test_print("do_unlink_test: inode was not deleted.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_remove_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_remove_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+  fclose(fp);
+
+  if (0 != remove(TEST_FILE)) {
+    irt_ext_test_print("do_remove_test: file remove was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env,
+                                                 TEST_DIRECTORY "/" TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node != NULL) {
+    irt_ext_test_print("do_remove_test: did not delete file.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+/* Duplicate file descriptor tests. */
 static int do_dup_test(struct file_desc_environment *file_desc_env) {
   FILE *fp = fopen(TEST_FILE, "w+");
   if (fp == NULL) {
@@ -1043,6 +1099,8 @@ static const TYPE_file_test g_file_tests[] = {
   do_symlink_test,
   do_lstat_test,
   do_readlink_test,
+  do_unlink_test,
+  do_remove_test,
 
   /* Duplicate file descriptor tests. */
   do_dup_test,
