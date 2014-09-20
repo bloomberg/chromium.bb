@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/test/test_suite.h"
 
 // Don't use the multiprocess test harness. This test suite is fast enough and
