@@ -179,9 +179,6 @@ class DesktopSessionAgent
 
   std::string client_jid_;
 
-  // Used to disable callbacks to |this|.
-  base::WeakPtrFactory<ClientSessionControl> control_factory_;
-
   base::WeakPtr<Delegate> delegate_;
 
   // The DesktopEnvironment instance used by this agent.
@@ -227,6 +224,9 @@ class DesktopSessionAgent
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.
   scoped_ptr<webrtc::DesktopFrame> last_frame_;
+
+  // Used to disable callbacks to |this|.
+  base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

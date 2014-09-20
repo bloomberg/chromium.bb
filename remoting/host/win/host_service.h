@@ -116,9 +116,10 @@ class HostService : public WtsTerminalMonitor {
   // A waitable event that is used to wait until the service is stopped.
   base::WaitableEvent stopped_event_;
 
+  base::WeakPtr<HostService> weak_ptr_;
+
   // Used to post session change notifications and control events.
   base::WeakPtrFactory<HostService> weak_factory_;
-  base::WeakPtr<HostService> weak_ptr_;
 
   // Singleton.
   friend struct DefaultSingletonTraits<HostService>;

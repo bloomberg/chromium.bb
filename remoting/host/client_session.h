@@ -173,10 +173,6 @@ class ClientSession
 
   std::string client_jid_;
 
-  // Used to disable callbacks to |this| once DisconnectSession() has been
-  // called.
-  base::WeakPtrFactory<ClientSessionControl> control_factory_;
-
   // Used to create a DesktopEnvironment instance for this session.
   DesktopEnvironmentFactory* desktop_environment_factory_;
 
@@ -262,6 +258,10 @@ class ClientSession
   bool pause_video_;
   bool lossless_video_encode_;
   bool lossless_video_color_;
+
+  // Used to disable callbacks to |this| once DisconnectSession() has been
+  // called.
+  base::WeakPtrFactory<ClientSessionControl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

@@ -51,7 +51,6 @@ ClientSession::ClientSession(
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
-      control_factory_(this),
       desktop_environment_factory_(desktop_environment_factory),
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
@@ -71,7 +70,8 @@ ClientSession::ClientSession(
       pairing_registry_(pairing_registry),
       pause_video_(false),
       lossless_video_encode_(false),
-      lossless_video_color_(false) {
+      lossless_video_color_(false),
+      weak_factory_(this) {
   connection_->SetEventHandler(this);
 
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
@@ -274,7 +274,7 @@ void ClientSession::OnConnectionAuthenticated(
   // Create the desktop environment. Drop the connection if it could not be
   // created for any reason (for instance the curtain could not initialize).
   desktop_environment_ =
-      desktop_environment_factory_->Create(control_factory_.GetWeakPtr());
+      desktop_environment_factory_->Create(weak_factory_.GetWeakPtr());
   if (!desktop_environment_) {
     DisconnectSession();
     return;
@@ -347,7 +347,7 @@ void ClientSession::OnConnectionClosed(
   DCHECK_EQ(connection_.get(), connection);
 
   // Ignore any further callbacks.
-  control_factory_.InvalidateWeakPtrs();
+  weak_factory_.InvalidateWeakPtrs();
 
   // If the client never authenticated then the session failed.
   if (!auth_input_filter_.enabled())
