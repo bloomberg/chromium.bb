@@ -1482,8 +1482,11 @@ def GetDefaultTryConfigs(bots=None):
       # TODO(maruel): An option would be to run 'sizes' but not count a failure
       # of this step as a try job failure.
       'android_aosp': ['compile'],
+      'android_arm64_dbg_recipe': ['slave_steps'],
+      'android_chromium_gn_compile_dbg': ['compile'],
       'android_chromium_gn_compile_rel': ['compile'],
       'android_clang_dbg': ['slave_steps'],
+      'android_clang_dbg_recipe': ['slave_steps'],
       'android_dbg_tests_recipe': ['slave_steps'],
       'cros_x86': ['defaulttests'],
       'ios_dbg_simulator': [
@@ -1497,6 +1500,7 @@ def GetDefaultTryConfigs(bots=None):
           'ui_unittests',
       ],
       'ios_rel_device': ['compile'],
+      'ios_rel_device_ninja': ['compile'],
       'linux_asan': ['compile'],
       'mac_asan': ['compile'],
       #TODO(stip): Change the name of this builder to reflect that it's release.
@@ -1505,6 +1509,7 @@ def GetDefaultTryConfigs(bots=None):
       'linux_chromium_chromeos_clang_dbg': ['defaulttests'],
       'linux_chromium_chromeos_rel_swarming': ['defaulttests'],
       'linux_chromium_compile_dbg': ['defaulttests'],
+      'linux_chromium_gn_dbg': ['compile'],
       'linux_chromium_gn_rel': ['defaulttests'],
       'linux_chromium_rel_swarming': ['defaulttests'],
       'linux_chromium_clang_dbg': ['defaulttests'],
@@ -1584,13 +1589,18 @@ def GetPreferredTryMasters(project, change):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
   builders = [
+      'android_arm64_dbg_recipe',
       'android_chromium_gn_compile_rel',
+      'android_chromium_gn_compile_dbg',
       'android_clang_dbg',
+      'android_clang_dbg_recipe',
       'android_dbg_tests_recipe',
       'ios_dbg_simulator',
       'ios_rel_device',
+      'ios_rel_device_ninja',
       'linux_chromium_chromeos_rel_swarming',
       'linux_chromium_clang_dbg',
+      'linux_chromium_gn_dbg',
       'linux_chromium_gn_rel',
       'linux_chromium_rel_swarming',
       'linux_gpu',
