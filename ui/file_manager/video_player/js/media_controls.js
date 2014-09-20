@@ -1013,9 +1013,22 @@ VideoControls.prototype = { __proto__: MediaControls.prototype };
  * @private
  */
 VideoControls.prototype.showIconFeedback_ = function() {
-  this.stateIcon_.removeAttribute('state');
+  var stateIcon = this.stateIcon_;
+  stateIcon.removeAttribute('state');
+
   setTimeout(function() {
-    this.stateIcon_.setAttribute('state', this.isPlaying() ? 'play' : 'pause');
+    var newState = this.isPlaying() ? 'play' : 'pause';
+
+    var onAnimationEnd = function(state, event) {
+      if (stateIcon.getAttribute('state') === state)
+        stateIcon.removeAttribute('state');
+
+      stateIcon.removeEventListener('webkitAnimationEnd', onAnimationEnd);
+    }.bind(null, newState);
+    stateIcon.addEventListener('webkitAnimationEnd', onAnimationEnd);
+
+    // Shows the icon with animation.
+    stateIcon.setAttribute('state', newState);
   }.bind(this), 0);
 };
 
