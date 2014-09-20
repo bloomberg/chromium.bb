@@ -268,13 +268,17 @@ Error Html5FsNode::Init(int open_flags) {
     return EIO;
   }
 
+  // Set all files and directories to RWX.
+  SetMode(S_IWALL | S_IRALL | S_IXALL);
+
   // First query the FileRef to see if it is a file or directory.
   PP_FileInfo file_info;
   int32_t query_result = file_ref_iface_->Query(
       fileref_resource_, &file_info, PP_BlockUntilComplete());
   // If this is a directory, do not get a FileIO.
-  if (query_result == PP_OK && file_info.type == PP_FILETYPE_DIRECTORY)
+  if (query_result == PP_OK && file_info.type == PP_FILETYPE_DIRECTORY) {
     return 0;
+  }
 
   fileio_resource_ =
       file_io_iface_->Create(filesystem_->ppapi()->GetInstance());
