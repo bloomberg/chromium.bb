@@ -407,9 +407,6 @@
     'libwebp': {
       'filepath': 'third_party/libwebp'
     },
-    'layout_tests': {
-      'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/',
-    },
     'linux_fonts': {
       'filepath': 'ui/gfx/font_render_params_.*|'\
                   'ui/gfx/platform_font_pango.*|'\

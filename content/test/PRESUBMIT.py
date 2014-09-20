@@ -18,29 +18,14 @@ def LintTestFiles(input_api, output_api):
   tools_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
   src_dir = os.path.dirname(tools_dir)
 
-  # Set 'webkit/tools/layout_tests' in include path.
-  python_paths = [
-      current_dir,
-      input_api.os_path.join(src_dir, 'tools', 'python')
-  ]
-  env = input_api.environ.copy()
-  if env.get('PYTHONPATH'):
-    python_paths.append(env['PYTHONPATH'])
-  env['PYTHONPATH'] = input_api.os_path.pathsep.join(python_paths)
-  args = [
-      input_api.python_executable,
-      input_api.os_path.join(src_dir, 'webkit', 'tools', 'layout_tests',
-        'run_webkit_tests.py'), '--lint-test-files'
-  ]
   subproc = input_api.subprocess.Popen(
-      args,
-      cwd=current_dir,
-      env=env,
+      [input_api.python_executable,
+       input_api.os.path.join(src_dir, 'third_party', 'WebKit', 'Tools',
+           'Scripts', 'lint-test-expectations')],
       stdin=input_api.subprocess.PIPE,
       stdout=input_api.subprocess.PIPE,
       stderr=input_api.subprocess.STDOUT)
   stdout_data = subproc.communicate()[0]
-  # TODO(ukai): consolidate run_webkit_tests --lint-test-files reports.
   is_error = lambda line: (input_api.re.match('^Line:', line) or
                            input_api.re.search('ERROR Line:', line))
   error = filter(is_error, stdout_data.splitlines())
