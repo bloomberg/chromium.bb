@@ -132,6 +132,9 @@ enum SBThreatType {
   // The URL hosts malware.
   SB_THREAT_TYPE_URL_MALWARE,
 
+  // The URL hosts harmful programs.
+  SB_THREAT_TYPE_URL_HARMFUL,
+
   // The download URL is malware.
   SB_THREAT_TYPE_BINARY_MALWARE_URL,
 
