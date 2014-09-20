@@ -68,6 +68,9 @@ class AppDelegate {
                                           content::MediaStreamType type,
                                           const Extension* extension) = 0;
   virtual int PreferredIconSize() = 0;
+
+  // TODO(jamescook): Eliminate this method. All implementations load the same
+  // icon, and the icon is available in the extensions module resources.
   virtual gfx::ImageSkia GetAppDefaultIcon() = 0;
 
   // Web contents modal dialog support.

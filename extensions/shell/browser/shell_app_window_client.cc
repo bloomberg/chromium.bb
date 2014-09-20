@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_app_window_client.h"
 
+#include <vector>
+
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_native_app_window.h"
@@ -39,11 +41,12 @@ NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
 }
 
 void ShellAppWindowClient::IncrementKeepAliveCount() {
-  NOTIMPLEMENTED();
+  // app_shell runs until the system powers off, so it doesn't need to track
+  // open apps or windows to keep itself alive.
 }
 
 void ShellAppWindowClient::DecrementKeepAliveCount() {
-  NOTIMPLEMENTED();
+  // See IncrementKeepAliveCount().
 }
 
 void ShellAppWindowClient::OpenDevToolsWindow(

@@ -5,13 +5,23 @@
 #include "extensions/shell/browser/shell_native_app_window.h"
 
 #include "content/public/browser/web_contents.h"
+#include "extensions/shell/browser/desktop_controller.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/wm/core/window_util.h"
 
 namespace extensions {
+namespace {
+
+gfx::Size GetDesktopWindowSize() {
+  return DesktopController::instance()->GetHost()->window()->bounds().size();
+}
+
+}  // namespace
 
 ShellNativeAppWindow::ShellNativeAppWindow(
     AppWindow* app_window,
@@ -30,22 +40,24 @@ ShellNativeAppWindow::~ShellNativeAppWindow() {
 }
 
 bool ShellNativeAppWindow::IsActive() const {
-  NOTIMPLEMENTED();
-  return false;
+  // Even though app_shell only supports a single app window, there might be
+  // some sort of system-level dialog open and active.
+  aura::Window* window = GetWindow();
+  return window && wm::IsActiveWindow(window);
 }
 
 bool ShellNativeAppWindow::IsMaximized() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool ShellNativeAppWindow::IsMinimized() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool ShellNativeAppWindow::IsFullscreen() const {
-  NOTIMPLEMENTED();
+  // The window in app_shell is considered a "restored" window that happens to
+  // fill the display. This avoids special handling of fullscreen or maximized
+  // windows that app_shell doesn't need.
   return false;
 }
 
@@ -54,12 +66,12 @@ gfx::NativeWindow ShellNativeAppWindow::GetNativeWindow() {
 }
 
 gfx::Rect ShellNativeAppWindow::GetRestoredBounds() const {
-  NOTIMPLEMENTED();
+  // app_shell windows cannot be maximized, so the current bounds are the
+  // restored bounds.
   return GetBounds();
 }
 
 ui::WindowShowState ShellNativeAppWindow::GetRestoredState() const {
-  NOTIMPLEMENTED();
   return ui::SHOW_STATE_NORMAL;
 }
 
@@ -84,11 +96,15 @@ void ShellNativeAppWindow::Close() {
 }
 
 void ShellNativeAppWindow::Activate() {
-  NOTIMPLEMENTED();
+  aura::Window* window = GetWindow();
+  if (window)
+    wm::ActivateWindow(window);
 }
 
 void ShellNativeAppWindow::Deactivate() {
-  NOTIMPLEMENTED();
+  aura::Window* window = GetWindow();
+  if (window)
+    wm::DeactivateWindow(window);
 }
 
 void ShellNativeAppWindow::Maximize() {
@@ -112,7 +128,6 @@ void ShellNativeAppWindow::FlashFrame(bool flash) {
 }
 
 bool ShellNativeAppWindow::IsAlwaysOnTop() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
@@ -150,20 +165,20 @@ void ShellNativeAppWindow::SetFullscreen(int fullscreen_types) {
 }
 
 bool ShellNativeAppWindow::IsFullscreenOrPending() const {
-  NOTIMPLEMENTED();
+  // See comment in IsFullscreen().
   return false;
 }
 
 void ShellNativeAppWindow::UpdateWindowIcon() {
-  NOTIMPLEMENTED();
+  // No icon to update.
 }
 
 void ShellNativeAppWindow::UpdateWindowTitle() {
-  NOTIMPLEMENTED();
+  // No window title to update.
 }
 
 void ShellNativeAppWindow::UpdateBadgeIcon() {
-  NOTIMPLEMENTED();
+  // No badge to update.
 }
 
 void ShellNativeAppWindow::UpdateDraggableRegions(
@@ -182,7 +197,7 @@ void ShellNativeAppWindow::UpdateShape(scoped_ptr<SkRegion> region) {
 
 void ShellNativeAppWindow::HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) {
-  NOTIMPLEMENTED();
+  // No special handling. The WebContents will handle it.
 }
 
 bool ShellNativeAppWindow::IsFrameless() const {
@@ -191,22 +206,18 @@ bool ShellNativeAppWindow::IsFrameless() const {
 }
 
 bool ShellNativeAppWindow::HasFrameColor() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 SkColor ShellNativeAppWindow::ActiveFrameColor() const {
-  NOTIMPLEMENTED();
   return SkColor();
 }
 
 SkColor ShellNativeAppWindow::InactiveFrameColor() const {
-  NOTIMPLEMENTED();
   return SkColor();
 }
 
 gfx::Insets ShellNativeAppWindow::GetFrameInsets() const {
-  NOTIMPLEMENTED();
   return gfx::Insets();
 }
 
@@ -219,17 +230,17 @@ void ShellNativeAppWindow::HideWithApp() {
 }
 
 void ShellNativeAppWindow::UpdateShelfMenu() {
-  NOTIMPLEMENTED();
+  // app_shell has no shelf, dock, or system-tray to update.
 }
 
 gfx::Size ShellNativeAppWindow::GetContentMinimumSize() const {
-  NOTIMPLEMENTED();
-  return gfx::Size();
+  // Content fills the desktop and cannot be resized.
+  return GetDesktopWindowSize();
 }
 
 gfx::Size ShellNativeAppWindow::GetContentMaximumSize() const {
-  NOTIMPLEMENTED();
-  return gfx::Size();
+  // Content fills the desktop and cannot be resized.
+  return GetDesktopWindowSize();
 }
 
 void ShellNativeAppWindow::SetContentSizeConstraints(
@@ -243,7 +254,7 @@ void ShellNativeAppWindow::SetVisibleOnAllWorkspaces(bool always_visible) {
 }
 
 bool ShellNativeAppWindow::CanHaveAlphaEnabled() const {
-  NOTIMPLEMENTED();
+  // No background to display if the window was transparent.
   return false;
 }
 
