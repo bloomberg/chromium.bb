@@ -28,6 +28,8 @@ from pylib.linker import setup as linker_setup
 from pylib.host_driven import setup as host_driven_setup
 from pylib.instrumentation import setup as instrumentation_setup
 from pylib.instrumentation import test_options as instrumentation_test_options
+from pylib.junit import setup as junit_setup
+from pylib.junit import test_dispatcher as junit_dispatcher
 from pylib.monkey import setup as monkey_setup
 from pylib.monkey import test_options as monkey_test_options
 from pylib.perf import setup as perf_setup
@@ -379,6 +381,36 @@ def ProcessUIAutomatorOptions(options, error_func):
       options.package)
 
 
+def AddJUnitTestOptions(option_parser):
+  """Adds junit test options to |option_parser|."""
+  option_parser.usage = '%prog junit -s [test suite name]'
+  option_parser.commands_dict = {}
+
+  option_parser.add_option(
+      '-s', '--test-suite', dest='test_suite',
+      help=('JUnit test suite to run.'))
+  option_parser.add_option(
+      '-f', '--test-filter', dest='test_filter',
+      help='Filters tests googletest-style.')
+  option_parser.add_option(
+      '--package-filter', dest='package_filter',
+      help='Filters tests by package.')
+  option_parser.add_option(
+      '--runner-filter', dest='runner_filter',
+      help='Filters tests by runner class. Must be fully qualified.')
+  option_parser.add_option(
+      '--sdk-version', dest='sdk_version', type="int",
+      help='The Android SDK version.')
+  AddCommonOptions(option_parser)
+
+
+def ProcessJUnitTestOptions(options, error_func):
+  """Processes all JUnit test options."""
+  if not options.test_suite:
+    error_func('No test suite specified.')
+  return options
+
+
 def AddMonkeyTestOptions(option_parser):
   """Adds monkey test options to |option_parser|."""
 
@@ -635,6 +667,15 @@ def _RunUIAutomatorTests(options, error_func, devices):
   return exit_code
 
 
+def _RunJUnitTests(options, error_func):
+  """Subcommand of RunTestsCommand which runs junit tests."""
+  junit_options = ProcessJUnitTestOptions(options, error_func)
+  runner_factory, tests = junit_setup.Setup(junit_options)
+  _, exit_code = junit_dispatcher.RunTests(tests, runner_factory)
+
+  return exit_code
+
+
 def _RunMonkeyTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs monkey tests."""
   monkey_options = ProcessMonkeyTestOptions(options, error_func)
@@ -758,6 +799,8 @@ def RunTestsCommand(command, options, args, option_parser):
     return _RunInstrumentationTests(options, option_parser.error, devices)
   elif command == 'uiautomator':
     return _RunUIAutomatorTests(options, option_parser.error, devices)
+  elif command == 'junit':
+    return _RunJUnitTests(options, option_parser.error)
   elif command == 'monkey':
     return _RunMonkeyTests(options, option_parser.error, devices)
   elif command == 'perf':
@@ -818,6 +861,8 @@ VALID_COMMANDS = {
         AddInstrumentationTestOptions, RunTestsCommand),
     'uiautomator': CommandFunctionTuple(
         AddUIAutomatorTestOptions, RunTestsCommand),
+    'junit': CommandFunctionTuple(
+        AddJUnitTestOptions, RunTestsCommand),
     'monkey': CommandFunctionTuple(
         AddMonkeyTestOptions, RunTestsCommand),
     'perf': CommandFunctionTuple(
