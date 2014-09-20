@@ -8,5 +8,7 @@ include_rules = [
   "+skia",
   "+third_party/WebKit/public",
   "+third_party/skia/include",
+  "+ui/base",
+  "+ui/events",
   "+ui/native_theme",
 ]

@@ -39,8 +39,9 @@ source_set("view_manager") {
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/gpu",
     "//mojo/services/public/interfaces/input_events:input_events",
+    "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/surfaces:surface_id",
-    "//mojo/services/public/interfaces/surfaces:surfaces",
+    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
     "//skia",
@@ -52,7 +53,8 @@ source_set("view_manager") {
 
 source_set("common") {
   sources = [
-    "types.h"
+    "ids.h",
+    "types.h",
   ]
   public_deps = [
     "//base",

@@ -9,7 +9,6 @@ group("services") {
     "//mojo/services/clipboard",
     "//mojo/services/gles2:bindings",
     "//mojo/services/html_viewer",
-    "//mojo/services/native_viewport",
     "//mojo/services/network",
     "//mojo/services/public/interfaces/clipboard",
     "//mojo/services/public/interfaces/content_handler",
@@ -22,10 +21,14 @@ group("services") {
     "//mojo/services/surfaces",
     "//mojo/services/test_service:bindings",
   ]
+  if (!is_android) {
+    deps += ["//mojo/services/native_viewport"]
+  }
   if (use_aura) {
     deps += [
       "//mojo/services/public/interfaces/view_manager",
       "//mojo/services/public/interfaces/window_manager",
+      "//mojo/services/view_manager",
       "//mojo/services/window_manager",
     ]
   }

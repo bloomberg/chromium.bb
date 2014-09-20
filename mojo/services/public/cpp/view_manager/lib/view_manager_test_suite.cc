@@ -26,8 +26,11 @@ void ViewManagerTestSuite::Initialize() {
   gfx::InitializeThreadedX11();
 #endif
 
-  base::TestSuite::Initialize();
+#if defined(COMPONENT_BUILD)
   gfx::GLSurface::InitializeOneOffForTests();
+#endif
+
+  base::TestSuite::Initialize();
 
   // base::TestSuite and ViewsInit both try to load icu. That's ok for tests.
   base::i18n::AllowMultipleInitializeCallsForTesting();
