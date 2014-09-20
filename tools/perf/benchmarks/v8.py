@@ -6,6 +6,7 @@ import page_sets
 from telemetry.web_perf import timeline_based_measurement
 from telemetry import benchmark
 
+
 class V8GarbageCollectionCases(benchmark.Benchmark):
   """Measure V8 metrics on the garbage collection cases."""
   test = timeline_based_measurement.TimelineBasedMeasurement

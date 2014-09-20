@@ -8,6 +8,7 @@ import page_sets
 from telemetry import benchmark
 
 
+@benchmark.Enabled('android')
 class ThreadTimesKeySilkCases(benchmark.Benchmark):
   """Measures timeline metrics while performing smoothness action on key silk
   cases."""
@@ -16,6 +17,7 @@ class ThreadTimesKeySilkCases(benchmark.Benchmark):
   options = {"report_silk_results": True}
 
 
+@benchmark.Enabled('android')
 class ThreadTimesFastPathKeySilkCases(benchmark.Benchmark):
   """Measures timeline metrics while performing smoothness action on key silk
   cases using bleeding edge rendering fast paths."""
@@ -35,6 +37,7 @@ class LegacySilkBenchmark(ThreadTimesKeySilkCases):
     return "silk.key_silk_cases"
 
 
+@benchmark.Enabled('android')
 class ThreadTimesFastPathMobileSites(benchmark.Benchmark):
   """Measures timeline metrics while performing smoothness action on
   key mobile sites labeled with fast-path tag.
