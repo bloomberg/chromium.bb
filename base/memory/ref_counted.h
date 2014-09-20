@@ -17,7 +17,7 @@
 #include "base/threading/thread_collision_warner.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
 #define DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR
 #endif
 
