@@ -62,7 +62,7 @@ class BASE_EXPORT FilePathWatcher {
       return message_loop_;
     }
 
-    void set_message_loop(base::MessageLoopProxy* loop) {
+    void set_message_loop(const scoped_refptr<base::MessageLoopProxy>& loop) {
       message_loop_ = loop;
     }
 

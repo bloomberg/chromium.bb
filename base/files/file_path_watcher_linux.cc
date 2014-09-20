@@ -429,7 +429,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   DCHECK(target_.empty());
   DCHECK(MessageLoopForIO::current());
 
-  set_message_loop(MessageLoopProxy::current().get());
+  set_message_loop(MessageLoopProxy::current());
   callback_ = callback;
   target_ = path;
   recursive_ = recursive;
