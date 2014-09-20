@@ -42,7 +42,6 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual bool CanExtensionCrossIncognito(
       const Extension* extension,
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool IsWebViewRequest(net::URLRequest* request) const OVERRIDE;
   virtual net::URLRequestJob* MaybeCreateResourceBundleRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,

@@ -87,11 +87,6 @@ bool TestExtensionsBrowserClient::CanExtensionCrossIncognito(
   return false;
 }
 
-bool TestExtensionsBrowserClient::IsWebViewRequest(
-    net::URLRequest* request) const {
-  return false;
-}
-
 net::URLRequestJob*
 TestExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
     net::URLRequest* request,
