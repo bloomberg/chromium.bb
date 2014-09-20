@@ -114,6 +114,9 @@ public class InfoBarContainer extends ScrollView {
             int tabId, ViewGroup parentView, WebContents webContents) {
         super(activity);
 
+        // Workaround for http://crbug.com/407149. See explanation in onMeasure() below.
+        setVerticalScrollBarEnabled(false);
+
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
         int topMarginDp = DeviceFormFactor.isTablet(activity)
@@ -141,6 +144,19 @@ public class InfoBarContainer extends ScrollView {
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
         mNativeInfoBarContainer = nativeInit(webContents, mAutoLoginDelegate);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        // Only enable scrollbars when the view is actually scrollable.
+        // This prevents 10-15 frames of jank that would otherwise occur 1.2 seconds after the
+        // InfoBarContainer is attached to the window. See: http://crbug.com/407149
+        boolean canScroll = mLinearLayout.getMeasuredHeight() > getMeasuredHeight();
+        if (canScroll != isVerticalScrollBarEnabled()) {
+            setVerticalScrollBarEnabled(canScroll);
+        }
     }
 
     /**
