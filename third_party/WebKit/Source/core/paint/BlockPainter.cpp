@@ -280,7 +280,7 @@ void BlockPainter::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pai
                 LayoutUnit ruleTop = m_renderBlock.isHorizontalWritingMode() ? paintOffset.y() + m_renderBlock.borderTop() + m_renderBlock.paddingTop() : paintOffset.y() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
                 LayoutUnit ruleBottom = m_renderBlock.isHorizontalWritingMode() ? ruleTop + m_renderBlock.contentHeight() : ruleTop + ruleThickness;
                 IntRect pixelSnappedRuleRect = pixelSnappedIntRectFromEdges(ruleLeft, ruleTop, ruleRight, ruleBottom);
-                m_renderBlock.drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
+                ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
             }
 
             ruleLogicalLeft = currLogicalLeftOffset;
@@ -317,7 +317,7 @@ void BlockPainter::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pai
         for (unsigned i = 1; i < colCount; i++) {
             ruleRect.move(step);
             IntRect pixelSnappedRuleRect = pixelSnappedIntRect(ruleRect);
-            m_renderBlock.drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
+            ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
         }
     }
 }

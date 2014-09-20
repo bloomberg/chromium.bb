@@ -91,14 +91,6 @@ enum HitTestAction {
     HitTestForeground
 };
 
-// Sides used when drawing borders and outlines. The values should run clockwise from top.
-enum BoxSide {
-    BSTop,
-    BSRight,
-    BSBottom,
-    BSLeft
-};
-
 enum MarkingBehavior {
     MarkOnlyThis,
     MarkContainingBlockChain,
@@ -1083,9 +1075,6 @@ public:
 
     virtual LayoutRect viewRect() const;
 
-    // FIXME: make this not public.
-    void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
-
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 
@@ -1098,16 +1087,6 @@ protected:
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
     virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* style) const { }
 
-    void drawDashedOrDottedBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
-        BoxSide, Color, int thickness, EBorderStyle, bool antialias);
-    void drawDoubleBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
-        int length, BoxSide, Color, int thickness, int adjacentWidth1, int adjacentWidth2, bool antialias);
-    void drawRidgeOrGrooveBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
-        BoxSide, Color, EBorderStyle, int adjacentWidth1, int adjacentWidth2, bool antialias);
-    void drawSolidBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
-        BoxSide, Color, int adjacentWidth1, int adjacentWidth2, bool antialias);
-
-    void paintFocusRing(PaintInfo&, const LayoutPoint&, RenderStyle*);
 public:
     void paintOutline(PaintInfo&, const LayoutRect&);
 protected:

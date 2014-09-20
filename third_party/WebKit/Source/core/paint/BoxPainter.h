@@ -5,6 +5,7 @@
 #ifndef BoxPainter_h
 #define BoxPainter_h
 
+#include "core/paint/ObjectPainter.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
 namespace blink {

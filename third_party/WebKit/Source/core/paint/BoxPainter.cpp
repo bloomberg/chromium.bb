@@ -1635,7 +1635,7 @@ void BoxPainter::paintOneBorderSide(RenderObject& obj, GraphicsContext* graphics
             mitreAdjacentSide2 = false;
         }
 
-        obj.drawLineForBoxSide(graphicsContext, sideRect.x(), sideRect.y(), sideRect.maxX(), sideRect.maxY(), side, colorToPaint, edgeToRender.borderStyle(),
+        ObjectPainter::drawLineForBoxSide(graphicsContext, sideRect.x(), sideRect.y(), sideRect.maxX(), sideRect.maxY(), side, colorToPaint, edgeToRender.borderStyle(),
             mitreAdjacentSide1 ? adjacentEdge1.width : 0, mitreAdjacentSide2 ? adjacentEdge2.width : 0, antialias);
     }
 }

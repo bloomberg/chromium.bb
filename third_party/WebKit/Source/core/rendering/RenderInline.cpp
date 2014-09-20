@@ -28,6 +28,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
@@ -1416,7 +1417,7 @@ void RenderInline::paintOutline(PaintInfo& paintInfo, const LayoutPoint& paintOf
     if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(this)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-            paintFocusRing(paintInfo, paintOffset, styleToUse);
+            ObjectPainter(*this).paintFocusRing(paintInfo, paintOffset, styleToUse);
         }
         return;
     }
@@ -1473,7 +1474,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
     IntRect pixelSnappedNextLine = pixelSnappedIntRect(paintOffset.x() + nextline.x(), 0, nextline.width(), 0);
 
     // left edge
-    drawLineForBoxSide(graphicsContext,
+    ObjectPainter::drawLineForBoxSide(graphicsContext,
         pixelSnappedBox.x() - outlineWidth,
         pixelSnappedBox.y() - (lastline.isEmpty() || thisline.x() < lastline.x() || (lastline.maxX() - 1) <= thisline.x() ? outlineWidth : 0),
         pixelSnappedBox.x(),
@@ -1485,7 +1486,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
         antialias);
 
     // right edge
-    drawLineForBoxSide(graphicsContext,
+    ObjectPainter::drawLineForBoxSide(graphicsContext,
         pixelSnappedBox.maxX(),
         pixelSnappedBox.y() - (lastline.isEmpty() || lastline.maxX() < thisline.maxX() || (thisline.maxX() - 1) <= lastline.x() ? outlineWidth : 0),
         pixelSnappedBox.maxX() + outlineWidth,
@@ -1497,7 +1498,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
         antialias);
     // upper edge
     if (thisline.x() < lastline.x())
-        drawLineForBoxSide(graphicsContext,
+        ObjectPainter::drawLineForBoxSide(graphicsContext,
             pixelSnappedBox.x() - outlineWidth,
             pixelSnappedBox.y() - outlineWidth,
             std::min(pixelSnappedBox.maxX() + outlineWidth, (lastline.isEmpty() ? 1000000 : pixelSnappedLastLine.x())),
@@ -1508,7 +1509,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
             antialias);
 
     if (lastline.maxX() < thisline.maxX())
-        drawLineForBoxSide(graphicsContext,
+        ObjectPainter::drawLineForBoxSide(graphicsContext,
             std::max(lastline.isEmpty() ? -1000000 : pixelSnappedLastLine.maxX(), pixelSnappedBox.x() - outlineWidth),
             pixelSnappedBox.y() - outlineWidth,
             pixelSnappedBox.maxX() + outlineWidth,
@@ -1518,7 +1519,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
             outlineWidth, antialias);
 
     if (thisline.x() == thisline.maxX())
-          drawLineForBoxSide(graphicsContext,
+        ObjectPainter::drawLineForBoxSide(graphicsContext,
             pixelSnappedBox.x() - outlineWidth,
             pixelSnappedBox.y() - outlineWidth,
             pixelSnappedBox.maxX() + outlineWidth,
@@ -1530,7 +1531,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
 
     // lower edge
     if (thisline.x() < nextline.x())
-        drawLineForBoxSide(graphicsContext,
+        ObjectPainter::drawLineForBoxSide(graphicsContext,
             pixelSnappedBox.x() - outlineWidth,
             pixelSnappedBox.maxY(),
             std::min(pixelSnappedBox.maxX() + outlineWidth, !nextline.isEmpty() ? pixelSnappedNextLine.x() + 1 : 1000000),
@@ -1541,7 +1542,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
             antialias);
 
     if (nextline.maxX() < thisline.maxX())
-        drawLineForBoxSide(graphicsContext,
+        ObjectPainter::drawLineForBoxSide(graphicsContext,
             std::max(!nextline.isEmpty() ? pixelSnappedNextLine.maxX() : -1000000, pixelSnappedBox.x() - outlineWidth),
             pixelSnappedBox.maxY(),
             pixelSnappedBox.maxX() + outlineWidth,
@@ -1551,7 +1552,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
             outlineWidth, antialias);
 
     if (thisline.x() == thisline.maxX())
-          drawLineForBoxSide(graphicsContext,
+        ObjectPainter::drawLineForBoxSide(graphicsContext,
             pixelSnappedBox.x() - outlineWidth,
             pixelSnappedBox.maxY(),
             pixelSnappedBox.maxX() + outlineWidth,
