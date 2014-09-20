@@ -86,7 +86,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
 
   // This is called by the dispatcher to convert a local endpoint to a proxy
   // endpoint.
-  void ConvertLocalToProxy(unsigned port);
+  scoped_refptr<ChannelEndpoint> ConvertLocalToProxy(unsigned port);
 
   // This is used by |Channel| to enqueue messages (typically to a
   // |LocalMessagePipeEndpoint|). Unlike |WriteMessage()|, |port| is the

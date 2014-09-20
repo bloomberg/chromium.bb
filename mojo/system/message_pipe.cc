@@ -5,6 +5,7 @@
 #include "mojo/system/message_pipe.h"
 
 #include "base/logging.h"
+#include "mojo/system/channel_endpoint.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_dispatcher.h"
@@ -145,7 +146,7 @@ void MessagePipe::RemoveWaiter(unsigned port,
   endpoints_[port]->RemoveWaiter(waiter, signals_state);
 }
 
-void MessagePipe::ConvertLocalToProxy(unsigned port) {
+scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
@@ -169,6 +170,8 @@ void MessagePipe::ConvertLocalToProxy(unsigned port) {
           static_cast<LocalMessagePipeEndpoint*>(endpoints_[port].get()),
           is_peer_open));
   endpoints_[port].swap(replacement_endpoint);
+
+  return make_scoped_refptr(new ChannelEndpoint(this, port));
 }
 
 MojoResult MessagePipe::EnqueueMessage(unsigned port,

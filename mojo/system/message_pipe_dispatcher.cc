@@ -247,12 +247,10 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
     embedder::PlatformHandleVector* /*platform_handles*/) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
-  // Convert the local endpoint to a proxy endpoint (moving the message queue).
-  message_pipe_->ConvertLocalToProxy(port_);
-
-  // Attach the new proxy endpoint to the channel.
-  MessageInTransit::EndpointId endpoint_id = channel->AttachEndpoint(
-      make_scoped_refptr(new ChannelEndpoint(message_pipe_.get(), port_)));
+  // Convert the local endpoint to a proxy endpoint (moving the message queue)
+  // and attach it to the channel.
+  MessageInTransit::EndpointId endpoint_id =
+      channel->AttachEndpoint(message_pipe_->ConvertLocalToProxy(port_));
   // Note: It's okay to get an endpoint ID of |kInvalidEndpointId|. (It's
   // possible that the other endpoint -- the one that we're not sending -- was
   // closed in the intervening time.) In that case, we need to deserialize a
