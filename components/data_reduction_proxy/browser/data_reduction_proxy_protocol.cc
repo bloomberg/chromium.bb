@@ -73,6 +73,15 @@ bool MaybeBypassProxyAndPrepareToRetry(
   DataReductionProxyBypassType bypass_type =
       GetDataReductionProxyBypassType(original_response_headers,
                                       &data_reduction_proxy_info);
+
+  if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER &&
+      DataReductionProxyParams::
+          IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial()) {
+    // Ignore MISSING_VIA_HEADER_OTHER proxy bypass events if the client is part
+    // of the field trial to remove these kinds of bypasses.
+    bypass_type = BYPASS_EVENT_TYPE_MAX;
+  }
+
   if (proxy_bypass_type)
     *proxy_bypass_type = bypass_type;
   if (bypass_type == BYPASS_EVENT_TYPE_MAX)

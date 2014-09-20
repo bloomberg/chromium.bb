@@ -83,6 +83,13 @@ class DataReductionProxyParams {
   // is in effect.
   static bool IsIncludedInHoldbackFieldTrial();
 
+  // Returns true if this client is part of a field trial that removes the
+  // |MISSING_VIA_HEADER_OTHER| proxy bypass case. This experiment changes proxy
+  // bypass logic to not trigger a proxy bypass when a response with a non-4xx
+  // response code is expected to have a data reduction proxy via header, but
+  // the data reduction proxy via header is missing.
+  static bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial();
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is

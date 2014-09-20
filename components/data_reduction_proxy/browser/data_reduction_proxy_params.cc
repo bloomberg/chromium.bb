@@ -66,6 +66,19 @@ bool DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() {
           "DataCompressionProxyCriticalBypass") == kEnabled;
 }
 
+// static
+bool DataReductionProxyParams::IsIncludedInHoldbackFieldTrial() {
+  return FieldTrialList::FindFullName(
+      "DataCompressionProxyHoldback") == kEnabled;
+}
+
+// static
+bool DataReductionProxyParams::
+    IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() {
+  return FieldTrialList::FindFullName(
+      "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == kEnabled;
+}
+
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
     : proxy_servers(),
       is_fallback(false),
@@ -74,11 +87,6 @@ DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
 }
 
 DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo(){
-}
-
-bool DataReductionProxyParams::IsIncludedInHoldbackFieldTrial() {
-  return FieldTrialList::FindFullName(
-      "DataCompressionProxyHoldback") == kEnabled;
 }
 
 DataReductionProxyParams::DataReductionProxyParams(int flags)
