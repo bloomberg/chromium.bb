@@ -186,15 +186,15 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
                                  const CompletionCallback& callback) OVERRIDE;
   virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
-  virtual int OpenNextEntry(void** iter, Entry** next_entry,
-                            const CompletionCallback& callback) OVERRIDE;
-  virtual void EndEnumeration(void** iter) OVERRIDE;
+  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
   virtual void GetStats(StatsItems* stats) OVERRIDE;
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
   friend class EvictionV3;
   typedef base::hash_map<CacheAddr, EntryImplV3*> EntriesMap;
+  class IteratorImpl;
+  class NotImplementedIterator;
   class Worker;
 
   void AdjustMaxCacheSize();

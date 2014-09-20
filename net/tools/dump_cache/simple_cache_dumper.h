@@ -9,13 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "net/base/completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 
 class DiskDumper;
-
-namespace disk_cache {
-class Backend;
-class Entry;
-}  // namespace disk_cache
 
 namespace net {
 
@@ -79,7 +75,7 @@ class SimpleCacheDumper {
   scoped_ptr<disk_cache::Backend> cache_;
   scoped_ptr<DiskDumper> writer_;
   base::Thread* cache_thread_;
-  void* iter_;
+  scoped_ptr<disk_cache::Backend::Iterator> iter_;
   disk_cache::Entry* src_entry_;
   disk_cache::Entry* dst_entry_;
   CompletionCallback io_callback_;
