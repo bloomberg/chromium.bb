@@ -97,18 +97,6 @@ class _BlinkPerfMeasurement(page_test.PageTest):
     print log
 
 
-# TODO(dtu): Remove this benchmark once desktop chromium.perf bots are on
-# recipes and running the split-up blink_perf benchmark.
-@benchmark.Disabled('android')
-class BlinkPerfAll(benchmark.Benchmark):
-  tag = 'all'
-  test = _BlinkPerfMeasurement
-
-  def CreatePageSet(self, options):
-    return _CreatePageSetFromPath(BLINK_PERF_BASE_DIR, SKIPPED_FILE)
-
-
-@benchmark.Enabled('android')
 class BlinkPerfAnimation(benchmark.Benchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
@@ -118,7 +106,6 @@ class BlinkPerfAnimation(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfBindings(benchmark.Benchmark):
   tag = 'bindings'
   test = _BlinkPerfMeasurement
@@ -128,7 +115,6 @@ class BlinkPerfBindings(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfCSS(benchmark.Benchmark):
   tag = 'css'
   test = _BlinkPerfMeasurement
@@ -138,7 +124,6 @@ class BlinkPerfCSS(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfCanvas(benchmark.Benchmark):
   tag = 'canvas'
   test = _BlinkPerfMeasurement
@@ -148,7 +133,6 @@ class BlinkPerfCanvas(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfDOM(benchmark.Benchmark):
   tag = 'dom'
   test = _BlinkPerfMeasurement
@@ -158,7 +142,6 @@ class BlinkPerfDOM(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfEvents(benchmark.Benchmark):
   tag = 'events'
   test = _BlinkPerfMeasurement
@@ -168,7 +151,6 @@ class BlinkPerfEvents(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfInteractive(benchmark.Benchmark):
   tag = 'interactive'
   test = _BlinkPerfMeasurement
@@ -178,7 +160,6 @@ class BlinkPerfInteractive(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfLayout(benchmark.Benchmark):
   tag = 'layout'
   test = _BlinkPerfMeasurement
@@ -188,7 +169,6 @@ class BlinkPerfLayout(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfMutation(benchmark.Benchmark):
   tag = 'mutation'
   test = _BlinkPerfMeasurement
@@ -198,7 +178,6 @@ class BlinkPerfMutation(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfParser(benchmark.Benchmark):
   tag = 'parser'
   test = _BlinkPerfMeasurement
@@ -208,7 +187,6 @@ class BlinkPerfParser(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfSVG(benchmark.Benchmark):
   tag = 'svg'
   test = _BlinkPerfMeasurement
@@ -218,7 +196,6 @@ class BlinkPerfSVG(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfShadowDOM(benchmark.Benchmark):
   tag = 'shadow_dom'
   test = _BlinkPerfMeasurement
@@ -228,7 +205,6 @@ class BlinkPerfShadowDOM(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Enabled('android')
 class BlinkPerfXMLHttpRequest(benchmark.Benchmark):
   tag = 'xml_http_request'
   test = _BlinkPerfMeasurement
