@@ -1,7 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import memory_expectations
+import memory_test_expectations
 import page_sets
 
 from telemetry import benchmark
@@ -99,16 +99,15 @@ class _MemoryValidator(page_test.PageTest):
     return 'Memory allocation too %s (was %d MB, should be %d MB +/- %d MB)' % (
       low_or_high, mb_used, SINGLE_TAB_LIMIT_MB, WIGGLE_ROOM_MB)
 
-class Memory(benchmark.Benchmark):
+class MemoryTest(benchmark.Benchmark):
   """Tests GPU memory limits"""
   test = _MemoryValidator
-  page_set = page_sets.MemoryTestsPageSet
 
   def CreateExpectations(self, page_set):
-    return memory_expectations.MemoryExpectations()
+    return memory_test_expectations.MemoryTestExpectations()
 
   def CreatePageSet(self, options):
-    page_set = super(Memory, self).CreatePageSet(options)
+    page_set = page_sets.MemoryTestsPageSet()
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script
     return page_set
