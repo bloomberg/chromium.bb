@@ -1494,6 +1494,8 @@
             'paint/BackgroundImageGeometry.cpp',
             'paint/InlinePainter.h',
             'paint/InlinePainter.cpp',
+            'paint/LineBoxListPainter.h',
+            'paint/LineBoxListPainter.cpp',
             'paint/ObjectPainter.h',
             'paint/ObjectPainter.cpp',
             'paint/TablePainter.h',

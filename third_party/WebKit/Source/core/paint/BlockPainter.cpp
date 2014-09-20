@@ -12,6 +12,7 @@
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlinePainter.h"
+#include "core/paint/LineBoxListPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -390,7 +391,7 @@ void BlockPainter::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintO
         return;
 
     if (m_renderBlock.childrenInline()) {
-        m_renderBlock.lineBoxes()->paint(&m_renderBlock, paintInfo, paintOffset);
+        LineBoxListPainter(*m_renderBlock.lineBoxes()).paint(&m_renderBlock, paintInfo, paintOffset);
     } else {
         PaintPhase newPhase = (paintInfo.phase == PaintPhaseChildOutlines) ? PaintPhaseOutline : paintInfo.phase;
         newPhase = (newPhase == PaintPhaseChildBlockBackgrounds) ? PaintPhaseChildBlockBackground : newPhase;
