@@ -174,6 +174,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             }
         }
     }
+
     /**
      * Called when the activity becomes visible. This happens on initial launch and whenever the
      * user switches to the activity, for example, by using the window-switcher or when coming from
@@ -306,12 +307,6 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         try {
             // Here comes our auth token from the Android system.
             result = future.getResult();
-            String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
-            Log.i("auth", "Received an auth token from system");
-
-            mToken = authToken;
-
-            mHostListLoader.retrieveHostList(authToken, this);
         } catch (OperationCanceledException ex) {
             // User canceled authentication. No need to report an error.
         } catch (AuthenticatorException ex) {
@@ -327,12 +322,10 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             return;
         }
 
-        String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
+        mToken = result.getString(AccountManager.KEY_AUTHTOKEN);
         Log.i("auth", "Received an auth token from system");
 
-        mToken = authToken;
-
-        mHostListLoader.retrieveHostList(authToken, this);
+        mHostListLoader.retrieveHostList(mToken, this);
     }
 
     @Override
