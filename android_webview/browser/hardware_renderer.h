@@ -62,10 +62,14 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
 
  private:
+  void SetFrameData();
+
   SharedRendererState* shared_renderer_state_;
 
   typedef void* EGLContext;
   EGLContext last_egl_context_;
+
+  scoped_ptr<DrawGLInput> committed_input_;
 
   // Information about last delegated frame.
   gfx::Size frame_size_;

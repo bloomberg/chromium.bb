@@ -250,11 +250,16 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
 }
 
 bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
   if (!compositor_)
     return false;
 
-  if (last_on_draw_global_visible_rect_.IsEmpty())
+  if (last_on_draw_global_visible_rect_.IsEmpty()) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_EmptyVisibleRect",
+                         TRACE_EVENT_SCOPE_THREAD);
     return client_->RequestDrawGL(java_canvas, false);
+  }
 
   if (!hardware_enabled_) {
     hardware_enabled_ = compositor_->InitializeHwDraw();
@@ -269,6 +274,15 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   SynchronousCompositorMemoryPolicy new_policy = CalculateDesiredMemoryPolicy();
   RequestMemoryPolicy(new_policy);
   compositor_->SetMemoryPolicy(memory_policy_);
+
+  if (shared_renderer_state_->HasDrawGLInput()) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_PreviousFrameUnconsumed",
+                         TRACE_EVENT_SCOPE_THREAD);
+    // TODO(boliu): Rename this method. We didn't actually composite here.
+    DidComposite();
+    return client_->RequestDrawGL(java_canvas, false);
+  }
 
   scoped_ptr<DrawGLInput> draw_gl_input(new DrawGLInput);
   draw_gl_input->scroll_offset = last_on_draw_scroll_offset_;
@@ -304,7 +318,6 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
 
   frame->AssignTo(&draw_gl_input->frame);
-  ReturnUnusedResource(shared_renderer_state_->PassDrawGLInput());
   shared_renderer_state_->SetDrawGLInput(draw_gl_input.Pass());
   DidComposite();
   return client_->RequestDrawGL(java_canvas, false);

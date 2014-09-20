@@ -53,6 +53,7 @@ class SharedRendererState {
   void ClientRequestDrawGL();
   void DidDrawGLProcess();
 
+  bool HasDrawGLInput() const;
   void SetDrawGLInput(scoped_ptr<DrawGLInput> input);
   scoped_ptr<DrawGLInput> PassDrawGLInput();
 

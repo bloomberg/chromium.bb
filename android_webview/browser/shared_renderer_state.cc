@@ -134,6 +134,11 @@ void SharedRendererState::UpdateParentDrawConstraintsOnUIThread() {
   client_on_ui_->UpdateParentDrawConstraints();
 }
 
+bool SharedRendererState::HasDrawGLInput() const {
+  base::AutoLock lock(lock_);
+  return draw_gl_input_.get();
+}
+
 void SharedRendererState::SetDrawGLInput(scoped_ptr<DrawGLInput> input) {
   base::AutoLock lock(lock_);
   DCHECK(!draw_gl_input_.get());

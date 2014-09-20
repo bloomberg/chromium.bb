@@ -106,6 +106,8 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
 }
 
 HardwareRenderer::~HardwareRenderer() {
+  SetFrameData();
+
   // Must reset everything before |resource_collection_| to ensure all
   // resources are returned before resetting |resource_collection_| client.
   layer_tree_host_.reset();
@@ -137,21 +139,34 @@ void HardwareRenderer::DidBeginMainFrame() {
 }
 
 void HardwareRenderer::CommitFrame() {
-  scoped_ptr<DrawGLInput> input = shared_renderer_state_->PassDrawGLInput();
+  if (committed_input_.get()) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_PreviousFrameUnconsumed",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return;
+  }
+
+  committed_input_ = shared_renderer_state_->PassDrawGLInput();
   // Happens with empty global visible rect.
-  if (!input.get())
+  if (!committed_input_.get())
     return;
 
-  DCHECK(!input->frame.gl_frame_data);
-  DCHECK(!input->frame.software_frame_data);
+  DCHECK(!committed_input_->frame.gl_frame_data);
+  DCHECK(!committed_input_->frame.software_frame_data);
 
   // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
   // renderer frame, assuming that the browser compositor will scale
   // it back up to device scale.  But on Android we put our browser layers in
   // physical pixels and set our browser CC device_scale_factor to 1, so this
   // suppresses the transform.
-  input->frame.delegated_frame_data->device_scale_factor = 1.0f;
+  committed_input_->frame.delegated_frame_data->device_scale_factor = 1.0f;
+}
 
+void HardwareRenderer::SetFrameData() {
+  if (!committed_input_.get())
+    return;
+
+  scoped_ptr<DrawGLInput> input = committed_input_.Pass();
   gfx::Size frame_size =
       input->frame.delegated_frame_data->render_pass_list.back()
           ->output_rect.size();
@@ -185,15 +200,13 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
   EGLContext current_context = eglGetCurrentContext();
-  if (!current_context) {
-    DLOG(ERROR) << "DrawGL called without EGLContext";
-    return;
-  }
+  DCHECK(current_context) << "DrawGL called without EGLContext";
 
   // TODO(boliu): Handle context loss.
   if (last_egl_context_ != current_context)
     DLOG(WARNING) << "EGLContextChanged";
 
+  SetFrameData();
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());
