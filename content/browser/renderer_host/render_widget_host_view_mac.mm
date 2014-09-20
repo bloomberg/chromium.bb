@@ -739,7 +739,7 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   CGDirectDisplayID display_id = [screen_number unsignedIntValue];
 
   display_link_ = DisplayLinkMac::GetForDisplay(display_id);
-  if (!display_link_) {
+  if (!display_link_.get()) {
     // Note that on some headless systems, the display link will fail to be
     // created, so this should not be a fatal error.
     LOG(ERROR) << "Failed to create display link.";
@@ -747,7 +747,7 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
 }
 
 void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
-  if (!render_widget_host_ || !display_link_)
+  if (!render_widget_host_ || !display_link_.get())
     return;
 
   if (!display_link_->GetVSyncParameters(&vsync_timebase_, &vsync_interval_)) {

@@ -534,7 +534,7 @@ class TestResourceDispatcherHostDelegate
 
   void GotCookie(bool found_cookie) {
     found_cookie_ = found_cookie;
-    if (runner_)
+    if (runner_.get())
       runner_->QuitClosure().Run();
   }
 
