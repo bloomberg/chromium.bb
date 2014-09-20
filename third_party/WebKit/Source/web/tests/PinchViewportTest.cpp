@@ -153,6 +153,7 @@ public:
         settings->setViewportEnabled(true);
         settings->setViewportMetaEnabled(true);
         settings->setShrinksViewportContentToFit(true);
+        settings->setMainFrameResizesAreOrientationChanges(true);
     }
 
 protected:
@@ -191,6 +192,125 @@ TEST_F(PinchViewportTest, TestResize)
     pinchViewport.setSize(newViewportSize);
     EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->size()));
     EXPECT_SIZE_EQ(newViewportSize, pinchViewport.size());
+}
+
+// Test that the PinchViewport works as expected in case of a scaled
+// and scrolled viewport - scroll down.
+TEST_F(PinchViewportTest, TestResizeAfterVerticalScroll)
+{
+    /*
+                 200                                 200
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   | 800           |                   | 800
+        |-------------------|               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |   -------->   |                   |
+        | 300               |               |                   |
+        |                   |               |                   |
+        |               400 |               |                   |
+        |                   |               |-------------------|
+        |                   |               |      75           |
+        | 50                |               | 50             100|
+        o-----              |               o----               |
+        |    |              |               |   |  25           |
+        |    |100           |               |-------------------|
+        |    |              |               |                   |
+        |    |              |               |                   |
+        --------------------                --------------------
+
+     */
+
+    initializeWithAndroidSettings();
+
+    registerMockedHttpURLLoad("200-by-800-viewport.html");
+    navigateTo(m_baseURL + "200-by-800-viewport.html");
+
+    webViewImpl()->resize(IntSize(100, 200));
+
+    // Scroll main frame to the bottom of the document
+    webViewImpl()->setMainFrameScrollOffset(WebPoint(0, 400));
+    EXPECT_POINT_EQ(IntPoint(0, 400), frame()->view()->scrollPosition());
+
+    webViewImpl()->setPageScaleFactor(2.0);
+
+    // Scroll pinch viewport to the bottom of the main frame
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.setLocation(FloatPoint(0, 300));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 300), pinchViewport.location());
+
+    // Verify the initial size of the pinch viewport in the CSS pixels
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100), pinchViewport.visibleRect().size());
+
+    // Perform the resizing
+    webViewImpl()->resize(IntSize(200, 100));
+
+    // After resizing the scale changes 2.0 -> 4.0
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), pinchViewport.visibleRect().size());
+
+    EXPECT_POINT_EQ(IntPoint(0, 625), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 75), pinchViewport.location());
+}
+
+// Test that the PinchViewport works as expected in case if a scaled
+// and scrolled viewport - scroll right.
+TEST_F(PinchViewportTest, TestResizeAfterHorizontalScroll)
+{
+    /*
+                 200                                 200
+        ---------------o-----               ---------------o-----
+        |              |    |               |            25|    |
+        |              |    |               |              -----|
+        |           100|    |               |100             50 |
+        |              |    |               |                   |
+        |              ---- |               |-------------------|
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |400                |   --------->  |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |                   |               |                   |
+        |-------------------|               |                   |
+        |                   |               |                   |
+
+     */
+
+    initializeWithAndroidSettings();
+
+    registerMockedHttpURLLoad("200-by-800-viewport.html");
+    navigateTo(m_baseURL + "200-by-800-viewport.html");
+
+    webViewImpl()->resize(IntSize(100, 200));
+
+    // Outer viewport takes the whole width of the document.
+
+    webViewImpl()->setPageScaleFactor(2.0);
+
+    // Scroll pinch viewport to the right edge of the frame
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.setLocation(FloatPoint(150, 0));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(150, 0), pinchViewport.location());
+
+    // Verify the initial size of the pinch viewport in the CSS pixels
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100), pinchViewport.visibleRect().size());
+
+    webViewImpl()->resize(IntSize(200, 100));
+
+    // After resizing the scale changes 2.0 -> 4.0
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), pinchViewport.visibleRect().size());
+
+    EXPECT_POINT_EQ(IntPoint(0, 0), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(150, 0), pinchViewport.location());
 }
 
 static void disableAcceleratedCompositing(WebSettings* settings)
