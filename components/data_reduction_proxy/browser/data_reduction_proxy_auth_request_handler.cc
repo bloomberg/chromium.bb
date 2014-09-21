@@ -16,6 +16,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/common/version.h"
 #include "crypto/random.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_server.h"
@@ -44,20 +45,40 @@ bool DataReductionProxyAuthRequestHandler::IsKeySetOnCommandLine() {
 
 DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
     const std::string& client,
+    DataReductionProxyParams* params,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+    : client_(client),
+      data_reduction_proxy_params_(params),
+      network_task_runner_(network_task_runner) {
+  GetChromiumBuildAndPatch(ChromiumVersion(), &build_number_, &patch_number_);
+  Init();
+}
+
+DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
+    const std::string& client,
     const std::string& version,
     DataReductionProxyParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-    : data_reduction_proxy_params_(params),
+    : client_(client),
+      data_reduction_proxy_params_(params),
       network_task_runner_(network_task_runner) {
-  client_ = client;
   GetChromiumBuildAndPatch(version, &build_number_, &patch_number_);
   Init();
 }
 
+std::string DataReductionProxyAuthRequestHandler::ChromiumVersion() const {
+#if defined(PRODUCT_VERSION)
+  return PRODUCT_VERSION;
+#else
+  return std::string();
+#endif
+}
+
+
 void DataReductionProxyAuthRequestHandler::GetChromiumBuildAndPatch(
     const std::string& version,
     std::string* build,
-    std::string* patch) {
+    std::string* patch) const {
   std::vector<std::string> version_parts;
   base::SplitString(version, '.', &version_parts);
   if (version_parts.size() != 4)

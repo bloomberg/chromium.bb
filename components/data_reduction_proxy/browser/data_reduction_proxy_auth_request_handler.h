@@ -40,14 +40,9 @@ class DataReductionProxyAuthRequestHandler {
   static bool IsKeySetOnCommandLine();
 
   // Constructs a DataReductionProxyAuthRequestHandler object with the given
-  // client, version, params, and network task runner. The Chromium |version| is
-  // expected to be of the form "xx.xx.xx.xx". If it isn't of this form,
-  // |build_number_| and |patch_number_| are set to empty strings and not
-  // included in the header. http://crbug.com/410127 will change this so that
-  // the version is retrieved inside this constructor.
+  // client type, params, and network task runner.
   DataReductionProxyAuthRequestHandler(
       const std::string& client,
-      const std::string& version,
       DataReductionProxyParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
@@ -92,6 +87,13 @@ class DataReductionProxyAuthRequestHandler {
   // Visible for testing.
   virtual std::string GetDefaultKey() const;
 
+  // Visible for testing.
+  DataReductionProxyAuthRequestHandler(
+      const std::string& client,
+      const std::string& version,
+      DataReductionProxyParams* params,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            Authorization);
@@ -100,11 +102,14 @@ class DataReductionProxyAuthRequestHandler {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            AuthHashForSalt);
 
+  // Returns the version of Chromium that is being used.
+  std::string ChromiumVersion() const;
+
   // Returns the build and patch numbers of |version|. If |version| isn't of the
   // form xx.xx.xx.xx build and patch are not modified.
   void GetChromiumBuildAndPatch(const std::string& version,
                                 std::string* build,
-                                std::string* patch);
+                                std::string* patch) const;
 
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.

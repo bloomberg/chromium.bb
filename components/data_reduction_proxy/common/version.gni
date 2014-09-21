@@ -1,0 +1,50 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Runs the version processing script over the given template file to produce
+# an output file. This is used for generating various forms of files that
+# incorporate the product name and version.
+#
+# This template automatically includes VERSION,
+#
+# Parameters:
+#   source:
+#     File name of source template file to read.
+#
+#   output:
+#     File name of file to write.
+#
+#   visibility (optional)
+#
+# Example:
+#   process_version("myversion") {
+#     source = "myfile.h.in"
+#     output = "$target_gen_dir/myfile.h"
+#   }
+template("process_version") {
+  assert(defined(invoker.source), "Source must be defined for $target_name")
+  assert(defined(invoker.output), "Output must be defined for $target_name")
+
+  action(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+    script = "//build/util/version.py"
+
+    version_path = "//chrome/VERSION"
+
+    inputs = [
+      version_path,
+      invoker.source,
+    ]
+
+    outputs = [ invoker.output ]
+
+    args = [
+      "-f", rebase_path(version_path, root_build_dir),
+      rebase_path(invoker.source, root_build_dir),
+      rebase_path(invoker.output, root_build_dir),
+    ]
+  }
+}

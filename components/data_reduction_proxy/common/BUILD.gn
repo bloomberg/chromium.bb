@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/data_reduction_proxy/common/version.gni")
+
 static_library("common") {
   sources = [
     "data_reduction_proxy_headers.cc",
@@ -13,6 +15,7 @@ static_library("common") {
   ]
 
   deps = [
+    ":version_header",
     "//base",
   ]
 }
@@ -28,3 +31,9 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+process_version("version_header") {
+  source = "version.h.in"
+  output = "$target_gen_dir/version.h"
+} 
+

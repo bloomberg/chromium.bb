@@ -650,7 +650,6 @@ void IOThread::InitAsync() {
   globals_->data_reduction_proxy_auth_request_handler.reset(
       new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
           DataReductionProxyChromeSettings::GetClient(),
-          chrome::VersionInfo().Version(),
           globals_->data_reduction_proxy_params.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   globals_->data_reduction_proxy_delegate.reset(
