@@ -22,6 +22,8 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
@@ -150,6 +152,8 @@ class WebActivityController : public AcceleratorHandler {
 const SkColor kDefaultTitleColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
 const SkColor kDefaultUnavailableColor = SkColorSetRGB(0xbb, 0x77, 0x77);
 const int kIconSize = 32;
+const int kDistanceShowReloadMessage = 100;
+const int kDistanceReload = 150;
 
 }  // namespace
 
@@ -159,7 +163,8 @@ class AthenaWebView : public views::WebView {
  public:
   AthenaWebView(content::BrowserContext* context)
       : views::WebView(context), controller_(new WebActivityController(this)),
-        fullscreen_(false) {
+        fullscreen_(false),
+        overscroll_y_(0) {
     SetEmbedFullscreenWidgetMode(true);
     // TODO(skuhne): Add content observer to detect renderer crash and set
     // content status to unloaded if that happens.
@@ -248,6 +253,32 @@ class AthenaWebView : public views::WebView {
     return value != "0";
   }
 
+  virtual void OverscrollUpdate(int delta_y) OVERRIDE {
+    overscroll_y_ = delta_y;
+    if (overscroll_y_ > kDistanceShowReloadMessage) {
+      if (!reload_message_)
+        CreateReloadMessage();
+      reload_message_->Show();
+      float opacity = 1.0f;
+      if (overscroll_y_ < kDistanceReload) {
+        opacity =
+            (overscroll_y_ - kDistanceShowReloadMessage) /
+            static_cast<float>(kDistanceReload - kDistanceShowReloadMessage);
+      }
+      reload_message_->GetLayer()->SetOpacity(opacity);
+    } else if (reload_message_) {
+      reload_message_->Hide();
+    }
+  }
+
+  virtual void OverscrollComplete() OVERRIDE {
+    if (overscroll_y_ >= kDistanceReload)
+      GetWebContents()->GetController().Reload(false);
+    if (reload_message_)
+      reload_message_->Hide();
+    overscroll_y_ = 0;
+  }
+
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
@@ -332,6 +363,24 @@ class AthenaWebView : public views::WebView {
     progress_bar_->SetColor(SkColorSetRGB(0x17, 0x59, 0xcd));
   }
 
+  void CreateReloadMessage() {
+    CHECK(!reload_message_);
+    reload_message_.reset(new views::Widget);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = GetWidget()->GetNativeView();
+    reload_message_->Init(params);
+
+    views::Label* label = new views::Label(base::UTF8ToUTF16("Reload"));
+    label->SetBackgroundColor(SK_ColorGRAY);
+    label->set_background(
+        views::Background::CreateSolidBackground(SK_ColorGRAY));
+
+    reload_message_->SetContentsView(label);
+    reload_message_->SetBounds(ConvertRectToWidget(
+        gfx::Rect(0, 0, width(), label->GetPreferredSize().height())));
+  }
+
   scoped_ptr<WebActivityController> controller_;
 
   // If the activity got evicted, this is the web content which holds the known
@@ -340,9 +389,14 @@ class AthenaWebView : public views::WebView {
 
   scoped_ptr<ui::Layer> progress_bar_;
 
+  scoped_ptr<views::Widget> reload_message_;
+
   // TODO(oshima): Find out if we should support window fullscreen.
   // It may still useful when a user is in split mode.
   bool fullscreen_;
+
+  // The distance that the user has overscrolled vertically.
+  int overscroll_y_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaWebView);
 };

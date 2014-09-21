@@ -1288,21 +1288,26 @@ bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
   gfx::Transform transform;
 
-  // Vertical overscrolls don't participate in the navigation gesture.
-  if (current_overscroll_gesture_ != OVERSCROLL_NORTH &&
-      current_overscroll_gesture_ != OVERSCROLL_SOUTH) {
+  if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||
+      current_overscroll_gesture_ == OVERSCROLL_SOUTH) {
+    OverscrollUpdateForWebContentsDelegate(translate.y());
+  } else {
+    // Only horizontal overscrolls participate in the navigation gesture.
     transform.Translate(translate.x(), translate.y());
     target->SetTransform(transform);
     UpdateOverscrollWindowBrightness(delta_x);
   }
 
-  OverscrollUpdateForWebContentsDelegate(translate.y());
   return !translate.IsZero();
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
   UMA_HISTOGRAM_ENUMERATION("Overscroll.Completed", mode, OVERSCROLL_COUNT);
-  OverscrollUpdateForWebContentsDelegate(0);
+  if (web_contents_->GetDelegate() &&
+      IsScrollEndEffectEnabled() &&
+      (mode == OVERSCROLL_NORTH || mode == OVERSCROLL_SOUTH)) {
+    web_contents_->GetDelegate()->OverscrollComplete();
+  }
   NavigationControllerImpl& controller = web_contents_->GetController();
   if (ShouldNavigateForward(controller, mode) ||
       ShouldNavigateBack(controller, mode)) {
@@ -1318,6 +1323,9 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
   // Reset any in-progress overscroll animation first.
   ResetOverscrollTransform();
 
+  if (old_mode == OVERSCROLL_NORTH || old_mode == OVERSCROLL_SOUTH)
+    OverscrollUpdateForWebContentsDelegate(0);
+
   if (new_mode != OVERSCROLL_NONE && touch_editable_)
     touch_editable_->OverscrollStarted();
 
@@ -1326,7 +1334,6 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
       ((new_mode == OVERSCROLL_EAST || new_mode == OVERSCROLL_WEST) &&
        navigation_overlay_.get() && navigation_overlay_->has_window())) {
     current_overscroll_gesture_ = OVERSCROLL_NONE;
-    OverscrollUpdateForWebContentsDelegate(0);
   } else {
     aura::Window* target = GetWindowToAnimateForOverscroll();
     if (target) {

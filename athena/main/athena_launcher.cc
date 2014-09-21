@@ -24,6 +24,7 @@
 #include "athena/wm/public/window_manager.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/common/content_switches.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
@@ -91,6 +92,9 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> blocking_task_runner) {
   // Force showing in the experimental app-list view.
   command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
   command_line->AppendSwitch(switches::kEnableOverlayScrollbar);
+
+  // Enable vertical overscroll.
+  command_line->AppendSwitchASCII(switches::kScrollEndEffect, "1");
 
 #if defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();

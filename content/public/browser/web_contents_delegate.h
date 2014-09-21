@@ -162,8 +162,11 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool CanOverscrollContent() const;
 
   // Callback that allows vertical overscroll activies to be communicated to the
-  // delegate.
+  // delegate. |delta_y| is the total amount of overscroll.
   virtual void OverscrollUpdate(int delta_y) {}
+
+  // Invoked when a vertical overscroll completes.
+  virtual void OverscrollComplete() {}
 
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
