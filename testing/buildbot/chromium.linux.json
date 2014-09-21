@@ -190,6 +190,7 @@
       "crypto_unittests",
       "device_unittests",
       "display_unittests",
+      "extensions_unittests",
       "google_apis_unittests",
       "ipc_mojo_unittests",
       "ipc_tests",
