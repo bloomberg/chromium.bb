@@ -122,7 +122,13 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclNonSfi,
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_manifest_file_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtException) {
+#if defined(OS_WIN)
+// http://crbug.com/416272
+#define MAYBE_IrtException DISABLED_IrtException
+#else
+#define MAYBE_IrtException IrtException
+#endif
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, MAYBE_IrtException) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_exception_test.html"));
 }
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclNonSfi,
