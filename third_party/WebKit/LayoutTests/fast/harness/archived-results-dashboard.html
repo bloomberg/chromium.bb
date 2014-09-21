@@ -80,6 +80,10 @@ function processGlobalStateFor(testObject)
 {
     var table = document.getElementById('results-table');
     var row = table.insertRow(-1);
+    var checkboxcell = row.insertCell(-1);
+    var checkbox = document.createElement("input");
+    checkbox.setAttribute('type','checkbox');
+    checkboxcell.appendChild(checkbox);
     var cell = row.insertCell(-1);
     cell.innerHTML = testObject.name;
     for (var result in testObject.archived_results) {
@@ -114,10 +118,61 @@ function forEachTest(handler, opt_tree, opt_prefix)
             forEachTest(handler, tree[key], newPrefix);
     }
 }
+function getTests()
+{
+    var table = document.getElementById('results-table');
+    var testCount = table.rows.length;
+    //FIXME : CONVERT TO JSON
+    var tests_list = '';
+    for(var i = 1; i < testCount; i++) {
+        var selected = table.rows[i].cells[0].getElementsByTagName("input")[0];
+        if(selected.checked) {
+            var test = table.rows[i].cells[1].innerHTML;
+            tests_list += test + ' ' ;
+        }
+    }
+    return tests_list;
+}
+function rerun()
+{
+    var log = document.getElementById('log');
+    log.innerHTML = 'Re running tests again';
+    var testList = getTests()
+    if (testList == '')
+        alert('Please select atlest one Test');
+    else {
+        xmlhttp = new XMLHttpRequest();
+        var url ='http://localhost:9630/';
+        xmlhttp.open('POST', url, true);
+        xmlhttp.onerror = function() {
+            alert('Server offline');
+        }
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.onreadystatechange = function() {
+            if(xmlhttp.readyState > 0)
+                document.body.innerHTML = xmlhttp.responseText;
+        }
+        xmlhttp.send(String(getTests()));
+    }
+}
+function checkalltests()
+{
+    var value = document.getElementById("check_all").checked;
+    var table = document.getElementById("results-table");
+    var length = table.rows.length;
+    for (var i = 1; i < length; i++) {
+        var checkbox = table.rows[i].cells[0].getElementsByTagName("input")[0];
+            checkbox.checked = value;
+    }
+
+}
+
 function generatePage()
 {
     var count = globalState().results.result_links.length;
-    var tableHeader= '<div><table id= results-table><thead><tr>' +
+    var tableHeader= '<div><table id=results-table><thead><tr>' +
+        '<th>' + '<input type="checkbox" name="checkall" id="check_all" onclick="checkalltests()"></input>' + ' Rerun'  + '</th>' +
+
         '<th>Failing Tests ( Latest &#8594; Oldest )</th>';
     for( var i = 0; i < count; i++)
         tableHeader += '<th>'+ (i+1) +'</th>';
@@ -130,5 +185,9 @@ function generatePage()
 </script>
 <!-- To run the tests -->
 <script src="resources/archived-results-dashboard-test.js"></script>
-<body onload="generatePage()"><h1>Dashboard</h1></body>
+<body onload="generatePage()">
+    <h1>Dashboard</h1>
+    <p id=log></p>
+    <p><button onclick="rerun()">Re Run Tests</button></p>
+</body>
 </html>
