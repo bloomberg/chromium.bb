@@ -11,7 +11,11 @@ function getElementRegion(element) {
   // and then the bounding client rect.
   // SVG is one case that doesn't have a first client rect.
   var clientRects = element.getClientRects();
-  if (clientRects.length == 0) {
+
+  // Element area of a map has same first ClientRect and BoundingClientRect
+  // after blink roll at chromium commit position 290738 which includes blink
+  // revision 180610. Thus handle area as a special case.
+  if (clientRects.length == 0 || element.tagName.toLowerCase() == 'area') {
     var box = element.getBoundingClientRect();
     if (element.tagName.toLowerCase() == 'area') {
       var coords = element.coords.split(',');
