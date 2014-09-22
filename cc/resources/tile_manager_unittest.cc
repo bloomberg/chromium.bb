@@ -928,15 +928,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   EXPECT_EQ(all_tiles, new_content_tiles);
 }
 
-#if defined(OS_WIN)
-#define MAYBE_EvictionTilePriorityQueueWithOcclusion \
-  DISABLED_EvictionTilePriorityQueueWithOcclusion
-#else
-#define MAYBE_EvictionTilePriorityQueueWithOcclusion \
-  EvictionTilePriorityQueueWithOcclusion
-#endif
 TEST_F(TileManagerTilePriorityQueueTest,
-       MAYBE_EvictionTilePriorityQueueWithOcclusion) {
+       EvictionTilePriorityQueueWithOcclusion) {
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
 
