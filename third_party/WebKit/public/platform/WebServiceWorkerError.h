@@ -42,6 +42,7 @@ struct WebServiceWorkerError {
         ErrorTypeSecurity,
         ErrorTypeInstall,
         ErrorTypeActivate,
+        ErrorTypeNetwork,
         ErrorTypeNotFound,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown

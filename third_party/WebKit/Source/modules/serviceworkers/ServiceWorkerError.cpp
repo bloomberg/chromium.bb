@@ -55,6 +55,8 @@ PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::take(ScriptPromiseResol
         // Not currently returned as a promise rejection.
         // FIXME: Introduce new ActivateError type to ExceptionCodes?
         return DOMException::create(AbortError, "The Service Worker activation failed.");
+    case WebServiceWorkerError::ErrorTypeNetwork:
+        return DOMException::create(NetworkError, "The Service Worker failed by network.");
     case WebServiceWorkerError::ErrorTypeNotFound:
         return DOMException::create(NotFoundError, "The specified Service Worker resource was not found.");
     case WebServiceWorkerError::ErrorTypeUnknown:
