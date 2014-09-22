@@ -9,6 +9,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/CGLRenderers.h>
+#include <OpenGL/gl.h>
 #include <OpenGL/OpenGL.h>
 
 #include "base/mac/mac_util.h"
