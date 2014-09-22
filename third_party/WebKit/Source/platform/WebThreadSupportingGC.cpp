@@ -17,6 +17,15 @@ WebThreadSupportingGC::WebThreadSupportingGC(const char* name)
 {
 }
 
+WebThreadSupportingGC::~WebThreadSupportingGC()
+{
+    if (ThreadState::current()) {
+        // WebThread's destructor blocks until all the tasks are processed.
+        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+        m_thread.clear();
+    }
+}
+
 void WebThreadSupportingGC::attachGC()
 {
     m_pendingGCRunner = adoptPtr(new PendingGCRunner);
