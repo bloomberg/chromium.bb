@@ -33,7 +33,7 @@ CTCommitLog.prototype._handleResponse = function(repositoryUrl, repository, json
   // FIXME: Fix googlesource to not do this outdated JSON XSS mitigation.
   json = json.substring(')]}\n'.length);
   JSON.parse(json).log.forEach(function(entry) {
-    var author = entry.author.name;
+    var author = entry.author.email;
     var message = entry.message;
     var revision = CTCommit.findRevision(message);
 
