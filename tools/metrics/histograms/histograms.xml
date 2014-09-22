@@ -26389,6 +26389,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Rappor.DailyEvent.IntervalType" enum="DailyEventIntervalType">
+  <owner>holte@chromium.org</owner>
+  <summary>Counts how often daily interval events were fired.</summary>
+</histogram>
+
 <histogram name="Rappor.DiscardReason" enum="RapporDiscardReason">
   <owner>holte@chromium.org</owner>
   <summary>
@@ -39463,6 +39468,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DailyEventIntervalType" type="int">
+  <int value="0" label="First Run"/>
+  <int value="1" label="Day Elapsed"/>
+  <int value="2" label="Clock Changed"/>
 </enum>
 
 <enum name="DataChannelCounters" type="int">

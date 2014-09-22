@@ -144,6 +144,7 @@
             'language_usage_metrics/language_usage_metrics_unittest.cc',
             'leveldb_proto/proto_database_impl_unittest.cc',
             'metrics/compression_utils_unittest.cc',
+            'metrics/daily_event_unittest.cc',
             'metrics/machine_id_provider_win_unittest.cc',
             'metrics/metrics_hashes_unittest.cc',
             'metrics/metrics_log_manager_unittest.cc',

@@ -26,6 +26,8 @@
         'metrics/cloned_install_detector.h',
         'metrics/compression_utils.cc',
         'metrics/compression_utils.h',
+        'metrics/daily_event.cc',
+        'metrics/daily_event.h',
         'metrics/machine_id_provider.h',
         'metrics/machine_id_provider_stub.cc',
         'metrics/machine_id_provider_win.cc',

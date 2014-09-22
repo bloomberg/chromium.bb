@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/testing_pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "components/rappor/byte_vector_utils.h"
@@ -42,9 +43,13 @@ class TestRapporService : public rappor::RapporService {
   // be from the last time GetReports() was called (not from the beginning of
   // the test).
   rappor::RapporReports GetReports();
+
+ protected:
+  TestingPrefServiceSimple prefs_;
 };
 
-TestRapporService::TestRapporService() {
+TestRapporService::TestRapporService()
+  : rappor::RapporService(&prefs_) {
   // Initialize the RapporService for testing.
   SetCohortForTesting(0);
   SetSecretForTesting(rappor::HmacByteVectorGenerator::GenerateEntropyInput());

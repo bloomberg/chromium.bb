@@ -656,7 +656,6 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   // TODO(asvitkine): Since this function is not run on Android, RAPPOR is
   // currently disabled there. http://crbug.com/370041
   browser_process_->rappor_service()->Start(
-      browser_process_->local_state(),
       browser_process_->system_request_context(),
       metrics_enabled);
 }

@@ -4,23 +4,44 @@
 
 #include "components/rappor/rappor_service.h"
 
+#include "base/base64.h"
+#include "base/prefs/testing_pref_service.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
+#include "components/rappor/rappor_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace rappor {
 
 class TestRapporService : public RapporService {
  public:
+  TestRapporService() : RapporService(&prefs_) {
+    RegisterPrefs(prefs_.registry());
+    prefs_.SetInteger(prefs::kRapporCohortSeed, 0);
+    std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
+    std::string secret_base64;
+    base::Base64Encode(secret, &secret_base64);
+    prefs_.SetString(prefs::kRapporSecret, secret_base64);
+    LoadCohort();
+    LoadSecret();
+  }
+
   void GetReports(RapporReports* reports) {
     ExportMetrics(reports);
   }
+
   void TestRecordSample(const std::string& metric_name,
                         const RapporParameters& parameters,
                         const std::string& sample) {
     RecordSampleInternal(metric_name, parameters, sample);
   }
+
+ protected:
+  TestingPrefServiceSimple prefs_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestRapporService);
 };
 
 TEST(RapporServiceTest, RecordAndExportMetrics) {
@@ -34,9 +55,6 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
       PROBABILITY_50 /* Zero coin probability */};
 
   TestRapporService rappor_service;
-  rappor_service.SetCohortForTesting(0);
-  rappor_service.SetSecretForTesting(
-      HmacByteVectorGenerator::GenerateEntropyInput());
 
   rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "foo");
   rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "bar");

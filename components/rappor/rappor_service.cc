@@ -29,6 +29,8 @@ const int kLogIntervalSeconds = 30 * 60;
 
 const char kMimeType[] = "application/vnd.chrome.rappor";
 
+const char kRapporDailyEventHistogram[] = "Rappor.DailyEvent.IntervalType";
+
 // Constants for the RAPPOR rollout field trial.
 const char kRapporRolloutFieldTrialName[] = "RapporRollout";
 
@@ -69,14 +71,24 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
 
 }  // namespace
 
-RapporService::RapporService() : cohort_(-1) {}
+RapporService::RapporService(PrefService* pref_service)
+    : pref_service_(pref_service),
+      cohort_(-1),
+      daily_event_(pref_service,
+                      prefs::kRapporLastDailySample,
+                      kRapporDailyEventHistogram) {
+}
 
 RapporService::~RapporService() {
   STLDeleteValues(&metrics_map_);
 }
 
-void RapporService::Start(PrefService* pref_service,
-                          net::URLRequestContextGetter* request_context,
+void RapporService::AddDailyObserver(
+    scoped_ptr<metrics::DailyEvent::Observer> observer) {
+  daily_event_.AddObserver(observer.Pass());
+}
+
+void RapporService::Start(net::URLRequestContextGetter* request_context,
                           bool metrics_enabled) {
   const GURL server_url = GetServerUrl(metrics_enabled);
   if (!server_url.is_valid()) {
@@ -86,8 +98,8 @@ void RapporService::Start(PrefService* pref_service,
   }
   DVLOG(1) << "RapporService started. Reporting to " << server_url.spec();
   DCHECK(!uploader_);
-  LoadSecret(pref_service);
-  LoadCohort(pref_service);
+  LoadSecret();
+  LoadCohort();
   uploader_.reset(new LogUploader(server_url, kMimeType, request_context));
   log_rotation_timer_.Start(
       FROM_HERE,
@@ -99,6 +111,7 @@ void RapporService::Start(PrefService* pref_service,
 void RapporService::OnLogInterval() {
   DCHECK(uploader_);
   DVLOG(2) << "RapporService::OnLogInterval";
+  daily_event_.CheckInterval();
   RapporReports reports;
   if (ExportMetrics(&reports)) {
     std::string log_text;
@@ -119,14 +132,16 @@ void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRapporSecret, std::string());
   registry->RegisterIntegerPref(prefs::kRapporCohortDeprecated, -1);
   registry->RegisterIntegerPref(prefs::kRapporCohortSeed, -1);
+  metrics::DailyEvent::RegisterPref(registry,
+                                       prefs::kRapporLastDailySample);
 }
 
-void RapporService::LoadCohort(PrefService* pref_service) {
+void RapporService::LoadCohort() {
   DCHECK(!IsInitialized());
   // Ignore and delete old cohort parameter.
-  pref_service->ClearPref(prefs::kRapporCohortDeprecated);
+  pref_service_->ClearPref(prefs::kRapporCohortDeprecated);
 
-  cohort_ = pref_service->GetInteger(prefs::kRapporCohortSeed);
+  cohort_ = pref_service_->GetInteger(prefs::kRapporCohortSeed);
   // If the user is already assigned to a valid cohort, we're done.
   if (cohort_ >= 0 && cohort_ < RapporParameters::kMaxCohorts)
     return;
@@ -135,12 +150,12 @@ void RapporService::LoadCohort(PrefService* pref_service) {
   // preferences were corrupted).  Randomly assign them to a cohort.
   cohort_ = base::RandGenerator(RapporParameters::kMaxCohorts);
   DVLOG(2) << "Selected a new Rappor cohort: " << cohort_;
-  pref_service->SetInteger(prefs::kRapporCohortSeed, cohort_);
+  pref_service_->SetInteger(prefs::kRapporCohortSeed, cohort_);
 }
 
-void RapporService::LoadSecret(PrefService* pref_service) {
+void RapporService::LoadSecret() {
   DCHECK(secret_.empty());
-  std::string secret_base64 = pref_service->GetString(prefs::kRapporSecret);
+  std::string secret_base64 = pref_service_->GetString(prefs::kRapporSecret);
   if (!secret_base64.empty()) {
     bool decoded = base::Base64Decode(secret_base64, &secret_);
     if (decoded && secret_.size() == HmacByteVectorGenerator::kEntropyInputSize)
@@ -153,7 +168,7 @@ void RapporService::LoadSecret(PrefService* pref_service) {
   DVLOG(2) << "Generated a new Rappor secret.";
   secret_ = HmacByteVectorGenerator::GenerateEntropyInput();
   base::Base64Encode(secret_, &secret_base64);
-  pref_service->SetString(prefs::kRapporSecret, secret_base64);
+  pref_service_->SetString(prefs::kRapporSecret, secret_base64);
 }
 
 bool RapporService::ExportMetrics(RapporReports* reports) {

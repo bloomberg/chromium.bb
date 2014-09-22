@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "components/metrics/daily_event.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -38,12 +39,17 @@ enum RapporType {
 // and periodically generates and uploads reports based on the collected data.
 class RapporService {
  public:
-  RapporService();
+  // Constructs a RapporService.
+  // Calling code is responsible for ensuring that the lifetime of
+  // |pref_service| is longer than the lifetime of RapporService.
+  explicit RapporService(PrefService* pref_service);
   virtual ~RapporService();
 
+  // Add an observer for collecting daily metrics.
+  void AddDailyObserver(scoped_ptr<metrics::DailyEvent::Observer> observer);
+
   // Starts the periodic generation of reports and upload attempts.
-  void Start(PrefService* pref_service,
-             net::URLRequestContextGetter* context,
+  void Start(net::URLRequestContextGetter* context,
              bool metrics_enabled);
 
   // Records a sample of the rappor metric specified by |metric_name|.
@@ -52,10 +58,10 @@ class RapporService {
                     RapporType type,
                     const std::string& sample);
 
-  // Sets the cohort value.  For use by tests only.
+  // Sets the cohort value. For use by tests only.
   void SetCohortForTesting(uint32_t cohort) { cohort_ = cohort; }
 
-  // Sets the secret value.  For use by tests only.
+  // Sets the secret value. For use by tests only.
   void SetSecretForTesting(const std::string& secret) { secret_ = secret; }
 
   // Registers the names of all of the preferences used by RapporService in the
@@ -63,8 +69,17 @@ class RapporService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
+  // Retrieves the cohort number this client was assigned to, generating it if
+  // doesn't already exist. The cohort should be persistent.
+  void LoadCohort();
+
+  // Retrieves the value for secret_ from preferences, generating it if doesn't
+  // already exist. The secret should be persistent, so that additional bits
+  // from the client do not get exposed over time.
+  void LoadSecret();
+
   // Logs all of the collected metrics to the reports proto message and clears
-  // the internal map.  Exposed for tests.  Returns true if any metrics were
+  // the internal map. Exposed for tests. Returns true if any metrics were
   // recorded.
   bool ExportMetrics(RapporReports* reports);
 
@@ -79,15 +94,6 @@ class RapporService {
   // Check if the service has been started successfully.
   bool IsInitialized() const;
 
-  // Retrieves the cohort number this client was assigned to, generating it if
-  // doesn't already exist.  The cohort should be persistent.
-  void LoadCohort(PrefService* pref_service);
-
-  // Retrieves the value for secret_ from preferences, generating it if doesn't
-  // already exist.  The secret should be persistent, so that additional bits
-  // from the client do not get exposed over time.
-  void LoadSecret(PrefService* pref_service);
-
   // Called whenever the logging interval elapses to generate a new log of
   // reports and pass it to the uploader.
   void OnLogInterval();
@@ -97,6 +103,9 @@ class RapporService {
   RapporMetric* LookUpMetric(const std::string& metric_name,
                              const RapporParameters& parameters);
 
+  // A weak pointer to the PrefService used to read and write preferences.
+  PrefService* pref_service_;
+
   // Client-side secret used to generate fake bits.
   std::string secret_;
 
@@ -105,6 +114,9 @@ class RapporService {
 
   // Timer which schedules calls to OnLogInterval().
   base::OneShotTimer<RapporService> log_rotation_timer_;
+
+  // A daily event for collecting metrics once a day.
+  metrics::DailyEvent daily_event_;
 
   // A private LogUploader instance for sending reports to the server.
   scoped_ptr<LogUploader> uploader_;
