@@ -540,8 +540,6 @@ void FillFormField(const FormFieldData& data,
   if (!data.is_autofilled)
     return;
 
-  field->setAutofilled(true);
-
   WebInputElement* input_element = toWebInputElement(field);
   if (IsCheckableElement(input_element)) {
     input_element->setChecked(data.is_checked, true);
@@ -554,6 +552,8 @@ void FillFormField(const FormFieldData& data,
     }
     field->setValue(value, true);
   }
+
+  field->setAutofilled(true);
 
   if (is_initiating_node &&
       ((IsTextInput(input_element) || IsMonthInput(input_element)) ||
