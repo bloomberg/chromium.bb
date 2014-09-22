@@ -31,61 +31,6 @@ const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
 const char kSocketNameFormat[] = "webview_devtools_remote_%d";
 
-const char kTargetTypePage[] = "page";
-const char kTargetTypeServiceWorker[] = "service_worker";
-const char kTargetTypeOther[] = "other";
-
-std::string GetViewDescription(WebContents* web_contents);
-
-class Target : public content::DevToolsTarget {
- public:
-  explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
-
-  virtual std::string GetId() const OVERRIDE { return agent_host_->GetId(); }
-  virtual std::string GetParentId() const OVERRIDE { return std::string(); }
-  virtual std::string GetType() const OVERRIDE {
-    switch (agent_host_->GetType()) {
-      case DevToolsAgentHost::TYPE_WEB_CONTENTS:
-        return kTargetTypePage;
-      case DevToolsAgentHost::TYPE_SERVICE_WORKER:
-        return kTargetTypeServiceWorker;
-      default:
-        break;
-    }
-    return kTargetTypeOther;
-  }
-  virtual std::string GetTitle() const OVERRIDE {
-    return agent_host_->GetTitle();
-  }
-  virtual std::string GetDescription() const OVERRIDE { return description_; }
-  virtual GURL GetURL() const OVERRIDE { return agent_host_->GetURL(); }
-  virtual GURL GetFaviconURL() const OVERRIDE { return GURL(); }
-  virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
-    return last_activity_time_;
-  }
-  virtual bool IsAttached() const OVERRIDE {
-    return agent_host_->IsAttached();
-  }
-  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
-    return agent_host_;
-  }
-  virtual bool Activate() const OVERRIDE { return agent_host_->Activate(); }
-  virtual bool Close() const OVERRIDE { return agent_host_->Close(); }
-
- private:
-  scoped_refptr<DevToolsAgentHost> agent_host_;
-  std::string description_;
-  base::TimeTicks last_activity_time_;
-};
-
-Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
-    : agent_host_(agent_host) {
-  if (WebContents* web_contents = agent_host->GetWebContents()) {
-    description_ = GetViewDescription(web_contents);
-    last_activity_time_ = web_contents->GetLastActiveTime();
-  }
-}
-
 // Delegate implementation for the devtools http handler for WebView. A new
 // instance of this gets created each time web debugging is enabled.
 class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
@@ -102,25 +47,6 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
   virtual base::FilePath GetDebugFrontendDir() OVERRIDE {
     return base::FilePath();
-  }
-
-  virtual std::string GetPageThumbnailData(const GURL&) OVERRIDE {
-    return "";
-  }
-
-  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL&) OVERRIDE {
-    return scoped_ptr<content::DevToolsTarget>();
-  }
-
-  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
-    TargetList targets;
-    DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
-    for (DevToolsAgentHost::List::iterator it = agents.begin();
-        it != agents.end(); ++it) {
-      targets.push_back(new Target(*it));
-    }
-    callback.Run(targets);
   }
 
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
@@ -142,27 +68,6 @@ std::string AwDevToolsServerDelegate::GetDiscoveryPageHTML() {
       "</body>"
       "</html>";
   return html;
-}
-
-std::string GetViewDescription(WebContents* web_contents) {
-  const android_webview::BrowserViewRenderer* bvr =
-      android_webview::AwContents::FromWebContents(web_contents)
-          ->GetBrowserViewRenderer();
-  if (!bvr) return "";
-  base::DictionaryValue description;
-  description.SetBoolean("attached", bvr->attached_to_window());
-  description.SetBoolean("visible", bvr->IsVisible());
-  gfx::Rect screen_rect = bvr->GetScreenRect();
-  description.SetInteger("screenX", screen_rect.x());
-  description.SetInteger("screenY", screen_rect.y());
-  description.SetBoolean("empty", screen_rect.size().IsEmpty());
-  if (!screen_rect.size().IsEmpty()) {
-    description.SetInteger("width", screen_rect.width());
-    description.SetInteger("height", screen_rect.height());
-  }
-  std::string json;
-  base::JSONWriter::Write(&description, &json);
-  return json;
 }
 
 // Factory for UnixDomainServerSocket.

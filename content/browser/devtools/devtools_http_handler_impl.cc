@@ -18,6 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_browser_target.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_system_info_handler.h"
@@ -522,9 +523,16 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   if (command == "list") {
     std::string host = info.headers["host"];
     AddRef();  // Balanced in OnTargetListReceived.
-    delegate_->EnumerateTargets(
-        base::Bind(&DevToolsHttpHandlerImpl::OnTargetListReceived,
-                   this, connection_id, host));
+    DevToolsManagerDelegate* manager_delegate =
+        DevToolsManager::GetInstance()->delegate();
+    if (manager_delegate) {
+      manager_delegate->EnumerateTargets(
+          base::Bind(&DevToolsHttpHandlerImpl::OnTargetListReceived,
+                     this, connection_id, host));
+    } else {
+      DevToolsManagerDelegate::TargetList empty_list;
+      OnTargetListReceived(connection_id, host, empty_list);
+    }
     return;
   }
 
@@ -533,7 +541,11 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
         query, net::UnescapeRule::URL_SPECIAL_CHARS));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_ptr<DevToolsTarget> target(delegate_->CreateNewTarget(url));
+    scoped_ptr<DevToolsTarget> target;
+    DevToolsManagerDelegate* manager_delegate =
+        DevToolsManager::GetInstance()->delegate();
+    if (manager_delegate)
+      target = manager_delegate->CreateNewTarget(url);
     if (!target) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
@@ -594,13 +606,13 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
 void DevToolsHttpHandlerImpl::OnTargetListReceived(
     int connection_id,
     const std::string& host,
-    const DevToolsHttpHandlerDelegate::TargetList& targets) {
-  DevToolsHttpHandlerDelegate::TargetList sorted_targets = targets;
+    const DevToolsManagerDelegate::TargetList& targets) {
+  DevToolsManagerDelegate::TargetList sorted_targets = targets;
   std::sort(sorted_targets.begin(), sorted_targets.end(), TimeComparator);
 
   STLDeleteValues(&target_map_);
   base::ListValue list_value;
-  for (DevToolsHttpHandlerDelegate::TargetList::const_iterator it =
+  for (DevToolsManagerDelegate::TargetList::const_iterator it =
       sorted_targets.begin(); it != sorted_targets.end(); ++it) {
     DevToolsTarget* target = *it;
     target_map_[target->GetId()] = target;
@@ -619,7 +631,10 @@ DevToolsTarget* DevToolsHttpHandlerImpl::GetTarget(const std::string& id) {
 
 void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
     int connection_id, const GURL& page_url) {
-  std::string data = delegate_->GetPageThumbnailData(page_url);
+  DevToolsManagerDelegate* manager_delegate =
+      DevToolsManager::GetInstance()->delegate();
+  std::string data =
+      manager_delegate ? manager_delegate->GetPageThumbnailData(page_url) : "";
   if (!data.empty())
     Send200(connection_id, data, "image/png");
   else
@@ -864,7 +879,10 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeTarget(
   if (favicon_url.is_valid())
     dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
 
-  if (!delegate_->GetPageThumbnailData(url).empty()) {
+  DevToolsManagerDelegate* manager_delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (manager_delegate &&
+      !manager_delegate->GetPageThumbnailData(url).empty()) {
     dictionary->SetString(kTargetThumbnailUrlField,
                           std::string(kThumbUrlPrefix) + id);
   }

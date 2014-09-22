@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
 
@@ -22,13 +23,10 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   // Stops http server.
   void Stop();
 
-  // DevToolsHttpProtocolHandler::Delegate overrides.
+  // DevToolsHttpHandlerDelegate implementation.
   virtual std::string GetDiscoveryPageHTML() OVERRIDE;
   virtual bool BundlesFrontendResources() OVERRIDE;
   virtual base::FilePath GetDebugFrontendDir() OVERRIDE;
-  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
-  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) OVERRIDE;
-  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE;
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) OVERRIDE;
@@ -42,6 +40,29 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   DevToolsHttpHandler* devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsDelegate);
+};
+
+class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
+ public:
+  explicit ShellDevToolsManagerDelegate(BrowserContext* browser_context);
+  virtual ~ShellDevToolsManagerDelegate();
+
+  // DevToolsManagerDelegate implementation.
+  virtual void Inspect(BrowserContext* browser_context,
+                       DevToolsAgentHost* agent_host) OVERRIDE {}
+  virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
+                                         bool attached) OVERRIDE {}
+  virtual base::DictionaryValue* HandleCommand(
+      DevToolsAgentHost* agent_host,
+      base::DictionaryValue* command) OVERRIDE;
+  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) OVERRIDE;
+  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE;
+  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
+
+ private:
+  BrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellDevToolsManagerDelegate);
 };
 
 }  // namespace content

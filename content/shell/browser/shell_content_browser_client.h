@@ -75,6 +75,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                               const GURL& current_url,
                                               const GURL& new_url) OVERRIDE;
+  virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(

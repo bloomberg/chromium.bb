@@ -348,6 +348,11 @@ bool ShellContentBrowserClient::ShouldSwapProcessesForRedirect(
   return g_swap_processes_for_redirect;
 }
 
+DevToolsManagerDelegate*
+ShellContentBrowserClient::GetDevToolsManagerDelegate() {
+  return new ShellDevToolsManagerDelegate(browser_context());
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,

@@ -45,6 +45,8 @@
       'browser/android/content_view_util.h',
       'browser/android/dev_tools_server.cc',
       'browser/android/dev_tools_server.h',
+      'browser/android/dev_tools_manager_delegate_android.cc',
+      'browser/android/dev_tools_manager_delegate_android.h',
       'browser/android/dom_distiller/feedback_reporter_android.cc',
       'browser/android/dom_distiller/feedback_reporter_android.h',
       'browser/android/favicon_helper.cc',

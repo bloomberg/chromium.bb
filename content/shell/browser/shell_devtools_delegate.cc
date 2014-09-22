@@ -178,6 +178,8 @@ bool Target::Close() const {
 
 namespace content {
 
+// ShellDevToolsDelegate ----------------------------------------------------
+
 ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context)
     : browser_context_(browser_context) {
   std::string frontend_url;
@@ -218,12 +220,36 @@ base::FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
   return base::FilePath();
 }
 
-std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
+scoped_ptr<net::StreamListenSocket>
+ShellDevToolsDelegate::CreateSocketForTethering(
+    net::StreamListenSocket::Delegate* delegate,
+    std::string* name) {
+  return scoped_ptr<net::StreamListenSocket>();
+}
+
+// ShellDevToolsManagerDelegate ----------------------------------------------
+
+ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
+    BrowserContext* browser_context)
+    : browser_context_(browser_context) {
+}
+
+ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {
+}
+
+base::DictionaryValue* ShellDevToolsManagerDelegate::HandleCommand(
+    DevToolsAgentHost* agent_host,
+    base::DictionaryValue* command) {
+  return NULL;
+}
+
+std::string ShellDevToolsManagerDelegate::GetPageThumbnailData(
+    const GURL& url) {
   return std::string();
 }
 
 scoped_ptr<DevToolsTarget>
-ShellDevToolsDelegate::CreateNewTarget(const GURL& url) {
+ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context_,
                                         url,
                                         NULL,
@@ -233,7 +259,7 @@ ShellDevToolsDelegate::CreateNewTarget(const GURL& url) {
       new Target(DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));
 }
 
-void ShellDevToolsDelegate::EnumerateTargets(TargetCallback callback) {
+void ShellDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
   TargetList targets;
   content::DevToolsAgentHost::List agents =
       content::DevToolsAgentHost::GetOrCreateAll();
@@ -242,13 +268,6 @@ void ShellDevToolsDelegate::EnumerateTargets(TargetCallback callback) {
     targets.push_back(new Target(*it));
   }
   callback.Run(targets);
-}
-
-scoped_ptr<net::StreamListenSocket>
-ShellDevToolsDelegate::CreateSocketForTethering(
-    net::StreamListenSocket::Delegate* delegate,
-    std::string* name) {
-  return scoped_ptr<net::StreamListenSocket>();
 }
 
 }  // namespace content

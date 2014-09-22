@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
+#ifndef CHROME_BROWSER_ANDROID_DEV_TOOLS_MANAGER_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_DEV_TOOLS_MANAGER_DELEGATE_ANDROID_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -11,10 +11,10 @@
 #include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
-class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
+class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
  public:
-  ChromeDevToolsManagerDelegate();
-  virtual ~ChromeDevToolsManagerDelegate();
+  DevToolsManagerDelegateAndroid();
+  virtual ~DevToolsManagerDelegateAndroid();
 
   // content::DevToolsManagerDelegate implementation.
   virtual void Inspect(content::BrowserContext* browser_context,
@@ -32,7 +32,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  private:
   scoped_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegateAndroid);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
+#endif  // CHROME_BROWSER_ANDROID_DEV_TOOLS_MANAGER_DELEGATE_ANDROID_H_

@@ -12,6 +12,7 @@
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
 #include "chromecast/shell/browser/cast_browser_process.h"
+#include "chromecast/shell/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/shell/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,6 +148,11 @@ bool CastContentBrowserClient::CanCreateWindow(
     bool* no_javascript_access) {
   *no_javascript_access = true;
   return false;
+}
+
+content::DevToolsManagerDelegate*
+CastContentBrowserClient::GetDevToolsManagerDelegate() {
+  return new CastDevToolsManagerDelegate();
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(

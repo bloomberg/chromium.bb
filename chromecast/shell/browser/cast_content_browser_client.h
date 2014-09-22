@@ -65,6 +65,8 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       int render_process_id,
       int opener_id,
       bool* no_javascript_access) OVERRIDE;
+  virtual content::DevToolsManagerDelegate*
+      GetDevToolsManagerDelegate() OVERRIDE;
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,

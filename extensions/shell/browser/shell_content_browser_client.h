@@ -60,6 +60,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       int plugin_process_id) OVERRIDE;
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) OVERRIDE;
+  virtual content::DevToolsManagerDelegate*
+      GetDevToolsManagerDelegate() OVERRIDE;
 
  private:
   // Appends command line switches for a renderer process.

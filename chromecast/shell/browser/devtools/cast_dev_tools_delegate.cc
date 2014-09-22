@@ -92,6 +92,8 @@ Target::Target(scoped_refptr<content::DevToolsAgentHost> agent_host)
 
 }  // namespace
 
+// CastDevToolsDelegate -----------------------------------------------------
+
 CastDevToolsDelegate::CastDevToolsDelegate() {
 }
 
@@ -111,16 +113,38 @@ base::FilePath CastDevToolsDelegate::GetDebugFrontendDir() {
   return base::FilePath();
 }
 
-std::string CastDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
+scoped_ptr<net::StreamListenSocket>
+CastDevToolsDelegate::CreateSocketForTethering(
+    net::StreamListenSocket::Delegate* delegate,
+    std::string* name) {
+  return scoped_ptr<net::StreamListenSocket>();
+}
+
+// CastDevToolsManagerDelegate -----------------------------------------------
+
+CastDevToolsManagerDelegate::CastDevToolsManagerDelegate() {
+}
+
+CastDevToolsManagerDelegate::~CastDevToolsManagerDelegate() {
+}
+
+base::DictionaryValue* CastDevToolsManagerDelegate::HandleCommand(
+    content::DevToolsAgentHost* agent_host,
+    base::DictionaryValue* command) {
+  return NULL;
+}
+
+std::string CastDevToolsManagerDelegate::GetPageThumbnailData(
+    const GURL& url) {
   return "";
 }
 
-scoped_ptr<content::DevToolsTarget> CastDevToolsDelegate::CreateNewTarget(
-    const GURL& url) {
+scoped_ptr<content::DevToolsTarget>
+CastDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   return scoped_ptr<content::DevToolsTarget>();
 }
 
-void CastDevToolsDelegate::EnumerateTargets(TargetCallback callback) {
+void CastDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
   TargetList targets;
   content::DevToolsAgentHost::List agents =
       content::DevToolsAgentHost::GetOrCreateAll();
@@ -129,13 +153,6 @@ void CastDevToolsDelegate::EnumerateTargets(TargetCallback callback) {
     targets.push_back(new Target(*it));
   }
   callback.Run(targets);
-}
-
-scoped_ptr<net::StreamListenSocket>
-CastDevToolsDelegate::CreateSocketForTethering(
-    net::StreamListenSocket::Delegate* delegate,
-    std::string* name) {
-  return scoped_ptr<net::StreamListenSocket>();
 }
 
 }  // namespace shell

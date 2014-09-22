@@ -6,28 +6,17 @@
 
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
-
-using content::DevToolsTarget;
-using content::RenderViewHost;
-using content::WebContents;
 
 namespace {
 
@@ -83,38 +72,6 @@ base::FilePath BrowserListTabContentsProvider::GetDebugFrontendDir() {
 #else
   return base::FilePath();
 #endif
-}
-
-std::string BrowserListTabContentsProvider::GetPageThumbnailData(
-    const GURL& url) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Profile* profile = (*it)->profile();
-    history::TopSites* top_sites = profile->GetTopSites();
-    if (!top_sites)
-      continue;
-    scoped_refptr<base::RefCountedMemory> data;
-    if (top_sites->GetPageThumbnail(url, false, &data))
-      return std::string(data->front_as<char>(), data->size());
-  }
-
-  return std::string();
-}
-
-scoped_ptr<DevToolsTarget>
-BrowserListTabContentsProvider::CreateNewTarget(const GURL& url) {
-  chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
-      url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-  if (!params.target_contents)
-    return scoped_ptr<DevToolsTarget>();
-  return scoped_ptr<DevToolsTarget>(
-      DevToolsTargetImpl::CreateForWebContents(params.target_contents, true));
-}
-
-void BrowserListTabContentsProvider::EnumerateTargets(TargetCallback callback) {
-  DevToolsTargetImpl::EnumerateAllTargets(
-      *reinterpret_cast<DevToolsTargetImpl::Callback*>(&callback));
 }
 
 scoped_ptr<net::StreamListenSocket>

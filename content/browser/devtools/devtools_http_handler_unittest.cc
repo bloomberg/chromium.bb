@@ -86,18 +86,6 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
     return base::FilePath();
   }
 
-  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE {
-    return std::string();
-  }
-
-  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) OVERRIDE {
-    return scoped_ptr<DevToolsTarget>();
-  }
-
-  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
-    callback.Run(TargetList());
-  }
-
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) OVERRIDE {
