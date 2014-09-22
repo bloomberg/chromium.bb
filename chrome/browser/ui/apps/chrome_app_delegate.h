@@ -60,7 +60,6 @@ class ChromeAppDelegate : public extensions::AppDelegate,
       content::MediaStreamType type,
       const extensions::Extension* extension) OVERRIDE;
   virtual int PreferredIconSize() OVERRIDE;
-  virtual gfx::ImageSkia GetAppDefaultIcon() OVERRIDE;
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(

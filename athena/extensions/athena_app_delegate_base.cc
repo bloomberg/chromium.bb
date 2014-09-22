@@ -88,11 +88,6 @@ int AthenaAppDelegateBase::PreferredIconSize() {
   return extension_misc::EXTENSION_ICON_SMALL;
 }
 
-gfx::ImageSkia AthenaAppDelegateBase::GetAppDefaultIcon() {
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_APP_DEFAULT_ICON);
-}
-
 bool AthenaAppDelegateBase::IsWebContentsVisible(
     content::WebContents* web_contents) {
   return web_contents->GetNativeView()->IsVisible();

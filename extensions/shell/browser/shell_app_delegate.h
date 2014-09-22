@@ -45,7 +45,6 @@ class ShellAppDelegate : public AppDelegate {
                                           content::MediaStreamType type,
                                           const Extension* extension) OVERRIDE;
   virtual int PreferredIconSize() OVERRIDE;
-  virtual gfx::ImageSkia GetAppDefaultIcon() OVERRIDE;
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(

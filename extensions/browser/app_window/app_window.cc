@@ -39,7 +39,9 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 
 #if !defined(OS_MACOSX)
@@ -799,11 +801,15 @@ void AppWindow::UpdateExtensionAppIcon() {
   if (!extension)
     return;
 
+  gfx::ImageSkia app_default_icon =
+      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_APP_DEFAULT_ICON);
+
   app_icon_image_.reset(new IconImage(browser_context(),
                                       extension,
                                       IconsInfo::GetIcons(extension),
                                       app_delegate_->PreferredIconSize(),
-                                      app_delegate_->GetAppDefaultIcon(),
+                                      app_default_icon,
                                       this));
 
   // Triggers actual image loading with 1x resources. The 2x resource will

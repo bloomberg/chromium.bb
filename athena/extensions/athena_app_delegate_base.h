@@ -33,7 +33,6 @@ class AthenaAppDelegateBase : public extensions::AppDelegate {
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual int PreferredIconSize() OVERRIDE;
-  virtual gfx::ImageSkia GetAppDefaultIcon() OVERRIDE;
   virtual bool IsWebContentsVisible(
       content::WebContents* web_contents) OVERRIDE;
   virtual void SetTerminatingCallback(const base::Closure& callback) OVERRIDE;

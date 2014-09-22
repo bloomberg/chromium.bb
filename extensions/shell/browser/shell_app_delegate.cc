@@ -75,11 +75,6 @@ int ShellAppDelegate::PreferredIconSize() {
   return extension_misc::EXTENSION_ICON_SMALL;
 }
 
-gfx::ImageSkia ShellAppDelegate::GetAppDefaultIcon() {
-  NOTIMPLEMENTED();
-  return gfx::ImageSkia();
-}
-
 void ShellAppDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents,
     bool blocked) {

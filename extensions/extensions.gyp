@@ -997,6 +997,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_browser_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
