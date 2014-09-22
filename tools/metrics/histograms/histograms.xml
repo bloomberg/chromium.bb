@@ -10527,6 +10527,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.harmful.decision" enum="SB3InterstitialDecision">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User decision when presented with a Safe Browsing harmful program
+    interstitial.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.harmful.interaction"
+    enum="SB3InterstitialInteraction">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    User interactions with a Safe Browsing harmful program interstitial.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.malware.decision" enum="SB3InterstitialDecision">
   <owner>felt@chromium.org</owner>
   <summary>

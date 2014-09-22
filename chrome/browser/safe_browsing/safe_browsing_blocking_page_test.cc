@@ -670,8 +670,42 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageBrowserTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageBrowserTest,
+                       HarmfulDontProceed) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_HARMFUL);
+
+  EXPECT_EQ(VISIBLE, GetVisibility("primary-button"));
+  EXPECT_EQ(HIDDEN, GetVisibility("details"));
+  EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
+  EXPECT_EQ(HIDDEN, GetVisibility("error-code"));
+  EXPECT_TRUE(Click("details-button"));
+  EXPECT_EQ(VISIBLE, GetVisibility("details"));
+  EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
+  EXPECT_EQ(HIDDEN, GetVisibility("error-code"));
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+
+  AssertNoInterstitial(false);   // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageBrowserTest, MalwareProceed) {
   GURL url = SetupWarningAndNavigate(SB_THREAT_TYPE_URL_MALWARE);
+
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+  EXPECT_EQ(url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageBrowserTest, HarmfulProceed) {
+  GURL url = SetupWarningAndNavigate(SB_THREAT_TYPE_URL_HARMFUL);
 
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
   AssertNoInterstitial(true);  // Assert the interstitial is gone.

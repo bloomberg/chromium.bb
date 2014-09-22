@@ -106,6 +106,7 @@ const char kDisplayCheckBox[] = "displaycheckbox";
 // Constants for the Experience Sampling instrumentation.
 #if defined(ENABLE_EXTENSIONS)
 const char kEventNameMalware[] = "safebrowsing_interstitial_";
+const char kEventNameHarmful[] = "harmful_interstitial_";
 const char kEventNamePhishing[] = "phishing_interstitial_";
 const char kEventNameOther[] = "safebrowsing_other_interstitial_";
 #endif
@@ -161,6 +162,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       create_view_(true),
       num_visits_(-1) {
   bool malware = false;
+  bool harmful = false;
   bool phishing = false;
   for (UnsafeResourceList::const_iterator iter = unsafe_resources_.begin();
        iter != unsafe_resources_.end(); ++iter) {
@@ -169,15 +171,19 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       malware = true;
+    } else if (threat_type == SB_THREAT_TYPE_URL_HARMFUL) {
+      harmful = true;
     } else {
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
              threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
       phishing = true;
     }
   }
-  DCHECK(phishing || malware);
+  DCHECK(phishing || malware || harmful);
   if (malware)
     interstitial_type_ = TYPE_MALWARE;
+  else if (harmful)
+    interstitial_type_ = TYPE_HARMFUL;
   else
     interstitial_type_ = TYPE_PHISHING;
 
@@ -223,6 +229,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   switch (interstitial_type_) {
     case TYPE_MALWARE:
       event_name = kEventNameMalware;
+      break;
+    case TYPE_HARMFUL:
+      event_name = kEventNameHarmful;
       break;
     case TYPE_PHISHING:
       event_name = kEventNamePhishing;
@@ -492,13 +501,16 @@ void SafeBrowsingBlockingPage::RecordUserDecision(Decision decision) {
                                 decision,
                                 MAX_DECISION);
       break;
+    case TYPE_HARMFUL:
+      UMA_HISTOGRAM_ENUMERATION("interstitial.harmful.decision",
+                                decision,
+                                MAX_DECISION);
+      break;
     case TYPE_PHISHING:
       UMA_HISTOGRAM_ENUMERATION("interstitial.phishing.decision",
                                 decision,
                                 MAX_DECISION);
       break;
-    default:
-      NOTREACHED();
   }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -541,13 +553,16 @@ void SafeBrowsingBlockingPage::RecordUserInteraction(Interaction interaction) {
                                 interaction,
                                 MAX_INTERACTION);
       break;
+    case TYPE_HARMFUL:
+      UMA_HISTOGRAM_ENUMERATION("interstitial.harmful.interaction",
+                                interaction,
+                                MAX_INTERACTION);
+      break;
     case TYPE_PHISHING:
       UMA_HISTOGRAM_ENUMERATION("interstitial.phishing.interaction",
                                 interaction,
                                 MAX_INTERACTION);
       break;
-    default:
-      NOTREACHED();
   }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -690,10 +705,17 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
       "overridable",
       !IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
 
-  if (interstitial_type_ == TYPE_PHISHING)
-    PopulatePhishingLoadTimeData(&load_time_data);
-  else
-    PopulateMalwareLoadTimeData(&load_time_data);
+  switch (interstitial_type_) {
+    case TYPE_MALWARE:
+      PopulateMalwareLoadTimeData(&load_time_data);
+      break;
+    case TYPE_HARMFUL:
+      PopulateHarmfulLoadTimeData(&load_time_data);
+      break;
+    case TYPE_PHISHING:
+      PopulatePhishingLoadTimeData(&load_time_data);
+      break;
+  }
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -725,6 +747,41 @@ void SafeBrowsingBlockingPage::PopulateMalwareLoadTimeData(
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
+
+  load_time_data->SetBoolean(kDisplayCheckBox, CanShowMalwareDetailsOption());
+  if (CanShowMalwareDetailsOption()) {
+    std::string privacy_link = base::StringPrintf(
+        kPrivacyLinkHtml,
+        l10n_util::GetStringUTF8(
+            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
+    load_time_data->SetString(
+        "optInLink",
+        l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
+                                   base::UTF8ToUTF16(privacy_link)));
+    load_time_data->SetBoolean(
+        kBoxChecked,
+        IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
+  }
+}
+
+void SafeBrowsingBlockingPage::PopulateHarmfulLoadTimeData(
+    base::DictionaryValue* load_time_data) {
+  load_time_data->SetBoolean("phishing", false);
+  load_time_data->SetString(
+      "heading", l10n_util::GetStringUTF16(IDS_HARMFUL_V3_HEADING));
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringFUTF16(
+          IDS_HARMFUL_V3_PRIMARY_PARAGRAPH,
+          base::UTF8ToUTF16(url_.host())));
+  load_time_data->SetString(
+      "explanationParagraph",
+      l10n_util::GetStringFUTF16(
+          IDS_HARMFUL_V3_EXPLANATION_PARAGRAPH,
+          base::UTF8ToUTF16(url_.host())));
+  load_time_data->SetString(
+      "finalParagraph",
+      l10n_util::GetStringUTF16(IDS_HARMFUL_V3_PROCEED_PARAGRAPH));
 
   load_time_data->SetBoolean(kDisplayCheckBox, CanShowMalwareDetailsOption());
   if (CanShowMalwareDetailsOption()) {

@@ -216,6 +216,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Which type of interstitial this is.
   enum {
     TYPE_MALWARE,
+    TYPE_HARMFUL,
     TYPE_PHISHING,
   } interstitial_type_;
 
@@ -232,6 +233,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Fills the passed dictionary with the values to be passed to the template
   // when creating the HTML.
   void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
+  void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
 
 #if defined(ENABLE_EXTENSIONS)
