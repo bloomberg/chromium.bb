@@ -103,7 +103,7 @@ ProfileImplIOData::Handle::Handle(Profile* profile)
 ProfileImplIOData::Handle::~Handle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  io_data_->data_reduction_proxy_statistics_prefs_->WritePrefs();
+  io_data_->data_reduction_proxy_statistics_prefs()->WritePrefs();
 #endif
 
   if (io_data_->predictor_ != NULL) {
@@ -182,14 +182,13 @@ void ProfileImplIOData::Handle::Init(
     io_data_->domain_reliability_monitor_->MoveToNetworkThread();
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  io_data_->data_reduction_proxy_unavailable_callback_ =
-      data_reduction_proxy_unavailable;
-  io_data_->data_reduction_proxy_chrome_configurator_ =
-      data_reduction_proxy_chrome_configurator.Pass();
-  io_data_->data_reduction_proxy_params_ =
-      data_reduction_proxy_params.Pass();
-  io_data_->data_reduction_proxy_statistics_prefs_ =
-      data_reduction_proxy_statistics_prefs.Pass();
+  io_data_->set_data_reduction_proxy_unavailable_callback(
+      data_reduction_proxy_unavailable);
+  io_data_->set_data_reduction_proxy_chrome_configurator(
+      data_reduction_proxy_chrome_configurator.Pass());
+  io_data_->set_data_reduction_proxy_params(data_reduction_proxy_params.Pass());
+  io_data_->set_data_reduction_proxy_statistics_prefs(
+      data_reduction_proxy_statistics_prefs.Pass());
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 }
 
@@ -439,34 +438,35 @@ void ProfileImplIOData::InitializeInternal(
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  data_reduction_proxy_auth_request_handler_.reset(
-      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
-          DataReductionProxyChromeSettings::GetClient(),
-          data_reduction_proxy_params_.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-  data_reduction_proxy_usage_stats_.reset(
-      new data_reduction_proxy::DataReductionProxyUsageStats(
-          data_reduction_proxy_params_.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)
-              .get()));
-  data_reduction_proxy_usage_stats_->set_unavailable_callback(
-      data_reduction_proxy_unavailable_callback_);
-
+  set_data_reduction_proxy_auth_request_handler(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+          (new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
+              DataReductionProxyChromeSettings::GetClient(),
+              data_reduction_proxy_params(),
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))));
+  set_data_reduction_proxy_usage_stats(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
+          (new data_reduction_proxy::DataReductionProxyUsageStats(
+              data_reduction_proxy_params(),
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)
+                  .get())));
+  data_reduction_proxy_usage_stats()->set_unavailable_callback(
+      data_reduction_proxy_unavailable_callback());
 
   network_delegate()->set_data_reduction_proxy_params(
-      data_reduction_proxy_params_.get());
+      data_reduction_proxy_params());
   network_delegate()->set_data_reduction_proxy_usage_stats(
-      data_reduction_proxy_usage_stats_.get());
+      data_reduction_proxy_usage_stats());
   network_delegate()->set_data_reduction_proxy_auth_request_handler(
-      data_reduction_proxy_auth_request_handler_.get());
+      data_reduction_proxy_auth_request_handler());
   network_delegate()->set_data_reduction_proxy_statistics_prefs(
-      data_reduction_proxy_statistics_prefs_.get());
+      data_reduction_proxy_statistics_prefs());
   network_delegate()->set_on_resolve_proxy_handler(
       base::Bind(data_reduction_proxy::OnResolveProxyHandler));
   network_delegate()->set_proxy_config_getter(
       base::Bind(
           &DataReductionProxyChromeConfigurator::GetProxyConfigOnIO,
-          base::Unretained(data_reduction_proxy_chrome_configurator_.get())));
+          base::Unretained(data_reduction_proxy_chrome_configurator())));
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   network_delegate()->set_predictor(predictor_.get());

@@ -22,15 +22,6 @@ namespace content {
 class CookieCryptoDelegate;
 }  // namespace content
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-namespace data_reduction_proxy {
-class DataReductionProxyParams;
-class DataReductionProxyUsageStats;
-class DataReductionProxyAuthRequestHandler;
-class DataReductionProxyStatisticsPrefs;
-}  // namespace data_reduction_proxy
-#endif
-
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability
@@ -47,8 +38,6 @@ class SDCHManager;
 namespace storage {
 class SpecialStoragePolicy;
 }  // namespace storage
-
-class DataReductionProxyChromeConfigurator;
 
 class ProfileImplIOData : public ProfileIOData {
  public:
@@ -250,20 +239,6 @@ class ProfileImplIOData : public ProfileIOData {
   base::FilePath profile_path_;
   int app_cache_max_size_;
   int app_media_cache_max_size_;
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-      data_reduction_proxy_params_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
-      data_reduction_proxy_usage_stats_;
-  mutable base::Callback<void(bool)> data_reduction_proxy_unavailable_callback_;
-  mutable scoped_ptr<DataReductionProxyChromeConfigurator>
-      data_reduction_proxy_chrome_configurator_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
-      data_reduction_proxy_auth_request_handler_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-      data_reduction_proxy_statistics_prefs_;
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImplIOData);
 };

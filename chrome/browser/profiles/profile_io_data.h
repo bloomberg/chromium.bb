@@ -19,9 +19,11 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -30,6 +32,10 @@
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
+#endif // SPDY_PROXY_AUTH_ORIGIN
 
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
@@ -377,6 +383,76 @@ class ProfileIOData {
   void set_channel_id_service(
       net::ChannelIDService* channel_id_service) const;
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params()
+      const {
+    return data_reduction_proxy_params_.get();
+  }
+
+  void set_data_reduction_proxy_params(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+          data_reduction_proxy_params) const {
+    data_reduction_proxy_params_ = data_reduction_proxy_params.Pass();
+  }
+
+  data_reduction_proxy::DataReductionProxyUsageStats*
+      data_reduction_proxy_usage_stats() const {
+    return data_reduction_proxy_usage_stats_.get();
+  }
+
+  void set_data_reduction_proxy_statistics_prefs(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
+          data_reduction_proxy_statistics_prefs) {
+    data_reduction_proxy_statistics_prefs_ =
+        data_reduction_proxy_statistics_prefs.Pass();
+  }
+
+  data_reduction_proxy::DataReductionProxyStatisticsPrefs*
+      data_reduction_proxy_statistics_prefs() const {
+    return data_reduction_proxy_statistics_prefs_.get();
+  }
+
+  void set_data_reduction_proxy_usage_stats(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
+          data_reduction_proxy_usage_stats) const {
+     data_reduction_proxy_usage_stats_ =
+         data_reduction_proxy_usage_stats.Pass();
+  }
+
+  base::Callback<void(bool)> data_reduction_proxy_unavailable_callback() const {
+    return data_reduction_proxy_unavailable_callback_;
+  }
+
+  void set_data_reduction_proxy_unavailable_callback(
+      const base::Callback<void(bool)>& unavailable_callback) const {
+    data_reduction_proxy_unavailable_callback_ = unavailable_callback;
+  }
+
+  DataReductionProxyChromeConfigurator*
+      data_reduction_proxy_chrome_configurator() const {
+    return data_reduction_proxy_chrome_configurator_.get();
+  }
+
+  void set_data_reduction_proxy_chrome_configurator(
+      scoped_ptr<DataReductionProxyChromeConfigurator>
+          data_reduction_proxy_chrome_configurator) const {
+    data_reduction_proxy_chrome_configurator_ =
+        data_reduction_proxy_chrome_configurator.Pass();
+  }
+
+  data_reduction_proxy::DataReductionProxyAuthRequestHandler*
+      data_reduction_proxy_auth_request_handler() const {
+    return data_reduction_proxy_auth_request_handler_.get();
+  }
+
+  void set_data_reduction_proxy_auth_request_handler(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+          data_reduction_proxy_auth_request_handler) const {
+    data_reduction_proxy_auth_request_handler_ =
+        data_reduction_proxy_auth_request_handler.Pass();
+  }
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
+
   ChromeNetworkDelegate* network_delegate() const {
     return network_delegate_.get();
   }
@@ -579,6 +655,25 @@ class ProfileIOData {
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
 #endif
   mutable scoped_ptr<net::ChannelIDService> channel_id_service_;
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  // data_reduction_proxy_* classes must be declared before |network_delegate_|.
+  // The data_reduction_proxy_* classes are passed in to |network_delegate_|,
+  // so this ordering ensures that the |network_delegate_| never references
+  // freed objects.
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+      data_reduction_proxy_params_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
+      data_reduction_proxy_usage_stats_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
+            data_reduction_proxy_statistics_prefs_;
+  mutable base::Callback<void(bool)> data_reduction_proxy_unavailable_callback_;
+  mutable scoped_ptr<DataReductionProxyChromeConfigurator>
+      data_reduction_proxy_chrome_configurator_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+      data_reduction_proxy_auth_request_handler_;
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
+
   mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>
       fraudulent_certificate_reporter_;
