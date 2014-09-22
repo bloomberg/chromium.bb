@@ -436,9 +436,6 @@ private:
     bool stoppedDueToErrors() const;
     bool couldPlayIfEnoughData() const;
 
-    // Pauses playback without changing any states or generating events
-    void setPausedInternal(bool);
-
     void setShouldDelayLoadEvent(bool);
     void invalidateCachedTime();
     void refreshCachedTime() const;
@@ -568,8 +565,6 @@ private:
 
     // time has not changed since sending an "ended" event
     bool m_sentEndEvent : 1;
-
-    bool m_pausedInternal : 1;
 
     bool m_closedCaptionsVisible : 1;
 

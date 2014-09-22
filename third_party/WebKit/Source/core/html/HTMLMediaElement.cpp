@@ -345,7 +345,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_seeking(false)
     , m_sentStalledEvent(false)
     , m_sentEndEvent(false)
-    , m_pausedInternal(false)
     , m_closedCaptionsVisible(false)
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
@@ -3190,7 +3189,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged(%p)", this);
 
-    if (!m_player || m_pausedInternal)
+    if (!webMediaPlayer())
         return;
 
     if (webMediaPlayer()->paused())
@@ -3356,16 +3355,6 @@ void HTMLMediaElement::updatePlayState()
         return;
 
     bool isPlaying = webMediaPlayer() && !webMediaPlayer()->paused();
-    if (m_pausedInternal) {
-        if (isPlaying)
-            webMediaPlayer()->pause();
-        refreshCachedTime();
-        m_playbackProgressTimer.stop();
-        if (hasMediaControls())
-            mediaControls()->playbackStopped();
-        return;
-    }
-
     bool shouldBePlaying = potentiallyPlaying();
 
     WTF_LOG(Media, "HTMLMediaElement::updatePlayState(%p) - shouldBePlaying = %s, isPlaying = %s",
@@ -3410,12 +3399,6 @@ void HTMLMediaElement::updatePlayState()
 
     if (renderer())
         renderer()->updateFromElement();
-}
-
-void HTMLMediaElement::setPausedInternal(bool b)
-{
-    m_pausedInternal = b;
-    updatePlayState();
 }
 
 void HTMLMediaElement::stopPeriodicTimers()
@@ -3518,7 +3501,6 @@ void HTMLMediaElement::stop()
     m_playing = false;
     m_paused = true;
     m_seeking = false;
-    setPausedInternal(true);
 
     if (renderer())
         renderer()->updateFromElement();
