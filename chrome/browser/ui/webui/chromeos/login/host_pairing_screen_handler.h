@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/screen_context.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
@@ -18,6 +19,8 @@ class HostPairingScreenHandler : public HostPairingScreenActor,
   virtual ~HostPairingScreenHandler();
 
  private:
+  void HandleContextReady();
+
   // Overridden from BaseScreenHandler:
   virtual void Initialize() OVERRIDE;
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
@@ -33,6 +36,10 @@ class HostPairingScreenHandler : public HostPairingScreenActor,
 
   HostPairingScreenActor::Delegate* delegate_;
   bool show_on_init_;
+  bool js_context_ready_;
+
+  // Caches context changes while JS part is not ready to receive messages.
+  ScreenContext context_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(HostPairingScreenHandler);
 };

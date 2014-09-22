@@ -84,6 +84,9 @@ class ScreenContext : public base::NonThreadSafe {
   void ApplyChanges(const base::DictionaryValue& diff,
                     std::vector<std::string>* keys);
 
+  // Returns underlying dictionary containing all the stored data.
+  const base::DictionaryValue& storage() const { return storage_; }
+
  private:
   bool Set(const KeyType& key, base::Value* value);
 

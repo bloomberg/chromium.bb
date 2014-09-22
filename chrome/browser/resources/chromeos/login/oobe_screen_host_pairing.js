@@ -25,6 +25,9 @@ login.createScreen('HostPairingScreen', 'host-pairing', function() {
   /** @const */ var PAGE_ENROLLMENT_ERROR = 'enrollment-error';
   /** @const */ var PAGE_PAIRING_DONE = 'pairing-done';
 
+  /** @const */ var CALLBACK_CONTEXT_READY = 'contextReady';
+
+
   /** @const */ var PAGE_NAMES = [
       PAGE_WELCOME,
       PAGE_CODE_CONFIRMATION,
@@ -51,6 +54,7 @@ login.createScreen('HostPairingScreen', 'host-pairing', function() {
       }, this);
 
       this.addContextObserver(CONTEXT_KEY_PAGE, this.pageChanged_);
+      this.send(CALLBACK_CONTEXT_READY);
     },
 
     pageChanged_: function(newPage, oldPage) {
