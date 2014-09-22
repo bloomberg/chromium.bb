@@ -282,9 +282,9 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   scoped_ptr<InterstitialPageDelegate> delegate_;
 
-  base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_;
-
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+
+  base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImpl);
 };
