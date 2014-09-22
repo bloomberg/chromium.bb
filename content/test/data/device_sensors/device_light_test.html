@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <title>DeviceLight test</title>
+    <script type="text/javascript">
+      function checkLightEvent(event) {
+        return event.value >= 0;
+      }
+
+      function onLight(event) {
+        if (checkLightEvent(event)) {
+          window.removeEventListener('devicelight', onLight);
+          pass();
+        } else {
+          fail();
+        }
+      }
+
+      function pass() {
+        document.getElementById('status').innerHTML = 'PASS';
+        document.location = '#pass';
+      }
+
+      function fail() {
+        document.location = '#fail';
+      }
+    </script>
+  </head>
+  <body onLoad="window.addEventListener('devicelight', onLight)">
+    <div id="status">FAIL</div>
+  </body>
+</html>

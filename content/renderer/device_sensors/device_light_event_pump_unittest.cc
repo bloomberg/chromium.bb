@@ -111,6 +111,19 @@ TEST_F(DeviceLightEventPumpTest, DidStartPolling) {
   EXPECT_EQ(1, static_cast<double>(received_data.value));
 }
 
+TEST_F(DeviceLightEventPumpTest, FireAllNullEvent) {
+  base::MessageLoopForUI loop;
+
+  light_pump()->Start(listener());
+  light_pump()->OnDidStart(handle());
+
+  base::MessageLoop::current()->Run();
+
+  const DeviceLightData& received_data = listener()->data();
+  EXPECT_TRUE(listener()->did_change_device_light());
+  EXPECT_FALSE(received_data.value);
+}
+
 TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
   base::MessageLoopForUI loop;
 

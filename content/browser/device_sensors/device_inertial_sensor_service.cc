@@ -12,7 +12,8 @@
 namespace content {
 
 DeviceInertialSensorService::DeviceInertialSensorService()
-    : num_motion_readers_(0),
+    : num_light_readers_(0),
+      num_motion_readers_(0),
       num_orientation_readers_(0),
       is_shutdown_(false) {
 }
@@ -59,6 +60,10 @@ bool DeviceInertialSensorService::ChangeNumberConsumers(
       num_orientation_readers_ += delta;
       DCHECK_GE(num_orientation_readers_ , 0);
       return true;
+    case CONSUMER_TYPE_LIGHT:
+      num_light_readers_ += delta;
+      DCHECK_GE(num_light_readers_, 0);
+      return true;
     default:
       NOTREACHED();
   }
@@ -72,6 +77,8 @@ int DeviceInertialSensorService::GetNumberConsumers(
       return num_motion_readers_;
     case CONSUMER_TYPE_ORIENTATION:
       return num_orientation_readers_;
+    case CONSUMER_TYPE_LIGHT:
+      return num_light_readers_;
     default:
       NOTREACHED();
   }

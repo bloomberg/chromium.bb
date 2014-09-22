@@ -57,6 +57,7 @@ class CONTENT_EXPORT DeviceInertialSensorService {
       int delta);
   int GetNumberConsumers(ConsumerType consumer_type) const;
 
+  int num_light_readers_;
   int num_motion_readers_;
   int num_orientation_readers_;
   bool is_shutdown_;

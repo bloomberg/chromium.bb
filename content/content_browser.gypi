@@ -476,6 +476,8 @@
       'browser/device_sensors/data_fetcher_shared_memory_win.cc',
       'browser/device_sensors/device_inertial_sensor_service.cc',
       'browser/device_sensors/device_inertial_sensor_service.h',
+      'browser/device_sensors/device_light_message_filter.cc',
+      'browser/device_sensors/device_light_message_filter.h',
       'browser/device_sensors/device_motion_message_filter.cc',
       'browser/device_sensors/device_motion_message_filter.h',
       'browser/device_sensors/device_orientation_message_filter.cc',

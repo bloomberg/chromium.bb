@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>DeviceLight one-off Infinity event test with alert</title>
+  </head>
+  <body>
+    <div id="status">FAIL</div>
+  </body>
+  <script type="text/javascript">
+    function checkLightEvent(event) {
+      return event.value == Infinity;
+    }
+
+    function onLight(event) {
+      window.removeEventListener('devicelight', onLight);
+      checkLightEvent(event) ? pass() : fail();
+    }
+
+    function pass() {
+      document.getElementById('status').innerHTML = 'PASS';
+      document.location = '#pass';
+    }
+
+    function fail() {
+      document.location = '#fail';
+    }
+
+    window.addEventListener('devicelight', onLight);
+    alert("suspend active DOM objects");
+  </script>
+</html>

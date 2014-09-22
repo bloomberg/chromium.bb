@@ -46,6 +46,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/device_sensors/device_light_message_filter.h"
 #include "content/browser/device_sensors/device_motion_message_filter.h"
 #include "content/browser/device_sensors/device_orientation_message_filter.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -866,6 +867,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
   AddFilter(new GamepadBrowserMessageFilter());
+  AddFilter(new DeviceLightMessageFilter());
   AddFilter(new DeviceMotionMessageFilter());
   AddFilter(new DeviceOrientationMessageFilter());
   AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));

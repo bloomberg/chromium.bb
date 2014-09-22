@@ -42,10 +42,12 @@ class FakeSensorManagerAndroid : public SensorManagerAndroid {
 class AndroidSensorManagerTest : public testing::Test {
  protected:
   AndroidSensorManagerTest() {
+    light_buffer_.reset(new DeviceLightHardwareBuffer);
     motion_buffer_.reset(new DeviceMotionHardwareBuffer);
     orientation_buffer_.reset(new DeviceOrientationHardwareBuffer);
   }
 
+  scoped_ptr<DeviceLightHardwareBuffer> light_buffer_;
   scoped_ptr<DeviceMotionHardwareBuffer> motion_buffer_;
   scoped_ptr<DeviceOrientationHardwareBuffer> orientation_buffer_;
 };
@@ -142,6 +144,19 @@ TEST_F(AndroidSensorManagerTest, DeviceOrientationSensorsActive) {
   ASSERT_FALSE(orientation_buffer_->data.allAvailableSensorsAreActive);
 }
 
+// DeviceLight
+TEST_F(AndroidSensorManagerTest, DeviceLightSensorsActive) {
+  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
+  FakeSensorManagerAndroid sensorManager;
+
+  sensorManager.StartFetchingDeviceLightData(light_buffer_.get());
+
+  sensorManager.GotLight(0, 0, 100);
+  ASSERT_EQ(100, light_buffer_->data.value);
+
+  sensorManager.StopFetchingDeviceLightData();
+  ASSERT_EQ(-1, light_buffer_->data.value);
+}
 
 }  // namespace
 

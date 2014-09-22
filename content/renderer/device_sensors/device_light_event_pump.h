@@ -42,6 +42,9 @@ class CONTENT_EXPORT DeviceLightEventPump
   virtual void SendStartMessage() OVERRIDE;
   virtual void SendStopMessage() OVERRIDE;
 
+ private:
+  bool ShouldFireEvent(double data) const;
+
   scoped_ptr<DeviceLightSharedMemoryReader> reader_;
   double last_seen_data_;
 

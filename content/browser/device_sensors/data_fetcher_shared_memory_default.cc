@@ -29,12 +29,22 @@ static bool SetOrientationBuffer(
   return true;
 }
 
+static bool SetLightBuffer(content::DeviceLightHardwareBuffer* buffer,
+                           double lux) {
+  if (!buffer)
+    return false;
+  buffer->seqlock.WriteBegin();
+  buffer->data.value = lux;
+  buffer->seqlock.WriteEnd();
+  return true;
+}
+
 }  // namespace
 
 namespace content {
 
 DataFetcherSharedMemory::DataFetcherSharedMemory()
-    : motion_buffer_(NULL), orientation_buffer_(NULL) {
+    : motion_buffer_(NULL), orientation_buffer_(NULL), light_buffer_(NULL) {
 }
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
@@ -54,6 +64,10 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationDefaultAvailable",
           false);
       return SetOrientationBuffer(orientation_buffer_, true);
+    case CONSUMER_TYPE_LIGHT:
+      light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
+      return SetLightBuffer(light_buffer_,
+                            std::numeric_limits<double>::infinity());
     default:
       NOTREACHED();
   }
@@ -66,6 +80,8 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       return SetMotionBuffer(motion_buffer_, false);
     case CONSUMER_TYPE_ORIENTATION:
       return SetOrientationBuffer(orientation_buffer_, false);
+    case CONSUMER_TYPE_LIGHT:
+      return SetLightBuffer(light_buffer_, -1);
     default:
       NOTREACHED();
   }

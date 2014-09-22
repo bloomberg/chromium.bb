@@ -7,18 +7,22 @@
 
 namespace content {
 
-// Constants related to the Device Motion/Device Orientation APIs.
+// Constants related to the Device {Motion|Orientation|Light} APIs.
 
 enum ConsumerType {
   CONSUMER_TYPE_MOTION = 1 << 0,
   CONSUMER_TYPE_ORIENTATION = 1 << 1,
+  CONSUMER_TYPE_LIGHT = 1 << 2,
 };
 
 // Specifies the minimal interval between subsequent sensor data updates.
 // Note that when changing this value it is desirable to have an adequate
 // matching value |DeviceSensorEventPump::kDefaultPumpDelayMillis| in
-// content/renderer/device_orientation/device_sensor_event_pump.cc.
+// content/renderer/device_sensors/device_sensor_event_pump.cc.
 const int kInertialSensorIntervalMillis = 50;
+// Corresponding |kDefaultLightPumpDelayMillis| is in
+// content/renderer/device_sensors/device_light_event_pump.cc.
+const int kLightSensorIntervalMillis = 200;
 
 }  // namespace content
 

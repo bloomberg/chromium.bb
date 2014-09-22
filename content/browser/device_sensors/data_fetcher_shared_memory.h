@@ -8,6 +8,7 @@
 #include "content/browser/device_sensors/data_fetcher_shared_memory_base.h"
 
 #if !defined(OS_ANDROID)
+#include "content/common/device_sensors/device_light_hardware_buffer.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/common/device_sensors/device_orientation_hardware_buffer.h"
 #endif
@@ -35,6 +36,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
 #if !defined(OS_ANDROID)
   DeviceMotionHardwareBuffer* motion_buffer_;
   DeviceOrientationHardwareBuffer* orientation_buffer_;
+  DeviceLightHardwareBuffer* light_buffer_;
 #endif
 #if defined(OS_MACOSX)
   virtual void Fetch(unsigned consumer_bitmask) OVERRIDE;

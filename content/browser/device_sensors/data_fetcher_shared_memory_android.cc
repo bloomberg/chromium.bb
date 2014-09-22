@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/device_sensors/sensor_manager_android.h"
+#include "content/common/device_sensors/device_light_hardware_buffer.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/common/device_sensors/device_orientation_hardware_buffer.h"
 
@@ -29,6 +30,9 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       return SensorManagerAndroid::GetInstance()->
           StartFetchingDeviceOrientationData(
               static_cast<DeviceOrientationHardwareBuffer*>(buffer));
+    case CONSUMER_TYPE_LIGHT:
+      return SensorManagerAndroid::GetInstance()->StartFetchingDeviceLightData(
+          static_cast<DeviceLightHardwareBuffer*>(buffer));
     default:
       NOTREACHED();
   }
@@ -42,6 +46,9 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       return true;
     case CONSUMER_TYPE_ORIENTATION:
       SensorManagerAndroid::GetInstance()->StopFetchingDeviceOrientationData();
+      return true;
+    case CONSUMER_TYPE_LIGHT:
+      SensorManagerAndroid::GetInstance()->StopFetchingDeviceLightData();
       return true;
     default:
       NOTREACHED();
