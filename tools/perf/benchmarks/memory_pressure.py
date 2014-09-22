@@ -7,7 +7,7 @@ from measurements import memory_pressure
 import page_sets
 
 
-@benchmark.Enabled('has tabs')
+@benchmark.Disabled
 class MemoryPressure(benchmark.Benchmark):
   test = memory_pressure.MemoryPressure
   page_set = page_sets.Typical25PageSet
