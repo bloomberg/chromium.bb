@@ -112,16 +112,16 @@ class GpuBot:
       gpu_bot._end_time = unserializeTime(dict['end_time'])
 
     if 'hours_since_last_run' in dict:
-      self._hours_since_last_run = dict['hours_since_last_run']
+      gpu_bot._hours_since_last_run = dict['hours_since_last_run']
 
     if 'failure_string' in dict:
-      self.failure_string = dict['failure_string']
+      gpu_bot.failure_string = dict['failure_string']
 
     if 'bot_url' in dict:
-      self.bot_url = dict['bot_url']
+      gpu_bot.bot_url = dict['bot_url']
 
     if 'build_url' in dict:
-      self.build_url = dict['build_url']
+      gpu_bot.build_url = dict['build_url']
 
     return gpu_bot
 
