@@ -848,17 +848,16 @@ class Licensing(object):
         # We dump packages where licensing failed too.
         pkg.SaveLicenseDump(pkg.license_dump_path)
 
-    # To debug the code, we force the data to be re-read from the dumps
-    # instead of reusing what we may have in memory.
     for package_name in self.packages:
       pkg = self.packages[package_name]
-      if pkg.category == 'virtual':
-        continue
-
-      self._LoadLicenseDump(pkg)
-      logging.debug('loaded dump for %s', pkg.fullnamerev)
       if pkg.skip:
         logging.info('Package %s is in skip list', pkg.fullnamerev)
+        continue
+
+      # TODO(dgarrett): Only load if the in-memory version is incomplete.
+      self._LoadLicenseDump(pkg)
+      logging.debug('loaded dump for %s', pkg.fullnamerev)
+
       if pkg.licensing_failed:
         logging.info('Package %s failed licensing', pkg.fullnamerev)
         self.incomplete_packages += [pkg.fullnamerev]
