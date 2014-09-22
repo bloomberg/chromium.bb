@@ -70,7 +70,16 @@ public:
     void trace(Visitor*) { }
 
 private:
-    TypeConversions() { }
+    TypeConversions()
+        : m_long(0)
+        , m_unsignedLong(0)
+        , m_longLong(0)
+        , m_unsignedLongLong(0)
+        , m_byte(0)
+        , m_octet(0)
+        , m_short(0)
+        , m_unsignedShort(0)
+    { }
 
     long m_long;
     unsigned long m_unsignedLong;
