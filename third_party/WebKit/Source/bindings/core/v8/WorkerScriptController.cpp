@@ -177,19 +177,15 @@ bool WorkerScriptController::initializeContextIfNeeded()
     context->SetEmbedderData(0, v8AtomicString(m_isolate, "worker"));
 
     // Create a new JS object and use it as the prototype for the shadow global object.
-    const WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::wrapperTypeInfo;
-    if (m_workerGlobalScope.isServiceWorkerGlobalScope())
-        contextType = &V8ServiceWorkerGlobalScope::wrapperTypeInfo;
-    else if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
-        contextType = &V8SharedWorkerGlobalScope::wrapperTypeInfo;
-    v8::Handle<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(contextType);
+    const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope.wrapperTypeInfo();
+    v8::Handle<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
     v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(m_isolate, workerGlobalScopeConstructor);
     if (jsWorkerGlobalScope.IsEmpty()) {
         m_scriptState->disposePerContextData();
         return false;
     }
 
-    V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtrWillBeRawPtr<WorkerGlobalScope>(&m_workerGlobalScope), contextType, jsWorkerGlobalScope, m_isolate);
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(&m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope, m_isolate);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());

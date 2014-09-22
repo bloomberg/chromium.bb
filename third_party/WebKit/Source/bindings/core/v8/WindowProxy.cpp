@@ -281,11 +281,12 @@ static v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> contex
 bool WindowProxy::installDOMWindow()
 {
     LocalDOMWindow* window = m_frame->domWindow();
-    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(&V8Window::wrapperTypeInfo));
+    const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
+    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(wrapperTypeInfo));
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, window->toScriptWrappableBase());
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window->toScriptWrappableBase());
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -308,10 +309,10 @@ bool WindowProxy::installDOMWindow()
     //       views of the LocalDOMWindow will die together once that wrapper clears the persistent
     //       reference.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, window->toScriptWrappableBase());
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, wrapperTypeInfo, window->toScriptWrappableBase());
     innerGlobalObject->SetPrototype(windowWrapper);
-    V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<LocalDOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate);
-    V8Window::installConditionallyEnabledProperties(windowWrapper, m_isolate);
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(window, wrapperTypeInfo, windowWrapper, m_isolate);
+    wrapperTypeInfo->installConditionallyEnabledProperties(windowWrapper, m_isolate);
     return true;
 }
 
