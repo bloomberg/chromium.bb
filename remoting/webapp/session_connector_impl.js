@@ -428,7 +428,7 @@ remoting.SessionConnectorImpl.prototype.onIT2MeHostInfo_ = function(xhr) {
       this.hostJid_ = host.data.jabberId;
       this.hostPublicKey_ = host.data.publicKey;
       this.hostDisplayName_ = this.hostJid_.split('/')[0];
-      this.createSession_();
+      this.connectSignaling_();
       return;
     } else {
       console.error('Invalid "support-hosts" response from server.');
