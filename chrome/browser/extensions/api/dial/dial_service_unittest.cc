@@ -83,24 +83,40 @@ TEST_F(DialServiceTest, TestMultipleNetworkInterfaces) {
   dial_service_.discovery_active_ = true;
   net::NetworkInterfaceList interface_list;
   interface_list.push_back(
-      net::NetworkInterface("network1", "network1", 0,
+      net::NetworkInterface("network1",
+                            "network1",
+                            0,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_, 0));
+                            mock_ip_,
+                            0,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
   interface_list.push_back(
-      net::NetworkInterface("network2", "network2", 1,
+      net::NetworkInterface("network2",
+                            "network2",
+                            1,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_, 0));
+                            mock_ip_,
+                            0,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
   interface_list.push_back(
-      net::NetworkInterface("network3", "network3", 2,
+      net::NetworkInterface("network3",
+                            "network3",
+                            2,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_, 0));
+                            mock_ip_,
+                            0,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   // "network4" is equivalent to "network2" because both the address family
   // and interface index are the same.
   interface_list.push_back(
-      net::NetworkInterface("network4", "network4", 1,
+      net::NetworkInterface("network4",
+                            "network4",
+                            1,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_, 0));
+                            mock_ip_,
+                            0,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   // 3 sockets * 4 requests per socket = 12 requests
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(12);

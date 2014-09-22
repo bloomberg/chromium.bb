@@ -62,7 +62,8 @@ TEST_F(IpcNetworkManagerTest, DISABLED_TestMergeNetworkList) {
                             0,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
                             ip_number,
-                            64));
+                            64,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   EXPECT_TRUE(net::ParseIPLiteralToNumber(kIPv6PublicAddrString2, &ip_number));
   list.push_back(
@@ -71,7 +72,8 @@ TEST_F(IpcNetworkManagerTest, DISABLED_TestMergeNetworkList) {
                             0,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
                             ip_number,
-                            64));
+                            64,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   network_manager_->OnNetworkListChanged(list);
   network_manager_->GetNetworks(&networks);
@@ -87,7 +89,8 @@ TEST_F(IpcNetworkManagerTest, DISABLED_TestMergeNetworkList) {
                             0,
                             net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
                             ip_number,
-                            48));
+                            48,
+                            net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   network_manager_->OnNetworkListChanged(list);
 

@@ -312,28 +312,30 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
   // Simulate a VPN connection. The proxy should be disabled.
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   settings->network_interfaces_.reset(new net::NetworkInterfaceList());
-  settings->network_interfaces_->push_back(
-      net::NetworkInterface("tun0",  /* network interface name */
-                            "tun0",  /* network interface friendly name */
-                            0,  /* interface index */
-                            net::NetworkChangeNotifier::CONNECTION_WIFI,
-                            net::IPAddressNumber(), /* IP address */
-                            0  /* network prefix */
-                            ));
+  settings->network_interfaces_->push_back(net::NetworkInterface(
+      "tun0", /* network interface name */
+      "tun0", /* network interface friendly name */
+      0,      /* interface index */
+      net::NetworkChangeNotifier::CONNECTION_WIFI,
+      net::IPAddressNumber(),        /* IP address */
+      0,                             /* network prefix */
+      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
+      ));
   settings_->OnIPAddressChanged();
   base::MessageLoop::current()->RunUntilIdle();
   CheckProxyConfigs(false, false, false);
 
   // Check that the proxy is re-enabled if a non-VPN connection is later used.
   settings->network_interfaces_.reset(new net::NetworkInterfaceList());
-  settings->network_interfaces_->push_back(
-      net::NetworkInterface("eth0",  /* network interface name */
-                            "eth0",  /* network interface friendly name */
-                            0,  /* interface index */
-                            net::NetworkChangeNotifier::CONNECTION_WIFI,
-                            net::IPAddressNumber(),
-                            0  /* network prefix */
-                            ));
+  settings->network_interfaces_->push_back(net::NetworkInterface(
+      "eth0", /* network interface name */
+      "eth0", /* network interface friendly name */
+      0,      /* interface index */
+      net::NetworkChangeNotifier::CONNECTION_WIFI,
+      net::IPAddressNumber(),
+      0,                             /* network prefix */
+      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
+      ));
   CheckProbeOnIPChange(kProbeURLWithOKResponse,
                        "OK",
                        true,

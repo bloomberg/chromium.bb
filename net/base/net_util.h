@@ -438,6 +438,24 @@ NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
 // machine.
 NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 
+// A subset of IP address attributes which are actionable by the
+// application layer. Currently unimplemented for all hosts;
+// IP_ADDRESS_ATTRIBUTE_NONE is always returned.
+enum IPAddressAttributes {
+  IP_ADDRESS_ATTRIBUTE_NONE = 0,
+
+  // A temporary address is dynamic by nature and will not contain MAC
+  // address. Presence of MAC address in IPv6 addresses can be used to
+  // track an endpoint and cause privacy concern. Please refer to
+  // RFC4941.
+  IP_ADDRESS_ATTRIBUTE_TEMPORARY = 1 << 0,
+
+  // A temporary address could become deprecated once the preferred
+  // lifetime is reached. It is still valid but shouldn't be used to
+  // create new connections.
+  IP_ADDRESS_ATTRIBUTE_DEPRECATED = 1 << 1,
+};
+
 // struct that is used by GetNetworkList() to represent a network
 // interface.
 struct NET_EXPORT NetworkInterface {
@@ -447,7 +465,8 @@ struct NET_EXPORT NetworkInterface {
                    uint32 interface_index,
                    NetworkChangeNotifier::ConnectionType type,
                    const IPAddressNumber& address,
-                   uint32 network_prefix);
+                   uint32 network_prefix,
+                   int ip_address_attributes);
   ~NetworkInterface();
 
   std::string name;
@@ -456,6 +475,7 @@ struct NET_EXPORT NetworkInterface {
   NetworkChangeNotifier::ConnectionType type;
   IPAddressNumber address;
   uint32 network_prefix;
+  int ip_address_attributes;  // Combination of |IPAddressAttributes|.
 };
 
 typedef std::vector<NetworkInterface> NetworkInterfaceList;

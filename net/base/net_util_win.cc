@@ -190,20 +190,25 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
             if (ipv6_valid_lifetime == 0 ||
                 ipv6_valid_lifetime > address->ValidLifetime) {
               ipv6_valid_lifetime = address->ValidLifetime;
-              ipv6_address.reset(new NetworkInterface(adapter->AdapterName,
-                                 base::SysWideToNativeMB(adapter->FriendlyName),
-                                 index,
-                                 GetNetworkInterfaceType(adapter->IfType),
-                                 endpoint.address(),
-                                 net_prefix));
+              ipv6_address.reset(new NetworkInterface(
+                  adapter->AdapterName,
+                  base::SysWideToNativeMB(adapter->FriendlyName),
+                  index,
+                  GetNetworkInterfaceType(adapter->IfType),
+                  endpoint.address(),
+                  net_prefix,
+                  IP_ADDRESS_ATTRIBUTE_NONE));
               continue;
             }
           }
           networks->push_back(
               NetworkInterface(adapter->AdapterName,
                                base::SysWideToNativeMB(adapter->FriendlyName),
-                               index, GetNetworkInterfaceType(adapter->IfType),
-                               endpoint.address(), net_prefix));
+                               index,
+                               GetNetworkInterfaceType(adapter->IfType),
+                               endpoint.address(),
+                               net_prefix,
+                               IP_ADDRESS_ATTRIBUTE_NONE));
         }
       }
     }
