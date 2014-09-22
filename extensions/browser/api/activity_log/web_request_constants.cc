@@ -5,7 +5,7 @@
 // Constants used when describing request modifications via the WebRequest API
 // in the activity log.
 
-#include "chrome/browser/extensions/activity_log/web_request_constants.h"
+#include "extensions/browser/api/activity_log/web_request_constants.h"
 
 namespace activity_log_web_request_constants {
 

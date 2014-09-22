@@ -302,6 +302,8 @@
         # Note: sources list duplicated in GN build.
         # NOTE: When moving an API out of Chrome be sure to verify that the
         # Android build still compiles. See conditions below.
+        'browser/api/activity_log/web_request_constants.cc',
+        'browser/api/activity_log/web_request_constants.h',
         'browser/api/api_resource.cc',
         'browser/api/api_resource.h',
         'browser/api/api_resource_manager.h',

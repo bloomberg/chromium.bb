@@ -5,8 +5,8 @@
 // Constants used when describing request modifications via the WebRequest API
 // in the activity log.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_WEB_REQUEST_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_WEB_REQUEST_CONSTANTS_H_
+#ifndef EXTENSIONS_BROWSER_API_ACTIVITY_LOG_WEB_REQUEST_CONSTANTS_H_
+#define EXTENSIONS_BROWSER_API_ACTIVITY_LOG_WEB_REQUEST_CONSTANTS_H_
 
 namespace activity_log_web_request_constants {
 
@@ -33,4 +33,4 @@ extern const char kCookieModDomainKey[];
 
 }  // namespace activity_log_web_request_constants
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_WEB_REQUEST_CONSTANTS_H_
+#endif  // EXTENSIONS_BROWSER_API_ACTIVITY_LOG_WEB_REQUEST_CONSTANTS_H_

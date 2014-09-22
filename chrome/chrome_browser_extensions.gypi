@@ -94,8 +94,6 @@
       'browser/extensions/activity_log/hashed_ad_networks.h',
       'browser/extensions/activity_log/uma_policy.cc',
       'browser/extensions/activity_log/uma_policy.h',
-      'browser/extensions/activity_log/web_request_constants.cc',
-      'browser/extensions/activity_log/web_request_constants.h',
       'browser/extensions/api/activity_log_private/activity_log_private_api.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_api.h',
       'browser/extensions/api/alarms/alarm_manager.cc',

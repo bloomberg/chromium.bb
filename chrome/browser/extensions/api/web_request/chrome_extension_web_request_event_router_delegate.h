@@ -21,21 +21,12 @@ class ChromeExtensionWebRequestEventRouterDelegate :
   virtual bool OnGetMatchingListenersImplCheck(
     int tab_id, int window_id, net::URLRequest* request) OVERRIDE;
   virtual void LogExtensionActivity(
-    void* browser_context_id,
+    content::BrowserContext* browser_context,
     bool is_incognito,
     const std::string& extension_id,
     const GURL& url,
-    const std::string& api_calli,
-    const extension_web_request_api_helpers::EventResponseDelta& delta)
-      OVERRIDE;
- private:
-  void LogExtensionActivityInternal(
-    void* browser_context_id,
-    bool is_incognito,
-    const std::string& extension_id,
-    const GURL& url,
-    const std::string& api_calli,
-    scoped_ptr<base::DictionaryValue> details);
+    const std::string& api_call,
+    scoped_ptr<base::DictionaryValue> details) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_CHROME_EXTENSION_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_

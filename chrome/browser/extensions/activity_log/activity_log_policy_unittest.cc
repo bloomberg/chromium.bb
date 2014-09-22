@@ -6,7 +6,7 @@
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
-#include "chrome/browser/extensions/activity_log/web_request_constants.h"
+#include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

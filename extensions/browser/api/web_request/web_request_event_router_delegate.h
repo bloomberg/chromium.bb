@@ -15,13 +15,13 @@ namespace base {
 class DictionaryValue;
 }  // namspace base
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace net {
 class URLRequest;
 }  // namspace net
-
-namespace extension_web_request_api_helpers {
-struct EventResponseDelta;
-}  // extension_web_request_api_helpers
 
 namespace extensions {
 
@@ -43,12 +43,12 @@ class WebRequestEventRouterDelegate {
 
   // Logs an extension action.
   virtual void LogExtensionActivity(
-      void* browser_context_id,
+      content::BrowserContext* browser_context,
       bool is_incognito,
       const std::string& extension_id,
       const GURL& url,
-      const std::string& api_calli,
-      const extension_web_request_api_helpers::EventResponseDelta& delta) = 0;
+      const std::string& api_call,
+       scoped_ptr<base::DictionaryValue> details) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestEventRouterDelegate);
 };

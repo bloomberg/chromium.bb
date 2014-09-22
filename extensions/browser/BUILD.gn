@@ -33,6 +33,8 @@ source_set("browser") {
     # TODO: Eventually the entire extensions module should not be built
     # when enable_extensions=false.
     sources += [
+      "api/activity_log/web_request_constants.cc",
+      "api/activity_log/web_request_constants.h",
       "api/api_resource.cc",
       "api/api_resource.h",
       "api/api_resource_manager.h",
