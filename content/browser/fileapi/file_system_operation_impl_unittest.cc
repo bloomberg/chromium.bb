@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/fileapi/mock_file_change_observer.h"
+#include "content/browser/fileapi/mock_file_update_observer.h"
 #include "content/browser/quota/mock_quota_manager.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/async_file_test_helper.h"
@@ -51,6 +52,8 @@ class FileSystemOperationImplTest
     EXPECT_TRUE(base_.CreateUniqueTempDir());
     change_observers_ =
         storage::MockFileChangeObserver::CreateList(&change_observer_);
+    update_observers_ =
+        storage::MockFileUpdateObserver::CreateList(&update_observer_);
 
     base::FilePath base_dir = base_.path().AppendASCII("filesystem");
     quota_manager_ =
@@ -63,6 +66,8 @@ class FileSystemOperationImplTest
         quota_manager(), base::MessageLoopProxy::current().get());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
     sandbox_file_system_.AddFileChangeObserver(&change_observer_);
+    sandbox_file_system_.AddFileUpdateObserver(&update_observer_);
+    update_observer_.Disable();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -292,12 +297,14 @@ class FileSystemOperationImplTest
       storage::FileSystemOperation::CopyOrMoveOption option) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->Move(
         src,
         dest,
         option,
         RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
@@ -307,6 +314,7 @@ class FileSystemOperationImplTest
       storage::FileSystemOperation::CopyOrMoveOption option) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->Copy(
         src,
         dest,
@@ -314,6 +322,7 @@ class FileSystemOperationImplTest
         FileSystemOperationRunner::CopyProgressCallback(),
         RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
@@ -321,36 +330,44 @@ class FileSystemOperationImplTest
                                       const FileSystemURL& dest) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->CopyInForeignFile(
         src, dest, RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error Truncate(const FileSystemURL& url, int size) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->Truncate(
         url, size, RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error CreateFile(const FileSystemURL& url, bool exclusive) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->CreateFile(
         url, exclusive, RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error Remove(const FileSystemURL& url, bool recursive) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->Remove(
         url, recursive, RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
@@ -359,57 +376,69 @@ class FileSystemOperationImplTest
                                     bool recursive) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->CreateDirectory(
         url,
         exclusive,
         recursive,
         RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error GetMetadata(const FileSystemURL& url) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->GetMetadata(
         url, RecordMetadataCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error ReadDirectory(const FileSystemURL& url) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->ReadDirectory(
         url, RecordReadDirectoryCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error CreateSnapshotFile(const FileSystemURL& url) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->CreateSnapshotFile(
         url, RecordSnapshotFileCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error FileExists(const FileSystemURL& url) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->FileExists(
         url, RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
   base::File::Error DirectoryExists(const FileSystemURL& url) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->DirectoryExists(
         url, RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
@@ -418,12 +447,14 @@ class FileSystemOperationImplTest
                               const base::Time& last_modified_time) {
     base::File::Error status;
     base::RunLoop run_loop;
+    update_observer_.Enable();
     operation_runner()->TouchFile(
         url,
         last_access_time,
         last_modified_time,
         RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
+    update_observer_.Disable();
     return status;
   }
 
@@ -445,6 +476,8 @@ class FileSystemOperationImplTest
 
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
+  storage::MockFileUpdateObserver update_observer_;
+  storage::UpdateObserverList update_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_;
 

@@ -77,6 +77,7 @@ class SandboxFileSystemTestHelper {
   storage::FileSystemOperationContext* NewOperationContext();
 
   void AddFileChangeObserver(storage::FileChangeObserver* observer);
+  void AddFileUpdateObserver(storage::FileUpdateObserver* observer);
 
   storage::FileSystemContext* file_system_context() const {
     return file_system_context_.get();

@@ -422,6 +422,7 @@ OperationID FileSystemOperationRunner::RemoveFile(
     DidFinish(handle, callback, error);
     return handle.id;
   }
+  PrepareForWrite(handle.id, url);
   operation->RemoveFile(
       url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -441,6 +442,7 @@ OperationID FileSystemOperationRunner::RemoveDirectory(
     DidFinish(handle, callback, error);
     return handle.id;
   }
+  PrepareForWrite(handle.id, url);
   operation->RemoveDirectory(
       url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),

@@ -136,6 +136,12 @@ void SandboxFileSystemTestHelper::AddFileChangeObserver(
       type_, observer, NULL);
 }
 
+void SandboxFileSystemTestHelper::AddFileUpdateObserver(
+    storage::FileUpdateObserver* observer) {
+  file_system_context_->sandbox_delegate()->AddFileUpdateObserver(
+      type_, observer, NULL);
+}
+
 storage::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
   return file_system_context()->sandbox_delegate()->usage_cache();
 }
