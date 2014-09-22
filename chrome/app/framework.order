@@ -46,6 +46,9 @@ ___gcov_flush
 ___gcov_merge_add
 ___gcov_fork
 
+# Provided by build/sanitizers/sanitizer_options.cc in ASan builds.
+___asan_default_options
+
 # Written in asm as a .globl.  (Is that necessary?)
 _NaClSwitch
 _NaClSyscallSeg
