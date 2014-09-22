@@ -119,8 +119,76 @@ cr.define('cloudprint', function() {
     }
   };
 
+  /** Namespace which contains a method to parse printer sharing invitation. */
+  function InvitationParser() {};
+
+  /**
+   * Enumeration of invitation field names.
+   * @enum {string}
+   * @private
+   */
+  InvitationParser.Field_ = {
+    PRINTER: 'printer',
+    RECEIVER: 'receiver',
+    SENDER: 'sender'
+  };
+
+  /**
+   * Enumeration of cloud destination types that are supported by print preview.
+   * @enum {string}
+   * @private
+   */
+  InvitationParser.AclType_ = {
+    DOMAIN: 'DOMAIN',
+    GROUP: 'GROUP',
+    PUBLIC: 'PUBLIC',
+    USER: 'USER'
+  };
+
+  /**
+   * Parses printer sharing invitation from JSON from GCP invite API response.
+   * @param {!Object} json Object that represents a invitation search response.
+   * @param {string} account The account this invitation is sent for.
+   * @return {!print_preview.Invitation} Parsed invitation.
+   */
+  InvitationParser.parse = function(json, account) {
+    if (!json.hasOwnProperty(InvitationParser.Field_.SENDER) ||
+        !json.hasOwnProperty(InvitationParser.Field_.RECEIVER) ||
+        !json.hasOwnProperty(InvitationParser.Field_.PRINTER)) {
+      throw Error('Invitation does not have necessary info.');
+    }
+
+    var nameFormatter = function(name, scope) {
+      return name && scope ? (name + ' (' + scope + ')') : (name || scope);
+    };
+
+    var sender = json[InvitationParser.Field_.SENDER];
+    var senderName = nameFormatter(sender['name'], sender['email']);
+
+    var receiver = json[InvitationParser.Field_.RECEIVER];
+    var receiverName = '';
+    var receiverType = receiver['type'];
+    if (receiverType == InvitationParser.AclType_.USER) {
+      // It's a personal invitation, empty name indicates just that.
+    } else if (receiverType == InvitationParser.AclType_.GROUP ||
+               receiverType == InvitationParser.AclType_.DOMAIN) {
+      receiverName = nameFormatter(receiver['name'], receiver['scope']);
+    } else {
+      throw Error('Invitation of unsupported receiver type');
+    }
+
+    var destination = cloudprint.CloudDestinationParser.parse(
+        json[InvitationParser.Field_.PRINTER],
+        print_preview.Destination.Origin.COOKIES,
+        account);
+
+    return new print_preview.Invitation(
+        senderName, receiverName, destination, receiver, account);
+  };
+
   // Export
   return {
-    CloudDestinationParser: CloudDestinationParser
+    CloudDestinationParser: CloudDestinationParser,
+    InvitationParser: InvitationParser
   };
 });

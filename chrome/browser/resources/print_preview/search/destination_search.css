@@ -64,6 +64,41 @@
   padding: 0 14px 18px;
 }
 
+#destination-search .invitation-container {
+  -webkit-animation: invitation-fadein 500ms;
+  background-color: rgb(249, 237, 190);
+  border-top: solid 1px rgb(245, 233, 183);
+  padding: 12px;
+}
+
+@-webkit-keyframes invitation-fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#destination-search .invitation-text {
+  -webkit-padding-after: 12px;
+  text-align: center;
+}
+
+#destination-search .invitation-buttons {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+#destination-search .invitation-buttons > *:not(:first-child) {
+  -webkit-margin-start: 10px;
+}
+
+#destination-search #invitation-process-throbber {
+  display: block;
+}
+
 #destination-search .cloudprint-promo {
   -webkit-box-align: center;
   -webkit-user-select: none;

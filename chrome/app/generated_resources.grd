@@ -8411,6 +8411,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS" desc="The text for the button to open the printer's advanced settings dialog.">
           Change printer options...
         </message>
+        <message name="IDS_PRINT_PREVIEW_ACCEPT_INVITE" desc="Text for the button to accept the printer-sharing invitation.">
+          Accept
+        </message>
+        <message name="IDS_PRINT_PREVIEW_ACCEPT_GROUP_INVITE" desc="Text for the button to accept the printer-sharing invitation for the group of users.">
+          Accept for group
+        </message>
+        <message name="IDS_PRINT_PREVIEW_REJECT_INVITE" desc="Text for the button to reject the printer-sharing invitation.">
+          Reject
+        </message>
+        <message name="IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT" desc="Message to show when the user has pending printer-sharing invitation for the group of users he is a manager of.">
+          &lt;strong&gt;<ph name="SENDER">$1</ph>&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME">$2</ph>&lt;/strong&gt; with a group you own: &lt;strong&gt;<ph name="GROUP_NAME">$3</ph>&lt;/strong&gt;. If you accept, all group members will be able to print to the printer.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_INVITE_TEXT" desc="Message to show when the user has pending printer-sharing invitation.">
+          &lt;strong&gt;<ph name="SENDER">$1</ph>&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME">$2</ph>&lt;/strong&gt; with you.
+        </message>
       </if>
 
       <!-- Load State -->

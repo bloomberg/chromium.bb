@@ -57,6 +57,13 @@ cr.define('print_preview', function() {
         this.nativeLayer_, this.userInfo_, this.appState_);
 
     /**
+     * Data store which holds printer sharing invitations.
+     * @type {!print_preview.InvitationStore}
+     * @private
+     */
+    this.invitationStore_ = new print_preview.InvitationStore(this.userInfo_);
+
+    /**
      * Storage of the print ticket used to create the print job.
      * @type {!print_preview.PrintTicketStore}
      * @private
@@ -79,7 +86,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationSearch_ = new print_preview.DestinationSearch(
-        this.destinationStore_, this.userInfo_);
+        this.destinationStore_, this.invitationStore_, this.userInfo_);
     this.addChild(this.destinationSearch_);
 
     /**
@@ -665,8 +672,10 @@ cr.define('print_preview', function() {
           this.onCloudPrintError_.bind(this));
 
       this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
+      this.invitationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
       if (this.destinationSearch_.getIsVisible()) {
         this.destinationStore_.startLoadCloudDestinations();
+        this.invitationStore_.startLoadingInvitations();
       }
     },
 
@@ -911,9 +920,6 @@ cr.define('print_preview', function() {
      */
     onDestinationChangeButtonActivate_: function() {
       this.destinationSearch_.setIsVisible(true);
-      this.destinationStore_.startLoadCloudDestinations();
-      this.destinationStore_.startLoadLocalDestinations();
-      this.destinationStore_.startLoadPrivetDestinations();
     },
 
     /**
@@ -1227,6 +1233,8 @@ cr.define('print_preview', function() {
 <include src="data/local_parsers.js">
 <include src="data/cloud_parsers.js">
 <include src="data/destination_store.js">
+<include src="data/invitation.js">
+<include src="data/invitation_store.js">
 <include src="data/margins.js">
 <include src="data/document_info.js">
 <include src="data/printable_area.js">
@@ -1278,7 +1286,7 @@ cr.define('print_preview', function() {
 
 <include src="previewarea/margin_control.js">
 <include src="previewarea/margin_control_container.js">
-<include src="../pdf/pdf_scripting_api.js" >
+<include src="../pdf/pdf_scripting_api.js">
 <include src="previewarea/preview_area.js">
 <include src="preview_generator.js">
 

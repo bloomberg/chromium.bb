@@ -348,6 +348,15 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("showAdvancedOptions",
                              IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS);
 
+  source->AddLocalizedString("accept", IDS_PRINT_PREVIEW_ACCEPT_INVITE);
+  source->AddLocalizedString(
+      "acceptForGroup", IDS_PRINT_PREVIEW_ACCEPT_GROUP_INVITE);
+  source->AddLocalizedString("reject", IDS_PRINT_PREVIEW_REJECT_INVITE);
+  source->AddLocalizedString(
+      "groupPrinterSharingInviteText", IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT);
+  source->AddLocalizedString(
+      "printerSharingInviteText", IDS_PRINT_PREVIEW_INVITE_TEXT);
+
   source->SetJsonPath("strings.js");
   source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);
   source->AddResourcePath("images/printer.png",
