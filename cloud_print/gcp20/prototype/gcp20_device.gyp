@@ -49,6 +49,8 @@
         'dns_response_builder.h',
         'dns_sd_server.cc',
         'dns_sd_server.h',
+        'gcp20_switches.cc',
+        'gcp20_switches.h',
         'local_settings.h',
         'local_print_job.cc',
         'local_print_job.h',

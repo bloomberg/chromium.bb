@@ -12,37 +12,10 @@
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "cloud_print/gcp20/prototype/gcp20_switches.h"
 #include "cloud_print/gcp20/prototype/printer.h"
 
 namespace {
-
-const char kHelpMessage[] =
-    "usage: gcp20_device [switches] [options]\n"
-    "\n"
-    "switches:\n"
-    "  --disable-confirmation     disables confirmation of registration\n"
-    "  --disable-method-check     disables HTTP method checking (POST, GET)\n"
-    "  --disable-x-token          disables checking of X-Privet-Token "
-                                 "HTTP header\n"
-    "  -h, --help                 prints this message\n"
-    "  --no-announcement          disables DNS announcements\n"
-    "  --extended-response        responds to PTR with additional records\n"
-    "  --simulate-printing-errors simulates some errors for local printing\n"
-    "  --unicast-respond          DNS responses will be sent in unicast "
-                                 "instead of multicast\n"
-    "\n"
-    "options:\n"
-    "  --domain-name=<name>       sets, should ends with '.local'\n"
-    "  --http-port=<value>        sets port for HTTP server\n"
-    "  --service-name=<name>      sets DNS service name\n"
-    "  --state-path=<path>        sets path to file with registration state\n"
-    "  --ttl=<value>              sets TTL for DNS announcements\n"
-    "\n"
-    "WARNING: mDNS probing is not implemented\n";
-
-void PrintHelp() {
-  printf("%s", kHelpMessage);
-}
 
 void StartPrinter(Printer* printer) {
   bool success = printer->Start();
@@ -83,9 +56,9 @@ int main(int argc, char* argv[]) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch("h") ||
-      CommandLine::ForCurrentProcess()->HasSwitch("help")) {
-    PrintHelp();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelp) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelpShort)) {
+    switches::PrintUsage();
     return 0;
   }
 

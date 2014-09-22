@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "cloud_print/gcp20/prototype/gcp20_switches.h"
 
 namespace {
 
@@ -84,7 +85,8 @@ LocalPrintJob::CreateResult PrintJobHandler::CreatePrintJob(
     return LocalPrintJob::CREATE_INVALID_TICKET;
 
   // Let's simulate at least some errors just for testing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch("simulate-printing-errors")) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSimulatePrintingErrors)) {
     if (base::RandDouble() <= kPaperJamProbability) {
       *error_description = "Paper jam, try again";
       return LocalPrintJob::CREATE_PRINTER_ERROR;
