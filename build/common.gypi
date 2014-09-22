@@ -389,7 +389,7 @@
 
       # Enable Chromium overrides of the default configurations for various
       # dynamic tools (like ASan).
-      'use_sanitizer_options%': 0,
+      'use_sanitizer_options%': 1,
 
       # Enable building with SyzyAsan.
       # See https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
@@ -2140,7 +2140,6 @@
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
         'use_allocator%': 'none',
-        'use_sanitizer_options%': 1,
       }],
       ['asan==1 and OS=="linux" and chromeos==0', {
         'use_custom_libcxx%': 1,
@@ -3481,14 +3480,6 @@
           '-Wl,-z,now',
           '-Wl,-z,relro',
         ],
-        # TODO(glider): enable the default options on other systems.
-        'conditions': [
-          ['use_sanitizer_options==1 and ((OS=="linux" and (chromeos==0 or target_arch!="ia32")) or OS=="mac")', {
-            'dependencies': [
-              '<(DEPTH)/build/sanitizers/sanitizers.gyp:sanitizer_options',
-            ],
-          }],
-        ],
       },
     }],
     # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
@@ -4102,6 +4093,14 @@
                 'defines': [
                   'MEMORY_TOOL_REPLACES_ALLOCATOR',
                   'MEMORY_SANITIZER_INITIAL_SIZE',
+                ],
+              }],
+            ],
+            # TODO(glider): enable the default options on other systems.
+            'conditions': [
+              ['use_sanitizer_options==1 and OS=="linux" and (chromeos==0 or target_arch!="ia32")', {
+                'dependencies': [
+                  '<(DEPTH)/build/sanitizers/sanitizers.gyp:sanitizer_options',
                 ],
               }],
             ],
