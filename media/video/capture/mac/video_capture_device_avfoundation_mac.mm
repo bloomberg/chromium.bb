@@ -70,11 +70,11 @@
         break;
     }
 
-  CoreMediaGlue::CMVideoDimensions dimensions =
+    CoreMediaGlue::CMVideoDimensions dimensions =
         CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(
             [format formatDescription]);
 
-  for (CrAVFrameRateRange* frameRate in
+    for (CrAVFrameRateRange* frameRate in
            [format videoSupportedFrameRateRanges]) {
       media::VideoCaptureFormat format(
           gfx::Size(dimensions.width, dimensions.height),

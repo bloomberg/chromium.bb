@@ -165,6 +165,8 @@ component("media") {
     "video/capture/mac/platform_video_capturing_mac.h",
     "video/capture/mac/video_capture_device_avfoundation_mac.h",
     "video/capture/mac/video_capture_device_avfoundation_mac.mm",
+    "video/capture/mac/video_capture_device_decklink_mac.h",
+    "video/capture/mac/video_capture_device_decklink_mac.mm",
     "video/capture/mac/video_capture_device_factory_mac.h",
     "video/capture/mac/video_capture_device_factory_mac.mm",
     "video/capture/mac/video_capture_device_mac.h",
@@ -333,6 +335,7 @@ component("media") {
   if (is_mac) {
     deps += [
       "//media/base/mac",
+      "//third_party/decklink",
     ]
     libs += [
       "CoreMIDI.framework",

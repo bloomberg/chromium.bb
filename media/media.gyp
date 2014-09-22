@@ -504,6 +504,8 @@
         'video/capture/mac/platform_video_capturing_mac.h',
         'video/capture/mac/video_capture_device_avfoundation_mac.h',
         'video/capture/mac/video_capture_device_avfoundation_mac.mm',
+        'video/capture/mac/video_capture_device_decklink_mac.h',
+        'video/capture/mac/video_capture_device_decklink_mac.mm',
         'video/capture/mac/video_capture_device_factory_mac.h',
         'video/capture/mac/video_capture_device_factory_mac.mm',
         'video/capture/mac/video_capture_device_mac.h',
@@ -873,6 +875,9 @@
           ],
         }],
         ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/decklink/decklink.gyp:decklink',
+          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',

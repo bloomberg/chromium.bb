@@ -55,6 +55,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     enum CaptureApiType {
       AVFOUNDATION,
       QTKIT,
+      DECKLINK,
       API_TYPE_UNKNOWN
     };
     // For AVFoundation Api, identify devices that are built-in or USB.

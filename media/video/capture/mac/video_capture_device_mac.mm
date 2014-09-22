@@ -331,6 +331,8 @@ const std::string VideoCaptureDevice::Name::GetModel() const {
   // Skip the AVFoundation's not USB nor built-in devices.
   if (capture_api_type() == AVFOUNDATION && transport_type() != USB_OR_BUILT_IN)
     return "";
+  if (capture_api_type() == DECKLINK)
+    return "";
   // Both PID and VID are 4 characters.
   if (unique_id_.size() < 2 * kVidPidSize)
     return "";

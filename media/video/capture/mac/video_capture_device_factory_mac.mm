@@ -13,6 +13,7 @@
 #import "media/base/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
+#import "media/video/capture/mac/video_capture_device_decklink_mac.h"
 #import "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
 namespace media {
@@ -157,6 +158,9 @@ void VideoCaptureDeviceFactoryMac::GetDeviceNames(
         }
       }
     }
+
+    // Also retrieve Blackmagic devices, if present, via DeckLink SDK API.
+    VideoCaptureDeviceDeckLinkMac::EnumerateDevices(device_names);
   } else {
     // We should not enumerate QTKit devices in Device Thread;
     NOTREACHED();
@@ -185,11 +189,13 @@ void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
     const VideoCaptureDevice::Name& device,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device.capture_api_type() == VideoCaptureDevice::Name::AVFOUNDATION) {
+  switch (device.capture_api_type()) {
+  case VideoCaptureDevice::Name::AVFOUNDATION:
     DVLOG(1) << "Enumerating video capture capabilities, AVFoundation";
     [VideoCaptureDeviceAVFoundation getDevice:device
                              supportedFormats:supported_formats];
-  } else {
+    break;
+  case VideoCaptureDevice::Name::QTKIT:
     // Blacklisted cameras provide their own supported format(s), otherwise no
     // such information is provided for QTKit.
     if (device.is_blacklisted()) {
@@ -205,6 +211,14 @@ void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
         }
       }
     }
+    break;
+  case VideoCaptureDevice::Name::DECKLINK:
+    DVLOG(1) << "Enumerating video capture capabilities " << device.name();
+    VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
+        device, supported_formats);
+    break;
+  default:
+    NOTREACHED();
   }
 }
 
