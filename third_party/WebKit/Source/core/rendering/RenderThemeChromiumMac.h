@@ -86,6 +86,8 @@ public:
 
     virtual bool supportsSelectionForegroundColors() const OVERRIDE { return false; }
 
+    virtual bool isModalColorChooser() const { return false; }
+
 protected:
     RenderThemeChromiumMac();
     virtual ~RenderThemeChromiumMac();

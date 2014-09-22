@@ -715,6 +715,11 @@ TextDirection InputType::computedTextDirection()
     return element().computedStyle()->direction();
 }
 
+ColorChooserClient* InputType::colorChooserClient()
+{
+    return 0;
+}
+
 void InputType::applyStep(const Decimal& current, int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)
 {
     StepRange stepRange(createStepRange(anyStepHandling));

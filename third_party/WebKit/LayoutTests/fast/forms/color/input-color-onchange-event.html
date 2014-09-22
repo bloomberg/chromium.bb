@@ -20,8 +20,15 @@ input.style.top = '0';
 input.style.width = '20px';
 input.style.height = '20px';
 
+var onChange = 0;
+
 input.onchange = function() {
-    debug("value changed to " + input.value);
+    debug("change event dispatched - value changed to " + input.value);
+    onChange++;
+};
+
+input.oninput = function() {
+    debug("input event dispatched - value is:  " + input.value);
 };
 
 eventSender.mouseMoveTo(10, 10);
@@ -34,10 +41,19 @@ shouldThrow("internals.selectColorInColorChooser(document, '#ff0000');");
 
 // input.onchange should be called
 internals.selectColorInColorChooser(input, '#ff0000');
+internals.endColorChooser(input);
 // input.onchange should not be called
 internals.selectColorInColorChooser(input, '#ff0000');
-
+internals.endColorChooser(input);
 shouldBe('input.value', '"#ff0000"');
+
+debug('Change event is only dispatched, when color chooser is closed');
+onChange = 0;
+internals.selectColorInColorChooser(input, '#ff0002');
+shouldBe('onChange', '0');
+internals.endColorChooser(input);
+shouldBe('onChange', '1');
+
 </script>
 </body>
 </html>

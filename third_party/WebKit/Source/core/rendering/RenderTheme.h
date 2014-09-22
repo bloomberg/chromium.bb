@@ -191,6 +191,8 @@ public:
 
     virtual bool supportsSelectionForegroundColors() const { return true; }
 
+    virtual bool isModalColorChooser() const { return true; }
+
 protected:
     // The platform selection color.
     virtual Color platformActiveSelectionBackgroundColor() const;

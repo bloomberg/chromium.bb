@@ -1483,10 +1483,14 @@ void HTMLInputElement::requiredAttributeChanged()
 
 void HTMLInputElement::selectColorInColorChooser(const Color& color)
 {
-    // FIXME: Remove type check and static_cast.
-    if (type() != InputTypeNames::color)
-        return;
-    static_cast<ColorInputType*>(m_inputType.get())->didChooseColor(color);
+    if (ColorChooserClient* client = m_inputType->colorChooserClient())
+        client->didChooseColor(color);
+}
+
+void HTMLInputElement::endColorChooser()
+{
+    if (ColorChooserClient* client = m_inputType->colorChooserClient())
+        client->didEndChooser();
 }
 
 HTMLElement* HTMLInputElement::list() const

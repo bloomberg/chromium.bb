@@ -11,8 +11,8 @@ change event dispatched - value changed to #ff0000
 PASS input.value is "#ff0000"
 Change event is only dispatched, when color chooser is closed
 input event dispatched - value is:  #ff0002
-PASS onChange is 0
 change event dispatched - value changed to #ff0002
+FAIL onChange should be 0. Was 1.
 PASS onChange is 1
 PASS successfullyParsed is true
 

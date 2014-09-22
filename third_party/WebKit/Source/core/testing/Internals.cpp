@@ -645,6 +645,14 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
     toHTMLInputElement(*element).selectColorInColorChooser(color);
 }
 
+void Internals::endColorChooser(Element* element)
+{
+    ASSERT(element);
+    if (!isHTMLInputElement(*element))
+        return;
+    toHTMLInputElement(*element).endColorChooser();
+}
+
 bool Internals::hasAutofocusRequest(Document* document)
 {
     if (!document)

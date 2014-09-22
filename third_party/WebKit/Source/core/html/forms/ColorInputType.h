@@ -51,6 +51,7 @@ public:
     virtual Color currentColor() OVERRIDE;
     virtual bool shouldShowSuggestions() const OVERRIDE;
     virtual Vector<ColorSuggestion> suggestions() const OVERRIDE;
+    ColorChooserClient* colorChooserClient() OVERRIDE;
 
 private:
     ColorInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }

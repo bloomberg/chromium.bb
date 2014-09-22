@@ -212,6 +212,7 @@ public:
 
     // For test purposes.
     void selectColorInColorChooser(const Color&);
+    void endColorChooser();
 
     String defaultToolTip() const;
 
