@@ -1317,45 +1317,6 @@ name=bug_138220_b
 *!blink::RenderBlock::paintObject
 
 UNINITIALIZED READ
-name=bug_139467
-*!blink::AccessibilityTable::roleValue
-*!blink::AccessibilityRenderObject::ariaLiveRegionStatus
-*!blink::AccessibilityObject::supportsARIALiveRegion
-*!blink::AccessibilityObject::supportsARIAAttributes
-*!blink::AccessibilityRenderObject::determineAccessibilityRole
-*!blink::AccessibilityNodeObject::init
-*!blink::AccessibilityRenderObject::init
-*!blink::AccessibilityTable::init
-
-UNINITIALIZED READ
-name=bug_140196
-*!SkDescriptor::equals
-*!SkGlyphCache::VisitCache
-...
-*!SkPaint::descriptorProc
-
-UNINITIALIZED READ
-name=bug_143545
-*!aura::RootWindow::ShowCursor
-*!ash::Shell::ShowCursor
-*!ash::CursorManager::ShowCursor
-*!ash::test::AshTestBase::SetUp
-
-UNINITIALIZED READ
-name=bug_145244
-*!blink::StyleRuleImport::requestStyleSheet
-*!blink::StyleSheetContents::requestImportedStyleSheets
-
-UNINITIALIZED READ
-name=bug_159005
-*!blink::RenderMarquee::updateMarqueeStyle
-*!blink::RenderLayer::styleChanged
-*!blink::RenderLayerModelObject::styleDidChange
-*!blink::RenderBox::styleDidChange
-*!blink::RenderBlock::styleDidChange
-*!blink::RenderObject::setStyle
-
-UNINITIALIZED READ
 name=bug_162825
 *!bcmp
 *!gpu::gles2::ShaderTranslatorCache::ShaderTranslatorInitParams::operator<
