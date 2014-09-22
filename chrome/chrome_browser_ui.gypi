@@ -16,8 +16,6 @@
       'browser/ui/android/autofill/autofill_logger_android.h',
       'browser/ui/android/autofill/autofill_popup_view_android.cc',
       'browser/ui/android/autofill/autofill_popup_view_android.h',
-      'browser/ui/android/autofill/country_adapter_android.cc',
-      'browser/ui/android/autofill/country_adapter_android.h',
       'browser/ui/android/content_settings/popup_blocked_infobar_delegate.cc',
       'browser/ui/android/content_settings/popup_blocked_infobar_delegate.h',
       'browser/ui/android/infobars/auto_login_infobar_delegate_android.cc',
