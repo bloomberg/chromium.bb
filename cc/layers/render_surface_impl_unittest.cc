@@ -52,11 +52,8 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
     impl.AppendSurfaceQuadsWithOcclusion(render_surface_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
-        impl.quad_list(),
-        gfx::Rect(layer_size),
-        occluded,
-        &partially_occluded_count);
+    LayerTestCommon::VerifyQuadsAreOccluded(
+        impl.quad_list(), occluded, &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);

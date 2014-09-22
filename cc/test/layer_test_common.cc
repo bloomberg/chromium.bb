@@ -64,14 +64,14 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
 }
 
 // static
-void LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
-    const QuadList& quads,
-    const gfx::Rect& rect,
-    const gfx::Rect& occluded,
-    size_t* partially_occluded_count) {
+void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
+                                             const gfx::Rect& occluded,
+                                             size_t* partially_occluded_count) {
   // No quad should exist if it's fully occluded.
   for (size_t i = 0; i < quads.size(); ++i) {
-    EXPECT_FALSE(occluded.Contains(quads[i]->visible_rect));
+    gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
+        quads[i]->quadTransform(), quads[i]->visible_rect);
+    EXPECT_FALSE(occluded.Contains(target_visible_rect));
   }
 
   // Quads that are fully occluded on one axis only should be shrunken.

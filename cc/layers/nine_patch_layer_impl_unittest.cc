@@ -265,11 +265,8 @@ TEST(NinePatchLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
-        impl.quad_list(),
-        gfx::Rect(layer_size),
-        occluded,
-        &partially_occluded_count);
+    LayerTestCommon::VerifyQuadsAreOccluded(
+        impl.quad_list(), occluded, &partially_occluded_count);
     // The layer outputs nine quads, three of which are partially occluded, and
     // three fully occluded.
     EXPECT_EQ(6u, impl.quad_list().size());

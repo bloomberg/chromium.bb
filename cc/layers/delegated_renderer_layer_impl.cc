@@ -440,7 +440,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         output_shared_quad_state->content_to_target_transform;
     if (!is_root_delegated_render_pass) {
       quad_content_to_delegated_target_space.ConcatTransform(
-          render_pass->transform_to_root_target);
+          delegated_render_pass->transform_to_root_target);
       quad_content_to_delegated_target_space.ConcatTransform(draw_transform());
     }
 

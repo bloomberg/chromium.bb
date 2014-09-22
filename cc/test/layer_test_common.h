@@ -42,11 +42,9 @@ class LayerTestCommon {
   static void VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                           const gfx::Rect& rect);
 
-  static void VerifyQuadsCoverRectWithOcclusion(
-      const QuadList& quads,
-      const gfx::Rect& rect,
-      const gfx::Rect& occluded,
-      size_t* partially_occluded_count);
+  static void VerifyQuadsAreOccluded(const QuadList& quads,
+                                     const gfx::Rect& occluded,
+                                     size_t* partially_occluded_count);
 
   class LayerImplTest {
    public:

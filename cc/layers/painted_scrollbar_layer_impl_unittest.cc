@@ -58,11 +58,8 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
-        impl.quad_list(),
-        gfx::Rect(layer_size),
-        occluded,
-        &partially_occluded_count);
+    LayerTestCommon::VerifyQuadsAreOccluded(
+        impl.quad_list(), occluded, &partially_occluded_count);
     EXPECT_EQ(2u, impl.quad_list().size());
     EXPECT_EQ(0u, partially_occluded_count);
   }
@@ -82,8 +79,8 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
-        impl.quad_list(), thumb_rect, occluded, &partially_occluded_count);
+    LayerTestCommon::VerifyQuadsAreOccluded(
+        impl.quad_list(), occluded, &partially_occluded_count);
     // The layer outputs two quads, which is partially occluded.
     EXPECT_EQ(2u, impl.quad_list().size());
     EXPECT_EQ(2u, partially_occluded_count);

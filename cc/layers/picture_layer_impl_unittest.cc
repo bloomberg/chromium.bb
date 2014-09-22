@@ -2846,11 +2846,8 @@ TEST_F(PictureLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(active_layer_, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
-        impl.quad_list(),
-        gfx::Rect(layer_bounds),
-        occluded,
-        &partially_occluded_count);
+    LayerTestCommon::VerifyQuadsAreOccluded(
+        impl.quad_list(), occluded, &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(100u - 10u, impl.quad_list().size());
     EXPECT_EQ(10u + 10u, partially_occluded_count);
