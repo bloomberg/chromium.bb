@@ -81,8 +81,10 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
 
 Frame::~Frame()
 {
+#if ENABLE(OILPAN)
+    ASSERT(!m_owner);
+#else
     // FIXME: We should not be doing all this work inside the destructor
-#if !ENABLE(OILPAN)
     disconnectOwnerElement();
     setDOMWindow(nullptr);
 #endif

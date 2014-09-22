@@ -116,9 +116,8 @@ PassRefPtrWillBeRawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client,
 LocalFrame::~LocalFrame()
 {
 #if ENABLE(OILPAN)
-    // Verify that the FrameView and FrameLoader have instead been
-    // cleared as part of detaching the frame owner.
-    ASSERT(!m_owner);
+    // Verify that the FrameView has been cleared as part of detaching
+    // the frame owner.
     ASSERT(!m_view);
     // Oilpan: see setDOMWindow() comment why it is acceptable not to
     // mirror the non-Oilpan call below.
