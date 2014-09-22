@@ -9,6 +9,10 @@ XMLHttpRequest should dispatch readystatechange event.</p>
 
     function called1(evt) {
         alert("onreadystatechange called");
+        alert("evt.constructor = " + evt.constructor);
+        if (evt instanceof XMLHttpRequestProgressEvent) {
+            alert("FAIL: evt must not be an instance of XMLHttpRequestProgressEvent");
+        }
         evt.foo = "bar";
     }
 
