@@ -420,29 +420,6 @@ class SYNC_EXPORT Directory {
                                 ModelType type,
                                 AttachmentIdSet* id_set);
 
- protected:  // for friends, mainly used by Entry constructors
-  virtual EntryKernel* GetEntryByHandle(int64 handle);
-  virtual EntryKernel* GetEntryByHandle(int64 metahandle,
-      ScopedKernelLock* lock);
-  virtual EntryKernel* GetEntryById(const Id& id);
-  EntryKernel* GetEntryByServerTag(const std::string& tag);
-  virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
-  bool ReindexId(BaseWriteTransaction* trans, EntryKernel* const entry,
-                 const Id& new_id);
-  bool ReindexParentId(BaseWriteTransaction* trans, EntryKernel* const entry,
-                       const Id& new_parent_id);
-  // Update the attachment index for |metahandle| removing it from the index
-  // under |old_metadata| entries and add it under |new_metadata| entries.
-  void UpdateAttachmentIndex(const int64 metahandle,
-                             const sync_pb::AttachmentMetadata& old_metadata,
-                             const sync_pb::AttachmentMetadata& new_metadata);
-  void ClearDirtyMetahandles();
-
-  DirOpenResult OpenImpl(
-      const std::string& name,
-      DirectoryChangeDelegate* delegate,
-      const WeakHandle<TransactionObserver>& transaction_observer);
-
  private:
   struct Kernel {
     // |delegate| must not be NULL.  |transaction_observer| must be
@@ -543,9 +520,57 @@ class SYNC_EXPORT Directory {
     const WeakHandle<TransactionObserver> transaction_observer;
   };
 
-  // These private versions expect the kernel lock to already be held
-  // before calling.
-  EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
+  // You'll notice that some of these methods have two forms.  One that takes a
+  // ScopedKernelLock and one that doesn't.  The general pattern is that those
+  // without a ScopedKernelLock parameter construct one internally before
+  // calling the form that takes one.
+
+  virtual EntryKernel* GetEntryByHandle(int64 handle);
+  virtual EntryKernel* GetEntryByHandle(const ScopedKernelLock& lock,
+                                        int64 metahandle);
+
+  virtual EntryKernel* GetEntryById(const Id& id);
+  virtual EntryKernel* GetEntryById(const ScopedKernelLock& lock, const Id& id);
+
+  EntryKernel* GetEntryByServerTag(const std::string& tag);
+  virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
+
+  // For new entry creation only
+  bool InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry);
+  bool InsertEntry(const ScopedKernelLock& lock,
+                   BaseWriteTransaction* trans,
+                   EntryKernel* entry);
+
+  bool ReindexId(BaseWriteTransaction* trans, EntryKernel* const entry,
+                 const Id& new_id);
+
+  bool ReindexParentId(BaseWriteTransaction* trans, EntryKernel* const entry,
+                       const Id& new_parent_id);
+
+  // Update the attachment index for |metahandle| removing it from the index
+  // under |old_metadata| entries and add it under |new_metadata| entries.
+  void UpdateAttachmentIndex(const int64 metahandle,
+                             const sync_pb::AttachmentMetadata& old_metadata,
+                             const sync_pb::AttachmentMetadata& new_metadata);
+
+  // Remove each of |metahandle|'s attachment ids from index_by_attachment_id.
+  void RemoveFromAttachmentIndex(
+      const ScopedKernelLock& lock,
+      const int64 metahandle,
+      const sync_pb::AttachmentMetadata& attachment_metadata);
+
+  // Add each of |metahandle|'s attachment ids to the index_by_attachment_id.
+  void AddToAttachmentIndex(
+      const ScopedKernelLock& lock,
+      const int64 metahandle,
+      const sync_pb::AttachmentMetadata& attachment_metadata);
+
+  void ClearDirtyMetahandles(const ScopedKernelLock& lock);
+
+  DirOpenResult OpenImpl(
+      const std::string& name,
+      DirectoryChangeDelegate* delegate,
+      const WeakHandle<TransactionObserver>& transaction_observer);
 
   // A helper that implements the logic of checking tree invariants.
   bool CheckTreeInvariants(syncable::BaseTransaction* trans,
@@ -571,11 +596,6 @@ class SYNC_EXPORT Directory {
   // processed |snapshot| failed, for example, due to no disk space.
   void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
 
-  // For new entry creation only
-  bool InsertEntry(BaseWriteTransaction* trans,
-                   EntryKernel* entry, ScopedKernelLock* lock);
-  bool InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry);
-
   // Used by CheckTreeInvariants
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
   bool SafeToPurgeFromMemory(WriteTransaction* trans,
@@ -588,27 +608,16 @@ class SYNC_EXPORT Directory {
       std::deque<const OrderedChildSet*>* child_sets) const;
 
   // Append the handles of the children of |parent_id| to |result|.
-  void AppendChildHandles(
-      const ScopedKernelLock& lock,
-      const Id& parent_id, Directory::Metahandles* result);
+  void AppendChildHandles(const ScopedKernelLock& lock,
+                          const Id& parent_id,
+                          Directory::Metahandles* result);
 
   // Helper methods used by PurgeDisabledTypes.
   void UnapplyEntry(EntryKernel* entry);
-  void DeleteEntry(bool save_to_journal,
+  void DeleteEntry(const ScopedKernelLock& lock,
+                   bool save_to_journal,
                    EntryKernel* entry,
-                   EntryKernelSet* entries_to_journal,
-                   const ScopedKernelLock& lock);
-
-  // Remove each of |metahandle|'s attachment ids from index_by_attachment_id.
-  void RemoveFromAttachmentIndex(
-      const int64 metahandle,
-      const sync_pb::AttachmentMetadata& attachment_metadata,
-      const ScopedKernelLock& lock);
-  // Add each of |metahandle|'s attachment ids to the index_by_attachment_id.
-  void AddToAttachmentIndex(
-      const int64 metahandle,
-      const sync_pb::AttachmentMetadata& attachment_metadata,
-      const ScopedKernelLock& lock);
+                   EntryKernelSet* entries_to_journal);
 
   // A private version of the public GetMetaHandlesOfType for when you already
   // have a ScopedKernelLock.

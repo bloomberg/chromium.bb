@@ -162,7 +162,7 @@ void Directory::InitializeIndices(MetahandlesMap* handles_map) {
            kernel_->ids_map.end()) << "Unexpected duplicate use of ID";
     kernel_->ids_map[entry->ref(ID).value()] = entry;
     DCHECK(!entry->is_dirty());
-    AddToAttachmentIndex(metahandle, entry->ref(ATTACHMENT_METADATA), lock);
+    AddToAttachmentIndex(lock, metahandle, entry->ref(ATTACHMENT_METADATA));
   }
 }
 
@@ -225,11 +225,11 @@ void Directory::OnUnrecoverableError(const BaseTransaction* trans,
 
 EntryKernel* Directory::GetEntryById(const Id& id) {
   ScopedKernelLock lock(this);
-  return GetEntryById(id, &lock);
+  return GetEntryById(lock, id);
 }
 
-EntryKernel* Directory::GetEntryById(const Id& id,
-                                     ScopedKernelLock* const lock) {
+EntryKernel* Directory::GetEntryById(const ScopedKernelLock& lock,
+                                     const Id& id) {
   DCHECK(kernel_);
   // Find it in the in memory ID index.
   IdsMap::iterator id_found = kernel_->ids_map.find(id.value());
@@ -262,11 +262,11 @@ EntryKernel* Directory::GetEntryByServerTag(const string& tag) {
 
 EntryKernel* Directory::GetEntryByHandle(int64 metahandle) {
   ScopedKernelLock lock(this);
-  return GetEntryByHandle(metahandle, &lock);
+  return GetEntryByHandle(lock, metahandle);
 }
 
-EntryKernel* Directory::GetEntryByHandle(int64 metahandle,
-                                         ScopedKernelLock* lock) {
+EntryKernel* Directory::GetEntryByHandle(const ScopedKernelLock& lock,
+                                         int64 metahandle) {
   // Look up in memory
   MetahandlesMap::iterator found =
       kernel_->metahandles_map.find(metahandle);
@@ -342,13 +342,12 @@ int Directory::GetPositionIndex(
 
 bool Directory::InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry) {
   ScopedKernelLock lock(this);
-  return InsertEntry(trans, entry, &lock);
+  return InsertEntry(lock, trans, entry);
 }
 
-bool Directory::InsertEntry(BaseWriteTransaction* trans,
-                            EntryKernel* entry,
-                            ScopedKernelLock* lock) {
-  DCHECK(NULL != lock);
+bool Directory::InsertEntry(const ScopedKernelLock& lock,
+                            BaseWriteTransaction* trans,
+                            EntryKernel* entry) {
   if (!SyncAssert(NULL != entry, FROM_HERE, "Entry is null", trans))
     return false;
 
@@ -379,7 +378,7 @@ bool Directory::InsertEntry(BaseWriteTransaction* trans,
     }
   }
   AddToAttachmentIndex(
-      entry->ref(META_HANDLE), entry->ref(ATTACHMENT_METADATA), *lock);
+      lock, entry->ref(META_HANDLE), entry->ref(ATTACHMENT_METADATA));
 
   // Should NEVER be created with a client tag or server tag.
   if (!SyncAssert(entry->ref(UNIQUE_SERVER_TAG).empty(), FROM_HERE,
@@ -397,7 +396,7 @@ bool Directory::ReindexId(BaseWriteTransaction* trans,
                           EntryKernel* const entry,
                           const Id& new_id) {
   ScopedKernelLock lock(this);
-  if (NULL != GetEntryById(new_id, &lock))
+  if (NULL != GetEntryById(lock, new_id))
     return false;
 
   {
@@ -427,9 +426,9 @@ bool Directory::ReindexParentId(BaseWriteTransaction* trans,
 }
 
 void Directory::RemoveFromAttachmentIndex(
+    const ScopedKernelLock& lock,
     const int64 metahandle,
-    const sync_pb::AttachmentMetadata& attachment_metadata,
-    const ScopedKernelLock& lock) {
+    const sync_pb::AttachmentMetadata& attachment_metadata) {
   for (int i = 0; i < attachment_metadata.record_size(); ++i) {
     AttachmentIdUniqueId unique_id =
         attachment_metadata.record(i).id().unique_id();
@@ -445,9 +444,9 @@ void Directory::RemoveFromAttachmentIndex(
 }
 
 void Directory::AddToAttachmentIndex(
+    const ScopedKernelLock& lock,
     const int64 metahandle,
-    const sync_pb::AttachmentMetadata& attachment_metadata,
-    const ScopedKernelLock& lock) {
+    const sync_pb::AttachmentMetadata& attachment_metadata) {
   for (int i = 0; i < attachment_metadata.record_size(); ++i) {
     AttachmentIdUniqueId unique_id =
         attachment_metadata.record(i).id().unique_id();
@@ -467,8 +466,8 @@ void Directory::UpdateAttachmentIndex(
     const sync_pb::AttachmentMetadata& old_metadata,
     const sync_pb::AttachmentMetadata& new_metadata) {
   ScopedKernelLock lock(this);
-  RemoveFromAttachmentIndex(metahandle, old_metadata, lock);
-  AddToAttachmentIndex(metahandle, new_metadata, lock);
+  RemoveFromAttachmentIndex(lock, metahandle, old_metadata);
+  AddToAttachmentIndex(lock, metahandle, new_metadata);
 }
 
 void Directory::GetMetahandlesByAttachmentId(
@@ -492,7 +491,7 @@ bool Directory::unrecoverable_error_set(const BaseTransaction* trans) const {
   return unrecoverable_error_set_;
 }
 
-void Directory::ClearDirtyMetahandles() {
+void Directory::ClearDirtyMetahandles(const ScopedKernelLock& lock) {
   kernel_->transaction_mutex.AssertAcquired();
   kernel_->dirty_metahandles.clear();
 }
@@ -538,7 +537,7 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   // clear dirty flags.
   for (MetahandleSet::const_iterator i = kernel_->dirty_metahandles.begin();
        i != kernel_->dirty_metahandles.end(); ++i) {
-    EntryKernel* entry = GetEntryByHandle(*i, &lock);
+    EntryKernel* entry = GetEntryByHandle(lock, *i);
     if (!entry)
       continue;
     // Skip over false positives; it happens relatively infrequently.
@@ -551,7 +550,7 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
     // in a moment, and it unnecessarily complicates iteration.
     entry->clear_dirty(NULL);
   }
-  ClearDirtyMetahandles();
+  ClearDirtyMetahandles(lock);
 
   // Set purged handles.
   DCHECK(snapshot->metahandles_to_purge.empty());
@@ -628,7 +627,7 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
                       (&trans)))
         return false;
       RemoveFromAttachmentIndex(
-          entry->ref(META_HANDLE), entry->ref(ATTACHMENT_METADATA), lock);
+          lock, entry->ref(META_HANDLE), entry->ref(ATTACHMENT_METADATA));
 
       delete entry;
     }
@@ -687,10 +686,10 @@ void Directory::UnapplyEntry(EntryKernel* entry) {
   // update. See MutableEntry::MutableEntry(.., CreateNewUpdateItem, ..).
 }
 
-void Directory::DeleteEntry(bool save_to_journal,
+void Directory::DeleteEntry(const ScopedKernelLock& lock,
+                            bool save_to_journal,
                             EntryKernel* entry,
-                            EntryKernelSet* entries_to_journal,
-                            const ScopedKernelLock& lock) {
+                            EntryKernelSet* entries_to_journal) {
   int64 handle = entry->ref(META_HANDLE);
   ModelType server_type = GetModelTypeFromSpecifics(
       entry->ref(SERVER_SPECIFICS));
@@ -720,7 +719,7 @@ void Directory::DeleteEntry(bool save_to_journal,
         kernel_->server_tags_map.erase(entry->ref(UNIQUE_SERVER_TAG));
     DCHECK_EQ(1u, num_erased);
   }
-  RemoveFromAttachmentIndex(handle, entry->ref(ATTACHMENT_METADATA), lock);
+  RemoveFromAttachmentIndex(lock, handle, entry->ref(ATTACHMENT_METADATA));
 
   if (save_to_journal) {
     entries_to_journal->insert(entry);
@@ -800,7 +799,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
                types_to_journal.Has(server_type)) &&
               (delete_journal_->IsDeleteJournalEnabled(local_type) ||
                delete_journal_->IsDeleteJournalEnabled(server_type));
-          DeleteEntry(save_to_journal, entry, &entries_to_journal, lock);
+          DeleteEntry(lock, save_to_journal, entry, &entries_to_journal);
         }
       }
 
@@ -841,7 +840,7 @@ bool Directory::ResetVersionsForType(BaseWriteTransaction* trans,
 
   for (Metahandles::iterator it = children.begin(); it != children.end();
        ++it) {
-    EntryKernel* entry = GetEntryByHandle(*it, &lock);
+    EntryKernel* entry = GetEntryByHandle(lock, *it);
     if (!entry)
       continue;
     if (entry->ref(BASE_VERSION) > 1)
@@ -1497,7 +1496,7 @@ void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
     const std::vector<int64>::const_iterator end = metahandles.end();
     // For all of this type's entries...
     for (; iter != end; ++iter) {
-      EntryKernel* entry = GetEntryByHandle(*iter, &lock);
+      EntryKernel* entry = GetEntryByHandle(lock, *iter);
       DCHECK(entry);
       const sync_pb::AttachmentMetadata metadata =
           entry->ref(ATTACHMENT_METADATA);
