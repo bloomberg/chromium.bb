@@ -14,8 +14,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "chrome/tools/profile_reset/jtl_compiler.h"
 
 namespace {
