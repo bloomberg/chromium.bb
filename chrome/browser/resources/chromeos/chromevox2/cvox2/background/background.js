@@ -10,6 +10,8 @@
 goog.provide('cvox2.Background');
 goog.provide('cvox2.global');
 
+goog.require('cvox.TabsApiHandler');
+
 /** Classic Chrome accessibility API. */
 cvox2.global.accessibility =
     chrome.accessibilityPrivate || chrome.experimental.accessibility;
@@ -25,9 +27,12 @@ cvox2.Background = function() {
    */
   this.whitelist_ = ['http://www.chromevox.com/', 'chromevox_next_test'];
 
+  /** @type {cvox.TabsApiHandler} @private */
+  this.tabsHandler_ = new cvox.TabsApiHandler(cvox.ChromeVox.tts,
+                                              cvox.ChromeVox.braille,
+                                              cvox.ChromeVox.earcons);
+
   // Only needed with unmerged ChromeVox classic loaded before.
-  // TODO(dtseng): Refactor all tabs handlers out of
-  // accessibility_api_handler.js.
   cvox2.global.accessibility.setAccessibilityEnabled(false);
 
   // Manually bind all functions to |this|.

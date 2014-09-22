@@ -5,11 +5,13 @@
 
 {
   'variables': {
+    'chromevox_dir': '.',
     'chromevox_third_party_dir': '<(DEPTH)/chrome/third_party/chromevox',
     'closure_goog_dir': '<(chromevox_third_party_dir)/third_party/closure-library/closure/goog',
     'chromevox_dest_dir': '<(PRODUCT_DIR)/resources/chromeos/chromevox',
     'js_root_flags': [
       '-r', '.',
+      '-r', '<(chromevox_dir)',
       '-r', '<(closure_goog_dir)',
       '-x', 'testing',
       '-x', '_test.js',

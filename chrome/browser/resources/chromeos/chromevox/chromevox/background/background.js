@@ -29,6 +29,7 @@ goog.require('cvox.NavBraille');
 goog.require('cvox.OptionsPage');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
+goog.require('cvox.TabsApiHandler');
 goog.require('cvox.TtsBackground');
 
 
@@ -87,6 +88,8 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   this.backgroundBraille_ = new cvox.BrailleBackground();
 
   this.accessibilityApiHandler_ = new cvox.AccessibilityApiHandler(
+      this.tts, this.backgroundBraille_, this.earcons);
+    this.tabsApiHandler_ = new cvox.TabsApiHandler(
       this.tts, this.backgroundBraille_, this.earcons);
 
   // Export globals on cvox.ChromeVox.

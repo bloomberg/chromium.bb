@@ -24,10 +24,6 @@
           'type': 'none',
           'variables': {
             'dest_dir': '<(chromevox_dest_dir)',
-            'js_root_flags': [
-              '-r', '.',
-              '-r', '<(closure_goog_dir)',
-            ],
           },
           'sources': [
             'cvox2/background/loader.js',

@@ -5,7 +5,6 @@
 /**
  * @fileoverview Accesses Chrome's accessibility extension API and gives
  * spoken feedback for events that happen in the "Chrome of Chrome".
- *
  */
 
 goog.provide('cvox.AccessibilityApiHandler');
@@ -175,24 +174,6 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
 
   var accessibility = chrome.accessibilityPrivate;
 
-  chrome.tabs.onCreated.addListener(goog.bind(function(tab) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
-    this.tts.speak(msg('chrome_tab_created'),
-                   0,
-                   cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-    this.braille.write(cvox.NavBraille.fromText(msg('chrome_tab_created')));
-    this.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_OPEN);
-  }, this));
-
-  chrome.tabs.onRemoved.addListener(goog.bind(function(tab) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
-    this.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_CLOSE);
-  }, this));
-
   chrome.tabs.onActivated.addListener(goog.bind(function(activeInfo) {
     if (!cvox.ChromeVox.isActive) {
       return;
@@ -201,52 +182,7 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
       if (tab.status == 'loading') {
         return;
       }
-      var title = tab.title ? tab.title : tab.url;
-      this.tts.speak(msg('chrome_tab_selected',
-                         [title]),
-                     cvox.AbstractTts.QUEUE_MODE_FLUSH,
-                     cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-      this.braille.write(
-          cvox.NavBraille.fromText(msg('chrome_tab_selected', [title])));
-      this.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_SELECT);
       this.queueAlertsForActiveTab();
-    }, this));
-  }, this));
-
-  chrome.tabs.onUpdated.addListener(goog.bind(function(tabId, selectInfo) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
-    chrome.tabs.get(tabId, goog.bind(function(tab) {
-      if (!tab.active) {
-        return;
-      }
-      if (tab.status == 'loading') {
-        this.earcons.playEarcon(cvox.AbstractEarcons.BUSY_PROGRESS_LOOP);
-      } else {
-        this.earcons.playEarcon(cvox.AbstractEarcons.TASK_SUCCESS);
-      }
-    }, this));
-  }, this));
-
-  chrome.windows.onFocusChanged.addListener(goog.bind(function(windowId) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
-    if (windowId == chrome.windows.WINDOW_ID_NONE) {
-      return;
-    }
-    chrome.windows.get(windowId, goog.bind(function(window) {
-      chrome.tabs.getSelected(windowId, goog.bind(function(tab) {
-        var msgId = window.incognito ? 'chrome_incognito_window_selected' :
-          'chrome_normal_window_selected';
-        var title = tab.title ? tab.title : tab.url;
-        this.tts.speak(msg(msgId, [title]),
-                       cvox.AbstractTts.QUEUE_MODE_FLUSH,
-                       cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-        this.braille.write(cvox.NavBraille.fromText(msg(msgId, [title])));
-        this.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_SELECT);
-      }, this));
     }, this));
   }, this));
 
