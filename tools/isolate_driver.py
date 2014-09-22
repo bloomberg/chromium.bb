@@ -177,6 +177,12 @@ def post_process_deps(build_dir, dependencies):
     return i
 
   def f(i):
+    # This script is only for adding new binaries that are created as part of
+    # the component build.
+    ext = os.path.splitext(i)[1]
+    if ext not in ['.dll', '.so', '.dylib']:
+      return False
+
     # Check for execute access and strip directories. This gets rid of all the
     # phony rules.
     p = os.path.join(build_dir, i)
