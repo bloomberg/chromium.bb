@@ -4,6 +4,7 @@
 
 #include "athena/content/content_activity_factory.h"
 
+#include "athena/content/app_activity.h"
 #include "athena/content/web_activity.h"
 #include "base/logging.h"
 
@@ -19,6 +20,12 @@ Activity* ContentActivityFactory::CreateWebActivity(
     const base::string16& title,
     const GURL& url) {
   return new WebActivity(browser_context, title, url);
+}
+
+Activity* ContentActivityFactory::CreateAppActivity(
+    extensions::AppWindow* app_window,
+    views::WebView* web_view) {
+  return new AppActivity(app_window, web_view);
 }
 
 ActivityFactory* CreateContentActivityFactory() {

@@ -186,7 +186,6 @@
         '../components/components.gyp:omnibox',
       ],
       'sources': [
-        'content/chrome/content_activity_factory.cc',
         'content/chrome/dialogs.cc',
         'content/chrome/scheme_classifier_factory.cc',
         'extensions/chrome/athena_chrome_app_delegate.cc',
@@ -206,11 +205,8 @@
         '../skia/skia.gyp:skia',
       ],
       'sources': [
-        'content/shell/content_activity_factory.cc',
         'content/shell/dialogs.cc',
         'content/shell/scheme_classifier_factory.cc',
-        'content/shell/shell_app_activity.cc',
-        'content/shell/shell_app_activity.h',
         'extensions/shell/extensions_delegate_impl.cc',
         'extensions/shell/athena_shell_app_delegate.cc',
         'extensions/shell/athena_shell_app_delegate.h',

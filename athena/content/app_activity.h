@@ -12,6 +12,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace extensions {
+class AppWindow;
+}
+
 namespace views {
 class WebView;
 }
@@ -22,11 +26,12 @@ class AppActivityRegistry;
 class ContentProxy;
 
 // The activity object for a hosted V2 application.
+// TODO(oshima): Move this to athena/extensions
 class AppActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  explicit AppActivity(const std::string& app_id);
+  AppActivity(extensions::AppWindow* app_window, views::WebView* web_view);
 
   // Gets the content proxy so that the AppProxy can take it over.
   scoped_ptr<ContentProxy> GetContentProxy(aura::Window* window);
@@ -45,23 +50,25 @@ class AppActivity : public Activity,
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual bool UsesFrame() const OVERRIDE;
+  virtual views::Widget* CreateWidget() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
   virtual void PrepareContentsForOverview() OVERRIDE;
   virtual void ResetContentsView() OVERRIDE;
 
  protected:
+  // Constructor for test.
+  explicit AppActivity(const std::string& app_id);
+
   virtual ~AppActivity();
 
+ private:
  // content::WebContentsObserver:
   virtual void TitleWasSet(content::NavigationEntry* entry,
                            bool explicit_set) OVERRIDE;
   virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
-  virtual views::WebView* GetWebView() = 0;
-
- private:
   // Register this activity with its application.
   void RegisterActivity();
 

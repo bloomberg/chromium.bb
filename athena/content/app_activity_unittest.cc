@@ -69,9 +69,6 @@ class TestAppActivity : public AppActivity {
     return view_->GetWidget()->GetNativeWindow();
   }
 
-  // AppActivity:
-  virtual views::WebView* GetWebView() OVERRIDE { return NULL; }
-
   // ActivityViewModel:
   virtual void Init() OVERRIDE {}
   virtual SkColor GetRepresentativeColor() const OVERRIDE { return 0; }

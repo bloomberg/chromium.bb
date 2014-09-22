@@ -11,6 +11,7 @@
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -18,11 +19,14 @@
 namespace athena {
 
 // TODO(mukai): specifies the same accelerators of WebActivity.
-AppActivity::AppActivity(const std::string& app_id)
-    : app_id_(app_id),
-      web_view_(NULL),
+AppActivity::AppActivity(extensions::AppWindow* app_window,
+                         views::WebView* web_view)
+    : app_id_(app_window->extension_id()),
+      web_view_(web_view),
       current_state_(ACTIVITY_UNLOADED),
       app_activity_registry_(NULL) {
+  DCHECK_EQ(app_window->web_contents(), web_view->GetWebContents());
+  Observe(app_window->web_contents());
 }
 
 scoped_ptr<ContentProxy> AppActivity::GetContentProxy(aura::Window* window) {
@@ -125,20 +129,21 @@ bool AppActivity::UsesFrame() const {
   return false;
 }
 
-views::View* AppActivity::GetContentsView() {
-  if (!web_view_) {
-    web_view_ = GetWebView();
-    // Make sure the content gets properly shown.
-    if (current_state_ == ACTIVITY_VISIBLE) {
-      HideContentProxy();
-    } else if (current_state_ == ACTIVITY_INVISIBLE) {
-      ShowContentProxy();
-    } else {
-      // If not previously specified, we change the state now to invisible..
-      SetCurrentState(ACTIVITY_INVISIBLE);
-    }
-    RegisterActivity();
+views::Widget* AppActivity::CreateWidget() {
+  // Make sure the content gets properly shown.
+  if (current_state_ == ACTIVITY_VISIBLE) {
+    HideContentProxy();
+  } else if (current_state_ == ACTIVITY_INVISIBLE) {
+    ShowContentProxy();
+  } else {
+    // If not previously specified, we change the state now to invisible..
+    SetCurrentState(ACTIVITY_INVISIBLE);
   }
+  RegisterActivity();
+  return web_view_->GetWidget();
+}
+
+views::View* AppActivity::GetContentsView() {
   return web_view_;
 }
 
@@ -162,6 +167,13 @@ void AppActivity::ResetContentsView() {
     web_view_->SetFastResize(false);
     web_view_->Layout();
   }
+}
+
+AppActivity::AppActivity(const std::string& app_id)
+    : app_id_(app_id),
+      web_view_(NULL),
+      current_state_(ACTIVITY_UNLOADED),
+      app_activity_registry_(NULL) {
 }
 
 AppActivity::~AppActivity() {
