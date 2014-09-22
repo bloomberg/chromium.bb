@@ -265,8 +265,9 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   fetcher_->stopped_motion_.Wait();
 }
 
+// crbug/416406. The test is flaky.
 IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-                       LightOneOffInfintyTest) {
+                       DISABLED_LightOneOffInfintyTest) {
   // The test page will register an event handler for light events,
   // expects to get an event with value equal to Infinity. This tests that the
   // one-off infinity event still propagates to window after the alert is
