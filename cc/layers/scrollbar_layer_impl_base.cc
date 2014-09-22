@@ -105,42 +105,47 @@ gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(
   return gfx::ToEnclosingRect(content_rect);
 }
 
-void ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
+bool ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
   if (current_pos_ == current_pos)
-    return;
+    return false;
   current_pos_ = current_pos;
   NoteLayerPropertyChanged();
+  return true;
 }
 
-void ScrollbarLayerImplBase::SetMaximum(int maximum) {
+bool ScrollbarLayerImplBase::SetMaximum(int maximum) {
   if (maximum_ == maximum)
-    return;
+    return false;
   maximum_ = maximum;
   NoteLayerPropertyChanged();
+  return true;
 }
 
-void ScrollbarLayerImplBase::SetVerticalAdjust(float vertical_adjust) {
+bool ScrollbarLayerImplBase::SetVerticalAdjust(float vertical_adjust) {
   if (vertical_adjust_ == vertical_adjust)
-    return;
+    return false;
   vertical_adjust_ = vertical_adjust;
   NoteLayerPropertyChanged();
+  return true;
 }
 
-void ScrollbarLayerImplBase::SetVisibleToTotalLengthRatio(float ratio) {
+bool ScrollbarLayerImplBase::SetVisibleToTotalLengthRatio(float ratio) {
   if (!IsThumbResizable())
-    return;
+    return false;
 
   if (visible_to_total_length_ratio_ == ratio)
-    return;
+    return false;
   visible_to_total_length_ratio_ = ratio;
   NoteLayerPropertyChanged();
+  return true;
 }
 
-void ScrollbarLayerImplBase::SetThumbThicknessScaleFactor(float factor) {
+bool ScrollbarLayerImplBase::SetThumbThicknessScaleFactor(float factor) {
   if (thumb_thickness_scale_factor_ == factor)
-    return;
+    return false;
   thumb_thickness_scale_factor_ = factor;
   NoteLayerPropertyChanged();
+  return true;
 }
 
 gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {

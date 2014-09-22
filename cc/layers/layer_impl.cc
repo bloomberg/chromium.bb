@@ -1275,17 +1275,25 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
     current_offset.Scale(layer_tree_impl()->total_page_scale_factor());
   }
 
-  scrollbar_layer->SetVerticalAdjust(scrollbar_clip_layer->bounds_delta().y());
+  bool scrollbar_needs_animation = false;
+  scrollbar_needs_animation |= scrollbar_layer->SetVerticalAdjust(
+      scrollbar_clip_layer->bounds_delta().y());
   if (scrollbar_layer->orientation() == HORIZONTAL) {
     float visible_ratio = clip_rect.width() / scroll_rect.width();
-    scrollbar_layer->SetCurrentPos(current_offset.x());
-    scrollbar_layer->SetMaximum(scroll_rect.width() - clip_rect.width());
-    scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
+    scrollbar_needs_animation |=
+        scrollbar_layer->SetCurrentPos(current_offset.x());
+    scrollbar_needs_animation |=
+        scrollbar_layer->SetMaximum(scroll_rect.width() - clip_rect.width());
+    scrollbar_needs_animation |=
+        scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
   } else {
     float visible_ratio = clip_rect.height() / scroll_rect.height();
-    scrollbar_layer->SetCurrentPos(current_offset.y());
-    scrollbar_layer->SetMaximum(scroll_rect.height() - clip_rect.height());
-    scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
+    scrollbar_needs_animation |=
+        scrollbar_layer->SetCurrentPos(current_offset.y());
+    scrollbar_needs_animation |=
+        scrollbar_layer->SetMaximum(scroll_rect.height() - clip_rect.height());
+    scrollbar_needs_animation |=
+        scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
   }
 
   layer_tree_impl()->set_needs_update_draw_properties();
@@ -1293,7 +1301,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
   // activate for every scroll on the main frame, not just the scrolls that move
   // the pinch virtual viewport (i.e. trigger from either inner or outer
   // viewport).
-  if (scrollbar_animation_controller_) {
+  if (scrollbar_animation_controller_ && scrollbar_needs_animation) {
     // When both non-overlay and overlay scrollbars are both present, don't
     // animate the overlay scrollbars when page scale factor is at the min.
     // Non-overlay scrollbars also shouldn't trigger animations.

@@ -1359,7 +1359,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
 
   // After a scroll, a fade animation should be scheduled about 20ms from now.
   host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(5, 0));
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 5));
   host_impl_->ScrollEnd();
   did_request_redraw_ = false;
   did_request_animate_ = false;
@@ -1386,6 +1386,12 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   EXPECT_FALSE(did_request_redraw_);
   EXPECT_FALSE(did_request_animate_);
   requested_scrollbar_animation_delay_ = base::TimeDelta();
+
+  // Unnecessarily Fade animation of solid color scrollbar is not triggered.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(5, 0));
+  host_impl_->ScrollEnd();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollbarFadePinchZoomScrollbars) {
