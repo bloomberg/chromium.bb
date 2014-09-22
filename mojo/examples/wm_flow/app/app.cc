@@ -17,13 +17,12 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_context.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace examples {
 namespace {
-void ConnectCallback(bool success) {}
 
 const SkColor kColors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorYELLOW };
 
@@ -51,9 +50,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
                   public mojo::ViewManagerDelegate,
                   public mojo::ViewObserver {
  public:
-  WMFlowApp()
-      : embed_count_(0),
-        app_(NULL) {}
+  WMFlowApp() : embed_count_(0) {}
   virtual ~WMFlowApp() {}
 
  private:
@@ -61,7 +58,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
     view_manager_client_factory_.reset(
         new mojo::ViewManagerClientFactory(app->shell(), this));
-    app_ = app;
+    view_manager_context_.reset(new mojo::ViewManagerContext(app));
     OpenNewWindow();
     OpenNewWindow();
     OpenNewWindow();
@@ -120,18 +117,14 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   }
 
   void OpenNewWindow() {
-    mojo::ViewManagerInitServicePtr init_svc;
-    app_->ConnectToService("mojo:mojo_view_manager", &init_svc);
-    mojo::ServiceProviderPtr sp;
-    init_svc->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
-                    base::Bind(&ConnectCallback));
+    view_manager_context_->Embed("mojo:mojo_wm_flow_app");
   }
 
   int embed_count_;
   scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
   mojo::InterfaceFactoryImpl<EmbedderImpl> embedder_factory_;
+  scoped_ptr<mojo::ViewManagerContext> view_manager_context_;
   EmbeddeePtr embeddee_;
-  mojo::ApplicationImpl* app_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowApp);
 };

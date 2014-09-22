@@ -12,7 +12,6 @@
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 
 namespace mojo {
-class ApplicationConnection;
 class View;
 class ViewManagerDelegate;
 class WindowManagerDelegate;
@@ -43,7 +42,6 @@ class ViewManager {
 
  protected:
   virtual ~ViewManager() {}
-
 };
 
 }  // namespace mojo

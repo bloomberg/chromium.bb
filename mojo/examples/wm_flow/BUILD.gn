@@ -12,16 +12,18 @@ group("wm_flow" ) {
     ":app",
     ":embedded",
     ":init",
-    ":wm_flow_wm",
+    ":wm",
   ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_wm
-shared_library("wm_flow_wm") {
+shared_library("wm") {
   output_name = "mojo_wm_flow_wm"
 
   sources = [
     "wm/wm.cc",
+    "wm/frame_controller.cc",
+    "wm/frame_controller.h",
   ]
 
   deps = [
@@ -30,6 +32,7 @@ shared_library("wm_flow_wm") {
     "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/window_manager:lib",
+    "//mojo/views",
   ]
 }
 
@@ -45,6 +48,7 @@ shared_library("init") {
     "//base",
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/view_manager",
   ]
 }

@@ -510,6 +510,7 @@
             '../base/base.gyp:base',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_view_manager_bindings',
+            'mojo_view_manager_lib',
             '<(mojo_system_for_loadable_module)',
           ],
           'sources': [
@@ -572,6 +573,7 @@
             'mojo_base.gyp:mojo_utility',
             'mojo_geometry_bindings',
             'mojo_view_manager_bindings',
+            'mojo_view_manager_lib',
             '<(mojo_system_for_loadable_module)',
           ],
           'includes': [
@@ -787,6 +789,7 @@
             '../base/base.gyp:base',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_view_manager_bindings',
+            'mojo_view_manager_lib',
             '<(mojo_system_for_loadable_module)',
           ],
           'sources': [

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
@@ -356,7 +357,8 @@ void ViewManagerClientImpl::OnViewInputEvent(
 void ViewManagerClientImpl::Embed(
     const String& url,
     InterfaceRequest<ServiceProvider> service_provider) {
-  window_manager_delegate_->Embed(url, service_provider.Pass());
+  if (window_manager_delegate_)
+    window_manager_delegate_->Embed(url, service_provider.Pass());
 }
 
 void ViewManagerClientImpl::DispatchOnViewInputEvent(EventPtr event) {
