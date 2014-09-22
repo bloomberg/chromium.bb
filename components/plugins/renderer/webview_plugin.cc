@@ -235,6 +235,11 @@ void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
   current_cursor_ = cursor;
 }
 
+void WebViewPlugin::scheduleAnimation() {
+  if (container_)
+    container_->invalidate();
+}
+
 void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
   if (delegate_)
     delegate_->BindWebFrame(frame);

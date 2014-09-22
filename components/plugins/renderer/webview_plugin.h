@@ -124,6 +124,7 @@ class WebViewPlugin : public blink::WebPlugin,
   // WebWidgetClient methods:
   virtual void didInvalidateRect(const blink::WebRect&);
   virtual void didChangeCursor(const blink::WebCursorInfo& cursor);
+  virtual void scheduleAnimation();
 
   // WebFrameClient methods:
   virtual void didClearWindowObject(blink::WebLocalFrame* frame);
