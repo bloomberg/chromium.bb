@@ -74,10 +74,10 @@ template <typename NodeType> class StaticNodeTypeList;
 typedef StaticNodeTypeList<Node> StaticNodeList;
 class TypeConversions;
 
-class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
+class Internals FINAL : public GarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Internals> create(Document*);
+    static Internals* create(Document*);
     virtual ~Internals();
 
     static void resetToConsistentState(Page*);
@@ -86,7 +86,7 @@ public:
 
     String address(Node*);
 
-    PassRefPtrWillBeRawPtr<GCObservation> observeGC(ScriptValue);
+    GCObservation* observeGC(ScriptValue);
 
     bool isPreloaded(const String& url);
     bool isLoadingFromMemoryCache(const String& url);
@@ -182,7 +182,7 @@ public:
     unsigned wheelEventHandlerCount(Document*);
     unsigned scrollEventHandlerCount(Document*);
     unsigned touchEventHandlerCount(Document*);
-    PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
+    LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtrWillBeRawPtr<StaticNodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
@@ -254,7 +254,7 @@ public:
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
 
-    PassRefPtrWillBeRawPtr<TypeConversions> typeConversions() const;
+    TypeConversions* typeConversions() const;
     PrivateScriptTest* privateScriptTest() const;
     DictionaryTest* dictionaryTest() const;
 
@@ -332,8 +332,8 @@ private:
     PassRefPtrWillBeRawPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
-    RefPtrWillBeMember<InternalRuntimeFlags> m_runtimeFlags;
-    RefPtrWillBeMember<InternalProfilers> m_profilers;
+    Member<InternalRuntimeFlags> m_runtimeFlags;
+    Member<InternalProfilers> m_profilers;
 };
 
 } // namespace blink

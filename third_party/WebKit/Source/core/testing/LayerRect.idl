@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface LayerRect {
     /* The node that most closely represents the layer in which the rect
        occurs.  When a layer doesn't correspond directly to a node (eg.

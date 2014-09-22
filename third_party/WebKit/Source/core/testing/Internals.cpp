@@ -204,9 +204,9 @@ static SpellCheckRequester* spellCheckRequester(Document* document)
 
 const char* Internals::internalsId = "internals";
 
-PassRefPtrWillBeRawPtr<Internals> Internals::create(Document* document)
+Internals* Internals::create(Document* document)
 {
-    return adoptRefWillBeNoop(new Internals(document));
+    return new Internals(document);
 }
 
 Internals::~Internals()
@@ -289,7 +289,7 @@ String Internals::address(Node* node)
     return String(buf);
 }
 
-PassRefPtrWillBeRawPtr<GCObservation> Internals::observeGC(ScriptValue scriptValue)
+GCObservation* Internals::observeGC(ScriptValue scriptValue)
 {
     v8::Handle<v8::Value> observedValue = scriptValue.v8Value();
     ASSERT(!observedValue.IsEmpty());
@@ -1315,7 +1315,7 @@ static void accumulateLayerRectList(RenderLayerCompositor* compositor, GraphicsL
         accumulateLayerRectList(compositor, graphicsLayer->children()[i], rects);
 }
 
-PassRefPtrWillBeRawPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* document, ExceptionState& exceptionState)
+LayerRectList* Internals::touchEventTargetLayerRects(Document* document, ExceptionState& exceptionState)
 {
     ASSERT(document);
     if (!document->view() || !document->page() || document != contextDocument()) {
@@ -1332,8 +1332,8 @@ PassRefPtrWillBeRawPtr<LayerRectList> Internals::touchEventTargetLayerRects(Docu
     if (RenderView* view = document->renderView()) {
         if (RenderLayerCompositor* compositor = view->compositor()) {
             if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
-                RefPtrWillBeRawPtr<LayerRectList> rects = LayerRectList::create();
-                accumulateLayerRectList(compositor, rootLayer, rects.get());
+                LayerRectList* rects = LayerRectList::create();
+                accumulateLayerRectList(compositor, rootLayer, rects);
                 return rects;
             }
         }
@@ -1771,7 +1771,7 @@ void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const 
     SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(scheme);
 }
 
-PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
+TypeConversions* Internals::typeConversions() const
 {
     return TypeConversions::create();
 }

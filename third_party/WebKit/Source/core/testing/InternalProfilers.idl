@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface InternalProfilers {
     void startHeapProfiling(DOMString prefix);
     void stopHeapProfiling();

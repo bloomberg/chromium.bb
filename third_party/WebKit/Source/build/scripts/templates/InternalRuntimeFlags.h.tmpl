@@ -13,12 +13,12 @@
 
 namespace blink {
 
-class InternalRuntimeFlags : public RefCountedWillBeGarbageCollected<InternalRuntimeFlags>, public ScriptWrappable {
+class InternalRuntimeFlags : public GarbageCollected<InternalRuntimeFlags>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<InternalRuntimeFlags> create()
+    static InternalRuntimeFlags* create()
     {
-        return adoptRefWillBeNoop(new InternalRuntimeFlags);
+        return new InternalRuntimeFlags;
     }
 
 {#

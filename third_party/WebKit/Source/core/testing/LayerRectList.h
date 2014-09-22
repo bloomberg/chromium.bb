@@ -44,13 +44,12 @@ class ClientRectList;
 class LayerRect;
 class Node;
 
-class LayerRectList FINAL : public RefCountedWillBeGarbageCollected<LayerRectList>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(LayerRectList);
+class LayerRectList FINAL : public GarbageCollected<LayerRectList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<LayerRectList> create()
+    static LayerRectList* create()
     {
-        return adoptRefWillBeNoop(new LayerRectList);
+        return new LayerRectList;
     }
 
     unsigned length() const;
@@ -62,7 +61,7 @@ public:
 private:
     LayerRectList();
 
-    WillBeHeapVector<RefPtrWillBeMember<LayerRect> > m_list;
+    HeapVector<Member<LayerRect> > m_list;
 };
 
 } // namespace blink

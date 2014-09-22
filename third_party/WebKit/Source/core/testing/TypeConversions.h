@@ -33,12 +33,12 @@
 
 namespace blink {
 
-class TypeConversions : public RefCountedWillBeGarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
+class TypeConversions FINAL : public GarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<TypeConversions> create()
+    static TypeConversions* create()
     {
-        return adoptRefWillBeNoop(new TypeConversions());
+        return new TypeConversions();
     }
 
     long testLong() { return m_long; }

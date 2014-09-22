@@ -248,7 +248,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_DoesNotImpedeGarbageCo
 {
     ScriptValue holderWrapper = wrap(mainWorld(), holder()->toGarbageCollectedScriptWrappable());
 
-    RefPtrWillBePersistent<GCObservation> observation;
+    Persistent<GCObservation> observation;
     {
         ScriptState::Scope scope(mainScriptState());
         observation = GCObservation::create(promise(DOMWrapperWorld::mainWorld()).v8Value());
