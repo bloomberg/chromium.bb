@@ -76,8 +76,6 @@ source_set("test_support") {
     "test_listener_ios.mm",
     "test_pending_task.cc",
     "test_pending_task.h",
-    "test_process_killer_win.cc",
-    "test_process_killer_win.h",
     "test_reg_util_win.cc",
     "test_reg_util_win.h",
     "test_shortcut_win.cc",

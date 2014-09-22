@@ -22,6 +22,22 @@ TestMetroViewerProcessHost::TestMetroViewerProcessHost(
 TestMetroViewerProcessHost::~TestMetroViewerProcessHost() {
 }
 
+void TestMetroViewerProcessHost::TerminateViewer() {
+  base::ProcessId viewer_process_id = GetViewerProcessId();
+  if (viewer_process_id != base::kNullProcessId) {
+    base::ProcessHandle viewer_process = NULL;
+    base::OpenProcessHandleWithAccess(
+        viewer_process_id,
+        PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE,
+        &viewer_process);
+    if (viewer_process) {
+      ::TerminateProcess(viewer_process, 0);
+      ::WaitForSingleObject(viewer_process, INFINITE);
+      ::CloseHandle(viewer_process);
+    }
+  }
+}
+
 void TestMetroViewerProcessHost::OnChannelError() {
   closed_unexpectedly_ = true;
   aura::RemoteWindowTreeHostWin::Instance()->Disconnected();

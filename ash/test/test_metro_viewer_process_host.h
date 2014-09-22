@@ -20,6 +20,10 @@ class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
 
   bool closed_unexpectedly() { return closed_unexpectedly_; }
 
+  // Forcibly terminate the viewer. Used on completion of tests to ensure that
+  // it's gone (quickly) so that we can start the next test immediately.
+  void TerminateViewer();
+
  private:
   // win8::MetroViewerProcessHost implementation
   virtual void OnChannelError() OVERRIDE;
