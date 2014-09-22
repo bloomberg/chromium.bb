@@ -449,7 +449,6 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
     if (shouldPaintBackgroundImage) {
         BackgroundImageGeometry geometry;
         calculateBackgroundImageGeometry(obj, paintInfo.paintContainer(), bgLayer, scrolledPaintRect, geometry, backgroundObject);
-        geometry.clip(paintInfo.rect);
         if (!geometry.destRect().isEmpty()) {
             CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer.composite() : op;
             RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
