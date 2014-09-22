@@ -1125,16 +1125,16 @@ class GitWrapper(SCMWrapper):
 
   def _Run(self, args, options, show_header=True, **kwargs):
     # Disable 'unused options' warning | pylint: disable=W0613
-    cwd = kwargs.setdefault('cwd', self.checkout_path)
+    kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stdout', self.out_fh)
     kwargs['filter_fn'] = self.filter
     kwargs.setdefault('print_stdout', False)
     env = scm.GIT.ApplyEnvVars(kwargs)
     cmd = ['git'] + args
     if show_header:
-      header = "running '%s' in '%s'" % (' '.join(cmd), cwd)
-      self.filter(header)
-    return gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
+      gclient_utils.CheckCallAndFilterAndHeader(cmd, env=env, **kwargs)
+    else:
+      gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
 
 
 class SVNWrapper(SCMWrapper):
