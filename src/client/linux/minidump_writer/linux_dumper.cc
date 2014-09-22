@@ -305,7 +305,7 @@ bool LinuxDumper::EnumerateMappings() {
             MappingInfo* module = mappings_.back();
             if ((start_addr == module->start_addr + module->size) &&
                 module->exec &&
-                module->name && module->name[0] == '/' &&
+                module->name[0] == '/' &&
                 offset == 0 && my_strncmp(i2,
                                           kReservedFlags,
                                           sizeof(kReservedFlags) - 1) == 0) {
