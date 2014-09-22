@@ -19,22 +19,15 @@ Type 'a' additionally. The element becomes badInput again.
 PASS colorOf(number) is invalidStyleColor
 PASS number.validity.badInput is true
 PASS number.value is ""
-The element looses focus. The element state should not be changed.
+The element losts focus. The element state should not be changed.
 PASS colorOf(number) is invalidStyleColor
 PASS number.validity.badInput is true
 PASS document.getSelection().toString() is "-1a"
 PASS number.value is ""
-The element looses renderer. The element state should not be changed.
+The element losts a renderer. The element state should not be changed.
 PASS number.style.display = "none"; number.validity.badInput is true
 A bad input should be cleared by value="".
 PASS number.value = ""; document.execCommand("SelectAll"); document.getSelection().toString() is ""
-badInput and checkValidty() should be updated by value= "some valid number"
-Type some text (invalid input)
-PASS number.validity.badInput is true
-PASS number.checkValidity() is false
-Now set a valid value
-PASS number.validity.badInput is false
-PASS number.checkValidity() is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

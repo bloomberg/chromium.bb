@@ -58,7 +58,6 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_willValidateInitialized(false)
     , m_willValidate(true)
     , m_isValid(true)
-    , m_validityIsDirty(true)
     , m_wasChangedSinceLastFormControlChangeEvent(false)
     , m_wasFocusedByMouse(false)
 {
@@ -482,24 +481,20 @@ bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<F
 
 bool HTMLFormControlElement::isValidFormControlElement()
 {
-    if (m_validityIsDirty) {
-        m_isValid = valid();
-        m_validityIsDirty = false;
-    } else {
-        // If the following assertion fails, setNeedsValidityCheck() is not called
-        // correctly when something which changes validity is updated.
-        ASSERT(m_isValid == valid());
-    }
+    // If the following assertion fails, setNeedsValidityCheck() is not called
+    // correctly when something which changes validity is updated.
+    ASSERT(m_isValid == valid());
     return m_isValid;
 }
 
 void HTMLFormControlElement::setNeedsValidityCheck()
 {
-    if (!m_validityIsDirty && willValidate()) {
+    bool newIsValid = valid();
+    if (willValidate() && newIsValid != m_isValid) {
         // Update style for pseudo classes such as :valid :invalid.
         setNeedsStyleRecalc(SubtreeStyleChange);
-        m_validityIsDirty = true;
     }
+    m_isValid = newIsValid;
 
     // Updates only if this control already has a validation message.
     if (isValidationMessageVisible()) {

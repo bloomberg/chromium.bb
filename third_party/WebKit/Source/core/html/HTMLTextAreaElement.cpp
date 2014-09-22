@@ -324,6 +324,7 @@ void HTMLTextAreaElement::updateValue() const
     if (m_valueIsUpToDate)
         return;
 
+    ASSERT(renderer());
     m_value = innerEditorValue();
     const_cast<HTMLTextAreaElement*>(this)->m_valueIsUpToDate = true;
     const_cast<HTMLTextAreaElement*>(this)->notifyFormStateChanged();

@@ -46,7 +46,7 @@ shouldBe('colorOf(number)', 'invalidStyleColor');
 shouldBeTrue('number.validity.badInput');
 shouldBeEqualToString('number.value', '');
 
-debug("The element looses focus. The element state should not be changed.");
+debug("The element losts focus. The element state should not be changed.");
 document.getElementById('another').focus();
 shouldBe('colorOf(number)', 'invalidStyleColor');
 shouldBeTrue('number.validity.badInput');
@@ -56,24 +56,13 @@ document.execCommand('SelectAll');
 shouldBeEqualToString('document.getSelection().toString()', '-1a');
 shouldBeEqualToString('number.value', '');
 
-debug("The element looses renderer. The element state should not be changed.");
+debug("The element losts a renderer. The element state should not be changed.");
 shouldBeTrue('number.style.display = "none"; number.validity.badInput');
 
 number.style.display = 'inline-block';
 number.focus();
 debug('A bad input should be cleared by value="".');
 shouldBeEqualToString('number.value = ""; document.execCommand("SelectAll"); document.getSelection().toString()', '');
-
-debug('badInput and checkValidty() should be updated by value= "some valid number"');
-number.focus();
-debug('Type some text (invalid input)');
-document.execCommand('InsertText', false, 'g');
-shouldBeTrue('number.validity.badInput');
-shouldBeFalse('number.checkValidity()');
-debug('Now set a valid value');
-number.value = '1';
-shouldBeFalse('number.validity.badInput');
-shouldBeTrue('number.checkValidity()');
 
 document.getElementById('parent').innerHTML = '';
 </script>
