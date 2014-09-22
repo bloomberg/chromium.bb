@@ -72,7 +72,12 @@ public:
     virtual void invalidateRect(const IntRect&) OVERRIDE;
     virtual void setFrameRect(const IntRect&) OVERRIDE;
 
-    LocalFrame& frame() const { return *m_frame; }
+    LocalFrame& frame() const
+    {
+        ASSERT(m_frame);
+        return *m_frame;
+    }
+
     Page* page() const;
 
     RenderView* renderView() const;

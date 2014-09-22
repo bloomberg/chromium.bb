@@ -72,7 +72,11 @@ public:
 private:
     explicit FrameConsole(LocalFrame&);
 
-    LocalFrame& frame() const { return *m_frame; }
+    LocalFrame& frame() const
+    {
+        ASSERT(m_frame);
+        return *m_frame;
+    }
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;

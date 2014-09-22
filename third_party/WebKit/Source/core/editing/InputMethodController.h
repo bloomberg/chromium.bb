@@ -107,7 +107,11 @@ private:
     explicit InputMethodController(LocalFrame&);
 
     Editor& editor() const;
-    LocalFrame& frame() const { return *m_frame; }
+    LocalFrame& frame() const
+    {
+        ASSERT(m_frame);
+        return *m_frame;
+    }
 
     bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;

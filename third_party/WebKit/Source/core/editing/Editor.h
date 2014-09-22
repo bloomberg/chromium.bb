@@ -141,7 +141,11 @@ public:
         // Returns 0 if this Command is not supported.
         int idForHistogram() const;
     private:
-        LocalFrame& frame() const { return *m_frame; }
+        LocalFrame& frame() const
+        {
+            ASSERT(m_frame);
+            return *m_frame;
+        }
 
         const EditorInternalCommand* m_command;
         EditorCommandSource m_source;
@@ -246,7 +250,11 @@ private:
 
     explicit Editor(LocalFrame&);
 
-    LocalFrame& frame() const { return *m_frame; }
+    LocalFrame& frame() const
+    {
+        ASSERT(m_frame);
+        return *m_frame;
+    }
 
     bool canDeleteRange(Range*) const;
 

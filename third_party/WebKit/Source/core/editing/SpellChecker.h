@@ -92,7 +92,11 @@ public:
 private:
     explicit SpellChecker(LocalFrame&);
 
-    LocalFrame& frame() const { return *m_frame; }
+    LocalFrame& frame() const
+    {
+        ASSERT(m_frame);
+        return *m_frame;
+    }
 
     void markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling, RefPtrWillBeRawPtr<Range>& firstMisspellingRange);
     TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);

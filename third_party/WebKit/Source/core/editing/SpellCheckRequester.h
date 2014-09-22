@@ -117,7 +117,11 @@ private:
     void didCheck(int sequence, const Vector<TextCheckingResult>&);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
-    LocalFrame& frame() const { ASSERT(m_frame); return *m_frame; }
+    LocalFrame& frame() const
+    {
+        ASSERT(m_frame);
+        return *m_frame;
+    }
 
     int m_lastRequestSequence;
     int m_lastProcessedSequence;
