@@ -125,6 +125,11 @@ class MetadataDatabase {
       const base::FilePath& database_path,
       leveldb::Env* env_override,
       SyncStatusCode* status);
+  static scoped_ptr<MetadataDatabase> CreateInternal(
+      const base::FilePath& database_path,
+      leveldb::Env* env_override,
+      bool enable_on_disk_index,
+      SyncStatusCode* status);
   static SyncStatusCode CreateForTesting(
       scoped_ptr<LevelDBWrapper> db,
       bool enable_on_disk_index,

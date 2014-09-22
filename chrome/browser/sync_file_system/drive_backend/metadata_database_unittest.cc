@@ -169,7 +169,7 @@ base::FilePath CreateNormalizedPath(const base::FilePath::StringType& path) {
 
 }  // namespace
 
-class MetadataDatabaseTest : public testing::Test {
+class MetadataDatabaseTest : public testing::TestWithParam<bool> {
  public:
   MetadataDatabaseTest()
       : current_change_id_(kInitialChangeID),
@@ -202,8 +202,9 @@ class MetadataDatabaseTest : public testing::Test {
 
   SyncStatusCode InitializeMetadataDatabase() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_ = MetadataDatabase::Create(
-        database_dir_.path(), in_memory_env_.get(), &status);
+    metadata_database_ = MetadataDatabase::CreateInternal(
+        database_dir_.path(), in_memory_env_.get(),
+        GetParam(), &status);
     return status;
   }
 
@@ -520,7 +521,7 @@ class MetadataDatabaseTest : public testing::Test {
 
     MetadataDatabaseIndexInterface* index1 = metadata_database_->index_.get();
     MetadataDatabaseIndexInterface* index2 = metadata_database_2->index_.get();
-    if (metadata_database_->enable_on_disk_index_) {
+    if (GetParam()) {
       VerifyReloadConsistencyForOnDisk(
           static_cast<MetadataDatabaseIndexOnDisk*>(index1),
           static_cast<MetadataDatabaseIndexOnDisk*>(index2));
@@ -615,7 +616,11 @@ class MetadataDatabaseTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseTest);
 };
 
-TEST_F(MetadataDatabaseTest, InitializationTest_Empty) {
+INSTANTIATE_TEST_CASE_P(MetadataDatabaseTestWithIndexesOnDisk,
+                        MetadataDatabaseTest,
+                        ::testing::Values(true, false));
+
+TEST_P(MetadataDatabaseTest, InitializationTest_Empty) {
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
   DropDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
@@ -630,7 +635,7 @@ TEST_F(MetadataDatabaseTest, InitializationTest_Empty) {
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
 }
 
-TEST_F(MetadataDatabaseTest, InitializationTest_SimpleTree) {
+TEST_P(MetadataDatabaseTest, InitializationTest_SimpleTree) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedFolder(sync_root, "app_id"));
   app_root.tracker.set_app_id(app_root.metadata.details().title());
@@ -654,7 +659,7 @@ TEST_F(MetadataDatabaseTest, InitializationTest_SimpleTree) {
   VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
 }
 
-TEST_F(MetadataDatabaseTest, AppManagementTest) {
+TEST_P(MetadataDatabaseTest, AppManagementTest) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedFolder(sync_root, "app_id"));
   app_root.tracker.set_app_id(app_root.metadata.details().title());
@@ -709,7 +714,7 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
   VerifyReloadConsistency();
 }
 
-TEST_F(MetadataDatabaseTest, BuildPathTest) {
+TEST_P(MetadataDatabaseTest, BuildPathTest) {
   FileMetadata sync_root(CreateSyncRootMetadata());
   FileTracker sync_root_tracker(CreateSyncRootTracker(sync_root));
 
@@ -758,7 +763,7 @@ TEST_F(MetadataDatabaseTest, BuildPathTest) {
             path);
 }
 
-TEST_F(MetadataDatabaseTest, FindNearestActiveAncestorTest) {
+TEST_P(MetadataDatabaseTest, FindNearestActiveAncestorTest) {
   const std::string kAppID = "app_id";
 
   FileMetadata sync_root(CreateSyncRootMetadata());
@@ -863,7 +868,7 @@ TEST_F(MetadataDatabaseTest, FindNearestActiveAncestorTest) {
   }
 }
 
-TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
+TEST_P(MetadataDatabaseTest, UpdateByChangeListTest) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedFolder(sync_root, "app_id"));
   TrackedFile disabled_app_root(CreateTrackedFolder(sync_root, "disabled_app"));
@@ -925,7 +930,7 @@ TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
   VerifyReloadConsistency();
 }
 
-TEST_F(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
+TEST_P(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_id"));
   app_root.tracker.set_app_id(app_root.metadata.details().title());
@@ -967,7 +972,7 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
   VerifyReloadConsistency();
 }
 
-TEST_F(MetadataDatabaseTest, PopulateFolderTest_InactiveFolder) {
+TEST_P(MetadataDatabaseTest, PopulateFolderTest_InactiveFolder) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_id"));
 
@@ -997,7 +1002,7 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_InactiveFolder) {
   VerifyReloadConsistency();
 }
 
-TEST_F(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
+TEST_P(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile disabled_app_root(
       CreateTrackedAppRoot(sync_root, "disabled_app"));
@@ -1034,7 +1039,7 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
 }
 
 // TODO(tzik): Fix expectation and re-enable this test.
-TEST_F(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
+TEST_P(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_root"));
   TrackedFile file(CreateTrackedFile(app_root, "file"));
@@ -1085,7 +1090,7 @@ TEST_F(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
   VerifyReloadConsistency();
 }
 
-TEST_F(MetadataDatabaseTest, PopulateInitialDataTest) {
+TEST_P(MetadataDatabaseTest, PopulateInitialDataTest) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedFolder(sync_root, "app_root"));
   app_root.tracker.set_active(false);
@@ -1116,7 +1121,7 @@ TEST_F(MetadataDatabaseTest, PopulateInitialDataTest) {
   VerifyReloadConsistency();
 }
 
-TEST_F(MetadataDatabaseTest, DumpFiles) {
+TEST_P(MetadataDatabaseTest, DumpFiles) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_id"));
   app_root.tracker.set_app_id(app_root.metadata.details().title());

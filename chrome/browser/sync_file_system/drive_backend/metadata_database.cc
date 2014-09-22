@@ -523,6 +523,16 @@ scoped_ptr<MetadataDatabase> MetadataDatabase::Create(
     SyncStatusCode* status_out) {
   bool enable_on_disk_index = !CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableMetadataDatabaseOnDisk);
+  return CreateInternal(database_path, env_override, enable_on_disk_index,
+                        status_out);
+}
+
+// static
+scoped_ptr<MetadataDatabase> MetadataDatabase::CreateInternal(
+    const base::FilePath& database_path,
+    leveldb::Env* env_override,
+    bool enable_on_disk_index,
+    SyncStatusCode* status_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(database_path,
                            enable_on_disk_index,
