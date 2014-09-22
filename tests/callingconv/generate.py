@@ -477,6 +477,7 @@ class TestFunction(object):
         for module_id in xrange(self.settings.num_modules):
           out.write("      va_copy(ap2, ap);\n")
           out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
+          out.write("      va_end(ap2);\n");
         out.write("      ASSERT(%s);\n" % comp_expr)
         out.write("      break;\n")
     out.write("    default:\n")
@@ -485,6 +486,7 @@ class TestFunction(object):
     out.write("    }\n")
     out.write("    i++;\n")
     out.write("  }\n")
+    out.write("  va_end(ap);\n")
     out.write("}\n\n")
 
 alphabet = string.letters + string.digits
