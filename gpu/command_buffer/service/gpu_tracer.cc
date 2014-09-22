@@ -102,8 +102,21 @@ void GPUTrace::Start() {
     case kTracerTypeInvalid:
       break;
 
-    case kTracerTypeARBTimer:
     case kTracerTypeDisjointTimer:
+      // For the disjoint timer, GPU idle time does not seem to increment the
+      // internal counter. We must calculate the offset before any query. The
+      // good news is any device that supports disjoint timer will also support
+      // glGetInteger64v, so we can query it directly unlike the ARBTimer case.
+      // The "offset_" variable will always be 0 during normal use cases, only
+      // under the unit tests will it be set to specific test values.
+      if (offset_ == 0) {
+        GLint64 gl_now = 0;
+        glGetInteger64v(GL_TIMESTAMP, &gl_now);
+        offset_ = base::TimeTicks::NowFromSystemTraceTime().ToInternalValue() -
+                  gl_now / base::Time::kNanosecondsPerMicrosecond;
+      }
+      // Intentionally fall through to kTracerTypeARBTimer case.xs
+    case kTracerTypeARBTimer:
       // GL_TIMESTAMP and GL_TIMESTAMP_EXT both have the same value.
       glQueryCounter(queries_[0], GL_TIMESTAMP);
       break;
@@ -342,10 +355,14 @@ void GPUTracer::ProcessTraces() {
 
 void GPUTracer::CalculateTimerOffset() {
   if (tracer_type_ != kTracerTypeInvalid) {
-    // If GPU device category is off, invalidate timing sync.
     if (*gpu_trace_dev_category == '\0') {
+      // If GPU device category is off, invalidate timing sync.
       gpu_timing_synced_ = false;
       return;
+    } else if (tracer_type_ == kTracerTypeDisjointTimer) {
+      // Disjoint timers offsets should be calculated before every query.
+      gpu_timing_synced_ = true;
+      timer_offset_ = 0;
     }
 
     if (gpu_timing_synced_)
@@ -357,26 +374,15 @@ void GPUTracer::CalculateTimerOffset() {
     // it's not available everywhere.
     GLuint64 gl_now = 0;
     GLuint query;
-    GLint disjoint_value = 0;
 
-    if (tracer_type_ == kTracerTypeDisjointTimer) {
-      // Clear the disjoint bit before we do any queries.
-      glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint_value);
-    }
+    glGenQueriesARB(1, &query);
 
     glFinish();
-    glGenQueriesARB(1, &query);
     glQueryCounter(query, GL_TIMESTAMP);
     glFinish();
 
     glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gl_now);
     glDeleteQueriesARB(1, &query);
-
-    if (tracer_type_ == kTracerTypeDisjointTimer) {
-      glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint_value);
-      if (disjoint_value)
-        return;
-    }
 
     base::TimeTicks system_now = base::TimeTicks::NowFromSystemTraceTime();
 
