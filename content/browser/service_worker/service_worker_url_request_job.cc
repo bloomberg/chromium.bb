@@ -18,6 +18,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -380,9 +381,10 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // We should have a response now.
   DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
 
-  // Treat a response whose status is 0 as an error.
+  // Treat a response whose status is 0 as a Network Error.
   if (response.status_code == 0) {
-    DeliverErrorResponse();
+    NotifyDone(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
     return;
   }
 
