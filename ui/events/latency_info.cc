@@ -117,6 +117,16 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData(
     record_data->Set(GetComponentName(it->first.first), component_info);
   }
   record_data->SetDouble("trace_id", latency.trace_id);
+
+  scoped_ptr<base::ListValue> coordinates(new base::ListValue());
+  for (size_t i = 0; i < latency.input_coordinates_size; i++) {
+    scoped_ptr<base::DictionaryValue> coordinate_pair(
+        new base::DictionaryValue());
+    coordinate_pair->SetDouble("x", latency.input_coordinates[i].x);
+    coordinate_pair->SetDouble("y", latency.input_coordinates[i].y);
+    coordinates->Append(coordinate_pair.release());
+  }
+  record_data->Set("coordinates", coordinates.release());
   return LatencyInfoTracedValue::FromValue(record_data.PassAs<base::Value>());
 }
 
@@ -124,7 +134,14 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData(
 
 namespace ui {
 
-LatencyInfo::LatencyInfo() : trace_id(-1), terminated(false) {
+LatencyInfo::InputCoordinate::InputCoordinate() : x(0), y(0) {
+}
+
+LatencyInfo::InputCoordinate::InputCoordinate(float x, float y) : x(x), y(y) {
+}
+
+LatencyInfo::LatencyInfo()
+    : input_coordinates_size(0), trace_id(-1), terminated(false) {
 }
 
 LatencyInfo::~LatencyInfo() {
@@ -137,6 +154,14 @@ bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
                << latency_info.size() << " is too big.";
     return false;
   }
+  for (size_t i = 0; i < latency_info.size(); i++) {
+    if (latency_info[i].input_coordinates_size > kMaxInputCoordinates) {
+      LOG(ERROR) << referring_msg << ", coordinate vector size "
+                 << latency_info[i].input_coordinates_size << " is too big.";
+      return false;
+    }
+  }
+
   return true;
 }
 

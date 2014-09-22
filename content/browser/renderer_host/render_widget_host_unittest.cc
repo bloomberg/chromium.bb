@@ -1334,21 +1334,24 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
   EXPECT_TRUE(host_->mock_input_router()->message_received_);
 }
 
+ui::LatencyInfo GetLatencyInfoFromInputEvent(RenderWidgetHostProcess* process) {
+  const IPC::Message* message = process->sink().GetUniqueMessageMatching(
+      InputMsg_HandleInputEvent::ID);
+  EXPECT_TRUE(message);
+  InputMsg_HandleInputEvent::Param params;
+  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
+  process->sink().ClearMessages();
+  return params.b;
+}
 
 void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
                                         int64 component_id,
                                         WebInputEvent::Type input_type) {
-  const IPC::Message* message = process->sink().GetUniqueMessageMatching(
-      InputMsg_HandleInputEvent::ID);
-  ASSERT_TRUE(message);
-  InputMsg_HandleInputEvent::Param params;
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-  ui::LatencyInfo latency_info = params.b;
+  ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process);
   EXPECT_TRUE(latency_info.FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       component_id,
       NULL));
-  process->sink().ClearMessages();
 }
 
 // Tests that after input event passes through RWHI through ForwardXXXEvent()
@@ -1405,6 +1408,79 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
   CheckLatencyInfoComponentInMessage(
       process_, GetLatencyComponentId(), WebInputEvent::TouchStart);
   SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+}
+
+// Tests that after input event passes through RWHI through
+// ForwardXXXEventWithLatencyInfo(), input event coordinates will be present in
+// the latency info.
+TEST_F(RenderWidgetHostTest, InputEventRWHLatencyInfoCoordinates) {
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  process_->sink().ClearMessages();
+
+  {
+    WebMouseWheelEvent event =
+        SyntheticWebMouseWheelEventBuilder::Build(-5, 0, 0, true);
+    event.x = 100;
+    event.y = 200;
+    host_->ForwardWheelEvent(event);
+    ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process_);
+    EXPECT_EQ(1u, latency_info.input_coordinates_size);
+    EXPECT_EQ(100, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(200, latency_info.input_coordinates[0].y);
+    SendInputEventACK(WebInputEvent::MouseWheel,
+                      INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
+
+  {
+    WebMouseEvent event =
+        SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove);
+    event.x = 300;
+    event.y = 400;
+    host_->ForwardMouseEvent(event);
+    ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process_);
+    EXPECT_EQ(1u, latency_info.input_coordinates_size);
+    EXPECT_EQ(300, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(400, latency_info.input_coordinates[0].y);
+    SendInputEventACK(WebInputEvent::MouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
+
+  {
+    WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
+        WebInputEvent::GestureScrollBegin, blink::WebGestureDeviceTouchscreen);
+    event.x = 500;
+    event.y = 600;
+    host_->ForwardGestureEvent(event);
+    ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process_);
+    EXPECT_EQ(1u, latency_info.input_coordinates_size);
+    EXPECT_EQ(500, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(600, latency_info.input_coordinates[0].y);
+    SendInputEventACK(WebInputEvent::GestureScrollBegin,
+                      INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
+
+  {
+    PressTouchPoint(700, 800);
+    PressTouchPoint(900, 1000);
+    PressTouchPoint(1100, 1200);  // LatencyInfo only holds two coordinates.
+    SendTouchEvent();
+    ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process_);
+    EXPECT_EQ(2u, latency_info.input_coordinates_size);
+    EXPECT_EQ(700, latency_info.input_coordinates[0].x);
+    EXPECT_EQ(800, latency_info.input_coordinates[0].y);
+    EXPECT_EQ(900, latency_info.input_coordinates[1].x);
+    EXPECT_EQ(1000, latency_info.input_coordinates[1].y);
+    SendInputEventACK(WebInputEvent::TouchStart,
+                      INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
+
+  {
+    NativeWebKeyboardEvent event;
+    event.type = WebKeyboardEvent::KeyDown;
+    host_->ForwardKeyboardEvent(event);
+    ui::LatencyInfo latency_info = GetLatencyInfoFromInputEvent(process_);
+    EXPECT_EQ(0u, latency_info.input_coordinates_size);
+    SendInputEventACK(WebInputEvent::KeyDown, INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
 }
 
 TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {

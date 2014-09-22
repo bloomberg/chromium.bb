@@ -857,9 +857,11 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
       const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent",
                "x", mouse_event.x, "y", mouse_event.y);
+  ui::LatencyInfo::InputCoordinate logical_coordinate(mouse_event.x,
+                                                      mouse_event.y);
 
-  ui::LatencyInfo latency_info =
-      CreateRWHLatencyInfoIfNotExist(&ui_latency, mouse_event.type);
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(
+      &ui_latency, mouse_event.type, &logical_coordinate, 1);
 
   for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
     if (mouse_event_callbacks_[i].Run(mouse_event))
@@ -889,8 +891,11 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
       const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardWheelEvent");
 
-  ui::LatencyInfo latency_info =
-      CreateRWHLatencyInfoIfNotExist(&ui_latency, wheel_event.type);
+  ui::LatencyInfo::InputCoordinate logical_coordinate(wheel_event.x,
+                                                      wheel_event.y);
+
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(
+      &ui_latency, wheel_event.type, &logical_coordinate, 1);
 
   if (IgnoreInputEvents())
     return;
@@ -918,8 +923,11 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (delegate_->PreHandleGestureEvent(gesture_event))
     return;
 
-  ui::LatencyInfo latency_info =
-      CreateRWHLatencyInfoIfNotExist(&ui_latency, gesture_event.type);
+  ui::LatencyInfo::InputCoordinate logical_coordinate(gesture_event.x,
+                                                      gesture_event.y);
+
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(
+      &ui_latency, gesture_event.type, &logical_coordinate, 1);
 
   if (gesture_event.type == blink::WebInputEvent::GestureScrollUpdate) {
     latency_info.AddLatencyNumber(
@@ -950,8 +958,19 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& touch_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardEmulatedTouchEvent");
-  ui::LatencyInfo latency_info =
-      CreateRWHLatencyInfoIfNotExist(NULL, touch_event.type);
+
+  ui::LatencyInfo::InputCoordinate
+      logical_coordinates[ui::LatencyInfo::kMaxInputCoordinates];
+  size_t logical_coordinates_size =
+      std::min(arraysize(logical_coordinates),
+               static_cast<size_t>(touch_event.touchesLength));
+  for (size_t i = 0; i < logical_coordinates_size; i++) {
+    logical_coordinates[i] = ui::LatencyInfo::InputCoordinate(
+        touch_event.touches[i].position.x, touch_event.touches[i].position.y);
+  }
+
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(
+      NULL, touch_event.type, logical_coordinates, logical_coordinates_size);
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
   input_router_->SendTouchEvent(touch_with_latency);
 }
@@ -964,8 +983,21 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
   // Always forward TouchEvents for touch stream consistency. They will be
   // ignored if appropriate in FilterInputEvent().
 
+  ui::LatencyInfo::InputCoordinate
+      logical_coordinates[ui::LatencyInfo::kMaxInputCoordinates];
+  size_t logical_coordinates_size =
+      std::min(arraysize(logical_coordinates),
+               static_cast<size_t>(touch_event.touchesLength));
+  for (size_t i = 0; i < logical_coordinates_size; i++) {
+    logical_coordinates[i] = ui::LatencyInfo::InputCoordinate(
+        touch_event.touches[i].position.x, touch_event.touches[i].position.y);
+  }
+
   ui::LatencyInfo latency_info =
-      CreateRWHLatencyInfoIfNotExist(&ui_latency, touch_event.type);
+      CreateRWHLatencyInfoIfNotExist(&ui_latency,
+                                     touch_event.type,
+                                     logical_coordinates,
+                                     logical_coordinates_size);
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
 
   if (touch_emulator_ &&
@@ -1046,7 +1078,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
   input_router_->SendKeyboardEvent(
       key_event,
-      CreateRWHLatencyInfoIfNotExist(NULL, key_event.type),
+      CreateRWHLatencyInfoIfNotExist(NULL, key_event.type, NULL, 0),
       is_shortcut);
 }
 
@@ -1089,7 +1121,10 @@ void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
 }
 
 ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
-    const ui::LatencyInfo* original, WebInputEvent::Type type) {
+    const ui::LatencyInfo* original,
+    WebInputEvent::Type type,
+    const ui::LatencyInfo::InputCoordinate* logical_coordinates,
+    size_t logical_coordinates_size) {
   ui::LatencyInfo info;
   if (original)
     info = *original;
@@ -1102,7 +1137,21 @@ ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
                           GetLatencyComponentId(),
                           ++last_input_number_);
     info.TraceEventType(WebInputEventTraits::GetName(type));
+
+    // Convert logical coordinates to physical coordinates, based on the
+    // device scale factor.
+    float device_scale_factor =
+        screen_info_ ? screen_info_->deviceScaleFactor : 1;
+    DCHECK(logical_coordinates_size <= ui::LatencyInfo::kMaxInputCoordinates);
+    info.input_coordinates_size = logical_coordinates_size;
+    for (size_t i = 0; i < info.input_coordinates_size; i++) {
+      info.input_coordinates[i].x =
+          logical_coordinates[i].x * device_scale_factor;
+      info.input_coordinates[i].y =
+          logical_coordinates[i].y * device_scale_factor;
+    }
   }
+
   return info;
 }
 

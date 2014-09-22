@@ -862,6 +862,11 @@ void LayerTreeImpl::AsValueInto(base::debug::TracedValue* state) const {
     TracedValue::AppendIDRef(*it, state);
   }
   state->EndArray();
+
+  state->BeginArray("swap_promise_trace_ids");
+  for (size_t i = 0; i < swap_promise_list_.size(); i++)
+    state->AppendDouble(swap_promise_list_[i]->TraceId());
+  state->EndArray();
 }
 
 void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(

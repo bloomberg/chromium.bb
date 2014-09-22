@@ -95,8 +95,18 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
     uint32 event_count;
   };
 
+  struct EVENTS_BASE_EXPORT InputCoordinate {
+    InputCoordinate();
+    InputCoordinate(float x, float y);
+
+    float x;
+    float y;
+  };
+
   // Empirically determined constant based on a typical scroll sequence.
   enum { kTypicalMaxComponentsPerLatencyInfo = 6 };
+
+  enum { kMaxInputCoordinates = 2 };
 
   // Map a Latency Component (with a component-specific int64 id) to a
   // component info.
@@ -153,6 +163,11 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   void TraceEventType(const char* event_type);
 
   LatencyMap latency_components;
+
+  // These coordinates represent window coordinates of the original input event.
+  uint32 input_coordinates_size;
+  InputCoordinate input_coordinates[kMaxInputCoordinates];
+
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64 trace_id;
   // Whether a terminal component has been added.
