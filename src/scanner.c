@@ -884,7 +884,6 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 		desc_dump(mdesc ? mdesc->summary : "(none)",
 			  "\t * %s - ", m->name);
 		wl_list_for_each(a, &m->arg_list, link) {
-
 			if (side == SERVER && a->type == NEW_ID &&
 			    a->interface_name == NULL)
 				printf("\t * @interface: name of the objects interface\n"
