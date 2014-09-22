@@ -2458,9 +2458,6 @@ _arm_brillo_release = _brillo_release.derive(non_testable_builder)
 _arm_brillo_release.add_config('storm-release',
   boards=['storm'],
 
-  # Need to verify before enabling.
-  signer_tests=False,
-
   # Hw Lab can't test duck, yet.
   paygen_skip_testing=True,
   important=True,
