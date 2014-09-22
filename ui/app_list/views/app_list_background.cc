@@ -89,7 +89,7 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
       gfx::Rect separator_rect(contents_rect);
       separator_rect.Inset(
           kExperimentalWindowPadding + main_view_->GetInsets().left(), 0);
-      separator_rect.set_y(contents_view_view_bounds.bottom());
+      separator_rect.set_y(contents_view_view_bounds.bottom() - 1);
       separator_rect.set_height(kBottomSeparatorSize);
       canvas->FillRect(separator_rect, kBottomSeparatorColor);
     }

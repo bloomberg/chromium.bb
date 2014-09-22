@@ -32,6 +32,9 @@ ContentsSwitcherView::~ContentsSwitcherView() {}
 
 void ContentsSwitcherView::AddSwitcherButton(int resource_id, int page_index) {
   views::ImageButton* button = new views::ImageButton(this);
+  button->SetMinimumImageSize(gfx::Size(kMinimumHeight, kMinimumHeight));
+  button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                            views::ImageButton::ALIGN_MIDDLE);
   button->SetImage(
       views::CustomButton::STATE_NORMAL,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));

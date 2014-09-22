@@ -239,11 +239,26 @@ void AppListViewTestContext::RunDisplayTest() {
 
   Show();
 
-  // The landscape app launcher needs to be short enough to accomodate the
-  // virtual keyboard because it is enabled by default when the virtual keyboard
-  // is enabled.
-  if (test_type_ == LANDSCAPE)
-    EXPECT_GE(403, view_->bounds().height());
+  // Explicitly enforce the exact dimensions of the app list. Feel free to
+  // change these if you need to (they are just here to prevent against
+  // accidental changes to the window size).
+  switch (test_type_) {
+    case NORMAL:
+      EXPECT_EQ("400x500", view_->bounds().size().ToString());
+      break;
+    case LANDSCAPE:
+      // NOTE: Height should not exceed 402, because otherwise there might not
+      // be enough space to accomodate the virtual keyboard. (LANDSCAPE mode is
+      // enabled by default when the virtual keyboard is enabled.)
+      EXPECT_EQ("576x402", view_->bounds().size().ToString());
+      break;
+    case EXPERIMENTAL:
+      EXPECT_EQ("768x560", view_->bounds().size().ToString());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 
   if (is_landscape())
     EXPECT_EQ(2, GetPaginationModel()->total_pages());
