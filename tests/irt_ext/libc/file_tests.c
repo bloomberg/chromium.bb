@@ -386,6 +386,54 @@ static int do_fwriteread_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+static int do_truncate_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_truncate_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_truncate_test: did not create inode.\n");
+    return 1;
+  }
+
+  size_t num_bytes = fwrite(TEST_TEXT, sizeof(TEST_TEXT[0]),
+                            sizeof(TEST_TEXT), fp);
+  if (num_bytes != sizeof(TEST_TEXT)) {
+    irt_ext_test_print("do_truncate_test: fwrite was not successful - %s.\n");
+    return 1;
+  }
+
+  if (0 != truncate(TEST_FILE, num_bytes - 1)) {
+    irt_ext_test_print("do_truncate_test: truncate was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (file_node->size != (num_bytes - 1)) {
+    irt_ext_test_print("do_truncate_test: truncate did not affect env.\n");
+    return 1;
+  }
+
+  if (0 != ftruncate(fileno(fp), num_bytes - 2)) {
+    irt_ext_test_print("do_truncate_test: ftruncate was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (file_node->size != (num_bytes - 2)) {
+    irt_ext_test_print("do_truncate_test: ftruncate did not affect env.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
 /* Standard stream tests. */
 static int do_isatty_test(struct file_desc_environment *file_desc_env) {
   if (!isatty(STDIN_FILENO) ||
@@ -1154,6 +1202,7 @@ static const TYPE_file_test g_file_tests[] = {
   /* File IO tests. */
   do_fopenclose_test,
   do_fwriteread_test,
+  do_truncate_test,
 
   /* Standard stream tests. */
   do_isatty_test,

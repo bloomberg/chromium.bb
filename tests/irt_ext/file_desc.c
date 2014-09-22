@@ -314,6 +314,29 @@ static int my_fdatasync(int fd) {
 }
 
 static int my_ftruncate(int fd, nacl_irt_off_t length) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid &&
+      g_activated_env->file_descs[fd].data != NULL) {
+    struct inode_data *filedata = g_activated_env->file_descs[fd].data;
+    if (length < 0)
+      return EINVAL;
+    else if (length > BUFFER_SIZE)
+      return EFBIG;
+
+    if (length > filedata->size)
+      memset(&filedata->content[filedata->size], 0, length - filedata->size);
+
+    if (length != filedata->size) {
+      filedata->size = length;
+      filedata->ctime = g_activated_env->current_time++;
+      filedata->mtime = filedata->ctime;
+    }
+
+    return 0;
+  }
+
   return EBADF;
 }
 
@@ -572,6 +595,19 @@ static int my_unlink(const char *pathname) {
 }
 
 static int my_truncate(const char *pathname, nacl_irt_off_t length) {
+  if (g_activated_env) {
+    int fd = -1;
+    int ret = my_open(pathname, O_WRONLY, 0, &fd);
+    if (ret != 0)
+      return ret;
+
+    ret = my_ftruncate(fd, length);
+    if (ret != 0)
+      return ret;
+
+    return my_close(fd);
+  }
+
   return ENOSYS;
 }
 
