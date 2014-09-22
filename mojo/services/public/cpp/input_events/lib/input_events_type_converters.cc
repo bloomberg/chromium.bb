@@ -119,18 +119,12 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
   } else if (input.IsKeyEvent()) {
     const ui::KeyEvent* key_event = static_cast<const ui::KeyEvent*>(&input);
     KeyDataPtr key_data(KeyData::New());
-    key_data->key_code = key_event->key_code();
+    key_data->key_code = key_event->GetConflatedWindowsKeyCode();
     key_data->native_key_code = key_event->platform_keycode();
     key_data->is_char = key_event->is_char();
     key_data->character = key_event->GetCharacter();
 
-    if (key_event->HasNativeEvent()) {
-      key_data->windows_key_code = static_cast<mojo::KeyboardCode>(
-          ui::WindowsKeycodeFromNative(key_event->native_event()));
-      key_data->text = ui::TextFromNative(key_event->native_event());
-      key_data->unmodified_text =
-          ui::UnmodifiedTextFromNative(key_event->native_event());
-    } else if (key_event->extended_key_event_data()) {
+    if (key_event->extended_key_event_data()) {
       const MojoExtendedKeyEventData* data =
           static_cast<const MojoExtendedKeyEventData*>(
               key_event->extended_key_event_data());
@@ -139,8 +133,10 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
       key_data->text = data->text();
       key_data->unmodified_text = data->unmodified_text();
     } else {
-      NOTREACHED() << "Synthesized event which never contained a native event "
-          "passed to mojo::TypeConverter.";
+      key_data->windows_key_code = static_cast<mojo::KeyboardCode>(
+          key_event->GetLocatedWindowsKeyboardCode());
+      key_data->text = key_event->GetText();
+      key_data->unmodified_text = key_event->GetUnmodifiedText();
     }
 
     event->key_data = key_data.Pass();
