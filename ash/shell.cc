@@ -53,6 +53,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
@@ -793,6 +794,7 @@ Shell::~Shell() {
   display_manager_->CreateScreenForShutdown();
   display_controller_->Shutdown();
   display_controller_.reset();
+  virtual_keyboard_controller_.reset();
   screen_position_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
@@ -879,6 +881,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_controller_->Start();
   display_controller_->CreatePrimaryHost(
       ShellInitParamsToAshWindowTreeHostInitParams(init_params));
+  virtual_keyboard_controller_.reset(new VirtualKeyboardController);
   aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 

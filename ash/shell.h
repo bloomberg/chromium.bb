@@ -141,6 +141,7 @@ class TouchTransformerController;
 class TouchObserverHUD;
 class UserActivityDetector;
 class UserWallpaperDelegate;
+class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
 class WebNotificationTray;
@@ -666,6 +667,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<WindowSelectorController> window_selector_controller_;
   scoped_ptr<FocusCycler> focus_cycler_;
   scoped_ptr<DisplayController> display_controller_;
+  scoped_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<MagnificationController> magnification_controller_;
   scoped_ptr<PartialMagnificationController> partial_magnification_controller_;
