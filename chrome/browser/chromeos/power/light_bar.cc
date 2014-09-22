@@ -18,7 +18,8 @@ namespace chromeos {
 namespace {
 const int kDarkSuspendDelaySeconds = 4;
 const char kLightBarControlPath[] =
-    "/sys/devices/virtual/chromeos/cros_ec/lightbar/sequence";
+    "/sys/devices/platform/cros_ec_lpc.0/cros-ec-dev.0/chromeos/cros_ec/"
+    "lightbar/sequence";
 const char kKonamiCommand[] = "KONAMI";
 
 }  // namespace
