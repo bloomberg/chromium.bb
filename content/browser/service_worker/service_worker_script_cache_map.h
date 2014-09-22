@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/content_export.h"
+#include "net/url_request/url_request_status.h"
 
 class GURL;
 
@@ -29,10 +30,10 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   // Used during the initial run of a new version to build the map
   // of resources ids.
   void NotifyStartedCaching(const GURL& url, int64 resource_id);
-  void NotifyFinishedCaching(const GURL& url, bool success);
+  void NotifyFinishedCaching(const GURL& url,
+                             const net::URLRequestStatus& status);
 
   // Used to retrieve the results of the initial run of a new version.
-  bool HasError() const { return has_error_; }
   void GetResources(
       std::vector<ServiceWorkerDatabase::ResourceRecord>* resources);
 
@@ -41,6 +42,10 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
      const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources);
 
   size_t size() const { return resource_ids_.size(); }
+
+  const net::URLRequestStatus& main_script_status() const {
+    return main_script_status_;
+  }
 
  private:
   typedef std::map<GURL, int64> ResourceIDMap;
@@ -55,7 +60,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   ServiceWorkerVersion* owner_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ResourceIDMap resource_ids_;
-  bool has_error_;
+  net::URLRequestStatus main_script_status_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptCacheMap);
 };

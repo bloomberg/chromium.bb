@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 
@@ -333,14 +334,33 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
 
 void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     ServiceWorkerStatusCode status) {
-  // "If serviceWorker fails to start up..." then reject the promise with an
-  // error and abort.
-  if (status != SERVICE_WORKER_OK) {
-    Complete(status);
+  if (status == SERVICE_WORKER_OK) {
+    InstallAndContinue();
     return;
   }
 
-  InstallAndContinue();
+  // "If serviceWorker fails to start up..." then reject the promise with an
+  // error and abort. When there is a main script network error, the status will
+  // be updated to a more specific one.
+  const net::URLRequestStatus& main_script_status =
+      new_version()->script_cache_map()->main_script_status();
+  if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
+    switch (main_script_status.error()) {
+      case net::ERR_INSECURE_RESPONSE:
+      case net::ERR_UNSAFE_REDIRECT:
+        status = SERVICE_WORKER_ERROR_SECURITY;
+        break;
+      case net::ERR_ABORTED:
+        status = SERVICE_WORKER_ERROR_ABORT;
+        break;
+      case net::ERR_FAILED:
+        status = SERVICE_WORKER_ERROR_NETWORK;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  Complete(status);
 }
 
 // This function corresponds to the spec's [[Install]] algorithm.

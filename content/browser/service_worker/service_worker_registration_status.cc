@@ -35,6 +35,14 @@ void GetServiceWorkerRegistrationStatusResponse(
       *error_type = WebServiceWorkerError::ErrorTypeNotFound;
       return;
 
+    case SERVICE_WORKER_ERROR_NETWORK:
+      *error_type = WebServiceWorkerError::ErrorTypeNetwork;
+      return;
+
+    case SERVICE_WORKER_ERROR_SECURITY:
+      *error_type = WebServiceWorkerError::ErrorTypeSecurity;
+      return;
+
     case SERVICE_WORKER_ERROR_ABORT:
     case SERVICE_WORKER_ERROR_IPC_FAILED:
     case SERVICE_WORKER_ERROR_FAILED:

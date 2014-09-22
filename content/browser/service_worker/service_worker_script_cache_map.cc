@@ -16,8 +16,7 @@ ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
     ServiceWorkerVersion* owner,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : owner_(owner),
-      context_(context),
-      has_error_(false) {
+      context_(context) {
 }
 
 ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
@@ -40,14 +39,15 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
-    const GURL& url, bool success) {
+    const GURL& url, const net::URLRequestStatus& status) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, Lookup(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING);
-  if (!success) {
+  if (!status.is_success()) {
     context_->storage()->DoomUncommittedResponse(Lookup(url));
-    has_error_ = true;
     resource_ids_.erase(url);
+    if (owner_->script_url() == url)
+      main_script_status_ = status;
   }
 }
 

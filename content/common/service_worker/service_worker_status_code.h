@@ -42,6 +42,12 @@ enum ServiceWorkerStatusCode {
   // Sending an IPC to the worker failed (often due to child process is
   // terminated).
   SERVICE_WORKER_ERROR_IPC_FAILED,
+
+  // Operation is failed by network issue.
+  SERVICE_WORKER_ERROR_NETWORK,
+
+  // Operation is failed by security issue.
+  SERVICE_WORKER_ERROR_SECURITY,
 };
 
 CONTENT_EXPORT const char* ServiceWorkerStatusToString(

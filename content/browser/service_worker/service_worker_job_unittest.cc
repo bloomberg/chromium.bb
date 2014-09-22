@@ -945,7 +945,8 @@ class UpdateJobTestHelper
       int64 resource_id = storage()->NewResourceId();
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
-      version->script_cache_map()->NotifyFinishedCaching(script, true);
+      version->script_cache_map()->NotifyFinishedCaching(
+          script, net::URLRequestStatus());
     } else {
       // Spoof caching the script for the new version.
       int64 resource_id = storage()->NewResourceId();
@@ -954,7 +955,8 @@ class UpdateJobTestHelper
         WriteStringResponse(storage(), resource_id, kMockScriptBody);
       else
         WriteStringResponse(storage(), resource_id, "mock_different_script");
-      version->script_cache_map()->NotifyFinishedCaching(script, true);
+      version->script_cache_map()->NotifyFinishedCaching(
+          script, net::URLRequestStatus());
     }
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download);

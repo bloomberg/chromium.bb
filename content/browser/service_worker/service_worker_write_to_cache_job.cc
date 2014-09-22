@@ -68,7 +68,8 @@ void ServiceWorkerWriteToCacheJob::Kill() {
   net_request_.reset();
   if (did_notify_started_ && !did_notify_finished_) {
     version_->script_cache_map()->NotifyFinishedCaching(
-        url_, false);
+        url_,
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_ABORTED));
     did_notify_finished_ = true;
   }
   writer_.reset();
@@ -128,7 +129,7 @@ bool ServiceWorkerWriteToCacheJob::ReadRawData(
   // No more data to process, the job is complete.
   io_buffer_ = NULL;
   version_->script_cache_map()->NotifyFinishedCaching(
-      url_, status.is_success());
+      url_, net::URLRequestStatus());
   did_notify_finished_ = true;
   return status.is_success();
 }
@@ -279,7 +280,7 @@ void ServiceWorkerWriteToCacheJob::OnReceivedRedirect(
                "ServiceWorkerWriteToCacheJob::OnReceivedRedirect");
   // Script resources can't redirect.
   AsyncNotifyDoneHelper(net::URLRequestStatus(
-      net::URLRequestStatus::FAILED, net::ERR_FAILED));
+      net::URLRequestStatus::FAILED, net::ERR_UNSAFE_REDIRECT));
 }
 
 void ServiceWorkerWriteToCacheJob::OnAuthRequired(
@@ -349,7 +350,7 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
         mime_type != "text/javascript" &&
         mime_type != "application/javascript") {
       AsyncNotifyDoneHelper(net::URLRequestStatus(
-          net::URLRequestStatus::FAILED, net::ERR_FAILED));
+          net::URLRequestStatus::FAILED, net::ERR_INSECURE_RESPONSE));
       return;
     }
   }
@@ -380,8 +381,7 @@ void ServiceWorkerWriteToCacheJob::OnReadCompleted(
 void ServiceWorkerWriteToCacheJob::AsyncNotifyDoneHelper(
     const net::URLRequestStatus& status) {
   DCHECK(!status.is_io_pending());
-  version_->script_cache_map()->NotifyFinishedCaching(
-      url_, status.is_success());
+  version_->script_cache_map()->NotifyFinishedCaching(url_, status);
   did_notify_finished_ = true;
   SetStatus(status);
   NotifyDone(status);
