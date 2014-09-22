@@ -412,6 +412,30 @@ cvox.LiveRegions.announceChange = function(
     }
   });
 
+  // TODO(dmazzoni): http://crbug.com/415679 Temporary design decision;
+  // until we have a way to tell the speech queue to group the nav
+  // descriptions together, collapse them into one.
+  // Otherwise, one nav description could be spoken, then something unrelated,
+  // then the rest.
+  if (navDescriptions.length > 1) {
+    var allStrings = [];
+    navDescriptions.forEach(function(desc) {
+      if (desc.context) {
+        allStrings.push(desc.context);
+      }
+      if (desc.text) {
+        allStrings.push(desc.text);
+      }
+      if (desc.userValue) {
+        allStrings.push(desc.userValue);
+      }
+    });
+    navDescriptions = [new cvox.NavDescription({
+      text: allStrings.join(', '),
+      category: 'live'
+    })];
+  }
+
   handler(assertive, navDescriptions);
 };
 

@@ -179,10 +179,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'RemoveFromLiveRegion', function() {
   $('buddylist2').removeChild($('jack'));
   this.waitForCalm(function() {
     var utterances = cvox.ChromeVoxTester.getUtteranceList();
-    assertEquals(3, utterances.length);
-    assertEquals('removed:', utterances[0]);
-    assertEquals('', utterances[1]);
-    assertEquals('Jack', utterances[2]);
+    assertEquals(1, utterances.length);
+    assertEquals('removed:, Jack', utterances[0]);
     testDone();
   });
 });
@@ -213,7 +211,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'ProgressBarLiveRegionEvents', function() {
 /**
  * Test 'alert' live region inserted as a result of focus change, like
  *   when there's an error message when filling out a form.
- * @export
  */
 TEST_F('CvoxLiveRegionsUnitTest', 'FocusTriggeredAlertLiveRegion', function() {
   this.loadDoc(function() {/*!
@@ -255,5 +252,71 @@ TEST_F('CvoxLiveRegionsUnitTest', 'FocusTriggeredAlertLiveRegion', function() {
                            .queue('Edit text')
                        .categoryFlush('Not a valid name!')
                        .queue('Alert'))
+      .waitForCalm(testDone);
+});
+
+
+/**
+ * Test focus followed by live region change, make sure both are spoken.
+ */
+TEST_F('CvoxLiveRegionsUnitTest', 'FocusThenLiveRegion', function() {
+  this.loadDoc(function() {/*!
+    <button id="button_to_focus">Button To Focus</button>
+    <div id="live" aria-live="polite"></div>
+  */});
+
+  $('button_to_focus').focus();
+  $('live').innerText = 'Live region text';
+
+  this.waitForCalm(this.assertSpokenList,
+                   new cvox.SpokenListBuilder()
+                       .categoryFlush('Button To Focus')
+                       .queue('Button')
+                       .categoryFlush('Live region text'))
+      .waitForCalm(testDone);
+});
+
+
+/**
+ * Test live region change followed by focus, make sure both are spoken.
+ */
+TEST_F('CvoxLiveRegionsUnitTest', 'LiveRegionThenFocus', function() {
+  this.loadDoc(function() {/*!
+    <button id="button_to_focus">Button To Focus</button>
+    <div id="live" aria-live="polite"></div>
+  */});
+
+  $('live').innerText = 'Live region text';
+
+  this.waitForCalm(function() {
+         $('button_to_focus').focus();
+       })
+      .waitForCalm(this.assertSpokenList,
+                   new cvox.SpokenListBuilder()
+                       .categoryFlush('Live region text')
+                       .categoryFlush('Button To Focus')
+                       .queue('Button'))
+      .waitForCalm(testDone);
+});
+
+
+/**
+ * Two elements inside a live region. These are all combined into
+ * one utterance until this bug is fixed: http://crbug.com/415679
+ */
+TEST_F('CvoxLiveRegionsUnitTest', 'TwoElementsInLiveRegion', function() {
+  this.loadDoc(function() {/*!
+    <div id="live" aria-live="polite">
+      <div id="hidden" style="display:none">
+        <button>L1</button>
+        <button>L2</button>
+      </div>
+    </div>
+  */});
+
+  $('hidden').style.display = 'block';
+  this.waitForCalm(this.assertSpokenList,
+                    new cvox.SpokenListBuilder()
+                        .categoryFlush('L1, L2'))
       .waitForCalm(testDone);
 });
