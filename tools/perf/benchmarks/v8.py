@@ -7,6 +7,7 @@ from telemetry.web_perf import timeline_based_measurement
 from telemetry import benchmark
 
 
+@benchmark.Disabled  # crbug.com/416502
 class V8GarbageCollectionCases(benchmark.Benchmark):
   """Measure V8 metrics on the garbage collection cases."""
   test = timeline_based_measurement.TimelineBasedMeasurement
