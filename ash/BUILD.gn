@@ -356,7 +356,7 @@ executable("ash_shell") {
 
   if (is_chromeos) {
     deps += [
-      "../device/bluetooth/bluetooth.gyp:device_bluetooth",
+      "//device/bluetooth",
     ]
   }
 }
