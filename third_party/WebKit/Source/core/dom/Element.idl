@@ -75,8 +75,8 @@
     // attribute (Dictionary or double) scrollLeft;
     // attribute (Dictionary or double) scrollTop;
     // http://crbug.com/240176
-    [Custom=Setter] attribute long scrollLeft;
-    [Custom=Setter] attribute long scrollTop;
+    [Custom=Setter] attribute double scrollLeft;
+    [Custom=Setter] attribute double scrollTop;
     readonly attribute long scrollWidth;
     readonly attribute long scrollHeight;
 

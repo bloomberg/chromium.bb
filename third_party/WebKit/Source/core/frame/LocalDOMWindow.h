@@ -167,10 +167,10 @@ public:
     int screenY() const;
     int screenLeft() const { return screenX(); }
     int screenTop() const { return screenY(); }
-    int scrollX() const;
-    int scrollY() const;
-    int pageXOffset() const { return scrollX(); }
-    int pageYOffset() const { return scrollY(); }
+    double scrollX() const;
+    double scrollY() const;
+    double pageXOffset() const { return scrollX(); }
+    double pageYOffset() const { return scrollY(); }
 
     bool closed() const;
 
@@ -222,12 +222,12 @@ public:
     void postMessageTimerFired(PostMessageTimer*);
     void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
-    void scrollBy(int x, int y, ScrollBehavior = ScrollBehaviorAuto) const;
-    void scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
-    void scrollTo(int x, int y, ScrollBehavior = ScrollBehaviorAuto) const;
-    void scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
-    void scroll(int x, int y) const { scrollTo(x, y); }
-    void scroll(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
+    void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
+    void scrollBy(double x, double y, const Dictionary& scrollOptions, ExceptionState&) const;
+    void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
+    void scrollTo(double x, double y, const Dictionary& scrollOptions, ExceptionState&) const;
+    void scroll(double x, double y) const { scrollTo(x, y); }
+    void scroll(double x, double y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
 
     void moveBy(float x, float y) const;
     void moveTo(float x, float y) const;

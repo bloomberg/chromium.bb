@@ -188,11 +188,11 @@ public:
     int clientTop();
     int clientWidth();
     int clientHeight();
-    virtual int scrollLeft();
-    virtual int scrollTop();
-    virtual void setScrollLeft(int);
+    virtual double scrollLeft();
+    virtual double scrollTop();
+    virtual void setScrollLeft(double);
     virtual void setScrollLeft(const Dictionary& scrollOptionsHorizontal, ExceptionState&);
-    virtual void setScrollTop(int);
+    virtual void setScrollTop(double);
     virtual void setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionState&);
     virtual int scrollWidth();
     virtual int scrollHeight();

@@ -612,13 +612,13 @@ int Element::clientHeight()
     return 0;
 }
 
-int Element::scrollLeft()
+double Element::scrollLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
         if (RenderBox* rend = renderBox())
-            return adjustDoubleForAbsoluteZoom(rend->scrollLeft(), *rend);
+            return adjustScrollForAbsoluteZoom(rend->scrollLeft(), *rend);
         return 0;
     }
 
@@ -628,20 +628,20 @@ int Element::scrollLeft()
 
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustDoubleForAbsoluteZoom(view->scrollX(), *renderView);
+                return adjustScrollForAbsoluteZoom(view->scrollX(), *renderView);
         }
     }
 
     return 0;
 }
 
-int Element::scrollTop()
+double Element::scrollTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
         if (RenderBox* rend = renderBox())
-            return adjustLayoutUnitForAbsoluteZoom(rend->scrollTop(), *rend);
+            return adjustScrollForAbsoluteZoom(rend->scrollTop(), *rend);
         return 0;
     }
 
@@ -651,14 +651,14 @@ int Element::scrollTop()
 
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustDoubleForAbsoluteZoom(view->scrollY(), *renderView);
+                return adjustScrollForAbsoluteZoom(view->scrollY(), *renderView);
         }
     }
 
     return 0;
 }
 
-void Element::setScrollLeft(int newLeft)
+void Element::setScrollLeft(double newLeft)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -694,7 +694,7 @@ void Element::setScrollLeft(const Dictionary& scrollOptionsHorizontal, Exception
         }
     }
 
-    int position;
+    double position;
     if (!DictionaryHelper::get(scrollOptionsHorizontal, "x", position)) {
         exceptionState.throwTypeError("ScrollOptionsHorizontal must include an 'x' member.");
         return;
@@ -704,7 +704,7 @@ void Element::setScrollLeft(const Dictionary& scrollOptionsHorizontal, Exception
     setScrollLeft(position);
 }
 
-void Element::setScrollTop(int newTop)
+void Element::setScrollTop(double newTop)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -740,7 +740,7 @@ void Element::setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionSta
         }
     }
 
-    int position;
+    double position;
     if (!DictionaryHelper::get(scrollOptionsVertical, "y", position)) {
         exceptionState.throwTypeError("ScrollOptionsVertical must include a 'y' member.");
         return;

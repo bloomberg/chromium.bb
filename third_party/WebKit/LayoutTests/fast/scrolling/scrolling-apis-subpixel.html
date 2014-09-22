@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<style>
+.spacer {
+  height: 1000px;
+  width: 1000px;
+}
+#scroller, body {
+  height: 100px;
+  width: 100px;
+  overflow: scroll;
+}
+
+</style>
+<body class=scroller>
+<div id=console></div>
+
+<div id=scroller>
+    <div class=spacer></div>
+</div>
+<div class=spacer></div>
+</body>
+
+<script src="../../resources/js-test.js"></script>
+<script>
+
+description("Verifies that scrolling APIs support fractional offsets.");
+// Note we current support fractional scrolling only for the special case of
+// browser zoom.  When http://crbug.com/414283 is fixed, we should test
+// other cases like device scale.
+
+function testScroll(scrollOffset) {
+
+    debug('Scrolling DIV with scrollTop/scrollLeft');
+    scroller.scrollTop = scrollOffset;
+    shouldBeEqualToNumber('scroller.scrollTop', scrollOffset);
+    scroller.scrollLeft = scrollOffset;
+    shouldBeEqualToNumber('scroller.scrollLeft', scrollOffset);
+
+    // Note that the body element is a special case - we don't attempt to
+    // test it here as it's semantics are in flux (http://goo.gl/BFHtMR).
+
+    debug('Scrolling the document with window.scroll');
+    window.scroll(0,0);
+    scrollOffset++;
+    window.scroll(scrollOffset, scrollOffset);
+    shouldBeEqualToNumber('window.scrollY', scrollOffset);
+    shouldBeEqualToNumber('window.scrollX', scrollOffset);
+
+    debug('Scrolling the document with window.scrollTo');
+    window.scroll(0,0);
+    window.scrollTo(scrollOffset, scrollOffset);
+    shouldBeEqualToNumber('window.pageYOffset', scrollOffset);
+    shouldBeEqualToNumber('window.pageXOffset', scrollOffset);
+
+    debug('Scrolling the document with window.scrollBy');
+    window.scroll(1,1);
+    window.scrollBy(scrollOffset - 1, scrollOffset - 1);
+    shouldBeEqualToNumber('window.scrollY', scrollOffset);
+    shouldBeEqualToNumber('window.scrollX', scrollOffset);
+
+    debug('');
+}
+
+function testPageZoom(zoom) {
+    debug('---- Testing page zoom = ' + zoom + ' ----');
+    eventSender.setPageZoomFactor(zoom);
+    testScroll(4);
+    testScroll(4.5);
+}
+
+testPageZoom(2);
+</script>

@@ -1539,6 +1539,12 @@ inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, RenderObject& render
         rect.scale(1 / zoom, 1 / zoom);
 }
 
+inline double adjustScrollForAbsoluteZoom(int value, RenderObject& renderer)
+{
+    ASSERT(renderer.style());
+    return adjustScrollForAbsoluteZoom(value, *renderer.style());
+}
+
 #define DEFINE_RENDER_OBJECT_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, RenderObject, object, object->predicate, object.predicate)
 

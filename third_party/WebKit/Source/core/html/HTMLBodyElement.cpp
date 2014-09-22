@@ -222,7 +222,7 @@ static int adjustForZoom(int value, Document* document)
 // That said, Blink's {set}scroll{Top,Left} behaviors match Gecko's: even if there is a non-overflown
 // scrollable area, scrolling should not get propagated to the viewport in neither strict
 // or quirks modes.
-int HTMLBodyElement::scrollLeft()
+double HTMLBodyElement::scrollLeft()
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -232,16 +232,17 @@ int HTMLBodyElement::scrollLeft()
         if (!render)
             return 0;
         if (render->hasOverflowClip())
-            return adjustForAbsoluteZoom(render->scrollLeft(), render);
+            return adjustScrollForAbsoluteZoom(render->scrollLeft(), *render);
         if (!document.inQuirksMode())
             return 0;
     }
 
-    FrameView* view = document.view();
-    return view ? adjustForZoom(view->scrollX(), &document) : 0;
+    if (FrameView* view = document.view())
+        return adjustScrollForAbsoluteZoom(view->scrollX(), document.frame()->pageZoomFactor());
+    return 0;
 }
 
-void HTMLBodyElement::setScrollLeft(int scrollLeft)
+void HTMLBodyElement::setScrollLeft(double scrollLeft)
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -268,7 +269,7 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
     view->setScrollPosition(IntPoint(static_cast<int>(scrollLeft * frame->pageZoomFactor()), view->scrollY()));
 }
 
-int HTMLBodyElement::scrollTop()
+double HTMLBodyElement::scrollTop()
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -278,16 +279,17 @@ int HTMLBodyElement::scrollTop()
         if (!render)
             return 0;
         if (render->hasOverflowClip())
-            return adjustForAbsoluteZoom(render->scrollTop(), render);
+            return adjustLayoutUnitForAbsoluteZoom(render->scrollTop(), *render);
         if (!document.inQuirksMode())
             return 0;
     }
 
-    FrameView* view = document.view();
-    return view ? adjustForZoom(view->scrollY(), &document) : 0;
+    if (FrameView* view = document.view())
+        return adjustScrollForAbsoluteZoom(view->scrollY(), document.frame()->pageZoomFactor());
+    return 0;
 }
 
-void HTMLBodyElement::setScrollTop(int scrollTop)
+void HTMLBodyElement::setScrollTop(double scrollTop)
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();

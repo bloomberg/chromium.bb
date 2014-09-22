@@ -133,7 +133,6 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 
 # Requires subpixel precision for offset/client/scroll properties
 crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
-crbug.com/360889 fast/sub-pixel/scroll-offset-precision.html  [ ImageOnlyFailure ]
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
 crbug.com/360889 fast/block/float/logical-bottom-exceeds-layoutunit-max.html [ Failure ]
 crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Failure Crash ]

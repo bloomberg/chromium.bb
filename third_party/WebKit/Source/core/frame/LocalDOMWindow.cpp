@@ -1158,7 +1158,7 @@ int LocalDOMWindow::screenY() const
     return static_cast<int>(host->chrome().windowRect().y());
 }
 
-int LocalDOMWindow::scrollX() const
+double LocalDOMWindow::scrollX() const
 {
     if (!m_frame)
         return 0;
@@ -1169,10 +1169,10 @@ int LocalDOMWindow::scrollX() const
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    return adjustForAbsoluteZoom(view->scrollX(), m_frame->pageZoomFactor());
+    return adjustScrollForAbsoluteZoom(view->scrollX(), m_frame->pageZoomFactor());
 }
 
-int LocalDOMWindow::scrollY() const
+double LocalDOMWindow::scrollY() const
 {
     if (!m_frame)
         return 0;
@@ -1183,7 +1183,7 @@ int LocalDOMWindow::scrollY() const
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    return adjustForAbsoluteZoom(view->scrollY(), m_frame->pageZoomFactor());
+    return adjustScrollForAbsoluteZoom(view->scrollY(), m_frame->pageZoomFactor());
 }
 
 bool LocalDOMWindow::closed() const
@@ -1348,7 +1348,7 @@ static bool scrollBehaviorFromScrollOptions(const Dictionary& scrollOptions, Scr
     return false;
 }
 
-void LocalDOMWindow::scrollBy(int x, int y, ScrollBehavior scrollBehavior) const
+void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return;
@@ -1359,11 +1359,11 @@ void LocalDOMWindow::scrollBy(int x, int y, ScrollBehavior scrollBehavior) const
     if (!view)
         return;
 
-    IntSize scaledOffset(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
+    IntSize scaledOffset(static_cast<int>(x * m_frame->pageZoomFactor()), static_cast<int>(y * m_frame->pageZoomFactor()));
     view->scrollBy(scaledOffset, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
+void LocalDOMWindow::scrollBy(double x, double y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
 {
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
@@ -1371,7 +1371,7 @@ void LocalDOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, Exc
     scrollBy(x, y, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollTo(int x, int y, ScrollBehavior scrollBehavior) const
+void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return;
@@ -1382,11 +1382,11 @@ void LocalDOMWindow::scrollTo(int x, int y, ScrollBehavior scrollBehavior) const
     if (!view)
         return;
 
-    IntPoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
+    IntPoint layoutPos(static_cast<int>(x * m_frame->pageZoomFactor()), static_cast<int>(y * m_frame->pageZoomFactor()));
     view->setScrollPosition(layoutPos, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
+void LocalDOMWindow::scrollTo(double x, double y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
 {
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))

@@ -57,7 +57,7 @@ void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, cons
         return;
     }
 
-    TONATIVE_VOID_EXCEPTIONSTATE(float, position, toInt32(value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(float, position, toFloat(value, exceptionState), exceptionState);
     impl->setScrollLeft(position);
 }
 
@@ -73,7 +73,7 @@ void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const
         return;
     }
 
-    TONATIVE_VOID_EXCEPTIONSTATE(float, position, toInt32(value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(float, position, toFloat(value, exceptionState), exceptionState);
     impl->setScrollTop(position);
 }
 
