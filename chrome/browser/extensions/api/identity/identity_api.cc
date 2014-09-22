@@ -288,11 +288,6 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     : OAuth2TokenService::Consumer("extensions_identity_api"),
       should_prompt_for_scopes_(false),
       should_prompt_for_signin_(false) {
-  TRACE_EVENT_ASYNC_BEGIN1("identity",
-                           "IdentityGetAuthTokenFunction",
-                           this,
-                           "extension",
-                           extension()->id());
 }
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
@@ -300,6 +295,12 @@ IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
 }
 
 bool IdentityGetAuthTokenFunction::RunAsync() {
+  TRACE_EVENT_ASYNC_BEGIN1("identity",
+                           "IdentityGetAuthTokenFunction",
+                           this,
+                           "extension",
+                           extension()->id());
+
   if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
     return false;
