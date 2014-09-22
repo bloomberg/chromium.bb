@@ -652,19 +652,13 @@
           'target_name': 'chromium_builder_webrtc',
           'type': 'none',
           'dependencies': [
-            'chromium_builder_qa',  # TODO(phoglund): not sure if needed?
+            'chromium_builder_perf',
             '../chrome/chrome.gyp:browser_tests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_unittests',
+            '../media/media.gyp:media_unittests',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
-              ],
-            }],
           ],
         },  # target_name: chromium_builder_webrtc
         {
@@ -1147,7 +1141,7 @@
               'dependencies': [
                 '../base/base.gyp:base_unittests',
                 '../chrome/chrome.gyp:browser_tests',
-                '../chrome/chrome.gyp:sync_integration_tests', 
+                '../chrome/chrome.gyp:sync_integration_tests',
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:pack_policy_templates',
