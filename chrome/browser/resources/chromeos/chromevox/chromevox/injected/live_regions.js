@@ -344,14 +344,16 @@ cvox.LiveRegions.announceChange = function(
   }
 
   var navDescriptions = cvox.LiveRegions.getNavDescriptionsRecursive(node);
-  if (navDescriptions.length == 0) {
-    return;
-  }
-
   if (isRemoval) {
+    navDescriptions = [cvox.DescriptionUtil.getDescriptionFromAncestors(
+        [node], true, cvox.ChromeVox.verbosity)];
     navDescriptions = [new cvox.NavDescription({
       context: cvox.ChromeVox.msgs.getMsg('live_regions_removed'), text: ''
     })].concat(navDescriptions);
+  }
+
+  if (navDescriptions.length == 0) {
+    return;
   }
 
   // Don't announce alerts on page load if their text and values consist of

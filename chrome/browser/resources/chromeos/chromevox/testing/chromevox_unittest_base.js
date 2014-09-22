@@ -119,5 +119,53 @@ ChromeVoxUnitTestBase.prototype = {
     return commentEncodedHtml.toString().
         replace(/^[^\/]+\/\*!?/, '').
         replace(/\*\/[^\/]+$/, '');
+  },
+
+  /**
+   * Waits for the queued events in ChromeVoxEventWatcher to be
+   * handled, then calls a callback function with provided arguments
+   * in the test case scope. Very useful for asserting the results of events.
+   *
+   * @param {function()} func A function to call when ChromeVox is ready.
+   * @param {*} var_args Additional arguments to pass through to the function.
+   * @return {ChromeVoxUnitTestBase} this.
+   */
+  waitForCalm: function(func, var_args) {
+    var me = this;
+    var calmArguments = Array.prototype.slice.call(arguments);
+    calmArguments.shift();
+    cvox.ChromeVoxEventWatcher.addReadyCallback(function() {
+      func.apply(me, calmArguments);
+    });
+    return this; // for chaining.
+  },
+
+  /**
+   * Asserts a list of utterances are in the correct queue mode.
+   * @param {cvox.SpokenListBuilder|Array} expectedList A list
+   *     of [text, queueMode] tuples OR a SpokenListBuilder with the expected
+   *     utterances.
+   * @return {ChromeVoxUnitTestBase} this.
+   */
+  assertSpokenList: function(expectedList) {
+    if (expectedList instanceof cvox.SpokenListBuilder) {
+      expectedList = expectedList.build();
+    }
+
+    var ulist = cvox.ChromeVoxTester.testTts().getUtteranceInfoList();
+    for (var i = 0; i < expectedList.length; i++) {
+      var text = expectedList[i][0];
+      var queueMode = expectedList[i][1];
+      this.assertSingleUtterance_(text, queueMode,
+                                  ulist[i].text, ulist[i].queueMode);
+    }
+    cvox.ChromeVoxTester.clearUtterances();
+    return this; // for chaining.
+  },
+
+  assertSingleUtterance_: function(
+      expectedText, expectedQueueMode, text, queueMode) {
+    assertEquals(expectedQueueMode, queueMode);
+    assertEquals(expectedText, text);
   }
 };
