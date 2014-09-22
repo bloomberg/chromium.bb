@@ -31,68 +31,23 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBasicTypes.h"
-#include "modules/webdatabase/DatabaseError.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
-
-class ChangeVersionData;
-class DatabaseCallback;
-class DatabaseContext;
-class SecurityOrigin;
-class SQLTransaction;
-class SQLTransactionBackend;
-class SQLTransactionCallback;
-class SQLTransactionErrorCallback;
-class VoidCallback;
 
 class Database FINAL : public DatabaseBackend, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Database();
-    virtual void trace(Visitor*) OVERRIDE;
-
-    // Direct support for the DOM API
-    virtual String version() const OVERRIDE;
-    void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
-    void transaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
-    void readTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
 
     // Internal engine support
     static Database* from(DatabaseBackend*);
-    DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
-
-    Vector<String> tableNames();
-
-    virtual SecurityOrigin* securityOrigin() const OVERRIDE;
-
-    virtual void closeImmediately() OVERRIDE;
-
-    void scheduleTransactionCallback(SQLTransaction*);
 
 private:
     Database(DatabaseContext*, const String& name,
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
-    PassRefPtrWillBeRawPtr<DatabaseBackend> backend();
     static PassRefPtrWillBeRawPtr<Database> create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackend>);
 
-    void runTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);
-
-    Vector<String> performGetTableNames();
-
-    void reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
-    void reportCommitTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
-
-    RefPtr<SecurityOrigin> m_databaseThreadSecurityOrigin;
-    RefPtrWillBeMember<DatabaseContext> m_databaseContext;
-
     friend class DatabaseManager;
-    friend class DatabaseServer; // FIXME: remove this when the backend has been split out.
-    friend class DatabaseBackend; // FIXME: remove this when the backend has been split out.
-    friend class SQLStatement;
-    friend class SQLTransaction;
 };
 
 } // namespace blink

@@ -43,8 +43,11 @@ class DatabaseServer;
 class ExecutionContext;
 class SQLTransaction;
 class SQLTransactionBackend;
+class SQLTransactionCallback;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
+class SQLTransactionErrorCallback;
+class VoidCallback;
 
 // FIXME: This implementation of DatabaseBackend is only a place holder
 // for the split out of the Database backend to be done later. This
@@ -67,7 +70,22 @@ public:
     SQLTransactionClient* transactionClient() const;
     SQLTransactionCoordinator* transactionCoordinator() const;
 
-    virtual String version() const;
+    // Direct support for the DOM API
+    String version() const;
+    void changeVersion(
+        const String& oldVersion,
+        const String& newVersion,
+        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
+        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+    void transaction(
+        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
+        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+    void readTransaction(
+        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
+        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
 
     bool opened() const { return m_opened; }
     bool isNew() const { return m_new; }
@@ -91,12 +109,13 @@ public:
     bool hadDeletes();
     void resetAuthorizer();
 
-    virtual void closeImmediately() = 0;
+    Vector<String> tableNames();
+    void scheduleTransactionCallback(SQLTransaction*);
+    void closeImmediately();
     void closeDatabase();
 
     DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
     ExecutionContext* executionContext() const;
-    void setFrontend(Database* frontend) { m_frontend = frontend; }
 
 protected:
     DatabaseBackend(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
@@ -119,6 +138,14 @@ private:
     void setCachedVersion(const String&);
     bool getActualVersionForTransaction(String& version);
 
+    void runTransaction(
+        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
+        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback,
+        bool readOnly,
+        const ChangeVersionData* = 0);
+    Vector<String> performGetTableNames();
+
     void reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
     void reportChangeVersionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
     void reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
@@ -132,6 +159,7 @@ private:
 #endif
 
     RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;
+    RefPtr<SecurityOrigin> m_databaseThreadSecurityOrigin;
     RefPtrWillBeMember<DatabaseContext> m_databaseContext; // Associated with m_executionContext.
 
     String m_name;
@@ -139,8 +167,6 @@ private:
     String m_displayName;
     unsigned long m_estimatedSize;
     String m_filename;
-
-    Database* m_frontend;
 
     DatabaseGuid m_guid;
     bool m_opened;
@@ -158,6 +184,7 @@ private:
     friend class ChangeVersionWrapper;
     friend class Database;
     friend class SQLStatementBackend;
+    friend class SQLTransaction;
     friend class SQLTransactionBackend;
 };
 

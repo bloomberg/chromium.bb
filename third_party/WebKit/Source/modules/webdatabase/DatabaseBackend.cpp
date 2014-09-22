@@ -26,19 +26,25 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 
+#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/VoidCallback.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseThread.h"
 #include "modules/webdatabase/DatabaseTracker.h"
+#include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
+#include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "platform/Logging.h"
@@ -223,6 +229,10 @@ DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String&
     }
 
     m_filename = DatabaseManager::manager().fullPathForDatabase(securityOrigin(), m_name);
+
+    m_databaseThreadSecurityOrigin = m_contextThreadSecurityOrigin->isolatedCopy();
+    ASSERT(m_databaseContext->databaseThread());
+    ASSERT(m_databaseContext->isContextThread());
 }
 
 DatabaseBackend::~DatabaseBackend()
@@ -544,11 +554,6 @@ bool DatabaseBackend::performOpenAndVerify(bool shouldSetVersionInNewDatabase, D
     return true;
 }
 
-SecurityOrigin* DatabaseBackend::securityOrigin() const
-{
-    return m_contextThreadSecurityOrigin.get();
-}
-
 String DatabaseBackend::stringIdentifier() const
 {
     // Return a deep copy for ref counting thread safety
@@ -773,6 +778,158 @@ void DatabaseBackend::logErrorMessage(const String& message)
 ExecutionContext* DatabaseBackend::executionContext() const
 {
     return databaseContext()->executionContext();
+}
+
+void DatabaseBackend::closeImmediately()
+{
+    ASSERT(executionContext()->isContextThread());
+    DatabaseThread* databaseThread = databaseContext()->databaseThread();
+    if (databaseThread && !databaseThread->terminationRequested() && opened()) {
+        logErrorMessage("forcibly closing database");
+        databaseThread->scheduleTask(DatabaseCloseTask::create(this, 0));
+    }
+}
+
+void DatabaseBackend::changeVersion(
+    const String& oldVersion,
+    const String& newVersion,
+    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
+    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
+{
+    ChangeVersionData data(oldVersion, newVersion);
+    runTransaction(callback, errorCallback, successCallback, false, &data);
+}
+
+void DatabaseBackend::transaction(
+    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
+    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
+{
+    runTransaction(callback, errorCallback, successCallback, false);
+}
+
+void DatabaseBackend::readTransaction(
+    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
+    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
+{
+    runTransaction(callback, errorCallback, successCallback, true);
+}
+
+static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback, PassOwnPtr<SQLErrorData> errorData)
+{
+    RefPtrWillBeRawPtr<SQLError> error = SQLError::create(*errorData);
+    callback->handleEvent(error.get());
+}
+
+void DatabaseBackend::runTransaction(
+    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
+    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback,
+    bool readOnly,
+    const ChangeVersionData* changeVersionData)
+{
+    // FIXME: Rather than passing errorCallback to SQLTransaction and then
+    // sometimes firing it ourselves, this code should probably be pushed down
+    // into DatabaseBackend so that we only create the SQLTransaction if we're
+    // actually going to run it.
+#if ENABLE(ASSERT)
+    SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
+#endif
+    RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(Database::from(this), callback, successCallback, errorCallback, readOnly);
+    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = runTransaction(transaction, readOnly, changeVersionData);
+    if (!transactionBackend) {
+        OwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
+        ASSERT(callback == originalErrorCallback);
+        if (callback) {
+            OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
+            executionContext()->postTask(createCrossThreadTask(&callTransactionErrorCallback, callback.release(), error.release()));
+        }
+    }
+}
+
+// This object is constructed in a database thread, and destructed in the
+// context thread.
+class DeliverPendingCallbackTask FINAL : public ExecutionContextTask {
+public:
+    static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtrWillBeRawPtr<SQLTransaction> transaction)
+    {
+        return adoptPtr(new DeliverPendingCallbackTask(transaction));
+    }
+
+    virtual void performTask(ExecutionContext*) OVERRIDE
+    {
+        m_transaction->performPendingCallback();
+    }
+
+private:
+    DeliverPendingCallbackTask(PassRefPtrWillBeRawPtr<SQLTransaction> transaction)
+        : m_transaction(transaction)
+    {
+    }
+
+    RefPtrWillBeCrossThreadPersistent<SQLTransaction> m_transaction;
+};
+
+void DatabaseBackend::scheduleTransactionCallback(SQLTransaction* transaction)
+{
+    executionContext()->postTask(DeliverPendingCallbackTask::create(transaction));
+}
+
+Vector<String> DatabaseBackend::performGetTableNames()
+{
+    disableAuthorizer();
+
+    SQLiteStatement statement(sqliteDatabase(), "SELECT name FROM sqlite_master WHERE type='table';");
+    if (statement.prepare() != SQLResultOk) {
+        WTF_LOG_ERROR("Unable to retrieve list of tables for database %s", databaseDebugName().ascii().data());
+        enableAuthorizer();
+        return Vector<String>();
+    }
+
+    Vector<String> tableNames;
+    int result;
+    while ((result = statement.step()) == SQLResultRow) {
+        String name = statement.getColumnText(0);
+        if (name != databaseInfoTableName())
+            tableNames.append(name);
+    }
+
+    enableAuthorizer();
+
+    if (result != SQLResultDone) {
+        WTF_LOG_ERROR("Error getting tables for database %s", databaseDebugName().ascii().data());
+        return Vector<String>();
+    }
+
+    return tableNames;
+}
+
+Vector<String> DatabaseBackend::tableNames()
+{
+    // FIXME: Not using isolatedCopy on these strings looks ok since threads
+    // take strict turns in dealing with them. However, if the code changes,
+    // this may not be true anymore.
+    Vector<String> result;
+    TaskSynchronizer synchronizer;
+    if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
+        return result;
+
+    OwnPtr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &synchronizer, result);
+    databaseContext()->databaseThread()->scheduleTask(task.release());
+    synchronizer.waitForTaskCompletion();
+
+    return result;
+}
+
+SecurityOrigin* DatabaseBackend::securityOrigin() const
+{
+    if (executionContext()->isContextThread())
+        return m_contextThreadSecurityOrigin.get();
+    if (databaseContext()->databaseThread()->isDatabaseThread())
+        return m_databaseThreadSecurityOrigin.get();
+    return 0;
 }
 
 } // namespace blink
