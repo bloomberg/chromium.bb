@@ -23,6 +23,8 @@ class WebRtcVideoEncoderFactory;
 
 namespace webrtc {
 class AudioDeviceModule;
+class AudioProcessing;
+class Config;
 }  // namespace webrtc
 
 typedef std::string (*FieldTrialFindFullName)(const std::string& trial_name);
@@ -38,6 +40,9 @@ typedef void (*DestroyWebRtcMediaEngineFunction)(
 
 typedef void (*InitDiagnosticLoggingDelegateFunctionFunction)(
     void (*DelegateFunction)(const std::string&));
+
+typedef webrtc::AudioProcessing* (*CreateWebRtcAudioProcessingFunction)(
+    const webrtc::Config& config);
 
 // A typedef for the main initialize function in libpeerconnection.
 // This will initialize logging in the module with the proper arguments
@@ -56,7 +61,8 @@ typedef bool (*InitializeModuleFunction)(
     webrtc::AddTraceEventPtr trace_add_trace_event,
     CreateWebRtcMediaEngineFunction* create_media_engine,
     DestroyWebRtcMediaEngineFunction* destroy_media_engine,
-    InitDiagnosticLoggingDelegateFunctionFunction* init_diagnostic_logging);
+    InitDiagnosticLoggingDelegateFunctionFunction* init_diagnostic_logging,
+    CreateWebRtcAudioProcessingFunction* create_audio_processing);
 
 #if !defined(LIBPEERCONNECTION_IMPLEMENTATION)
 // Load and initialize the shared WebRTC module (libpeerconnection).
@@ -65,6 +71,11 @@ typedef bool (*InitializeModuleFunction)(
 // If not called explicitly, this function will still be called from the main
 // CreateWebRtcMediaEngine factory function the first time it is called.
 bool InitializeWebRtcModule();
+
+// Return a webrtc::AudioProcessing object.
+webrtc::AudioProcessing* CreateWebRtcAudioProcessing(
+    const webrtc::Config& config);
+
 #endif
 
 #endif // THIRD_PARTY_LIBJINGLE_OVERRIDES_INIT_WEBRTC_H_
