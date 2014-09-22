@@ -1667,6 +1667,16 @@ NSSearchFieldCell* RenderThemeChromiumMac::search() const
         [m_search.get() setBezeled:YES];
         [m_search.get() setEditable:YES];
         [m_search.get() setFocusRingType:NSFocusRingTypeExterior];
+        SEL sel = @selector(setCenteredLook:);
+        if ([m_search.get() respondsToSelector:sel]) {
+            BOOL boolValue = NO;
+            NSMethodSignature* signature = [NSSearchFieldCell instanceMethodSignatureForSelector:sel];
+            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature: signature];
+            [invocation setTarget:m_search.get()];
+            [invocation setSelector:sel];
+            [invocation setArgument:&boolValue atIndex:2];
+            [invocation invoke];
+        }
     }
 
     return m_search.get();
