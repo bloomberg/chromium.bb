@@ -939,7 +939,8 @@ TEST_F(BookmarkBarControllerTest, Display) {
   [[bar_ view] display];
 }
 
-// Test that middle clicking on a bookmark button results in an open action.
+// Test that middle clicking on a bookmark button results in an open action,
+// except for offTheSideButton, as it just opens its folder menu.
 TEST_F(BookmarkBarControllerTest, MiddleClick) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com/");
@@ -953,6 +954,37 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   [first otherMouseUp:
       cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0)];
   EXPECT_EQ(noOpenBar()->urls_.size(), 1U);
+
+  // Test for offTheSideButton.
+  // Add more bookmarks so that offTheSideButton is visible.
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  for (int i = 0; i < 20; i++) {
+    model->AddURL(parent, parent->child_count(),
+                  ASCIIToUTF16("super duper wide title"),
+                  GURL("http://superfriends.hall-of-justice.edu"));
+  }
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  NSButton* offTheSideButton = [bar_ offTheSideButton];
+  EXPECT_TRUE(offTheSideButton);
+  [offTheSideButton otherMouseUp:
+      cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0)];
+
+  // Middle click on offTheSideButton should not open any bookmarks under it,
+  // therefore urls size should still be 1.
+  EXPECT_EQ(noOpenBar()->urls_.size(), 1U);
+
+  // Check that folderController should not be NULL since offTheSideButton
+  // folder is currently open.
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  EXPECT_TRUE([bbfc parentButton] == offTheSideButton);
+
+  // Middle clicking again on it should close the folder.
+  [offTheSideButton otherMouseUp:
+      cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0)];
+  bbfc = [bar_ folderController];
+  EXPECT_FALSE(bbfc);
 }
 
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {

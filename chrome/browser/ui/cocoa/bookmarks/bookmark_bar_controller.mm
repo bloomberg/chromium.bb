@@ -716,11 +716,26 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     RecordBookmarkFolderOpen([self bookmarkLaunchLocation]);
   showFolderMenus_ = !showFolderMenus_;
 
-  if (sender == offTheSideButton_)
+  // Middle click on chevron should not open bookmarks under it, instead just
+  // open its folder menu.
+  if (sender == offTheSideButton_) {
     [[sender cell] setStartingChildIndex:displayedButtonCount_];
-
+    NSEvent* event = [NSApp currentEvent];
+    if ([event type] == NSOtherMouseUp) {
+      [self openOrCloseBookmarkFolderForOffTheSideButton];
+      return;
+    }
+  }
   // Toggle presentation of bar folder menus.
   [folderTarget_ openBookmarkFolderFromButton:sender];
+}
+
+- (void)openOrCloseBookmarkFolderForOffTheSideButton {
+  // If clicked on already opened folder, then close it and return.
+  if ([folderController_ parentButton] == offTheSideButton_)
+    [self closeBookmarkFolder:self];
+  else
+    [self addNewFolderControllerWithParentButton:offTheSideButton_];
 }
 
 // Click on a bookmark folder button.
