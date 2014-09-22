@@ -194,14 +194,7 @@ void InlineBox::adjustPosition(float dx, float dy)
 
 void InlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&renderer()) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
-        return;
-
-    LayoutPoint childPoint = paintOffset;
-    if (parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(renderer()), childPoint);
-
-    BlockPainter::paintAsInlineBlock(&renderer(), paintInfo, childPoint);
+    BlockPainter::paintInlineBox(*this, paintInfo, paintOffset);
 }
 
 bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)

@@ -93,6 +93,18 @@ void BlockPainter::paintChildAsInlineBlock(RenderBox* child, PaintInfo& paintInf
         paintAsInlineBlock(child, paintInfo, childPoint);
 }
 
+void BlockPainter::paintInlineBox(InlineBox& inlineBox, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    if (!paintInfo.shouldPaintWithinRoot(&inlineBox.renderer()) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
+        return;
+
+    LayoutPoint childPoint = paintOffset;
+    if (inlineBox.parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
+        childPoint = inlineBox.renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(inlineBox.renderer()), childPoint);
+
+    paintAsInlineBlock(&inlineBox.renderer(), paintInfo, childPoint);
+}
+
 void BlockPainter::paintAsInlineBlock(RenderObject* renderer, PaintInfo& paintInfo, const LayoutPoint& childPoint)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
