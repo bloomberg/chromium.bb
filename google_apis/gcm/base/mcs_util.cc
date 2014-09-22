@@ -46,7 +46,7 @@ const char kLoginSettingDefaultName[] = "new_vc";
 const char kLoginSettingDefaultValue[] = "1";
 
 // Maximum amount of time to save an unsent outgoing message for.
-const int kMaxTTLSeconds = 4 * 7 * 24 * 60 * 60;  // 4 weeks.
+const int kMaxTTLSeconds = 24 * 60 * 60;  // 1 day.
 
 }  // namespace
 

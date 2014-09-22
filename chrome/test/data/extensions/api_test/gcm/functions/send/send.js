@@ -6,7 +6,7 @@ function createMessage() {
   return {
     messageId: "message-id",
     destinationId: "destination-id",
-    timeToLive: 2419200,
+    timeToLive: 86400,
     data: {
       "key1": "value1",
       "key2": "value"
@@ -61,7 +61,7 @@ chrome.test.runTests([
     expectFailureWhen(function(message) { message.timeToLive = -1; });
   },
   function failureWhenTtlIsTooLarge() {
-    expectFailureWhen(function(message) { message.timeToLive = 24192001; });
+    expectFailureWhen(function(message) { message.timeToLive = 86401; });
   },
   function failureWhenMessageIdMissing() {
     expectFailureWhen(function(message) { delete message.messageId; });

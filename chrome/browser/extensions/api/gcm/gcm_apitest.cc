@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageDefaultTTL) {
       service()->last_sent_message();
   gcm::GCMClient::MessageData::const_iterator iter;
 
-  EXPECT_EQ(2419200, message.time_to_live);
+  EXPECT_EQ(gcm::GCMClient::OutgoingMessage::kMaximumTTL, message.time_to_live);
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessagesDeleted) {

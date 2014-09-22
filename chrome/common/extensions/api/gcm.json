@@ -79,9 +79,9 @@
               "timeToLive": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 2419200,
+                "maximum": 86400,
                 "optional": true,
-                "description": "Time-to-live of the message in seconds. If it is not possible to send the message within that time, an onSendError event will be raised. A time-to-live of 0 indicates that the message should be sent immediately or fail if it's not possible. The maximum and a default value of time-to-live is 2419200 seconds (4 weeks)."
+                "description": "Time-to-live of the message in seconds. If it is not possible to send the message within that time, an onSendError event will be raised. A time-to-live of 0 indicates that the message should be sent immediately or fail if it's not possible. The maximum and a default value of time-to-live is 86400 seconds (1 day)."
               },
               "data": {
                 "type": "object",
