@@ -44,7 +44,7 @@ FrontendDataTypeController::FrontendDataTypeController(
 void FrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!model_load_callback.is_null());
+  model_load_callback_ = model_load_callback;
 
   if (state_ != NOT_RUNNING) {
     model_load_callback.Run(type(),
@@ -55,9 +55,6 @@ void FrontendDataTypeController::LoadModels(
     return;
   }
 
-  DCHECK(model_load_callback_.is_null());
-
-  model_load_callback_ = model_load_callback;
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -72,13 +69,10 @@ void FrontendDataTypeController::LoadModels(
 
 void FrontendDataTypeController::OnModelLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!model_load_callback_.is_null());
   DCHECK_EQ(state_, MODEL_STARTING);
 
   state_ = MODEL_LOADED;
-  ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(), syncer::SyncError());
+  model_load_callback_.Run(type(), syncer::SyncError());
 }
 
 void FrontendDataTypeController::StartAssociating(
@@ -150,15 +144,12 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
     const syncer::SyncError& error) {
   DCHECK_EQ(type(), error.model_type());
   RecordUnrecoverableError(error.location(), error.message());
-  if (!start_callback_.is_null()) {
+  if (!model_load_callback_.is_null()) {
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(start_callback_,
-                   RUNTIME_ERROR,
-                   local_merge_result,
-                   syncer::SyncMergeResult(type())));
+        base::Bind(model_load_callback_, type(), error));
   }
 }
 
@@ -260,13 +251,10 @@ void FrontendDataTypeController::AbortModelLoad() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CleanUp();
   state_ = NOT_RUNNING;
-  ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(),
-                          syncer::SyncError(FROM_HERE,
-                                            syncer::SyncError::DATATYPE_ERROR,
-                                            "Aborted",
-                                            type()));
+  model_load_callback_.Run(
+      type(),
+      syncer::SyncError(
+          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Aborted", type()));
 }
 
 void FrontendDataTypeController::StartDone(

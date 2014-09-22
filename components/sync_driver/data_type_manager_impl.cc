@@ -128,7 +128,6 @@ void DataTypeManagerImpl::ReenableType(syncer::ModelType type) {
 }
 
 void DataTypeManagerImpl::ResetDataTypeErrors() {
-  DCHECK_EQ(state_, CONFIGURED);
   data_type_status_table_.Reset();
 }
 
@@ -265,14 +264,14 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   if (state_ == STOPPED || state_ == CONFIGURED)
     NotifyStart();
 
-  model_association_manager_.Initialize(enabled_types);
-
+  state_ = DOWNLOAD_PENDING;
   download_types_queue_ = PrioritizeTypes(enabled_types);
   association_types_queue_ = std::queue<AssociationTypesInfo>();
 
+  model_association_manager_.Initialize(enabled_types);
+
   // Tell the backend about the new set of data types we wish to sync.
   // The task will be invoked when updates are downloaded.
-  state_ = DOWNLOAD_PENDING;
   configurer_->ConfigureDataTypes(
       reason,
       BuildDataTypeConfigStateMap(download_types_queue_.front()),
@@ -442,8 +441,6 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(
       needs_reconfigure_ = true;
       last_configure_reason_ = syncer::CONFIGURE_REASON_PROGRAMMATIC;
       ProcessReconfigure();
-    } else {
-      DCHECK_EQ(state_, CONFIGURING);
     }
   }
 }

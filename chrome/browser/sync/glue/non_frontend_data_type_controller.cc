@@ -182,7 +182,7 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
 void NonFrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!model_load_callback.is_null());
+  model_load_callback_ = model_load_callback;
   if (state_ != NOT_RUNNING) {
     model_load_callback.Run(type(),
                             syncer::SyncError(FROM_HERE,
@@ -368,12 +368,8 @@ void NonFrontendDataTypeController::StartDoneImpl(
 void NonFrontendDataTypeController::DisableImpl(
     const syncer::SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!start_callback_.is_null()) {
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
-    start_callback_.Run(RUNTIME_ERROR,
-                        local_merge_result,
-                        syncer::SyncMergeResult(type()));
+  if (!model_load_callback_.is_null()) {
+    model_load_callback_.Run(type(), error);
   }
 }
 

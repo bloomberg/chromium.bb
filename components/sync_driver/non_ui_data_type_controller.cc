@@ -34,7 +34,7 @@ NonUIDataTypeController::NonUIDataTypeController(
 void NonUIDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  DCHECK(!model_load_callback.is_null());
+  model_load_callback_ = model_load_callback;
   if (state() != NOT_RUNNING) {
     model_load_callback.Run(type(),
                             syncer::SyncError(FROM_HERE,
@@ -50,7 +50,6 @@ void NonUIDataTypeController::LoadModels(
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ = CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
-  model_load_callback_ = model_load_callback;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
     // or we failed to start the models, we exit early.
@@ -63,12 +62,8 @@ void NonUIDataTypeController::LoadModels(
 
 void NonUIDataTypeController::OnModelLoaded() {
   DCHECK_EQ(state_, MODEL_STARTING);
-  DCHECK(!model_load_callback_.is_null());
   state_ = MODEL_LOADED;
-
-  ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(), syncer::SyncError());
+  model_load_callback_.Run(type(), syncer::SyncError());
 }
 
 bool NonUIDataTypeController::StartModels() {
@@ -256,13 +251,10 @@ void NonUIDataTypeController::RecordStartFailure(ConfigureResult result) {
 void NonUIDataTypeController::AbortModelLoad() {
   state_ = NOT_RUNNING;
   StopModels();
-  ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(),
-                          syncer::SyncError(FROM_HERE,
-                                            syncer::SyncError::DATATYPE_ERROR,
-                                            "ABORTED",
-                                            type()));
+  model_load_callback_.Run(
+      type(),
+      syncer::SyncError(
+          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "ABORTED", type()));
 }
 
 void NonUIDataTypeController::DisableImpl(
@@ -271,12 +263,10 @@ void NonUIDataTypeController::DisableImpl(
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
-  if (!start_callback_.is_null()) {
+  if (!model_load_callback_.is_null()) {
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
-    start_callback_.Run(RUNTIME_ERROR,
-                        local_merge_result,
-                        syncer::SyncMergeResult(type()));
+    model_load_callback_.Run(type(), error);
   }
 }
 

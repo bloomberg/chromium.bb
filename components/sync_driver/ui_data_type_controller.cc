@@ -52,8 +52,8 @@ UIDataTypeController::~UIDataTypeController() {
 void UIDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  DCHECK(!model_load_callback.is_null());
   DCHECK(syncer::IsRealDataType(type_));
+  model_load_callback_ = model_load_callback;
   if (state_ != NOT_RUNNING) {
     model_load_callback.Run(type(),
                             syncer::SyncError(FROM_HERE,
@@ -67,7 +67,6 @@ void UIDataTypeController::LoadModels(
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ = new SharedChangeProcessor();
 
-  model_load_callback_ = model_load_callback;
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -78,19 +77,15 @@ void UIDataTypeController::LoadModels(
   }
 
   state_ = MODEL_LOADED;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(), syncer::SyncError());
+  model_load_callback_.Run(type(), syncer::SyncError());
 }
 
 void UIDataTypeController::OnModelLoaded() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  DCHECK(!model_load_callback_.is_null());
   DCHECK_EQ(state_, MODEL_STARTING);
 
   state_ = MODEL_LOADED;
-  ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(), syncer::SyncError());
+  model_load_callback_.Run(type(), syncer::SyncError());
 }
 
 void UIDataTypeController::StartAssociating(
@@ -227,13 +222,10 @@ void UIDataTypeController::AbortModelLoad() {
     shared_change_processor_ = NULL;
   }
 
-  ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback_.Reset();
-  model_load_callback.Run(type(),
-                          syncer::SyncError(FROM_HERE,
-                                            syncer::SyncError::DATATYPE_ERROR,
-                                            "Aborted",
-                                            type()));
+  model_load_callback_.Run(
+      type(),
+      syncer::SyncError(
+          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Aborted", type()));
   // We don't want to continue loading models (e.g OnModelLoaded should never be
   // called after we've decided to abort).
   StopModels();
@@ -328,15 +320,9 @@ void UIDataTypeController::OnSingleDataTypeUnrecoverableError(
   // TODO(tim): We double-upload some errors.  See bug 383480.
   if (!error_callback_.is_null())
     error_callback_.Run();
-  if (!start_callback_.is_null()) {
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
+  if (!model_load_callback_.is_null()) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(start_callback_,
-                   RUNTIME_ERROR,
-                   local_merge_result,
-                   syncer::SyncMergeResult(type())));
+        FROM_HERE, base::Bind(model_load_callback_, type(), error));
   }
 }
 

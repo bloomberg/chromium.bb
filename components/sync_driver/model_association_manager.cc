@@ -288,11 +288,6 @@ void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
       << syncer::ModelTypeToString(type);
 
-  // This happens when slow loading type is disabled by new configuration.
-  if (!desired_types_.Has(type))
-    return;
-
-  DCHECK(!loaded_types_.Has(type));
   if (error.IsSet()) {
     syncer::SyncMergeResult local_merge_result(type);
     local_merge_result.set_error(error);
@@ -304,6 +299,11 @@ void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
     return;
   }
 
+  // This happens when slow loading type is disabled by new configuration.
+  if (!desired_types_.Has(type))
+    return;
+
+  DCHECK(!loaded_types_.Has(type));
   loaded_types_.Put(type);
   if (associating_types_.Has(type)) {
     DataTypeController* dtc = controllers_->find(type)->second.get();

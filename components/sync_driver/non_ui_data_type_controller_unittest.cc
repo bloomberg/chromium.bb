@@ -486,7 +486,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, OnSingleDataTypeUnrecoverableError) {
   EXPECT_EQ(DataTypeController::RUNNING, non_ui_dtc_->state());
 
   testing::Mock::VerifyAndClearExpectations(&start_callback_);
-  EXPECT_CALL(start_callback_, Run(DataTypeController::RUNTIME_ERROR, _, _));
+  EXPECT_CALL(model_load_callback_, Run(_, _));
   syncer::SyncError error(FROM_HERE,
                           syncer::SyncError::DATATYPE_ERROR,
                           "error",

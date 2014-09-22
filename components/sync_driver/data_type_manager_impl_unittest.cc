@@ -44,24 +44,30 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
   DataTypeStatusTable::TypeErrorMap error_map;
   for (ModelTypeSet::Iterator iter = crypto_errors.First(); iter.Good();
        iter.Inc()) {
-    error_map[iter.Get()] = SyncError(
-        FROM_HERE, SyncError::CRYPTO_ERROR, "crypto error", iter.Get());
+    error_map[iter.Get()] = SyncError(FROM_HERE,
+                                      SyncError::CRYPTO_ERROR,
+                                      "crypto error expected",
+                                      iter.Get());
   }
   for (ModelTypeSet::Iterator iter = association_errors.First(); iter.Good();
        iter.Inc()) {
-    error_map[iter.Get()] = SyncError(
-        FROM_HERE, SyncError::DATATYPE_ERROR, "association error", iter.Get());
+    error_map[iter.Get()] = SyncError(FROM_HERE,
+                                      SyncError::DATATYPE_ERROR,
+                                      "association error expected",
+                                      iter.Get());
   }
   for (ModelTypeSet::Iterator iter = unready_errors.First(); iter.Good();
        iter.Inc()) {
-    error_map[iter.Get()] = SyncError(
-        FROM_HERE, SyncError::UNREADY_ERROR, "unready errors", iter.Get());
+    error_map[iter.Get()] = SyncError(FROM_HERE,
+                                      SyncError::UNREADY_ERROR,
+                                      "unready error expected",
+                                      iter.Get());
   }
   for (ModelTypeSet::Iterator iter = unrecoverable_errors.First(); iter.Good();
        iter.Inc()) {
     error_map[iter.Get()] = SyncError(FROM_HERE,
                                       SyncError::UNRECOVERABLE_ERROR,
-                                      "unrecoverable errors",
+                                      "unrecoverable error expected",
                                       iter.Get());
   }
   DataTypeStatusTable status_table;
@@ -1332,6 +1338,54 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
+}
+
+TEST_F(SyncDataTypeManagerImplTest, ModelLoadError) {
+  AddController(BOOKMARKS);
+  GetController(BOOKMARKS)->SetModelLoadError(syncer::SyncError(
+        FROM_HERE, SyncError::DATATYPE_ERROR, "load error", BOOKMARKS));
+
+  // Bookmarks is never started due to hitting a model load error.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK,
+                              BuildStatusTable(ModelTypeSet(),
+                                               ModelTypeSet(BOOKMARKS),
+                                               ModelTypeSet(),
+                                               ModelTypeSet()));
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+
+  EXPECT_EQ(0U, configurer_.activated_types().Size());
+}
+
+
+TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeAssociation) {
+  AddController(BOOKMARKS);
+
+  // Bookmarks is never started due to hitting a datatype error while the DTM
+  // is still downloading types.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK,
+                              BuildStatusTable(ModelTypeSet(),
+                                               ModelTypeSet(BOOKMARKS),
+                                               ModelTypeSet(),
+                                               ModelTypeSet()));
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  GetController(BOOKMARKS)->OnSingleDataTypeUnrecoverableError(
+      syncer::SyncError(FROM_HERE,
+                        SyncError::DATATYPE_ERROR,
+                        "bookmarks error",
+                        BOOKMARKS));
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());  // Reconfig for error.
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+
+  EXPECT_EQ(0U, configurer_.activated_types().Size());
 }
 
 }  // namespace sync_driver

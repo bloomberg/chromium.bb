@@ -92,12 +92,6 @@ syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
   return syncer::GROUP_HISTORY;
 }
 
-void TypedUrlDataTypeController::LoadModels(
-    const ModelLoadCallback& model_load_callback) {
-  set_state(MODEL_LOADED);
-  model_load_callback.Run(type(), syncer::SyncError());
-}
-
 bool TypedUrlDataTypeController::ReadyForStart() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return !profile()->GetPrefs()->GetBoolean(
