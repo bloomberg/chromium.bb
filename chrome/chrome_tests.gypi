@@ -309,6 +309,8 @@
             'browser/chromeos/login/screenshot_tester.cc',
             'browser/chromeos/login/mixin_based_browser_test.h',
             'browser/chromeos/login/mixin_based_browser_test.cc',
+            'browser/chromeos/login/screenshot_testing_mixin.h',
+            'browser/chromeos/login/screenshot_testing_mixin.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_browsertest.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h',
