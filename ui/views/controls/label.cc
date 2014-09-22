@@ -427,7 +427,7 @@ gfx::Rect Label::GetTextBounds() const {
       NOTREACHED();
       break;
   }
-  origin.Offset(0, std::max(0, (available.height() - text_size.height())) / 2);
+  text_size.set_height(available.height());
   return gfx::Rect(origin, text_size);
 }
 

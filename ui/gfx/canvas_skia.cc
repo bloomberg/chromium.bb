@@ -124,10 +124,7 @@ void UpdateRenderText(const Rect& rect,
   render_text->SetFontList(font_list);
   render_text->SetText(text);
   render_text->SetCursorEnabled(false);
-
-  Rect display_rect = rect;
-  display_rect.set_height(font_list.GetHeight());
-  render_text->SetDisplayRect(display_rect);
+  render_text->SetDisplayRect(rect);
 
   // Set the text alignment explicitly based on the directionality of the UI,
   // if not specified.
@@ -303,11 +300,6 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
 
     UpdateRenderText(rect, adjusted_text, font_list, flags, color,
                      render_text.get());
-
-    const int text_height = render_text->GetStringSize().height();
-    rect += Vector2d(0, (text_bounds.height() - text_height) / 2);
-    rect.set_height(text_height);
-    render_text->SetDisplayRect(rect);
     if (range.IsValid())
       render_text->ApplyStyle(UNDERLINE, true, range);
     render_text->Draw(this);
@@ -395,11 +387,6 @@ void Canvas::DrawFadedString(const base::string16& text,
   Rect rect = display_rect;
   UpdateRenderText(rect, text, font_list, flags, color, render_text.get());
   render_text->SetElideBehavior(FADE_TAIL);
-
-  const int line_height = render_text->GetStringSize().height();
-  rect += Vector2d(0, (display_rect.height() - line_height) / 2);
-  rect.set_height(line_height);
-  render_text->SetDisplayRect(rect);
 
   canvas_->save();
   ClipRect(display_rect);
