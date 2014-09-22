@@ -4,6 +4,8 @@
 
 #include "net/dns/mdns_client_impl.h"
 
+#include <queue>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
@@ -54,7 +56,8 @@ MDnsConnection::SocketHandler::SocketHandler(
     MDnsConnection* connection)
     : socket_(socket.Pass()),
       connection_(connection),
-      response_(dns_protocol::kMaxMulticastSize) {
+      response_(dns_protocol::kMaxMulticastSize),
+      send_in_progress_(false) {
 }
 
 MDnsConnection::SocketHandler::~SocketHandler() {
@@ -95,21 +98,41 @@ void MDnsConnection::SocketHandler::OnDatagramReceived(int rv) {
     rv = DoLoop(rv);
 
   if (rv != OK)
-    connection_->OnError(this, rv);
+    connection_->PostOnError(this, rv);
 }
 
-int MDnsConnection::SocketHandler::Send(IOBuffer* buffer, unsigned size) {
-  return socket_->SendTo(buffer, size, multicast_addr_,
-                         base::Bind(&MDnsConnection::SocketHandler::SendDone,
-                                    base::Unretained(this) ));
+void MDnsConnection::SocketHandler::Send(const scoped_refptr<IOBuffer>& buffer,
+                                         unsigned size) {
+  if (send_in_progress_) {
+    send_queue_.push(std::make_pair(buffer, size));
+    return;
+  }
+  int rv = socket_->SendTo(buffer.get(),
+                           size,
+                           multicast_addr_,
+                           base::Bind(&MDnsConnection::SocketHandler::SendDone,
+                                      base::Unretained(this)));
+  if (rv == ERR_IO_PENDING) {
+    send_in_progress_ = true;
+  } else if (rv < OK) {
+    connection_->PostOnError(this, rv);
+  }
 }
 
 void MDnsConnection::SocketHandler::SendDone(int rv) {
-  // TODO(noamsml): Retry logic.
+  DCHECK(send_in_progress_);
+  send_in_progress_ = false;
+  if (rv != OK)
+    connection_->PostOnError(this, rv);
+  while (!send_in_progress_ && !send_queue_.empty()) {
+    std::pair<scoped_refptr<IOBuffer>, unsigned> buffer = send_queue_.front();
+    send_queue_.pop();
+    Send(buffer.first, buffer.second);
+  }
 }
 
-MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate) :
-      delegate_(delegate) {
+MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate)
+    : delegate_(delegate), weak_ptr_factory_(this) {
 }
 
 MDnsConnection::~MDnsConnection() {
@@ -141,24 +164,26 @@ bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
   return !socket_handlers_.empty();
 }
 
-bool MDnsConnection::Send(IOBuffer* buffer, unsigned size) {
-  bool success = false;
-  for (size_t i = 0; i < socket_handlers_.size(); ++i) {
-    int rv = socket_handlers_[i]->Send(buffer, size);
-    if (rv >= OK || rv == ERR_IO_PENDING) {
-      success = true;
-    } else {
-      VLOG(1) << "Send failed, socket=" << i << ", error=" << rv;
-    }
-  }
-  return success;
+void MDnsConnection::Send(const scoped_refptr<IOBuffer>& buffer,
+                          unsigned size) {
+  for (size_t i = 0; i < socket_handlers_.size(); ++i)
+    socket_handlers_[i]->Send(buffer, size);
 }
 
-void MDnsConnection::OnError(SocketHandler* loop,
-                             int error) {
+void MDnsConnection::PostOnError(SocketHandler* loop, int rv) {
+  VLOG(1) << "Socket error. id="
+          << std::find(socket_handlers_.begin(), socket_handlers_.end(), loop) -
+                 socket_handlers_.begin() << ", error=" << rv;
+  // Post to allow deletion of this object by delegate.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MDnsConnection::OnError, weak_ptr_factory_.GetWeakPtr(), rv));
+}
+
+void MDnsConnection::OnError(int rv) {
   // TODO(noamsml): Specific handling of intermittent errors that can be handled
   // in the connection.
-  delegate_->OnConnectionError(error);
+  delegate_->OnConnectionError(rv);
 }
 
 void MDnsConnection::OnDatagramReceived(
@@ -190,7 +215,8 @@ bool MDnsClientImpl::Core::SendQuery(uint16 rrtype, std::string name) {
   DnsQuery query(0, name_dns, rrtype);
   query.set_flags(0);  // Remove the RD flag from the query. It is unneeded.
 
-  return connection_->Send(query.io_buffer(), query.io_buffer()->size());
+  connection_->Send(query.io_buffer(), query.io_buffer()->size());
+  return true;
 }
 
 void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,

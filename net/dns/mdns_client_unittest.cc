@@ -1093,6 +1093,8 @@ class MDnsConnectionTest : public ::testing::Test {
     socket_ipv6_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV6);
     factory_.PushSocket(socket_ipv6_);
     factory_.PushSocket(socket_ipv4_);
+    sample_packet_ = MakeString(kSamplePacket1, sizeof(kSamplePacket1));
+    sample_buffer_ = new StringIOBuffer(sample_packet_);
   }
 
   bool InitConnection() {
@@ -1106,13 +1108,12 @@ class MDnsConnectionTest : public ::testing::Test {
   SimpleMockSocketFactory factory_;
   MDnsConnection connection_;
   TestCompletionCallback callback_;
+  std::string sample_packet_;
+  scoped_refptr<IOBuffer> sample_buffer_;
 };
 
 TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
-  std::string sample_packet = MakeString(kSamplePacket1,
-      sizeof(kSamplePacket1));
-
-  socket_ipv6_->SetResponsePacket(sample_packet);
+  socket_ipv6_->SetResponsePacket(sample_packet_);
   EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
   EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
@@ -1120,50 +1121,26 @@ TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
           Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvNow))
       .WillOnce(Return(ERR_IO_PENDING));
 
-  EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet));
-
+  EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet_));
   ASSERT_TRUE(InitConnection());
 }
 
 TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
-  std::string sample_packet = MakeString(kSamplePacket1,
-      sizeof(kSamplePacket1));
-  socket_ipv6_->SetResponsePacket(sample_packet);
+  socket_ipv6_->SetResponsePacket(sample_packet_);
+
   EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
   EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
+      .Times(2)
       .WillOnce(
-          Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvLater))
+           Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvLater))
       .WillOnce(Return(ERR_IO_PENDING));
 
   ASSERT_TRUE(InitConnection());
 
-  EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet));
+  EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet_));
 
   base::MessageLoop::current()->RunUntilIdle();
-}
-
-TEST_F(MDnsConnectionTest, Send) {
-  std::string sample_packet = MakeString(kSamplePacket1,
-      sizeof(kSamplePacket1));
-
-  scoped_refptr<IOBufferWithSize> buf(
-      new IOBufferWithSize(sizeof kSamplePacket1));
-  memcpy(buf->data(), kSamplePacket1, sizeof(kSamplePacket1));
-
-  EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
-      .WillOnce(Return(ERR_IO_PENDING));
-  EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
-      .WillOnce(Return(ERR_IO_PENDING));
-
-  ASSERT_TRUE(InitConnection());
-
-  EXPECT_CALL(*socket_ipv4_,
-              SendToInternal(sample_packet, "224.0.0.251:5353", _));
-  EXPECT_CALL(*socket_ipv6_,
-              SendToInternal(sample_packet, "[ff02::fb]:5353", _));
-
-  connection_.Send(buf.get(), buf->size());
 }
 
 TEST_F(MDnsConnectionTest, Error) {
@@ -1172,12 +1149,75 @@ TEST_F(MDnsConnectionTest, Error) {
   EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
   EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&callback),  Return(ERR_IO_PENDING)));
+      .WillOnce(DoAll(SaveArg<3>(&callback), Return(ERR_IO_PENDING)));
 
   ASSERT_TRUE(InitConnection());
 
   EXPECT_CALL(delegate_, OnConnectionError(ERR_SOCKET_NOT_CONNECTED));
   callback.Run(ERR_SOCKET_NOT_CONNECTED);
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+class MDnsConnectionSendTest : public MDnsConnectionTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    MDnsConnectionTest::SetUp();
+    EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
+        .WillOnce(Return(ERR_IO_PENDING));
+    EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
+        .WillOnce(Return(ERR_IO_PENDING));
+    EXPECT_TRUE(InitConnection());
+  }
+};
+
+TEST_F(MDnsConnectionSendTest, Send) {
+  EXPECT_CALL(*socket_ipv4_,
+              SendToInternal(sample_packet_, "224.0.0.251:5353", _));
+  EXPECT_CALL(*socket_ipv6_,
+              SendToInternal(sample_packet_, "[ff02::fb]:5353", _));
+
+  connection_.Send(sample_buffer_, sample_packet_.size());
+}
+
+TEST_F(MDnsConnectionSendTest, SendError) {
+  CompletionCallback callback;
+
+  EXPECT_CALL(*socket_ipv4_,
+              SendToInternal(sample_packet_, "224.0.0.251:5353", _));
+  EXPECT_CALL(*socket_ipv6_,
+              SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
+      .WillOnce(DoAll(SaveArg<2>(&callback), Return(ERR_SOCKET_NOT_CONNECTED)));
+
+  connection_.Send(sample_buffer_, sample_packet_.size());
+  EXPECT_CALL(delegate_, OnConnectionError(ERR_SOCKET_NOT_CONNECTED));
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(MDnsConnectionSendTest, SendQueued) {
+  // Send data immediately.
+  EXPECT_CALL(*socket_ipv4_,
+              SendToInternal(sample_packet_, "224.0.0.251:5353", _))
+      .Times(2)
+      .WillRepeatedly(Return(OK));
+
+  CompletionCallback callback;
+  // Delay sending data. Only the first call should be made.
+  EXPECT_CALL(*socket_ipv6_,
+              SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
+      .WillOnce(DoAll(SaveArg<2>(&callback), Return(ERR_IO_PENDING)));
+
+  connection_.Send(sample_buffer_, sample_packet_.size());
+  connection_.Send(sample_buffer_, sample_packet_.size());
+
+  // The second IPv6 packed is not sent yet.
+  EXPECT_CALL(*socket_ipv4_,
+              SendToInternal(sample_packet_, "224.0.0.251:5353", _))
+      .Times(0);
+  // Expect call for the second IPv6 packed.
+  EXPECT_CALL(*socket_ipv6_,
+              SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
+      .WillOnce(Return(OK));
+  callback.Run(OK);
 }
 
 }  // namespace

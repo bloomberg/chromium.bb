@@ -52,7 +52,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
 
   // Both methods return true if at least one of the socket handlers succeeded.
   bool Init(MDnsSocketFactory* socket_factory);
-  bool Send(IOBuffer* buffer, unsigned size);
+  void Send(const scoped_refptr<IOBuffer>& buffer, unsigned size);
 
  private:
   class SocketHandler {
@@ -62,7 +62,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
     ~SocketHandler();
 
     int Start();
-    int Send(IOBuffer* buffer, unsigned size);
+    void Send(const scoped_refptr<IOBuffer>& buffer, unsigned size);
 
    private:
     int DoLoop(int rv);
@@ -76,6 +76,8 @@ class NET_EXPORT_PRIVATE MDnsConnection {
     IPEndPoint recv_addr_;
     DnsResponse response_;
     IPEndPoint multicast_addr_;
+    bool send_in_progress_;
+    std::queue<std::pair<scoped_refptr<IOBuffer>, unsigned> > send_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(SocketHandler);
   };
@@ -85,12 +87,15 @@ class NET_EXPORT_PRIVATE MDnsConnection {
                           const IPEndPoint& recv_addr,
                           int bytes_read);
 
-  void OnError(SocketHandler* loop, int error);
+  void PostOnError(SocketHandler* loop, int rv);
+  void OnError(int rv);
 
   // Only socket handlers which successfully bound and started are kept.
   ScopedVector<SocketHandler> socket_handlers_;
 
   Delegate* delegate_;
+
+  base::WeakPtrFactory<MDnsConnection> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsConnection);
 };
