@@ -253,15 +253,9 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
 // the Client receives the event with their original timestamp.
 class CoalescedWebTouchEvent {
  public:
-  // Events for which |async| is true will not be ack'ed to the client after the
-  // corresponding ack is received following dispatch.
-  CoalescedWebTouchEvent(const TouchEventWithLatencyInfo& event, bool async)
-      : coalesced_event_(event) {
-    if (async)
-      coalesced_event_.event.cancelable = false;
-    else
-      events_to_ack_.push_back(event);
-
+  CoalescedWebTouchEvent(const TouchEventWithLatencyInfo& event,
+                         bool suppress_client_ack)
+      : coalesced_event_(event), suppress_client_ack_(suppress_client_ack) {
     TRACE_EVENT_ASYNC_BEGIN0("input", "TouchEventQueue::QueueEvent", this);
   }
 
@@ -273,42 +267,48 @@ class CoalescedWebTouchEvent {
   // the event was coalesced.
   bool CoalesceEventIfPossible(
       const TouchEventWithLatencyInfo& event_with_latency) {
-    if (!WillDispatchAckToClient())
+    if (suppress_client_ack_)
       return false;
 
     if (!coalesced_event_.CanCoalesceWith(event_with_latency))
       return false;
 
+    // Addition of the first event to |uncoaleseced_events_to_ack_| is deferred
+    // until the first coalesced event, optimizing the (common) case where the
+    // event is not coalesced at all.
+    if (uncoaleseced_events_to_ack_.empty())
+      uncoaleseced_events_to_ack_.push_back(coalesced_event_);
+
     TRACE_EVENT_INSTANT0(
         "input", "TouchEventQueue::MoveCoalesced", TRACE_EVENT_SCOPE_THREAD);
     coalesced_event_.CoalesceWith(event_with_latency);
-    events_to_ack_.push_back(event_with_latency);
+    uncoaleseced_events_to_ack_.push_back(event_with_latency);
+    DCHECK_GE(uncoaleseced_events_to_ack_.size(), 2U);
     return true;
   }
 
-  void UpdateLatencyInfoForAck(const ui::LatencyInfo& renderer_latency_info) {
-    if (!WillDispatchAckToClient())
-      return;
-
-    for (WebTouchEventWithLatencyList::iterator iter = events_to_ack_.begin(),
-                                                end = events_to_ack_.end();
-         iter != end;
-         ++iter) {
-      iter->latency.AddNewLatencyFrom(renderer_latency_info);
-    }
-  }
-
   void DispatchAckToClient(InputEventAckState ack_result,
+                           const ui::LatencyInfo* optional_latency_info,
                            TouchEventQueueClient* client) {
     DCHECK(client);
-    if (!WillDispatchAckToClient())
+    if (suppress_client_ack_)
       return;
 
-    for (WebTouchEventWithLatencyList::const_iterator
-             iter = events_to_ack_.begin(),
-             end = events_to_ack_.end();
+    if (uncoaleseced_events_to_ack_.empty()) {
+      if (optional_latency_info)
+        coalesced_event_.latency.AddNewLatencyFrom(*optional_latency_info);
+      client->OnTouchEventAck(coalesced_event_, ack_result);
+      return;
+    }
+
+    DCHECK_GE(uncoaleseced_events_to_ack_.size(), 2U);
+    for (WebTouchEventWithLatencyList::iterator
+             iter = uncoaleseced_events_to_ack_.begin(),
+             end = uncoaleseced_events_to_ack_.end();
          iter != end;
          ++iter) {
+      if (optional_latency_info)
+        iter->latency.AddNewLatencyFrom(*optional_latency_info);
       client->OnTouchEventAck(*iter, ack_result);
     }
   }
@@ -318,15 +318,16 @@ class CoalescedWebTouchEvent {
   }
 
  private:
-  bool WillDispatchAckToClient() const { return !events_to_ack_.empty(); }
-
   // This is the event that is forwarded to the renderer.
   TouchEventWithLatencyInfo coalesced_event_;
 
   // This is the list of the original events that were coalesced, each requiring
   // future ack dispatch to the client.
+  // Note that this will be empty if no coalescing has occurred.
   typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
-  WebTouchEventWithLatencyList events_to_ack_;
+  WebTouchEventWithLatencyList uncoaleseced_events_to_ack_;
+
+  bool suppress_client_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(CoalescedWebTouchEvent);
 };
@@ -695,20 +696,19 @@ void TouchEventQueue::FlushQueue() {
 }
 
 void TouchEventQueue::PopTouchEventToClient(InputEventAckState ack_result) {
-  AckTouchEventToClient(ack_result, PopTouchEvent());
+  AckTouchEventToClient(ack_result, PopTouchEvent(), NULL);
 }
 
 void TouchEventQueue::PopTouchEventToClient(
     InputEventAckState ack_result,
     const LatencyInfo& renderer_latency_info) {
-  scoped_ptr<CoalescedWebTouchEvent> acked_event = PopTouchEvent();
-  acked_event->UpdateLatencyInfoForAck(renderer_latency_info);
-  AckTouchEventToClient(ack_result, acked_event.Pass());
+  AckTouchEventToClient(ack_result, PopTouchEvent(), &renderer_latency_info);
 }
 
 void TouchEventQueue::AckTouchEventToClient(
     InputEventAckState ack_result,
-    scoped_ptr<CoalescedWebTouchEvent> acked_event) {
+    scoped_ptr<CoalescedWebTouchEvent> acked_event,
+    const ui::LatencyInfo* optional_latency_info) {
   DCHECK(acked_event);
   DCHECK(!dispatching_touch_ack_);
   UpdateTouchAckStates(acked_event->coalesced_event().event, ack_result);
@@ -717,7 +717,7 @@ void TouchEventQueue::AckTouchEventToClient(
   // to the renderer, or touch-events being queued.
   base::AutoReset<const CoalescedWebTouchEvent*> dispatching_touch_ack(
       &dispatching_touch_ack_, acked_event.get());
-  acked_event->DispatchAckToClient(ack_result, client_);
+  acked_event->DispatchAckToClient(ack_result, optional_latency_info, client_);
 }
 
 scoped_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {

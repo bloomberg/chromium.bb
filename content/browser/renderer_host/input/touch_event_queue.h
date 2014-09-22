@@ -160,9 +160,11 @@ class CONTENT_EXPORT TouchEventQueue {
   void PopTouchEventToClient(InputEventAckState ack_result,
                              const ui::LatencyInfo& renderer_latency_info);
 
-  // Ack all coalesced events in |acked_event| to the client with |ack_result|.
+  // Ack all coalesced events in |acked_event| to the client with |ack_result|,
+  // updating the acked events with |optional_latency_info| if it exists.
   void AckTouchEventToClient(InputEventAckState ack_result,
-                             scoped_ptr<CoalescedWebTouchEvent> acked_event);
+                             scoped_ptr<CoalescedWebTouchEvent> acked_event,
+                             const ui::LatencyInfo* optional_latency_info);
 
   // Safely pop the head of the queue.
   scoped_ptr<CoalescedWebTouchEvent> PopTouchEvent();
