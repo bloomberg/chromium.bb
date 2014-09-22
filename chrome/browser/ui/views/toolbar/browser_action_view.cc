@@ -130,13 +130,8 @@ void BrowserActionView::UpdateState() {
   if (tab_id < 0)
     return;
 
-  if (!IsEnabled(tab_id)) {
+  if (!IsEnabled(tab_id))
     SetState(views::CustomButton::STATE_DISABLED);
-  } else {
-    SetState(menu_visible_ ?
-             views::CustomButton::STATE_PRESSED :
-             views::CustomButton::STATE_NORMAL);
-  }
 
   gfx::ImageSkia icon = *view_controller_->GetIcon(tab_id).ToImageSkia();
 
@@ -255,16 +250,6 @@ scoped_ptr<LabelButtonBorder> BrowserActionView::CreateDefaultBorder() const {
   return border.Pass();
 }
 
-void BrowserActionView::SetButtonPushed() {
-  SetState(views::CustomButton::STATE_PRESSED);
-  menu_visible_ = true;
-}
-
-void BrowserActionView::SetButtonNotPushed() {
-  SetState(views::CustomButton::STATE_NORMAL);
-  menu_visible_ = false;
-}
-
 bool BrowserActionView::IsEnabled(int tab_id) const {
   return view_controller_->extension_action()->GetIsVisible(tab_id);
 }
@@ -323,6 +308,11 @@ views::View* BrowserActionView::GetReferenceViewForPopup() {
   return visible() ? this : delegate_->GetOverflowReferenceView();
 }
 
+views::MenuButton* BrowserActionView::GetContextMenuButton() {
+  DCHECK(visible());  // We should never show a context menu for a hidden item.
+  return this;
+}
+
 content::WebContents* BrowserActionView::GetCurrentWebContents() {
   return delegate_->GetCurrentWebContents();
 }
@@ -333,8 +323,16 @@ void BrowserActionView::HideActivePopup() {
 
 void BrowserActionView::OnPopupShown(bool grant_tab_permissions) {
   delegate_->SetPopupOwner(this);
-  if (grant_tab_permissions)
-    SetButtonPushed();
+  // If this was through direct user action, we press the menu button.
+  if (grant_tab_permissions) {
+    // We set the state of the menu button we're using as a reference view,
+    // which is either this or the overflow reference view.
+    // This cast is safe because GetReferenceViewForPopup returns either |this|
+    // or delegate_->GetOverflowReferenceView(), which returns a MenuButton.
+    views::MenuButton* reference_view =
+        static_cast<views::MenuButton*>(GetReferenceViewForPopup());
+    pressed_lock_.reset(new views::MenuButton::PressedLock(reference_view));
+  }
 }
 
 void BrowserActionView::CleanupPopup() {
@@ -342,14 +340,6 @@ void BrowserActionView::CleanupPopup() {
   // performing the rest of the cleanup in OnWidgetDestroyed()) because
   // OnWidgetDestroyed() can be called asynchronously from Close(), and we need
   // to keep the delegate's popup owner up-to-date.
-  SetButtonNotPushed();
   delegate_->SetPopupOwner(NULL);
-}
-
-void BrowserActionView::OnWillShowContextMenus() {
-  SetButtonPushed();
-}
-
-void BrowserActionView::OnContextMenuDone() {
-  SetButtonNotPushed();
+  pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }

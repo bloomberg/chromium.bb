@@ -247,7 +247,7 @@ class BrowserActionsContainer
   virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
   virtual bool ShownInsideMenu() const OVERRIDE;
   virtual void OnBrowserActionViewDragDone() OVERRIDE;
-  virtual views::View* GetOverflowReferenceView() OVERRIDE;
+  virtual views::MenuButton* GetOverflowReferenceView() OVERRIDE;
   virtual void SetPopupOwner(BrowserActionView* popup_owner) OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
   virtual BrowserActionView* GetMainViewForExtension(

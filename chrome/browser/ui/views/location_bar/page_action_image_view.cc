@@ -147,6 +147,10 @@ views::View* PageActionImageView::GetReferenceViewForPopup() {
   return this;
 }
 
+views::MenuButton* PageActionImageView::GetContextMenuButton() {
+  return NULL;  // No menu button for page action views.
+}
+
 content::WebContents* PageActionImageView::GetCurrentWebContents() {
   return owner_->GetWebContents();
 }

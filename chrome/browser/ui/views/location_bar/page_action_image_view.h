@@ -68,6 +68,7 @@ class PageActionImageView : public ExtensionActionViewDelegate,
   virtual ExtensionActionViewController* GetPreferredPopupViewController()
       OVERRIDE;
   virtual views::View* GetReferenceViewForPopup() OVERRIDE;
+  virtual views::MenuButton* GetContextMenuButton() OVERRIDE;
   virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
 

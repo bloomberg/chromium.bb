@@ -325,7 +325,8 @@ MenuItemView* MenuController::Run(Widget* parent,
     DCHECK(blocking_run_);
 
     // We're already showing, push the current state.
-    menu_stack_.push_back(state_);
+    menu_stack_.push_back(
+        std::make_pair(state_, make_linked_ptr(pressed_lock_.release())));
 
     // The context menu should be owned by the same parent.
     DCHECK_EQ(owner_, parent);
@@ -357,7 +358,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   }
 
   if (button)
-    menu_button_ = button;
+    pressed_lock_.reset(new MenuButton::PressedLock(button));
 
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
   if (ViewsDelegate::views_delegate)
@@ -399,12 +400,14 @@ MenuItemView* MenuController::Run(Widget* parent,
   }
 #endif
 
+  linked_ptr<MenuButton::PressedLock> nested_pressed_lock;
   if (nested_menu) {
     DCHECK(!menu_stack_.empty());
     // We're running from within a menu, restore the previous state.
     // The menus are already showing, so we don't have to show them.
-    state_ = menu_stack_.back();
-    pending_state_ = menu_stack_.back();
+    state_ = menu_stack_.back().first;
+    pending_state_ = menu_stack_.back().first;
+    nested_pressed_lock = menu_stack_.back().second;
     menu_stack_.pop_back();
   } else {
     showing_ = false;
@@ -434,12 +437,10 @@ MenuItemView* MenuController::Run(Widget* parent,
     }
   }
 
-  // If we stopped running because one of the menus was destroyed chances are
-  // the button was also destroyed.
-  if (exit_type_ != EXIT_DESTROYED && menu_button_) {
-    menu_button_->SetState(CustomButton::STATE_NORMAL);
-    menu_button_->SchedulePaint();
-  }
+  // Reset our pressed lock to the previous state's, if there was one.
+  // The lock handles the case if the button was destroyed.
+  pressed_lock_.reset(nested_pressed_lock.release());
+
   return result;
 }
 
@@ -933,7 +934,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
       gfx::Point screen_loc(event.location());
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
       MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
-          menu_stack_.back().item, screen_loc);
+          menu_stack_.back().first.item, screen_loc);
       if (last_part.type != MenuPart::NONE)
         exit_type = EXIT_OUTERMOST;
     }
@@ -1092,7 +1093,6 @@ MenuController::MenuController(ui::NativeTheme* theme,
       valid_drop_coordinates_(false),
       last_drop_operation_(MenuDelegate::DROP_UNKNOWN),
       showing_submenu_(false),
-      menu_button_(NULL),
       active_mouse_view_id_(ViewStorage::GetInstance()->CreateStorageID()),
       delegate_(delegate),
       message_loop_depth_(0),
@@ -1183,7 +1183,7 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
 
 bool MenuController::ShowSiblingMenu(SubmenuView* source,
                                      const gfx::Point& mouse_location) {
-  if (!menu_stack_.empty() || !menu_button_)
+  if (!menu_stack_.empty() || !pressed_lock_.get())
     return false;
 
   View* source_view = source->GetScrollViewContainer();
@@ -1223,11 +1223,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // There is a sibling menu, update the button state, hide the current menu
   // and show the new one.
-  menu_button_->SetState(CustomButton::STATE_NORMAL);
-  menu_button_->SchedulePaint();
-  menu_button_ = button;
-  menu_button_->SetState(CustomButton::STATE_PRESSED);
-  menu_button_->SchedulePaint();
+  pressed_lock_.reset(new MenuButton::PressedLock(button));
 
   // Need to reset capture when we show the menu again, otherwise we aren't
   // going to get any events.
@@ -1271,16 +1267,17 @@ bool MenuController::ShowContextMenu(MenuItemView* menu_item,
 }
 
 void MenuController::CloseAllNestedMenus() {
-  for (std::list<State>::iterator i = menu_stack_.begin();
+  for (std::list<NestedState>::iterator i = menu_stack_.begin();
        i != menu_stack_.end(); ++i) {
-    MenuItemView* last_item = i->item;
+    State& state = i->first;
+    MenuItemView* last_item = state.item;
     for (MenuItemView* item = last_item; item;
          item = item->GetParentMenuItem()) {
       CloseMenu(item);
       last_item = item;
     }
-    i->submenu_open = false;
-    i->item = last_item;
+    state.submenu_open = false;
+    state.item = last_item;
   }
 }
 

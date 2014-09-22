@@ -291,7 +291,7 @@ void BrowserActionsContainer::OnBrowserActionViewDragDone() {
                     OnBrowserActionDragDone());
 }
 
-views::View* BrowserActionsContainer::GetOverflowReferenceView() {
+views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
   // With traditional overflow, the reference is the chevron. With the
   // redesign, we use the wrench menu instead.
   return chevron_ ?
@@ -300,8 +300,10 @@ views::View* BrowserActionsContainer::GetOverflowReferenceView() {
 }
 
 void BrowserActionsContainer::SetPopupOwner(BrowserActionView* popup_owner) {
-  // We should never be setting a popup owner when one already exists.
-  DCHECK(!popup_owner_ || !popup_owner);
+  // We should never be setting a popup owner when one already exists, and
+  // never unsetting one when one wasn't set.
+  DCHECK((!popup_owner_ && popup_owner) ||
+         (popup_owner_ && !popup_owner));
   popup_owner_ = popup_owner;
 }
 

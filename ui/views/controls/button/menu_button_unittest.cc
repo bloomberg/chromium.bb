@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/button/menu_button.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -29,17 +30,15 @@ class MenuButtonTest : public ViewsTestBase {
   MenuButton* button() { return button_; }
 
  protected:
+  // Creates a MenuButton with no button listener.
+  void CreateMenuButtonWithNoListener() {
+    CreateMenuButton(NULL, NULL);
+  }
+
   // Creates a MenuButton with a ButtonListener. In this case, the MenuButton
   // acts like a regular button.
   void CreateMenuButtonWithButtonListener(ButtonListener* button_listener) {
-    CreateWidget();
-
-    const base::string16 label(ASCIIToUTF16("button"));
-    button_ = new MenuButton(button_listener, label, NULL, false);
-    button_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
-    widget_->SetContentsView(button_);
-
-    widget_->Show();
+    CreateMenuButton(button_listener, NULL);
   }
 
   // Creates a MenuButton with a MenuButtonListener. In this case, when the
@@ -47,17 +46,23 @@ class MenuButtonTest : public ViewsTestBase {
   // drop-down menu.
   void CreateMenuButtonWithMenuButtonListener(
       MenuButtonListener* menu_button_listener) {
+    CreateMenuButton(NULL, menu_button_listener);
+  }
+
+ private:
+  void CreateMenuButton(ButtonListener* button_listener,
+                        MenuButtonListener* menu_button_listener) {
     CreateWidget();
 
     const base::string16 label(ASCIIToUTF16("button"));
-    button_ = new MenuButton(NULL, label, menu_button_listener, false);
+    button_ =
+        new MenuButton(button_listener, label, menu_button_listener, false);
     button_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
     widget_->SetContentsView(button_);
 
     widget_->Show();
   }
 
- private:
   void CreateWidget() {
     DCHECK(!widget_);
 
@@ -187,6 +192,42 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
   // state.
   EXPECT_EQ(button(), menu_button_listener->last_source());
   EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener->last_source_state());
+}
+
+// Test that the MenuButton stays pressed while there are any PressedLocks.
+TEST_F(MenuButtonTest, MenuButtonPressedLock) {
+  CreateMenuButtonWithNoListener();
+
+  // Move the mouse over the button; the button should be in a hovered state.
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.MoveMouseTo(gfx::Point(10, 10));
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+
+  // Introduce a PressedLock, which should make the button pressed.
+  scoped_ptr<MenuButton::PressedLock> pressed_lock1(
+      new MenuButton::PressedLock(button()));
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+
+  // Even if we move the mouse outside of the button, it should remain pressed.
+  generator.MoveMouseTo(gfx::Point(300, 10));
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+
+  // Creating a new lock should obviously keep the button pressed.
+  scoped_ptr<MenuButton::PressedLock> pressed_lock2(
+      new MenuButton::PressedLock(button()));
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+
+  // The button should remain pressed while any locks are active.
+  pressed_lock1.reset();
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+
+  // Reseting the final lock should return the button's state to normal...
+  pressed_lock2.reset();
+  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+
+  // ...And it should respond to mouse movement again.
+  generator.MoveMouseTo(gfx::Point(10, 10));
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 }
 
 }  // namespace views

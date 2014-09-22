@@ -12,11 +12,13 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/widget/widget_observer.h"
@@ -549,7 +551,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // If not empty, it means we're nested. When Run is invoked from within
   // Run, the current state (state_) is pushed onto menu_stack_. This allows
   // MenuController to restore the state when the nested run returns.
-  std::list<State> menu_stack_;
+  typedef std::pair<State, linked_ptr<MenuButton::PressedLock> > NestedState;
+  std::list<NestedState> menu_stack_;
 
   // As the mouse moves around submenus are not opened immediately. Instead
   // they open after this timer fires.
@@ -596,7 +599,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // underway.
   scoped_ptr<MenuScrollTask> scroll_task_;
 
-  MenuButton* menu_button_;
+  // The lock to keep the menu button pressed while a menu is visible.
+  scoped_ptr<MenuButton::PressedLock> pressed_lock_;
 
   // ViewStorage id used to store the view mouse drag events are forwarded to.
   // See UpdateActiveMouseView() for details.

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/views/background.h"
@@ -25,6 +26,19 @@ class MenuButtonListener;
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT MenuButton : public LabelButton {
  public:
+  // A scoped lock for keeping the MenuButton in STATE_PRESSED e.g., while a
+  // menu is running. These are cumulative.
+  class VIEWS_EXPORT PressedLock {
+   public:
+    explicit PressedLock(MenuButton* menu_button);
+    ~PressedLock();
+
+   private:
+    base::WeakPtr<MenuButton> menu_button_;
+
+    DISALLOW_COPY_AND_ASSIGN(PressedLock);
+  };
+
   static const char kViewClassName[];
 
   // How much padding to put on the left and right of the menu marker.
@@ -56,7 +70,9 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
@@ -69,13 +85,17 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Overridden from LabelButton:
   virtual gfx::Rect GetChildAreaBounds() OVERRIDE;
 
-  // True if the menu is currently visible.
-  bool menu_visible_;
-
   // Offset of the associated menu position.
   gfx::Point menu_offset_;
 
  private:
+  friend class PressedLock;
+
+  // Increment/decrement the number of "pressed" locks this button has, and
+  // set the state accordingly.
+  void IncrementPressedLocked();
+  void DecrementPressedLocked();
+
   // Compute the maximum X coordinate for the current screen. MenuButtons
   // use this to make sure a menu is never shown off screen.
   int GetMaximumScreenXCoordinate();
@@ -100,6 +120,11 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // If non-null the destuctor sets this to true. This is set while the menu is
   // showing and used to detect if the menu was deleted while running.
   bool* destroyed_flag_;
+
+  // The current number of "pressed" locks this button has.
+  int pressed_lock_count_;
+
+  base::WeakPtrFactory<MenuButton> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButton);
 };

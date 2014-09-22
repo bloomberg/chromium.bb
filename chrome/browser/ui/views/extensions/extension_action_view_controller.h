@@ -117,9 +117,13 @@ class ExtensionActionViewController
   void DoShowContextMenu(ui::MenuSourceType source_type);
 
   // Shows the popup for the extension action, given the associated |popup_url|.
+  // |grant_tab_permissions| is true if active tab permissions should be given
+  // to the extension; this is only true if the popup is opened through a user
+  // action.
   // Returns true if a popup is successfully shown.
   bool ShowPopupWithUrl(ExtensionPopup::ShowAction show_action,
-                        const GURL& popup_url);
+                        const GURL& popup_url,
+                        bool grant_tab_permissions);
 
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.

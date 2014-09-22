@@ -56,7 +56,7 @@ class BrowserActionView : public views::MenuButton,
 
     // Returns the view of the browser actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
-    virtual views::View* GetOverflowReferenceView() = 0;
+    virtual views::MenuButton* GetOverflowReferenceView() = 0;
 
     // Sets the delegate's active popup owner to be |popup_owner|.
     virtual void SetPopupOwner(BrowserActionView* popup_owner) = 0;
@@ -134,11 +134,6 @@ class BrowserActionView : public views::MenuButton,
   virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
       OVERRIDE;
 
-  // Notifications when to set button state to pushed/not pushed (for when the
-  // popup/context menu is hidden or shown by the container).
-  void SetButtonPushed();
-  void SetButtonNotPushed();
-
   // Whether the browser action is enabled on this tab. Note that we cannot use
   // the built-in views enabled/SetEnabled because disabled views do not
   // receive drag events.
@@ -167,13 +162,12 @@ class BrowserActionView : public views::MenuButton,
   virtual ExtensionActionViewController* GetPreferredPopupViewController()
       OVERRIDE;
   virtual views::View* GetReferenceViewForPopup() OVERRIDE;
+  virtual views::MenuButton* GetContextMenuButton() OVERRIDE;
   virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
   virtual void OnIconUpdated() OVERRIDE;
   virtual void OnPopupShown(bool grant_tab_permissions) OVERRIDE;
   virtual void CleanupPopup() OVERRIDE;
-  virtual void OnWillShowContextMenus() OVERRIDE;
-  virtual void OnContextMenuDone() OVERRIDE;
 
   // The controller for this ExtensionAction view.
   scoped_ptr<ExtensionActionViewController> view_controller_;
@@ -189,6 +183,9 @@ class BrowserActionView : public views::MenuButton,
   // The observer that we need to notify when the icon of the button has been
   // updated.
   IconObserver* icon_observer_;
+
+  // A lock to keep the MenuButton pressed when a menu or popup is visible.
+  scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
 };

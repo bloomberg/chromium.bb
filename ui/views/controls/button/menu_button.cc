@@ -39,6 +39,22 @@ const int MenuButton::kMenuMarkerPaddingRight = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// MenuButton::PressedLock
+//
+////////////////////////////////////////////////////////////////////////////////
+
+MenuButton::PressedLock::PressedLock(MenuButton* menu_button)
+    : menu_button_(menu_button->weak_factory_.GetWeakPtr()) {
+  menu_button_->IncrementPressedLocked();
+}
+
+MenuButton::PressedLock::~PressedLock() {
+  if (menu_button_.get())
+    menu_button_->DecrementPressedLocked();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // MenuButton - constructors, destructors, initialization
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,13 +64,14 @@ MenuButton::MenuButton(ButtonListener* listener,
                        MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
     : LabelButton(listener, text),
-      menu_visible_(false),
       menu_offset_(kDefaultMenuOffsetX, kDefaultMenuOffsetY),
       listener_(menu_button_listener),
       show_menu_marker_(show_menu_marker),
       menu_marker_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_MENU_DROPARROW).ToImageSkia()),
-      destroyed_flag_(NULL) {
+      destroyed_flag_(NULL),
+      pressed_lock_count_(0),
+      weak_factory_(this) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
 
@@ -100,10 +117,11 @@ bool MenuButton::Activate() {
     static_cast<internal::RootView*>(GetWidget()->GetRootView())->
         SetMouseHandler(NULL);
 
-    menu_visible_ = true;
-
     bool destroyed = false;
     destroyed_flag_ = &destroyed;
+
+    // We don't set our state here. It's handled in the MenuController code or
+    // by our click listener.
 
     listener_->OnMenuButtonClicked(this, menu_position);
 
@@ -114,17 +132,7 @@ bool MenuButton::Activate() {
 
     destroyed_flag_ = NULL;
 
-    menu_visible_ = false;
     menu_closed_time_ = TimeTicks::Now();
-
-    // Now that the menu has closed, we need to manually reset state to
-    // "normal" since the menu modal loop will have prevented normal
-    // mouse move messages from getting to this View. We set "normal"
-    // and not "hot" because the likelihood is that the mouse is now
-    // somewhere else (user clicked elsewhere on screen to close the menu
-    // or selected an item) and we will inevitably refresh the hot state
-    // in the event the mouse _is_ over the view.
-    SetState(STATE_NORMAL);
 
     // We must return false here so that the RootView does not get stuck
     // sending all mouse pressed events to us instead of the appropriate
@@ -191,15 +199,19 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
   }
 }
 
-// The reason we override View::OnMouseExited is because we get this event when
-// we display the menu. If we don't override this method then
-// BaseButton::OnMouseExited will get the event and will set the button's state
-// to STATE_NORMAL instead of keeping the state BM_PUSHED. This, in turn, will
-// cause the button to appear depressed while the menu is displayed.
+void MenuButton::OnMouseEntered(const ui::MouseEvent& event) {
+  if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
+    CustomButton::OnMouseEntered(event);
+}
+
 void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
-  if ((state_ != STATE_DISABLED) && (!menu_visible_) && (!InDrag())) {
-    SetState(STATE_NORMAL);
-  }
+  if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
+    CustomButton::OnMouseExited(event);
+}
+
+void MenuButton::OnMouseMoved(const ui::MouseEvent& event) {
+  if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
+    CustomButton::OnMouseMoved(event);
 }
 
 void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -273,6 +285,24 @@ gfx::Rect MenuButton::GetChildAreaBounds() {
   }
 
   return gfx::Rect(s);
+}
+
+void MenuButton::IncrementPressedLocked() {
+  ++pressed_lock_count_;
+  SetState(STATE_PRESSED);
+}
+
+void MenuButton::DecrementPressedLocked() {
+  --pressed_lock_count_;
+  DCHECK_GE(pressed_lock_count_, 0);
+
+  // If this was the last lock, manually reset state to "normal". We set
+  // "normal" and not "hot" because the likelihood is that the mouse is now
+  // somewhere else (user clicked elsewhere on screen to close the menu or
+  // selected an item) and we will inevitably refresh the hot state in the event
+  // the mouse _is_ over the view.
+  if (pressed_lock_count_ == 0)
+    SetState(STATE_NORMAL);
 }
 
 int MenuButton::GetMaximumScreenXCoordinate() {
