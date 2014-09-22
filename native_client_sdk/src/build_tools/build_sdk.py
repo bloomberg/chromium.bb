@@ -949,7 +949,9 @@ def main(args):
     options.build_app_engine = False
     options.tar = True
 
-  toolchains = ['newlib', 'glibc', 'arm', 'pnacl', 'host']
+  # NOTE: order matters here. This will be the order that is specified in the
+  # Makefiles; the first toolchain will be the default.
+  toolchains = ['pnacl', 'newlib', 'glibc', 'arm', 'host']
 
   # Changes for experimental bionic builder
   if options.bionic:
