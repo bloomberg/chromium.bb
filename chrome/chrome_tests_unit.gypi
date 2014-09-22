@@ -396,6 +396,8 @@
       'browser/extensions/extension_icon_manager_unittest.cc',
       'browser/extensions/extension_install_checker_unittest.cc',
       'browser/extensions/extension_install_prompt_unittest.cc',
+      'browser/extensions/extension_management_test_util.cc',
+      'browser/extensions/extension_management_test_util.h',
       'browser/extensions/extension_management_unittest.cc',
       'browser/extensions/extension_message_bubble_controller_unittest.cc',
       'browser/extensions/extension_path_util_unittest.cc',

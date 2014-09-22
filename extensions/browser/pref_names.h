@@ -47,6 +47,11 @@ extern const char kBookmarkAppCreationLaunchType[];
 // extension ids.
 extern const char kExtensions[];
 
+// Dictionary pref that manages extensions, controlled by policy.
+// Values are expected to conform to the schema of the ExtensionManagement
+// policy.
+extern const char kExtensionManagement[];
+
 // A whitelist of extension ids the user can install: exceptions from the
 // following blacklist.
 extern const char kInstallAllowList[];

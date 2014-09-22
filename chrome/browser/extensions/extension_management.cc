@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
@@ -15,11 +17,79 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
 
 namespace extensions {
+
+namespace {
+
+const char kMalformedPreferenceWarning[] =
+    "Malformed extension management preference.";
+
+enum Scope {
+  // Parses the default settings.
+  SCOPE_DEFAULT = 0,
+  // Parses the settings for an extension with specified extension ID.
+  SCOPE_INDIVIDUAL,
+};
+
+// Parse the individual settings for |settings|. |dict| is the a
+// sub-dictionary in extension management preference and |scope| represents
+// the applicable range of the settings, a single extension, a group of
+// extensions or default settings.
+// Note that in case of parsing errors, |settings| will NOT be left untouched.
+bool ParseIndividualSettings(
+    const base::DictionaryValue* dict,
+    Scope scope,
+    ExtensionManagement::IndividualSettings* settings) {
+  settings->Reset();
+
+  std::string installation_mode;
+  if (dict->GetStringWithoutPathExpansion(schema_constants::kInstallationMode,
+                                          &installation_mode)) {
+    if (installation_mode == schema_constants::kAllowed) {
+      settings->installation_mode = ExtensionManagement::INSTALLATION_ALLOWED;
+    } else if (installation_mode == schema_constants::kBlocked) {
+      settings->installation_mode = ExtensionManagement::INSTALLATION_BLOCKED;
+    } else if (installation_mode == schema_constants::kForceInstalled) {
+      settings->installation_mode = ExtensionManagement::INSTALLATION_FORCED;
+    } else if (installation_mode == schema_constants::kNormalInstalled) {
+      settings->installation_mode =
+          ExtensionManagement::INSTALLATION_RECOMMENDED;
+    } else {
+      // Invalid value for 'installation_mode'.
+      LOG(WARNING) << kMalformedPreferenceWarning;
+      return false;
+    }
+  }
+
+  if (settings->installation_mode == ExtensionManagement::INSTALLATION_FORCED ||
+      settings->installation_mode ==
+          ExtensionManagement::INSTALLATION_RECOMMENDED) {
+    if (scope != SCOPE_INDIVIDUAL) {
+      // Only individual extensions are allowed to be automatically installed.
+      LOG(WARNING) << kMalformedPreferenceWarning;
+      return false;
+    }
+    std::string update_url;
+    if (dict->GetStringWithoutPathExpansion(schema_constants::kUpdateUrl,
+                                            &update_url) &&
+        GURL(update_url).is_valid()) {
+      settings->update_url = update_url;
+    } else {
+      // No valid update URL for extension.
+      LOG(WARNING) << kMalformedPreferenceWarning;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
 
 void ExtensionManagement::IndividualSettings::Reset() {
   installation_mode = ExtensionManagement::INSTALLATION_ALLOWED;
@@ -54,6 +124,8 @@ ExtensionManagement::ExtensionManagement(PrefService* pref_service)
   pref_change_registrar_.Add(pref_names::kAllowedInstallSites,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
+  pref_change_registrar_.Add(pref_names::kExtensionManagement,
+                             pref_change_callback);
   Refresh();
   provider_.reset(new StandardManagementPolicyProvider(this));
 }
@@ -145,6 +217,11 @@ void ExtensionManagement::Refresh() {
   const base::ListValue* allowed_types_pref =
       static_cast<const base::ListValue*>(LoadPreference(
           pref_names::kAllowedTypes, true, base::Value::TYPE_LIST));
+  const base::DictionaryValue* dict_pref =
+      static_cast<const base::DictionaryValue*>(
+          LoadPreference(pref_names::kExtensionManagement,
+                         true,
+                         base::Value::TYPE_DICTIONARY));
 
   // Reset all settings.
   global_settings_.Reset();
@@ -156,6 +233,22 @@ void ExtensionManagement::Refresh() {
   if (denied_list_pref &&
       denied_list_pref->Find(wildcard) != denied_list_pref->end()) {
     default_settings_.installation_mode = INSTALLATION_BLOCKED;
+  }
+
+  const base::DictionaryValue* subdict = NULL;
+  if (dict_pref &&
+      dict_pref->GetDictionary(schema_constants::kWildcard, &subdict)) {
+    if (!ParseIndividualSettings(subdict, SCOPE_DEFAULT, &default_settings_)) {
+      LOG(WARNING) << "Default extension management settings parsing error.";
+      default_settings_.Reset();
+    }
+
+    // Settings from new preference have higher priority over legacy ones.
+    const base::ListValue* list_value = NULL;
+    if (subdict->GetList(schema_constants::kInstallSources, &list_value))
+      install_sources_pref = list_value;
+    if (subdict->GetList(schema_constants::kAllowedTypes, &list_value))
+      allowed_types_pref = list_value;
   }
 
   // Parse legacy preferences.
@@ -196,11 +289,11 @@ void ExtensionManagement::Refresh() {
 
   if (install_sources_pref) {
     global_settings_.has_restricted_install_sources = true;
-    std::string url_pattern;
     for (base::ListValue::const_iterator it = install_sources_pref->begin();
          it != install_sources_pref->end(); ++it) {
-      URLPattern entry(URLPattern::SCHEME_ALL);
+      std::string url_pattern;
       if ((*it)->GetAsString(&url_pattern)) {
+        URLPattern entry(URLPattern::SCHEME_ALL);
         if (entry.Parse(url_pattern) == URLPattern::PARSE_SUCCESS) {
           global_settings_.install_sources.AddPattern(entry);
         } else {
@@ -217,16 +310,47 @@ void ExtensionManagement::Refresh() {
     for (base::ListValue::const_iterator it = allowed_types_pref->begin();
          it != allowed_types_pref->end(); ++it) {
       int int_value;
+      std::string string_value;
       if ((*it)->GetAsInteger(&int_value) && int_value >= 0 &&
           int_value < Manifest::Type::NUM_LOAD_TYPES) {
         global_settings_.allowed_types.push_back(
             static_cast<Manifest::Type>(int_value));
+      } else if ((*it)->GetAsString(&string_value)) {
+        Manifest::Type manifest_type =
+            schema_constants::GetManifestType(string_value);
+        if (manifest_type != Manifest::TYPE_UNKNOWN)
+          global_settings_.allowed_types.push_back(manifest_type);
       }
     }
   }
 
-  // TODO(binjin): Add parsing of new ExtensionManagement preference after the
-  // new ExtensionManagement policy is added.
+  if (dict_pref) {
+    // Parse new extension management preference.
+    for (base::DictionaryValue::Iterator iter(*dict_pref); !iter.IsAtEnd();
+         iter.Advance()) {
+      if (iter.key() == schema_constants::kWildcard)
+        continue;
+      if (!iter.value().GetAsDictionary(&subdict)) {
+        LOG(WARNING) << kMalformedPreferenceWarning;
+        continue;
+      }
+      if (StartsWithASCII(
+              iter.key(), schema_constants::kUpdateUrlPrefix, true))
+        continue;
+      const std::string& extension_id = iter.key();
+      if (!crx_file::id_util::IdIsValid(extension_id)) {
+        LOG(WARNING) << kMalformedPreferenceWarning;
+        continue;
+      }
+      IndividualSettings by_id;
+      if (ParseIndividualSettings(subdict, SCOPE_INDIVIDUAL, &by_id)) {
+        *AccessById(extension_id) = by_id;
+      } else {
+        LOG(WARNING) << "Malformed Extension Management settings for "
+                     << iter.key() << ".";
+      }
+    }
+  }
 }
 
 const base::Value* ExtensionManagement::LoadPreference(
@@ -291,6 +415,13 @@ KeyedService* ExtensionManagementFactory::BuildServiceInstanceFor(
 content::BrowserContext* ExtensionManagementFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
+void ExtensionManagementFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  user_prefs->RegisterDictionaryPref(
+      pref_names::kExtensionManagement,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace extensions

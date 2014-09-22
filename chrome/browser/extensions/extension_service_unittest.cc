@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
+#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_notification_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -91,7 +92,6 @@
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
@@ -1104,6 +1104,8 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   }
 
  protected:
+  typedef extensions::ExtensionManagementPrefUpdater<TestingPrefServiceSyncable>
+      ManagementPrefUpdater;
   scoped_ptr<ExtensionSyncService> extension_sync_service_;
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
@@ -3292,10 +3294,10 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   UpdateExtension(good_crx, path, FAILED_SILENTLY);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
 
-  base::ListValue whitelist;
-  whitelist.Append(new base::StringValue(good_crx));
-  profile_->GetTestingPrefService()->SetManagedPref(
-      extensions::pref_names::kInstallAllowList, whitelist.DeepCopy());
+  {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.SetIndividualExtensionInstallationAllowed(good_crx, true);
+  }
 
   test_blacklist.SetBlacklistState(
       good_crx, extensions::BLACKLISTED_MALWARE, true);
@@ -3587,10 +3589,8 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
 
   // Blacklist everything.
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          extensions::pref_names::kInstallDenyList);
-    base::ListValue* blacklist = update.Get();
-    blacklist->Append(new base::StringValue("*"));
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.SetBlacklistedByDefault(true);
   }
 
   // Blacklist prevents us from installing good_crx.
@@ -3600,10 +3600,8 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
 
   // Now whitelist this particular extension.
   {
-    base::ListValue whitelist;
-    whitelist.Append(new base::StringValue(good_crx));
-    profile_->GetTestingPrefService()->SetManagedPref(
-        extensions::pref_names::kInstallAllowList, whitelist.DeepCopy());
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.SetIndividualExtensionInstallationAllowed(good_crx, true);
   }
 
   // Ensure we can now install good_crx.
@@ -3613,21 +3611,17 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
 
 // Extension blacklisted by policy get unloaded after installing.
 TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
-  InitializeEmptyExtensionService();
+  InitializeEmptyExtensionServiceWithTestingPrefs();
 
   // Install good_crx.
   base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
 
-  { // Scope for pref update notification.
-    PrefService* prefs = profile()->GetPrefs();
-    ListPrefUpdate update(prefs, extensions::pref_names::kInstallDenyList);
-    base::ListValue* blacklist = update.Get();
-    ASSERT_TRUE(blacklist != NULL);
-
+  {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
     // Blacklist this extension.
-    blacklist->Append(new base::StringValue(good_crx));
+    pref.SetIndividualExtensionInstallationAllowed(good_crx, false);
   }
 
   // Extension should not be running now.
@@ -3637,14 +3631,12 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 
 // Tests that component extensions are not blacklisted by policy.
 TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
-  InitializeEmptyExtensionService();
+  InitializeEmptyExtensionServiceWithTestingPrefs();
 
   // Blacklist everything.
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          extensions::pref_names::kInstallDenyList);
-    base::ListValue* blacklist = update.Get();
-    blacklist->Append(new base::StringValue("*"));
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.SetBlacklistedByDefault(true);
   }
 
   // Install a component extension.
@@ -3670,10 +3662,8 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
 
   // Extension should not be uninstalled on blacklist changes.
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          extensions::pref_names::kInstallDenyList);
-    base::ListValue* blacklist = update.Get();
-    blacklist->Append(new base::StringValue(good0));
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.SetIndividualExtensionInstallationAllowed(good0, false);
   }
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
@@ -3685,20 +3675,12 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
   {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
     // Blacklist everything.
-    ListPrefUpdate blacklist_update(profile()->GetPrefs(),
-                                    extensions::pref_names::kInstallDenyList);
-    base::ListValue* blacklist = blacklist_update.Get();
-    blacklist->AppendString("*");
-  }
-
-  {
+    pref.SetBlacklistedByDefault(true);
     // Mark good.crx for force-installation.
-    base::DictionaryValue forcelist;
-    extensions::ExternalPolicyLoader::AddExtension(
-        &forcelist, good_crx, "http://example.com/update_url");
-    profile_->GetTestingPrefService()->SetManagedPref(
-        extensions::pref_names::kInstallForceList, forcelist.DeepCopy());
+    pref.SetIndividualExtensionAutoInstalled(
+        good_crx, "http://example.com/update_url", true);
   }
 
   // Have policy force-install an extension.
@@ -3722,10 +3704,8 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
 
   // Blacklist update should not uninstall the extension.
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          extensions::pref_names::kInstallDenyList);
-    base::ListValue* blacklist = update.Get();
-    blacklist->Append(new base::StringValue(good0));
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.SetIndividualExtensionInstallationAllowed(good0, false);
   }
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, registry()->enabled_extensions().size());

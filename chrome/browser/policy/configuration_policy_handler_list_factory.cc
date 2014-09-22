@@ -50,6 +50,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
+#include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
@@ -496,24 +497,16 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 void GetExtensionAllowedTypesMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
   // Mapping from extension type names to Manifest::Type.
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "extension", scoped_ptr<base::Value>(new base::FundamentalValue(
-          extensions::Manifest::TYPE_EXTENSION))));
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "theme", scoped_ptr<base::Value>(new base::FundamentalValue(
-          extensions::Manifest::TYPE_THEME))));
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "user_script", scoped_ptr<base::Value>(new base::FundamentalValue(
-          extensions::Manifest::TYPE_USER_SCRIPT))));
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "hosted_app", scoped_ptr<base::Value>(new base::FundamentalValue(
-          extensions::Manifest::TYPE_HOSTED_APP))));
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "legacy_packaged_app", scoped_ptr<base::Value>(new base::FundamentalValue(
-          extensions::Manifest::TYPE_LEGACY_PACKAGED_APP))));
-  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "platform_app", scoped_ptr<base::Value>(new base::FundamentalValue(
-          extensions::Manifest::TYPE_PLATFORM_APP))));
+  for (size_t index = 0;
+       index < extensions::schema_constants::kAllowedTypesMapSize;
+       ++index) {
+    const extensions::schema_constants::AllowedTypesMapEntry& entry =
+        extensions::schema_constants::kAllowedTypesMap[index];
+    result->push_back(new StringMappingListPolicyHandler::MappingEntry(
+        entry.name,
+        scoped_ptr<base::Value>(
+            new base::FundamentalValue(entry.manifest_type))));
+  }
 }
 #endif
 

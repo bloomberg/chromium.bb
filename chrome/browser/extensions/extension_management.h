@@ -193,6 +193,8 @@ class ExtensionManagementFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
+  virtual void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementFactory);
 };
