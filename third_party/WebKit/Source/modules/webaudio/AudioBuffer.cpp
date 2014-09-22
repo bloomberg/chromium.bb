@@ -34,6 +34,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioContext.h"
 #include "platform/audio/AudioBus.h"
@@ -198,6 +199,23 @@ void AudioBuffer::zero()
         if (getChannelData(i))
             getChannelData(i)->zeroRange(0, length());
     }
+}
+
+v8::Handle<v8::Object> AudioBuffer::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+{
+    ScriptWrappable::associateWithWrapper(wrapperType, wrapper, isolate);
+
+    if (!wrapper.IsEmpty()) {
+        // We only setDeallocationObservers on array buffers that are held by
+        // some object in the V8 heap, not in the ArrayBuffer constructor
+        // itself. This is because V8 GC only cares about memory it can free on
+        // GC, and until the object is exposed to JavaScript, V8 GC doesn't
+        // affect it.
+        for (unsigned i = 0, n = numberOfChannels(); i < n; ++i) {
+            getChannelData(i)->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
+        }
+    }
+    return wrapper;
 }
 
 } // namespace blink

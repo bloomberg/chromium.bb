@@ -622,7 +622,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     {% endif %}
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate());
+    event->associateWithWrapper(&{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 
@@ -1202,16 +1202,6 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    {% if is_audio_buffer %}
-    {# We only setDeallocationObservers on array buffers that are held by some
-       object in the V8 heap, not in the ArrayBuffer constructor itself.
-       This is because V8 GC only cares about memory it can free on GC, and
-       until the object is exposed to JavaScript, V8 GC doesn't affect it. #}
-    for (unsigned i = 0, n = impl->numberOfChannels(); i < n; i++) {
-        Float32Array* channelData = impl->getChannelData(i);
-        channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
-    }
-    {% endif %}
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl, &wrapperTypeInfo, wrapper, isolate);
     return wrapper;

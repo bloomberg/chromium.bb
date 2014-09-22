@@ -260,7 +260,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventConstructor>(event.release(), &V8TestInterfaceEventConstructor::wrapperTypeInfo, wrapper, info.GetIsolate());
+    event->associateWithWrapper(&V8TestInterfaceEventConstructor::wrapperTypeInfo, wrapper, info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 
