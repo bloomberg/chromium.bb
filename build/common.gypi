@@ -3558,6 +3558,7 @@
             'cflags': [
               '-O>(debug_optimize)',
               '-g',
+              '-gdwarf-4',
             ],
             'conditions' : [
               ['OS=="android"', {
