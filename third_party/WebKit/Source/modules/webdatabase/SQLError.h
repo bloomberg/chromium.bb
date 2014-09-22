@@ -52,6 +52,8 @@ public:
         return create(data.code(), data.message());
     }
 
+    SQLErrorData(const SQLErrorData& data) : m_code(data.m_code), m_message(data.m_message.isolatedCopy()) { }
+
     unsigned code() const { return m_code; }
     String message() const { return m_message.isolatedCopy(); }
 
