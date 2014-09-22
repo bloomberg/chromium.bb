@@ -115,3 +115,24 @@ class ExpandCommand(SubCommand):
         if component_match == component_name:
           ExpandCommand._add_size('', bucket, depth,
                                   region[1]['committed'], sizes)
+    elif rule.allocator_type == 'unhooked':
+      for addr, region in dump.iter_map:
+        if region[0] != 'unhooked':
+          continue
+        component_match = policy.find_unhooked(region)
+        if component_match == component_name:
+          precedence = ''
+          precedence += '%s-' % hex(addr[0])[2:]
+          precedence += '%s' % hex(addr[1])[2:]
+          precedence += ' %s' % region[1]['vma']['readable']
+          precedence += '%s' % region[1]['vma']['writable']
+          precedence += '%s' % region[1]['vma']['executable']
+          precedence += '%s' % region[1]['vma']['private']
+          precedence += ' %s' % region[1]['vma']['offset']
+          precedence += ' %s:' % region[1]['vma']['major']
+          precedence += '%s' % region[1]['vma']['minor']
+          precedence += ' %s' % region[1]['vma']['inode']
+          precedence += '   %s' % region[1]['vma']['name']
+          if not precedence in sizes:
+            sizes[precedence] = 0
+          sizes[precedence] += region[1]['committed']
