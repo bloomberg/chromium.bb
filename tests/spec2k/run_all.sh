@@ -68,7 +68,7 @@ readonly TC_BASE="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_${BUILD_ARCH_SHORT}"
 readonly ARM_TRUSTED_TC="${TC_BASE}/arm_trusted"
 readonly QEMU_TOOL="${ARM_TRUSTED_TC}/run_under_qemu_arm"
 
-readonly ARM_LLC_NEXE="${TC_BASE}/pnacl_translator/armv7/bin/pnacl-llc.nexe"
+readonly ARM_LLC_NEXE="${TC_BASE}/pnacl_translator/translator/arm/bin/pnacl-llc.nexe"
 
 readonly NNACL_TC="${TC_BASE}/nacl_${BUILD_ARCH_SHORT}_glibc"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/x86_64-nacl/lib32/runnable-ld.so"
