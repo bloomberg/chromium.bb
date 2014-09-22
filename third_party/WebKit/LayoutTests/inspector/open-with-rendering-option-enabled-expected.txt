@@ -1,15 +1,15 @@
 This test checks load with rendering options turned on by default.
 
 Loaded modules:
-    common
-    host
-    sdk
-    ui
-    components
-    workspace
     bindings
-    screencast
-    toolbox
-    main
+    common
+    components
     elements
+    host
+    main
+    screencast
+    sdk
+    toolbox
+    ui
+    workspace
 

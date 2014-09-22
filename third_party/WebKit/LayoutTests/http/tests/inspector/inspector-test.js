@@ -576,12 +576,17 @@ InspectorTest.TempFileMock.prototype = {
 
 InspectorTest.dumpLoadedModules = function(next)
 {
+    function moduleSorter(left, right)
+    {
+        return String.naturalOrderComparator(left._descriptor.name, right._descriptor.name);
+    }
+
     InspectorTest.addResult("Loaded modules:");
     var modules = self.runtime._modules;
+    modules.sort(moduleSorter);
     for (var i = 0; i < modules.length; ++i) {
-        if (modules[i]._loaded) {
+        if (modules[i]._loaded)
             InspectorTest.addResult("    " + modules[i]._descriptor.name);
-        }
     }
     if (next)
         next();
