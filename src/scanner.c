@@ -1296,8 +1296,14 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "fread: %m\n");
 			exit(EXIT_FAILURE);
 		}
-		XML_ParseBuffer(ctx.parser, len, len == 0);
-
+		if (XML_ParseBuffer(ctx.parser, len, len == 0) == 0) {
+			fprintf(stderr,
+				"Error parsing XML at line %ld col %ld: %s\n",
+				XML_GetCurrentLineNumber(ctx.parser),
+				XML_GetCurrentColumnNumber(ctx.parser),
+				XML_ErrorString(XML_GetErrorCode(ctx.parser)));
+			exit(EXIT_FAILURE);
+		}
 	} while (len > 0);
 
 	XML_ParserFree(ctx.parser);
