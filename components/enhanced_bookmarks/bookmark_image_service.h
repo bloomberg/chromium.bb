@@ -38,6 +38,9 @@ class BookmarkImageService : public KeyedService,
 
   typedef base::Callback<void(const gfx::Image&, const GURL& url)> Callback;
 
+  // KeyedService:
+  virtual void Shutdown() OVERRIDE;
+
   // Returns a salient image for a URL. This may trigger a network request for
   // the image if the image was not retrieved before and if a bookmark node has
   // a URL for this salient image available.  The image (which may be empty) is

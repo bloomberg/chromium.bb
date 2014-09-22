@@ -38,7 +38,7 @@ class EnhancedBookmarkModel : public KeyedService,
                         const std::string& version);
   virtual ~EnhancedBookmarkModel();
 
-  virtual void ShutDown();
+  virtual void Shutdown() OVERRIDE;
 
   void AddObserver(EnhancedBookmarkModelObserver* observer);
   void RemoveObserver(EnhancedBookmarkModelObserver* observer);

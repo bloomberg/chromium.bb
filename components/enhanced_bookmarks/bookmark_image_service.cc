@@ -83,11 +83,16 @@ BookmarkImageService::BookmarkImageService(
 
 BookmarkImageService::~BookmarkImageService() {
   DCHECK(CalledOnValidThread());
-  enhanced_bookmark_model_->bookmark_model()->RemoveObserver(this);
   pool_->PostNamedSequencedWorkerTask(
       kSequenceToken,
       FROM_HERE,
       base::Bind(&DeleteImageStore, store_.release()));
+}
+
+void BookmarkImageService::Shutdown() {
+  DCHECK(CalledOnValidThread());
+  enhanced_bookmark_model_->bookmark_model()->RemoveObserver(this);
+  enhanced_bookmark_model_ = NULL;
 }
 
 void BookmarkImageService::SalientImageForUrl(const GURL& page_url,

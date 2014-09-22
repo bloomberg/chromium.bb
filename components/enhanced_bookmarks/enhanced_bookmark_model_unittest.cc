@@ -51,7 +51,7 @@ class EnhancedBookmarkModelTest
 
   virtual void TearDown() OVERRIDE {
     if (model_)
-      model_->ShutDown();
+      model_->Shutdown();
     model_.reset();
     bookmark_model_.reset();
     bookmark_client_.reset();
@@ -447,7 +447,7 @@ TEST_F(EnhancedBookmarkModelTest, TestVersionField) {
 
 // Verifies that duplicate nodes are reset when the model is created.
 TEST_F(EnhancedBookmarkModelTest, ResetDuplicateNodesOnInitialization) {
-  model_->ShutDown();
+  model_->Shutdown();
 
   const BookmarkNode* parent = bookmark_model_->other_node();
   const BookmarkNode* node1 = bookmark_model_->AddURL(
@@ -563,7 +563,7 @@ TEST_F(EnhancedBookmarkModelTest, SetMultipleMetaInfo) {
 
 TEST_F(EnhancedBookmarkModelTest, ObserverShuttingDownEvent) {
   EXPECT_EQ(0, shutting_down_calls_);
-  model_->ShutDown();
+  model_->Shutdown();
   EXPECT_EQ(1, shutting_down_calls_);
   model_.reset();
 }
@@ -645,7 +645,7 @@ TEST_F(EnhancedBookmarkModelTest, ShutDownWhileResetDuplicationScheduled) {
   const BookmarkNode* node2 = AddBookmark();
   bookmark_model_->SetNodeMetaInfo(node1, "stars.id", "c_1");
   bookmark_model_->SetNodeMetaInfo(node2, "stars.id", "c_1");
-  model_->ShutDown();
+  model_->Shutdown();
   model_.reset();
   base::RunLoop().RunUntilIdle();
 }

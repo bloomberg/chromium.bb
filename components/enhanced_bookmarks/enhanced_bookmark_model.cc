@@ -93,7 +93,7 @@ EnhancedBookmarkModel::EnhancedBookmarkModel(BookmarkModel* bookmark_model,
 EnhancedBookmarkModel::~EnhancedBookmarkModel() {
 }
 
-void EnhancedBookmarkModel::ShutDown() {
+void EnhancedBookmarkModel::Shutdown() {
   FOR_EACH_OBSERVER(EnhancedBookmarkModelObserver,
                     observers_,
                     EnhancedBookmarkModelShuttingDown());
