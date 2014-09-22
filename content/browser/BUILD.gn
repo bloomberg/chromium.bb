@@ -249,8 +249,6 @@ source_set("browser") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
-  } else {
-    sources -= [ "renderer_host/web_input_event_aurax11.cc" ]
   }
 
   # Dealing with power_save_blocker_{x11,ozone}.cc is a little complicated
