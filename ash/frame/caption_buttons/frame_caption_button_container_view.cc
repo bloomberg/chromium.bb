@@ -322,15 +322,6 @@ bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
 
 void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
                                                     const ui::Event& event) {
-  // When shift-clicking, slow down animations for visual debugging.
-  // We used to do this via an event filter that looked for the shift key being
-  // pressed but this interfered with several normal keyboard shortcuts.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> slow_duration_mode;
-  if (event.IsShiftDown()) {
-    slow_duration_mode.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
-  }
-
   // Abort any animations of the button icons.
   SetButtonsToNormal(ANIMATE_NO);
 
