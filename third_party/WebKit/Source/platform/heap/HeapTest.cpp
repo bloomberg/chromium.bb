@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "platform/Task.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapLinkedStack.h"
@@ -418,8 +419,11 @@ class ThreadedTesterBase {
 protected:
     static void test(ThreadedTesterBase* tester)
     {
-        for (int i = 0; i < numberOfThreads; i++)
-            createThread(&threadFunc, tester, "testing thread");
+        Vector<OwnPtr<WebThread>, numberOfThreads> m_threads;
+        for (int i = 0; i < numberOfThreads; i++) {
+            m_threads.append(adoptPtr(Platform::current()->createThread("blink gc testing thread")));
+            m_threads.last()->postTask(new Task(WTF::bind(threadFunc, tester)));
+        }
         while (tester->m_threadsToFinish) {
             ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             yield();
@@ -3949,7 +3953,8 @@ class GCParkingThreadTester {
 public:
     static void test()
     {
-        createThread(&sleeperMainFunc, 0, "SleepingThread");
+        OwnPtr<WebThread> sleepingThread = adoptPtr(Platform::current()->createThread("SleepingThread"));
+        sleepingThread->postTask(new Task(WTF::bind(sleeperMainFunc)));
 
         // Wait for the sleeper to run.
         while (!s_sleeperRunning) {
@@ -3971,6 +3976,7 @@ public:
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             yield();
         }
+
         {
             // Since the sleeper thread has detached this is the only thread.
             TestGCScope scope(ThreadState::NoHeapPointersOnStack);
@@ -3979,7 +3985,7 @@ public:
     }
 
 private:
-    static void sleeperMainFunc(void* data)
+    static void sleeperMainFunc()
     {
         ThreadState::attach();
         s_sleeperRunning = true;
@@ -4644,7 +4650,8 @@ public:
         IntWrapper::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        createThread(&workerThreadMain, 0, "Worker Thread");
+        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        workerThread->postTask(new Task(WTF::bind(workerThreadMain)));
 
         parkMainThread();
 
@@ -4702,7 +4709,7 @@ public:
     }
 
 private:
-    static void workerThreadMain(void* data)
+    static void workerThreadMain()
     {
         MutexLocker locker(workerThreadMutex());
         ThreadState::attach();
@@ -4747,7 +4754,8 @@ public:
         IntWrapper::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        createThread(&workerThreadMain, 0, "Worker Thread");
+        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        workerThread->postTask(new Task(WTF::bind(workerThreadMain)));
 
         // Wait for the worker thread to have done its initialization,
         // IE. the worker allocates an object and then throw aways any
@@ -4796,7 +4804,7 @@ public:
 
 private:
 
-    static void workerThreadMain(void* data)
+    static void workerThreadMain()
     {
         MutexLocker locker(workerThreadMutex());
 
@@ -4849,7 +4857,8 @@ public:
         IntWrapper::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        createThread(&workerThreadMain, 0, "Worker Thread");
+        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        workerThread->postTask(new Task(WTF::bind(workerThreadMain)));
 
         // Wait for the worker thread initialization. The worker
         // allocates a weak collection where both collection and
@@ -4914,7 +4923,7 @@ private:
         return weakCollection;
     }
 
-    static void workerThreadMain(void* data)
+    static void workerThreadMain()
     {
         MutexLocker locker(workerThreadMutex());
 
@@ -5032,7 +5041,8 @@ public:
         DestructorLockingObject::s_destructorCalls = 0;
 
         MutexLocker locker(mainThreadMutex());
-        createThread(&workerThreadMain, 0, "Worker Thread");
+        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        workerThread->postTask(new Task(WTF::bind(workerThreadMain)));
 
         // Park the main thread until the worker thread has initialized.
         parkMainThread();
@@ -5058,7 +5068,7 @@ public:
     }
 
 private:
-    static void workerThreadMain(void* data)
+    static void workerThreadMain()
     {
         MutexLocker locker(workerThreadMutex());
         ThreadState::attach();
