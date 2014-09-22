@@ -1727,20 +1727,6 @@
    fun:main
 }
 {
-   bug_94195
-   Memcheck:Leak
-   ...
-   fun:_ZN12GpuBlacklist16LoadGpuBlacklistERKSsNS_8OsFilterE
-}
-{
-   bug_94345
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK4base8internal18WeakReferenceOwner6GetRefEv
-   fun:_ZN4base15SupportsWeakPtrI16ObserverListBaseIN11MessageLoop12TaskObserverEEE9AsWeakPtrEv
-   fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE8IteratorC1ERS2_
-}
-{
    bug_94764
    Memcheck:Leak
    fun:_Znw*
@@ -1765,61 +1751,11 @@
    fun:_ZN11PluginPrefs19OnUpdatePreferencesESt6vectorIN6webkit13WebPluginInfoESaIS2_EES0_INS1_5npapi11PluginGroupESaIS6_EE
 }
 {
-   bug_96069
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net9HttpCache13CreateBackendEPPN10disk_cache7BackendEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net9HttpCache17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
-   ...
-   fun:_ZN3net13CookieMonster17CookieMonsterTask14InvokeCallbackEN4base8CallbackIFvvEEE
-}
-{
-   bug_96568a
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:HB_OpenType*
-   ...
-   fun:HB_ShapeItem
-   fun:_ZN5blink21ComplexTextController11shapeGlyphsEv
-   fun:_ZN5blink21ComplexTextController13nextScriptRunEv
-}
-{
-   bug_96568b
-   Memcheck:Leak
-   ...
-   fun:HB_NewFace
-   fun:_ZN5blinkL21getCachedHarfbuzzFaceEPNS_16FontPlatformDataE
-   fun:_ZN5blink12HarfbuzzFaceC1EPNS_16FontPlatformDataE
-   fun:_ZN5blink12HarfbuzzFace6createEPNS_16FontPlatformDataE
-   fun:_ZNK7blink16FontPlatformData12harfbuzzFaceEv
-   fun:_ZN5blink21ComplexTextController21setupFontForScriptRunEv
-}
-{
-   bug_98568
-   Memcheck:Leak
-   ...
-   fun:_ZN44WebDragDestGtkTest_NoTabContentsWrapper_Test8TestBodyEv
-}
-{
    bug_98867
    Memcheck:Jump
    obj:*
    obj:*
    obj:*
-}
-{
-   bug_99304
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN2v88internal10PagedSpace11AllocateRawEi
-   fun:_ZN2v88internal12Deserializer8AllocateEiPNS0_5SpaceEi
-   fun:_ZN2v88internal12Deserializer10ReadObjectEiPNS0_5SpaceEPPNS0_6ObjectE
-   fun:_ZN2v88internal12Deserializer9ReadChunkEPPNS0_6ObjectES4_iPh
-   fun:_ZN2v88internal12Deserializer10ReadObjectEiPNS0_5SpaceEPPNS0_6ObjectE
-   fun:_ZN2v88internal12Deserializer9ReadChunkEPPNS0_6ObjectES4_iPh
-   fun:_ZN2v88internal12Deserializer13VisitPointersEPPNS0_6ObjectES4_
 }
 {
    bug_99307
@@ -1828,32 +1764,6 @@
    fun:_ZN4base12Base64Encode*
    fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
    fun:_ZN12_GLOBAL__N_121NetworkInfoDictionary8set_iconERK8SkBitmap
-}
-{
-   bug_99308
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZL9toCStringRK9_NPString
-   fun:_ZL15testPostURLFileP12PluginObjectPK10_NPVariantjPS1_
-   fun:_ZL12pluginInvokeP8NPObjectPvPK10_NPVariantjPS2_
-   fun:_ZN5blinkL18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
-}
-{
-   bug_99321
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink12CCThreadImpl6createEPNS_9WebThreadE
-   fun:_ZN5blink13WebCompositor9setThreadEPNS_9WebThreadE
-   fun:_ZN11WebViewHostC1EP9TestShell
-   fun:_ZN9TestShell15createNewWindowERKN5blink6WebURLEP16DRTDevToolsAgent
-}
-{
-   bug_99435
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN4base11MessageLoop11RunInternalEv
-   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    bug_100982
