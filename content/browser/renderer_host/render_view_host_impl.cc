@@ -486,15 +486,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   return prefs;
 }
 
-void RenderViewHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
-  TRACE_EVENT0("renderer_host,navigation", "RenderViewHostImpl::Navigate");
-  delegate_->GetFrameTree()->GetMainFrame()->Navigate(params);
-}
-
-void RenderViewHostImpl::NavigateToURL(const GURL& url) {
-  delegate_->GetFrameTree()->GetMainFrame()->NavigateToURL(url);
-}
-
 void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
   Send(new ViewMsg_SuppressDialogsUntilSwapOut(GetRoutingID()));
 }

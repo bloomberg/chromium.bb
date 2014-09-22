@@ -236,22 +236,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Returns the content specific prefs for this RenderViewHost.
   WebPreferences ComputeWebkitPrefs(const GURL& url);
 
-  // Sends the given navigation message. Use this rather than sending it
-  // yourself since this does the internal bookkeeping described below. This
-  // function takes ownership of the provided message pointer.
-  //
-  // If a cross-site request is in progress, we may be suspended while waiting
-  // for the onbeforeunload handler, so this function might buffer the message
-  // rather than sending it.
-  // TODO(nasko): Remove this method once all callers are converted to use
-  // RenderFrameHostImpl.
-  void Navigate(const FrameMsg_Navigate_Params& message);
-
-  // Load the specified URL, this is a shortcut for Navigate().
-  // TODO(nasko): Remove this method once all callers are converted to use
-  // RenderFrameHostImpl.
-  void NavigateToURL(const GURL& url);
-
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
   bool IsSwappedOut() const { return rvh_state_ == STATE_SWAPPED_OUT; }
