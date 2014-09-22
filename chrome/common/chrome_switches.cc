@@ -759,9 +759,6 @@ const char kInstantProcess[]                = "instant-process";
 // enabled.
 const char kInvalidationUseGCMChannel[]     = "invalidation-use-gcm-channel";
 
-// Enables experimental Harmony (ECMAScript 6) features.
-const char kJavaScriptHarmony[]             = "javascript-harmony";
-
 // Specifies the testcase used by the IPC fuzzer.
 const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
 

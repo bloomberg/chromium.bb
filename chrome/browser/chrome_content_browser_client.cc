@@ -1359,7 +1359,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableShowModalDialog,
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWebBasedSignin,
-      switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
       switches::kOutOfProcessPdf,
       switches::kPlaybackMode,

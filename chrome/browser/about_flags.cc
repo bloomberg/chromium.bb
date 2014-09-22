@@ -806,7 +806,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME,
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kJavaScriptHarmony)
+    SINGLE_VALUE_TYPE_AND_VALUE(switches::kJavaScriptFlags, "--harmony")
   },
   {
     "disable-software-rasterizer",
