@@ -150,6 +150,7 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(T* object
 
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplate(ScriptWrappable* impl, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
+    wrapperTypeInfo->refObject(impl->toScriptWrappableBase());
 #if ENABLE(OILPAN)
     if (wrapperTypeInfo->gcType == WrapperTypeInfo::RefCountedObject)
         setNativeInfo(wrapper, wrapperTypeInfo, impl->toScriptWrappableBase());
@@ -168,6 +169,7 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplat
 
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplate(Node* node, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
+    wrapperTypeInfo->refObject(ScriptWrappable::fromObject(node)->toScriptWrappableBase());
 #if ENABLE(OILPAN)
     if (wrapperTypeInfo->gcType == WrapperTypeInfo::RefCountedObject)
         setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toScriptWrappableBase());

@@ -5778,7 +5778,6 @@ v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8
 
 v8::Handle<v8::Object> Document::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    wrapperType->refObject(toScriptWrappableBase());
     V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
     if (world.isMainWorld() && frame())

@@ -40,9 +40,7 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
 
 v8::Handle<v8::Object> ScriptWrappable::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    wrapperType->refObject(toScriptWrappableBase());
-    V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
-    return wrapper;
+    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
 }
 
 } // namespace blink
