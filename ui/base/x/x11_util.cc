@@ -994,23 +994,34 @@ void SetWindowRole(XDisplay* display, XID window, const std::string& role) {
 }
 
 bool GetCustomFramePrefDefault() {
-  // Ideally, we'd use the custom frame by default and just fall back on using
-  // system decorations for the few (?) tiling window managers where the custom
-  // frame doesn't make sense (e.g. awesome, ion3, ratpoison, xmonad, etc.) or
-  // other WMs where it has issues (e.g. Fluxbox -- see issue 19130).  The EWMH
-  // _NET_SUPPORTING_WM property makes it easy to look up a name for the current
-  // WM, but at least some of the WMs in the latter group don't set it.
-  // Instead, we default to using system decorations for all WMs and
-  // special-case the ones where the custom frame should be used.
-  ui::WindowManagerName wm_type = GuessWindowManager();
-  return (wm_type == WM_BLACKBOX ||
-          wm_type == WM_COMPIZ ||
-          wm_type == WM_ENLIGHTENMENT ||
-          wm_type == WM_METACITY ||
-          wm_type == WM_MUFFIN ||
-          wm_type == WM_MUTTER ||
-          wm_type == WM_OPENBOX ||
-          wm_type == WM_XFWM4);
+  // If the window manager doesn't support enough of EWMH to tell us its name,
+  // assume that it doesn't want custom frames. For example, _NET_WM_MOVERESIZE
+  // is needed for frame-drag-initiated window movement.
+  std::string wm_name;
+  if (!GetWindowManagerName(&wm_name))
+    return false;
+
+  // Also disable custom frames for (at-least-partially-)EWMH-supporting tiling
+  // window managers.
+  ui::WindowManagerName wm = GuessWindowManager();
+  if (wm == WM_AWESOME ||
+      wm == WM_I3 ||
+      wm == WM_ION3 ||
+      wm == WM_MATCHBOX ||
+      wm == WM_NOTION ||
+      wm == WM_QTILE ||
+      wm == WM_RATPOISON ||
+      wm == WM_STUMPWM)
+    return false;
+
+  // Handle a few more window managers that don't get along well with custom
+  // frames.
+  if (wm == WM_ICE_WM ||
+      wm == WM_KWIN)
+    return false;
+
+  // For everything else, use custom frames.
+  return true;
 }
 
 bool GetWindowDesktop(XID window, int* desktop) {
