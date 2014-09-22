@@ -383,7 +383,9 @@ cr.define('print_preview', function() {
       });
     },
 
-    /** @param {!print_preview.Destination} Destination to select. */
+    /**
+     * @param {!print_preview.Destination} destination Destination to select.
+     */
     selectDestination: function(destination) {
       this.isInAutoSelectMode_ = false;
       // When auto select expires, DESTINATION_SELECT event has to be dispatched
@@ -716,7 +718,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the local destinations have been got from the native layer.
-     * @param {Event} Contains the local destinations.
+     * @param {Event} event Contains the local destinations.
      * @private
      */
     onLocalDestinationsSet_: function(event) {

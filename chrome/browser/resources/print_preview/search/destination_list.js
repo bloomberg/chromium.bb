@@ -121,7 +121,8 @@ cr.define('print_preview', function() {
     /**
      * Gets estimated height of the destination list for the given number of
      * items.
-     * @param {number} Number of items to render in the destination list.
+     * @param {number} numItems Number of items to render in the destination
+     *     list.
      * @return {number} Height (in pixels) of the destination list.
      */
     getEstimatedHeightInPixels: function(numItems) {

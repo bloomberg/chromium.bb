@@ -11,8 +11,6 @@ cr.define('print_preview', function() {
    *     events to.
    * @param {!print_preview.PrintTicketStore} printTicketStore Contains the
    *     print ticket to print.
-   * @param {!print_preview.Destination} destination Destination data object to
-   *     render.
    * @param {!Object} capability Capability to render.
    * @constructor
    * @extends {print_preview.Component}

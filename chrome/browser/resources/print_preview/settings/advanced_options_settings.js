@@ -49,7 +49,7 @@ cr.define('print_preview', function() {
       return this.isAvailable();
     },
 
-    /** @param {boolean} Whether the component is enabled. */
+    /** @param {boolean} isEnabled Whether the component is enabled. */
     set isEnabled(isEnabled) {
       this.getButton_().disabled = !isEnabled;
     },

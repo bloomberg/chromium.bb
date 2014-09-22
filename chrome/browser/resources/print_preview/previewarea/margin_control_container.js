@@ -153,7 +153,7 @@ cr.define('print_preview', function() {
 
     /**
      * Clips margin controls to the given clip size in pixels.
-     * @param {print_preview.Size} Size to clip the margin controls to.
+     * @param {print_preview.Size} clipSize Size to clip the margin controls to.
      */
     updateClippingMask: function(clipSize) {
       if (!clipSize) {

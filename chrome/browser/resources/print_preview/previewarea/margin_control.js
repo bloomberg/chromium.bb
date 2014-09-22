@@ -265,7 +265,7 @@ cr.define('print_preview', function() {
 
     /**
      * Converts a value in pixels to points.
-     * @param {number} Pixel value to convert.
+     * @param {number} pixels Pixel value to convert.
      * @return {number} Given value expressed in points.
      */
     convertPixelsToPts: function(pixels) {

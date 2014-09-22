@@ -200,7 +200,7 @@ cr.define('print_preview', function() {
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
-     * @param {number} ID of the preview request.
+     * @param {number} requestId ID of the preview request.
      */
     startGetPreview: function(
         destination, printTicketStore, documentInfo, requestId) {
@@ -435,7 +435,8 @@ cr.define('print_preview', function() {
 
     /**
      * Turn on the integration of Cloud Print.
-     * @param {string} cloudPrintURL The URL to use for cloud print servers.
+     * @param {{cloudPrintURL: string, appKioskMode: string}} settings
+     *     cloudPrintUrl: The URL to use for cloud print servers.
      * @private
      */
     onSetUseCloudPrint_: function(settings) {
@@ -474,7 +475,7 @@ cr.define('print_preview', function() {
     /**
      * Called when native layer gets settings information for a requested local
      * destination.
-     * @param {string} printerId printer affected by error.
+     * @param {string} destinationId Printer affected by error.
      * @private
      */
     onFailedToGetPrinterCapabilities_: function(destinationId) {
@@ -489,7 +490,7 @@ cr.define('print_preview', function() {
     /**
      * Called when native layer gets settings information for a requested privet
      * destination.
-     * @param {string} printerId printer affected by error.
+     * @param {string} destinationId Printer affected by error.
      * @private
      */
     onFailedToGetPrivetPrinterCapabilities_: function(destinationId) {

@@ -49,7 +49,7 @@ PDFScriptingAPI.prototype = {
    * Send a message to the extension. If we try to send messages prior to the
    * extension being ready to receive messages (i.e. before it has finished
    * loading) we queue up the messages and flush them later.
-   * @param {Object} the message to send.
+   * @param {Object} message The message to send.
    */
   sendMessage_: function(message) {
     if (!this.pdfWindow_) {

@@ -519,7 +519,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when a native layer receives access token.
-     * @param {Event} evt Contains the authentication type and access token.
+     * @param {Event} event Contains the authentication type and access token.
      * @private
      */
     onAccessTokenReady_: function(event) {

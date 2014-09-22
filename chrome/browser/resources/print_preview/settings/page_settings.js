@@ -144,7 +144,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {boolean} Whether the custom hint is visible.
+     * @param {boolean} isVisible Whether the custom hint is visible.
      * @private
      */
     setInvalidStateVisible_: function(isVisible) {

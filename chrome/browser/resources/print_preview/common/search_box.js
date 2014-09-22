@@ -51,7 +51,7 @@ cr.define('print_preview', function() {
   SearchBox.prototype = {
     __proto__: print_preview.Component.prototype,
 
-    /** @param {string} New query to set the search box's query to. */
+    /** @param {string} query New query to set the search box's query to. */
     setQuery: function(query) {
       query = query || '';
       this.input_.value = query.trim();

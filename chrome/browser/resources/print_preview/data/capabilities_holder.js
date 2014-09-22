@@ -24,7 +24,10 @@ cr.define('print_preview', function() {
       return this.capabilities_;
     },
 
-    /** @param {!print_preview.Cdd} New instance to put into the holder. */
+    /**
+     * @param {!print_preview.Cdd} capabilities New instance to put into the
+     *     holder.
+     */
     set: function(capabilities) {
       this.capabilities_ = capabilities;
     }

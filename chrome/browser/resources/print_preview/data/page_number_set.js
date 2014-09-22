@@ -35,7 +35,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {number} 1-based page number to check for.
+     * @param {number} pageNumber 1-based page number to check for.
      * @return {boolean} Whether the given page number is in the page range.
      */
     hasPageNumber: function(pageNumber) {
@@ -43,7 +43,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {number} 1-based number of the page to get index of.
+     * @param {number} pageNumber 1-based number of the page to get index of.
      * @return {number} 0-based index of the given page number with respect to
      *     all of the pages in the page range.
      */

@@ -556,13 +556,6 @@ cr.define('print_preview', function() {
      * Called when the open-system-dialog button is clicked. Disables the
      * button, shows the throbber, and dispatches the OPEN_SYSTEM_DIALOG_CLICK
      * event.
-     * @param {number} pageX the x-coordinate of the page relative to the
-     *     screen.
-     * @param {number} pageY the y-coordinate of the page relative to the
-     *     screen.
-     * @param {number} pageWidth the width of the page on the screen.
-     * @param {number} viewportWidth the width of the viewport.
-     * @param {number} viewportHeight the height of the viewport.
      * @private
      */
     onOpenSystemDialogButtonClick_: function() {
@@ -594,7 +587,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the preview generator begins loading the preview.
-     * @param {Event} Contains the URL to initialize the plugin to.
+     * @param {Event} event Contains the URL to initialize the plugin to.
      * @private
      */
     onPreviewStart_: function(event) {
