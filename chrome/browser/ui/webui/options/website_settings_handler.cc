@@ -676,10 +676,16 @@ void WebsiteSettingsHandler::UpdateBatteryUsage() {
 
     base::DictionaryValue* origin_entry = new base::DictionaryValue();
     origin_entry->SetInteger("usage", it->second);
-    origin_entry->SetString(
-        "usageString",
-        l10n_util::GetStringFUTF16Int(IDS_WEBSITE_SETTINGS_BATTERY_PERCENT,
-                                      it->second));
+    if (it->second == 0) {
+      origin_entry->SetString(
+          "usageString",
+          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_BATTERY_ZERO_PERCENT));
+    } else {
+      origin_entry->SetString(
+          "usageString",
+          l10n_util::GetStringFUTF16Int(IDS_WEBSITE_SETTINGS_BATTERY_PERCENT,
+                                        it->second));
+    }
     origin_entry->SetStringWithoutPathExpansion("readableName",
                                                 GetReadableName(it->first));
     power_map.SetWithoutPathExpansion(origin, origin_entry);
