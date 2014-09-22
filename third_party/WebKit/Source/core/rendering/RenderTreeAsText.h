@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class Color;
 class Element;
 class LayoutRect;
 class LocalFrame;
@@ -74,6 +75,8 @@ String counterValueForElement(Element*);
 String markerTextForListItem(Element*);
 
 String nodePositionAsStringForTesting(Node*);
+
+TextStream& operator<<(TextStream&, const Color&);
 
 } // namespace blink
 

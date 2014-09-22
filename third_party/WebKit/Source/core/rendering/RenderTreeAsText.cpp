@@ -158,6 +158,11 @@ String quoteAndEscapeNonPrintables(const String& s)
     return result.toString();
 }
 
+TextStream& operator<<(TextStream& ts, const Color& c)
+{
+    return ts << c.nameForRenderTreeAsText();
+}
+
 void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, RenderAsTextBehavior behavior)
 {
     ts << o.renderName();
@@ -221,23 +226,23 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         if (o.parent()) {
             Color color = o.resolveColor(CSSPropertyColor);
             if (o.parent()->resolveColor(CSSPropertyColor) != color)
-                ts << " [color=" << color.nameForRenderTreeAsText() << "]";
+                ts << " [color=" << color << "]";
 
             // Do not dump invalid or transparent backgrounds, since that is the default.
             Color backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
             if (o.parent()->resolveColor(CSSPropertyBackgroundColor) != backgroundColor
                 && backgroundColor.rgb())
-                ts << " [bgcolor=" << backgroundColor.nameForRenderTreeAsText() << "]";
+                ts << " [bgcolor=" << backgroundColor << "]";
 
             Color textFillColor = o.resolveColor(CSSPropertyWebkitTextFillColor);
             if (o.parent()->resolveColor(CSSPropertyWebkitTextFillColor) != textFillColor
                 && textFillColor != color && textFillColor.rgb())
-                ts << " [textFillColor=" << textFillColor.nameForRenderTreeAsText() << "]";
+                ts << " [textFillColor=" << textFillColor << "]";
 
             Color textStrokeColor = o.resolveColor(CSSPropertyWebkitTextStrokeColor);
             if (o.parent()->resolveColor(CSSPropertyWebkitTextStrokeColor) != textStrokeColor
                 && textStrokeColor != color && textStrokeColor.rgb())
-                ts << " [textStrokeColor=" << textStrokeColor.nameForRenderTreeAsText() << "]";
+                ts << " [textStrokeColor=" << textStrokeColor << "]";
 
             if (o.parent()->style()->textStrokeWidth() != o.style()->textStrokeWidth() && o.style()->textStrokeWidth() > 0)
                 ts << " [textStrokeWidth=" << o.style()->textStrokeWidth() << "]";
@@ -256,8 +261,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
             else {
                 ts << " (" << box.borderTop() << "px ";
                 printBorderStyle(ts, o.style()->borderTopStyle());
-                Color col = o.resolveColor(CSSPropertyBorderTopColor);
-                ts << col.nameForRenderTreeAsText() << ")";
+                ts << o.resolveColor(CSSPropertyBorderTopColor) << ")";
             }
 
             if (o.style()->borderRight() != prevBorder) {
@@ -267,8 +271,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderRight() << "px ";
                     printBorderStyle(ts, o.style()->borderRightStyle());
-                    Color col = o.resolveColor(CSSPropertyBorderRightColor);
-                    ts << col.nameForRenderTreeAsText() << ")";
+                    ts << o.resolveColor(CSSPropertyBorderRightColor) << ")";
                 }
             }
 
@@ -279,8 +282,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderBottom() << "px ";
                     printBorderStyle(ts, o.style()->borderBottomStyle());
-                    Color col = o.resolveColor(CSSPropertyBorderBottomColor);
-                    ts << col.nameForRenderTreeAsText() << ")";
+                    ts << o.resolveColor(CSSPropertyBorderBottomColor) << ")";
                 }
             }
 
@@ -291,8 +293,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderLeft() << "px ";
                     printBorderStyle(ts, o.style()->borderLeftStyle());
-                    Color col = o.resolveColor(CSSPropertyBorderLeftColor);
-                    ts << col.nameForRenderTreeAsText() << ")";
+                    ts << o.resolveColor(CSSPropertyBorderLeftColor) << ")";
                 }
             }
 

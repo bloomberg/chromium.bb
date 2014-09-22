@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class Color;
 class RenderObject;
 class RenderSVGGradientStop;
 class RenderSVGImage;
@@ -38,7 +37,6 @@ class RenderSVGInlineText;
 class RenderSVGShape;
 class RenderSVGRoot;
 class RenderSVGText;
-class AffineTransform;
 
 // functions used by the main RenderTreeAsText code
 void write(TextStream&, const RenderSVGShape&, int indent);
@@ -50,35 +48,6 @@ void writeSVGImage(TextStream&, const RenderSVGImage&, int indent);
 void writeSVGInlineText(TextStream&, const RenderSVGInlineText&, int indent);
 void writeSVGText(TextStream&, const RenderSVGText&, int indent);
 void writeResources(TextStream&, const RenderObject&, int indent);
-
-// helper operators defined used in various classes to dump the render tree.
-TextStream& operator<<(TextStream&, const AffineTransform&);
-TextStream& operator<<(TextStream&, const Color&);
-
-// helper operators specific to dumping the render tree. these are used in various classes to dump the render tree
-// these could be defined in separate namespace to avoid matching these generic signatures unintentionally.
-
-template<typename Item>
-TextStream& operator<<(TextStream& ts, const Vector<Item*>& v)
-{
-    ts << "[";
-
-    for (unsigned i = 0; i < v.size(); i++) {
-        ts << *v[i];
-        if (i < v.size() - 1)
-            ts << ", ";
-    }
-
-    ts << "]";
-    return ts;
-}
-
-template<typename Pointer>
-TextStream& operator<<(TextStream& ts, Pointer* t)
-{
-    ts << reinterpret_cast<intptr_t>(t);
-    return ts;
-}
 
 } // namespace blink
 

@@ -192,12 +192,7 @@ static TextStream& operator<<(TextStream& ts, const SVGMarkerOrientType& orientT
     return ts;
 }
 
-TextStream& operator<<(TextStream& ts, const Color& c)
-{
-    return ts << c.nameForRenderTreeAsText();
-}
-
-// FIXME: Maybe this should be in KCanvasRenderingStyle.cpp
+// FIXME: Maybe this should be in DashArray.cpp
 static TextStream& operator<<(TextStream& ts, const DashArray& a)
 {
     ts << "{";
