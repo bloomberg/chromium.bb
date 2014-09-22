@@ -88,13 +88,13 @@ DeviceStatusCollector::DeviceStatusCollector(
       duration_for_last_reported_day_(0),
       geolocation_update_in_progress_(false),
       statistics_provider_(provider),
-      weak_factory_(this),
       report_version_info_(false),
       report_activity_times_(false),
       report_boot_mode_(false),
       report_location_(false),
       report_network_interfaces_(false),
-      report_users_(false) {
+      report_users_(false),
+      weak_factory_(this) {
   if (location_update_requester)
     location_update_requester_ = *location_update_requester;
   idle_poll_timer_.Start(FROM_HERE,

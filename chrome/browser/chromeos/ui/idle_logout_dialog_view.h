@@ -77,9 +77,9 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
 
   base::RepeatingTimer<IdleLogoutDialogView> timer_;
 
-  base::WeakPtrFactory<IdleLogoutDialogView> weak_ptr_factory_;
-
   static IdleLogoutSettingsProvider* provider_;
+
+  base::WeakPtrFactory<IdleLogoutDialogView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleLogoutDialogView);
 };

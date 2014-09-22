@@ -29,10 +29,10 @@ namespace chromeos {
 
 SessionManagerOperation::SessionManagerOperation(const Callback& callback)
     : session_manager_client_(NULL),
-      weak_factory_(this),
       callback_(callback),
       force_key_load_(false),
-      is_loading_(false) {}
+      is_loading_(false),
+      weak_factory_(this) {}
 
 SessionManagerOperation::~SessionManagerOperation() {}
 

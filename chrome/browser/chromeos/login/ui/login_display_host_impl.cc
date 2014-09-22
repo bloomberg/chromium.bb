@@ -283,10 +283,10 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       crash_count_(0),
       restore_path_(RESTORE_UNKNOWN),
       finalize_animation_type_(ANIMATION_WORKSPACE),
-      animation_weak_ptr_factory_(this),
       startup_sound_played_(false),
       startup_sound_honors_spoken_feedback_(false),
-      is_observing_keyboard_(false) {
+      is_observing_keyboard_(false),
+      animation_weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
   if (keyboard::KeyboardController::GetInstance()) {

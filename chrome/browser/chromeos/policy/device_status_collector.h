@@ -165,8 +165,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
 
   chromeos::CrosSettings* cros_settings_;
 
-  base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
-
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.
   LocationUpdateRequester location_update_requester_;
@@ -194,6 +192,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       network_interfaces_subscription_;
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       users_subscription_;
+
+  base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

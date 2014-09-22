@@ -298,8 +298,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   FinalizeAnimationType finalize_animation_type_;
 
-  base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
-
   // Time when login prompt visible signal is received. Used for
   // calculations of delay before startup sound.
   base::TimeTicks login_prompt_visible_time_;
@@ -322,6 +320,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 #if defined(USE_ATHENA)
   scoped_ptr<aura::Window> login_screen_container_;
 #endif
+
+  base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };

@@ -128,8 +128,6 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   const std::string username_;
   base::FilePath user_policy_key_dir_;
 
-  base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
-
   // TODO(mnissler): Remove all the legacy policy support members below after
   // the number of pre-M20 clients drops back to zero.
   base::FilePath legacy_cache_dir_;
@@ -139,6 +137,8 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   bool policy_key_loaded_;
   base::FilePath policy_key_path_;
   std::string policy_key_;
+
+  base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOS);
 };

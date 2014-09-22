@@ -164,9 +164,9 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   scoped_ptr<base::OneShotTimer<AutomaticRebootManager> > grace_start_timer_;
   scoped_ptr<base::OneShotTimer<AutomaticRebootManager> > grace_end_timer_;
 
-  base::WeakPtrFactory<AutomaticRebootManager> weak_ptr_factory_;
-
   ObserverList<AutomaticRebootManagerObserver, true> observers_;
+
+  base::WeakPtrFactory<AutomaticRebootManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticRebootManager);
 };

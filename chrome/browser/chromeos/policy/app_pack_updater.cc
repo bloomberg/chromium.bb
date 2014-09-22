@@ -62,8 +62,7 @@ class AppPackExternalLoader
 
 AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
                                EnterpriseInstallAttributes* install_attributes)
-    : weak_ptr_factory_(this),
-      created_extension_loader_(false),
+    : created_extension_loader_(false),
       install_attributes_(install_attributes),
       external_cache_(base::FilePath(kAppPackCacheDir),
                       request_context,
@@ -74,7 +73,8 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
                               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
                       this,
                       false,
-                      false) {
+                      false),
+      weak_ptr_factory_(this) {
   app_pack_subscription_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
       chromeos::kAppPack,
       base::Bind(&AppPackUpdater::AppPackChanged, base::Unretained(this)));

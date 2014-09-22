@@ -117,8 +117,6 @@ class SessionManagerOperation {
   SessionManagerClient* session_manager_client_;
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
-  base::WeakPtrFactory<SessionManagerOperation> weak_factory_;
-
   Callback callback_;
 
   scoped_refptr<ownership::PublicKey> public_key_;
@@ -128,6 +126,8 @@ class SessionManagerOperation {
   bool is_loading_;
   scoped_ptr<enterprise_management::PolicyData> policy_data_;
   scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> device_settings_;
+
+  base::WeakPtrFactory<SessionManagerOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerOperation);
 };

@@ -81,8 +81,6 @@ class AppPackUpdater : public chromeos::ExternalCache::Delegate {
   // appropriate.
   void SetScreenSaverPath(const base::FilePath& path);
 
-  base::WeakPtrFactory<AppPackUpdater> weak_ptr_factory_;
-
   // The extension ID and path of the CRX file of the screen saver extension,
   // if it is configured by the policy. Otherwise these fields are empty.
   std::string screen_saver_id_;
@@ -105,6 +103,8 @@ class AppPackUpdater : public chromeos::ExternalCache::Delegate {
 
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       app_pack_subscription_;
+
+  base::WeakPtrFactory<AppPackUpdater> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppPackUpdater);
 };

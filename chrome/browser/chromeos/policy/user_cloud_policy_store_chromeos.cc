@@ -92,8 +92,6 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
   static CloudPolicyStore::Status TranslateLoadResult(
       UserPolicyDiskCache::LoadResult result);
 
-  base::WeakPtrFactory<LegacyPolicyCacheLoader> weak_factory_;
-
   scoped_refptr<UserPolicyTokenLoader> token_loader_;
   scoped_refptr<UserPolicyDiskCache> policy_cache_;
 
@@ -105,6 +103,8 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 
   Callback callback_;
 
+  base::WeakPtrFactory<LegacyPolicyCacheLoader> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(LegacyPolicyCacheLoader);
 };
 
@@ -112,9 +112,9 @@ LegacyPolicyCacheLoader::LegacyPolicyCacheLoader(
     const base::FilePath& token_cache_file,
     const base::FilePath& policy_cache_file,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : weak_factory_(this),
-      has_policy_(false),
-      status_(CloudPolicyStore::STATUS_OK) {
+    : has_policy_(false),
+      status_(CloudPolicyStore::STATUS_OK),
+      weak_factory_(this) {
   token_loader_ = new UserPolicyTokenLoader(weak_factory_.GetWeakPtr(),
                                             token_cache_file,
                                             background_task_runner);
@@ -186,13 +186,13 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
       session_manager_client_(session_manager_client),
       username_(username),
       user_policy_key_dir_(user_policy_key_dir),
-      weak_factory_(this),
       legacy_cache_dir_(legacy_token_cache_file.DirName()),
       legacy_loader_(new LegacyPolicyCacheLoader(legacy_token_cache_file,
                                                  legacy_policy_cache_file,
                                                  background_task_runner)),
       legacy_caches_loaded_(false),
-      policy_key_loaded_(false) {}
+      policy_key_loaded_(false),
+      weak_factory_(this) {}
 
 UserCloudPolicyStoreChromeOS::~UserCloudPolicyStoreChromeOS() {}
 
