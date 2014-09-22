@@ -40,6 +40,7 @@
     # Client JavaScript files.
     'remoting_webapp_js_client_files': [
       'webapp/client_plugin.js',
+      'webapp/client_plugin_impl.js',
       # TODO(garykac) For client_screen:
       # * Split out pin/access code stuff into separate file.
       # * Move client logic into session_connector
@@ -49,6 +50,7 @@
       'webapp/hangout_session.js',
       'webapp/media_source_renderer.js',
       'webapp/session_connector.js',
+      'webapp/session_connector_impl.js',
       'webapp/smart_reconnector.js',
       'webapp/video_frame_recorder.js',
     ],

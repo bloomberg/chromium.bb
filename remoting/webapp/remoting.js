@@ -52,6 +52,9 @@ remoting.init = function() {
   l10n.localize();
 
   // Create global objects.
+  remoting.ClientPlugin.factory = new remoting.DefaultClientPluginFactory();
+  remoting.SessionConnector.factory =
+      new remoting.DefaultSessionConnectorFactory();
   remoting.settings = new remoting.Settings();
   if (base.isAppsV2()) {
     remoting.identity = new remoting.Identity(consentRequired_);
@@ -195,7 +198,7 @@ remoting.init = function() {
   };
   remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));
 
-  remoting.ClientPlugin.preload();
+  remoting.ClientPlugin.factory.preloadPlugin();
 };
 
 /**

@@ -13,8 +13,8 @@
 var remoting = remoting || {};
 
 /**
- * @type {remoting.SessionConnector} The connector object, set when a connection
- *     is initiated.
+ * @type {remoting.SessionConnector} The connector object, set when a
+ *     connection is initiated.
  */
 remoting.connector = null;
 
@@ -280,7 +280,8 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
         remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
         onPinFetched(pin);
         if (/** @type {boolean} */(rememberPinCheckbox.checked)) {
-          remoting.connector.pairingRequested = true;
+          /** @type {boolean} */
+          remoting.pairingRequested = true;
         }
       } else {
         remoting.setMode(remoting.AppMode.HOME);
@@ -328,7 +329,7 @@ remoting.onConnected = function(clientSession) {
       remoting.hangoutSessionEvents.sessionStateChanged,
       remoting.ClientSession.State.CONNECTED
   );
-  if (remoting.connector.pairingRequested) {
+  if (remoting.pairingRequested) {
     /**
      * @param {string} clientId
      * @param {string} sharedSecret
@@ -382,7 +383,7 @@ remoting.onExtensionMessage = function(type, data) {
  */
 remoting.ensureSessionConnector_ = function() {
   if (!remoting.connector) {
-    remoting.connector = new remoting.SessionConnector(
+    remoting.connector = remoting.SessionConnector.factory.createConnector(
         document.getElementById('video-container'),
         remoting.onConnected,
         showConnectError_, remoting.onExtensionMessage);

@@ -234,15 +234,15 @@ remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
     // Determine whether or not horizontal or vertical scrollbars are
     // required, taking into account their width.
     var clientArea = this.getClientArea_();
-    needsVerticalScroll = clientArea.height < this.plugin_.desktopHeight;
-    needsHorizontalScroll = clientArea.width < this.plugin_.desktopWidth;
+    needsVerticalScroll = clientArea.height < this.plugin_.getDesktopHeight();
+    needsHorizontalScroll = clientArea.width < this.plugin_.getDesktopWidth();
     var kScrollBarWidth = 16;
     if (needsHorizontalScroll && !needsVerticalScroll) {
       needsVerticalScroll =
-          clientArea.height - kScrollBarWidth < this.plugin_.desktopHeight;
+          clientArea.height - kScrollBarWidth < this.plugin_.getDesktopHeight();
     } else if (!needsHorizontalScroll && needsVerticalScroll) {
       needsHorizontalScroll =
-          clientArea.width - kScrollBarWidth < this.plugin_.desktopWidth;
+          clientArea.width - kScrollBarWidth < this.plugin_.getDesktopWidth();
     }
   }
 
@@ -447,7 +447,7 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(onExtensionMessage) {
-  this.plugin_ = new remoting.ClientPlugin(
+  this.plugin_ = remoting.ClientPlugin.factory.createPlugin(
       this.container_.querySelector('.client-plugin-container'),
       onExtensionMessage);
   remoting.HostSettings.load(this.hostId_,
@@ -500,7 +500,7 @@ remoting.ClientSession.prototype.setFocusHandlers_ = function() {
  */
 remoting.ClientSession.prototype.resetWithError_ = function(error) {
   this.signalStrategy_.setIncomingStanzaCallback(null);
-  this.plugin_.cleanup();
+  this.plugin_.dispose();
   this.plugin_ = null;
   this.error_ = error;
   this.setState_(remoting.ClientSession.State.FAILED);
@@ -557,23 +557,24 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
     this.container_.classList.remove('mediasource-rendering');
   }
 
-  /** @param {string} msg The IQ stanza to send. */
-  this.plugin_.onOutgoingIqHandler = this.sendIq_.bind(this);
-  /** @param {string} msg The message to log. */
-  this.plugin_.onDebugMessageHandler = function(msg) {
-    console.log('plugin: ' + msg.trimRight());
-  };
+  this.plugin_.setOnOutgoingIqHandler(this.sendIq_.bind(this));
+  this.plugin_.setOnDebugMessageHandler(
+      /** @param {string} msg */
+      function(msg) {
+        console.log('plugin: ' + msg.trimRight());
+      });
 
-  this.plugin_.onConnectionStatusUpdateHandler =
-      this.onConnectionStatusUpdate_.bind(this);
-  this.plugin_.onConnectionReadyHandler = this.onConnectionReady_.bind(this);
-  this.plugin_.onDesktopSizeUpdateHandler =
-      this.onDesktopSizeChanged_.bind(this);
-  this.plugin_.onSetCapabilitiesHandler = this.onSetCapabilities_.bind(this);
-  this.plugin_.onGnubbyAuthHandler = this.processGnubbyAuthMessage_.bind(this);
-  this.plugin_.updateMouseCursorImage = this.updateMouseCursorImage_.bind(this);
-  this.plugin_.onCastExtensionHandler =
-      this.processCastExtensionMessage_.bind(this);
+  this.plugin_.setConnectionStatusUpdateHandler(
+      this.onConnectionStatusUpdate_.bind(this));
+  this.plugin_.setConnectionReadyHandler(this.onConnectionReady_.bind(this));
+  this.plugin_.setDesktopSizeUpdateHandler(
+      this.onDesktopSizeChanged_.bind(this));
+  this.plugin_.setCapabilitiesHandler(this.onSetCapabilities_.bind(this));
+  this.plugin_.setGnubbyAuthHandler(
+      this.processGnubbyAuthMessage_.bind(this));
+  this.plugin_.setMouseCursorHandler(this.updateMouseCursorImage_.bind(this));
+  this.plugin_.setCastExtensionHandler(
+      this.processCastExtensionMessage_.bind(this));
   this.initiateConnection_();
 };
 
@@ -590,7 +591,7 @@ remoting.ClientSession.prototype.removePlugin = function() {
         'focus', this.callPluginGotFocus_, false);
     this.plugin_.element().removeEventListener(
         'blur', this.callPluginLostFocus_, false);
-    this.plugin_.cleanup();
+    this.plugin_.dispose();
     this.plugin_ = null;
   }
 
@@ -917,7 +918,7 @@ remoting.ClientSession.prototype.getSharedSecret_ = function(callback) {
           tokenUrl, hostPublicKey, scope,
           that.plugin_.onThirdPartyTokenFetched.bind(that.plugin_));
     };
-    this.plugin_.fetchThirdPartyTokenHandler = fetchThirdPartyToken;
+    this.plugin_.setFetchThirdPartyTokenHandler(fetchThirdPartyToken);
   }
   if (this.accessCode_) {
     // Shared secret was already supplied before connecting (It2Me case).
@@ -931,7 +932,7 @@ remoting.ClientSession.prototype.getSharedSecret_ = function(callback) {
       that.fetchPin_(pairingSupported,
                      that.plugin_.onPinFetched.bind(that.plugin_));
     };
-    this.plugin_.fetchPinHandler = fetchPin;
+    this.plugin_.setFetchPinHandler(fetchPin);
     callback('');
   } else {
     // Clients that don't support asking for a PIN asynchronously also don't
@@ -1147,10 +1148,10 @@ remoting.ClientSession.prototype.pauseAudio = function(pause) {
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
   console.log('desktop size changed: ' +
-              this.plugin_.desktopWidth + 'x' +
-              this.plugin_.desktopHeight +' @ ' +
-              this.plugin_.desktopXDpi + 'x' +
-              this.plugin_.desktopYDpi + ' DPI');
+              this.plugin_.getDesktopWidth() + 'x' +
+              this.plugin_.getDesktopHeight() +' @ ' +
+              this.plugin_.getDesktopXDpi() + 'x' +
+              this.plugin_.getDesktopYDpi() + ' DPI');
   this.updateDimensions();
   this.updateScrollbarVisibility();
 };
@@ -1162,14 +1163,14 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.updateDimensions = function() {
-  if (this.plugin_.desktopWidth == 0 ||
-      this.plugin_.desktopHeight == 0) {
+  if (this.plugin_.getDesktopWidth() == 0 ||
+      this.plugin_.getDesktopHeight() == 0) {
     return;
   }
 
   var clientArea = this.getClientArea_();
-  var desktopWidth = this.plugin_.desktopWidth;
-  var desktopHeight = this.plugin_.desktopHeight;
+  var desktopWidth = this.plugin_.getDesktopWidth();
+  var desktopHeight = this.plugin_.getDesktopHeight();
 
   // When configured to display a host at its original size, we aim to display
   // it as close to its physical size as possible, without losing data:
@@ -1183,8 +1184,8 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   // an initial scale factor based on the client devicePixelRatio and host DPI.
 
   // Determine the effective device pixel ratio of the host, based on DPI.
-  var hostPixelRatioX = Math.ceil(this.plugin_.desktopXDpi / 96);
-  var hostPixelRatioY = Math.ceil(this.plugin_.desktopYDpi / 96);
+  var hostPixelRatioX = Math.ceil(this.plugin_.getDesktopXDpi() / 96);
+  var hostPixelRatioY = Math.ceil(this.plugin_.getDesktopYDpi() / 96);
   var hostPixelRatio = Math.min(hostPixelRatioX, hostPixelRatioY);
 
   // Down-scale by the smaller of the client and host ratios.
