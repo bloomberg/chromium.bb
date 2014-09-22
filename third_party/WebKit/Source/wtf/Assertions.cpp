@@ -75,8 +75,6 @@
 #include <android/log.h>
 #endif
 
-extern "C" {
-
 WTF_ATTRIBUTE_PRINTF(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args)
 {
@@ -398,4 +396,3 @@ void WTFLogAlways(const char* format, ...)
     va_end(args);
 }
 
-} // extern "C"
