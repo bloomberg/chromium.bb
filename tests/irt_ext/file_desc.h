@@ -73,6 +73,8 @@ struct inode_data {
 
 struct file_descriptor {
   bool valid;
+  bool fsync;
+  bool fdatasync;
   int oflag;
   int dir_position;
   struct inode_data *data;

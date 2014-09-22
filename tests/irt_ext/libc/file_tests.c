@@ -1060,6 +1060,82 @@ static int do_dup2_used_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+/* File sync tests. */
+static int do_fsync_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_fsync_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  const int fd = fileno(fp);
+  if (fd < 0 ||
+      fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[fd].valid) {
+    irt_ext_test_print("do_fsync_test: created invalid fd: %d\n",
+                       fd);
+    return 1;
+  }
+
+  if (file_desc_env->file_descs[fd].fsync ||
+      file_desc_env->file_descs[fd].fdatasync) {
+    irt_ext_test_print("do_fsync_test: file desc not initialized properly.\n");
+    return 1;
+  }
+
+  if (0 != fsync(fd)) {
+    irt_ext_test_print("do_fsync_test: fsync was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (!file_desc_env->file_descs[fd].fsync ||
+      !file_desc_env->file_descs[fd].fdatasync) {
+    irt_ext_test_print("do_fsync_test: fsync did not modify file desc.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_fdatasync_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_fdatasync_test: fopen failed - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  const int fd = fileno(fp);
+  if (fd < 0 ||
+      fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[fd].valid) {
+    irt_ext_test_print("do_fdatasync_test: created invalid fd: %d\n",
+                       fd);
+    return 1;
+  }
+
+  if (file_desc_env->file_descs[fd].fdatasync) {
+    irt_ext_test_print("do_fdatasync_test: descriptor not initialized.\n");
+    return 1;
+  }
+
+  if (0 != fdatasync(fd)) {
+    irt_ext_test_print("do_fdatasync_test: fdatasync failed - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (!file_desc_env->file_descs[fd].fdatasync) {
+    irt_ext_test_print("do_fdatasync_test: fdatasync did not modify file"
+                       " descriptor.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
 /*
  * These tests should not be in alphabetical order but ordered by complexity,
  * simpler tests should break first. For example, changing to a directory
@@ -1106,6 +1182,10 @@ static const TYPE_file_test g_file_tests[] = {
   do_dup_test,
   do_dup2_new_test,
   do_dup2_used_test,
+
+  /* File sync tests. */
+  do_fsync_test,
+  do_fdatasync_test,
 };
 
 static void setup(struct file_desc_environment *file_desc_env) {

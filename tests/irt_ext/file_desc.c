@@ -25,6 +25,10 @@ static const struct inode_data g_default_inode = {
   .valid = false,
   .mode = S_IRUSR | S_IWUSR,
 };
+static const struct file_descriptor g_default_fd = {
+  .valid = false,
+  .data = NULL,
+};
 
 static struct inode_data g_root_dir = {
   .valid = true,
@@ -287,10 +291,25 @@ static int my_fchmod(int fd, mode_t mode) {
 }
 
 static int my_fsync(int fd) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid) {
+    g_activated_env->file_descs[fd].fsync = true;
+    g_activated_env->file_descs[fd].fdatasync = true;
+    return 0;
+  }
   return EBADF;
 }
 
 static int my_fdatasync(int fd) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid) {
+    g_activated_env->file_descs[fd].fdatasync = true;
+    return 0;
+  }
   return EBADF;
 }
 
@@ -842,8 +861,7 @@ void init_inode_data(struct inode_data *inode_data) {
 }
 
 void init_file_descriptor(struct file_descriptor *file_desc) {
-  file_desc->valid = false;
-  file_desc->data = NULL;
+  *file_desc = g_default_fd;
 }
 
 void init_file_desc_environment(struct file_desc_environment *env) {
