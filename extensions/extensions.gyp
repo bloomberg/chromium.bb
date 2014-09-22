@@ -1060,6 +1060,7 @@
         'browser/api/cast_channel/logger_unittest.cc',
         'browser/api/declarative/declarative_rule_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',
+        'browser/api/declarative/rules_registry_unittest.cc',
         'browser/api/declarative_webrequest/webrequest_condition_unittest.cc',
         'browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
         'browser/api/power/power_api_unittest.cc',

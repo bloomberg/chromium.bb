@@ -308,7 +308,6 @@
       'browser/extensions/api/cookies/cookies_unittest.cc',
       'browser/extensions/api/copresence/copresence_api_unittest.cc',
       'browser/extensions/api/declarative/rules_registry_service_unittest.cc',
-      'browser/extensions/api/declarative/rules_registry_unittest.cc',
       'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
       'browser/extensions/api/declarative_content/content_action_unittest.cc',
       'browser/extensions/api/declarative_content/content_condition_unittest.cc',
