@@ -15,6 +15,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -34,6 +35,8 @@
 using base::Time;
 using net::cookie_util::ParsedRequestCookie;
 using net::cookie_util::ParsedRequestCookies;
+
+namespace keys = extension_web_request_api_constants;
 
 namespace extension_web_request_api_helpers {
 
@@ -1197,6 +1200,21 @@ void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
   }
 
   host->Send(new ExtensionMsg_UsingWebRequestAPI(webrequest_used));
+}
+
+// Converts the |name|, |value| pair of a http header to a HttpHeaders
+// dictionary. Ownership is passed to the caller.
+base::DictionaryValue* CreateHeaderDictionary(
+    const std::string& name, const std::string& value) {
+  base::DictionaryValue* header = new base::DictionaryValue();
+  header->SetString(keys::kHeaderNameKey, name);
+  if (base::IsStringUTF8(value)) {
+    header->SetString(keys::kHeaderValueKey, value);
+  } else {
+    header->Set(keys::kHeaderBinaryValueKey,
+                StringToCharList(value));
+  }
+  return header;
 }
 
 }  // namespace extension_web_request_api_helpers

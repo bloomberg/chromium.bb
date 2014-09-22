@@ -41,6 +41,7 @@ class URLRequest;
 
 namespace extension_web_request_api_helpers {
 
+
 typedef std::pair<std::string, std::string> ResponseHeader;
 typedef std::vector<ResponseHeader> ResponseHeaders;
 
@@ -319,6 +320,11 @@ void NotifyWebRequestAPIUsed(
 // Send updates to |host| with information about what webRequest-related
 // extensions are installed.
 void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
+
+// Converts the |name|, |value| pair of a http header to a HttpHeaders
+// dictionary. Ownership is passed to the caller.
+base::DictionaryValue* CreateHeaderDictionary(
+    const std::string& name, const std::string& value);
 
 }  // namespace extension_web_request_api_helpers
 

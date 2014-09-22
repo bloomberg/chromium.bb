@@ -32,6 +32,7 @@ class WebViewGuest;
 class WebViewGuestDelegate;
 class WebViewPermissionHelper;
 class WebViewPermissionHelperDelegate;
+class WebRequestEventRouterDelegate;
 class SettingsObserver;
 class SettingsStorageFactory;
 class ValueStoreCache;
@@ -89,6 +90,10 @@ class ExtensionsAPIClient {
       content::BrowserContext* browser_context,
       const RulesRegistry::WebViewKey& webview_key,
       const std::string& event_name);
+
+  // Creates a delegate for WebRequestEventRouter.
+  virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
+      const;
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

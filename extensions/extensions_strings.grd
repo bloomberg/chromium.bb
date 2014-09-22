@@ -202,6 +202,9 @@
       <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
         Manifest file is invalid.
       </message>
+      <message name="IDS_LOAD_STATE_PARAMETER_EXTENSION" desc="Parameter to IDS_LOAD_STATE_WAITING_FOR_DELEGATE when we are waiting for an extension. The variable is the extension name.">
+        extension <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph>
+      </message>
 
       <!-- Bluetooth access permissions. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for general access to the Bluetooth API.">

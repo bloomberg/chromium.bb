@@ -53,6 +53,7 @@ namespace extensions {
 
 class InfoMap;
 class WebRequestRulesRegistry;
+class WebRequestEventRouterDelegate;
 
 // Support class for the WebRequest API. Lives on the UI thread. Most of the
 // work is done by ExtensionWebRequestEventRouter below. This class observes
@@ -168,16 +169,16 @@ class ExtensionWebRequestEventRouter
   static ExtensionWebRequestEventRouter* GetInstance();
 
   // Registers a rule registry. Pass null for |rules_registry| to unregister
-  // the rule registry for |profile|.
+  // the rule registry for |browser_context|.
   void RegisterRulesRegistry(
-      void* profile,
+      void* browser_context,
       const extensions::RulesRegistry::WebViewKey& webview_key,
       scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry);
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
   // the given request. Returns net::ERR_IO_PENDING if an extension is
   // intercepting the request, OK otherwise.
-  int OnBeforeRequest(void* profile,
+  int OnBeforeRequest(void* browser_context,
                       extensions::InfoMap* extension_info_map,
                       net::URLRequest* request,
                       const net::CompletionCallback& callback,
@@ -187,7 +188,7 @@ class ExtensionWebRequestEventRouter
   // requests only, and allows modification of the outgoing request headers.
   // Returns net::ERR_IO_PENDING if an extension is intercepting the request, OK
   // otherwise.
-  int OnBeforeSendHeaders(void* profile,
+  int OnBeforeSendHeaders(void* browser_context,
                           extensions::InfoMap* extension_info_map,
                           net::URLRequest* request,
                           const net::CompletionCallback& callback,
@@ -195,7 +196,7 @@ class ExtensionWebRequestEventRouter
 
   // Dispatches the onSendHeaders event. This is fired for HTTP(s) requests
   // only.
-  void OnSendHeaders(void* profile,
+  void OnSendHeaders(void* browser_context,
                      extensions::InfoMap* extension_info_map,
                      net::URLRequest* request,
                      const net::HttpRequestHeaders& headers);
@@ -210,7 +211,7 @@ class ExtensionWebRequestEventRouter
   // Do not modify |original_response_headers| directly but write new ones
   // into |override_response_headers|.
   int OnHeadersReceived(
-      void* profile,
+      void* browser_context,
       extensions::InfoMap* extension_info_map,
       net::URLRequest* request,
       const net::CompletionCallback& callback,
@@ -224,7 +225,7 @@ class ExtensionWebRequestEventRouter
   // AUTH_REQUIRED_RESPONSE_IO_PENDING is returned and |callback| will be
   // invoked later.
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
-      void* profile,
+      void* browser_context,
       extensions::InfoMap* extension_info_map,
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
@@ -233,34 +234,34 @@ class ExtensionWebRequestEventRouter
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.
-  void OnBeforeRedirect(void* profile,
+  void OnBeforeRedirect(void* browser_context,
                         extensions::InfoMap* extension_info_map,
                         net::URLRequest* request,
                         const GURL& new_location);
 
   // Dispatches the onResponseStarted event indicating that the first bytes of
   // the response have arrived.
-  void OnResponseStarted(void* profile,
+  void OnResponseStarted(void* browser_context,
                          extensions::InfoMap* extension_info_map,
                          net::URLRequest* request);
 
   // Dispatches the onComplete event.
-  void OnCompleted(void* profile,
+  void OnCompleted(void* browser_context,
                    extensions::InfoMap* extension_info_map,
                    net::URLRequest* request);
 
   // Dispatches an onErrorOccurred event.
-  void OnErrorOccurred(void* profile,
+  void OnErrorOccurred(void* browser_context,
                        extensions::InfoMap* extension_info_map,
                        net::URLRequest* request,
                        bool started);
 
   // Notifications when objects are going away.
-  void OnURLRequestDestroyed(void* profile, net::URLRequest* request);
+  void OnURLRequestDestroyed(void* browser_context, net::URLRequest* request);
 
   // Called when an event listener handles a blocking event and responds.
   void OnEventHandled(
-      void* profile,
+      void* browser_context,
       const std::string& extension_id,
       const std::string& event_name,
       const std::string& sub_event_name,
@@ -272,7 +273,7 @@ class ExtensionWebRequestEventRouter
   // the extension process to correspond to the given filter and
   // extra_info_spec. It returns true on success, false on failure.
   bool AddEventListener(
-      void* profile,
+      void* browser_context,
       const std::string& extension_id,
       const std::string& extension_name,
       const std::string& event_name,
@@ -285,22 +286,22 @@ class ExtensionWebRequestEventRouter
 
   // Removes the listener for the given sub-event.
   void RemoveEventListener(
-      void* profile,
+      void* browser_context,
       const std::string& extension_id,
       const std::string& sub_event_name);
 
   // Removes the listeners for a given <webview>.
   void RemoveWebViewEventListeners(
-      void* profile,
+      void* browser_context,
       const std::string& extension_id,
       int embedder_process_id,
       int web_view_instance_id);
 
-  // Called when an incognito profile is created or destroyed.
-  void OnOTRProfileCreated(void* original_profile,
-                           void* otr_profile);
-  void OnOTRProfileDestroyed(void* original_profile,
-                             void* otr_profile);
+  // Called when an incognito browser_context is created or destroyed.
+  void OnOTRBrowserContextCreated(void* original_browser_context,
+                                  void* otr_browser_context);
+  void OnOTRBrowserContextDestroyed(void* original_browser_context,
+                                    void* otr_browser_context);
 
   // Registers a |callback| that is executed when the next page load happens.
   // The callback is then deleted.
@@ -310,14 +311,16 @@ class ExtensionWebRequestEventRouter
   friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
 
   struct EventListener;
-  typedef std::map<std::string, std::set<EventListener> > ListenerMapForProfile;
-  typedef std::map<void*, ListenerMapForProfile> ListenerMap;
+  typedef std::map<std::string, std::set<EventListener> >
+      ListenerMapForBrowserContext;
+  typedef std::map<void*, ListenerMapForBrowserContext> ListenerMap;
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
   // Map of request_id -> bit vector of EventTypes already signaled
   typedef std::map<uint64, int> SignaledRequestMap;
-  // For each profile: a bool indicating whether it is an incognito profile,
-  // and a pointer to the corresponding (non-)incognito profile.
-  typedef std::map<void*, std::pair<bool, void*> > CrossProfileMap;
+  // For each browser_context: a bool indicating whether it is an incognito
+  // browser_context, and a pointer to the corresponding (non-)incognito
+  // browser_context.
+  typedef std::map<void*, std::pair<bool, void*> > CrossBrowserContextMap;
   typedef std::list<base::Closure> CallbacksForPageLoad;
 
   ExtensionWebRequestEventRouter();
@@ -328,7 +331,7 @@ class ExtensionWebRequestEventRouter
   void ClearPendingCallbacks(net::URLRequest* request);
 
   bool DispatchEvent(
-      void* profile,
+      void* browser_context,
       net::URLRequest* request,
       const std::vector<const EventListener*>& listeners,
       const base::ListValue& args);
@@ -337,23 +340,23 @@ class ExtensionWebRequestEventRouter
   // on their filter parameters. |extra_info_spec| will contain the combined
   // set of extra_info_spec flags that every matching listener asked for.
   std::vector<const EventListener*> GetMatchingListeners(
-      void* profile,
+      void* browser_context,
       extensions::InfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
       int* extra_info_spec);
 
-  // Helper for the above functions. This is called twice: once for the profile
-  // of the event, the next time for the "cross" profile (i.e. the incognito
-  // profile if the event is originally for the normal profile, or vice versa).
+  // Helper for the above functions. This is called twice: once for the
+  // browser_context of the event, the next time for the "cross" browser_context
+  // (i.e. the incognito browser_context if the event is originally for the
+  // normal browser_context, or vice versa).
   void GetMatchingListenersImpl(
-      void* profile,
+      void* browser_context,
+      net::URLRequest* request,
       extensions::InfoMap* extension_info_map,
       bool crosses_incognito,
       const std::string& event_name,
       const GURL& url,
-      int tab_id,
-      int window_id,
       int render_process_host_id,
       int routing_id,
       content::ResourceType resource_type,
@@ -369,7 +372,7 @@ class ExtensionWebRequestEventRouter
   // is decided by extension install time. If |response| is non-NULL, this
   // method assumes ownership.
   void DecrementBlockCount(
-      void* profile,
+      void* browser_context,
       const std::string& extension_id,
       const std::string& event_name,
       uint64 request_id,
@@ -381,7 +384,8 @@ class ExtensionWebRequestEventRouter
   // The function returns the error code for the network request. This is
   // mostly relevant in case the caller passes |call_callback| = false
   // and wants to return the correct network error code himself.
-  int ExecuteDeltas(void* profile, uint64 request_id, bool call_callback);
+  int ExecuteDeltas(
+      void* browser_context, uint64 request_id, bool call_callback);
 
   // Evaluates the rules of the declarative webrequest API and stores
   // modifications to the request that result from WebRequestActions as
@@ -389,7 +393,7 @@ class ExtensionWebRequestEventRouter
   // set for the OnHeadersReceived stage and NULL otherwise. Returns whether any
   // deltas were generated.
   bool ProcessDeclarativeRules(
-      void* profile,
+      void* browser_context,
       extensions::InfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
@@ -399,15 +403,21 @@ class ExtensionWebRequestEventRouter
   // If the BlockedRequest contains messages_to_extension entries in the event
   // deltas, we send them to subscribers of
   // chrome.declarativeWebRequest.onMessage.
-  void SendMessages(void* profile, const BlockedRequest& blocked_request);
+  void SendMessages(
+      void* browser_context, const BlockedRequest& blocked_request);
 
   // Called when the RulesRegistry is ready to unblock a request that was
   // waiting for said event.
   void OnRulesRegistryReady(
-      void* profile,
+      void* browser_context,
       const std::string& event_name,
       uint64 request_id,
       extensions::RequestStage request_stage);
+
+  // Extracts from |request| information for the keys requestId, url, method,
+  // frameId, tabId, type, and timeStamp and writes these into |out| to be
+  // passed on to extensions.
+  void ExtractRequestInfo(net::URLRequest* request, base::DictionaryValue* out);
 
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.
@@ -422,20 +432,20 @@ class ExtensionWebRequestEventRouter
   // Called on a page load to process all registered callbacks.
   void NotifyPageLoad();
 
-  // Returns the matching cross profile (the regular profile if |profile| is
-  // OTR and vice versa).
-  void* GetCrossProfile(void* profile) const;
+  // Returns the matching cross browser_context (the regular browser_context if
+  // |browser_context| is OTR and vice versa).
+  void* GetCrossBrowserContext(void* browser_context) const;
 
-  // Determines whether the specified profile is an incognito profile (based on
-  // the contents of the cross-profile table and without dereferencing the
-  // profile pointer).
-  bool IsIncognitoProfile(void* profile) const;
+  // Determines whether the specified browser_context is an incognito
+  // browser_context (based on the contents of the cross-browser_context table
+  // and without dereferencing the browser_context pointer).
+  bool IsIncognitoBrowserContext(void* browser_context) const;
 
   // Returns true if |request| was already signaled to some event handlers.
   bool WasSignaled(const net::URLRequest& request) const;
 
-  // A map for each profile that maps an event name to a set of extensions that
-  // are listening to that event.
+  // A map for each browser_context that maps an event name to a set of
+  // extensions that are listening to that event.
   ListenerMap listeners_;
 
   // A map of network requests that are waiting for at least one event handler
@@ -446,9 +456,9 @@ class ExtensionWebRequestEventRouter
   // signaled and should not be sent again.
   SignaledRequestMap signaled_requests_;
 
-  // A map of original profile -> corresponding incognito profile (and vice
-  // versa).
-  CrossProfileMap cross_profile_map_;
+  // A map of original browser_context -> corresponding incognito
+  // browser_context (and vice versa).
+  CrossBrowserContextMap cross_browser_context_map_;
 
   // Keeps track of time spent waiting on extensions using the blocking
   // webRequest API.
@@ -458,10 +468,13 @@ class ExtensionWebRequestEventRouter
 
   typedef std::pair<void*, extensions::RulesRegistry::WebViewKey>
       RulesRegistryKey;
-  // Maps each profile (and OTRProfile) and a webview key to its respective
-  // rules registry.
+  // Maps each browser_context (and OTRBrowserContext) and a webview key to its
+  // respective rules registry.
   std::map<RulesRegistryKey,
       scoped_refptr<extensions::WebRequestRulesRegistry> > rules_registries_;
+
+  scoped_ptr<extensions::WebRequestEventRouterDelegate>
+      web_request_event_router_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };

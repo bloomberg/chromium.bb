@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
+#include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
 #include "chrome/browser/guest_view/extension_options/chrome_extension_options_guest_delegate.h"
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
@@ -79,6 +80,11 @@ scoped_refptr<RulesRegistry> ChromeExtensionsAPIClient::GetRulesRegistry(
     const std::string& event_name) {
   return RulesRegistryService::Get(browser_context)->
       GetRulesRegistry(webview_key, event_name);
+}
+
+WebRequestEventRouterDelegate*
+ChromeExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
+  return new ChromeExtensionWebRequestEventRouterDelegate();
 }
 
 }  // namespace extensions

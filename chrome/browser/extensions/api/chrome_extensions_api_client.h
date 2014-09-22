@@ -38,6 +38,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       content::BrowserContext* browser_context,
       const RulesRegistry::WebViewKey& webview_key,
       const std::string& event_name) OVERRIDE;
+  virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
+      const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);

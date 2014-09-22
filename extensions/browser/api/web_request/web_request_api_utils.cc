@@ -24,6 +24,8 @@ static const char* kResourceTypeStrings[] = {
   "other",
 };
 
+const size_t kResourceTypeStringsLength = arraysize(kResourceTypeStrings);
+
 static ResourceType kResourceTypeValues[] = {
   content::RESOURCE_TYPE_MAIN_FRAME,
   content::RESOURCE_TYPE_SUB_FRAME,
@@ -41,20 +43,26 @@ static ResourceType kResourceTypeValues[] = {
   content::RESOURCE_TYPE_LAST_TYPE,
 };
 
+const size_t kResourceTypeValuesLength = arraysize(kResourceTypeValues);
+
 }
 
 #define ARRAYEND(array) (array + arraysize(array))
 
 bool IsRelevantResourceType(ResourceType type) {
   ResourceType* iter =
-      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
-  return iter != ARRAYEND(kResourceTypeValues);
+      std::find(kResourceTypeValues,
+                kResourceTypeValues + kResourceTypeValuesLength,
+                type);
+  return iter != (kResourceTypeValues + kResourceTypeValuesLength);
 }
 
 const char* ResourceTypeToString(ResourceType type) {
   ResourceType* iter =
-      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
-  if (iter == ARRAYEND(kResourceTypeValues))
+      std::find(kResourceTypeValues,
+                kResourceTypeValues + kResourceTypeValuesLength,
+                type);
+  if (iter == (kResourceTypeValues + kResourceTypeValuesLength))
     return "other";
 
   return kResourceTypeStrings[iter - kResourceTypeValues];
@@ -63,8 +71,10 @@ const char* ResourceTypeToString(ResourceType type) {
 bool ParseResourceType(const std::string& type_str,
                        ResourceType* type) {
   const char** iter =
-      std::find(kResourceTypeStrings, ARRAYEND(kResourceTypeStrings), type_str);
-  if (iter == ARRAYEND(kResourceTypeStrings))
+      std::find(kResourceTypeStrings,
+                kResourceTypeStrings + kResourceTypeStringsLength,
+                type_str);
+  if (iter == (kResourceTypeStrings + kResourceTypeStringsLength))
     return false;
   *type = kResourceTypeValues[iter - kResourceTypeStrings];
   return true;

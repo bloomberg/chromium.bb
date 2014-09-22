@@ -62,4 +62,9 @@ scoped_refptr<RulesRegistry> ExtensionsAPIClient::GetRulesRegistry(
   return scoped_refptr<RulesRegistry>();
 }
 
+WebRequestEventRouterDelegate*
+ExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
+  return NULL;
+}
+
 }  // namespace extensions

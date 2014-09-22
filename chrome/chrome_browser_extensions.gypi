@@ -479,6 +479,8 @@
       'browser/extensions/api/web_navigation/web_navigation_api_constants.h',
       'browser/extensions/api/web_navigation/web_navigation_api_helpers.cc',
       'browser/extensions/api/web_navigation/web_navigation_api_helpers.h',
+      'browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.cc',
+      'browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h',
       'browser/extensions/api/web_request/form_data_parser.cc',
       'browser/extensions/api/web_request/form_data_parser.h',
       'browser/extensions/api/web_request/upload_data_presenter.cc',
