@@ -596,16 +596,17 @@ hooks = [
         '--arch=i386'],
   },
   {
-    # Pull clang if on Mac or clang is requested via GYP_DEFINES.
-    'name': 'clang',
-    'pattern': '.',
-    'action': ['python', 'src/tools/clang/scripts/update.py', '--if-needed'],
-  },
-  {
     # Update the Windows toolchain if necessary.
     'name': 'win_toolchain',
     'pattern': '.',
     'action': ['python', 'src/build/vs_toolchain.py', 'update'],
+  },
+  {
+    # Pull clang if needed or requested via GYP_DEFINES.
+    # Note: On Win, this should run after win_toolchain, as it may use it.
+    'name': 'clang',
+    'pattern': '.',
+    'action': ['python', 'src/tools/clang/scripts/update.py', '--if-needed'],
   },
   {
     # Update LASTCHANGE. This is also run by export_tarball.py in

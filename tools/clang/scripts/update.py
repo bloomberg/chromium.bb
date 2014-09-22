@@ -136,13 +136,20 @@ def AddCMakeToPath():
 vs_version = None
 def GetVSVersion():
   global vs_version
-  if not vs_version:
-    # TODO(hans): Find a less hacky way to find the MSVS installation.
-    sys.path.append(os.path.join(CHROMIUM_DIR, 'tools', 'gyp', 'pylib'))
-    import gyp.MSVSVersion
-    # We request VS 2013 because Clang won't build with 2010, and 2013 will be
-    # the default for Chromium soon anyway.
-    vs_version = gyp.MSVSVersion.SelectVisualStudioVersion('2013')
+  if vs_version:
+    return vs_version
+
+  # Try using the toolchain in depot_tools.
+  # This sets environment variables used by SelectVisualStudioVersion below.
+  sys.path.append(os.path.join(CHROMIUM_DIR, 'build'))
+  import vs_toolchain
+  vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
+
+  # Use gyp to find the MSVS installation, either in depot_tools as per above,
+  # or a system-wide installation otherwise.
+  sys.path.append(os.path.join(CHROMIUM_DIR, 'tools', 'gyp', 'pylib'))
+  import gyp.MSVSVersion
+  vs_version = gyp.MSVSVersion.SelectVisualStudioVersion('2013')
   return vs_version
 
 
