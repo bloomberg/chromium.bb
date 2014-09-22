@@ -52,11 +52,8 @@ public:
     void consume(const uint8_t** data, size_t* length)
     {
         MutexLocker locker(m_mutex);
-        if (tryGetData(data, length))
-            return;
-        m_haveData.wait(m_mutex);
-        bool success = tryGetData(data, length);
-        ASSERT_UNUSED(success, success);
+        while (!tryGetData(data, length))
+            m_haveData.wait(m_mutex);
     }
 
 private:
@@ -214,20 +211,13 @@ private:
     SourceStreamDataQueue m_dataQueue; // Thread safe.
 };
 
+size_t ScriptStreamer::kSmallScriptThreshold = 30 * 1024;
 
 bool ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, ScriptState* scriptState)
 {
     ASSERT(isMainThread());
     if (!settings || !settings->v8ScriptStreamingEnabled())
         return false;
-    if (ScriptStreamerThread::shared()->isRunningTask()) {
-        // At the moment we only have one thread for running the tasks. A new
-        // task shouldn't be queued before the running task completes, because
-        // the running task can block and wait for data from the network. At the
-        // moment we are only streaming parser blocking scripts, but this code
-        // can still be hit when multiple frames are loading simultaneously.
-        return false;
-    }
     ScriptResource* resource = script.resource();
     if (!resource->url().protocolIsInHTTPFamily())
         return false;
@@ -272,19 +262,18 @@ bool ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, S
 
     // Decide what kind of cached data we should produce while streaming. By
     // default, we generate the parser cache for streamed scripts, to emulate
-    // the non-streaming behavior (seeV8ScriptRunner::compileScript).
+    // the non-streaming behavior (see V8ScriptRunner::compileScript).
     v8::ScriptCompiler::CompileOptions compileOption = v8::ScriptCompiler::kProduceParserCache;
     if (settings->v8CacheOptions() == V8CacheOptionsCode)
         compileOption = v8::ScriptCompiler::kProduceCodeCache;
     v8::ScriptCompiler::ScriptStreamingTask* scriptStreamingTask = v8::ScriptCompiler::StartStreamingScript(scriptState->isolate(), &(streamer->m_source), compileOption);
     if (scriptStreamingTask) {
-        ScriptStreamingTask* task = new ScriptStreamingTask(scriptStreamingTask, streamer.get());
+        streamer->m_task = scriptStreamingTask;
         // ScriptStreamer needs to stay alive as long as the background task is
         // running. This is taken care of with a manual ref() & deref() pair;
         // the corresponding deref() is in streamingComplete.
         streamer->ref();
         script.setStreamer(streamer.release());
-        ScriptStreamerThread::shared()->postTask(task);
         return true;
     }
     // Otherwise, V8 cannot stream the script.
@@ -296,8 +285,10 @@ void ScriptStreamer::streamingComplete()
     ASSERT(isMainThread());
     // It's possible that the corresponding Resource was deleted before V8
     // finished streaming. In that case, the data or the notification is not
-    // needed.
-    if (m_detached) {
+    // needed. In addition, if the streaming is suppressed, the non-streaming
+    // code path will resume after the resource has loaded, before the
+    // background task finishes.
+    if (m_detached || m_streamingSuppressed) {
         deref();
         return;
     }
@@ -325,10 +316,42 @@ void ScriptStreamer::cancel()
     m_stream->cancel();
 }
 
+void ScriptStreamer::suppressStreaming()
+{
+    ASSERT(!m_parsingFinished);
+    ASSERT(!m_loadingFinished);
+    m_streamingSuppressed = true;
+}
+
 void ScriptStreamer::notifyAppendData(ScriptResource* resource)
 {
     ASSERT(isMainThread());
     ASSERT(m_resource == resource);
+    if (m_streamingSuppressed)
+        return;
+    if (!m_firstDataChunkReceived) {
+        m_firstDataChunkReceived = true;
+        // Check the size of the first data chunk. The expectation is that if
+        // the first chunk is small, there won't be a second one. In those
+        // cases, it doesn't make sense to stream at all.
+        if (resource->resourceBuffer()->size() < kSmallScriptThreshold) {
+            suppressStreaming();
+            return;
+        }
+        if (ScriptStreamerThread::shared()->isRunningTask()) {
+            // At the moment we only have one thread for running the tasks. A
+            // new task shouldn't be queued before the running task completes,
+            // because the running task can block and wait for data from the
+            // network. At the moment we are only streaming parser blocking
+            // scripts, but this code can still be hit when multiple frames are
+            // loading simultaneously.
+            suppressStreaming();
+            return;
+        }
+        ScriptStreamingTask* task = new ScriptStreamingTask(m_task, this);
+        ScriptStreamerThread::shared()->postTask(task);
+        m_task = 0;
+    }
     m_stream->didReceiveData();
 }
 
@@ -347,8 +370,10 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::Str
     , m_stream(new SourceStream(this))
     , m_source(m_stream, encoding) // m_source takes ownership of m_stream.
     , m_client(0)
+    , m_task(0)
     , m_loadingFinished(false)
     , m_parsingFinished(false)
+    , m_firstDataChunkReceived(false)
     , m_streamingSuppressed(false)
 {
 }
@@ -364,8 +389,9 @@ void ScriptStreamer::notifyFinishedToClient()
     // function calling notifyFinishedToClient was already scheduled in the task
     // queue and the upper layer decided that it's not interested in the script
     // and called removeClient.
-    if (m_loadingFinished && m_parsingFinished && m_client)
+    if (m_loadingFinished && (m_parsingFinished || m_streamingSuppressed) && m_client) {
         m_client->notifyFinished(m_resource);
+    }
 }
 
 } // namespace blink

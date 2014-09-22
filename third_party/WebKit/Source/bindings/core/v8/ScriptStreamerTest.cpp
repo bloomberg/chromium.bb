@@ -68,6 +68,7 @@ public:
     {
         m_settings->setV8ScriptStreamingEnabled(true);
         m_resource->setLoading(true);
+        ScriptStreamer::removeSmallScriptThresholdForTesting();
     }
 
     ScriptState* scriptState() const { return m_scope.scriptState(); }

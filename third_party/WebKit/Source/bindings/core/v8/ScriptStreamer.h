@@ -37,7 +37,10 @@ public:
     // streaming finishes.
     static bool startStreaming(PendingScript&, Settings*, ScriptState*);
 
-    bool streamingInProgress() const { return !m_loadingFinished || !m_parsingFinished; }
+    bool streamingInProgress() const
+    {
+        return !m_loadingFinished || (!m_parsingFinished && !m_streamingSuppressed);
+    }
 
     v8::ScriptCompiler::StreamedSource* source() { return &m_source; }
     ScriptResource* resource() const { return m_resource; }
@@ -54,7 +57,7 @@ public:
     // started streaming but then we detect we don't want to stream (e.g., when
     // we have the code cache for the script) and we still want to parse and
     // execute it when it has finished loading.
-    void suppressStreaming() { m_streamingSuppressed = true; }
+    void suppressStreaming();
     bool streamingSuppressed() const { return m_streamingSuppressed; }
 
     unsigned cachedDataType() const { return m_cachedDataType; }
@@ -79,7 +82,18 @@ public:
     // has processed it.
     void streamingComplete();
 
+    static void removeSmallScriptThresholdForTesting()
+    {
+        kSmallScriptThreshold = 0;
+    }
+
+    static size_t smallScriptThreshold() { return kSmallScriptThreshold; }
+
 private:
+    // Scripts whose first data chunk is smaller than this constant won't be
+    // streamed. Non-const for testing.
+    static size_t kSmallScriptThreshold;
+
     ScriptStreamer(ScriptResource*, v8::ScriptCompiler::StreamedSource::Encoding);
 
     void notifyFinishedToClient();
@@ -96,8 +110,10 @@ private:
     SourceStream* m_stream;
     v8::ScriptCompiler::StreamedSource m_source;
     ScriptResourceClient* m_client;
+    v8::ScriptCompiler::ScriptStreamingTask* m_task;
     bool m_loadingFinished; // Whether loading from the network is done.
     bool m_parsingFinished; // Whether the V8 side processing is done.
+    bool m_firstDataChunkReceived;
 
     // Whether the script source code should be retrieved from the Resource
     // instead of the ScriptStreamer.
