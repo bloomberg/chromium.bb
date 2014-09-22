@@ -16,7 +16,6 @@ namespace app_list {
 
 namespace {
 
-const int kButtonImageSize = 32;
 const int kButtonSpacing = 4;
 const int kMinimumHeight = 39;
 
@@ -49,12 +48,9 @@ ContentsSwitcherView::~ContentsSwitcherView() {}
 
 void ContentsSwitcherView::AddSwitcherButton(int resource_id, int page_index) {
   views::ImageButton* button = new views::ImageButton(this);
-  button->SetPreferredSize(gfx::Size(kButtonImageSize, kButtonImageSize));
-  if (resource_id) {
-    button->SetImage(
-        views::CustomButton::STATE_NORMAL,
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
-  }
+  button->SetImage(
+      views::CustomButton::STATE_NORMAL,
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
   button->set_tag(page_index);
 
   // Add an indicator for the current launcher page.

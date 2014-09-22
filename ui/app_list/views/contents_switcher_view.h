@@ -28,8 +28,7 @@ class ContentsSwitcherView : public views::View,
   ContentsView* contents_view() const { return contents_view_; }
 
   // Adds a switcher button using |resource_id| as the button's image, which
-  // opens the page with index |page_index| in the ContentsView. |resource_id|
-  // is ignored if it is 0.
+  // opens the page with index |page_index| in the ContentsView.
   void AddSwitcherButton(int resource_id, int page_index);
 
  private:

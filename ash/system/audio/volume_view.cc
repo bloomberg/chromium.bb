@@ -47,7 +47,6 @@ class VolumeButton : public views::ToggleImageButton {
     SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
     image_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
-    SetPreferredSize(gfx::Size(kTrayPopupItemHeight, kTrayPopupItemHeight));
     Update();
   }
 

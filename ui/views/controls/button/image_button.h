@@ -57,11 +57,11 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
 
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
 
-  // Sets preferred size, so it could be correctly positioned in layout even if
-  // it is NULL.
-  void SetPreferredSize(const gfx::Size& preferred_size) {
-    preferred_size_ = preferred_size;
-  }
+  // The minimum size of the contents (not including the border). The contents
+  // will be at least this size, but may be larger if the image itself is
+  // larger.
+  const gfx::Size& minimum_image_size() const { return minimum_image_size_; }
+  void SetMinimumImageSize(const gfx::Size& size);
 
   // Whether we should draw our images resources horizontally flipped.
   void SetDrawImageMirrored(bool mirrored) {
@@ -104,7 +104,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   // Image alignment.
   HorizontalAlignment h_alignment_;
   VerticalAlignment v_alignment_;
-  gfx::Size preferred_size_;
+  gfx::Size minimum_image_size_;
 
   // Whether we draw our resources horizontally flipped. This can happen in the
   // linux titlebar, where image resources were designed to be flipped so a

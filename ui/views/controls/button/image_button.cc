@@ -15,8 +15,11 @@
 
 namespace views {
 
-static const int kDefaultWidth = 16;   // Default button width if no theme.
-static const int kDefaultHeight = 14;  // Default button height if no theme.
+// Default button size if no image is set. This is ignored if there is an image,
+// and exists for historical reasons (any number of clients could depend on this
+// behaviour).
+static const int kDefaultWidth = 16;
+static const int kDefaultHeight = 14;
 
 const char ImageButton::kViewClassName[] = "ImageButton";
 
@@ -27,7 +30,6 @@ ImageButton::ImageButton(ButtonListener* listener)
     : CustomButton(listener),
       h_alignment_(ALIGN_LEFT),
       v_alignment_(ALIGN_TOP),
-      preferred_size_(kDefaultWidth, kDefaultHeight),
       draw_image_mirrored_(false),
       focus_painter_(Painter::CreateDashedFocusPainter()) {
   // By default, we request that the gfx::Canvas passed to our View::OnPaint()
@@ -71,15 +73,25 @@ void ImageButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
   focus_painter_ = focus_painter.Pass();
 }
 
+void ImageButton::SetMinimumImageSize(const gfx::Size& size) {
+  if (minimum_image_size_ == size)
+    return;
+
+  minimum_image_size_ = size;
+  PreferredSizeChanged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, View overrides:
 
 gfx::Size ImageButton::GetPreferredSize() const {
-  gfx::Size size = preferred_size_;
+  gfx::Size size(kDefaultWidth, kDefaultHeight);
   if (!images_[STATE_NORMAL].isNull()) {
     size = gfx::Size(images_[STATE_NORMAL].width(),
                      images_[STATE_NORMAL].height());
   }
+
+  size.SetToMax(minimum_image_size_);
 
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());

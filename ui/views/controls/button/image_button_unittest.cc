@@ -28,12 +28,13 @@ TEST_F(ImageButtonTest, Basics) {
   // Our image to paint starts empty.
   EXPECT_TRUE(button.GetImageToPaint().isNull());
 
-  // Without a theme, buttons are 16x14 by default.
+  // Without an image, buttons are 16x14 by default.
   EXPECT_EQ("16x14", button.GetPreferredSize().ToString());
 
-  // We can set a preferred size when we have no image.
-  button.SetPreferredSize(gfx::Size(5, 15));
-  EXPECT_EQ("5x15", button.GetPreferredSize().ToString());
+  // The minimum image size should be applied even when there is no image.
+  button.SetMinimumImageSize(gfx::Size(5, 15));
+  EXPECT_EQ("5x15", button.minimum_image_size().ToString());
+  EXPECT_EQ("16x15", button.GetPreferredSize().ToString());
 
   // Set a normal image.
   gfx::ImageSkia normal_image = CreateTestImage(10, 20);
@@ -59,6 +60,14 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_FALSE(button.GetImageToPaint().isNull());
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
+
+  // The minimum image size should make the preferred size bigger.
+  button.SetMinimumImageSize(gfx::Size(15, 5));
+  EXPECT_EQ("15x5", button.minimum_image_size().ToString());
+  EXPECT_EQ("15x20", button.GetPreferredSize().ToString());
+  button.SetMinimumImageSize(gfx::Size(15, 25));
+  EXPECT_EQ("15x25", button.minimum_image_size().ToString());
+  EXPECT_EQ("15x25", button.GetPreferredSize().ToString());
 }
 
 TEST_F(ImageButtonTest, SetAndGetImage) {
@@ -112,6 +121,13 @@ TEST_F(ImageButtonTest, ImagePositionWithBorder) {
   button.SetBorder(views::Border::CreateEmptyBorder(10, 10, 0, 0));
   EXPECT_EQ(gfx::Point(20, 15).ToString(),
             button.ComputeImagePaintPosition(image).ToString());
+
+  // The entire button's size should take the border into account.
+  EXPECT_EQ(gfx::Size(30, 40).ToString(), button.GetPreferredSize().ToString());
+
+  // The border should be added on top of the minimum image size.
+  button.SetMinimumImageSize(gfx::Size(30, 5));
+  EXPECT_EQ(gfx::Size(40, 40).ToString(), button.GetPreferredSize().ToString());
 }
 
 TEST_F(ImageButtonTest, LeftAlignedMirrored) {
