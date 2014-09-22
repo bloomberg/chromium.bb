@@ -42,8 +42,6 @@ class SyncFrontend;
 
 namespace browser_sync {
 
-class SyncedDeviceTracker;
-
 // An API to "host" the top level SyncAPI element.
 //
 // This class handles dispatch of potentially blocking calls to appropriate
@@ -186,9 +184,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
 
   virtual void GetModelSafeRoutingInfo(
       syncer::ModelSafeRoutingInfo* out) const = 0;
-
-  // Fetches the DeviceInfo tracker.
-  virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const = 0;
 
   // Requests that the backend forward to the fronent any protocol events in
   // its buffer and begin forwarding automatically from now on.  Repeated calls

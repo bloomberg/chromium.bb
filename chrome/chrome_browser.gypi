@@ -1267,8 +1267,6 @@
       'browser/sync/glue/sync_backend_registrar.h',
       'browser/sync/glue/sync_start_util.cc',
       'browser/sync/glue/sync_start_util.h',
-      'browser/sync/glue/synced_device_tracker.cc',
-      'browser/sync/glue/synced_device_tracker.h',
       'browser/sync/glue/synced_session.cc',
       'browser/sync/glue/synced_session.h',
       'browser/sync/glue/synced_session_tracker.cc',

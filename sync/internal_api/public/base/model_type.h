@@ -92,6 +92,8 @@ enum ModelType {
   FAVICON_IMAGES,
   // Favicon tracking information.
   FAVICON_TRACKING,
+  // Client-specific metadata, synced before other user types.
+  DEVICE_INFO,
   // These preferences are synced before other user types and are never
   // encrypted.
   PRIORITY_PREFERENCES,
@@ -117,22 +119,17 @@ enum ModelType {
   // Tab sync. This is a placeholder type, so that Sessions can be implicitly
   // enabled for history sync and tabs sync.
   PROXY_TABS,
-
   FIRST_PROXY_TYPE = PROXY_TABS,
   LAST_PROXY_TYPE = PROXY_TABS,
-
   LAST_USER_MODEL_TYPE = PROXY_TABS,
 
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
   NIGORI,
   FIRST_CONTROL_MODEL_TYPE = NIGORI,
-  // Client-specific metadata.
-  DEVICE_INFO,
   // Flags to enable experimental features.
   EXPERIMENTS,
   LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
-
   LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
 
   // If you are adding a new sync datatype that is exposed to the user via the
@@ -141,7 +138,6 @@ enum ModelType {
   // histograms for sync include your new type.  In this case, be sure to also
   // update the UserSelectableTypes() definition in
   // sync/syncable/model_type.cc.
-
   MODEL_TYPE_COUNT,
 };
 

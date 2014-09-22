@@ -40,8 +40,7 @@ struct DoInitializeOptions {
       scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function,
-      const std::string& signin_scoped_device_id);
+          report_unrecoverable_error_function);
   ~DoInitializeOptions();
 
   base::MessageLoop* sync_loop;
@@ -64,7 +63,6 @@ struct DoInitializeOptions {
   scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler;
   syncer::ReportUnrecoverableErrorFunction
       report_unrecoverable_error_function;
-  std::string signin_scoped_device_id;
 };
 
 // Helper struct to handle currying params to
@@ -180,14 +178,8 @@ class SyncBackendHostCore
   void OnControlTypesDownloadRetry();
 
   // Called to perform tasks which require the control data to be downloaded.
-  // This includes refreshing encryption, setting up the device info change
-  // processor, etc.
+  // This includes refreshing encryption, etc.
   void DoInitialProcessControlTypes();
-
-  // Some parts of DoInitialProcessControlTypes() may be executed on a different
-  // thread.  This function asynchronously continues the work started in
-  // DoInitialProcessControlTypes() once that other thread gets back to us.
-  void DoFinishInitialProcessControlTypes();
 
   // The shutdown order is a bit complicated:
   // 1) Call ShutdownOnUIThread() from |frontend_loop_| to request sync manager
@@ -218,10 +210,6 @@ class SyncBackendHostCore
   // on the IO thread. Must be removed from IO thread.
 
   syncer::SyncManager* sync_manager() { return sync_manager_.get(); }
-
-  SyncedDeviceTracker* synced_device_tracker() {
-    return synced_device_tracker_.get();
-  }
 
   void SendBufferedProtocolEventsAndEnableForwarding();
   void DisableProtocolEventForwarding();
@@ -293,9 +281,6 @@ class SyncBackendHostCore
   // Our encryptor, which uses Chrome's encryption functions.
   sync_driver::SystemEncryptor encryptor_;
 
-  // A special ChangeProcessor that tracks the DEVICE_INFO type for us.
-  scoped_ptr<SyncedDeviceTracker> synced_device_tracker_;
-
   // The top-level syncapi entry point.  Lives on the sync thread.
   scoped_ptr<syncer::SyncManager> sync_manager_;
 
@@ -322,10 +307,6 @@ class SyncBackendHostCore
 
   // Set when the forwarding of per-type debug counters is enabled.
   bool forward_type_info_;
-
-  // Obtained from SigninClient::GetSigninScopedDeviceId(). Stored here just to
-  // pass from SyncBackendHostImpl to SyncedDeviceTracker.
-  std::string signin_scoped_device_id_;
 
   base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
 

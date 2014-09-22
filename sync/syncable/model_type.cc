@@ -373,6 +373,9 @@ ModelTypeSet EncryptableUserTypes() {
   // Synced Notification App Info does not have private data, so it is not
   // encrypted.
   encryptable_user_types.Remove(SYNCED_NOTIFICATION_APP_INFO);
+  // Device info data is not encrypted because it might be synced before
+  // encryption is ready.
+  encryptable_user_types.Remove(DEVICE_INFO);
   // Priority preferences are not encrypted because they might be synced before
   // encryption is ready.
   encryptable_user_types.Remove(PRIORITY_PREFERENCES);
@@ -391,7 +394,7 @@ ModelTypeSet EncryptableUserTypes() {
 }
 
 ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(PRIORITY_PREFERENCES);
+  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES);
 }
 
 ModelTypeSet ControlTypes() {

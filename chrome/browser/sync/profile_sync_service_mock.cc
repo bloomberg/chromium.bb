@@ -55,12 +55,3 @@ KeyedService* ProfileSyncServiceMock::BuildMockProfileSyncService(
     content::BrowserContext* profile) {
   return new ProfileSyncServiceMock(static_cast<Profile*>(profile));
 }
-
-ScopedVector<browser_sync::DeviceInfo>
-    ProfileSyncServiceMock::GetAllSignedInDevices() const {
-  ScopedVector<browser_sync::DeviceInfo> devices;
-  std::vector<browser_sync::DeviceInfo*>* device_vector =
-      GetAllSignedInDevicesMock();
-  devices.get() = *device_vector;
-  return devices.Pass();
-}

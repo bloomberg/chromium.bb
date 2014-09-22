@@ -341,6 +341,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncArticles;
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return prefs::kSyncSupervisedUserSharedSettings;
+    case syncer::DEVICE_INFO:
+      return prefs::kSyncDeviceInfo;
     default:
       break;
   }

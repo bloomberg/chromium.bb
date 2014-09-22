@@ -23,13 +23,56 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::DeviceInfo;
+using browser_sync::DeviceInfoTracker;
 using testing::Return;
 
 namespace extensions {
 
+class MockDeviceInfoTracker : public DeviceInfoTracker {
+ public:
+  virtual ~MockDeviceInfoTracker() {}
+
+  virtual scoped_ptr<DeviceInfo> GetDeviceInfo(
+      const std::string& client_id) const OVERRIDE {
+    NOTREACHED();
+    return scoped_ptr<DeviceInfo>();
+  }
+
+  static DeviceInfo* CloneDeviceInfo(const DeviceInfo* device_info) {
+    return new DeviceInfo(device_info->guid(),
+                          device_info->client_name(),
+                          device_info->chrome_version(),
+                          device_info->sync_user_agent(),
+                          device_info->device_type(),
+                          device_info->signin_scoped_device_id());
+  }
+
+  virtual ScopedVector<DeviceInfo> GetAllDeviceInfo() const OVERRIDE {
+    ScopedVector<DeviceInfo> list;
+
+    for (std::vector<const DeviceInfo*>::const_iterator iter = devices_.begin();
+         iter != devices_.end();
+         ++iter) {
+      list.push_back(CloneDeviceInfo(*iter));
+    }
+
+    return list.Pass();
+  }
+
+  virtual void AddObserver(Observer* observer) OVERRIDE { NOTREACHED(); }
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE { NOTREACHED(); }
+
+  void Add(const DeviceInfo* device) { devices_.push_back(device); }
+
+ private:
+  // DeviceInfo stored here are not owned.
+  std::vector<const DeviceInfo*> devices_;
+};
+
 TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   TestingProfile profile;
-  ProfileSyncServiceMock pss_mock(&profile);
+  MockDeviceInfoTracker device_tracker;
   base::MessageLoop message_loop_;
   TestExtensionPrefs extension_prefs(
       message_loop_.message_loop_proxy().get());
@@ -53,28 +96,18 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                           "device_id");
 
-  std::vector<DeviceInfo*> devices;
-  devices.push_back(&device_info1);
-  devices.push_back(&device_info2);
-
-  EXPECT_CALL(pss_mock, GetAllSignedInDevicesMock()).
-              WillOnce(Return(&devices));
+  device_tracker.Add(&device_info1);
+  device_tracker.Add(&device_info2);
 
   ScopedVector<DeviceInfo> output1 = GetAllSignedInDevices(
-      extension_test.get()->id(),
-      &pss_mock,
-      extension_prefs.prefs());
+      extension_test.get()->id(), &device_tracker, extension_prefs.prefs());
 
-  std::string public_id1 = device_info1.public_id();
-  std::string public_id2 = device_info2.public_id();
+  std::string public_id1 = output1[0]->public_id();
+  std::string public_id2 = output1[1]->public_id();
 
   EXPECT_FALSE(public_id1.empty());
   EXPECT_FALSE(public_id2.empty());
   EXPECT_NE(public_id1, public_id2);
-
-  // Now clear output1 so its destructor will not destroy the pointers for
-  // |device_info1| and |device_info2|.
-  output1.weak_clear();
 
   // Add a third device and make sure the first 2 ids are retained and a new
   // id is generated for the third device.
@@ -85,27 +118,18 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                           "device_id");
 
-  devices.push_back(&device_info3);
-
-  EXPECT_CALL(pss_mock, GetAllSignedInDevicesMock()).
-              WillOnce(Return(&devices));
+  device_tracker.Add(&device_info3);
 
   ScopedVector<DeviceInfo> output2 = GetAllSignedInDevices(
-      extension_test.get()->id(),
-      &pss_mock,
-      extension_prefs.prefs());
+      extension_test.get()->id(), &device_tracker, extension_prefs.prefs());
 
-  EXPECT_EQ(device_info1.public_id(), public_id1);
-  EXPECT_EQ(device_info2.public_id(), public_id2);
+  EXPECT_EQ(output2[0]->public_id(), public_id1);
+  EXPECT_EQ(output2[1]->public_id(), public_id2);
 
-  std::string public_id3 = device_info3.public_id();
+  std::string public_id3 = output2[2]->public_id();
   EXPECT_FALSE(public_id3.empty());
   EXPECT_NE(public_id3, public_id1);
   EXPECT_NE(public_id3, public_id2);
-
-  // Now clear output2 so that its destructor does not destroy the
-  // |DeviceInfo| pointers.
-  output2.weak_clear();
 }
 
 class ProfileSyncServiceMockForExtensionTests:
@@ -116,6 +140,7 @@ class ProfileSyncServiceMockForExtensionTests:
   ~ProfileSyncServiceMockForExtensionTests() {}
 
   MOCK_METHOD0(Shutdown, void());
+  MOCK_CONST_METHOD0(GetDeviceInfoTracker, DeviceInfoTracker*());
 };
 
 KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
@@ -132,15 +157,6 @@ class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {
         profile(), CreateProfileSyncServiceMock);
   }
 };
-
-DeviceInfo* CreateDeviceInfo(const DeviceInfo& device_info) {
-  return new DeviceInfo(device_info.guid(),
-                        device_info.client_name(),
-                        device_info.chrome_version(),
-                        device_info.sync_user_agent(),
-                        device_info.device_type(),
-                        device_info.signin_scoped_device_id());
-}
 
 std::string GetPublicId(const base::DictionaryValue* dictionary) {
   std::string public_id;
@@ -174,6 +190,7 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
   ProfileSyncServiceMockForExtensionTests* pss_mock =
       static_cast<ProfileSyncServiceMockForExtensionTests*>(
           ProfileSyncServiceFactory::GetForProfile(profile()));
+  MockDeviceInfoTracker device_tracker;
 
   DeviceInfo device_info1(base::GenerateGUID(),
                           "abc Device",
@@ -189,12 +206,11 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                           "device_id");
 
-  std::vector<DeviceInfo*> devices;
-  devices.push_back(CreateDeviceInfo(device_info1));
-  devices.push_back(CreateDeviceInfo(device_info2));
+  device_tracker.Add(&device_info1);
+  device_tracker.Add(&device_info2);
 
-  EXPECT_CALL(*pss_mock, GetAllSignedInDevicesMock()).
-              WillOnce(Return(&devices));
+  EXPECT_CALL(*pss_mock, GetDeviceInfoTracker())
+      .WillOnce(Return(&device_tracker));
 
   EXPECT_CALL(*pss_mock, Shutdown());
 
@@ -214,6 +230,21 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
   EXPECT_FALSE(public_id1.empty());
   EXPECT_FALSE(public_id2.empty());
   EXPECT_NE(public_id1, public_id2);
+}
+
+TEST_F(ExtensionSignedInDevicesTest, DeviceInfoTrackerNotInitialized) {
+  ProfileSyncServiceMockForExtensionTests* pss_mock =
+      static_cast<ProfileSyncServiceMockForExtensionTests*>(
+          ProfileSyncServiceFactory::GetForProfile(profile()));
+
+  EXPECT_CALL(*pss_mock, GetDeviceInfoTracker())
+    .WillOnce(Return((DeviceInfoTracker*)NULL));
+  EXPECT_CALL(*pss_mock, Shutdown());
+
+  ScopedVector<DeviceInfo> output = GetAllSignedInDevices(
+      extension()->id(), profile());
+
+  EXPECT_TRUE(output.empty());
 }
 
 }  // namespace extensions

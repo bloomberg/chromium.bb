@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
+#include "chrome/browser/sync/glue/device_info_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
@@ -104,6 +105,7 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChromeReportUnrecoverableError;
+using browser_sync::DeviceInfoDataTypeController;
 using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
@@ -185,6 +187,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types,
     ProfileSyncService* pss) {
+  // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
+  pss->RegisterDataTypeController(new DeviceInfoDataTypeController(
+      this, pss->GetLocalDeviceInfoProvider()));
+
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL)) {
@@ -443,6 +449,10 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
      return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
+    case syncer::DEVICE_INFO:
+      return ProfileSyncServiceFactory::GetForProfile(profile_)
+          ->GetDeviceInfoSyncableService()
+          ->AsWeakPtr();
     case syncer::PREFERENCES:
       return PrefServiceSyncable::FromProfile(
           profile_)->GetSyncableService(syncer::PREFERENCES)->AsWeakPtr();

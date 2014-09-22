@@ -13,6 +13,7 @@
 
 namespace browser_sync {
 class DeviceInfo;
+class DeviceInfoTracker;
 }  // namespace browser_sync
 
 namespace extensions {
@@ -20,7 +21,6 @@ class ExtensionPrefs;
 }  // namespace extensions
 
 class Profile;
-class ProfileSyncService;
 
 namespace extensions {
 
@@ -34,7 +34,7 @@ ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices(
 
 ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
-    ProfileSyncService* pss,
+    browser_sync::DeviceInfoTracker* device_tracker,
     ExtensionPrefs* extension_prefs);
 
 class SignedInDevicesGetFunction : public ChromeSyncExtensionFunction {

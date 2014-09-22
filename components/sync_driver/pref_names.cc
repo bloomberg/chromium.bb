@@ -38,6 +38,7 @@ const char kSyncArticles[] = "sync.articles";
 const char kSyncAutofillProfile[] = "sync.autofill_profile";
 const char kSyncAutofill[] = "sync.autofill";
 const char kSyncBookmarks[] = "sync.bookmarks";
+const char kSyncDeviceInfo[] = "sync.device_info";
 const char kSyncDictionary[] = "sync.dictionary";
 const char kSyncExtensionSettings[] = "sync.extension_settings";
 const char kSyncExtensions[] = "sync.extensions";

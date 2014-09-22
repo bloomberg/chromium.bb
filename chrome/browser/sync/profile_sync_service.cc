@@ -47,11 +47,9 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
-#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/sync_error_controller.h"
 #include "chrome/browser/sync/sync_type_preference_provider.h"
@@ -259,6 +257,8 @@ ProfileSyncService::ProfileSyncService(
   local_device_ = factory_->CreateLocalDeviceInfoProvider();
   sessions_sync_manager_.reset(
       new SessionsSyncManager(profile, local_device_.get(), router.Pass()));
+  device_info_sync_service_.reset(
+      new DeviceInfoSyncService(local_device_.get()));
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -426,15 +426,18 @@ void ProfileSyncService::InitializeNonBlockingType(
       type, task_runner, type_sync_proxy);
 }
 
-bool ProfileSyncService::IsSessionsDataTypeControllerRunning() const {
-  return directory_data_type_controllers_.find(syncer::SESSIONS) !=
-      directory_data_type_controllers_.end() &&
-      (directory_data_type_controllers_.find(syncer::SESSIONS)->
-       second->state() == DataTypeController::RUNNING);
+bool ProfileSyncService::IsDataTypeControllerRunning(
+    syncer::ModelType type) const {
+  DataTypeController::TypeMap::const_iterator iter =
+      directory_data_type_controllers_.find(type);
+  if (iter == directory_data_type_controllers_.end()) {
+    return false;
+  }
+  return iter->second->state() == DataTypeController::RUNNING;
 }
 
 browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
-  if (!IsSessionsDataTypeControllerRunning())
+  if (!IsDataTypeControllerRunning(syncer::SESSIONS))
     return NULL;
   return sessions_sync_manager_.get();
 }
@@ -448,58 +451,17 @@ ProfileSyncService::GetSyncedWindowDelegatesGetter() const {
   return sessions_sync_manager_->GetSyncedWindowDelegatesGetter();
 }
 
+browser_sync::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
+    const {
+  if (!IsDataTypeControllerRunning(syncer::DEVICE_INFO))
+    return NULL;
+
+  return device_info_sync_service_.get();
+}
+
 browser_sync::LocalDeviceInfoProvider*
 ProfileSyncService::GetLocalDeviceInfoProvider() {
   return local_device_.get();
-}
-
-scoped_ptr<browser_sync::DeviceInfo>
-ProfileSyncService::GetDeviceInfo(const std::string& client_id) const {
-  if (HasSyncingBackend()) {
-    browser_sync::SyncedDeviceTracker* device_tracker =
-        backend_->GetSyncedDeviceTracker();
-    if (device_tracker)
-      return device_tracker->ReadDeviceInfo(client_id);
-  }
-  return scoped_ptr<browser_sync::DeviceInfo>();
-}
-
-ScopedVector<browser_sync::DeviceInfo>
-    ProfileSyncService::GetAllSignedInDevices() const {
-  ScopedVector<browser_sync::DeviceInfo> devices;
-  if (HasSyncingBackend()) {
-    browser_sync::SyncedDeviceTracker* device_tracker =
-        backend_->GetSyncedDeviceTracker();
-    if (device_tracker) {
-      // TODO(lipalani) - Make device tracker return a scoped vector.
-      device_tracker->GetAllSyncedDeviceInfo(&devices);
-    }
-  }
-  return devices.Pass();
-}
-
-// Notifies the observer of any device info changes.
-void ProfileSyncService::AddObserverForDeviceInfoChange(
-    browser_sync::SyncedDeviceTracker::Observer* observer) {
-  if (HasSyncingBackend()) {
-    browser_sync::SyncedDeviceTracker* device_tracker =
-        backend_->GetSyncedDeviceTracker();
-    if (device_tracker) {
-      device_tracker->AddObserver(observer);
-    }
-  }
-}
-
-// Removes the observer from device info change notification.
-void ProfileSyncService::RemoveObserverForDeviceInfoChange(
-    browser_sync::SyncedDeviceTracker::Observer* observer) {
-  if (HasSyncingBackend()) {
-    browser_sync::SyncedDeviceTracker* device_tracker =
-        backend_->GetSyncedDeviceTracker();
-    if (device_tracker) {
-      device_tracker->RemoveObserver(observer);
-    }
-  }
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(
@@ -1048,10 +1010,8 @@ void ProfileSyncService::PostBackendInitialization() {
   DCHECK_EQ(backend_mode_, SYNC);
 
   if (last_backup_time_) {
-    browser_sync::SyncedDeviceTracker* device_tracker =
-        backend_->GetSyncedDeviceTracker();
-    if (device_tracker)
-      device_tracker->UpdateLocalDeviceBackupTime(*last_backup_time_);
+    DCHECK(device_info_sync_service_);
+    device_info_sync_service_->UpdateLocalDeviceBackupTime(*last_backup_time_);
   }
 
   if (protocol_event_observers_.might_have_observers()) {
@@ -1157,7 +1117,7 @@ void ProfileSyncService::OnBackendInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
-  if (IsSessionsDataTypeControllerRunning()) {
+  if (IsDataTypeControllerRunning(syncer::SESSIONS)) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -2608,6 +2568,10 @@ syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
   return sessions_sync_manager_.get();
 }
 
+syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
+  return device_info_sync_service_.get();
+}
+
 ProfileSyncService::SyncTokenStatus::SyncTokenStatus()
     : connection_status(syncer::CONNECTION_NOT_ATTEMPTED),
       last_get_token_error(GoogleServiceAuthError::AuthErrorNone()) {}
@@ -2738,12 +2702,8 @@ void ProfileSyncService::CheckSyncBackupIfNeeded() {
 void ProfileSyncService::CheckSyncBackupCallback(base::Time backup_time) {
   last_backup_time_.reset(new base::Time(backup_time));
 
-  if (HasSyncingBackend() && backend_initialized_) {
-    browser_sync::SyncedDeviceTracker* device_tracker =
-        backend_->GetSyncedDeviceTracker();
-    if (device_tracker)
-      device_tracker->UpdateLocalDeviceBackupTime(*last_backup_time_);
-  }
+  DCHECK(device_info_sync_service_);
+  device_info_sync_service_->UpdateLocalDeviceBackupTime(*last_backup_time_);
 }
 
 void ProfileSyncService::TryStartSyncAfterBackup() {
@@ -2765,5 +2725,5 @@ bool ProfileSyncService::NeedBackup() const {
 }
 
 base::Time ProfileSyncService::GetDeviceBackupTimeForTesting() const {
-  return backend_->GetSyncedDeviceTracker()->GetLocalDeviceBackupTime();
+  return device_info_sync_service_->GetLocalDeviceBackupTime();
 }

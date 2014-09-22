@@ -779,7 +779,6 @@
       'browser/sync/glue/sync_backend_host_mock.cc',
       'browser/sync/glue/sync_backend_host_mock.h',
       'browser/sync/glue/sync_backend_registrar_unittest.cc',
-      'browser/sync/glue/synced_device_tracker_unittest.cc',
       'browser/sync/glue/synced_session_tracker_unittest.cc',
       'browser/sync/glue/typed_url_model_associator_unittest.cc',
       'browser/sync/glue/ui_model_worker_unittest.cc',

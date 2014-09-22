@@ -26,6 +26,7 @@ extern const char kSyncArticles[];
 extern const char kSyncAutofillProfile[];
 extern const char kSyncAutofill[];
 extern const char kSyncBookmarks[];
+extern const char kSyncDeviceInfo[];
 extern const char kSyncDictionary[];
 extern const char kSyncExtensionSettings[];
 extern const char kSyncExtensions[];

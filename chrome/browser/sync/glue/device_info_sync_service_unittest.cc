@@ -11,6 +11,7 @@
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/internal_api/public/attachments/attachment_service_proxy_for_test.h"
+#include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::AttachmentIdList;
@@ -112,7 +113,8 @@ class DeviceInfoSyncServiceTest : public testing::Test,
   }
 
   SyncData CreateRemoteData(const std::string& client_id,
-                            const std::string& client_name) {
+                            const std::string& client_name,
+                            int64 backup_timestamp = 0) {
     sync_pb::EntitySpecifics entity;
     sync_pb::DeviceInfoSpecifics& specifics = *entity.mutable_device_info();
 
@@ -122,6 +124,10 @@ class DeviceInfoSyncServiceTest : public testing::Test,
     specifics.set_sync_user_agent("Chrome 10k");
     specifics.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
     specifics.set_signin_scoped_device_id("device_id");
+
+    if (backup_timestamp != 0) {
+      specifics.set_backup_timestamp(backup_timestamp);
+    }
 
     return SyncData::CreateRemoteData(1,
                                       entity,
@@ -398,6 +404,152 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessChangesAfterUnsubscribing) {
 
   // The number of callback should still be zero.
   EXPECT_EQ(0, num_device_info_changed_callbacks_);
+}
+
+// Verifies setting backup timestamp after the initial sync.
+TEST_F(DeviceInfoSyncServiceTest, UpdateLocalDeviceBackupTime) {
+  // Shouldn't have backuptime initially.
+  base::Time backup_time = sync_service_->GetLocalDeviceBackupTime();
+  EXPECT_TRUE(backup_time.is_null());
+
+  // Perform the initial sync with empty data.
+  SyncMergeResult merge_result =
+      sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
+                                              SyncDataList(),
+                                              PassProcessor(),
+                                              CreateAndPassSyncErrorFactory());
+
+  // Should have local device after the initial sync.
+  EXPECT_EQ(1U, sync_processor_->change_list_size());
+  EXPECT_EQ(SyncChange::ACTION_ADD, sync_processor_->change_type_at(0));
+
+  // Shouldn't have backup time initially.
+  EXPECT_EQ("guid_1", sync_processor_->cache_guid_at(0));
+  EXPECT_FALSE(sync_processor_->device_info_at(0).has_backup_timestamp());
+
+  sync_service_->UpdateLocalDeviceBackupTime(base::Time::FromTimeT(1000));
+
+  // Should have local device info updated with the specified backup timestamp.
+  EXPECT_EQ(1U, sync_processor_->change_list_size());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, sync_processor_->change_type_at(0));
+  EXPECT_EQ("guid_1", sync_processor_->cache_guid_at(0));
+  EXPECT_TRUE(sync_processor_->device_info_at(0).has_backup_timestamp());
+
+  backup_time = syncer::ProtoTimeToTime(
+      sync_processor_->device_info_at(0).backup_timestamp());
+  EXPECT_EQ(1000, backup_time.ToTimeT());
+
+  // Also verify that we get the same backup time directly from the service.
+  backup_time = sync_service_->GetLocalDeviceBackupTime();
+  EXPECT_EQ(1000, backup_time.ToTimeT());
+}
+
+// Verifies setting backup timestamp prior to the initial sync.
+TEST_F(DeviceInfoSyncServiceTest, UpdateLocalDeviceBackupTimeBeforeSync) {
+  // Set the backup timestamp.
+  sync_service_->UpdateLocalDeviceBackupTime(base::Time::FromTimeT(2000));
+  // Verify that we get it back.
+  base::Time backup_time = sync_service_->GetLocalDeviceBackupTime();
+  EXPECT_EQ(2000, backup_time.ToTimeT());
+
+  // Now perform the initial sync with empty data.
+  SyncMergeResult merge_result =
+      sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
+                                              SyncDataList(),
+                                              PassProcessor(),
+                                              CreateAndPassSyncErrorFactory());
+
+  // Should have local device after the initial sync.
+  // Should have the backup timestamp set.
+  EXPECT_EQ(1U, sync_processor_->change_list_size());
+  EXPECT_EQ(SyncChange::ACTION_ADD, sync_processor_->change_type_at(0));
+  EXPECT_EQ("guid_1", sync_processor_->cache_guid_at(0));
+  EXPECT_TRUE(sync_processor_->device_info_at(0).has_backup_timestamp());
+
+  backup_time = syncer::ProtoTimeToTime(
+      sync_processor_->device_info_at(0).backup_timestamp());
+  EXPECT_EQ(2000, backup_time.ToTimeT());
+}
+
+// Verifies that the backup timestamp that comes in the intial sync data
+// gets preserved when there are no changes to the local device.
+TEST_F(DeviceInfoSyncServiceTest, PreserveBackupTimeWithMatchingLocalDevice) {
+  base::Time backup_time = base::Time::FromTimeT(3000);
+  SyncDataList sync_data;
+  sync_data.push_back(CreateRemoteData(
+      "guid_1", "client_1", syncer::TimeToProtoTime(backup_time)));
+
+  SyncMergeResult merge_result =
+      sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
+                                              sync_data,
+                                              PassProcessor(),
+                                              CreateAndPassSyncErrorFactory());
+
+  // Everything is matching so there should be no updates.
+  EXPECT_EQ(0U, sync_processor_->change_list_size());
+
+  // Verify that we get back the same time.
+  backup_time = sync_service_->GetLocalDeviceBackupTime();
+  EXPECT_EQ(3000, backup_time.ToTimeT());
+}
+
+// Verifies that the backup timestamp that comes in the intial sync data
+// gets merged with the local device data.
+TEST_F(DeviceInfoSyncServiceTest, MergeBackupTimeWithMatchingLocalDevice) {
+  base::Time backup_time = base::Time::FromTimeT(4000);
+  SyncDataList sync_data;
+  sync_data.push_back(CreateRemoteData(
+      "guid_1", "foo_1", syncer::TimeToProtoTime(backup_time)));
+
+  SyncMergeResult merge_result =
+      sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
+                                              sync_data,
+                                              PassProcessor(),
+                                              CreateAndPassSyncErrorFactory());
+
+  // Should be one change because of the client name mismatch.
+  // However the backup time passed in the initial data should be merged into
+  // the change.
+  EXPECT_EQ(1U, sync_processor_->change_list_size());
+
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, sync_processor_->change_type_at(0));
+  EXPECT_EQ("guid_1", sync_processor_->cache_guid_at(0));
+  EXPECT_EQ("client_1", sync_processor_->client_name_at(0));
+
+  backup_time = syncer::ProtoTimeToTime(
+      sync_processor_->device_info_at(0).backup_timestamp());
+  EXPECT_EQ(4000, backup_time.ToTimeT());
+}
+
+// Verifies that mismatching backup timestamp generates an update even
+// when the rest of local device data is matching.
+TEST_F(DeviceInfoSyncServiceTest,
+       MergeMismatchingBackupTimeWithMatchingLocalDevice) {
+  base::Time backup_time = base::Time::FromTimeT(5000);
+  SyncDataList sync_data;
+  sync_data.push_back(CreateRemoteData(
+      "guid_1", "client_1", syncer::TimeToProtoTime(backup_time)));
+
+  // Set the backup timestamp different than the one in the sync data.
+  sync_service_->UpdateLocalDeviceBackupTime(base::Time::FromTimeT(6000));
+
+  SyncMergeResult merge_result =
+      sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
+                                              sync_data,
+                                              PassProcessor(),
+                                              CreateAndPassSyncErrorFactory());
+
+  // Should generate and update due to timestamp mismatch.
+  // The locally set timestamp wins.
+  EXPECT_EQ(1U, sync_processor_->change_list_size());
+
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, sync_processor_->change_type_at(0));
+  EXPECT_EQ("guid_1", sync_processor_->cache_guid_at(0));
+  EXPECT_EQ("client_1", sync_processor_->client_name_at(0));
+
+  backup_time = syncer::ProtoTimeToTime(
+      sync_processor_->device_info_at(0).backup_timestamp());
+  EXPECT_EQ(6000, backup_time.ToTimeT());
 }
 
 }  // namespace

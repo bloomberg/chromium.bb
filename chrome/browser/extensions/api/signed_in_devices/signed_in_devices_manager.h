@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/sync/glue/synced_device_tracker.h"
+#include "chrome/browser/sync/glue/device_info_tracker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -38,7 +38,7 @@ struct EventListenerInfo;
 // public ids for devices(public ids for a device, is not the same for
 // all extensions).
 class SignedInDevicesChangeObserver
-    : public browser_sync::SyncedDeviceTracker::Observer {
+    : public browser_sync::DeviceInfoTracker::Observer {
  public:
   SignedInDevicesChangeObserver(const std::string& extension_id,
                                 Profile* profile);

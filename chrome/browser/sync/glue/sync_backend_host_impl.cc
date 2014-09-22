@@ -135,12 +135,6 @@ void SyncBackendHostImpl::Initialize(
         InternalComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
 
-  SigninClient* signin_client =
-      ChromeSigninClientFactory::GetForProfile(profile_);
-  DCHECK(signin_client);
-  std::string signin_scoped_device_id =
-      signin_client->GetSigninScopedDeviceId();
-
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
       registrar_->sync_thread()->message_loop(),
       registrar_.get(),
@@ -162,8 +156,7 @@ void SyncBackendHostImpl::Initialize(
       scoped_ptr<InternalComponentsFactory>(
           new syncer::InternalComponentsFactoryImpl(factory_switches)).Pass(),
       unrecoverable_error_handler.Pass(),
-      report_unrecoverable_error_function,
-      signin_scoped_device_id));
+      report_unrecoverable_error_function));
   InitCore(init_opts.Pass());
 }
 
@@ -512,12 +505,6 @@ void SyncBackendHostImpl::GetModelSafeRoutingInfo(
   } else {
     NOTREACHED();
   }
-}
-
-SyncedDeviceTracker* SyncBackendHostImpl::GetSyncedDeviceTracker() const {
-  if (!initialized())
-    return NULL;
-  return core_->synced_device_tracker();
 }
 
 void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {

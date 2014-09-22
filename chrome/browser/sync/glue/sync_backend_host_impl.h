@@ -56,7 +56,6 @@ namespace browser_sync {
 class ChangeProcessor;
 class SyncBackendHostCore;
 class SyncBackendRegistrar;
-class SyncedDeviceTracker;
 struct DoInitializeOptions;
 
 // The only real implementation of the SyncBackendHost.  See that interface's
@@ -128,7 +127,6 @@ class SyncBackendHostImpl
       const syncer::BaseTransaction* trans) const OVERRIDE;
   virtual void GetModelSafeRoutingInfo(
       syncer::ModelSafeRoutingInfo* out) const OVERRIDE;
-  virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const OVERRIDE;
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
   virtual void EnableDirectoryTypeDebugInfoForwarding() OVERRIDE;

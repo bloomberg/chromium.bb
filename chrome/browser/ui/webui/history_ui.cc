@@ -233,9 +233,11 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
                           const std::string& client_id,
                           std::string* name,
                           std::string* type) {
-  if (sync_service && sync_service->sync_initialized()) {
+  // DeviceInfoTracker becomes available when Sync backend gets initialed.
+  // It must exist in order for remote history entries to be available.
+  if (sync_service && sync_service->GetDeviceInfoTracker()) {
     scoped_ptr<browser_sync::DeviceInfo> device_info =
-        sync_service->GetDeviceInfo(client_id);
+        sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
     if (device_info.get()) {
       *name = device_info->client_name();
       switch (device_info->device_type()) {
@@ -251,7 +253,7 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
       return;
     }
   } else {
-    NOTREACHED() << "Got a remote history entry but no ProfileSyncService.";
+    NOTREACHED() << "Got a remote history entry but no DeviceInfoTracker.";
   }
   *name = l10n_util::GetStringUTF8(IDS_HISTORY_UNKNOWN_DEVICE);
   *type = kDeviceTypeLaptop;

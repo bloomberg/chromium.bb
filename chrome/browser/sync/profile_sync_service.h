@@ -23,9 +23,9 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/backup_rollback_controller.h"
+#include "chrome/browser/sync/glue/device_info_sync_service.h"
 #include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/profile_sync_service_base.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/protocol_event_observer.h"
@@ -66,7 +66,6 @@ class CommandLine;
 
 namespace browser_sync {
 class BackendMigrator;
-class DeviceInfo;
 class FaviconCache;
 class JsController;
 class OpenTabsUIDelegate;
@@ -95,6 +94,7 @@ namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
 
+using browser_sync::DeviceInfoSyncService;
 using browser_sync::LocalDeviceInfoProvider;
 using browser_sync::SessionsSyncManager;
 
@@ -374,26 +374,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns the SyncableService for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();
 
+  // Returns the SyncableService for syncer::DEVICE_INFO.
+  virtual syncer::SyncableService* GetDeviceInfoSyncableService();
+
   // Returns DeviceInfo provider for the local device.
   virtual browser_sync::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
 
-  // Returns sync's representation of the device info for a client identified
-  // by |client_id|. Return value is an empty scoped ptr if the device info
-  // is unavailable.
-  virtual scoped_ptr<browser_sync::DeviceInfo> GetDeviceInfo(
-      const std::string& client_id) const;
-
-  // Gets the device info for all devices signed into the account associated
-  // with this profile.
-  virtual ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices() const;
-
-  // Notifies the observer of any device info changes.
-  virtual void AddObserverForDeviceInfoChange(
-      browser_sync::SyncedDeviceTracker::Observer* observer);
-
-  // Removes the observer from device info notification.
-  virtual void RemoveObserverForDeviceInfoChange(
-      browser_sync::SyncedDeviceTracker::Observer* observer);
+  // Returns synced devices tracker. If DEVICE_INFO model type isn't yet
+  // enabled or syncing, returns NULL.
+  virtual browser_sync::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
@@ -776,7 +765,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void OverrideNetworkResourcesForTest(
       scoped_ptr<syncer::NetworkResources> network_resources);
 
-  virtual bool IsSessionsDataTypeControllerRunning() const;
+  virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
   BackendMode backend_mode() const {
     return backend_mode_;
@@ -1142,6 +1131,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Locally owned SyncableService implementations.
   scoped_ptr<SessionsSyncManager> sessions_sync_manager_;
+  scoped_ptr<DeviceInfoSyncService> device_info_sync_service_;
 
   scoped_ptr<syncer::NetworkResources> network_resources_;
 
