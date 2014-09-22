@@ -27,6 +27,7 @@
  */
 
 [
+    ImplementedAs=DatabaseBackend,
     WillBeGarbageCollected,
     NoInterfaceObject
 ] interface Database {

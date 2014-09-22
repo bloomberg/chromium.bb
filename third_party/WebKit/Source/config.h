@@ -138,3 +138,6 @@
 #include <cstddef>
 
 #endif
+
+// FIXME: Hack for DatabaseBackend-Database merger. This should be removed soon.
+#define Database DatabaseBackend

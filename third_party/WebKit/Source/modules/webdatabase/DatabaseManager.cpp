@@ -33,7 +33,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Logging.h"
-#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseClient.h"
@@ -201,7 +200,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
     if (!backend)
         return nullptr;
 
-    RefPtrWillBeRawPtr<Database> database = Database::create(context, backend);
+    RefPtrWillBeRawPtr<Database> database = backend.get();
 
     databaseContextFor(context)->setHasOpenDatabases();
     DatabaseClient::from(context)->didOpenDatabase(database, context->securityOrigin()->host(), name, expectedVersion);

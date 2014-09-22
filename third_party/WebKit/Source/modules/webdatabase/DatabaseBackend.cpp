@@ -31,7 +31,6 @@
 #include "core/html/VoidCallback.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
-#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -837,7 +836,7 @@ void DatabaseBackend::runTransaction(
 #if ENABLE(ASSERT)
     SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
 #endif
-    RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(Database::from(this), callback, successCallback, errorCallback, readOnly);
+    RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
     RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = runTransaction(transaction, readOnly, changeVersionData);
     if (!transactionBackend) {
         OwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();

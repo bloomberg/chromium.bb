@@ -28,16 +28,16 @@
 #include "config.h"
 #include "modules/webdatabase/SQLStatement.h"
 
-#include "platform/Logging.h"
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
-#include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementBackend.h"
 #include "modules/webdatabase/SQLStatementCallback.h"
 #include "modules/webdatabase/SQLStatementErrorCallback.h"
 #include "modules/webdatabase/SQLTransaction.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
+#include "platform/Logging.h"
 #include "wtf/text/CString.h"
 
 namespace blink {

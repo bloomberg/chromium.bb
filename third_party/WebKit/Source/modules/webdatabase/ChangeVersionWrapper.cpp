@@ -28,7 +28,7 @@
 #include "config.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
 
-#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/SQLError.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

@@ -29,10 +29,10 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseTask.h"
 
-#include "platform/Logging.h"
-#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseThread.h"
+#include "platform/Logging.h"
 
 namespace blink {
 
@@ -118,7 +118,7 @@ DatabaseBackend::DatabaseCloseTask::DatabaseCloseTask(DatabaseBackend* database,
 
 void DatabaseBackend::DatabaseCloseTask::doPerformTask()
 {
-    Database::from(database())->close();
+    database()->close();
 }
 
 #if !LOG_DISABLED
@@ -132,7 +132,7 @@ const char* DatabaseBackend::DatabaseCloseTask::debugTaskName() const
 // Starts a transaction that will report its results via a callback.
 
 DatabaseBackend::DatabaseTransactionTask::DatabaseTransactionTask(PassRefPtrWillBeRawPtr<SQLTransactionBackend> transaction)
-    : DatabaseTask(Database::from(transaction->database()), 0)
+    : DatabaseTask(transaction->database(), 0)
     , m_transaction(transaction)
 {
 }
@@ -178,7 +178,7 @@ DatabaseBackend::DatabaseTableNamesTask::DatabaseTableNamesTask(DatabaseBackend*
 
 void DatabaseBackend::DatabaseTableNamesTask::doPerformTask()
 {
-    m_tableNames = Database::from(database())->performGetTableNames();
+    m_tableNames = database()->performGetTableNames();
 }
 
 #if !LOG_DISABLED

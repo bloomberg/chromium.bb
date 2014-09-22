@@ -26,6 +26,7 @@
 #ifndef DatabaseBackend_h
 #define DatabaseBackend_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
@@ -36,7 +37,6 @@
 namespace blink {
 
 class ChangeVersionData;
-class Database;
 class DatabaseAuthorizer;
 class DatabaseContext;
 class DatabaseServer;
@@ -49,16 +49,12 @@ class SQLTransactionCoordinator;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-// FIXME: This implementation of DatabaseBackend is only a place holder
-// for the split out of the Database backend to be done later. This
-// place holder is needed to allow other code that need to reference the
-// DatabaseBackend to do so before the proper backend split is
-// available. This should be replaced with the actual implementation later.
-
-class DatabaseBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseBackend> {
+// FIXME: This class should be renamed to Database.
+class DatabaseBackend FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseBackend>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DatabaseBackend();
-    virtual void trace(Visitor*);
+    void trace(Visitor*);
 
     bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
     void close();
@@ -90,11 +86,11 @@ public:
     bool opened() const { return m_opened; }
     bool isNew() const { return m_new; }
 
-    virtual SecurityOrigin* securityOrigin() const;
-    virtual String stringIdentifier() const;
-    virtual String displayName() const;
-    virtual unsigned long estimatedSize() const;
-    virtual String fileName() const;
+    SecurityOrigin* securityOrigin() const;
+    String stringIdentifier() const;
+    String displayName() const;
+    unsigned long estimatedSize() const;
+    String fileName() const;
     SQLiteDatabase& sqliteDatabase() { return m_sqliteDatabase; }
 
     unsigned long long maximumSize() const;
@@ -182,7 +178,7 @@ private:
     bool m_isTransactionQueueEnabled;
 
     friend class ChangeVersionWrapper;
-    friend class Database;
+    friend class DatabaseManager;
     friend class SQLStatementBackend;
     friend class SQLTransaction;
     friend class SQLTransactionBackend;

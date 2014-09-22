@@ -32,9 +32,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
-#include "platform/Logging.h"
-#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementCallback.h"
@@ -43,6 +42,7 @@
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h" // FIXME: Should be used in the backend only.
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
+#include "platform/Logging.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 

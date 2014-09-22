@@ -29,10 +29,6 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 
-#include "platform/Logging.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
-#include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "modules/webdatabase/Database.h" // FIXME: Should only be used in the frontend.
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -43,6 +39,9 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLiteTransaction.h"
+#include "platform/Logging.h"
 #include "wtf/StdLibExtras.h"
 
 
@@ -674,7 +673,7 @@ SQLTransactionState SQLTransactionBackend::runCurrentStatementAndGetNextState()
     m_database->resetAuthorizer();
 
     if (m_hasVersionMismatch)
-        m_currentStatementBackend->setVersionMismatchedError(Database::from(m_database.get()));
+        m_currentStatementBackend->setVersionMismatchedError(m_database.get());
 
     if (m_currentStatementBackend->execute(m_database.get())) {
         if (m_database->lastActionChangedDatabase()) {

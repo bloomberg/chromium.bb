@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseThread.h"
 
-#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"

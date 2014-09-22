@@ -879,7 +879,6 @@
       'webdatabase/ChangeVersionWrapper.h',
       'webdatabase/DOMWindowWebDatabase.cpp',
       'webdatabase/DOMWindowWebDatabase.h',
-      'webdatabase/Database.cpp',
       'webdatabase/DatabaseAuthorizer.cpp',
       'webdatabase/DatabaseAuthorizer.h',
       'webdatabase/DatabaseBackend.cpp',

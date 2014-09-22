@@ -37,7 +37,6 @@
 #include "bindings/modules/v8/V8SQLStatementCallback.h"
 #include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "wtf/Vector.h"
 
