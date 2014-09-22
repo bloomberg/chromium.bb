@@ -523,8 +523,8 @@ DraggableRect.prototype.getDragHandler = function(
       // Check new crop.
       if (this.dragMode_.newcrop) {
         this.dragMode_.newcrop = false;
-        this.bounds_.left = this.bounds_.right = newX;
-        this.bounds_.top = this.bounds_.bottom = newY;
+        this.bounds_.left = this.bounds_.right = initialX;
+        this.bounds_.top = this.bounds_.bottom = initialY;
         mouseBiasX = 0;
         mouseBiasY = 0;
       }
