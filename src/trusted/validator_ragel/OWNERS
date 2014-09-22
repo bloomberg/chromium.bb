@@ -1,10 +1,8 @@
 set noparent
 khim@chromium.org
-pasko@google.com
-eaeltsin@google.com
 mseaborn@chromium.org
-bsy@google.com
-shcherbina@google.com
+ncbray@chromium.org
+shyamsundarr@chromium.org
 
 # For build file review
 per-file *.gn=bradnelson@chromium.org
