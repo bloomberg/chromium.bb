@@ -79,8 +79,10 @@ public:
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebMediaStream(MediaStreamDescriptor*);
+    BLINK_PLATFORM_EXPORT WebMediaStream(const WTF::PassRefPtr<MediaStreamDescriptor>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<MediaStreamDescriptor>() const;
     BLINK_PLATFORM_EXPORT operator MediaStreamDescriptor*() const;
-    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(MediaStreamDescriptor*);
+    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(const WTF::PassRefPtr<MediaStreamDescriptor>&);
 #endif
 
 private:

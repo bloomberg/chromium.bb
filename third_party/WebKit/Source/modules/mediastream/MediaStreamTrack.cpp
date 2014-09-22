@@ -60,6 +60,7 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamCompone
 
 MediaStreamTrack::~MediaStreamTrack()
 {
+    m_component->source()->removeObserver(this);
 }
 
 String MediaStreamTrack::kind() const
@@ -152,9 +153,9 @@ void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
 
 MediaStreamTrack* MediaStreamTrack::clone(ExecutionContext* context)
 {
-    MediaStreamComponent* clonedComponent = MediaStreamComponent::create(component()->source());
-    MediaStreamTrack* clonedTrack = MediaStreamTrack::create(context, clonedComponent);
-    MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent);
+    RefPtr<MediaStreamComponent> clonedComponent = MediaStreamComponent::create(component()->source());
+    MediaStreamTrack* clonedTrack = MediaStreamTrack::create(context, clonedComponent.get());
+    MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent.get());
     return clonedTrack;
 }
 
@@ -235,9 +236,7 @@ ExecutionContext* MediaStreamTrack::executionContext() const
 void MediaStreamTrack::trace(Visitor* visitor)
 {
     visitor->trace(m_registeredMediaStreams);
-    visitor->trace(m_component);
     EventTargetWithInlineData::trace(visitor);
-    MediaStreamSource::Observer::trace(visitor);
 }
 
 } // namespace blink
