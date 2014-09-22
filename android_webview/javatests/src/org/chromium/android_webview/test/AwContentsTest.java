@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -13,16 +14,18 @@ import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
+import android.view.KeyEvent;
+import android.view.View;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.InputStream;
@@ -90,6 +93,50 @@ public class AwContentsTest extends AwTestBase {
             destroyAwContentsOnMainSync(views[i].getAwContents());
             views[i] = null;
         }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @UiThreadTest
+    public void testWebViewApisFailGracefullyAfterDestruction() throws Throwable {
+        AwContents awContents =
+                createAwTestContainerView(mContentsClient).getAwContents();
+        awContents.destroy();
+
+        assertNull(awContents.getWebContents());
+        assertNull(awContents.getContentViewCore());
+        assertNull(awContents.getNavigationController());
+
+        // The documentation for WebView#destroy() reads "This method should be called
+        // after this WebView has been removed from the view system. No other methods
+        // may be called on this WebView after destroy".
+        // However, some apps do not respect that restriction so we need to ensure that
+        // we fail gracefully and do not crash when APIs are invoked after destruction.
+        // Due to the large number of APIs we only test a representative selection here.
+        awContents.clearHistory();
+        awContents.loadUrl(new LoadUrlParams("http://www.google.com"));
+        awContents.findAllAsync("search");
+        assertNull(awContents.getUrl());
+        assertNull(awContents.getContentSettings());
+        assertFalse(awContents.canGoBack());
+        awContents.disableJavascriptInterfacesInspection();
+        awContents.invokeZoomPicker();
+        awContents.onResume();
+        awContents.stopLoading();
+        awContents.onWindowVisibilityChanged(View.VISIBLE);
+        awContents.requestFocus();
+        awContents.isMultiTouchZoomSupported();
+        awContents.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        awContents.pauseTimers();
+        awContents.onContainerViewScrollChanged(200, 200, 100, 100);
+        awContents.computeScroll();
+        awContents.onMeasure(100, 100);
+        awContents.onDraw(new Canvas());
+        awContents.getMostRecentProgress();
+        assertEquals(0, awContents.computeHorizontalScrollOffset());
+        assertEquals(0, awContents.getContentWidthCss());
+        awContents.onKeyUp(KeyEvent.KEYCODE_BACK,
+                new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
     }
 
     @LargeTest

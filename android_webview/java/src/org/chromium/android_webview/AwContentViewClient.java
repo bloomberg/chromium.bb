@@ -60,7 +60,10 @@ public class AwContentViewClient extends ContentViewClient {
                     if (mAwContents.isFullScreen()) {
                         return;
                     }
-                    viewGroup.addView(mAwContents.enterFullScreen());
+                    View fullscreenView = mAwContents.enterFullScreen();
+                    if (fullscreenView != null) {
+                        viewGroup.addView(fullscreenView);
+                    }
                 }
             });
             mAwContentsClient.onShowCustomView(viewGroup, cb);
