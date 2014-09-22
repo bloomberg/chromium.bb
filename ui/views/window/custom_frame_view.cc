@@ -599,6 +599,13 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
   switch (frame_button) {
     case views::FRAME_BUTTON_MINIMIZE: {
       button = minimize_button_;
+      // If we should not show the minimize button, then we return NULL as we
+      // don't want this button to become visible and to be laid out.
+      bool should_show = frame_->widget_delegate()->CanMinimize();
+      button->SetVisible(should_show);
+      if (!should_show)
+        return NULL;
+
       break;
     }
     case views::FRAME_BUTTON_MAXIMIZE: {

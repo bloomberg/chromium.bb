@@ -437,6 +437,10 @@ void ColorChooserView::OnSaturationValueChosen(SkScalar saturation,
   textfield_->SetText(GetColorText(color));
 }
 
+bool ColorChooserView::CanMinimize() const {
+  return false;
+}
+
 View* ColorChooserView::GetInitiallyFocusedView() {
   return textfield_;
 }

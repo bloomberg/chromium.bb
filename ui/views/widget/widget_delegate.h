@@ -58,6 +58,9 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window can ever be maximized.
   virtual bool CanMaximize() const;
 
+  // Returns true if the window can ever be minimized.
+  virtual bool CanMinimize() const;
+
   // Returns true if the window can be activated.
   virtual bool CanActivate() const;
 

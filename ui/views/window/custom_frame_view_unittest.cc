@@ -16,25 +16,33 @@ namespace views {
 
 namespace {
 
-// Allows for the control of whether or not the widget can maximize or not.
-// This can be set after initial setup in order to allow testing of both forms
-// of delegates. By default this can maximize.
-class MaximizeStateControlDelegate : public WidgetDelegateView {
+// Allows for the control of whether or not the widget can minimize/maximize or
+// not. This can be set after initial setup in order to allow testing of both
+// forms of delegates. By default this can minimize and maximize.
+class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
  public:
-  MaximizeStateControlDelegate() : can_maximize_(true) {}
-  virtual ~MaximizeStateControlDelegate() {}
+  MinimizeAndMaximizeStateControlDelegate()
+        : can_maximize_(true),
+          can_minimize_(true) {}
+  virtual ~MinimizeAndMaximizeStateControlDelegate() {}
 
   void set_can_maximize(bool can_maximize) {
     can_maximize_ = can_maximize;
   }
 
+  void set_can_minimize(bool can_minimize) {
+    can_minimize_ = can_minimize;
+  }
+
   // WidgetDelegate:
   virtual bool CanMaximize() const OVERRIDE { return can_maximize_; }
+  virtual bool CanMinimize() const OVERRIDE { return can_minimize_; }
 
  private:
   bool can_maximize_;
+  bool can_minimize_;
 
-  DISALLOW_COPY_AND_ASSIGN(MaximizeStateControlDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MinimizeAndMaximizeStateControlDelegate);
 };
 
 }  // namespace
@@ -48,8 +56,9 @@ class CustomFrameViewTest : public ViewsTestBase {
     return custom_frame_view_;
   }
 
-  MaximizeStateControlDelegate* maximize_state_control_delegate() {
-    return maximize_state_control_delegate_;
+  MinimizeAndMaximizeStateControlDelegate*
+        minimize_and_maximize_state_control_delegate() {
+    return minimize_and_maximize_state_control_delegate_;
   }
 
   Widget* widget() {
@@ -100,8 +109,9 @@ class CustomFrameViewTest : public ViewsTestBase {
   // Owned by |widget_|
   CustomFrameView* custom_frame_view_;
 
-  // Delegate of |widget_| which controls maximizing
-  MaximizeStateControlDelegate* maximize_state_control_delegate_;
+  // Delegate of |widget_| which controls minimizing and maximizing
+  MinimizeAndMaximizeStateControlDelegate*
+        minimize_and_maximize_state_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewTest);
 };
@@ -109,10 +119,11 @@ class CustomFrameViewTest : public ViewsTestBase {
 void CustomFrameViewTest::SetUp() {
   ViewsTestBase::SetUp();
 
-  maximize_state_control_delegate_ = new MaximizeStateControlDelegate;
+  minimize_and_maximize_state_control_delegate_ =
+      new MinimizeAndMaximizeStateControlDelegate;
   widget_ = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.delegate = maximize_state_control_delegate_;
+  params.delegate = minimize_and_maximize_state_control_delegate_;
   params.remove_standard_frame = true;
   widget_->Init(params);
 
@@ -209,7 +220,8 @@ TEST_F(CustomFrameViewTest, MaximizeRevealsRestoreButton) {
 TEST_F(CustomFrameViewTest, CannotMaximizeHidesButton) {
   Widget* parent = widget();
   CustomFrameView* view = custom_frame_view();
-  MaximizeStateControlDelegate* delegate = maximize_state_control_delegate();
+  MinimizeAndMaximizeStateControlDelegate* delegate =
+        minimize_and_maximize_state_control_delegate();
   delegate->set_can_maximize(false);
 
   view->Init(parent);
@@ -218,6 +230,22 @@ TEST_F(CustomFrameViewTest, CannotMaximizeHidesButton) {
 
   EXPECT_FALSE(restore_button()->visible());
   EXPECT_FALSE(maximize_button()->visible());
+}
+
+// Tests that when the parent cannot minimize that the minimize button is not
+// visible
+TEST_F(CustomFrameViewTest, CannotMinimizeHidesButton) {
+  Widget* parent = widget();
+  CustomFrameView* view = custom_frame_view();
+  MinimizeAndMaximizeStateControlDelegate* delegate =
+      minimize_and_maximize_state_control_delegate();
+  delegate->set_can_minimize(false);
+
+  view->Init(parent);
+  parent->SetBounds(gfx::Rect(0, 0, 300, 100));
+  parent->Show();
+
+  EXPECT_FALSE(minimize_button()->visible());
 }
 
 // Tests that when maximized that the edge button has an increased width.

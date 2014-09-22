@@ -51,6 +51,10 @@ bool WidgetDelegate::CanMaximize() const {
   return false;
 }
 
+bool WidgetDelegate::CanMinimize() const {
+  return false;
+}
+
 bool WidgetDelegate::CanActivate() const {
   return can_activate_;
 }

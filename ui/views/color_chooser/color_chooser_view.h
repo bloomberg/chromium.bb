@@ -48,6 +48,7 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
   class SelectedColorPatchView;
 
   // WidgetDelegate overrides:
+  virtual bool CanMinimize() const OVERRIDE;
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
