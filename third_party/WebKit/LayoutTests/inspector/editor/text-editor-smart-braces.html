@@ -21,8 +21,8 @@ function test()
         function testTypeBraceSequence(next)
         {
             clearEditor();
-            InspectorTest.typeIn(textEditor, "({[", step2);
-            function step2()
+            InspectorTest.typeIn(textEditor, "({[", onTypedIn);
+            function onTypedIn()
             {
                 InspectorTest.dumpTextWithSelection(textEditor);
                 next();
@@ -32,8 +32,20 @@ function test()
         function testBraceOverride(next)
         {
             clearEditor();
-            InspectorTest.typeIn(textEditor, "({[]})", step3);
-            function step3()
+            InspectorTest.typeIn(textEditor, "({[]})", onTypedIn);
+            function onTypedIn()
+            {
+                InspectorTest.dumpTextWithSelection(textEditor);
+                next();
+            }
+        },
+
+        function testQuotesToCloseStringLiterals(next)
+        {
+            textEditor.setText("'Hello");
+            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
+            InspectorTest.typeIn(textEditor, "\"'", onTypedIn);
+            function onTypedIn()
             {
                 InspectorTest.dumpTextWithSelection(textEditor);
                 next();

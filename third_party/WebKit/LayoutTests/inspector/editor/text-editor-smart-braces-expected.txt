@@ -7,3 +7,6 @@ Running: testTypeBraceSequence
 Running: testBraceOverride
 ({[]})|
 
+Running: testQuotesToCloseStringLiterals
+'Hello"'|
+

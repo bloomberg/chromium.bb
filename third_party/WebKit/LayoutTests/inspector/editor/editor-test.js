@@ -146,7 +146,14 @@ InspectorTest.fakeKeyEvent = function(editor, originalCode, modifiers, callback)
     modifiers = modifiers || [];
     var code;
     var charCode;
-    if (originalCode === "(") {
+    if (originalCode === "'") {
+        code = 222;
+        charCode = 0;
+    } else if (originalCode === "\"") {
+        code = 222;
+        modifiers.push("shiftKey");
+        charCode = 0;
+    } else if (originalCode === "(") {
         code = "9".charCodeAt(0);
         modifiers.push("shiftKey");
         charCode = originalCode.charCodeAt(0);
