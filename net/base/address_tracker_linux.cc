@@ -97,6 +97,18 @@ const char* GetInterfaceName(int interface_index) {
 
 }  // namespace
 
+AddressTrackerLinux::AddressTrackerLinux()
+    : get_interface_name_(GetInterfaceName),
+      address_callback_(base::Bind(&base::DoNothing)),
+      link_callback_(base::Bind(&base::DoNothing)),
+      tunnel_callback_(base::Bind(&base::DoNothing)),
+      netlink_fd_(-1),
+      is_offline_(true),
+      is_offline_initialized_(false),
+      is_offline_initialized_cv_(&is_offline_lock_),
+      tracking_(false) {
+}
+
 AddressTrackerLinux::AddressTrackerLinux(const base::Closure& address_callback,
                                          const base::Closure& link_callback,
                                          const base::Closure& tunnel_callback)
@@ -107,7 +119,8 @@ AddressTrackerLinux::AddressTrackerLinux(const base::Closure& address_callback,
       netlink_fd_(-1),
       is_offline_(true),
       is_offline_initialized_(false),
-      is_offline_initialized_cv_(&is_offline_lock_) {
+      is_offline_initialized_cv_(&is_offline_lock_),
+      tracking_(true) {
   DCHECK(!address_callback.is_null());
   DCHECK(!link_callback.is_null());
 }
@@ -124,20 +137,24 @@ void AddressTrackerLinux::Init() {
     return;
   }
 
-  // Request notifications.
-  struct sockaddr_nl addr = {};
-  addr.nl_family = AF_NETLINK;
-  addr.nl_pid = getpid();
-  // TODO(szym): Track RTMGRP_LINK as well for ifi_type, http://crbug.com/113993
-  addr.nl_groups = RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_NOTIFY |
-      RTMGRP_LINK;
-  int rv = bind(netlink_fd_,
-                reinterpret_cast<struct sockaddr*>(&addr),
-                sizeof(addr));
-  if (rv < 0) {
-    PLOG(ERROR) << "Could not bind NETLINK socket";
-    AbortAndForceOnline();
-    return;
+  int rv;
+
+  if (tracking_) {
+    // Request notifications.
+    struct sockaddr_nl addr = {};
+    addr.nl_family = AF_NETLINK;
+    addr.nl_pid = getpid();
+    // TODO(szym): Track RTMGRP_LINK as well for ifi_type,
+    // http://crbug.com/113993
+    addr.nl_groups =
+        RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_NOTIFY | RTMGRP_LINK;
+    rv = bind(
+        netlink_fd_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr));
+    if (rv < 0) {
+      PLOG(ERROR) << "Could not bind NETLINK socket";
+      AbortAndForceOnline();
+      return;
+    }
   }
 
   // Request dump of addresses.
@@ -186,38 +203,45 @@ void AddressTrackerLinux::Init() {
   // Consume pending message to populate links_online_, but don't notify.
   ReadMessages(&address_changed, &link_changed, &tunnel_changed);
   {
-    base::AutoLock lock(is_offline_lock_);
+    AddressTrackerAutoLock lock(*this, is_offline_lock_);
     is_offline_initialized_ = true;
     is_offline_initialized_cv_.Signal();
   }
 
-  rv = base::MessageLoopForIO::current()->WatchFileDescriptor(
-      netlink_fd_, true, base::MessageLoopForIO::WATCH_READ, &watcher_, this);
-  if (rv < 0) {
-    PLOG(ERROR) << "Could not watch NETLINK socket";
-    AbortAndForceOnline();
-    return;
+  if (tracking_) {
+    rv = base::MessageLoopForIO::current()->WatchFileDescriptor(
+        netlink_fd_, true, base::MessageLoopForIO::WATCH_READ, &watcher_, this);
+    if (rv < 0) {
+      PLOG(ERROR) << "Could not watch NETLINK socket";
+      AbortAndForceOnline();
+      return;
+    }
   }
 }
 
 void AddressTrackerLinux::AbortAndForceOnline() {
   CloseSocket();
-  base::AutoLock lock(is_offline_lock_);
+  AddressTrackerAutoLock lock(*this, is_offline_lock_);
   is_offline_ = false;
   is_offline_initialized_ = true;
   is_offline_initialized_cv_.Signal();
 }
 
 AddressTrackerLinux::AddressMap AddressTrackerLinux::GetAddressMap() const {
-  base::AutoLock lock(address_map_lock_);
+  AddressTrackerAutoLock lock(*this, address_map_lock_);
   return address_map_;
+}
+
+base::hash_set<int> AddressTrackerLinux::GetOnlineLinks() const {
+  AddressTrackerAutoLock lock(*this, online_links_lock_);
+  return online_links_;
 }
 
 NetworkChangeNotifier::ConnectionType
 AddressTrackerLinux::GetCurrentConnectionType() {
   // http://crbug.com/125097
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  base::AutoLock lock(is_offline_lock_);
+  AddressTrackerAutoLock lock(*this, is_offline_lock_);
   // Make sure the initial offline state is set before returning.
   while (!is_offline_initialized_) {
     is_offline_initialized_cv_.Wait();
@@ -254,10 +278,15 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
       return;
     }
     HandleMessage(buffer, rv, address_changed, link_changed, tunnel_changed);
-  };
+  }
   if (*link_changed) {
-    base::AutoLock lock(is_offline_lock_);
-    is_offline_ = online_links_.empty();
+    bool is_offline;
+    {
+      AddressTrackerAutoLock lock(*this, online_links_lock_);
+      is_offline = online_links_.empty();
+    }
+    AddressTrackerAutoLock lock(*this, is_offline_lock_);
+    is_offline_ = is_offline;
   }
 }
 
@@ -282,7 +311,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
         IPAddressNumber address;
         bool really_deprecated;
         if (GetAddress(header, &address, &really_deprecated)) {
-          base::AutoLock lock(address_map_lock_);
+          AddressTrackerAutoLock lock(*this, address_map_lock_);
           struct ifaddrmsg* msg =
               reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
           // Routers may frequently (every few seconds) output the IPv6 ULA
@@ -309,7 +338,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
       case RTM_DELADDR: {
         IPAddressNumber address;
         if (GetAddress(header, &address, NULL)) {
-          base::AutoLock lock(address_map_lock_);
+          AddressTrackerAutoLock lock(*this, address_map_lock_);
           if (address_map_.erase(address))
             *address_changed = true;
         }
@@ -319,12 +348,14 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
             reinterpret_cast<struct ifinfomsg*>(NLMSG_DATA(header));
         if (!(msg->ifi_flags & IFF_LOOPBACK) && (msg->ifi_flags & IFF_UP) &&
             (msg->ifi_flags & IFF_LOWER_UP) && (msg->ifi_flags & IFF_RUNNING)) {
+          AddressTrackerAutoLock lock(*this, online_links_lock_);
           if (online_links_.insert(msg->ifi_index).second) {
             *link_changed = true;
             if (IsTunnelInterface(msg))
               *tunnel_changed = true;
           }
         } else {
+          AddressTrackerAutoLock lock(*this, online_links_lock_);
           if (online_links_.erase(msg->ifi_index)) {
             *link_changed = true;
             if (IsTunnelInterface(msg))
@@ -335,6 +366,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
       case RTM_DELLINK: {
         const struct ifinfomsg* msg =
             reinterpret_cast<struct ifinfomsg*>(NLMSG_DATA(header));
+        AddressTrackerAutoLock lock(*this, online_links_lock_);
         if (online_links_.erase(msg->ifi_index)) {
           *link_changed = true;
           if (IsTunnelInterface(msg))
@@ -372,6 +404,24 @@ void AddressTrackerLinux::CloseSocket() {
 bool AddressTrackerLinux::IsTunnelInterface(const struct ifinfomsg* msg) const {
   // Linux kernel drivers/net/tun.c uses "tun" name prefix.
   return strncmp(get_interface_name_(msg->ifi_index), "tun", 3) == 0;
+}
+
+AddressTrackerLinux::AddressTrackerAutoLock::AddressTrackerAutoLock(
+    const AddressTrackerLinux& tracker,
+    base::Lock& lock)
+    : tracker_(tracker), lock_(lock) {
+  if (tracker_.tracking_) {
+    lock_.Acquire();
+  } else {
+    DCHECK(tracker_.thread_checker_.CalledOnValidThread());
+  }
+}
+
+AddressTrackerLinux::AddressTrackerAutoLock::~AddressTrackerAutoLock() {
+  if (tracker_.tracking_) {
+    lock_.AssertAcquired();
+    lock_.Release();
+  }
 }
 
 }  // namespace internal

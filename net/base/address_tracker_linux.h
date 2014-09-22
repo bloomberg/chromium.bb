@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 
@@ -33,19 +34,32 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
  public:
   typedef std::map<IPAddressNumber, struct ifaddrmsg> AddressMap;
 
-  // Will run |address_callback| when the AddressMap changes, |link_callback|
-  // when the list of online links changes, and |tunnel_callback| when the list
-  // of online tunnels changes.
+  // Non-tracking version constructor: it takes a snapshot of the
+  // current system configuration. Once Init() returns, the
+  // configuration is available through GetOnlineLinks() and
+  // GetAddressMap().
+  AddressTrackerLinux();
+
+  // Tracking version constructor: it will run |address_callback| when
+  // the AddressMap changes, |link_callback| when the list of online
+  // links changes, and |tunnel_callback| when the list of online
+  // tunnels changes.
   AddressTrackerLinux(const base::Closure& address_callback,
                       const base::Closure& link_callback,
                       const base::Closure& tunnel_callback);
   virtual ~AddressTrackerLinux();
 
-  // Starts watching system configuration for changes. The current thread must
-  // have a MessageLoopForIO.
+  // In tracking mode, it starts watching the system configuration for
+  // changes. The current thread must have a MessageLoopForIO. In
+  // non-tracking mode, once Init() returns, a snapshot of the system
+  // configuration is available through GetOnlineLinks() and
+  // GetAddressMap().
   void Init();
 
   AddressMap GetAddressMap() const;
+
+  // Returns set of interface indicies for online interfaces.
+  base::hash_set<int> GetOnlineLinks() const;
 
   // Implementation of NetworkChangeNotifierLinux::GetCurrentConnectionType().
   // Safe to call from any thread, but will block until Init() has completed.
@@ -53,6 +67,20 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
 
  private:
   friend class AddressTrackerLinuxTest;
+
+  // In tracking mode, holds |lock| while alive. In non-tracking mode,
+  // enforces single-threaded access.
+  class AddressTrackerAutoLock {
+   public:
+    AddressTrackerAutoLock(const AddressTrackerLinux& tracker,
+                           base::Lock& lock);
+    ~AddressTrackerAutoLock();
+
+   private:
+    const AddressTrackerLinux& tracker_;
+    base::Lock& lock_;
+    DISALLOW_COPY_AND_ASSIGN(AddressTrackerAutoLock);
+  };
 
   // A function that returns the name of an interface given the interface index
   // in |interface_index|.
@@ -105,12 +133,17 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   AddressMap address_map_;
 
   // Set of interface indices for links that are currently online.
+  mutable base::Lock online_links_lock_;
   base::hash_set<int> online_links_;
 
   base::Lock is_offline_lock_;
   bool is_offline_;
   bool is_offline_initialized_;
   base::ConditionVariable is_offline_initialized_cv_;
+  bool tracking_;
+
+  // Used to verify single-threaded access in non-tracking mode.
+  base::ThreadChecker thread_checker_;
 };
 
 }  // namespace internal
