@@ -35,31 +35,33 @@
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/WTF.h"
+#include <base/bind.h>
+#include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
 #include <base/time/time.h>
+#include <content/test/blink_test_environment.h>
 #include <string.h>
 
-static double CurrentTime()
-{
-    return base::Time::Now().ToDoubleT();
-}
+class BlinkTestEnvironmentScope {
+public:
+    BlinkTestEnvironmentScope()
+    {
+        content::SetUpBlinkTestEnvironment();
+    }
+    ~BlinkTestEnvironmentScope()
+    {
+        content::TearDownBlinkTestEnvironment();
+    }
+};
 
-static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
+int runHelper(TestSuite* testSuite)
 {
-    memset(buf, '\0', len);
+    BlinkTestEnvironmentScope blinkTestEnvironment;
+    return testSuite->Run();
 }
 
 int main(int argc, char** argv)
 {
-    WTF::setRandomSource(AlwaysZeroNumberSource);
-    WTF::initialize(CurrentTime, 0);
-    WTF::initializeMainThread(0);
-    blink::Heap::init();
-    blink::ThreadState::attachMainThread();
-    blink::EventTracer::initialize();
-    int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
-    blink::Heap::collectAllGarbage();
-    blink::ThreadState::detachMainThread();
-    blink::Heap::shutdown();
-    return result;
+    TestSuite testSuite(argc, argv);
+    return base::LaunchUnitTests(argc, argv, base::Bind(runHelper, base::Unretained(&testSuite)));
 }

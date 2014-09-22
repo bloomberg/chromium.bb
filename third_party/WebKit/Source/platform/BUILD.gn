@@ -353,6 +353,7 @@ test("heap_unittests") {
     "//testing/gtest",
     "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/wtf:test_support",
+    "//content/test:test_support",
   ]
 }
 
