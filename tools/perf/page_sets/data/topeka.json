@@ -1,7 +1,7 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "topeka_000.wpr": [
+        "topeka_001.wpr": [
             "http://www.polymer-project.org/apps/topeka/?test"
         ]
     }
