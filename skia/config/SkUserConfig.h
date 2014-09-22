@@ -249,13 +249,46 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 //
 // Remove these as we update our sites.
 //
-#ifndef SK_SUPPORT_LEGACY_GETTOPDEVICE
-    #define SK_SUPPORT_LEGACY_GETTOPDEVICE
+#ifndef    SK_SUPPORT_LEGACY_GETTOPDEVICE
+#   define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_GETDEVICE
-    #define SK_SUPPORT_LEGACY_GETDEVICE
+#ifndef    SK_SUPPORT_LEGACY_GETDEVICE
+#   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
+
+#ifndef    SK_SUPPORT_LEGACY_PUBLIC_IMAGEINFO_FIELDS
+#   define SK_SUPPORT_LEGACY_PUBLIC_IMAGEINFO_FIELDS
+#endif
+
+#ifndef    SK_IGNORE_PROPER_FRACTIONAL_SCALING
+#   define SK_IGNORE_PROPER_FRACTIONAL_SCALING
+#endif
+
+#ifndef    SK_SUPPORT_LEGACY_PICTURE_CLONE
+#   define SK_SUPPORT_LEGACY_PICTURE_CLONE
+#endif
+
+#ifndef    SK_IGNORE_ETC1_SUPPORT
+#   define SK_IGNORE_ETC1_SUPPORT
+#endif
+
+#ifndef    SK_IGNORE_GPU_DITHER
+#   define SK_IGNORE_GPU_DITHER
+#endif
+
+#ifndef    SK_SUPPORT_LEGACY_IMAGECACHE_NAME
+#   define SK_SUPPORT_LEGACY_IMAGECACHE_NAME
+#endif
+
+#ifndef    SK_LEGACY_PICTURE_SIZE_API
+#   define SK_LEGACY_PICTURE_SIZE_API
+#endif
+
+#ifndef    SK_LEGACY_PICTURE_DRAW_API
+#   define SK_LEGACY_PICTURE_DRAW_API
+#endif
+
 
 // Turns SkPicture::clone() into a simple "return SkRef(this);" as a way to
 // test the threadsafety of SkPicture playback.
