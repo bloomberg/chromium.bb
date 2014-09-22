@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace content {
 
@@ -26,6 +27,11 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
   virtual void SetUp() {
     child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    adapter_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
   blink::WebMediaStream CreateBlinkMediaStream(bool audio, bool video) {

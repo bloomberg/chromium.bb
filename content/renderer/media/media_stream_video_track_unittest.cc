@@ -15,6 +15,7 @@
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace content {
 
@@ -38,6 +39,11 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
   virtual ~MediaStreamVideoTrackTest() {
+  }
+
+  virtual void TearDown() OVERRIDE {
+    blink_source_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
   void DeliverVideoFrameAndWaitForRenderer(MockMediaStreamVideoSink* sink) {

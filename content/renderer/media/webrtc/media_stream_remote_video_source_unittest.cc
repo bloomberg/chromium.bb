@@ -12,6 +12,7 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
 
 namespace content {
@@ -48,21 +49,26 @@ class MediaStreamRemoteVideoSourceTest
     webkit_source_.setExtraData(remote_source_);
   }
 
+  virtual void TearDown() OVERRIDE {
+    webkit_source_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
+
   MediaStreamRemoteVideoSourceUnderTest* source() {
     return remote_source_;
   }
 
- MediaStreamVideoTrack* CreateTrack() {
-   bool enabled = true;
-   blink::WebMediaConstraints constraints;
-   constraints.initialize();
-   return new MediaStreamVideoTrack(
-       source(),
-       constraints,
-       base::Bind(
-           &MediaStreamRemoteVideoSourceTest::OnConstraintsApplied,
-           base::Unretained(this)),
-       enabled);
+  MediaStreamVideoTrack* CreateTrack() {
+    bool enabled = true;
+    blink::WebMediaConstraints constraints;
+    constraints.initialize();
+    return new MediaStreamVideoTrack(
+        source(),
+        constraints,
+        base::Bind(
+            &MediaStreamRemoteVideoSourceTest::OnConstraintsApplied,
+            base::Unretained(this)),
+        enabled);
   }
 
   int NumberOfSuccessConstraintsCallbacks() const {

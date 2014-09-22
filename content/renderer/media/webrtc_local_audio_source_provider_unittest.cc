@@ -13,6 +13,7 @@
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace content {
 
@@ -48,6 +49,12 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    source_provider_.reset();
+    blink_track_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
   media::AudioParameters source_params_;
