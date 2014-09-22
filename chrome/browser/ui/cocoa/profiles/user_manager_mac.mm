@@ -179,6 +179,7 @@ UserManagerMac::~UserManagerMac() {
 // static
 void UserManagerMac::Show(const base::FilePath& profile_path_to_focus,
                           profiles::UserManagerTutorialMode tutorial_mode) {
+  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {
     // If there's a user manager window open already, just activate it.
     [instance_->window_controller_ show];
