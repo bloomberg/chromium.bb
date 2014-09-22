@@ -2838,15 +2838,8 @@ String CSSComputedStyleDeclaration::getPropertyValue(CSSPropertyID propertyID) c
 
 unsigned CSSComputedStyleDeclaration::length() const
 {
-    Node* node = m_node.get();
-    if (!node)
+    if (!m_node || !m_node->inActiveDocument())
         return 0;
-
-    node->document().updateLayoutIgnorePendingStylesheets();
-    RenderStyle* style = node->computedStyle(m_pseudoElementSpecifier);
-    if (!style)
-        return 0;
-
     return computableProperties().size();
 }
 
