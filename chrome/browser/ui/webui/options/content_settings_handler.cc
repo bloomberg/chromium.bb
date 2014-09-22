@@ -527,16 +527,21 @@ void ContentSettingsHandler::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      if (content::Source<Profile>(source).ptr()->IsOffTheRecord()) {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile->IsOffTheRecord()) {
         web_ui()->CallJavascriptFunction(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
+        observer_.Remove(profile->GetHostContentSettingsMap());
       }
       break;
     }
 
     case chrome::NOTIFICATION_PROFILE_CREATED: {
-      if (content::Source<Profile>(source).ptr()->IsOffTheRecord())
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile->IsOffTheRecord()) {
         UpdateAllOTRExceptionsViewsFromModel();
+        observer_.Add(profile->GetHostContentSettingsMap());
+      }
       break;
     }
 
