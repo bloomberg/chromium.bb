@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
+#include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
