@@ -91,6 +91,14 @@ bool SubstitutionPattern::Parse(const std::string& str,
   return true;
 }
 
+// static
+SubstitutionPattern SubstitutionPattern::MakeForTest(const char* str) {
+  Err err;
+  SubstitutionPattern pattern;
+  CHECK(pattern.Parse(str, NULL, &err)) << err.message();
+  return pattern;
+}
+
 std::string SubstitutionPattern::AsString() const {
   std::string result;
   for (size_t i = 0; i < ranges_.size(); i++) {

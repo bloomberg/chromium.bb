@@ -41,6 +41,10 @@ class SubstitutionPattern {
   bool Parse(const Value& value, Err* err);
   bool Parse(const std::string& str, const ParseNode* origin, Err* err);
 
+  // Makes a pattern given a hardcoded string. Will assert if the string is
+  // not a valid pattern.
+  static SubstitutionPattern MakeForTest(const char* str);
+
   // Returns the pattern as a string with substitutions in them.
   std::string AsString() const;
 

@@ -322,7 +322,7 @@ void Target::FillOutputFiles() {
         if (!tool->depend_output().empty()) {
           dependency_output_file_ =
               SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
-                  this, tool, tool->link_output());
+                  this, tool, tool->depend_output());
         }
       }
       break;

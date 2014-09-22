@@ -479,3 +479,40 @@ TEST(Target, PublicConfigs) {
   ASSERT_EQ(1u, dep_on_forward.configs().size());
   EXPECT_EQ(&pub_config, dep_on_forward.configs()[0].ptr);
 }
+
+// Tests that different link/depend outputs work for solink tools.
+TEST(Target, LinkAndDepOutputs) {
+  TestWithScope setup;
+  Err err;
+
+  Toolchain toolchain(setup.settings(), Label(SourceDir("//tc/"), "tc"));
+
+  scoped_ptr<Tool> solink_tool(new Tool());
+  solink_tool->set_output_prefix("lib");
+  solink_tool->set_default_output_extension(".so");
+
+  const char kLinkPattern[] =
+      "{{root_out_dir}}/{{target_output_name}}{{output_extension}}";
+  SubstitutionPattern link_output = SubstitutionPattern::MakeForTest(
+      kLinkPattern);
+  solink_tool->set_link_output(link_output);
+
+  const char kDependPattern[] =
+      "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.TOC";
+  SubstitutionPattern depend_output = SubstitutionPattern::MakeForTest(
+      kDependPattern);
+  solink_tool->set_depend_output(depend_output);
+
+  solink_tool->set_outputs(SubstitutionList::MakeForTest(
+      kLinkPattern, kDependPattern));
+
+  toolchain.SetTool(Toolchain::TYPE_SOLINK, solink_tool.Pass());
+
+  Target target(setup.settings(), Label(SourceDir("//a/"), "a"));
+  target.set_output_type(Target::SHARED_LIBRARY);
+  target.SetToolchain(&toolchain);
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  EXPECT_EQ("./liba.so", target.link_output_file().value());
+  EXPECT_EQ("./liba.so.TOC", target.dependency_output_file().value());
+}
