@@ -97,9 +97,9 @@ class WaitForHistoryTask : public HistoryDBTask {
 class TopSitesQuerier {
  public:
   TopSitesQuerier()
-      : weak_ptr_factory_(this),
-        number_of_callbacks_(0),
-        waiting_(false) {}
+      : number_of_callbacks_(0),
+        waiting_(false),
+        weak_ptr_factory_(this) {}
 
   // Queries top sites. If |wait| is true a nested message loop is run until the
   // callback is notified.
@@ -143,10 +143,10 @@ class TopSitesQuerier {
     }
   }
 
-  base::WeakPtrFactory<TopSitesQuerier> weak_ptr_factory_;
   MostVisitedURLList urls_;
   int number_of_callbacks_;
   bool waiting_;
+  base::WeakPtrFactory<TopSitesQuerier> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesQuerier);
 };
