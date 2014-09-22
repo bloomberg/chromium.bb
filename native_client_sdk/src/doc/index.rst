@@ -14,7 +14,7 @@ Welcome to Native Client
 browser efficiently and securely, independent of the user's operating system.
 **Portable Native Client** extends that technology with
 architecture independence, letting developers compile their code once to run
-in any website and on any architecture.
+in any website and on any architecture with ahead-of-time (AOT) translation.
 
 In short, Native Client brings the **performance** and **low-level control**
 of native code to modern web browsers, without sacrificing the **security** and
