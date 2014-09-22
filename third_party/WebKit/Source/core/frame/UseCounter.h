@@ -502,6 +502,8 @@ public:
         NotificationCreated = 533,
         NotificationClosed = 534,
         NotificationPermissionRequested = 535,
+        MediaStreamLabel = 536,
+        MediaStreamStop = 537,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
