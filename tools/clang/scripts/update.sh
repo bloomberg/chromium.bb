@@ -17,7 +17,6 @@ COMPILER_RT_BUILD_DIR="${LLVM_DIR}/../llvm-build/compiler-rt"
 LLVM_BOOTSTRAP_DIR="${LLVM_DIR}/../llvm-bootstrap"
 LLVM_BOOTSTRAP_INSTALL_DIR="${LLVM_DIR}/../llvm-bootstrap-install"
 CLANG_DIR="${LLVM_DIR}/tools/clang"
-CLANG_TOOLS_EXTRA_DIR="${CLANG_DIR}/tools/extra"
 COMPILER_RT_DIR="${LLVM_DIR}/compiler-rt"
 LIBCXX_DIR="${LLVM_DIR}/projects/libcxx"
 LIBCXXABI_DIR="${LLVM_DIR}/projects/libcxxabi"
@@ -59,7 +58,7 @@ force_local_build=
 run_tests=
 bootstrap=
 with_android=yes
-chrome_tools="plugins blink_gc_plugin"
+chrome_tools="plugins;blink_gc_plugin"
 gcc_toolchain=
 
 if [[ "${OS}" = "Darwin" ]]; then
@@ -119,8 +118,8 @@ while [[ $# > 0 ]]; do
       echo "--print-revision: Print current clang revision and exit."
       echo "--without-android: Don't build ASan Android runtime library."
       echo "--with-chrome-tools: Select which chrome tools to build." \
-           "Defaults to plugins."
-      echo "    Example: --with-chrome-tools 'plugins empty-string'"
+           "Defaults to plugins;blink_gc_plugin."
+      echo "    Example: --with-chrome-tools plugins;empty-string"
       echo "--gcc-toolchain: Set the prefix for which GCC version should"
       echo "    be used for building. For example, to use gcc in"
       echo "    /opt/foo/bin/gcc, use '--gcc-toolchain '/opt/foo"
@@ -547,42 +546,31 @@ fi
 
 # Build Chrome-specific clang tools. Paths in this list should be relative to
 # tools/clang.
-# For each tool directory, copy it into the clang tree and use clang's build
-# system to compile it.
-for CHROME_TOOL_DIR in ${chrome_tools}; do
-  TOOL_SRC_DIR="${PWD}/${THIS_DIR}/../${CHROME_TOOL_DIR}"
-  TOOL_BUILD_DIR="${ABS_LLVM_BUILD_DIR}/tools/clang/tools/chrome-${CHROME_TOOL_DIR}"
+TOOL_SRC_DIR="${PWD}/${THIS_DIR}/../"
+TOOL_BUILD_DIR="${ABS_LLVM_BUILD_DIR}/tools/clang/tools/chrome-extras"
 
-  rm -rf "${TOOL_BUILD_DIR}"
-  mkdir -p "${TOOL_BUILD_DIR}"
-  pushd "${TOOL_BUILD_DIR}"
-  MACOSX_DEPLOYMENT_TARGET=10.6 cmake -GNinja  \
-      -DLLVM_BUILD_DIR="${ABS_LLVM_BUILD_DIR}" \
-      -DLLVM_SRC_DIR="${ABS_LLVM_DIR}" \
-      -DCMAKE_C_COMPILER="${CC}" \
-      -DCMAKE_CXX_COMPILER="${CXX}" \
-      -DCMAKE_C_FLAGS="${CFLAGS}" \
-      -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-      -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
-      -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
-      -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
-      "${TOOL_SRC_DIR}"
-  ninja
-  cp -v "${TOOL_BUILD_DIR}/lib"/* "${ABS_LLVM_BUILD_DIR}/lib/"
-  popd
-done
+rm -rf "${TOOL_BUILD_DIR}"
+mkdir -p "${TOOL_BUILD_DIR}"
+pushd "${TOOL_BUILD_DIR}"
+MACOSX_DEPLOYMENT_TARGET=10.6 cmake -GNinja  \
+    -DLLVM_BUILD_DIR="${ABS_LLVM_BUILD_DIR}" \
+    -DLLVM_SRC_DIR="${ABS_LLVM_DIR}" \
+    -DCMAKE_C_COMPILER="${CC}" \
+    -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_INSTALL_PREFIX="${ABS_LLVM_BUILD_DIR}" \
+    -DCHROMIUM_TOOLS="${chrome_tools}" \
+    "${TOOL_SRC_DIR}"
+popd
+ninja -C "${TOOL_BUILD_DIR}" install
 
 if [[ -n "$run_tests" ]]; then
-  # Run the tests for each chrome tool.
-  for CHROME_TOOL_DIR in ${chrome_tools}; do
-    TOOL_SRC_DIR="${THIS_DIR}/../${CHROME_TOOL_DIR}"
-    TOOL_BUILD_DIR="${ABS_LLVM_BUILD_DIR}/tools/clang/tools/chrome-${CHROME_TOOL_DIR}"
-    LIBNAME=$(basename $(ls "${TOOL_BUILD_DIR}/lib/"))
-    if [[ -f "${TOOL_SRC_DIR}/tests/test.sh" ]]; then
-      "${TOOL_SRC_DIR}/tests/test.sh" "${ABS_LLVM_BUILD_DIR}/bin/clang" \
-          "${ABS_LLVM_BUILD_DIR}/lib/${LIBNAME}"
-    fi
-  done
+  # Run Chrome tool tests.
+  ninja -C "${TOOL_BUILD_DIR}" check-all
   # Run the LLVM and Clang tests.
   ninja -C "${LLVM_BUILD_DIR}" check-all
 fi
