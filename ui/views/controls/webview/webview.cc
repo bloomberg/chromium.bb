@@ -303,12 +303,13 @@ void WebView::AttachWebContents() {
   if (holder_->native_view() == view_to_attach)
     return;
 
+  // The WCV needs to be parented before making it visible.
+  holder_->Attach(view_to_attach);
+
   // Fullscreen widgets are not parented by a WebContentsView. Their visibility
   // is controlled by content i.e. (RenderWidgetHost)
   if (!is_embedding_fullscreen_widget_)
     view_to_attach->Show();
-
-  holder_->Attach(view_to_attach);
 
   // The view will not be focused automatically when it is attached, so we need
   // to pass on focus to it if the FocusManager thinks the view is focused. Note

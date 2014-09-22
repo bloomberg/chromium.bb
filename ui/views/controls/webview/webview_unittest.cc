@@ -102,6 +102,8 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
   }
 
   virtual void WasShown() OVERRIDE {
+    valid_root_while_shown_ =
+        web_contents()->GetNativeView()->GetRootWindow() != NULL;
     was_shown_ = true;
     ++shown_count_;
   }
@@ -117,11 +119,15 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 
   int hidden_count() const { return hidden_count_; }
 
+  bool valid_root_while_shown() const { return valid_root_while_shown_; }
+
  private:
   content::WebContentsImpl* web_contents_;
   bool was_shown_;
   int32 shown_count_;
   int32 hidden_count_;
+  // Set to true if the view containing the webcontents has a valid root window.
+  bool valid_root_while_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestWebContentsObserver);
 };
@@ -149,6 +155,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   EXPECT_TRUE(web_contents1->GetNativeView()->IsVisible());
   EXPECT_EQ(observer1.shown_count(), 1);
   EXPECT_EQ(observer1.hidden_count(), 0);
+  EXPECT_TRUE(observer1.valid_root_while_shown());
 
   // Case 2: Create another WebContents and replace the current WebContents
   // via SetWebContents(). This should hide the current WebContents and show
@@ -156,6 +163,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   content::WebContents::CreateParams params2(browser_context());
   scoped_ptr<content::WebContents> web_contents2(
       content::WebContents::Create(params2));
+
   WebViewTestWebContentsObserver observer2(web_contents2.get());
   EXPECT_FALSE(observer2.was_shown());
 
@@ -163,6 +171,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   webview->SetWebContents(web_contents2.get());
   EXPECT_FALSE(observer1.was_shown());
   EXPECT_TRUE(observer2.was_shown());
+  EXPECT_TRUE(observer2.valid_root_while_shown());
 
   // WebContents1 should not get stray show calls when WebContents2 is set.
   EXPECT_EQ(observer1.shown_count(), 1);
