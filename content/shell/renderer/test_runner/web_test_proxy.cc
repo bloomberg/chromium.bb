@@ -486,6 +486,11 @@ void WebTestProxyBase::SetAcceptLanguages(const std::string& accept_languages) {
 
 void WebTestProxyBase::CopyImageAtAndCapturePixels(
     int x, int y, const base::Callback<void(const SkBitmap&)>& callback) {
+  // It may happen that there is a scheduled animation and
+  // no rootGraphicsLayer yet. If so we would run it right now. Otherwise
+  // isAcceleratedCompositingActive will return false;
+  AnimateNow();
+
   DCHECK(web_widget_->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
   uint64_t sequence_number =  blink::Platform::current()->clipboard()->
@@ -566,6 +571,11 @@ void WebTestProxyBase::CapturePixelsAsync(
     const base::Callback<void(const SkBitmap&)>& callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
 
+  // It may happen that there is a scheduled animation and
+  // no rootGraphicsLayer yet. If so we would run it right now. Otherwise
+  // isAcceleratedCompositingActive will return false;
+  AnimateNow();
+
   DCHECK(web_widget_->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
 
@@ -612,6 +622,11 @@ void WebTestProxyBase::DidDisplayAsync(const base::Closure& callback,
 
 void WebTestProxyBase::DisplayAsyncThen(const base::Closure& callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::DisplayAsyncThen");
+
+  // It may happen that there is a scheduled animation and
+  // no rootGraphicsLayer yet. If so we would run it right now. Otherwise
+  // isAcceleratedCompositingActive will return false;
+  AnimateNow();
 
   CHECK(web_widget_->isAcceleratedCompositingActive());
   CapturePixelsAsync(base::Bind(
