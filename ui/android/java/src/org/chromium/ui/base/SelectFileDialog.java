@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -71,23 +72,31 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
 
         Intent chooser = new Intent(Intent.ACTION_CHOOSER);
         Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Context context = window.getApplicationContext();
         camera.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION |
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        Context context = window.getApplicationContext();
         try {
-            mCameraOutputUri = ContentUriUtils.getContentUriFromFile(
-                    context, getFileForImageCapture(context));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                mCameraOutputUri = ContentUriUtils.getContentUriFromFile(
+                        context, getFileForImageCapture(context));
+            } else {
+                mCameraOutputUri = Uri.fromFile(getFileForImageCapture(context));
+            }
         } catch (IOException e) {
             Log.e(TAG, "Cannot retrieve content uri from file", e);
         }
+
         if (mCameraOutputUri == null) {
             onFileNotSelected();
             return;
         }
 
         camera.putExtra(MediaStore.EXTRA_OUTPUT, mCameraOutputUri);
-        camera.setClipData(
-                ClipData.newUri(context.getContentResolver(), IMAGE_FILE_PATH, mCameraOutputUri));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            camera.setClipData(
+                    ClipData.newUri(context.getContentResolver(),
+                    IMAGE_FILE_PATH, mCameraOutputUri));
+        }
         Intent camcorder = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         Intent soundRecorder = new Intent(
                 MediaStore.Audio.Media.RECORD_SOUND_ACTION);
@@ -145,13 +154,28 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
     }
 
     /**
-     * Get a file for the image capture in the IMAGE_FILE_PATH directory.
+     * Get a file for the image capture operation. For devices with JB MR2 or
+     * latter android versions, the file is put under IMAGE_FILE_PATH directory.
+     * For ICS devices, the file is put under CAPTURE_IMAGE_DIRECTORY.
+     *
      * @param context The application context.
+     * @return file path for the captured image to be stored.
      */
     private File getFileForImageCapture(Context context) throws IOException {
-        final File path = new File(context.getFilesDir(), IMAGE_FILE_PATH);
-        if (!path.exists() && !path.mkdir()) {
-            throw new IOException("Folder cannot be created.");
+        File path;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            path = new File(context.getFilesDir(), IMAGE_FILE_PATH);
+            if (!path.exists() && !path.mkdir()) {
+                throw new IOException("Folder cannot be created.");
+            }
+        } else {
+            File externalDataDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DCIM);
+            path = new File(externalDataDir.getAbsolutePath() +
+                    File.separator + CAPTURE_IMAGE_DIRECTORY);
+            if (!path.exists() && !path.mkdirs()) {
+                path = externalDataDir;
+            }
         }
         File photoFile = File.createTempFile(
                 String.valueOf(System.currentTimeMillis()), ".jpg", path);
