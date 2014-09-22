@@ -28,6 +28,9 @@ namespace gfx {
 
 namespace {
 
+// Text length limit. Longer strings are slow and not fully tested.
+const size_t kMaxTextLength = 10000;
+
 // The maximum number of scripts a Unicode character can belong to. This value
 // is arbitrarily chosen to be a good limit because it is unlikely for a single
 // character to belong to more scripts.
@@ -572,7 +575,9 @@ Range TextRunHarfBuzz::GetGraphemeBounds(
 
 RenderTextHarfBuzz::RenderTextHarfBuzz()
     : RenderText(),
-      needs_layout_(false) {}
+      needs_layout_(false) {
+  set_truncate_length(kMaxTextLength);
+}
 
 RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
