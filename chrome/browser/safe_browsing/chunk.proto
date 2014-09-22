@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package safe_browsing;
 
 // Everything below this comment was copied from the page
-// <https://devsite.googleplex.com/safe-browsing/developers_guide_v3> ,
+// <https://developers.google.com/safe-browsing/developers_guide_v3>,
 // section "HTTP Response for Data" under "Response Body".
 
 // Chunk data encoding format for the shavar-proto list format.

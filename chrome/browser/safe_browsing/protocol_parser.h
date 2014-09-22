@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_PARSER_H_
 
 // Parsers and formatters for SafeBrowsing v3.0 protocol:
-// https://devsite.googleplex.com/safe-browsing/developers_guide_v3
+// https://developers.google.com/safe-browsing/developers_guide_v3
 //
 // The quoted references are with respect to that document.
 
