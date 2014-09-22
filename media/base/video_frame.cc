@@ -745,7 +745,8 @@ int VideoFrame::stride(size_t plane) const {
 }
 
 // static
-int VideoFrame::RowBytes(size_t plane, VideoFrame::Format format, int width) {
+size_t VideoFrame::RowBytes(size_t plane, VideoFrame::Format format,
+                            int width) {
   DCHECK(IsValidPlane(plane, format));
   switch (format) {
     case VideoFrame::YV24:
@@ -809,10 +810,10 @@ int VideoFrame::row_bytes(size_t plane) const {
   return RowBytes(plane, format_, coded_size_.width());
 }
 
-int VideoFrame::rows(size_t plane) const {
-  DCHECK(IsValidPlane(plane, format_));
-  int height = coded_size_.height();
-  switch (format_) {
+// static
+size_t VideoFrame::Rows(size_t plane, VideoFrame::Format format, int height) {
+  DCHECK(IsValidPlane(plane, format));
+  switch (format) {
     case VideoFrame::YV24:
     case VideoFrame::YV16:
       switch (plane) {
@@ -866,9 +867,13 @@ int VideoFrame::rows(size_t plane) const {
     case VideoFrame::NATIVE_TEXTURE:
       break;
   }
-  NOTREACHED() << "Unsupported video frame format/plane: "
-               << format_ << "/" << plane;
+  NOTREACHED() << "Unsupported video frame format/plane: " << format << "/"
+               << plane;
   return 0;
+}
+
+int VideoFrame::rows(size_t plane) const {
+  return Rows(plane, format_, coded_size_.height());
 }
 
 uint8* VideoFrame::data(size_t plane) const {

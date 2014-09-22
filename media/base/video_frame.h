@@ -240,7 +240,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the number of bytes per row for the given plane, format, and width.
   // The width may be aligned to format requirements.
-  static int RowBytes(size_t plane, Format format, int width);
+  static size_t RowBytes(size_t plane, Format format, int width);
+
+  // Returns the number of rows for the given plane, format, and height.
+  // The height may be aligned to format requirements.
+  static size_t Rows(size_t plane, Format format, int height);
 
   Format format() const { return format_; }
 
