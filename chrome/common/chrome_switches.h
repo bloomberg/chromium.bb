@@ -215,6 +215,7 @@ extern const char kInstallFromWebstore[];
 extern const char kInstantProcess[];
 extern const char kInvalidationUseGCMChannel[];
 extern const char kIpcFuzzerTestcase[];
+extern const char kJavaScriptHarmony[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
