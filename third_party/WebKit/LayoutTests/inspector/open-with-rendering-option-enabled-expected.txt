@@ -6,6 +6,7 @@ Loaded modules:
     sdk
     ui
     components
+    workspace
     bindings
     screencast
     toolbox
