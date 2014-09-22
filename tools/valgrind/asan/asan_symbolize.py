@@ -32,8 +32,22 @@ def disable_buffering():
     os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
+def set_symbolizer_path():
+  """Set the path to the llvm-symbolize binary in the Chromium source tree."""
+  if not os.environ.get('LLVM_SYMBOLIZER_PATH'):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Assume this script resides three levels below src/ (i.e.
+    # src/tools/valgrind/asan/).
+    src_root = os.path.join(script_dir, "..", "..", "..")
+    symbolizer_path = os.path.join(src_root, 'third_party',
+        'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer')
+    assert(os.path.isfile(symbolizer_path))
+    os.environ['LLVM_SYMBOLIZER_PATH'] = os.path.abspath(symbolizer_path)
+
+
 def main():
   disable_buffering()
+  set_symbolizer_path()
   asan_symbolize.demangle = True
   asan_symbolize.fix_filename_patterns = sys.argv[1:]
   asan_symbolize.logfile = sys.stdin
