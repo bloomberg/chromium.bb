@@ -5,8 +5,12 @@
 #include "config.h"
 #include "core/rendering/TextPainter.h"
 
+#include "core/CSSPropertyNames.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -94,6 +98,77 @@ void TextPainter::updateGraphicsContext(GraphicsContext* context, const Style& t
             stateSaver.save();
         context->setDrawLooper(textStyle.shadow->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, horizontal));
     }
+}
+
+static Color textColorForWhiteBackground(Color textColor)
+{
+    int distanceFromWhite = differenceSquared(textColor, Color::white);
+    // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
+    return distanceFromWhite > 65025 ? textColor : textColor.dark();
+}
+
+// static
+TextPainter::Style TextPainter::textPaintingStyle(RenderObject& renderer, RenderStyle* style, bool forceBlackText, bool isPrinting)
+{
+    TextPainter::Style textStyle;
+
+    if (forceBlackText) {
+        textStyle.fillColor = Color::black;
+        textStyle.strokeColor = Color::black;
+        textStyle.emphasisMarkColor = Color::black;
+        textStyle.strokeWidth = style->textStrokeWidth();
+        textStyle.shadow = 0;
+    } else {
+        textStyle.fillColor = renderer.resolveColor(style, CSSPropertyWebkitTextFillColor);
+        textStyle.strokeColor = renderer.resolveColor(style, CSSPropertyWebkitTextStrokeColor);
+        textStyle.emphasisMarkColor = renderer.resolveColor(style, CSSPropertyWebkitTextEmphasisColor);
+        textStyle.strokeWidth = style->textStrokeWidth();
+        textStyle.shadow = style->textShadow();
+
+        // Adjust text color when printing with a white background.
+        bool forceBackgroundToWhite = false;
+        if (isPrinting) {
+            if (style->printColorAdjust() == PrintColorAdjustEconomy)
+                forceBackgroundToWhite = true;
+            if (renderer.document().settings() && renderer.document().settings()->shouldPrintBackgrounds())
+                forceBackgroundToWhite = false;
+        }
+        if (forceBackgroundToWhite) {
+            textStyle.fillColor = textColorForWhiteBackground(textStyle.fillColor);
+            textStyle.strokeColor = textColorForWhiteBackground(textStyle.strokeColor);
+            textStyle.emphasisMarkColor = textColorForWhiteBackground(textStyle.emphasisMarkColor);
+        }
+
+        // Text shadows are disabled when printing. http://crbug.com/258321
+        if (isPrinting)
+            textStyle.shadow = 0;
+    }
+
+    return textStyle;
+}
+
+TextPainter::Style TextPainter::selectionPaintingStyle(RenderObject& renderer, bool haveSelection, bool forceBlackText, bool isPrinting, const TextPainter::Style& textStyle)
+{
+    TextPainter::Style selectionStyle = textStyle;
+
+    if (haveSelection) {
+        if (!forceBlackText) {
+            selectionStyle.fillColor = renderer.selectionForegroundColor();
+            selectionStyle.emphasisMarkColor = renderer.selectionEmphasisMarkColor();
+        }
+
+        if (RenderStyle* pseudoStyle = renderer.getCachedPseudoStyle(SELECTION)) {
+            selectionStyle.strokeColor = forceBlackText ? Color::black : renderer.resolveColor(pseudoStyle, CSSPropertyWebkitTextStrokeColor);
+            selectionStyle.strokeWidth = pseudoStyle->textStrokeWidth();
+            selectionStyle.shadow = forceBlackText ? 0 : pseudoStyle->textShadow();
+        }
+
+        // Text shadows are disabled when printing. http://crbug.com/258321
+        if (isPrinting)
+            selectionStyle.shadow = 0;
+    }
+
+    return selectionStyle;
 }
 
 static bool graphicsContextAllowsTextBlobs(GraphicsContext* context)

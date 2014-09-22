@@ -25,6 +25,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
+#include "core/rendering/TextPainter.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -37,7 +38,6 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
 {
     GraphicsContext* context = paintInfo.context;
     RenderStyle* style = renderer().style(isFirstLineStyle());
-
     const Font& font = style->font();
     FloatPoint boxOrigin = locationIncludingFlipping();
     boxOrigin.moveBy(FloatPoint(paintOffset));
@@ -47,38 +47,23 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     GraphicsContextStateSaver stateSaver(*context);
     if (!isHorizontal())
         context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
-    FloatPoint textOrigin = FloatPoint(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
+    FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
-    Color styleTextColor = renderer().resolveColor(style, CSSPropertyWebkitTextFillColor);
-    if (styleTextColor != context->fillColor())
-        context->setFillColor(styleTextColor);
+    bool isPrinting = renderer().document().printing();
+    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && selectionState() != RenderObject::SelectionNone;
 
-    if (selectionState() != RenderObject::SelectionNone) {
+    if (haveSelection)
         paintSelection(context, boxOrigin, style, font);
+    else if (paintInfo.phase == PaintPhaseSelection)
+        return;
 
-        // Select the correct color for painting the text.
-        Color foreground = paintInfo.forceBlackText() ? Color::black : renderer().selectionForegroundColor();
-        if (foreground != styleTextColor)
-            context->setFillColor(foreground);
-    }
-
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    const ShadowList* shadowList = context->printing() ? 0 : style->textShadow();
-    bool hasShadow = shadowList;
-    if (hasShadow)
-        context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, isHorizontal()));
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(renderer(), style, paintInfo.forceBlackText(), isPrinting);
+    if (haveSelection)
+        textStyle = TextPainter::selectionPaintingStyle(renderer(), true, paintInfo.forceBlackText(), isPrinting, textStyle);
 
     TextRun textRun = constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
-    TextRunPaintInfo textRunPaintInfo(textRun);
-    textRunPaintInfo.bounds = boxRect;
-    context->drawText(font, textRunPaintInfo, textOrigin);
-
-    // Restore the regular fill color.
-    if (styleTextColor != context->fillColor())
-        context->setFillColor(styleTextColor);
-
-    if (hasShadow)
-        context->clearDrawLooper();
+    TextPainter textPainter(context, font, textRun, textOrigin, boxRect, isHorizontal());
+    textPainter.paint(0, m_str.length(), m_str.length(), textStyle);
 
     paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }

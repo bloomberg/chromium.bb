@@ -32,7 +32,6 @@
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/AbstractInlineTextBox.h"
@@ -333,13 +332,6 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
     return -1;
 }
 
-static Color textColorForWhiteBackground(Color textColor)
-{
-    int distanceFromWhite = differenceSquared(textColor, Color::white);
-    // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
-    return distanceFromWhite > 65025 ? textColor : textColor.dark();
-}
-
 bool InlineTextBox::isLineBreak() const
 {
     return renderer().isBR() || (renderer().style()->preserveNewline() && len() == 1 && (*renderer().text().impl())[start()] == '\n');
@@ -383,73 +375,6 @@ bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosi
     // The emphasis marks over are suppressed only if there is a ruby text box and it not empty.
     return !rubyText || !rubyText->firstLineBox();
 }
-
-namespace {
-
-TextPainter::Style textPaintingStyle(RenderText& renderer, RenderStyle* style, bool forceBlackText, bool isPrinting)
-{
-    TextPainter::Style textStyle;
-
-    if (forceBlackText) {
-        textStyle.fillColor = Color::black;
-        textStyle.strokeColor = Color::black;
-        textStyle.emphasisMarkColor = Color::black;
-        textStyle.strokeWidth = style->textStrokeWidth();
-        textStyle.shadow = 0;
-    } else {
-        textStyle.fillColor = renderer.resolveColor(style, CSSPropertyWebkitTextFillColor);
-        textStyle.strokeColor = renderer.resolveColor(style, CSSPropertyWebkitTextStrokeColor);
-        textStyle.emphasisMarkColor = renderer.resolveColor(style, CSSPropertyWebkitTextEmphasisColor);
-        textStyle.strokeWidth = style->textStrokeWidth();
-        textStyle.shadow = style->textShadow();
-
-        // Adjust text color when printing with a white background.
-        bool forceBackgroundToWhite = false;
-        if (isPrinting) {
-            if (style->printColorAdjust() == PrintColorAdjustEconomy)
-                forceBackgroundToWhite = true;
-            if (renderer.document().settings() && renderer.document().settings()->shouldPrintBackgrounds())
-                forceBackgroundToWhite = false;
-        }
-        if (forceBackgroundToWhite) {
-            textStyle.fillColor = textColorForWhiteBackground(textStyle.fillColor);
-            textStyle.strokeColor = textColorForWhiteBackground(textStyle.strokeColor);
-            textStyle.emphasisMarkColor = textColorForWhiteBackground(textStyle.emphasisMarkColor);
-        }
-
-        // Text shadows are disabled when printing. http://crbug.com/258321
-        if (isPrinting)
-            textStyle.shadow = 0;
-    }
-
-    return textStyle;
-}
-
-TextPainter::Style selectionPaintingStyle(RenderText& renderer, bool haveSelection, bool forceBlackText, bool isPrinting, const TextPainter::Style& textStyle)
-{
-    TextPainter::Style selectionStyle = textStyle;
-
-    if (haveSelection) {
-        if (!forceBlackText) {
-            selectionStyle.fillColor = renderer.selectionForegroundColor();
-            selectionStyle.emphasisMarkColor = renderer.selectionEmphasisMarkColor();
-        }
-
-        if (RenderStyle* pseudoStyle = renderer.getCachedPseudoStyle(SELECTION)) {
-            selectionStyle.strokeColor = forceBlackText ? Color::black : renderer.resolveColor(pseudoStyle, CSSPropertyWebkitTextStrokeColor);
-            selectionStyle.strokeWidth = pseudoStyle->textStrokeWidth();
-            selectionStyle.shadow = forceBlackText ? 0 : pseudoStyle->textShadow();
-        }
-
-        // Text shadows are disabled when printing. http://crbug.com/258321
-        if (isPrinting)
-            selectionStyle.shadow = 0;
-    }
-
-    return selectionStyle;
-}
-
-} // namespace
 
 void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /*lineTop*/, LayoutUnit /*lineBottom*/)
 {
@@ -523,8 +448,8 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     bool useCustomUnderlines = containsComposition && renderer().frame()->inputMethodController().compositionUsesCustomUnderlines();
 
     // Determine text colors.
-    TextPainter::Style textStyle = textPaintingStyle(renderer(), styleToUse, paintInfo.forceBlackText(), isPrinting);
-    TextPainter::Style selectionStyle = selectionPaintingStyle(renderer(), haveSelection, paintInfo.forceBlackText(), isPrinting, textStyle);
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(renderer(), styleToUse, paintInfo.forceBlackText(), isPrinting);
+    TextPainter::Style selectionStyle = TextPainter::selectionPaintingStyle(renderer(), haveSelection, paintInfo.forceBlackText(), isPrinting, textStyle);
     bool paintSelectedTextOnly = (paintInfo.phase == PaintPhaseSelection);
     bool paintSelectedTextSeparately = !paintSelectedTextOnly && textStyle != selectionStyle;
 

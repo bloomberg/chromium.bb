@@ -18,6 +18,8 @@ class Font;
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class RenderCombineText;
+class RenderObject;
+class RenderStyle;
 class ShadowList;
 class TextRun;
 struct TextRunPaintInfo;
@@ -53,6 +55,8 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
+    static Style textPaintingStyle(RenderObject&, RenderStyle*, bool forceBlackText, bool isPrinting);
+    static Style selectionPaintingStyle(RenderObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
 
 private:
     void updateGraphicsContext(const Style& style, GraphicsContextStateSaver& saver)
