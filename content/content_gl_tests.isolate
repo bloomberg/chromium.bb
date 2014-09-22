@@ -2,12 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  # TODO(kbr): including all of chrome.isolate is overkill -- the only
-  # real dependency is on ffmpegsumo. However, wait to refactor
-  # chrome.isolate (perhaps adding a media.isolate) for the moment.
-  'includes': [
-    'chrome.isolate',
-  ],
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
@@ -30,5 +24,33 @@
         ],
       },
     }],
+    ['OS=="linux"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/d3dcompiler_46.dll',
+          '<(PRODUCT_DIR)/libEGL.dll',
+          '<(PRODUCT_DIR)/libGLESv2.dll',
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/osmesa.dll',
+        ],
+      },
+    }],
+  ],
+  'includes': [
+    '../third_party/icu/icu.isolate',
   ],
 }

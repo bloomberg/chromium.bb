@@ -2957,21 +2957,6 @@
               ],
             },
             {
-              'target_name': 'content_gl_tests_run',
-              'type': 'none',
-              'dependencies': [
-                '../content/content_shell_and_tests.gyp:content_gl_tests',
-                'chrome_run',
-              ],
-              'includes': [
-                '../build/isolate.gypi',
-                'content_gl_tests.isolate',
-              ],
-              'sources': [
-                'content_gl_tests.isolate',
-              ],
-            },
-            {
               'target_name': 'gl_tests_run',
               'type': 'none',
               'dependencies': [

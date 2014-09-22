@@ -987,7 +987,27 @@
           'sources': [
             'content_unittests.isolate',
           ],
-       },
+        },
+      ],
+      'conditions': [
+        ['archive_gpu_tests==1', {
+          'targets': [
+            {
+              'target_name': 'content_gl_tests_run',
+              'type': 'none',
+              'dependencies': [
+                'content_shell_and_tests.gyp:content_gl_tests',
+              ],
+              'includes': [
+                '../build/isolate.gypi',
+                'content_gl_tests.isolate',
+              ],
+              'sources': [
+                'content_gl_tests.isolate',
+              ],
+            },
+          ],
+        }],
       ],
     }],
     ['OS!="ios"', {
@@ -1391,6 +1411,12 @@
             ['OS=="android"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+            }, {
+              'dependencies': [
+                # Runtime dependencis.
+                '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+                '../third_party/mesa/mesa.gyp:osmesa',
               ],
             }],
           ],
