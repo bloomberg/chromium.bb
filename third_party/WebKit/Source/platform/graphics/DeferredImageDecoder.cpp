@@ -123,8 +123,8 @@ void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 
 bool DeferredImageDecoder::isSizeAvailable()
 {
-    // m_actualDecoder is 0 only if image decoding is deferred and that
-    // means image header decoded successfully and size is available.
+    // m_actualDecoder is 0 only if image decoding is deferred and that means
+    // the image header decoded successfully and the size is available.
     return m_actualDecoder ? m_actualDecoder->isSizeAvailable() : true;
 }
 
