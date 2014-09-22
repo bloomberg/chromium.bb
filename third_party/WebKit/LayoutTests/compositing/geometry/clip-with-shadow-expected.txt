@@ -21,6 +21,7 @@
         {
           "position": [215, 15],
           "bounds": [110, 110],
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [-5, -5],

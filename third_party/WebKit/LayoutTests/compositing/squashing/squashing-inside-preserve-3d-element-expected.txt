@@ -7,7 +7,7 @@
       "drawsContent": true,
       "children": [
         {
-          "3dRenderingContext": 1,
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [8, 8],

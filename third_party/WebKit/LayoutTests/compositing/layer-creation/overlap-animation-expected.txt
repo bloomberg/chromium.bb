@@ -15,6 +15,7 @@
               "bounds": [120, 240],
               "children": [
                 {
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "position": [10, 10],

@@ -16,6 +16,7 @@ This tests that squashed layers' offset from renderer is updated properly. If no
           "backgroundColor": "#FFFF00"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],

@@ -57,6 +57,7 @@
         {
           "position": [12, 12],
           "bounds": [80, 80],
+          "shouldFlattenTransform": false,
           "hasScrollParent": true,
           "children": [
             {
@@ -74,6 +75,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "hasScrollParent": true,
           "children": [
             {

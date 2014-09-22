@@ -1,0 +1,47 @@
+Test CSS clip with composited layers. Left and right sides should look the same.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [25, 35],
+          "transformOrigin": [45, 35],
+          "bounds": [90, 80],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080",
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 1]
+          ]
+        },
+        {
+          "position": [225, 35],
+          "bounds": [90, 80],
+          "children": [
+            {
+              "position": [-15, -25],
+              "bounds": [120, 120],
+              "drawsContent": true,
+              "backgroundColor": "#00000033",
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 1, 1]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

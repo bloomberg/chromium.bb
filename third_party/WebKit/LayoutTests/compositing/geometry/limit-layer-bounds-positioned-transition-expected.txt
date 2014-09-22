@@ -8,6 +8,7 @@ Text here
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [29, 29],

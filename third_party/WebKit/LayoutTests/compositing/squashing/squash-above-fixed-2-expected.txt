@@ -17,6 +17,7 @@ CASE 1, original layer tree:
           "backgroundColor": "#0000FF",
           "children": [
             {
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [50, 50],
@@ -56,6 +57,7 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
           "backgroundColor": "#0000FF",
           "children": [
             {
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "bounds": [50, 50],

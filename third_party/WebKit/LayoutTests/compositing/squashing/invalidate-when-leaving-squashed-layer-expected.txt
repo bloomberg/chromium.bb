@@ -10,6 +10,7 @@
       ],
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [8, 8],

@@ -1,0 +1,83 @@
+{
+  "bounds": [785, 812],
+  "children": [
+    {
+      "bounds": [785, 812],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 120],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [...],
+            [...],
+            [...],
+            [...]
+          ]
+        },
+        {
+          "position": [58, 230],
+          "bounds": [122, 462],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFFFFF",
+          "children": [
+            {
+              "position": [1, 1],
+              "bounds": [120, 460],
+              "children": [
+                {
+                  "position": [10, 10],
+                  "bounds": [100, 100],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#808080",
+                  "transform": [
+                    [...],
+                    [...],
+                    [...],
+                    [...]
+                  ]
+                },
+                {
+                  "children": [
+                    {
+                      "position": [10, 230],
+                      "bounds": [100, 100],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#0000FF",
+                      "transform": [
+                        [...],
+                        [...],
+                        [...],
+                        [...]
+                      ]
+                    },
+                    {
+                      "position": [10, 340],
+                      "bounds": [100, 100],
+                      "drawsContent": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [18, 702],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFFF00"
+        }
+      ]
+    }
+  ]
+}
+

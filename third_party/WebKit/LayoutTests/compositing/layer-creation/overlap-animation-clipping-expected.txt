@@ -44,6 +44,7 @@
                   ]
                 },
                 {
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "position": [10, 230],

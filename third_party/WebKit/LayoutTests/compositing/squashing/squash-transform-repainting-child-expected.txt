@@ -8,6 +8,7 @@ CASE 1, original layer tree
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],
@@ -37,6 +38,7 @@ CASE 2, hovering over the outer div
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],
@@ -69,6 +71,7 @@ CASE 3, hovering over the inner div
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],

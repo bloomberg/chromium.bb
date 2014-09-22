@@ -9,6 +9,7 @@
         {
           "position": [8, 8],
           "bounds": [200, 10],
+          "shouldFlattenTransform": false,
           "children": [
             {
               "bounds": [200, 10],

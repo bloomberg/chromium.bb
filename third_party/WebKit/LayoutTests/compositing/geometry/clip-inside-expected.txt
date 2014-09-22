@@ -25,6 +25,7 @@ Test CSS clip with composited layers. Left and right sides should look the same.
         {
           "position": [225, 35],
           "bounds": [90, 80],
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [-15, -25],

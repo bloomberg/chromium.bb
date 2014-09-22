@@ -7,6 +7,7 @@
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [10, 10],
@@ -58,6 +59,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [16, -15],
@@ -116,6 +118,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [157, 18],
@@ -132,6 +135,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [250, 10],
@@ -182,6 +186,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [256, -15],
@@ -198,6 +203,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [370, 10],
@@ -249,6 +255,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [376, -15],
@@ -307,6 +314,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [37, 138],
@@ -323,6 +331,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [130, 130],
@@ -373,6 +382,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [136, 105],
@@ -430,6 +440,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [277, 138],
@@ -487,6 +498,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [397, 138],
@@ -552,6 +564,7 @@
           "backgroundColor": "#800080"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [16, 225],
@@ -616,6 +629,7 @@
           "backgroundColor": "#800080"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [136, 225],
@@ -681,6 +695,7 @@
           "backgroundColor": "#800080"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [256, 225],
@@ -745,6 +760,7 @@
           "backgroundColor": "#800080"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [376, 225],
@@ -803,6 +819,7 @@
           "backgroundColor": "#008000"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [16, -43],
@@ -819,6 +836,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [136, -43],
@@ -835,6 +853,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [256, -43],
@@ -851,6 +870,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [376, -43],
@@ -867,6 +887,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [16, 77],
@@ -883,6 +904,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [136, 77],
@@ -899,6 +921,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [256, 77],
@@ -915,6 +938,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [376, 77],
@@ -931,6 +955,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [16, 197],
@@ -947,6 +972,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [136, 197],
@@ -963,6 +989,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [256, 197],
@@ -979,6 +1006,7 @@
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [376, 197],

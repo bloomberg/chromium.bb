@@ -19,6 +19,7 @@ CASE 1, original layer tree:
           "backgroundColor": "#D3D3D3"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [0, 100],
@@ -63,6 +64,7 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           "backgroundColor": "#D3D3D3"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [0, 200],
@@ -107,6 +109,7 @@ CASE 3, scrolling y to 120, no repaints expected:
           "backgroundColor": "#D3D3D3"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [0, 200],
@@ -151,6 +154,7 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           "backgroundColor": "#D3D3D3"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [0, 300],

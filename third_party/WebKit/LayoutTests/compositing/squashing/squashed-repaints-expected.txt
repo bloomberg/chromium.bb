@@ -10,6 +10,7 @@ CASE 1, original layer tree:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [60, 60],
@@ -39,6 +40,7 @@ CASE 2, overlap1 changes color:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [60, 60],
@@ -71,6 +73,7 @@ CASE 3, overlap1 and overlap2 change color:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [60, 60],
@@ -104,6 +107,7 @@ CASE 4, overlap2 and overlap3 change color:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [60, 60],
@@ -137,6 +141,7 @@ CASE 5, overlap3 and overlap1 change color:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [60, 60],

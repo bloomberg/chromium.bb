@@ -45,6 +45,7 @@
           "backgroundColor": "#008000"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [103, 95],

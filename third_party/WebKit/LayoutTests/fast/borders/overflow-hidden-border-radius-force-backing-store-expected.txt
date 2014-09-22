@@ -16,6 +16,7 @@
               "children": [
                 {
                   "bounds": [285, 300],
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "bounds": [285, 1000]

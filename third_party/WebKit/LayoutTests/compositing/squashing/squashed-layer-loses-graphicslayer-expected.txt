@@ -10,6 +10,7 @@ CASE 1, original layer tree:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [60, 60],

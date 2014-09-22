@@ -12,6 +12,7 @@
         {
           "position": [8, 8],
           "bounds": [285, 285],
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [-315, 0],

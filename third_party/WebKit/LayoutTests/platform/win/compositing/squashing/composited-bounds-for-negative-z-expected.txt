@@ -51,6 +51,7 @@
               ]
             },
             {
+              "shouldFlattenTransform": false,
               "children": [
                 {
                   "position": [108, 100],

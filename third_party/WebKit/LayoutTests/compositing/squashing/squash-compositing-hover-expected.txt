@@ -14,6 +14,7 @@ Case 1, original layer tree:
           "bounds": [784, 0]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],
@@ -54,6 +55,7 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
           "backgroundColor": "#0000FF"
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [180, 180],
@@ -87,6 +89,7 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
           "bounds": [784, 0]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],
@@ -103,6 +106,7 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
           ]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [260, 260],
@@ -136,6 +140,7 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
           "bounds": [784, 0]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],
@@ -176,6 +181,7 @@ Case 5: back to situation in case 1
           "bounds": [784, 0]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [100, 100],

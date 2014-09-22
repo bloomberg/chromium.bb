@@ -8,6 +8,7 @@ CASE 1, original layer tree
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [50, 50],
@@ -37,6 +38,7 @@ CASE 2, change color of "inner" to red
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [50, 50],

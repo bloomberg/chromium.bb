@@ -41,6 +41,7 @@ Case: Displaying movie
           "bounds": [352, 288]
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [8, 8],

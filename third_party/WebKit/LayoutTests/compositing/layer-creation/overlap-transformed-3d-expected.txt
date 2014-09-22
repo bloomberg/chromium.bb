@@ -35,6 +35,7 @@ After:
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [108, 108],

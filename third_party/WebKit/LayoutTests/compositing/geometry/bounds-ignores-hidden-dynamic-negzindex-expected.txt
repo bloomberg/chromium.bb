@@ -14,6 +14,7 @@
           "drawsContent": true
         },
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [0, 250],

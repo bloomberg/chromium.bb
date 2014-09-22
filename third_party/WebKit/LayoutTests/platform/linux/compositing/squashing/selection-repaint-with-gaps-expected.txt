@@ -8,6 +8,7 @@ lorem ipsumlorem ipsumlorem ipsum
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [8, 8],
@@ -37,6 +38,7 @@ lorem ipsumlorem ipsumlorem ipsum
       "drawsContent": true,
       "children": [
         {
+          "shouldFlattenTransform": false,
           "children": [
             {
               "position": [8, 8],
