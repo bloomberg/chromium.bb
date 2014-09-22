@@ -187,7 +187,8 @@
     },
     'out_of_process_frames': {
       'filepath': 'Source/core/frame/FrameOwner' \
-                  '|Source/web/WebRemoteFrameImpl' \
+                  '|Source/web/WebFrame' \
+                  '|Source/web/WebRemoteFrameImpl'
     },
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
