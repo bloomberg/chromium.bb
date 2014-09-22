@@ -46,7 +46,7 @@ using blink::WebString;
 using blink::WebURLRequest;
 
 ChromeRenderViewTest::ChromeRenderViewTest()
-    : password_autofill_(NULL),
+    : password_autofill_agent_(NULL),
       password_generation_(NULL),
       autofill_agent_(NULL),
       chrome_render_thread_(NULL) {
@@ -67,10 +67,10 @@ void ChromeRenderViewTest::SetUp() {
   // RenderView doesn't expose its Agent objects, because it has no need to
   // store them directly (they're stored as RenderViewObserver*).  So just
   // create another set.
-  password_autofill_ = new autofill::TestPasswordAutofillAgent(view_);
+  password_autofill_agent_ = new autofill::TestPasswordAutofillAgent(view_);
   password_generation_ = new autofill::TestPasswordGenerationAgent(view_);
   autofill_agent_ =
-      new AutofillAgent(view_, password_autofill_, password_generation_);
+      new AutofillAgent(view_, password_autofill_agent_, password_generation_);
 }
 
 void ChromeRenderViewTest::TearDown() {

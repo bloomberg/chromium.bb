@@ -73,8 +73,6 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
       const blink::WebSecurityOrigin& origin);
 
  private:
-  friend class PasswordAutofillAgentTest;
-
   enum OtherPossibleUsernamesUsage {
     NOTHING_TO_AUTOFILL,
     OTHER_POSSIBLE_USERNAMES_ABSENT,
