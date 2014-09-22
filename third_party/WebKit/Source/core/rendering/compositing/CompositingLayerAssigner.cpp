@@ -145,6 +145,9 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
         return CompositingReasonSquashingSparsityExceeded;
 
+    if (layer->renderer()->hasBlendMode())
+        return CompositingReasonSquashingBlendingIsDisallowed;
+
     // FIXME: this is not efficient, since it walks up the tree. We should store these values on the CompositingInputsCache.
     if (layer->clippingContainer() != squashingLayer.clippingContainer() && !squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->clippingContainer()))
         return CompositingReasonSquashingClippingContainerMismatch;
