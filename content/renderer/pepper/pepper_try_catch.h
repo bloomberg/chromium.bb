@@ -19,6 +19,8 @@ class PepperPluginInstanceImpl;
 // Base class for scripting TryCatch helpers.
 class CONTENT_EXPORT PepperTryCatch {
  public:
+  // PepperTryCatch objects should only be used as stack variables. This object
+  // takes a reference on the given PepperPluginInstanceImpl.
   PepperTryCatch(PepperPluginInstanceImpl* instance,
                  V8VarConverter::AllowObjectVars convert_objects);
   virtual ~PepperTryCatch();
@@ -34,7 +36,14 @@ class CONTENT_EXPORT PepperTryCatch {
   ppapi::ScopedPPVar FromV8(v8::Handle<v8::Value> v8_value);
 
  protected:
-  PepperPluginInstanceImpl* instance_;
+  // Make sure that |instance_| is alive for the lifetime of PepperTryCatch.
+  // PepperTryCatch is used mostly in Pepper scripting code, where it can be
+  // possible to enter JavaScript synchronously which can cause the plugin to
+  // be deleted.
+  //
+  // Note that PepperTryCatch objects should only ever be on the stack, so this
+  // shouldn't keep the instance around for too long.
+  scoped_refptr<PepperPluginInstanceImpl> instance_;
 
   // Whether To/FromV8 should convert object vars. If set to
   // kDisallowObjectVars, an exception should be set if they are encountered
