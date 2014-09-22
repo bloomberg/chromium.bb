@@ -142,6 +142,8 @@
       'UUID.cpp',
       'UUID.h',
       'WebThread.cpp',
+      'WebThreadSupportingGC.cpp',
+      'WebThreadSupportingGC.h',
       'Widget.cpp',
       'Widget.h',
       'WindowsKeyboardCodes.h',

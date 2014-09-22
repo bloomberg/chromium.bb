@@ -28,8 +28,8 @@
 #ifndef DatabaseThread_h
 #define DatabaseThread_h
 
+#include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebThread.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -79,7 +79,7 @@ private:
     void cleanupDatabaseThread();
     void cleanupDatabaseThreadCompleted();
 
-    OwnPtr<WebThread> m_thread;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 
     // This set keeps track of the open databases that have been used on this thread.
     // This must be updated in the database thread though it is constructed and
@@ -92,8 +92,6 @@ private:
 
     mutable Mutex m_terminationRequestedMutex;
     bool m_terminationRequested;
-    OwnPtr<PendingGCRunner> m_pendingGCRunner;
-    OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
 };
 
 } // namespace blink

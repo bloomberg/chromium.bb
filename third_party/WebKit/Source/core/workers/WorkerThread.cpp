@@ -225,7 +225,7 @@ void WorkerThread::start()
     if (m_thread)
         return;
 
-    m_thread = adoptPtr(blink::Platform::current()->createThread("WebCore: Worker"));
+    m_thread = WebThreadSupportingGC::create("WebCore: Worker");
     m_thread->postTask(new Task(WTF::bind(&WorkerThread::initialize, this)));
 }
 
@@ -240,7 +240,7 @@ PlatformThreadId WorkerThread::platformThreadId() const
 {
     if (!m_thread)
         return 0;
-    return m_thread->threadId();
+    return m_thread->platformThread().threadId();
 }
 
 void WorkerThread::initialize()
@@ -262,11 +262,7 @@ void WorkerThread::initialize()
 
         m_microtaskRunner = adoptPtr(new MicrotaskRunner);
         m_thread->addTaskObserver(m_microtaskRunner.get());
-        m_pendingGCRunner = adoptPtr(new PendingGCRunner);
-        m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(m_thread.get()));
-        m_thread->addTaskObserver(m_pendingGCRunner.get());
-        ThreadState::attach();
-        ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
+        m_thread->attachGC();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
 
         m_sharedTimer = adoptPtr(new WorkerSharedTimer(this));
@@ -306,23 +302,10 @@ void WorkerThread::cleanup()
     m_workerGlobalScope->dispose();
     m_workerGlobalScope = nullptr;
 
-    ThreadState::current()->removeInterruptor(m_messageLoopInterruptor.get());
-
-    // Detach the ThreadState, cleaning out the thread's heap by
-    // performing a final GC. The cleanup operation will at the end
-    // assert that the heap is empty. If the heap does not become
-    // empty, there are still pointers into the heap and those
-    // pointers will be dangling after thread termination because we
-    // are destroying the heap. It is important to detach while the
-    // thread is still valid. In particular, finalizers for objects in
-    // the heap for this thread will need to access thread local data.
-    ThreadState::detach();
+    m_thread->detachGC();
 
     m_thread->removeTaskObserver(m_microtaskRunner.get());
     m_microtaskRunner = nullptr;
-    m_thread->removeTaskObserver(m_pendingGCRunner.get());
-    m_pendingGCRunner = nullptr;
-    m_messageLoopInterruptor = nullptr;
 
     // Notify the proxy that the WorkerGlobalScope has been disposed of.
     // This can free this thread object, hence it must not be touched afterwards.

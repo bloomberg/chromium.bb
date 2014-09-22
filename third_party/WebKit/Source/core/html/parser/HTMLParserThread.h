@@ -31,9 +31,7 @@
 #ifndef HTMLParserThread_h
 #define HTMLParserThread_h
 
-#include "platform/heap/glue/MessageLoopInterruptor.h"
-#include "platform/heap/glue/PendingGCRunner.h"
-#include "public/platform/WebThread.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 
@@ -59,9 +57,7 @@ private:
     void setupHTMLParserThread();
     void cleanupHTMLParserThread(TaskSynchronizer*);
 
-    OwnPtr<blink::WebThread> m_thread;
-    OwnPtr<PendingGCRunner> m_pendingGCRunner;
-    OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

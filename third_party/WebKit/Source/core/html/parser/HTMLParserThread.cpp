@@ -56,11 +56,8 @@ void HTMLParserThread::init()
 
 void HTMLParserThread::setupHTMLParserThread()
 {
-    m_pendingGCRunner = adoptPtr(new PendingGCRunner);
-    m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(&platformThread()));
-    platformThread().addTaskObserver(m_pendingGCRunner.get());
-    ThreadState::attach();
-    ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
+    ASSERT(m_thread);
+    m_thread->attachGC();
 }
 
 void HTMLParserThread::shutdown()
@@ -78,11 +75,7 @@ void HTMLParserThread::shutdown()
 
 void HTMLParserThread::cleanupHTMLParserThread(TaskSynchronizer* taskSynchronizer)
 {
-    ThreadState::current()->removeInterruptor(m_messageLoopInterruptor.get());
-    ThreadState::detach();
-    platformThread().removeTaskObserver(m_pendingGCRunner.get());
-    m_pendingGCRunner = nullptr;
-    m_messageLoopInterruptor = nullptr;
+    m_thread->detachGC();
     taskSynchronizer->taskCompleted();
 }
 
@@ -94,10 +87,10 @@ HTMLParserThread* HTMLParserThread::shared()
 blink::WebThread& HTMLParserThread::platformThread()
 {
     if (!isRunning()) {
-        m_thread = adoptPtr(blink::Platform::current()->createThread("HTMLParserThread"));
+        m_thread = WebThreadSupportingGC::create("HTMLParserThread");
         postTask(WTF::bind(&HTMLParserThread::setupHTMLParserThread, this));
     }
-    return *m_thread;
+    return m_thread->platformThread();
 }
 
 bool HTMLParserThread::isRunning()

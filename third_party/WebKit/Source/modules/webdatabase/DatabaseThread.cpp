@@ -72,17 +72,13 @@ void DatabaseThread::start()
 {
     if (m_thread)
         return;
-    m_thread = adoptPtr(Platform::current()->createThread("WebCore: Database"));
+    m_thread = WebThreadSupportingGC::create("WebCore: Database");
     m_thread->postTask(new Task(WTF::bind(&DatabaseThread::setupDatabaseThread, this)));
 }
 
 void DatabaseThread::setupDatabaseThread()
 {
-    m_pendingGCRunner = adoptPtr(new PendingGCRunner);
-    m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(m_thread.get()));
-    m_thread->addTaskObserver(m_pendingGCRunner.get());
-    ThreadState::attach();
-    ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
+    m_thread->attachGC();
 }
 
 void DatabaseThread::requestTermination(TaskSynchronizer *cleanupSync)
@@ -129,12 +125,7 @@ void DatabaseThread::cleanupDatabaseThread()
 
 void DatabaseThread::cleanupDatabaseThreadCompleted()
 {
-    ThreadState::current()->removeInterruptor(m_messageLoopInterruptor.get());
-    ThreadState::detach();
-    // We need to unregister PendingGCRunner before finising this task to avoid
-    // PendingGCRunner::didProcessTask accesses dead ThreadState.
-    m_thread->removeTaskObserver(m_pendingGCRunner.get());
-
+    m_thread->detachGC();
     if (m_cleanupSync) // Someone wanted to know when we were done cleaning up.
         m_cleanupSync->taskCompleted();
 }
