@@ -1,6 +1,10 @@
 Tests that editing is canceled properly after incremental editing.
 
 Text
+
+Running: selectInitialNode
+
+Running: testFreeFlowEdit
 [expanded] 
 element.style  { ()
 color: red;
@@ -10,6 +14,16 @@ div  { (user agent stylesheet)
 display: block;
 
 
+
+Running: testCommitEditing
+
+Running: testNewPropertyEditorIsCreated
+
+Running: testCycleThroughPropertyEditing
+
+Running: testNodeStyles
+
+Running: dumpStyles
 After append:
 [expanded] 
 element.style  { ()

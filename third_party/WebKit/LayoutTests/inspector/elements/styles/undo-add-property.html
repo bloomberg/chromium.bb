@@ -13,7 +13,7 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("container", testAppendProperty.bind(null, testInsertBegin));
+    InspectorTest.selectNodeAndWaitForStyles("container", testAppendProperty);
 
     function testAppendProperty()
     {
@@ -35,7 +35,6 @@ function test()
 
     function testAddProperty(propertyText, index, callback)
     {
-
         InspectorTest.addResult("(Initial value)");
         InspectorTest.dumpSelectedElementStyles(true);
 
