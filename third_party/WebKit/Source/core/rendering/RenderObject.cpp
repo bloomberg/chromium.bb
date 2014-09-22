@@ -1258,6 +1258,10 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
         return "bounds change";
     case InvalidationLocationChange:
         return "location change";
+    case InvalidationBecameVisible:
+        return "became visible";
+    case InvalidationBecameInvisible:
+        return "became invisible";
     case InvalidationScroll:
         return "scroll";
     case InvalidationSelection:
@@ -1366,19 +1370,21 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     if (newBounds.location() != oldBounds.location())
         return InvalidationBoundsChange;
 
-    // If the size is zero on one of our bounds then we know we're going to have
-    // to do a full invalidation of either old bounds or new bounds. If we fall
-    // into the incremental invalidation we'll issue two invalidations instead
-    // of one.
-    if (oldBounds.size().isZero() || newBounds.size().isZero())
-        return InvalidationBoundsChange;
-
     // This covers the case where we mark containing blocks for layout
     // and they change size but don't have anything to paint. This is
     // a pretty common case for <body> as we add / remove children
     // (and the default background is done by FrameView).
     if (skipInvalidationWhenLaidOutChildren())
         return InvalidationNone;
+
+    // If the size is zero on one of our bounds then we know we're going to have
+    // to do a full invalidation of either old bounds or new bounds. If we fall
+    // into the incremental invalidation we'll issue two invalidations instead
+    // of one.
+    if (oldBounds.isEmpty())
+        return InvalidationBecameVisible;
+    if (newBounds.isEmpty())
+        return InvalidationBecameInvisible;
 
     return InvalidationIncremental;
 }

@@ -112,6 +112,8 @@ enum InvalidationReason {
     InvalidationBorderBoxChange,
     InvalidationBoundsChange,
     InvalidationLocationChange,
+    InvalidationBecameVisible,
+    InvalidationBecameInvisible,
     InvalidationScroll,
     InvalidationSelection,
     InvalidationLayer,
