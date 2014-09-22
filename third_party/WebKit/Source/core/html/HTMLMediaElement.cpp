@@ -323,7 +323,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_previousProgressTime(std::numeric_limits<double>::max())
     , m_duration(std::numeric_limits<double>::quiet_NaN())
     , m_lastTimeUpdateEventWallTime(0)
-    , m_lastTimeUpdateEventMovieTime(std::numeric_limits<double>::max())
+    , m_lastTimeUpdateEventMovieTime(0)
     , m_defaultPlaybackStartPosition(0)
     , m_loadState(WaitingForSource)
     , m_deferredLoadState(NotDeferred)
