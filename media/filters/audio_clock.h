@@ -84,6 +84,12 @@ class MEDIA_EXPORT AudioClock {
   base::TimeDelta TimestampSinceWriting(
       base::TimeDelta time_since_writing) const;
 
+  // Returns the amount of wall time until |timestamp| will be played by the
+  // audio hardware.
+  //
+  // |timestamp| must be within front_timestamp() and back_timestamp().
+  base::TimeDelta TimeUntilPlayback(base::TimeDelta timestamp) const;
+
   // Returns the amount of contiguous media time buffered at the head of the
   // audio hardware buffer. Silence introduced into the audio hardware buffer is
   // treated as a break in media time.

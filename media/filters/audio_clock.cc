@@ -89,6 +89,43 @@ base::TimeDelta AudioClock::TimestampSinceWriting(
          ComputeBufferedMediaTime(frames_played_since_writing);
 }
 
+base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
+  DCHECK(timestamp >= front_timestamp_);
+  DCHECK(timestamp <= back_timestamp_);
+
+  int64_t frames_until_timestamp = 0;
+  double timestamp_us = timestamp.InMicroseconds();
+  double media_time_us = front_timestamp_.InMicroseconds();
+
+  for (size_t i = 0; i < buffered_.size(); ++i) {
+    // Leading silence is always accounted prior to anything else.
+    if (buffered_[i].playback_rate == 0) {
+      frames_until_timestamp += buffered_[i].frames;
+      continue;
+    }
+
+    // Calculate upper bound on media time for current block of buffered frames.
+    double delta_us = buffered_[i].frames * buffered_[i].playback_rate *
+                      microseconds_per_frame_;
+    double max_media_time_us = media_time_us + delta_us;
+
+    // Determine amount of media time to convert to frames for current block. If
+    // target timestamp falls within current block, scale the amount of frames
+    // based on remaining amount of media time.
+    if (timestamp_us <= max_media_time_us) {
+      frames_until_timestamp +=
+          buffered_[i].frames * (timestamp_us - media_time_us) / delta_us;
+      break;
+    }
+
+    media_time_us = max_media_time_us;
+    frames_until_timestamp += buffered_[i].frames;
+  }
+
+  return base::TimeDelta::FromMicroseconds(frames_until_timestamp *
+                                           microseconds_per_frame_);
+}
+
 AudioClock::AudioData::AudioData(int64_t frames, float playback_rate)
     : frames(frames), playback_rate(playback_rate) {
 }

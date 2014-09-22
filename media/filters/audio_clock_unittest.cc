@@ -39,6 +39,11 @@ class AudioClockTest : public testing::Test {
                                             milliseconds)).InMilliseconds();
   }
 
+  int TimeUntilPlaybackInMilliseconds(int timestamp_ms) {
+    return clock_.TimeUntilPlayback(base::TimeDelta::FromMilliseconds(
+                                        timestamp_ms)).InMilliseconds();
+  }
+
   int ContiguousAudioDataBufferedInDays() {
     return clock_.contiguous_audio_data_buffered().InDays();
   }
@@ -278,8 +283,9 @@ TEST_F(AudioClockTest, ZeroDelay) {
 TEST_F(AudioClockTest, TimestampSinceLastWriting) {
   // Construct an audio clock with the following representation:
   //
+  // |- existing  delay -|------------ calls to WroteAudio() -----------------|
   // +-------------------+----------------+------------------+----------------+
-  // | 10 frames silence | 10 frames @ 1x | 10 frames @ 0.5x | 10 frames @ 2x |
+  // | 20 frames silence | 10 frames @ 1x | 10 frames @ 0.5x | 10 frames @ 2x |
   // +-------------------+----------------+------------------+----------------+
   // Media timestamp:    0              1000               1500             3500
   // Wall clock time:  2000             3000               4000             5000
@@ -287,6 +293,7 @@ TEST_F(AudioClockTest, TimestampSinceLastWriting) {
   WroteAudio(10, 10, 40, 0.5);
   WroteAudio(10, 10, 40, 2.0);
   EXPECT_EQ(0, FrontTimestampInMilliseconds());
+  EXPECT_EQ(3500, BackTimestampInMilliseconds());
   EXPECT_EQ(0, ContiguousAudioDataBufferedInMilliseconds());
 
   // Simulate passing 2000ms of initial delay in the audio hardware.
@@ -312,6 +319,38 @@ TEST_F(AudioClockTest, TimestampSinceLastWriting) {
   // media timestamp we know of.
   EXPECT_EQ(3500, TimestampSinceLastWritingInMilliseconds(5001));
   EXPECT_EQ(3500, TimestampSinceLastWritingInMilliseconds(6000));
+}
+
+TEST_F(AudioClockTest, TimeUntilPlayback) {
+  // Construct an audio clock with the following representation:
+  //
+  //    existing
+  // |-  delay   -|------------------ calls to WroteAudio() ------------------|
+  // +------------+---------+------------+-----------+------------+-----------+
+  // | 20 silence | 10 @ 1x | 10 silence | 10 @ 0.5x | 10 silence | 10 @ 2.0x |
+  // +------------+---------+------------+-----------+------------+-----------+
+  // Media:       0       1000         1000        1500         1500        3500
+  // Wall:      2000      3000         4000        5000         6000        7000
+  WroteAudio(10, 10, 60, 1.0);
+  WroteAudio(0, 10, 60, 1.0);
+  WroteAudio(10, 10, 60, 0.5);
+  WroteAudio(0, 10, 60, 0.5);
+  WroteAudio(10, 10, 60, 2.0);
+  EXPECT_EQ(0, FrontTimestampInMilliseconds());
+  EXPECT_EQ(3500, BackTimestampInMilliseconds());
+  EXPECT_EQ(0, ContiguousAudioDataBufferedInMilliseconds());
+
+  // Media timestamp zero has to wait for silence to pass.
+  EXPECT_EQ(2000, TimeUntilPlaybackInMilliseconds(0));
+
+  // From then on out it's simply adding up the number of frames and taking
+  // silence into account.
+  EXPECT_EQ(2500, TimeUntilPlaybackInMilliseconds(500));
+  EXPECT_EQ(3000, TimeUntilPlaybackInMilliseconds(1000));
+  EXPECT_EQ(4500, TimeUntilPlaybackInMilliseconds(1250));
+  EXPECT_EQ(5000, TimeUntilPlaybackInMilliseconds(1500));
+  EXPECT_EQ(6500, TimeUntilPlaybackInMilliseconds(2500));
+  EXPECT_EQ(7000, TimeUntilPlaybackInMilliseconds(3500));
 }
 
 TEST_F(AudioClockTest, SupportsYearsWorthOfAudioData) {
