@@ -55,6 +55,7 @@ component("web") {
       "//testing/gtest",
       "//third_party/WebKit/Source/core:testing",
       "//third_party/WebKit/Source/modules:modules_testing",
+      "//third_party/WebKit/Source/wtf:test_support",
     ]
 
     configs -= [
