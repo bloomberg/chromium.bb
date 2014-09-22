@@ -3,9 +3,8 @@
 Download the Native Client SDK
 ==============================
 
-To build Native Client modules, you must download and install the Native Client
-Software Development Kit (SDK). This page provides an overview of the Native
-Client SDK, and instructions for how to download and install the SDK.
+This page provides an overview of the Native Client SDK, and instructions for
+downloading and installing the SDK.
 
 .. raw:: html
   
@@ -13,15 +12,16 @@ Client SDK, and instructions for how to download and install the SDK.
   <a class="button-nacl button-download" href="http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">Download SDK Zip File</a>
   </div>
 
+.. _sdk-overview:
+
 Overview
 --------
 
-The Native Client SDK includes the following:
+The Native Client SDK includes:
 
 - **Support for multiple Pepper versions** to compile for specific minimum
   versions of Chrome.
-- **Update utility** to download new bundles that are available, as well as new
-  versions of existing bundles.
+- **Update utility** to download new bundles and updates to existing bundles.
 - **Toolchains** to compile for Portable Native Client (PNaCl), traditional
   Native Client (NaCl), and for compiling architecture-specific Native Client
   applications with glibc.
@@ -33,47 +33,65 @@ The Native Client SDK includes the following:
 
 Follow the steps below to download and install the Native Client SDK.
 
+.. _prerequisites:
+
 Prerequisites
 -------------
 
-* **Python 2.6 or 2.7:** Make sure that the Python executable is in your path.
-  Python 2.7 is preferred. Python 3.x is not yet supported.
-  
-  * On Mac and Linux, Python is likely preinstalled. Run the command "``python
-    -V``" in a terminal window, and make sure that the version you have is 2.6.x
-    or 2.7.x.
-  * On Windows, you may need to install Python. Go to
-    `http://www.python.org/download/ <http://www.python.org/download/>`_ and
-    select the latest 2.x version. In addition, be sure to add the Python
-    directory (for example, ``C:\python27``) to the PATH `environment
-    variable <http://en.wikipedia.org/wiki/Environment_variable>`_. Run
-    "``python -V``" from a command line to verify that you properly configured
-    the PATH variable.
+.. _python26-27:
 
-* **Make:** On the Mac, you need to install the ``make`` command on your system
-  before you can build and run the examples in the SDK. One easy way to get
-  ``make``, along with several other useful tools, is to install
-  `Xcode Developer Tools <https://developer.apple.com/technologies/tools/>`_.
-  After installing Xcode, go to the XCode menu, open the Preferences dialog box
-  then select Downloads and Components. Verify that Command Line Tools are
-  installed. If you'd rather not install Xcode, you can download and build an
-  `open source version
+Python 2.7
+^^^^^^^^^^^^^^^^^
+
+Make sure that the Python executable is in your ``PATH`` variable. Python 3.x is
+not yet supported.
+  
+* On Mac and Linux, Python is likely preinstalled. Run the command ``python -V``
+  in a terminal window, and make sure that the version you have is 2.6.x or
+  2.7.x.
+* On Windows, you may need to install Python. Go to `http://www.python.org/
+  download/ <http://www.python.org/download/>`_ and select the latest 2.x
+  version. In addition, be sure to add the Python directory (for example,
+  ``C:\python27``) to the ``PATH`` `environment variable <http://en.wikipedia.
+  org/wiki/Environment_variable>`_. Run ``python -V`` from a command line to
+  verify that you properly configured the PATH variable.
+
+.. _make:
+
+Make
+^^^^
+
+* On the Mac, you need to install ``make`` on your system before you can build
+  and run the examples in the SDK. One easy way to get ``make``, along with
+  several other useful tools, is to install `Xcode Developer Tools 
+  <https://developer.apple.com/technologies/tools/>`_. After installing Xcode,
+  go to the XCode menu, open the Preferences dialog box then select Downloads
+  and Components. Verify that Command Line Tools are installed. If you'd rather
+  not install Xcode, you can download and build an `open source version 
   <http://mac.softpedia.com/dyn-postdownload.php?p=44632&t=4&i=1>`_ of ``make``.
-  To build the command you may also need to download and install
-  `gcc <https://github.com/kennethreitz/osx-gcc-installer>`_.
+  To build the program you may also need to download and install `gcc 
+  <https://github.com/kennethreitz/osx-gcc-installer>`_.
+* On Windows, the Native Client SDK includes a copy of GNU Make.
+
+.. _installing-the-sdk:
 
 Installing the SDK
 ------------------
 
-#. Download the SDK update zip file: `nacl_sdk.zip
+.. _downloading-and-unzipping:
+
+Downloading and Unzipping
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. Download the `SDK update zip file
    <http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip>`_.
 
 #. Unzip the file:
 
-   * On Mac/Linux, run the command "``unzip nacl_sdk.zip``" in a terminal
+   * On Mac/Linux, run the command ``unzip nacl_sdk.zip`` in a terminal
      window.
    * On Windows, right-click on the .zip file and select "Extract All...". A
-     dialog box will open; enter a location and click "Extract".
+     dialog box opens; enter a location and click "Extract".
 
    A directory is created called ``nacl_sdk`` with the following files and
    directories:
@@ -84,14 +102,14 @@ Installing the SDK
      you have already downloaded.
    * ``sdk_tools`` --- the code run by the ``naclsdk`` command.
 
-.. installing-bundles:
+.. _installing-the-stable-bundle:
 
-Installing bundles
-------------------
+Installing the stable bundle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. To see the SDK bundles that are available for download, go to the 
-   ``nacl_sdk`` directory and run ``naclsdk`` with the "``list``" command. The
-   SDK includes a separate bundle for each version of Chrome/Pepper.
+   ``nacl_sdk`` directory and run ``naclsdk`` with the ``list`` command. The SDK
+   includes a separate bundle for each version of Chrome/Pepper.
 
    On Mac/Linux::
 
@@ -124,17 +142,19 @@ Installing bundles
 
    The sample output above shows that several bundles are available for
    download, and that you have already installed the latest revision of the
-   ``sdk_tools`` bundle. (It was included in the zip file you downloaded.) Each
-   bundle is labeled post-stable, stable, beta, dev, or canary. These labels
-   usually correspond to the current versions of Chrome.
+   ``sdk_tools`` bundle, which was included in the zip file. You never need to
+   update the ``sdk_tools`` bundle. It is updated automatically (if necessary)
+   whenever you run ``naclsdk``.
    
-   We recommend that you download and use a "stable" bundle, because
-   applications developed with "stable" bundles can be used by all current
-   Chrome users. This is because Native Client is designed to be
-   backward-compatible (for example, applications developed with the
-   ``pepper_31`` bundle can run in Chrome 31, Chrome 32, etc.).
+   Bundles are labeled post-stable, stable, beta, dev, or canary. These labels
+   usually correspond to the current versions of Chrome. We recommend that you
+   develop against a "stable" bundle, because such bundles can be used by all
+   current Chrome users. Native Client is designed to be backward-compatible.For
+   example, applications developed with the ``pepper_31`` bundle can run in
+   Chrome 31, Chrome 32, etc..
 
-#. Run ``naclsdk`` with the "update" command to download recommended bundles.
+#. Run ``naclsdk`` with the ``update`` command to download recommended bundles,
+   including the current "stable" bundle.
 
    On Mac/Linux::
 
@@ -144,26 +164,21 @@ Installing bundles
 
      > naclsdk update
 
-   By default, ``naclsdk`` only downloads bundles that are recommended---
-   generally those that are "stable." Continuing with the earlier example, the
-   "update" command would only download the ``pepper_35`` bundle, since the
-   bundles ``pepper_36`` and greater are not yet stable. If you want the
-   ``pepper_36`` bundle, you must ask for it explicitly::
+   By default, ``naclsdk`` only downloads bundles that are recommended, 
+   generally those that are "stable." For example, if the current "stable"
+   bundle is ``pepper_35``, then the ``update`` downloads that bundle. To
+   download the ``pepper_36`` bundle you must ask for it explicitly::
 
      $ ./naclsdk update pepper_36
-
-.. Note::
-  :class: note
   
-   You never need to update the ``sdk_tools`` bundle. It is updated
-   automatically (if necessary) whenever you run ``naclsdk``.
+   
 
-.. updating-bundles:
+.. _updating-bundles:
 
 Updating bundles
-------------------------------------------------------
+----------------
 
-#. Run ``naclsdk`` with the "list" command. This shows you the list of available
+#. Run ``naclsdk`` with the ``list`` command. This shows you the list of available
    bundles and verifies which bundles you have installed.
 
    On Mac/Linux::
@@ -174,7 +189,8 @@ Updating bundles
 
      > naclsdk list
      
-   If an update is available, you'll see something like this.::
+   An asterisk (*) next to a bundle indicates that there is an update available
+   it. For example::
 
     Bundles:
      I: installed
@@ -192,8 +208,8 @@ Updating bundles
          pepper_canary (canary)
          bionic_canary (canary)
 
-   An asterisk next to a bundle indicates that there is an update available it.
-   If you run "``naclsdk update``" now, it warns you with a message similar to
+   
+   If you run ``naclsdk update`` now, it warns you with a message similar to
    this::
 
      WARNING: pepper_35 already exists, but has an update available. Run update
@@ -209,6 +225,8 @@ Updating bundles
    On Windows::
 
      > naclsdk update --force
+
+.. _help-with-the-naclsdk-utility:
      
 Help with the ``naclsdk`` utility
 ---------------------------------
@@ -223,12 +241,15 @@ Help with the ``naclsdk`` utility
 
      > naclsdk help
 
-**Next steps:**
+.. _next-steps:
 
-* Browse through the `Release Notes <release-notes>`_ for important
+Next steps
+----------
+
+* Browse the `Release Notes <release-notes>`_ for important
   information about the SDK and new bundles.
 * If you're just starting with Native Client, we recommend reading the 
   `Technical Overview <../overview>`_ and walking through the
   `Getting Started Tutorial <devguide/tutorial/tutorial-part1>`_.
-* If you'd rather dive into information about the toolchains, see
+* If you'd rather dive in, see
   `Building Native Client Modules <devguide/devcycle/building>`_.

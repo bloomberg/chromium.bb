@@ -2,18 +2,16 @@
 
 <section id="download-the-native-client-sdk">
 <span id="download"></span><h1 id="download-the-native-client-sdk"><span id="download"></span>Download the Native Client SDK</h1>
-<p>To build Native Client modules, you must download and install the Native Client
-Software Development Kit (SDK). This page provides an overview of the Native
-Client SDK, and instructions for how to download and install the SDK.</p>
+<p>This page provides an overview of the Native Client SDK, and instructions for
+downloading and installing the SDK.</p>
 <div id="home">
 <a class="button-nacl button-download" href="http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">Download SDK Zip File</a>
-</div><h2 id="overview">Overview</h2>
-<p>The Native Client SDK includes the following:</p>
+</div><h2 id="overview"><span id="sdk-overview"></span>Overview</h2>
+<p>The Native Client SDK includes:</p>
 <ul class="small-gap">
 <li><strong>Support for multiple Pepper versions</strong> to compile for specific minimum
 versions of Chrome.</li>
-<li><strong>Update utility</strong> to download new bundles that are available, as well as new
-versions of existing bundles.</li>
+<li><strong>Update utility</strong> to download new bundles and updates to existing bundles.</li>
 <li><strong>Toolchains</strong> to compile for Portable Native Client (PNaCl), traditional
 Native Client (NaCl), and for compiling architecture-specific Native Client
 applications with glibc.</li>
@@ -24,45 +22,43 @@ the toolchains.</li>
 command line.</li>
 </ul>
 <p>Follow the steps below to download and install the Native Client SDK.</p>
-<h2 id="prerequisites">Prerequisites</h2>
+<h2 id="prerequisites"><span id="id1"></span>Prerequisites</h2>
+<h3 id="python-2-7"><span id="python26-27"></span>Python 2.7</h3>
+<p>Make sure that the Python executable is in your <code>PATH</code> variable. Python 3.x is
+not yet supported.</p>
 <ul class="small-gap">
-<li><p class="first"><strong>Python 2.6 or 2.7:</strong> Make sure that the Python executable is in your path.
-Python 2.7 is preferred. Python 3.x is not yet supported.</p>
+<li>On Mac and Linux, Python is likely preinstalled. Run the command <code>python -V</code>
+in a terminal window, and make sure that the version you have is 2.6.x or
+2.7.x.</li>
+<li>On Windows, you may need to install Python. Go to <a class="reference external" href="http://www.python.org/download/">http://www.python.org/
+download/</a> and select the latest 2.x
+version. In addition, be sure to add the Python directory (for example,
+<code>C:\python27</code>) to the <code>PATH</code> <a class="reference external" href="http://en.wikipedia.org/wiki/Environment_variable">environment variable</a>. Run <code>python -V</code> from a command line to
+verify that you properly configured the PATH variable.</li>
+</ul>
+<h3 id="make"><span id="id2"></span>Make</h3>
 <ul class="small-gap">
-<li>On Mac and Linux, Python is likely preinstalled. Run the command &#8220;<code>python
--V</code>&#8221; in a terminal window, and make sure that the version you have is 2.6.x
-or 2.7.x.</li>
-<li>On Windows, you may need to install Python. Go to
-<a class="reference external" href="http://www.python.org/download/">http://www.python.org/download/</a> and
-select the latest 2.x version. In addition, be sure to add the Python
-directory (for example, <code>C:\python27</code>) to the PATH <a class="reference external" href="http://en.wikipedia.org/wiki/Environment_variable">environment
-variable</a>. Run
-&#8220;<code>python -V</code>&#8221; from a command line to verify that you properly configured
-the PATH variable.</li>
+<li>On the Mac, you need to install <code>make</code> on your system before you can build
+and run the examples in the SDK. One easy way to get <code>make</code>, along with
+several other useful tools, is to install <a class="reference external" href="https://developer.apple.com/technologies/tools/">Xcode Developer Tools</a>. After installing Xcode,
+go to the XCode menu, open the Preferences dialog box then select Downloads
+and Components. Verify that Command Line Tools are installed. If you&#8217;d rather
+not install Xcode, you can download and build an <a class="reference external" href="http://mac.softpedia.com/dyn-postdownload.php?p=44632&amp;t=4&amp;i=1">open source version</a> of <code>make</code>.
+To build the program you may also need to download and install <a class="reference external" href="https://github.com/kennethreitz/osx-gcc-installer">gcc</a>.</li>
+<li>On Windows, the Native Client SDK includes a copy of GNU Make.</li>
 </ul>
-</li>
-<li><strong>Make:</strong> On the Mac, you need to install the <code>make</code> command on your system
-before you can build and run the examples in the SDK. One easy way to get
-<code>make</code>, along with several other useful tools, is to install
-<a class="reference external" href="https://developer.apple.com/technologies/tools/">Xcode Developer Tools</a>.
-After installing Xcode, go to the XCode menu, open the Preferences dialog box
-then select Downloads and Components. Verify that Command Line Tools are
-installed. If you&#8217;d rather not install Xcode, you can download and build an
-<a class="reference external" href="http://mac.softpedia.com/dyn-postdownload.php?p=44632&amp;t=4&amp;i=1">open source version</a> of <code>make</code>.
-To build the command you may also need to download and install
-<a class="reference external" href="https://github.com/kennethreitz/osx-gcc-installer">gcc</a>.</li>
-</ul>
-<h2 id="installing-the-sdk">Installing the SDK</h2>
+<h2 id="installing-the-sdk"><span id="id3"></span>Installing the SDK</h2>
+<h3 id="downloading-and-unzipping"><span id="id4"></span>Downloading and Unzipping</h3>
 <ol class="arabic">
-<li><p class="first">Download the SDK update zip file: <a class="reference external" href="http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">nacl_sdk.zip</a>.</p>
+<li><p class="first">Download the <a class="reference external" href="http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">SDK update zip file</a>.</p>
 </li>
 <li><p class="first">Unzip the file:</p>
 <ul class="small-gap">
-<li><p class="first">On Mac/Linux, run the command &#8220;<code>unzip nacl_sdk.zip</code>&#8221; in a terminal
+<li><p class="first">On Mac/Linux, run the command <code>unzip nacl_sdk.zip</code> in a terminal
 window.</p>
 </li>
 <li><p class="first">On Windows, right-click on the .zip file and select &#8220;Extract All...&#8221;. A
-dialog box will open; enter a location and click &#8220;Extract&#8221;.</p>
+dialog box opens; enter a location and click &#8220;Extract&#8221;.</p>
 </li>
 </ul>
 <p>A directory is created called <code>nacl_sdk</code> with the following files and
@@ -79,11 +75,11 @@ you have already downloaded.</p>
 </ul>
 </li>
 </ol>
-<h2 id="installing-bundles">Installing bundles</h2>
+<h3 id="installing-the-stable-bundle"><span id="id5"></span>Installing the stable bundle</h3>
 <ol class="arabic">
 <li><p class="first">To see the SDK bundles that are available for download, go to the
-<code>nacl_sdk</code> directory and run <code>naclsdk</code> with the &#8220;<code>list</code>&#8221; command. The
-SDK includes a separate bundle for each version of Chrome/Pepper.</p>
+<code>nacl_sdk</code> directory and run <code>naclsdk</code> with the <code>list</code> command. The SDK
+includes a separate bundle for each version of Chrome/Pepper.</p>
 <p>On Mac/Linux:</p>
 <pre class="prettyprint">
 $ cd nacl_sdk
@@ -114,16 +110,18 @@ Bundles:
 </pre>
 <p>The sample output above shows that several bundles are available for
 download, and that you have already installed the latest revision of the
-<code>sdk_tools</code> bundle. (It was included in the zip file you downloaded.) Each
-bundle is labeled post-stable, stable, beta, dev, or canary. These labels
-usually correspond to the current versions of Chrome.</p>
-<p>We recommend that you download and use a &#8220;stable&#8221; bundle, because
-applications developed with &#8220;stable&#8221; bundles can be used by all current
-Chrome users. This is because Native Client is designed to be
-backward-compatible (for example, applications developed with the
-<code>pepper_31</code> bundle can run in Chrome 31, Chrome 32, etc.).</p>
+<code>sdk_tools</code> bundle, which was included in the zip file. You never need to
+update the <code>sdk_tools</code> bundle. It is updated automatically (if necessary)
+whenever you run <code>naclsdk</code>.</p>
+<p>Bundles are labeled post-stable, stable, beta, dev, or canary. These labels
+usually correspond to the current versions of Chrome. We recommend that you
+develop against a &#8220;stable&#8221; bundle, because such bundles can be used by all
+current Chrome users. Native Client is designed to be backward-compatible.For
+example, applications developed with the <code>pepper_31</code> bundle can run in
+Chrome 31, Chrome 32, etc..</p>
 </li>
-<li><p class="first">Run <code>naclsdk</code> with the &#8220;update&#8221; command to download recommended bundles.</p>
+<li><p class="first">Run <code>naclsdk</code> with the <code>update</code> command to download recommended bundles,
+including the current &#8220;stable&#8221; bundle.</p>
 <p>On Mac/Linux:</p>
 <pre class="prettyprint">
 $ ./naclsdk update
@@ -132,25 +130,18 @@ $ ./naclsdk update
 <pre class="prettyprint">
 &gt; naclsdk update
 </pre>
-<p>By default, <code>naclsdk</code> only downloads bundles that are recommended&#8212;
-generally those that are &#8220;stable.&#8221; Continuing with the earlier example, the
-&#8220;update&#8221; command would only download the <code>pepper_35</code> bundle, since the
-bundles <code>pepper_36</code> and greater are not yet stable. If you want the
-<code>pepper_36</code> bundle, you must ask for it explicitly:</p>
+<p>By default, <code>naclsdk</code> only downloads bundles that are recommended,
+generally those that are &#8220;stable.&#8221; For example, if the current &#8220;stable&#8221;
+bundle is <code>pepper_35</code>, then the <code>update</code> downloads that bundle. To
+download the <code>pepper_36</code> bundle you must ask for it explicitly:</p>
 <pre class="prettyprint">
 $ ./naclsdk update pepper_36
 </pre>
 </li>
 </ol>
-<aside class="note">
-<blockquote>
-<div>You never need to update the <code>sdk_tools</code> bundle. It is updated
-automatically (if necessary) whenever you run <code>naclsdk</code>.</div></blockquote>
-
-</aside>
-<h2 id="updating-bundles">Updating bundles</h2>
+<h2 id="updating-bundles"><span id="id6"></span>Updating bundles</h2>
 <ol class="arabic">
-<li><p class="first">Run <code>naclsdk</code> with the &#8220;list&#8221; command. This shows you the list of available
+<li><p class="first">Run <code>naclsdk</code> with the <code>list</code> command. This shows you the list of available
 bundles and verifies which bundles you have installed.</p>
 <p>On Mac/Linux:</p>
 <pre class="prettyprint">
@@ -160,7 +151,8 @@ $ ./naclsdk list
 <pre class="prettyprint">
 &gt; naclsdk list
 </pre>
-<p>If an update is available, you&#8217;ll see something like this.:</p>
+<p>An asterisk (*) next to a bundle indicates that there is an update available
+it. For example:</p>
 <pre class="prettyprint">
 Bundles:
  I: installed
@@ -178,8 +170,7 @@ Bundles:
      pepper_canary (canary)
      bionic_canary (canary)
 </pre>
-<p>An asterisk next to a bundle indicates that there is an update available it.
-If you run &#8220;<code>naclsdk update</code>&#8221; now, it warns you with a message similar to
+<p>If you run <code>naclsdk update</code> now, it warns you with a message similar to
 this:</p>
 <pre class="prettyprint">
 WARNING: pepper_35 already exists, but has an update available. Run update
@@ -198,7 +189,7 @@ $ ./naclsdk update --force
 </pre>
 </li>
 </ol>
-<h2 id="help-with-the-naclsdk-utility">Help with the <code>naclsdk</code> utility</h2>
+<h2 id="help-with-the-naclsdk-utility"><span id="id7"></span>Help with the <code>naclsdk</code> utility</h2>
 <ol class="arabic">
 <li><p class="first">For more information about the <code>naclsdk</code> utility, run:</p>
 <p>On Mac/Linux:</p>
@@ -211,14 +202,14 @@ $ ./naclsdk help
 </pre>
 </li>
 </ol>
-<p><strong>Next steps:</strong></p>
+<h2 id="next-steps"><span id="id8"></span>Next steps</h2>
 <ul class="small-gap">
-<li>Browse through the <a class="reference external" href="release-notes">Release Notes</a> for important
+<li>Browse the <a class="reference external" href="release-notes">Release Notes</a> for important
 information about the SDK and new bundles.</li>
 <li>If you&#8217;re just starting with Native Client, we recommend reading the
 <a class="reference external" href="../overview">Technical Overview</a> and walking through the
 <a class="reference external" href="devguide/tutorial/tutorial-part1">Getting Started Tutorial</a>.</li>
-<li>If you&#8217;d rather dive into information about the toolchains, see
+<li>If you&#8217;d rather dive in, see
 <a class="reference external" href="devguide/devcycle/building">Building Native Client Modules</a>.</li>
 </ul>
 </section>

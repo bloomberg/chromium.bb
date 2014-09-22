@@ -1,7 +1,9 @@
 .. _sdk-examples-2:
 
-Running the SDK Examples
-========================
+.. TODO: After default toolchain is changed to pnacl, recreate the make examples.
+
+Examples
+========
 
 Every Native Client SDK bundle comes with a folder of example applications.
 Each example demonstrates one or two key Native Client programming concepts.
@@ -9,22 +11,18 @@ After you've :doc:`downloaded the SDK <download>`, follow the instructions
 on this page to build and run the examples.
 
 Your version of Chrome must be equal to or greater than the version of your SDK
-bundle. For example, if you're developing with the ``pepper_31`` bundle, you
-must use Google Chrome version 31 or greater. To find out what version of Chrome
+bundle. For example, if you're developing with the ``pepper_35`` bundle, you
+must use Google Chrome version 35 or greater. To find out what version of Chrome
 you're using, type ``about:chrome`` or ``about:version`` in the Chrome address
 bar.
 
+.. _enable-native-client:
    
 Enable Native Client
 --------------------
 
-.. note::
-   :class: note
-   
-   If you are using Chrome 31 or later, you can skip this section.
-
-To run Portable Native Client applications you must specifically enable Native
-Client in Chrome:
+If you are using Chrome 31 or later, you can skip this section. To run Portable
+Native Client applications you must specifically enable Native Client in Chrome:
 
 #. Type ``about:flags`` in the Chrome address bar and scroll down to "Native
    Client".
@@ -38,123 +36,95 @@ Client in Chrome:
 #. Scroll down to the bottom of the page, and click "Relaunch Now". All browser
    windows will restart when you relaunch Chrome.
 
-Disable the Chrome cache
-------------------------
-
-Chrome caches resources aggressively. When you are building a Native Client
-application you should disable the cache to make sure that Chrome loads the 
-latest version.
-
-#. Open Chrome's developer tools by clicking the menu icon |menu-icon| and
-   choosing Tools > Developer tools.
-   
-#. Click the gear icon |gear-icon| in the bottom right corner of the Chrome
-   window.
-   
-#. Under the "General" settings, check the box next to "Disable cache".
+.. _build-the-sdk-examples:
 
 Build the SDK examples
 ----------------------
 
-The Makefile scripts for the SDK examples build multiple versions of the
-examples using all three SDK toolchains (newlib, glibc, and PNaCl) and in both
-release and debug configurations.  (Note that some examples build only with
-particular toolchains).
+The Makefile scripts for the SDK examples can build multiple versions of the
+examples using any of the three SDK toolchains (newlib, glibc, and PNaCl) and in
+both release and debug configurations. Note that some examples, ``dlopen`` for
+example, build only with particular toolchains. 
 
-Build all examples
-^^^^^^^^^^^^^^^^^^
+Find the toolchains for each example by looking at the ``VALID_TOOLCHAINS``
+variable in the Makefile for a particular example. The first item listed is the
+default. It's built when you run an example make file without parameters. for
+example running make in the ``core`` directory of pepper_35 builds the example
+using the ``newlib`` toolchain. ::
 
-To build all the examples, go to the examples directory in a specific SDK
-bundle and run ``make``::
-
-  $ cd pepper_31/examples
+  $ cd pepper_35/examples/api/core
   $ make
-  make -C api  all
-  make[1]: Entering directory `pepper_31/examples/api'
-  make -C audio  all
-  make[2]: Entering directory `pepper_31/examples/api/audio'
-    CXX  newlib/Debug/audio_x86_32.o
-    LINK newlib/Debug/audio_x86_32.nexe
-    CXX  newlib/Debug/audio_x86_64.o
-    LINK newlib/Debug/audio_x86_64.nexe
-    CXX  newlib/Debug/audio_arm.o
-    LINK newlib/Debug/audio_arm.nexe
-    CREATE_NMF newlib/Debug/audio.nmf
-  make[2]: Leaving directory `pepper_31/examples/api/audio'
-  make -C url_loader  all
-  make[2]: Entering directory `pepper_31/examples/api/url_loader'
-    CXX  newlib/Debug/url_loader_x86_32.o
-  ...
+    CXX  newlib/Release/core_x86_32.o
+    LINK newlib/Release/core_unstripped_x86_32.nexe
+    VALIDATE newlib/Release/core_unstripped_x86_32.nexe
+    CXX  newlib/Release/core_x86_64.o
+    LINK newlib/Release/core_unstripped_x86_64.nexe
+    VALIDATE newlib/Release/core_unstripped_x86_64.nexe
+    CXX  newlib/Release/core_arm.o
+    LINK newlib/Release/core_unstripped_arm.nexe
+    VALIDATE newlib/Release/core_unstripped_arm.nexe
+    STRIP newlib/Release/core_x86_32.nexe
+    STRIP newlib/Release/core_x86_64.nexe
+    STRIP newlib/Release/core_arm.nexe
+    CREATE_NMF newlib/Release/core.nmf
+
+As you can see, this produces a number of architecture specific nexe files in
+the ``pepper_35/examples/api/core/Release`` directory.  Create debug versions by
+using the ``CONFIG`` parameter of the make command. ::
+
+  $make CONFIG=Debug
   
-Build a single example
-^^^^^^^^^^^^^^^^^^^^^^
+This creates similar output, but in ``pepper_35/examples/api/core/Debug``.
 
-Calling ``make`` from inside a particular example's directory will build only
-that example::
+Select a different toolchain with the ``TOOLCHAIN`` parameter.  For example::
 
-  $ cd pepper_31/examples/api/core
-  $ make
-    CXX  newlib/Debug/core_x86_32.o
-    LINK newlib/Debug/core_x86_32.nexe
-    CXX  newlib/Debug/core_x86_64.o
-    LINK newlib/Debug/core_x86_64.nexe
-    CXX  newlib/Debug/core_arm.o
-    LINK newlib/Debug/core_arm.nexe
-    CREATE_NMF newlib/Debug/core.nmf
-
-Override defaults
-^^^^^^^^^^^^^^^^^
-
-You can call ``make`` with the ``TOOLCHAIN`` and ``CONFIG`` parameters to
-override the defaults::
-
+  $ cd pepper_35/examples/api/core
   $ make TOOLCHAIN=pnacl CONFIG=Release
-    CXX  pnacl/Release/core_pnacl.o
-    LINK pnacl/Release/core.bc
-    FINALIZE pnacl/Release/core.pexe
+    CXX  pnacl/Release/core.o
+    LINK pnacl/Release/core_unstripped.bc
+    FINALIZE pnacl/Release/core_unstripped.pexe
     CREATE_NMF pnacl/Release/core.nmf
 
+You can also set ``TOOLCHAIN`` to ``all`` to build all Release versions with
+default toolchains. ::
 
-You can also set ``TOOLCHAIN`` to "all" to build one or more examples with
-all available toolchains::
-
+  $ cd pepper_35/examples/api/core
   $ make TOOLCHAIN=all
-  make TOOLCHAIN=newlib
-  make[1]: Entering directory `pepper_31/examples/api/core'
-    CXX  newlib/Debug/core_x86_32.o
-    LINK newlib/Debug/core_x86_32.nexe
-    CXX  newlib/Debug/core_x86_64.o
-    LINK newlib/Debug/core_x86_64.nexe
-    CXX  newlib/Debug/core_arm.o
-    LINK newlib/Debug/core_arm.nexe
-    CREATE_NMF newlib/Debug/core.nmf
-  make[1]: Leaving directory `pepper_31/examples/api/core'
-  make TOOLCHAIN=glibc
-  make[1]: Entering directory `pepper_31/examples/api/core'
-    CXX  glibc/Debug/core_x86_32.o
-    LINK glibc/Debug/core_x86_32.nexe
-    CXX  glibc/Debug/core_x86_64.o
-    LINK glibc/Debug/core_x86_64.nexe
-    CREATE_NMF glibc/Debug/core.nmf
-  make[1]: Leaving directory `pepper_31/examples/api/core'
-  make TOOLCHAIN=pnacl
-  make[1]: Entering directory `pepper_31/examples/api/core'
-    CXX  pnacl/Debug/core.o
-    LINK pnacl/Debug/core_unstripped.bc
-    FINALIZE pnacl/Debug/core_unstripped.pexe
-    CREATE_NMF pnacl/Debug/core.nmf
-  make[1]: Leaving directory `pepper_31/examples/api/core'
-  make TOOLCHAIN=linux
-  make[1]: Entering directory `pepper_31/examples/api/core'
-    CXX  linux/Debug/core.o
-    LINK linux/Debug/core.so
-  make[1]: Leaving directory `pepper_31/examples/api/core'
+  make TOOLCHAIN=newlib 
+  make[1]: Entering directory 'pepper_35/examples/api/core'
+    CXX  newlib/Release/core_x86_32.o
+    LINK newlib/Release/core_unstripped_x86_32.nexe
+    VALIDATE newlib/Release/core_unstripped_x86_32.nexe
+    CXX  newlib/Release/core_x86_64.o
+    LINK newlib/Release/core_unstripped_x86_64.nexe
+    VALIDATE newlib/Release/core_unstripped_x86_64.nexe
+    CXX  newlib/Release/core_arm.o
+    LINK newlib/Release/core_unstripped_arm.nexe
+    VALIDATE newlib/Release/core_unstripped_arm.nexe
+    STRIP newlib/Release/core_x86_32.nexe
+    STRIP newlib/Release/core_x86_64.nexe
+    STRIP newlib/Release/core_arm.nexe
+    CREATE_NMF newlib/Release/core.nmf
+  make[1]: Leaving directory 'pepper_35/examples/api/core'
+  make TOOLCHAIN=glibc 
+  make[1]: Entering directory 'pepper_35/examples/api/core'
+    CXX  glibc/Release/core_x86_32.o
+    LINK glibc/Release/core_unstripped_x86_32.nexe
+    VALIDATE glibc/Release/core_unstripped_x86_32.nexe
+    CXX  glibc/Release/core_x86_64.o
+    LINK glibc/Release/core_unstripped_x86_64.nexe
+    VALIDATE glibc/Release/core_unstripped_x86_64.nexe
+    ...
+    (content excerpted)
+    ...
+
+.. _build-results:
 
 Build results
--------------
+^^^^^^^^^^^^^
 
-After running ``make``, each example directory will contain one or more of
-the following subdirectories:
+After running ``make``, example directories will contain one or more of the
+following subdirectories, depending on which Makefile you run:
 
 * ``newlib`` with subdirectories ``Debug`` and ``Release``;
 * ``glibc`` with subdirectories ``Debug`` and ``Release``;
@@ -178,22 +148,49 @@ use the SDK toolchain itself, see :doc:`Building Native Client Modules
 Run the SDK examples
 --------------------
 
-To run the SDK examples, you can use the ``make run`` command::
+.. _disable-chrome-cache:
 
-  $ cd pepper_31/examples/api/core
+Disable the Chrome cache
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Chrome's intelligent caching caches resources aggressively. When building a
+Native Client application you should disable the cache to make sure that Chrome
+loads the latest version. Intelligent caching only remains inactive while
+Developer Tools are open. Otherwise, agressive caching continues.
+
+#. Open Chrome's developer tools by clicking the menu icon |menu-icon| and
+   choosing Tools > Developer tools.
+   
+#. Click the gear icon |gear-icon| in the bottom right corner of the Chrome
+   window.
+   
+#. Under the "General" settings, check the box next to "Disable cache".
+
+.. _run-the-examples:
+   
+Run the examples
+^^^^^^^^^^^^^^^^
+
+To run the SDK examples, use the ``make run`` command::
+
+  $ cd pepper_35/examples/api/core
   $ make run
 
-This will launch a local HTTP server which will serve the data for the
-example. It then launches Chrome with the address of this server, usually
-``http://localhost:5103``. After you close Chrome, the local HTTP server is
-automatically shutdown.
+This launches a local HTTP server that serves the example. It then launches
+Chrome with the address of this server, usually ``http://localhost:5103``. 
+After you close Chrome, the local HTTP server automatically shuts down.
 
-This command will try to find an executable named ``google-chrome`` in your
+This command tries to find an executable named ``google-chrome`` in your
 ``PATH`` environment variable. If it can't, you'll get an error message like
 this::
 
-  pepper_31/tools/common.mk:415: No valid Chrome found at CHROME_PATH=
-  pepper_31/tools/common.mk:415: *** Set CHROME_PATH via an environment variable, or command-line..  Stop.
+  pepper_35/tools/common.mk:415: No valid Chrome found at CHROME_PATH=
+  pepper_35/tools/common.mk:415: *** Set CHROME_PATH via an environment variable, or command-line..  Stop.
+
+.. _add-an-env-variable-for-chrome:
+
+Add an environment variable for Chrome
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Set the CHROME_PATH environment variable to the location of your Chrome
 executable.
@@ -204,7 +201,7 @@ executable.
   ``C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`` for Chrome
   stable and
   ``C:\Users\<username>\AppData\Local\Google\Chrome SxS\Application\chrome.exe``
-  for Chrome Canary; try looking in those directories first::
+  for Chrome Canary. Try looking in those directories first::
 
     > set CHROME_PATH=<Path to chrome.exe>
 
@@ -222,31 +219,27 @@ executable.
   application bundle, not the top-level ``.app`` directory::
 
     $ export CHROME_PATH=<Path to Google Chrome>
-
-You can run via a different toolchain or configuration by using the
-``TOOLCHAIN`` and ``CONFIG`` parameters to make::
-
-  $ make run TOOLCHAIN=pnacl CONFIG=Debug
-
+    
 .. _run_sdk_examples_as_packaged:
 
 Run the SDK examples as packaged apps
 -------------------------------------
 
-Each example can also be launched as a packaged app. For more information about
-using Native Client for packaged apps, see :ref:`Packaged application
-<distributing_packaged>`.  For general information about packaged apps, see the
-`Chrome apps documentation </apps/about_apps>`_.
+Each example can also be launched as a packaged application. A packaged
+application is a special zip file (with a .crx extension) hosted in the Chrome
+Web Store. This file contains all of the application parts: A Chrome Web Store
+manifest file (manifest.json), an icon, and all of the regular Native Client
+application files. Refer to `What are Chrome Apps </apps/about_apps>`_ for more
+information about creating a packaged application.
 
 Some Pepper features, such as TCP/UDP socket access, are only allowed in
-packaged apps. The examples that use these features must be run as packaged
-apps, by using the ``make run_package`` command::
+packaged applications. The examples that use these features must be run as
+packaged applications, by using the following command::
 
   $ make run_package
 
-You can use ``TOOLCHAIN`` and ``CONFIG`` parameters as above to run with a
-different toolchain or configuration.
-
+You can use ``TOOLCHAIN`` and ``CONFIG`` parameters as described above to run
+with a different toolchain or configuration.
 
 .. _debugging_the_sdk_examples:
 
@@ -259,15 +252,14 @@ NaCl code. To use it, run the ``make debug`` command from an example directory::
 
   $ make debug
 
-This will launch Chrome with the ``--enable-nacl-debug`` flag set. This flag
-will cause Chrome to pause when a NaCl module is first loaded, waiting for a
-connection from gdb. The ``make debug`` command also simultaneously launches
-GDB and loads the symbols for that NEXE. To connect GDB to Chrome, in the GDB
-console, type::
+This launches Chrome with the ``--enable-nacl-debug`` flag set. This flag causes
+Chrome to pause when a NaCl module is first loaded, waiting for a connection
+from gdb. The ``make debug`` command also simultaneously launches GDB and loads
+the symbols for that NEXE. To connect GDB to Chrome, in the GDB console, type::
 
   (gdb) target remote :4014
 
-This tells GDB to connect to a TCP port on ``localhost:4014``--the port that
+This tells GDB to connect to a TCP port on ``localhost:4014``, the port that
 Chrome is listening on. GDB will respond::
 
   Remote debugging using :4014
@@ -275,9 +267,9 @@ Chrome is listening on. GDB will respond::
 
 At this point, you can use the standard GDB commands to debug your NaCl module.
 The most common commands you will use to debug are ``continue``, ``step``,
-``next``, ``break`` and ``backtrace``. See :doc:`Debugging
-<../devguide/devcycle/debugging>` for more information about debugging a Native Client
-application.
+``next``, ``break`` and ``backtrace``. See 
+:doc:`Debugging <../devguide/devcycle/debugging>` for more information about
+debugging a Native Client application.
 
 
 .. |menu-icon| image:: /images/menu-icon.png

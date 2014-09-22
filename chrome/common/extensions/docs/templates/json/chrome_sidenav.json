@@ -703,11 +703,11 @@
             ]
           },
           {
-            "title": "SDK",
+            "title": "Download the SDK",
             "href": "/native-client/sdk/download",
             "items": [
               {
-                "title": "Download SDK",
+                "title": "Download the Native Client SDK",
                 "href": "/native-client/sdk/download"
               },
               {
@@ -715,7 +715,7 @@
                 "href": "/native-client/sdk/examples"
               },
               {
-                "title": "SDK Release Notes",
+                "title": "Release Notes",
                 "href": "/native-client/sdk/release-notes"
               }
             ]
