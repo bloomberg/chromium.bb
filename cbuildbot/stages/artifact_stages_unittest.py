@@ -463,11 +463,13 @@ class UploadTestArtifactsStageMock(
       self.backup['BuildAutotestTarballs'](*args, **kwargs)
 
 
-class UploadTestArtifactsStageTest(
-    build_stages_unittest.BuildPackagesStageTest):
+class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase):
   """Tests UploadTestArtifactsStage."""
 
   def setUp(self):
+    self._release_tag = None
+
+    self.StartPatcher(BuilderRunMock())
     osutils.SafeMakedirs(os.path.join(self.build_root, 'chroot', 'tmp'))
     self.StartPatcher(UploadTestArtifactsStageMock())
 
@@ -546,6 +548,10 @@ class UploadTestArtifactsStageTest(
           self.assertNotEqual(rc.call_count, 0)
         else:
           self.assertEqual(rc.call_count, 0)
+
+  def testAllConfigs(self):
+    """Test all major configurations"""
+    self.RunAllConfigs(self.RunTestsWithBotId)
 
 
 # TODO: Delete ArchivingMock once ArchivingStage is deprecated.
