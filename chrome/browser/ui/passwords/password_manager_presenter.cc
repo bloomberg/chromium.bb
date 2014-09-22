@@ -40,6 +40,15 @@ PasswordManagerPresenter::~PasswordManagerPresenter() {
     store->RemoveObserver(this);
 }
 
+// static
+bool PasswordManagerPresenter::CheckOriginValidityForAdding(
+    const GURL& origin) {
+  // Restrict the URL scheme to http and https since a manually-added
+  // PasswordForm entry's |scheme| is assumed to be SCHEME_HTML.
+  return origin.is_valid() && (origin.SchemeIs(url::kHttpScheme) ||
+                               origin.SchemeIs(url::kHttpsScheme));
+}
+
 void PasswordManagerPresenter::Initialize() {
   // Due to the way that handlers are (re)initialized under certain types of
   // navigation, the presenter may already be initialized. (See bugs 88986
@@ -81,6 +90,68 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
 
   populater_.Populate();
   exception_populater_.Populate();
+}
+
+void PasswordManagerPresenter::AddPassword(
+    const GURL& origin,
+    const base::string16& username_value,
+    const base::string16& password_value) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  if (!CheckOriginValidityForAdding(origin) || password_value.empty()) {
+    // Invalid |origin| or empty |password_value| can only come from a
+    // compromised renderer.
+    NOTREACHED();
+    return;
+  }
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+
+  GURL::Replacements replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  autofill::PasswordForm form;
+  form.origin = origin.ReplaceComponents(replacements);
+  form.username_value = username_value;
+  form.password_value = password_value;
+  form.signon_realm = origin.GetOrigin().spec();
+  form.date_created = base::Time::Now();
+
+  // Because a secure scheme does not imply the presence of a valid certificate,
+  // this is not precise. However we give it the benefit of the doubt so that
+  // PasswordForms with a https origin will not be auto-filled unless the form
+  // comes with a valid SSL certificate.
+  form.ssl_valid = origin.SchemeIsSecure();
+
+  store->AddLogin(form);
+#endif
+}
+
+void PasswordManagerPresenter::UpdatePassword(
+    size_t index,
+    const base::string16& password_value) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  if (index >= password_list_.size() || password_value.empty()) {
+    // |index| out of bounds might come from a compromised renderer, don't let
+    // it crash the browser. http://crbug.com/362054
+    // Similarly, empty |password_value| also might come from a compromised
+    // renderer. So use the same logic to prevent saving it.
+    NOTREACHED();
+    return;
+  }
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+  autofill::PasswordForm form(*password_list_[index]);
+  form.password_value = password_value;
+  store->UpdateLogin(form);
+#endif
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {

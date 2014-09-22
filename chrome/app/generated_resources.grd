@@ -7270,11 +7270,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS" desc="Placeholder text shown in password table search box">
         Search passwords
       </message>
+      <message name="IDS_PASSWORDS_PAGE_URL_INSTRUCTION" desc="Placeholder text shown in the URL field when manually adding new credentials on the passwords page in settings.">
+        Login page URL
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_USERNAME_INSTRUCTION" desc="Placeholder text shown in the username field when manually adding new credentials on the passwords page in settings.">
+        Username
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_PASSWORD_INSTRUCTION" desc="Placeholder text shown in the password field when manually adding new credentials on the passwords page in settings.">
+        Password
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_INVALID_URL_TOOLTIP" desc="Tooltip text for an invalid login page URL when manually adding new credentials on the passwords page in settings.">
+        Login page URL must be a valid HTTP or HTTPS URL
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_INVALID_PASSWORD_TOOLTIP" desc="Tooltip text for an invalid password when manually adding new credentials on the passwords page in settings.">
+        Password must contain at least one character
+      </message>
       <message name="IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON" desc="Text for passwords page view's button to show a stored password">
         Show
       </message>
       <message name="IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON" desc="Text for passwords page view's button to hide a stored password">
         Hide
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_OVERWRITE_BUTTON" desc="Text for passwords page view's button to overwrite a stored password">
+        Overwrite
       </message>
       <message name="IDS_PASSWORDS_PAGE_VIEW_NO_PASSWORDS_DESCRIPTION" desc="Text for passwords page view when there are no passwords to show.">
         Your saved passwords will appear here.

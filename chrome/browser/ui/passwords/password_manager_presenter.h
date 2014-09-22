@@ -5,21 +5,23 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_MANAGER_PRESENTER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_MANAGER_PRESENTER_H_
 
+#include <stddef.h>
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_member.h"
+#include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+
+class GURL;
+class PasswordUIView;
+class Profile;
 
 namespace autofill {
 struct PasswordForm;
 }
-
-class PasswordUIView;
-
-class Profile;
 
 // Contains the common logic used by a PasswordUIView to
 // interact with PasswordStore. It provides completion callbacks for
@@ -30,6 +32,9 @@ class PasswordManagerPresenter
   // |password_view| the UI view that owns this presenter, must not be NULL.
   explicit PasswordManagerPresenter(PasswordUIView* password_view);
   virtual ~PasswordManagerPresenter();
+
+  // Checks if |origin| is valid for adding a new password entry.
+  static bool CheckOriginValidityForAdding(const GURL& origin);
 
   // PasswordStore::Observer implementation.
   virtual void OnLoginsChanged(
@@ -45,6 +50,17 @@ class PasswordManagerPresenter
 
   // Gets the password exception entry at |index|.
   const autofill::PasswordForm* GetPasswordException(size_t index);
+
+  // Adds a new password entry with |origin|, |username_value|, and
+  // |password_value|. |origin| should have been validated by
+  // CheckOriginValidityForAdding, and |password_value| should be non-empty.
+  void AddPassword(const GURL& origin,
+                   const base::string16& username_value,
+                   const base::string16& password_value);
+
+  // Updates the entry at |index| with |password_value|. |password_value| should
+  // be non-empty.
+  void UpdatePassword(size_t index, const base::string16& password_value);
 
   // Removes the saved password entry at |index|.
   // |index| the entry index to be removed.
