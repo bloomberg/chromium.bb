@@ -114,7 +114,7 @@ class GenericChangeProcessor : public ChangeProcessor,
                                     const std::string& type_str,
                                     const syncer::WriteTransaction& trans,
                                     syncer::WriteNode* sync_node,
-                                    syncer::AttachmentIdList* new_attachments);
+                                    syncer::AttachmentIdSet* new_attachments);
 
   // Logically part of ProcessSyncChanges.
   //
@@ -125,13 +125,11 @@ class GenericChangeProcessor : public ChangeProcessor,
       const std::string& type_str,
       const syncer::WriteTransaction& trans,
       syncer::WriteNode* sync_node,
-      syncer::AttachmentIdList* new_attachments);
+      syncer::AttachmentIdSet* new_attachments);
 
-  // Upload |attachments| to the sync server.
-  //
-  // This function assumes that attachments were already stored in
-  // AttachmentStore.
-  void UploadAttachments(const syncer::AttachmentIdList& attachment_ids);
+  // Begin uploading attachments that have not yet been uploaded to the sync
+  // server.
+  void UploadAllAttachmentsNotOnServer();
 
   const syncer::ModelType type_;
 

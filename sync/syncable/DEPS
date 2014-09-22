@@ -1,6 +1,7 @@
 include_rules = [
   "+net/base/escape.h",
   "+sql",
+  "+sync/api/attachments",
   "+sync/base",
   "+sync/internal_api/public/base",
   "+sync/internal_api/public/engine",

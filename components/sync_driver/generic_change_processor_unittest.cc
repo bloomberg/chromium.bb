@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/fake_attachment_store.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_change.h"
@@ -142,9 +143,12 @@ class SyncGenericChangeProcessorTest : public testing::Test {
                                         test_user_share_->user_share());
     }
     test_user_share_->encryption_handler()->Init();
+    ConstructGenericChangeProcessor(type);
+  }
+
+  void ConstructGenericChangeProcessor(syncer::ModelType type) {
     scoped_refptr<syncer::AttachmentStore> attachment_store(
         new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
-
     scoped_ptr<MockAttachmentService> mock_attachment_service(
         new MockAttachmentService(attachment_store));
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
@@ -444,6 +448,36 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
   ASSERT_EQ(node.InitByClientTagLookup(kType, tag), syncer::BaseNode::INIT_OK);
   attachment_ids = node.GetAttachmentIds();
   EXPECT_EQ(1U, attachment_ids.size());
+}
+
+// Verify that upon construction, all attachments not yet on the server are
+// scheduled for upload.
+TEST_F(SyncGenericChangeProcessorTest, UploadAllAttachmentsNotOnServer) {
+  // Create two attachment ids.  id2 will be marked as "on server".
+  syncer::AttachmentId id1 = syncer::AttachmentId::Create();
+  syncer::AttachmentId id2 = syncer::AttachmentId::Create();
+  {
+    // Write an entry containing these two attachment ids.
+    syncer::WriteTransaction trans(FROM_HERE, user_share());
+    syncer::ReadNode root(&trans);
+    ASSERT_EQ(syncer::BaseNode::INIT_OK, root.InitTypeRoot(kType));
+    syncer::WriteNode node(&trans);
+    node.InitUniqueByCreation(kType, root, "some node");
+    sync_pb::AttachmentMetadata metadata;
+    sync_pb::AttachmentMetadataRecord* record1 = metadata.add_record();
+    *record1->mutable_id() = id1.GetProto();
+    sync_pb::AttachmentMetadataRecord* record2 = metadata.add_record();
+    *record2->mutable_id() = id2.GetProto();
+    record2->set_is_on_server(true);
+    node.SetAttachmentMetadata(metadata);
+  }
+
+  // Construct the GenericChangeProcessor and see that it asks the
+  // AttachmentService to upload id1 only.
+  ConstructGenericChangeProcessor(kType);
+  ASSERT_EQ(1U, mock_attachment_service()->attachment_id_sets()->size());
+  ASSERT_THAT(mock_attachment_service()->attachment_id_sets()->front(),
+              testing::UnorderedElementsAre(id1));
 }
 
 }  // namespace

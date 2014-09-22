@@ -4,6 +4,7 @@
 
 #include "sync/syncable/directory.h"
 
+#include <algorithm>
 #include <iterator>
 
 #include "base/base64.h"
@@ -1063,8 +1064,15 @@ void Directory::GetUnappliedUpdateMetaHandles(
 void Directory::GetMetaHandlesOfType(BaseTransaction* trans,
                                      ModelType type,
                                      std::vector<int64>* result) {
-  result->clear();
   ScopedKernelLock lock(this);
+  GetMetaHandlesOfType(lock, trans, type, result);
+}
+
+void Directory::GetMetaHandlesOfType(const ScopedKernelLock& lock,
+                                     BaseTransaction* trans,
+                                     ModelType type,
+                                     std::vector<int64>* result) {
+  result->clear();
   for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
     EntryKernel* entry = it->second;
@@ -1468,6 +1476,60 @@ void Directory::AppendChildHandles(const ScopedKernelLock& lock,
 void Directory::UnmarkDirtyEntry(WriteTransaction* trans, Entry* entry) {
   CHECK(trans);
   entry->kernel_->clear_dirty(&kernel_->dirty_metahandles);
+}
+
+void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
+                                         ModelType type,
+                                         AttachmentIdSet* id_set) {
+  // TODO(maniscalco): Maintain an index by ModelType and rewrite this method to
+  // use it.  The approach below is likely very expensive because it iterates
+  // all entries (bug 415199).
+  DCHECK(trans);
+  DCHECK(id_set);
+  id_set->clear();
+  AttachmentIdSet on_server_id_set;
+  AttachmentIdSet not_on_server_id_set;
+  std::vector<int64> metahandles;
+  {
+    ScopedKernelLock lock(this);
+    GetMetaHandlesOfType(lock, trans, type, &metahandles);
+    std::vector<int64>::const_iterator iter = metahandles.begin();
+    const std::vector<int64>::const_iterator end = metahandles.end();
+    // For all of this type's entries...
+    for (; iter != end; ++iter) {
+      EntryKernel* entry = GetEntryByHandle(*iter, &lock);
+      DCHECK(entry);
+      const sync_pb::AttachmentMetadata metadata =
+          entry->ref(ATTACHMENT_METADATA);
+      // for each of this entry's attachments...
+      for (int i = 0; i < metadata.record_size(); ++i) {
+        AttachmentId id =
+            AttachmentId::CreateFromProto(metadata.record(i).id());
+        // if this attachment is known to be on the server, remember it for
+        // later,
+        if (metadata.record(i).is_on_server()) {
+          on_server_id_set.insert(id);
+        } else {
+          // otherwise, add it to id_set.
+          not_on_server_id_set.insert(id);
+        }
+      }
+    }
+  }
+  // Why did we bother keeping a set of ids known to be on the server?  The
+  // is_on_server flag is stored denormalized so we can end up with two entries
+  // with the same attachment id where one says it's on the server and the other
+  // says it's not.  When this happens, we trust the one that says it's on the
+  // server.  To avoid re-uploading the same attachment mulitple times, we
+  // remove any ids known to be on the server from the id_set we are about to
+  // return.
+  //
+  // TODO(maniscalco): Eliminate redundant metadata storage (bug 415203).
+  std::set_difference(not_on_server_id_set.begin(),
+                      not_on_server_id_set.end(),
+                      on_server_id_set.begin(),
+                      on_server_id_set.end(),
+                      std::inserter(*id_set, id_set->end()));
 }
 
 }  // namespace syncable

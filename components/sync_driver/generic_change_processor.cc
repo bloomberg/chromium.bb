@@ -112,6 +112,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     attachment_service_proxy_.reset(new syncer::AttachmentServiceProxy(
         base::MessageLoopProxy::current(),
         attachment_service_weak_ptr_factory_->GetWeakPtr()));
+    UploadAllAttachmentsNotOnServer();
   } else {
     attachment_service_proxy_.reset(new syncer::AttachmentServiceProxy(
         base::MessageLoopProxy::current(),
@@ -408,7 +409,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
 
   // Keep track of brand new attachments so we can persist them on this device
   // and upload them to the server.
-  syncer::AttachmentIdList new_attachments;
+  syncer::AttachmentIdSet new_attachments;
 
   syncer::WriteTransaction trans(from_here, share_handle());
 
@@ -470,7 +471,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       NOTREACHED();
       return error;
     }
-    UploadAttachments(new_attachments);
+    attachment_service_->UploadAttachments(new_attachments);
   }
 
   return syncer::SyncError();
@@ -485,7 +486,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
     const std::string& type_str,
     const syncer::WriteTransaction& trans,
     syncer::WriteNode* sync_node,
-    syncer::AttachmentIdList* new_attachments) {
+    syncer::AttachmentIdSet* new_attachments) {
   // TODO(sync): Handle other types of creation (custom parents, folders,
   // etc.).
   syncer::ReadNode root_node(&trans);
@@ -553,8 +554,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
   SetAttachmentMetadata(attachment_ids, sync_node);
 
   // Return any newly added attachments.
-  new_attachments->insert(
-      new_attachments->end(), attachment_ids.begin(), attachment_ids.end());
+  new_attachments->insert(attachment_ids.begin(), attachment_ids.end());
   if (merge_result_.get()) {
     merge_result_->set_num_items_added(merge_result_->num_items_added() + 1);
   }
@@ -569,7 +569,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
     const std::string& type_str,
     const syncer::WriteTransaction& trans,
     syncer::WriteNode* sync_node,
-    syncer::AttachmentIdList* new_attachments) {
+    syncer::AttachmentIdSet* new_attachments) {
   // TODO(zea): consider having this logic for all possible changes?
 
   const syncer::SyncDataLocal sync_data_local(change.sync_data());
@@ -655,8 +655,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
   SetAttachmentMetadata(attachment_ids, sync_node);
 
   // Return any newly added attachments.
-  new_attachments->insert(
-      new_attachments->end(), attachment_ids.begin(), attachment_ids.end());
+  new_attachments->insert(attachment_ids.begin(), attachment_ids.end());
 
   if (merge_result_.get()) {
     merge_result_->set_num_items_modified(merge_result_->num_items_modified() +
@@ -703,14 +702,17 @@ syncer::UserShare* GenericChangeProcessor::share_handle() const {
   return share_handle_;
 }
 
-void GenericChangeProcessor::UploadAttachments(
-    const syncer::AttachmentIdList& attachment_ids) {
+void GenericChangeProcessor::UploadAllAttachmentsNotOnServer() {
   DCHECK(CalledOnValidThread());
-  DCHECK(attachment_service_.get() != NULL);
-
-  syncer::AttachmentIdSet attachment_id_set;
-  attachment_id_set.insert(attachment_ids.begin(), attachment_ids.end());
-  attachment_service_->UploadAttachments(attachment_id_set);
+  DCHECK(attachment_service_.get());
+  syncer::AttachmentIdSet id_set;
+  {
+    syncer::ReadTransaction trans(FROM_HERE, share_handle());
+    trans.GetAttachmentIdsToUpload(type_, &id_set);
+  }
+  if (!id_set.empty()) {
+    attachment_service_->UploadAttachments(id_set);
+  }
 }
 
 }  // namespace sync_driver

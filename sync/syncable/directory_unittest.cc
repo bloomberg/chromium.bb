@@ -1719,6 +1719,53 @@ TEST_F(SyncableDirectoryTest, Directory_LastReferenceUnlinksAttachments) {
   ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
 }
 
+TEST_F(SyncableDirectoryTest, Directory_GetAttachmentIdsToUpload) {
+  // Create one attachment, referenced by two entries.
+  AttachmentId attachment_id = AttachmentId::Create();
+  sync_pb::AttachmentIdProto attachment_id_proto = attachment_id.GetProto();
+  sync_pb::AttachmentMetadata attachment_metadata;
+  sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
+  *record->mutable_id() = attachment_id_proto;
+  const Id id1 = TestIdFactory::FromNumber(-1);
+  const Id id2 = TestIdFactory::FromNumber(-2);
+  CreateEntryWithAttachmentMetadata(
+      PREFERENCES, "some entry", id1, attachment_metadata);
+  CreateEntryWithAttachmentMetadata(
+      PREFERENCES, "some other entry", id2, attachment_metadata);
+
+  // See that Directory reports that this attachment is not on the server.
+  AttachmentIdSet id_set;
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    dir()->GetAttachmentIdsToUpload(&trans, PREFERENCES, &id_set);
+  }
+  ASSERT_EQ(1U, id_set.size());
+  ASSERT_EQ(attachment_id, *id_set.begin());
+
+  // Call again, but this time with a ModelType for which there are no entries.
+  // See that Directory correctly reports that there are none.
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    dir()->GetAttachmentIdsToUpload(&trans, PASSWORDS, &id_set);
+  }
+  ASSERT_TRUE(id_set.empty());
+
+  // Now, mark the attachment as "on the server" via entry_1.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry entry_1(&trans, GET_BY_ID, id1);
+    entry_1.MarkAttachmentAsOnServer(attachment_id_proto);
+  }
+
+  // See that Directory no longer reports that this attachment is not on the
+  // server.
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    dir()->GetAttachmentIdsToUpload(&trans, PREFERENCES, &id_set);
+  }
+  ASSERT_TRUE(id_set.empty());
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

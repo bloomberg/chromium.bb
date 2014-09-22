@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
+#include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -413,6 +414,12 @@ class SYNC_EXPORT Directory {
   // preserve sync preferences in DB on disk.
   void UnmarkDirtyEntry(WriteTransaction* trans, Entry* entry);
 
+  // Clears |id_set| and fills it with the ids of attachments that need to be
+  // uploaded to the sync server.
+  void GetAttachmentIdsToUpload(BaseTransaction* trans,
+                                ModelType type,
+                                AttachmentIdSet* id_set);
+
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
   virtual EntryKernel* GetEntryByHandle(int64 metahandle,
@@ -602,6 +609,13 @@ class SYNC_EXPORT Directory {
       const int64 metahandle,
       const sync_pb::AttachmentMetadata& attachment_metadata,
       const ScopedKernelLock& lock);
+
+  // A private version of the public GetMetaHandlesOfType for when you already
+  // have a ScopedKernelLock.
+  void GetMetaHandlesOfType(const ScopedKernelLock& lock,
+                            BaseTransaction* trans,
+                            ModelType type,
+                            std::vector<int64>* result);
 
   Kernel* kernel_;
 

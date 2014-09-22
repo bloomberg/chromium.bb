@@ -6,6 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 
 #include "base/compiler_specific.h"
+#include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base_transaction.h"
 
@@ -44,6 +45,10 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
   // Fills |context| with the datatype context associated with |type|.
   void GetDataTypeContext(ModelType type,
                           sync_pb::DataTypeContext* context) const;
+
+  // Clears |id_set| and fills it with the ids of attachments that need to be
+  // uploaded to the sync server.
+  void GetAttachmentIdsToUpload(ModelType type, AttachmentIdSet* id_set);
 
  private:
   void* operator new(size_t size);  // Transaction is meant for stack use only.

@@ -47,4 +47,11 @@ void ReadTransaction::GetDataTypeContext(
       transaction_, type, context);
 }
 
+void ReadTransaction::GetAttachmentIdsToUpload(ModelType type,
+                                               AttachmentIdSet* id_set) {
+  DCHECK(id_set);
+  transaction_->directory()->GetAttachmentIdsToUpload(
+      transaction_, type, id_set);
+}
+
 }  // namespace syncer
