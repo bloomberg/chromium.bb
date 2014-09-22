@@ -69,8 +69,10 @@ var test = function ()
                               "\n    status: " + promise.status +
                               "\n    parent id: " + parentId;
             var callFrame = promise.callFrame;
-            if (callFrame)
-                promiseInfo += "\n    " + callFrame.functionName + " " + callFrame.url + ":" + callFrame.lineNumber;
+            if (callFrame) {
+                var url = WebInspector.displayNameForURL(callFrame.url);
+                promiseInfo += "\n    " + callFrame.functionName + " " + url + ":" + callFrame.lineNumber;
+            }
             output.push(promiseInfo);
         }
 

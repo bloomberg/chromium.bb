@@ -233,9 +233,8 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Hand
     } else {
         data->m_status = status;
         if (!status && !data->m_callStack) {
-            v8::Handle<v8::StackTrace> stackTrace(v8::StackTrace::CurrentStackTrace(isolate, 1));
-            RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(stackTrace, 1, isolate);
-            if (stack->size())
+            RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(1, true);
+            if (stack && stack->size())
                 data->m_callStack = stack;
         }
     }
