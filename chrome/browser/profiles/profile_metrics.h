@@ -92,10 +92,11 @@ class ProfileMetrics {
   };
 
   enum ProfileAuth {
-    AUTH_UNNECESSARY,         // Profile was not locked
-    AUTH_LOCAL,               // Profile was authenticated locally
-    AUTH_ONLINE,              // Profile was authenticated on-line
-    AUTH_FAILED,              // Profile failed authentication
+    AUTH_UNNECESSARY,     // Profile was not locked
+    AUTH_LOCAL,           // Profile was authenticated locally
+    AUTH_ONLINE,          // Profile was authenticated on-line
+    AUTH_FAILED,          // Profile failed authentication
+    AUTH_FAILED_OFFLINE,  // Profile failed authentication and was offline
     NUM_PROFILE_AUTH_METRICS
   };
 

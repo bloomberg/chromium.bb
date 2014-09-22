@@ -48980,6 +48980,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Authentication performed using local credentials"/>
   <int value="2" label="Authentication performed on-line"/>
   <int value="3" label="Authentication failed"/>
+  <int value="4" label="Authentication failed due to being offline"/>
 </enum>
 
 <enum name="ProfileAvatar" type="int">

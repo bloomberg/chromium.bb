@@ -473,9 +473,14 @@ void UserManagerScreenHandler::OnClientLoginFailure(
                   state == GoogleServiceAuthError::TWO_FACTOR ||
                   state == GoogleServiceAuthError::ACCOUNT_DELETED ||
                   state == GoogleServiceAuthError::ACCOUNT_DISABLED);
-  ReportAuthenticationResult(success,
-                             success ? ProfileMetrics::AUTH_ONLINE
-                                     : ProfileMetrics::AUTH_FAILED);
+  bool offline = (state == GoogleServiceAuthError::CONNECTION_FAILED ||
+                  state == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
+                  state == GoogleServiceAuthError::REQUEST_CANCELED);
+  ProfileMetrics::ProfileAuth failure_metric =
+      offline ? ProfileMetrics::AUTH_FAILED_OFFLINE :
+                ProfileMetrics::AUTH_FAILED;
+  ReportAuthenticationResult(
+      success, success ? ProfileMetrics::AUTH_ONLINE : failure_metric);
 }
 
 void UserManagerScreenHandler::RegisterMessages() {
@@ -686,8 +691,10 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
     web_ui()->CallJavascriptFunction(
         "cr.ui.Oobe.showSignInError",
         base::FundamentalValue(0),
-        base::StringValue(
-            l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_AUTHENTICATING)),
+        base::StringValue(l10n_util::GetStringUTF8(
+            auth == ProfileMetrics::AUTH_FAILED_OFFLINE ?
+                IDS_LOGIN_ERROR_AUTHENTICATING_OFFLINE :
+                IDS_LOGIN_ERROR_AUTHENTICATING)),
         base::StringValue(""),
         base::FundamentalValue(0));
   }
