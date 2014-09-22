@@ -57,7 +57,7 @@ void Vp8Encoder::Initialize() {
   // pointer will be set during encode. Setting align to 1, as it is
   // meaningless (actual memory is not allocated).
   raw_image_ = vpx_img_wrap(
-      NULL, IMG_FMT_I420, cast_config_.width, cast_config_.height, 1, NULL);
+      NULL, VPX_IMG_FMT_I420, cast_config_.width, cast_config_.height, 1, NULL);
 
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
     buffer_state_[i].frame_id = kStartFrameId;
@@ -123,11 +123,11 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   DCHECK(thread_checker_.CalledOnValidThread());
   // Image in vpx_image_t format.
   // Input image is const. VP8's raw image is not defined as const.
-  raw_image_->planes[PLANE_Y] =
+  raw_image_->planes[VPX_PLANE_Y] =
       const_cast<uint8*>(video_frame->data(VideoFrame::kYPlane));
-  raw_image_->planes[PLANE_U] =
+  raw_image_->planes[VPX_PLANE_U] =
       const_cast<uint8*>(video_frame->data(VideoFrame::kUPlane));
-  raw_image_->planes[PLANE_V] =
+  raw_image_->planes[VPX_PLANE_V] =
       const_cast<uint8*>(video_frame->data(VideoFrame::kVPlane));
 
   raw_image_->stride[VPX_PLANE_Y] = video_frame->stride(VideoFrame::kYPlane);
