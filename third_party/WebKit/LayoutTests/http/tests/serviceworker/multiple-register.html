@@ -6,33 +6,27 @@
 var worker_url = 'resources/empty-worker.js';
 
 async_test(function(t) {
-  var scope = 'scope/subsequent-register';
-  var worker;
-  var previous_registration;
+  var scope = 'scope/subsequent-register-from-same-window';
+  var registration;
 
   service_worker_unregister_and_register(t, worker_url, scope)
-    .then(function(registration) {
-        previous_registration = registration;
-        return wait_for_update(t, registration);
-      })
-    .then(function(installing_worker) {
-        worker = installing_worker;
-        return wait_for_state(t, worker, 'activated');
+    .then(function(r) {
+        registration = r;
+        return wait_for_activated(t, registration);
       })
     .then(function() {
         return navigator.serviceWorker.register(worker_url, { scope: scope });
       })
-    .then(function(registration) {
-        assert_equals(previous_registration, registration,
+    .then(function(new_registration) {
+        assert_equals(new_registration, registration,
                       'register should resolve to the same registration');
-        // FIXME: When crbug.com/400602 is fixed, assert that active equals the
-        // original worker.
-        assert_not_equals(registration.active, worker,
-                          'register should resolve to the same worker');
-        assert_equals(registration.active.state, 'activated',
-                     'the worker should be in state "activated"');
-        service_worker_unregister_and_done(t, scope);
+        assert_equals(new_registration.active, registration.active,
+                      'register should resolve to the same worker');
+        assert_equals(new_registration.active.state, 'activated',
+                      'the worker should be in state "activated"');
+        return registration.unregister();
       })
+    .then(function() { t.done(); })
     .catch(unreached_rejection(t));
 }, 'Subsequent registrations resolve to the same registration object');
 
@@ -44,7 +38,7 @@ async_test(function(t) {
   service_worker_unregister_and_register(t, worker_url, scope)
     .then(function(r) {
         registration = r;
-        return wait_for_state(t, registration.installing, 'activated');
+        return wait_for_activated(t, registration);
       })
     .then(function() { return with_iframe('out-of-scope'); })
     .then(function(f) {
@@ -86,8 +80,9 @@ async_test(function(t) {
           'active workers should be in the same state');
 
         unload_iframe(frame);
-        service_worker_unregister_and_done(t, scope);
+        return registration.unregister();
       })
+    .then(function() { t.done(); })
     .catch(unreached_rejection(t));
 }, 'Subsequent registrations from a different iframe resolve to the ' +
        'different registration object but they refer to the same ' +
@@ -99,7 +94,7 @@ async_test(function(t) {
   service_worker_unregister(t, scope)
     .then(function() {
         var promises = [];
-        for (var i = 0; i < 100; ++i) {
+        for (var i = 0; i < 10; ++i) {
           promises.push(navigator.serviceWorker.register(worker_url,
                                                          { scope: scope }));
         }
@@ -110,29 +105,10 @@ async_test(function(t) {
             assert_equals(registration, registrations[0],
                           'register should resolve to the same registration');
         });
-        service_worker_unregister_and_done(t, scope);
+        return registrations[0].unregister();
       })
+    .then(function() { t.done(); })
     .catch(unreached_rejection(t));
 }, 'Concurrent registrations resolve to the same registration object');
 
-async_test(function(t) {
-    var scope = 'scope/multiple-frames';
-    var previous_registration;
-
-    service_worker_unregister_and_register(t, worker_url, scope)
-      .then(function(registration) {
-          previous_registration = registration;
-          return with_iframe('nothing-here.html');
-        })
-      .then(function(frame) {
-          return frame.contentWindow.navigator.serviceWorker.register(
-              worker_url, { scope: scope });
-        })
-      .then(function(registration) {
-          assert_not_equals(previous_registration, registration);
-          service_worker_unregister_and_done(t, scope);
-        })
-      .catch(unreached_rejection(t));
-  }, 'Registrations in separate frames resolve to different ' +
-         'registration objects');
 </script>
