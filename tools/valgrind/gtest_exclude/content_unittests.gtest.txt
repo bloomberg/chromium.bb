@@ -4,3 +4,6 @@ WebContentsVideoCaptureDeviceTest.WebContentsDestroyed
 # False positive, according to crbug.com/386080
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplComplex
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplSimple
+
+# Flaky http://crbug.com/413775
+ServiceWorkerCacheStorageManagerTests/ServiceWorkerCacheStorageManagerTestP.RecreateCacheOnDemand/1
