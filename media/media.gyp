@@ -1048,6 +1048,8 @@
         'media',
         'media_mojo_bindings',
         '../base/base.gyp:base',
+        '../mojo/mojo_base.gyp:mojo_application_base',
+        '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '<(mojo_system_for_component)',
       ],

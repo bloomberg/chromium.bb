@@ -421,6 +421,11 @@ component("media") {
     ]
   }
 
+  public_deps = [
+    "//media/base",
+    "//media/audio",
+  ]
+
   deps += [
     ":shared_memory_support",
     "//base",
@@ -429,8 +434,6 @@ component("media") {
     "//crypto",
     "//crypto:platform",  # TODO(ajwong): This used to be provided by crypto.gyp via export_dependent_settings
     "//gpu/command_buffer/common",
-    "//media/audio",
-    "//media/base",
     "//skia",
     "//third_party/libyuv",
     "//third_party/opus",

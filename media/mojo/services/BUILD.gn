@@ -23,12 +23,15 @@ source_set("lib") {
 # mojo media::Renderer proxy (to a renderer_app) implementation.
 source_set("renderer_impl_lib") {
   deps = [
+    ":lib",
     "//base",
     "//media",
+    "//media/mojo/interfaces",
+    "//mojo/public/interfaces/application",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
-    ":lib",
+    "//mojo/public/cpp/application",
   ]
 
   sources = [
@@ -91,6 +94,7 @@ shared_library("renderer_apptest") {
     "//base",
     "//base/test:test_support",
     "//media",
+    "//media:shared_memory_support",
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/application",
