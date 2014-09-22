@@ -849,6 +849,8 @@
       'browser/media/capture/video_capture_oracle.h',
       'browser/media/capture/web_contents_audio_input_stream.cc',
       'browser/media/capture/web_contents_audio_input_stream.h',
+      'browser/media/capture/web_contents_audio_muter.cc',
+      'browser/media/capture/web_contents_audio_muter.h',
       'browser/media/capture/web_contents_capture_util.cc',
       'browser/media/capture/web_contents_capture_util.h',
       'browser/media/capture/web_contents_tracker.cc',

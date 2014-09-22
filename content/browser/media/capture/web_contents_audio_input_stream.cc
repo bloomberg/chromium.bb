@@ -74,6 +74,10 @@ class WebContentsAudioInputStream::Impl
   void StartMirroring();
   void StopMirroring();
 
+  // Invoked on the UI thread to make sure WebContents muting is turned off for
+  // successful audio capture.
+  void UnmuteWebContentsAudio();
+
   // AudioMirroringManager::MirroringDestination implementation
   virtual void QueryForMatches(
       const std::set<SourceFrameRef>& candidates,
@@ -174,6 +178,14 @@ void WebContentsAudioInputStream::Impl::Start(AudioInputCallback* callback) {
   mixer_stream_->Start(callback);
 
   StartMirroring();
+
+  // WebContents audio muting is implemented as audio capture to nowhere.
+  // Unmuting will stop that audio capture, allowing AudioMirroringManager to
+  // divert audio capture to here.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&Impl::UnmuteWebContentsAudio, this));
 }
 
 void WebContentsAudioInputStream::Impl::Stop() {
@@ -233,6 +245,14 @@ void WebContentsAudioInputStream::Impl::StopMirroring() {
       base::Bind(&AudioMirroringManager::StopMirroring,
                  base::Unretained(mirroring_manager_),
                  make_scoped_refptr(this)));
+}
+
+void WebContentsAudioInputStream::Impl::UnmuteWebContentsAudio() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  WebContents* const contents = tracker_->web_contents();
+  if (contents)
+    contents->SetAudioMuted(false);
 }
 
 void WebContentsAudioInputStream::Impl::QueryForMatches(

@@ -65,6 +65,7 @@ class SavePackage;
 class ScreenOrientationDispatcherHost;
 class SiteInstance;
 class TestWebContents;
+class WebContentsAudioMuter;
 class WebContentsDelegate;
 class WebContentsImpl;
 class WebContentsObserver;
@@ -246,6 +247,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void IncrementCapturerCount(const gfx::Size& capture_size) OVERRIDE;
   virtual void DecrementCapturerCount() OVERRIDE;
   virtual int GetCapturerCount() const OVERRIDE;
+  virtual bool IsAudioMuted() const OVERRIDE;
+  virtual void SetAudioMuted(bool mute) OVERRIDE;
   virtual bool IsCrashed() const OVERRIDE;
   virtual void SetIsCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
@@ -1240,6 +1243,9 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Monitors power levels for audio streams associated with this WebContents.
   AudioStreamMonitor audio_stream_monitor_;
+
+  // Created on-demand to mute all audio output from this WebContents.
+  scoped_ptr<WebContentsAudioMuter> audio_muter_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 

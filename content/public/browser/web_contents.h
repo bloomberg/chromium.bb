@@ -306,6 +306,10 @@ class WebContents : public PageNavigator,
   virtual void DecrementCapturerCount() = 0;
   virtual int GetCapturerCount() const = 0;
 
+  // Indicates/Sets whether all audio output from this WebContents is muted.
+  virtual bool IsAudioMuted() const = 0;
+  virtual void SetAudioMuted(bool mute) = 0;
+
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.
   virtual bool IsCrashed() const  = 0;

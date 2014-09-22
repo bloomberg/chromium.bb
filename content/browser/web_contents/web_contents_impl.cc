@@ -40,6 +40,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/audio_stream_monitor.h"
+#include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/midi_dispatcher_host.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
@@ -985,6 +986,30 @@ void WebContentsImpl::DecrementCapturerCount() {
 
 int WebContentsImpl::GetCapturerCount() const {
   return capturer_count_;
+}
+
+bool WebContentsImpl::IsAudioMuted() const {
+  return audio_muter_.get() && audio_muter_->is_muting();
+}
+
+void WebContentsImpl::SetAudioMuted(bool mute) {
+  DVLOG(1) << "SetAudioMuted(mute=" << mute << "), was " << IsAudioMuted()
+           << " for WebContentsImpl@" << this;
+
+  if (mute == IsAudioMuted())
+    return;
+
+  if (mute) {
+    if (!audio_muter_)
+      audio_muter_.reset(new WebContentsAudioMuter(this));
+    audio_muter_->StartMuting();
+  } else {
+    DCHECK(audio_muter_);
+    audio_muter_->StopMuting();
+  }
+
+  // Notification for UI updates in response to the changed muting state.
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 bool WebContentsImpl::IsCrashed() const {
