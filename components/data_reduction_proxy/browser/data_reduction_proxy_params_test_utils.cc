@@ -28,9 +28,11 @@ TestDataReductionProxyParams::TestDataReductionProxyParams(
     int flags, unsigned int has_definitions)
     : DataReductionProxyParams(flags, false),
       has_definitions_(has_definitions) {
-    init_result_ = Init(flags & DataReductionProxyParams::kAllowed,
-                        flags & DataReductionProxyParams::kFallbackAllowed,
-                        flags & DataReductionProxyParams::kAlternativeAllowed);
+    init_result_ = Init(
+        flags & DataReductionProxyParams::kAllowed,
+        flags & DataReductionProxyParams::kFallbackAllowed,
+        flags & DataReductionProxyParams::kAlternativeAllowed,
+        flags & DataReductionProxyParams::kAlternativeFallbackAllowed);
   }
 
 bool TestDataReductionProxyParams::init_result() const {

@@ -93,10 +93,13 @@ DataReductionProxyParams::DataReductionProxyParams(int flags)
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
+      alt_fallback_allowed_(
+          (flags & kAlternativeFallbackAllowed) == kAlternativeFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
       configured_on_command_line_(false) {
-  bool result = Init(allowed_, fallback_allowed_, alt_allowed_);
+  bool result = Init(
+      allowed_, fallback_allowed_, alt_allowed_, alt_fallback_allowed_);
   DCHECK(result);
 }
 
@@ -117,6 +120,7 @@ DataReductionProxyParams::DataReductionProxyParams(
       allowed_(other.allowed_),
       fallback_allowed_(other.fallback_allowed_),
       alt_allowed_(other.alt_allowed_),
+      alt_fallback_allowed_(other.alt_fallback_allowed_),
       promo_allowed_(other.promo_allowed_),
       holdback_(other.holdback_),
       configured_on_command_line_(other.configured_on_command_line_) {
@@ -137,7 +141,7 @@ DataReductionProxyParams::GetAllowedProxies() const {
     list.push_back(alt_origin_);
     list.push_back(ssl_origin_);
   }
-  if (alt_allowed_ && fallback_allowed_)
+  if (alt_allowed_ && alt_fallback_allowed_)
     list.push_back(alt_fallback_origin_);
   return list;
 }
@@ -147,17 +151,22 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
+      alt_fallback_allowed_(
+          (flags & kAlternativeFallbackAllowed) == kAlternativeFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
       configured_on_command_line_(false) {
   if (should_call_init) {
-    bool result = Init(allowed_, fallback_allowed_, alt_allowed_);
+    bool result = Init(
+        allowed_, fallback_allowed_, alt_allowed_, alt_fallback_allowed_);
     DCHECK(result);
   }
 }
 
-bool DataReductionProxyParams::Init(
-    bool allowed, bool fallback_allowed, bool alt_allowed) {
+bool DataReductionProxyParams::Init(bool allowed,
+                                    bool fallback_allowed,
+                                    bool alt_allowed,
+                                    bool alt_fallback_allowed) {
   InitWithoutChecks();
   // Verify that all necessary params are set.
   if (allowed) {
@@ -191,7 +200,7 @@ bool DataReductionProxyParams::Init(
     }
   }
 
-  if (alt_allowed && fallback_allowed) {
+  if (alt_allowed && alt_fallback_allowed) {
     if (!alt_fallback_origin_.is_valid()) {
       DVLOG(1) << "Invalid alternative fallback origin:"
           << alt_fallback_origin_.spec();
@@ -207,6 +216,11 @@ bool DataReductionProxyParams::Init(
   if (fallback_allowed_ && !allowed_) {
     DVLOG(1) << "The data reduction proxy fallback cannot be allowed if "
         << "the data reduction proxy is not allowed";
+    return false;
+  }
+  if (alt_fallback_allowed_ && !alt_allowed_) {
+    DVLOG(1) << "The data reduction proxy alternative fallback cannot be "
+        << "allowed if the alternative data reduction proxy is not allowed";
     return false;
   }
   if (promo_allowed_ && !allowed_) {
@@ -246,8 +260,7 @@ void DataReductionProxyParams::InitWithoutChecks() {
   if (configured_on_command_line_)
     allowed_ = true;
   if (!(ssl_origin.empty() &&
-        alt_origin.empty() &&
-        alt_fallback_origin.empty()))
+        alt_origin.empty()))
     alt_allowed_ = true;
 
   std::string probe_url = command_line.GetSwitchValueASCII(
@@ -318,12 +331,12 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     if (proxy_info) {
       proxy_info->proxy_servers.first = alt_origin();
       proxy_info->is_alternative = true;
-      if (fallback_allowed())
+      if (alternative_fallback_allowed())
         proxy_info->proxy_servers.second = alt_fallback_origin();
     }
     return true;
   }
-  if (fallback_allowed() &&
+  if (alternative_fallback_allowed() &&
       net::HostPortPair::FromURL(alt_fallback_origin()).Equals(
       host_port_pair)) {
     if (proxy_info) {

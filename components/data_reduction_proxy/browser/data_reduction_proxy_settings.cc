@@ -339,6 +339,10 @@ void DataReductionProxySettings::OnIPAddressChanged() {
     RecordNetworkChangeEvent(IP_CHANGED);
     if (DisableIfVPN())
       return;
+    if (IsDataReductionProxyAlternativeEnabled() &&
+        !params_->alternative_fallback_allowed()) {
+      return;
+    }
     ProbeWhetherDataReductionProxyIsAvailable();
   }
 }
@@ -393,7 +397,9 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
                   at_startup);
 
   // Check if the proxy has been restricted explicitly by the carrier.
-  if (enabled_by_user_ && !disabled_on_vpn_) {
+  if (enabled_by_user_ && !disabled_on_vpn_ &&
+      !(IsDataReductionProxyAlternativeEnabled() &&
+        !params_->alternative_fallback_allowed())) {
     ProbeWhetherDataReductionProxyIsAvailable();
   }
 }
@@ -411,9 +417,9 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
   if (enabled & !params_->holdback()) {
     if (alternative_enabled) {
       configurator_->Enable(restricted,
-                            !params_->fallback_allowed(),
+                            !params_->alternative_fallback_allowed(),
                             params_->alt_origin().spec(),
-                            params_->alt_fallback_origin().spec(),
+                            std::string(),
                             params_->ssl_origin().spec());
     } else {
       configurator_->Enable(restricted,

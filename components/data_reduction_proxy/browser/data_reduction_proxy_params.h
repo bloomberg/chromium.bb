@@ -51,8 +51,9 @@ class DataReductionProxyParams {
   static const unsigned int kAllowed = (1 << 0);
   static const unsigned int kFallbackAllowed = (1 << 1);
   static const unsigned int kAlternativeAllowed = (1 << 2);
-  static const unsigned int kPromoAllowed = (1 << 3);
-  static const unsigned int kHoldback = (1 << 4);
+  static const unsigned int kAlternativeFallbackAllowed = (1 << 3);
+  static const unsigned int kPromoAllowed = (1 << 4);
+  static const unsigned int kHoldback = (1 << 5);
 
   typedef std::vector<GURL> DataReductionProxyList;
 
@@ -216,6 +217,12 @@ class DataReductionProxyParams {
     return alt_allowed_;
   }
 
+  // Returns true if the alternative fallback data reduction proxy
+  // configuration may be used.
+  bool alternative_fallback_allowed() const {
+    return alt_fallback_allowed_;
+  }
+
   // Returns true if the data reduction proxy promo may be shown.
   // This is idependent of whether the data reduction proxy is allowed.
   // TODO(bengr): maybe tie to whether proxy is allowed.
@@ -248,7 +255,10 @@ class DataReductionProxyParams {
   // Initialize the values of the proxies, and probe URL, from command
   // line flags and preprocessor constants, and check that there are
   // corresponding definitions for the allowed configurations.
-  bool Init(bool allowed, bool fallback_allowed, bool alt_allowed);
+  bool Init(bool allowed,
+            bool fallback_allowed,
+            bool alt_allowed,
+            bool alt_fallback_allowed);
 
   // Initialize the values of the proxies, and probe URL from command
   // line flags and preprocessor constants.
@@ -290,6 +300,7 @@ class DataReductionProxyParams {
   bool allowed_;
   bool fallback_allowed_;
   bool alt_allowed_;
+  bool alt_fallback_allowed_;
   bool promo_allowed_;
   bool holdback_;
 
