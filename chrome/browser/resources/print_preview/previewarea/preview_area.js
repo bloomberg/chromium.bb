@@ -362,7 +362,7 @@ cr.define('print_preview', function() {
             print_preview.PreviewGenerator.EventType.DOCUMENT_READY,
             this.onDocumentReady_.bind(this));
       } else {
-        this.showCustomMessage(localStrings.getString('noPlugin'));
+        this.showCustomMessage(loadTimeData.getString('noPlugin'));
       }
     },
 

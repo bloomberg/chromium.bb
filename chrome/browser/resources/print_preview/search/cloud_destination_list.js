@@ -16,8 +16,8 @@ cr.define('print_preview', function() {
     print_preview.DestinationList.call(
         this,
         eventTarget,
-        localStrings.getString('cloudDestinationsTitle'),
-        localStrings.getString('manage'));
+        loadTimeData.getString('cloudDestinationsTitle'),
+        loadTimeData.getString('manage'));
   };
 
   CloudDestinationList.prototype = {
@@ -34,9 +34,9 @@ cr.define('print_preview', function() {
            ((destinations[0].id == docsId && destinations[1].id == fedexId) ||
             (destinations[0].id == fedexId && destinations[1].id == docsId)))) {
         this.setActionLinkTextInternal(
-            localStrings.getString('setupCloudPrinters'));
+            loadTimeData.getString('setupCloudPrinters'));
       } else {
-        this.setActionLinkTextInternal(localStrings.getString('manage'));
+        this.setActionLinkTextInternal(loadTimeData.getString('manage'));
       }
       print_preview.DestinationList.prototype.updateDestinations.call(
           this, destinations);

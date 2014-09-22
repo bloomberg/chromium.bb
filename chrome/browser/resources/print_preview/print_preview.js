@@ -4,8 +4,6 @@
 
 // TODO(rltoscano): Move data/* into print_preview.data namespace
 
-var localStrings = new LocalStrings(templateData);
-
 <include src="component.js">
 <include src="print_preview_focus_manager.js">
 
@@ -302,7 +300,6 @@ cr.define('print_preview', function() {
     /** Sets up the page and print preview by getting the printer list. */
     initialize: function() {
       this.decorate($('print-preview'));
-      i18nTemplate.process(document, templateData);
       if (!this.previewArea_.hasCompatiblePlugin) {
         this.setIsEnabled_(false);
       }
@@ -359,10 +356,12 @@ cr.define('print_preview', function() {
           $('cloud-print-dialog-link'),
           'click',
           this.onCloudPrintDialogLinkClick_.bind(this));
-      this.tracker.add(
-          $('open-pdf-in-preview-link'),
-          'click',
-          this.onOpenPdfInPreviewLinkClick_.bind(this));
+      if ($('open-pdf-in-preview-link')) {
+        this.tracker.add(
+            $('open-pdf-in-preview-link'),
+            'click',
+            this.onOpenPdfInPreviewLinkClick_.bind(this));
+      }
 
       this.tracker.add(
           this.previewArea_,
@@ -469,8 +468,6 @@ cr.define('print_preview', function() {
       this.advancedSettings_.decorate($('advanced-settings'));
       this.moreSettings_.decorate($('more-settings'));
       this.previewArea_.decorate($('preview-area'));
-
-      setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
     },
 
     /**
@@ -482,7 +479,9 @@ cr.define('print_preview', function() {
     setIsEnabled_: function(isEnabled) {
       $('system-dialog-link').disabled = !isEnabled;
       $('cloud-print-dialog-link').disabled = !isEnabled;
-      $('open-pdf-in-preview-link').disabled = !isEnabled;
+      if ($('open-pdf-in-preview-link')) {
+        $('open-pdf-in-preview-link').disabled = !isEnabled;
+      }
       this.printHeader_.isEnabled = isEnabled;
       this.destinationSettings_.isEnabled = isEnabled;
       this.pageSettings_.isEnabled = isEnabled;
@@ -719,7 +718,7 @@ cr.define('print_preview', function() {
              'File selection completed when not in file-selection state: ' +
                  this.uiState_);
       this.previewArea_.showCustomMessage(
-          localStrings.getString('printingToPDFInProgress'));
+          loadTimeData.getString('printingToPDFInProgress'));
       this.uiState_ = PrintPreview.UiState_.PRINTING;
     },
 
@@ -810,7 +809,7 @@ cr.define('print_preview', function() {
                  this.uiState_);
       setIsVisible($('open-preview-app-throbber'), true);
       this.previewArea_.showCustomMessage(
-          localStrings.getString('openingPDFInPreview'));
+          loadTimeData.getString('openingPDFInPreview'));
       this.printDocumentOrOpenPdfPreview_(true /*isPdfPreview*/);
     },
 
@@ -910,7 +909,7 @@ cr.define('print_preview', function() {
       this.uiState_ = PrintPreview.UiState_.ERROR;
       console.error('Invalid settings error reported from native layer');
       this.previewArea_.showCustomMessage(
-          localStrings.getString('invalidPrinterSettings'));
+          loadTimeData.getString('invalidPrinterSettings'));
     },
 
     /**
@@ -980,7 +979,7 @@ cr.define('print_preview', function() {
       console.error('Privet printing failed with error code ' +
                     event.httpError);
       this.printHeader_.setErrorMessage(
-        localStrings.getString('couldNotPrint'));
+          loadTimeData.getString('couldNotPrint'));
     },
 
     /**

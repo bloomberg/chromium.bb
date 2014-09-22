@@ -29,7 +29,7 @@ cr.define('print_preview', function() {
 
     /** @private {!print_preview.SearchBox} */
     this.searchBox_ = new print_preview.SearchBox(
-        localStrings.getString('advancedSettingsSearchBoxPlaceholder'));
+        loadTimeData.getString('advancedSettingsSearchBoxPlaceholder'));
     this.addChild(this.searchBox_);
 
     /** @private {print_preview.Destination} */
@@ -59,7 +59,7 @@ cr.define('print_preview', function() {
       assert(!this.destination_);
       this.destination_ = destination;
       this.getChildElement('.advanced-settings-title').textContent =
-          localStrings.getStringF('advancedSettingsDialogTitle',
+          loadTimeData.getStringF('advancedSettingsDialogTitle',
                                   this.destination_.displayName);
       this.setIsVisible(true);
       this.renderSettings_();

@@ -313,7 +313,7 @@ cr.define('print_preview', function() {
       this.textbox_ = this.getElement().getElementsByClassName(
           MarginControl.Classes_.TEXTBOX)[0];
       this.textbox_.setAttribute(
-          'aria-label', localStrings.getString(this.orientation_));
+          'aria-label', loadTimeData.getString(this.orientation_));
       this.marginLineEl_ = this.getElement().getElementsByClassName(
           MarginControl.Classes_.LINE)[0];
     },

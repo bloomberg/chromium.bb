@@ -228,7 +228,7 @@ cr.define('print_preview', function() {
       if (destinations.length > this.shortListSize_ && !this.isShowAll_) {
         numItems = this.shortListSize_ - 1;
         this.getChildElement('.total').textContent =
-            localStrings.getStringF('destinationCount', destinations.length);
+            loadTimeData.getStringF('destinationCount', destinations.length);
         setIsVisible(this.getChildElement('.destination-list > footer'), true);
       }
       for (var i = 0; i < numItems; i++) {

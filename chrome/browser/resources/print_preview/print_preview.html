@@ -35,17 +35,16 @@
   <link rel="stylesheet" href="search/destination_search.css">
   <link rel="stylesheet" href="search/fedex_tos.css">
 
-  <script src="chrome://print/strings.js"></script>
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/cr/event_target.js"></script>
   <script src="chrome://resources/js/cr/ui.js"></script>
   <script src="chrome://resources/js/cr/ui/focus_manager.js"></script>
   <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
   <script src="chrome://resources/js/event_tracker.js"></script>
-  <script src="chrome://resources/js/local_strings.js"></script>
+  <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://print/print_preview.js"></script>
-  <script src="chrome://resources/js/i18n_template.js"></script>
+  <script src="chrome://print/strings.js"></script>
 </head>
 
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
@@ -73,11 +72,13 @@
               i18n-content="systemDialogOption"></button>
           <div id="system-dialog-throbber" hidden class="throbber"></div>
         </div>
+<if expr="is_macosx">
         <div>
           <button id="open-pdf-in-preview-link" class="link-button navbar-link"
-              hidden i18n-content="openPdfInPreviewOption"></button>
+              i18n-content="openPdfInPreviewOption"></button>
           <div id="open-preview-app-throbber" hidden class="throbber"></div>
         </div>
+</if>
         <div>
           <button id="cloud-print-dialog-link" class="link-button navbar-link"
               hidden i18n-content="cloudPrintDialogOption"></button>
@@ -100,6 +101,8 @@
   <include src="search/destination_list.html">
   <include src="search/destination_list_item.html">
   <include src="search/fedex_tos.html">
+
+  <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 
 </html>

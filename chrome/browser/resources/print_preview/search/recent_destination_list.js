@@ -17,7 +17,7 @@ cr.define('print_preview', function() {
     print_preview.DestinationList.call(
         this,
         eventTarget,
-        localStrings.getString('recentDestinationsTitle'));
+        loadTimeData.getString('recentDestinationsTitle'));
   };
 
   RecentDestinationList.prototype = {

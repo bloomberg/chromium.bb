@@ -115,7 +115,7 @@ cr.define('print_preview', function() {
 
       var all = this.settingsToShow_ == MoreSettings.SettingsToShow.ALL;
       this.getChildElement('.more-settings-label').textContent =
-          localStrings.getString(all ? 'lessOptionsLabel' : 'moreOptionsLabel');
+          loadTimeData.getString(all ? 'lessOptionsLabel' : 'moreOptionsLabel');
       var iconEl = this.getChildElement('.more-settings-icon');
       iconEl.classList.toggle('more-settings-icon-plus', !all);
       iconEl.classList.toggle('more-settings-icon-minus', all);

@@ -71,7 +71,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.searchBox_ = new print_preview.SearchBox(
-        localStrings.getString('searchBoxPlaceholder'));
+        loadTimeData.getString('searchBoxPlaceholder'));
     this.addChild(this.searchBox_);
 
     /**
@@ -89,8 +89,8 @@ cr.define('print_preview', function() {
      */
     this.localList_ = new print_preview.DestinationList(
         this,
-        localStrings.getString('localDestinationsTitle'),
-        cr.isChromeOS ? null : localStrings.getString('manage'));
+        loadTimeData.getString('localDestinationsTitle'),
+        cr.isChromeOS ? null : loadTimeData.getString('manage'));
     this.addChild(this.localList_);
 
     /**
@@ -278,12 +278,12 @@ cr.define('print_preview', function() {
       this.recentList_.render(this.getChildElement('.recent-list'));
       this.localList_.render(this.getChildElement('.local-list'));
       this.cloudList_.render(this.getChildElement('.cloud-list'));
-      this.getChildElement('.promo-text').innerHTML = localStrings.getStringF(
+      this.getChildElement('.promo-text').innerHTML = loadTimeData.getStringF(
           'cloudPrintPromotion',
           '<span class="sign-in link-button">',
           '</span>');
       this.getChildElement('.account-select-label').textContent =
-          localStrings.getString('accountSelectTitle');
+          loadTimeData.getString('accountSelectTitle');
     },
 
     /**
@@ -476,13 +476,13 @@ cr.define('print_preview', function() {
     showInvitation_: function(invitation) {
       var invitationText = '';
       if (invitation.asGroupManager) {
-        invitationText = localStrings.getStringF(
+        invitationText = loadTimeData.getStringF(
             'groupPrinterSharingInviteText',
             invitation.sender,
             invitation.destination.displayName,
             invitation.receiver);
       } else {
-        invitationText = localStrings.getStringF(
+        invitationText = loadTimeData.getStringF(
             'printerSharingInviteText',
             invitation.sender,
             invitation.destination.displayName);
@@ -490,7 +490,7 @@ cr.define('print_preview', function() {
       this.getChildElement('.invitation-text').innerHTML = invitationText;
 
       var acceptButton = this.getChildElement('.invitation-accept-button');
-      acceptButton.textContent = localStrings.getString(
+      acceptButton.textContent = loadTimeData.getString(
           invitation.asGroupManager ? 'acceptForGroup' : 'accept');
       acceptButton.disabled = !!this.invitationStore_.invitationInProgress;
       this.getChildElement('.invitation-reject-button').disabled =
@@ -516,7 +516,7 @@ cr.define('print_preview', function() {
           accountSelectEl.add(option);
         });
         var option = document.createElement('option');
-        option.text = localStrings.getString('addAccountTitle');
+        option.text = loadTimeData.getString('addAccountTitle');
         option.value = '';
         accountSelectEl.add(option);
 

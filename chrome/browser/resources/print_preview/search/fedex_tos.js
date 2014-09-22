@@ -41,7 +41,7 @@ cr.define('print_preview', function() {
     createDom: function() {
       this.setElementInternal(this.cloneTemplateInternal('fedex-tos-template'));
       var tosTextEl = this.getElement().querySelector('.tos-text');
-      tosTextEl.innerHTML = localStrings.getStringF(
+      tosTextEl.innerHTML = loadTimeData.getStringF(
           'fedexTos',
           '<a href="http://www.fedex.com/us/office/copyprint/online/' +
               'googlecloudprint/termsandconditions">',

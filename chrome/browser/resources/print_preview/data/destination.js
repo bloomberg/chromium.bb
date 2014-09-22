@@ -358,7 +358,7 @@ cr.define('print_preview', function() {
       } else {
         offlineMessageId = 'offline';
       }
-      return localStrings.getString(offlineMessageId);
+      return loadTimeData.getString(offlineMessageId);
     },
 
     /**

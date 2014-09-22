@@ -693,7 +693,7 @@ cr.define('print_preview', function() {
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
             print_preview.Destination.Type.LOCAL,
             print_preview.Destination.Origin.LOCAL,
-            localStrings.getString('printToPDF'),
+            loadTimeData.getString('printToPDF'),
             false /*isRecent*/,
             print_preview.Destination.ConnectionStatus.ONLINE));
       }
