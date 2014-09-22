@@ -1030,11 +1030,6 @@ name=deliberate LazyInstance leak
 *!base::LazyInstance*::Pointer
 
 LEAK
-name=http://crbug.com/79933 (1)
-...
-*!TestURLRequestContext::Init
-
-LEAK
 name=http://crbug.com/79933 (2)
 ...
 *!TestURLRequestContext::TestURLRequestContext
@@ -1102,18 +1097,6 @@ name=http://crbug.com/64887 (GMock printing uninit data)
 # been avoided by already having the Memcheck suppressions.
 # TODO(bruening): review the entire file (not just these) once we're
 # at the peak set of tests we plan to run and remove the unused ones.
-
-UNINITIALIZED READ
-name=bug_87232
-*!blink::base64Encode
-*!blink::base64Encode
-*!blink::ImageToDataURL<>
-
-UNINITIALIZED READ
-name=bug_75127
-...
-*!png_process_data
-*!gfx::PNGCodec::Decode*
 
 UNINITIALIZED READ
 name=bug_99307
@@ -1696,18 +1679,6 @@ LEAK
 name=http://crbug.com/32085
 ...
 chrome.dll!NotificationRegistrar::Add
-
-LEAK
-name=http://crbug.com/32623
-...
-*!ssl3_HandleHandshakeMessage
-*!ssl3_HandleHandshake
-*!ssl3_HandleRecord
-*!ssl3_GatherCompleteHandshake
-...
-*!SSL_ForceHandshake
-*!net::SSLServerSocketNSS::DoHandshake
-*!net::SSLServerSocketNSS::DoHandshakeLoop
 
 UNINITIALIZED READ
 name=http://crbug.com/57266 (1)
