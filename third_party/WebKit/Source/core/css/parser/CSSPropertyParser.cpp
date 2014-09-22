@@ -750,7 +750,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return result;
     }
     case CSSPropertyObjectPosition:
-        ASSERT(RuntimeEnabledFeatures::objectFitPositionEnabled());
         parsedValue = parseObjectPosition();
         break;
     case CSSPropertyListStyleImage:     // <uri> | none | inherit

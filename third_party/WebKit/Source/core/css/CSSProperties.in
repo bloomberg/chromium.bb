@@ -212,8 +212,8 @@ max-width animatable, initial=initialMaxSize, converter=convertLengthMaxSizing
 min-height animatable, initial=initialMinSize, converter=convertLengthSizing
 min-width animatable, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode runtime_flag=CSSCompositing, type_name=blink::WebBlendMode, name_for_methods=BlendMode
-object-fit runtime_flag=ObjectFitPosition, type_name=ObjectFit
-object-position runtime_flag=ObjectFitPosition, animatable, converter=convertLengthPoint
+object-fit type_name=ObjectFit
+object-position animatable, converter=convertLengthPoint
 opacity animatable, type_name=float
 order type_name=int
 orphans animatable, inherited, type_name=short, custom_all

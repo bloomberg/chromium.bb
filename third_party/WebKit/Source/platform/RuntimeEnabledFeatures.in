@@ -87,7 +87,6 @@ NavigationTransitions status=experimental
 NavigatorContentUtils
 NetworkInformation status=stable
 Notifications status=stable
-ObjectFitPosition status=stable
 OrientationEvent
 // Only enabled on Android, and for certain layout tests on Linux.
 OverlayFullscreenVideo
