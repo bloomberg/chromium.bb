@@ -46,13 +46,6 @@ ContentLayerDelegate::~ContentLayerDelegate()
 }
 
 void ContentLayerDelegate::paintContents(
-    SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect&,
-    WebContentLayerClient::GraphicsContextStatus contextStatus)
-{
-    paintContents(canvas, clip, canPaintLCDText, contextStatus);
-}
-
-void ContentLayerDelegate::paintContents(
     SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText,
     WebContentLayerClient::GraphicsContextStatus contextStatus)
 {

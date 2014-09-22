@@ -58,7 +58,6 @@ public:
     void updateGeometry();
 
     // WebContentLayerClient implementation.
-    virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebFloatRect& opaque, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
     virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus) OVERRIDE;
 
     // WebCompositorAnimationDelegate implementation.
