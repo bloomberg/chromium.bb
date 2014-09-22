@@ -171,7 +171,10 @@ void ProcessPowerCollector::RecordCpuUsageByOrigin(double total_cpu_percent) {
     power::OriginPowerMap* origin_power_map =
         power::OriginPowerMapFactory::GetForBrowserContext(
             it->second->profile());
-    DCHECK(origin_power_map);
+    // |origin_power_map| can be NULL, if the profile is a guest profile in
+    // Chrome OS.
+    if (!origin_power_map)
+      continue;
     origin_power_map->AddPowerForOrigin(origin, last_process_power_usage);
   }
 
@@ -183,6 +186,8 @@ void ProcessPowerCollector::RecordCpuUsageByOrigin(double total_cpu_percent) {
        ++it) {
     power::OriginPowerMap* origin_power_map =
         power::OriginPowerMapFactory::GetForBrowserContext(*it);
+    if (!origin_power_map)
+      continue;
     origin_power_map->OnAllOriginsUpdated();
   }
 }

@@ -110,7 +110,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
 }
 
 void WebsiteSettingsHandler::InitializeHandler() {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
   observer_.Add(settings);
 
@@ -228,7 +228,7 @@ void WebsiteSettingsHandler::HandleUpdateSearchResults(
 void WebsiteSettingsHandler::HandleUpdateLocalStorage(
     const base::ListValue* args) {
   if (!local_storage_.get()) {
-    Profile* profile = Profile::FromWebUI(web_ui());
+    Profile* profile = GetProfile();
     local_storage_ = new BrowsingDataLocalStorageHelper(profile);
   }
 
@@ -273,7 +273,7 @@ void WebsiteSettingsHandler::Update() {
 }
 
 void WebsiteSettingsHandler::UpdateOrigins() {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
 
   ContentSettingsForOneType all_settings;
@@ -379,7 +379,7 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
   DCHECK(rv);
 
   ContentSetting setting = content_settings::ContentSettingFromString(value);
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
   ContentSetting default_value =
       map->GetDefaultContentSetting(settings_type, NULL);
@@ -483,14 +483,7 @@ void WebsiteSettingsHandler::HandleSetDefaultSetting(
 
   ContentSettingsType last_setting;
   content_settings::GetTypeFromName(last_setting_, &last_setting);
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-#if defined(OS_CHROMEOS)
-  // ChromeOS special case : in Guest mode settings are opened in Incognito
-  // mode, so we need original profile to actually modify settings.
-  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetOriginalProfile();
-#endif
+  Profile* profile = GetProfile();
 
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
   map->SetDefaultContentSetting(last_setting, new_default);
@@ -549,14 +542,14 @@ void WebsiteSettingsHandler::HandleSetGlobalToggle(
   rv = content_settings::GetTypeFromName(last_setting_, &last_setting);
   DCHECK(rv);
 
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
   map->SetContentSettingOverride(last_setting, is_enabled);
 }
 
 void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
                                               bool show_page) {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
 
   double storage = 0.0;
@@ -571,7 +564,7 @@ void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
 
   int battery = 0;
   battery = OriginPowerMapFactory::GetForBrowserContext(
-      Profile::FromWebUI(web_ui()))->GetPowerForOrigin(site_url);
+      GetProfile())->GetPowerForOrigin(site_url);
 
   base::DictionaryValue* permissions = new base::DictionaryValue;
   for (size_t i = 0; i < arraysize(kValidTypes); ++i) {
@@ -671,7 +664,7 @@ void WebsiteSettingsHandler::UpdateLocalStorage() {
 void WebsiteSettingsHandler::UpdateBatteryUsage() {
   base::DictionaryValue power_map;
   OriginPowerMap* origins =
-      OriginPowerMapFactory::GetForBrowserContext(Profile::FromWebUI(web_ui()));
+      OriginPowerMapFactory::GetForBrowserContext(GetProfile());
   OriginPowerMap::PercentOriginMap percent_map = origins->GetPercentOriginMap();
   for (std::map<GURL, int>::iterator it = percent_map.begin();
        it != percent_map.end();
@@ -698,7 +691,7 @@ void WebsiteSettingsHandler::UpdateBatteryUsage() {
 std::string WebsiteSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type,
     std::string* provider_id) {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   ContentSetting default_setting =
       profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
           type, provider_id);
@@ -707,7 +700,7 @@ std::string WebsiteSettingsHandler::GetSettingDefaultFromModel(
 }
 
 void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   if (site_url.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(profile)
@@ -740,7 +733,7 @@ void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {
 }
 
 void WebsiteSettingsHandler::DeleteLocalStorage(const GURL& site_url) {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   content::DOMStorageContext* dom_storage_context_ =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetDOMStorageContext();
@@ -757,7 +750,7 @@ void WebsiteSettingsHandler::DeleteLocalStorage(const GURL& site_url) {
 const std::string& WebsiteSettingsHandler::GetReadableName(
     const GURL& site_url) {
   if (site_url.SchemeIs(extensions::kExtensionScheme)) {
-    Profile* profile = Profile::FromWebUI(web_ui());
+    Profile* profile = GetProfile();
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
 
@@ -770,6 +763,17 @@ const std::string& WebsiteSettingsHandler::GetReadableName(
     return extension->name();
   }
   return site_url.spec();
+}
+
+Profile* WebsiteSettingsHandler::GetProfile() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+#if defined(OS_CHROMEOS)
+  // Chrome OS special case: in Guest mode settings are opened in Incognito
+  // mode, so we need original profile to actually modify settings.
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOriginalProfile();
+#endif
+  return profile;
 }
 
 }  // namespace options

@@ -128,6 +128,8 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // Returns the base URL for websites, or the app name for Chrome App URLs.
   const std::string& GetReadableName(const GURL& site_url);
 
+  Profile* GetProfile();
+
   std::string last_setting_;
   std::string last_filter_;
   GURL last_site_;
