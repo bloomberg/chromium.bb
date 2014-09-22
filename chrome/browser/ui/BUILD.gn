@@ -84,8 +84,6 @@ static_library("ui") {
       "//chrome/browser/devtools",
       "//chrome/browser/ui/views",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
-      "//chrome/common/extensions/api",
-      "//chrome/common/extensions/api:api_registration",
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//components/power",
@@ -382,7 +380,11 @@ static_library("ui") {
     }
   }
   if (enable_extensions) {
-    deps += [ "//chrome/browser/extensions" ]
+    deps += [
+      "//chrome/browser/extensions",
+      "//chrome/common/extensions/api",
+      "//chrome/common/extensions/api:api_registration",
+    ]
     sources += rebase_path(gypi_values.chrome_browser_ui_extensions_sources,
                            ".", "//chrome")
   }

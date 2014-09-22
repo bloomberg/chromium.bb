@@ -107,6 +107,9 @@ static_library("renderer") {
     sources += rebase_path(gypi_values.chrome_renderer_extensions_sources,
                            ".", "..")
     deps += [
+      # TODO(hclam): See crbug.com/298380 for details.
+      # We should isolate the APIs needed by the renderer.
+      "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/renderer",
     ]
@@ -147,13 +150,6 @@ static_library("renderer") {
   if (!is_android) {
     sources += rebase_path(gypi_values.chrome_renderer_non_android_sources,
                            ".", "..")
-  }
-  if (!is_ios) {
-    deps += [
-      # TODO(hclam): See crbug.com/298380 for details.
-      # We should isolate the APIs needed by the renderer.
-      "//chrome/common/extensions/api",
-    ]
   }
 
   # TODO(GYP)

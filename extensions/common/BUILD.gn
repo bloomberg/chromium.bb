@@ -200,7 +200,6 @@ source_set("common") {
     "//components/url_matcher",
     "//content/public/common",
     "//crypto",
-    "//extensions/common/api",
     "//extensions/strings",
     "//ipc",
     "//net",
@@ -221,6 +220,7 @@ source_set("common") {
     deps += [
       "//device/bluetooth",
       "//device/usb",
+      "//extensions/common/api",
     ]
   } else {
     sources -= [

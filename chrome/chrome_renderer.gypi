@@ -344,6 +344,9 @@
         ['enable_extensions==1', {
           'dependencies': [
             '../extensions/extensions.gyp:extensions_renderer',
+            # TODO(hclam): See crbug.com/298380 for details.
+            # We should isolate the APIs needed by the renderer.
+            '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
           ],
           'sources': [
             '<@(chrome_renderer_extensions_sources)',
@@ -407,13 +410,6 @@
                 '<(allocator_target)',
               ],
             }],
-          ],
-        }],
-        ['OS != "ios"', {
-          'dependencies': [
-            # TODO(hclam): See crbug.com/298380 for details.
-            # We should isolate the APIs needed by the renderer.
-            '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
           ],
         }],
       ],

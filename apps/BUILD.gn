@@ -55,7 +55,10 @@ static_library("apps") {
 
   if (!enable_extensions) {
     # When extensions are disabled, only the sizer file below is included.
-    deps -= [ "//chrome/browser/extensions" ]
+    deps -= [
+      "//chrome/browser/extensions",
+      "//chrome/common/extensions/api:api",
+    ]
     sources = []
   }
 

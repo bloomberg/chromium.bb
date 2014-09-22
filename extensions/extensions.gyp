@@ -28,7 +28,6 @@
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '../url/url.gyp:url_lib',
         '../third_party/libxml/libxml.gyp:libxml',
-        'common/api/api.gyp:extensions_api',
         'extensions_strings.gyp:extensions_strings',
       ],
       'include_dirs': [
@@ -225,6 +224,7 @@
       'conditions': [
         ['enable_extensions==1', {
           'dependencies': [
+            'common/api/api.gyp:extensions_api',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             # For Mojo generated headers for generated_api.cc.
             '../device/serial/serial.gyp:device_serial_mojo',

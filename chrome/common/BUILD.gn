@@ -81,7 +81,6 @@ static_library("common") {
   } else {
     # Non-iOS.
     deps += [
-      "//chrome/common/extensions/api",
       "//components/visitedlink/common",
       "//components/autofill/content/common",
       "//components/autofill/core/common",
@@ -100,8 +99,9 @@ static_library("common") {
         gypi_values.chrome_common_extensions_sources,
         ".", "//chrome")
     deps += [
-      "//device/bluetooth",
+      "//device/bluetooth",  # TODO(thestig) Still needed? Not in gyp version.
       "//device/usb",
+      "//chrome/common/extensions/api",
       "//extensions/common",
       "//extensions/common/api",
       "//extensions/strings",

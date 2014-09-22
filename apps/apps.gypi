@@ -70,6 +70,7 @@
           {
             'dependencies!': [
               'browser_extensions',
+              'common/extensions/api/api.gyp:chrome_api',
             ],
             'sources/': [
               ['exclude', '.*'],

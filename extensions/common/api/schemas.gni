@@ -8,10 +8,6 @@ gypi_values = exec_script(
     "scope",
     [ "schemas.gypi" ])
 
-if (is_android) {
-  sources = gypi_values.android_schema_files
-} else {
-  sources = gypi_values.main_schema_files
-}
+sources = gypi_values.main_schema_files
 
 root_namespace = "extensions::core_api::%(namespace)s"
