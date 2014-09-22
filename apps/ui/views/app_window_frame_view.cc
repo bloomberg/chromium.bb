@@ -229,6 +229,13 @@ void AppWindowFrameView::GetWindowMask(const gfx::Size& size,
   // We got nothing to say about no window mask.
 }
 
+void AppWindowFrameView::SizeConstraintsChanged() {
+  if (draw_frame_) {
+    maximize_button_->SetEnabled(widget_->widget_delegate() &&
+                                 widget_->widget_delegate()->CanMaximize());
+  }
+}
+
 gfx::Size AppWindowFrameView::GetPreferredSize() const {
   gfx::Size pref = widget_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
@@ -250,10 +257,8 @@ void AppWindowFrameView::Layout() {
                            close_size.width(),
                            close_size.height());
 
-  bool can_ever_resize = widget_->widget_delegate()
-                             ? widget_->widget_delegate()->CanResize()
-                             : false;
-  maximize_button_->SetEnabled(can_ever_resize);
+  maximize_button_->SetEnabled(widget_->widget_delegate() &&
+                               widget_->widget_delegate()->CanMaximize());
   gfx::Size maximize_size = maximize_button_->GetPreferredSize();
   maximize_button_->SetBounds(
       close_button_->x() - kButtonSpacing - maximize_size.width(),
