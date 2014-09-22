@@ -29,10 +29,9 @@ var kExampleTestsBlink = [
   new CTStepFailure("webkit_tests", "fast/events/bar.html", {}, 177164, 177165),
 ];
 
-function createTestList(tests, tree) {
+function createTestList(tests) {
   var list = document.createElement('ct-test-list');
   list.tests = tests;
-  list.tree = 'blink';
   return list;
 }
 
@@ -41,16 +40,16 @@ describe('ct-test-list', function() {
 
   describe('tests failed', function() {
     before(function(done) {
-      list = createTestList(kExampleTests, 'blink');
+      list = createTestList(kExampleTests);
       setTimeout(done);
     });
 
     it('should show all tests', function() {
       var tests = list.shadowRoot.querySelectorAll('a');
       assert.equal(tests.length, 3);
-      assert.equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=@ToT%20Blink&tests=plugins%2Fgesture-events-scrolled.html&testType=foo_step');
-      assert.equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=@ToT%20Blink&tests=plugins%2Ftransformed-events.html&testType=foo_step');
-      assert.equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=@ToT%20Blink&tests=plugins%2Fgesture-events.html&testType=foo_step');
+      assert.equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events-scrolled.html&testType=foo_step');
+      assert.equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Ftransformed-events.html&testType=foo_step');
+      assert.equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events.html&testType=foo_step');
     });
   });
 
@@ -63,12 +62,12 @@ describe('ct-test-list', function() {
     });
 
     it('should group chromium tests', function(done) {
-      list = createTestList(kExampleTestsChromium, 'chromium');
+      list = createTestList(kExampleTestsChromium);
       setTimeout(done);
     });
 
     it('should group blink tests', function(done) {
-      list = createTestList(kExampleTestsBlink, 'blink');
+      list = createTestList(kExampleTestsBlink);
       setTimeout(done);
     });
   });

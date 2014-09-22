@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 
-<polymer-element name="ct-test-list" attributes="tests tree">
+<polymer-element name="ct-test-list" attributes="tests">
   <template>
     <style>
       :host {
@@ -98,7 +98,7 @@ found in the LICENSE file.
       },
 
       flakinessDashboardURL: function(test) {
-        return test.flakinessDashboardURL(this.tree);
+        return test.flakinessDashboardURL();
       },
     });
   </script>

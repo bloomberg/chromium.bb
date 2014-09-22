@@ -10,7 +10,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-popout-iframe.html">
 <link rel="import" href="ct-commit-list.html">
 
-<polymer-element name="ct-results-panel" attributes="failures commitList tree">
+<polymer-element name="ct-results-panel" attributes="failures commitList">
   <template>
     <style>
       :host {
@@ -69,7 +69,7 @@ found in the LICENSE file.
       </core-menu>
       <div class="results">
         <template if="{{ failures[selected].testName }}">
-          <ct-embedded-flakiness-dashboard test="{{ failures[selected] }}" tree="{{ tree }}"></ct-embedded-flakiness-dashboard>
+          <ct-embedded-flakiness-dashboard test="{{ failures[selected] }}"></ct-embedded-flakiness-dashboard>
         </template>
         <ct-results-by-builder failure="{{ failures[selected] }}"></ct-results-by-builder>
         <ct-commit-list commitList="{{ commitList }}" detailed="true"></ct-commit-list>
