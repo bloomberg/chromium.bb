@@ -14,7 +14,10 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
+
+#if !defined(MEDIA_FOR_CAST_IOS)
 #include "third_party/skia/include/core/SkBitmap.h"
+#endif
 
 namespace media {
 
@@ -181,11 +184,13 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
   return frame;
 }
 
+#if !defined(MEDIA_FOR_CAST_IOS)
 void VideoFrame::ReadPixelsFromNativeTexture(const SkBitmap& pixels) {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
   if (!read_pixels_cb_.is_null())
     read_pixels_cb_.Run(pixels);
 }
+#endif
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(

@@ -108,10 +108,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       base::TimeDelta timestamp,
       const ReadPixelsCB& read_pixels_cb);
 
+#if !defined(MEDIA_FOR_CAST_IOS)
   // Read pixels from the native texture backing |*this| and write
   // them to |pixels| as BGRA.  |pixels| must point to a buffer at
   // least as large as 4 * visible_rect().size().GetArea().
   void ReadPixelsFromNativeTexture(const SkBitmap& pixels);
+#endif
 
   // Wraps packed image data residing in a memory buffer with a VideoFrame.
   // The image data resides in |data| and is assumed to be packed tightly in a

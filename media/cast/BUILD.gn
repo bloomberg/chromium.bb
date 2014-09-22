@@ -138,6 +138,24 @@ source_set("sender") {
     "//third_party/libvpx",
     "//third_party/opus",
   ]
+
+  # use a restricted subset of media and no software codecs on iOS
+  if (is_ios) {
+    deps += [ "//media:media_for_cast_ios" ]
+    deps -= [
+      "//media",
+      "//third_party/libvpx",
+      "//third_party/opus",
+    ]
+    sources -= [
+      "sender/external_video_encoder.h",
+      "sender/external_video_encoder.cc",
+      "sender/video_encoder_impl.h",
+      "sender/video_encoder_impl.cc",
+      "sender/vp8_encoder.cc",
+      "sender/vp8_encoder.h",
+    ]
+  }
 }
 
 source_set("receiver") {
@@ -158,10 +176,20 @@ source_set("receiver") {
     ":net",
     "//media",
     "//media:shared_memory_support",
-    "//third_party/opus",
     "//third_party/libvpx",
+    "//third_party/opus",
     "//ui/gfx",
   ]
+
+  # use a restricted subset of media and no software codecs on iOS
+  if (is_ios) {
+    deps += [ "//media:media_for_cast_ios" ]
+    deps -= [
+      "//media",
+      "//third_party/libvpx",
+      "//third_party/opus",
+    ]
+  }
 }
 
 source_set("test_support") {

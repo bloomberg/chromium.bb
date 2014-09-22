@@ -225,6 +225,20 @@ source_set("base") {
   }
 }
 
+# Minimal media component for media/cast on iOS.
+config("base_for_cast_ios_dependent_config") {
+  defines = [ "MEDIA_FOR_CAST_IOS" ]
+}
+
+source_set("base_for_cast_ios") {
+  sources = [
+    "video_frame.cc",
+    "video_frame.h",
+  ]
+  configs += [ "//media:media_config" ]
+  all_dependent_configs = [ ":base_for_cast_ios_dependent_config" ]
+}
+
 source_set("test_support") {
   testonly = true
   sources = [

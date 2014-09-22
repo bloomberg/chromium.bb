@@ -444,6 +444,24 @@ component("media") {
   ]
 }
 
+# Minimal media component for media/cast on iOS.
+if (is_ios) {
+  component("media_for_cast_ios") {
+    configs += [ ":media_config" ]
+    all_dependent_configs = [ ":media_dependent_config" ]
+    include_dirs = [ "." ]
+    libs = [ "CoreVideo.framework" ]
+
+    deps = [
+      ":shared_memory_support",
+      "//base",
+      "//media/base:base_for_cast_ios",
+      "//media/base/mac",
+      "//ui/gfx/geometry",
+    ]
+  }
+}
+
 test("media_unittests") {
   sources = [
     "cdm/aes_decryptor_unittest.cc",

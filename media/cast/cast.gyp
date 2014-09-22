@@ -120,6 +120,17 @@
         'net/rtp/rtp_receiver_defines.cc',
         'net/rtp/rtp_receiver_defines.h',
       ], # source
+      'conditions': [
+        # use a restricted subset of media and no software codecs on iOS
+        ['OS=="ios"', {
+          'dependencies': [ '<(DEPTH)/media/media.gyp:media_for_cast_ios' ],
+          'dependencies!': [
+            '<(DEPTH)/media/media.gyp:media',
+            '<(DEPTH)/third_party/opus/opus.gyp:opus',
+            '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
+          ],
+        }], # OS=="ios"
+      ], # conditions
     },
     {
       # GN version: //media/cast:sender
@@ -150,7 +161,7 @@
         'sender/external_video_encoder.cc',
         'sender/fake_software_video_encoder.h',
         'sender/fake_software_video_encoder.cc',
-	'sender/frame_sender.cc',
+        'sender/frame_sender.cc',
         'sender/frame_sender.h',
         'sender/software_video_encoder.h',
         'sender/video_encoder.h',
@@ -161,6 +172,25 @@
         'sender/vp8_encoder.cc',
         'sender/vp8_encoder.h',
       ], # source
+      'conditions': [
+        # use a restricted subset of media and no software codecs on iOS
+        ['OS=="ios"', {
+          'dependencies': [ '<(DEPTH)/media/media.gyp:media_for_cast_ios' ],
+          'dependencies!': [
+            '<(DEPTH)/media/media.gyp:media',
+            '<(DEPTH)/third_party/opus/opus.gyp:opus',
+            '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
+          ],
+          'sources!': [
+            'sender/external_video_encoder.h',
+            'sender/external_video_encoder.cc',
+            'sender/video_encoder_impl.h',
+            'sender/video_encoder_impl.cc',
+            'sender/vp8_encoder.cc',
+            'sender/vp8_encoder.h',
+          ],
+        }], # OS=="ios"
+      ], # conditions
     },
     {
       # GN version: //media/cast:net

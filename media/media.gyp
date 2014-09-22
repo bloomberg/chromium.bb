@@ -1885,5 +1885,66 @@
         },
       ],
     }],
+    ['OS=="ios"', {
+      'targets': [
+        {
+          # Minimal media component for media/cast on iOS.
+          # GN version: //media:media_for_cast_ios
+          'target_name': 'media_for_cast_ios',
+          'type': '<(component)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            'shared_memory_support',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
+            'MEDIA_FOR_CAST_IOS',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '..',
+            ],
+          },
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'base/mac/coremedia_glue.h',
+            'base/mac/coremedia_glue.mm',
+            'base/mac/corevideo_glue.h',
+            'base/mac/videotoolbox_glue.h',
+            'base/mac/videotoolbox_glue.mm',
+            'base/video_frame.cc',
+            'base/video_frame.h',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
+            ],
+          },
+          'conditions': [
+            ['arm_neon==1', {
+              'defines': [
+                'USE_NEON'
+              ],
+            }],
+          ],  # conditions
+          'target_conditions': [
+            ['OS == "ios" and _toolset != "host"', {
+              'sources/': [
+                # Pull in specific Mac files for iOS (which have been filtered
+                # out by file name rules).
+                ['include', '^base/mac/coremedia_glue\\.h$'],
+                ['include', '^base/mac/coremedia_glue\\.mm$'],
+                ['include', '^base/mac/corevideo_glue\\.h$'],
+                ['include', '^base/mac/videotoolbox_glue\\.h$'],
+                ['include', '^base/mac/videotoolbox_glue\\.mm$'],
+              ],
+            }],
+          ],  # target_conditions
+        },
+      ],
+    }],
   ],
 }
