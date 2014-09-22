@@ -59,10 +59,11 @@ class NotificationServiceSessionsRouter
   content::NotificationRegistrar registrar_;
   Profile* const profile_;
   syncer::SyncableService::StartSyncFlare flare_;
-  base::WeakPtrFactory<NotificationServiceSessionsRouter> weak_ptr_factory_;
 
   scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
       favicon_changed_subscription_;
+
+  base::WeakPtrFactory<NotificationServiceSessionsRouter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationServiceSessionsRouter);
 };
