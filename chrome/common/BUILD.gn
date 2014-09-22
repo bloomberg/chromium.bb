@@ -310,7 +310,7 @@ source_set("test_support") {
   if (is_win || is_mac) {
     sources += [
       "media_galleries/picasa_test_util.cc",
-      "media_galleries/picasa_test_util.cc",
+      "media_galleries/picasa_test_util.h",
       "media_galleries/pmp_test_util.cc",
       "media_galleries/pmp_test_util.h",
     ]

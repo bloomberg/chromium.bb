@@ -111,6 +111,8 @@ template("msvc_toolchain") {
         dllname,
         libname,
       ]
+      link_output = libname
+      depend_output = libname
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
       rspfile_content = "{{libs}} {{solibs}} {{inputs_newline}} {{ldflags}}"

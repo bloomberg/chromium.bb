@@ -433,7 +433,7 @@ set_defaults("shared_library") {
 }
 if (is_component_build) {
   set_defaults("component") {
-    configs = _native_compiler_configs
+    configs = _shared_library_configs
   }
 }
 

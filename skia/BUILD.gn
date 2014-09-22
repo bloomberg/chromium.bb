@@ -178,6 +178,10 @@ config("skia_library_config") {
     "SK_USE_DISCARDABLE_SCALEDIMAGECACHE",
   ]
 
+  if (component_mode == "shared_library") {
+    defines += [ "SKIA_IMPLEMENTATION=1" ]
+  }
+
   if (cpu_arch == "arm") {
     if (arm_use_neon) {
       defines += [ "SK_ARM_HAS_NEON" ]
@@ -513,10 +517,6 @@ component("skia") {
     "//third_party/zlib",
   ]
 
-  if (component_mode == "shared_library") {
-    defines = [ "SKIA_IMPLEMENTATION=1" ]
-  }
-
   if (is_win) {
     configs -= [
       # Some files define WIN32_LEAN_AND_MEAN and we want to avoid a duplicate
@@ -702,6 +702,7 @@ source_set("skia_opts") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":skia_config",
+    ":skia_library_config",
     "//build/config/compiler:no_chromium_code"
   ]
 
