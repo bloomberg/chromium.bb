@@ -1479,24 +1479,6 @@ name=bug_238170c
 *!blink::applyCommand
 
 UNINITIALIZED READ
-name=bug_241044
-*!blink::Settings::setOpenGLMultisamplingEnabled
-*!blink::WebSettingsImpl::setOpenGLMultisamplingEnabled
-*!content::ApplyWebPreferences
-*!content::RenderViewImpl::OnUpdateWebPreferences
-*!content::RenderViewImpl::SetWebkitPreferences
-
-UNINITIALIZED READ
-name=bug_246153
-*!blink::Settings::setOpenGLMultisamplingEnabled
-*!blink::WebSettingsImpl::setOpenGLMultisamplingEnabled
-*!content::ApplyWebPreferences
-...
-*!content::RenderViewImpl::Initialize
-*!content::RenderViewImpl::Create*
-*!content::RenderThreadImpl::OnCreateNewView
-
-UNINITIALIZED READ
 name=bug_259789
 *!blink::::adjustAttributes
 *!blink::WebGLRenderingContext::maybeRestoreContext
@@ -1564,22 +1546,6 @@ name=bug_309477
 *!content::ShellRenderProcessObserver::WebKitInitialized
 *!content::RenderThreadImpl::EnsureWebKitInitialized
 *!content::RenderThreadImpl::OnCreateNewView
-
-UNINITIALIZED READ
-name=bug_312332
-...
-*!blink::RenderTextControl::computeIntrinsicLogicalWidths
-*!blink::RenderTextControl::computePreferredLogicalWidths
-...
-*!blink::RenderBlock::layout
-
-UNINITIALIZED READ
-name=bug_327672
-*!blink::StyleSheetContents::isCacheable
-*!blink::LinkStyle::setCSSStyleSheet
-*!blink::CSSStyleSheetResource::checkNotify
-...
-*!content::WebURLLoaderImpl::Context::OnCompletedRequest
 
 ###############################################################
 # Real issues in Chromium
