@@ -71,6 +71,7 @@
       'output/software_renderer_unittest.cc',
       'quads/draw_polygon_unittest.cc',
       'quads/draw_quad_unittest.cc',
+      'quads/list_container_unittest.cc',
       'quads/render_pass_unittest.cc',
       'resources/layer_quad_unittest.cc',
       'resources/picture_layer_tiling_set_unittest.cc',
