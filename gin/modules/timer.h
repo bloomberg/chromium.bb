@@ -42,6 +42,7 @@ class GIN_EXPORT Timer : public Wrappable<Timer> {
   base::WeakPtr<gin::Runner> runner_;
   base::WeakPtrFactory<Timer> weak_factory_;
 
+  DISALLOW_COPY_AND_ASSIGN(Timer);
 };
 
 
