@@ -25,14 +25,12 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using blink::WebCanvas;
 using blink::WebPluginContainer;
-using blink::WebPluginParams;
 using blink::WebPoint;
 using blink::WebRect;
 using blink::WebURL;

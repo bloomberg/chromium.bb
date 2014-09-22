@@ -160,8 +160,7 @@ class CONTENT_EXPORT BrowserPlugin :
   gfx::Size plugin_size() const { return plugin_rect_.size(); }
   gfx::Rect plugin_rect() const { return plugin_rect_; }
 
-  // Virtual to allow for mocking in tests.
-  virtual float GetDeviceScaleFactor() const;
+  float GetDeviceScaleFactor() const;
 
   void ShowSadGraphic();
 
@@ -207,7 +206,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   WebCursor cursor_;
 
-  gfx::Size last_view_size_;
   bool mouse_locked_;
 
   // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
