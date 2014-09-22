@@ -378,14 +378,6 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [
 crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
-
-# Text tests that needs investigation or test changes (mostly due to precision).
-crbug.com/378610 [ Win7 ] fast/forms/cursor-at-editable-content-boundary.html [ Failure ]
-crbug.com/378610 [ Win7 ] fast/replaced/table-percent-height-text-controls.html [ Failure ]
-crbug.com/378610 [ Win7 ] fast/table/table-all-rowspans-height-distribution-in-rows.html [ Failure ]
-crbug.com/378610 [ Win7 ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
-crbug.com/378610 [ Win7 ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
