@@ -2107,7 +2107,8 @@ external_brillo_paladin.add_config('gizmo-paladin',
   boards=['gizmo'],
   paladin_builder_name='gizmo paladin',
   trybot_list=True,
-  important=False,
+  important=True,
+  vm_tests=None,
   create_delta_sysroot=True,
 )
 
