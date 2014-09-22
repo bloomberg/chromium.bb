@@ -17,6 +17,7 @@
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/cast_channel.h"
+#include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -126,36 +127,6 @@ class CastSocket : public ApiResource {
   // It is fine to delete the CastSocket object in |callback|.
   virtual void Close(const net::CompletionCallback& callback);
 
-  // Internal connection states.
-  enum ConnectionState {
-    CONN_STATE_NONE,
-    CONN_STATE_TCP_CONNECT,
-    CONN_STATE_TCP_CONNECT_COMPLETE,
-    CONN_STATE_SSL_CONNECT,
-    CONN_STATE_SSL_CONNECT_COMPLETE,
-    CONN_STATE_AUTH_CHALLENGE_SEND,
-    CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE,
-    CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE,
-  };
-
-  // Internal write states.
-  enum WriteState {
-    WRITE_STATE_NONE,
-    WRITE_STATE_WRITE,
-    WRITE_STATE_WRITE_COMPLETE,
-    WRITE_STATE_DO_CALLBACK,
-    WRITE_STATE_ERROR,
-  };
-
-  // Internal read states.
-  enum ReadState {
-    READ_STATE_NONE,
-    READ_STATE_READ,
-    READ_STATE_READ_COMPLETE,
-    READ_STATE_DO_CALLBACK,
-    READ_STATE_ERROR,
-  };
-
  private:
   friend class ApiResourceManager<CastSocket>;
   friend class CastSocketTest;
@@ -260,11 +231,11 @@ class CastSocket : public ApiResource {
 
   virtual base::Timer* GetTimer();
 
-  void SetConnectState(ConnectionState connect_state);
+  void SetConnectState(proto::ConnectionState connect_state);
   void SetReadyState(ReadyState ready_state);
   void SetErrorState(ChannelError error_state);
-  void SetReadState(ReadState read_state);
-  void SetWriteState(WriteState write_state);
+  void SetReadState(proto::ReadState read_state);
+  void SetWriteState(proto::WriteState write_state);
 
   base::ThreadChecker thread_checker_;
 
@@ -322,11 +293,11 @@ class CastSocket : public ApiResource {
   scoped_ptr<CastMessage> current_message_;
 
   // Connection flow state machine state.
-  ConnectionState connect_state_;
+  proto::ConnectionState connect_state_;
   // Write flow state machine state.
-  WriteState write_state_;
+  proto::WriteState write_state_;
   // Read flow state machine state.
-  ReadState read_state_;
+  proto::ReadState read_state_;
   // The last error encountered by the channel.
   ChannelError error_state_;
   // The current status of the channel.

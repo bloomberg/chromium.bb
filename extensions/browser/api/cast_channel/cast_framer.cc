@@ -9,7 +9,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 
 namespace extensions {
 namespace core_api {

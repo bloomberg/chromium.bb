@@ -14,8 +14,8 @@
 #include "base/strings/stringprintf.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
-#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
 

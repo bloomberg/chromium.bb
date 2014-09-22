@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

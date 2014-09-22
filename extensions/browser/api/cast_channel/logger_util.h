@@ -5,14 +5,17 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_UTIL_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_UTIL_H_
 
-#include "extensions/browser/api/cast_channel/logging.pb.h"
+#include "extensions/common/api/cast_channel.h"
+#include "extensions/common/api/cast_channel/logging.pb.h"
 
 namespace extensions {
 namespace core_api {
 namespace cast_channel {
+// Converts an IDL "ChannelError" to a proto enum "ErrorState".
+proto::ErrorState ErrorStateToProto(ChannelError state);
 
-// TODO(mfoltz): Move the *ToProto functions from cast_socket.cc here.
-// CastSocket should not need to know details of the logging protocol message.
+// Converts an IDL "ReadyState" to a proto enum "ReadyState".
+proto::ReadyState ReadyStateToProto(ReadyState state);
 
 // Holds the most recent errors encountered by a CastSocket.
 struct LastErrors {

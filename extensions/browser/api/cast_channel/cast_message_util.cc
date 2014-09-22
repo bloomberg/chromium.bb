@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/api/cast_channel.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 
 namespace {
 static const char kAuthNamespace[] =

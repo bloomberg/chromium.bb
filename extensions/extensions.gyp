@@ -285,7 +285,7 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/re2/re2.gyp:re2',
         'browser/api/api_registration.gyp:extensions_api_registration',
-        'cast_channel_proto',
+        'common/api/api.gyp:cast_channel_proto',
         'common/api/api.gyp:extensions_api',
         'extensions_common',
         'extensions_strings.gyp:extensions_strings',
@@ -1033,7 +1033,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        'cast_channel_proto',
+        'common/api/api.gyp:cast_channel_proto',
         'extensions_common',
         'extensions_renderer',
         'extensions_resources.gyp:extensions_resources',
@@ -1142,21 +1142,6 @@
           ],
         }],
       ],
-    },
-    {
-      # Protobuf compiler / generator for chrome.cast.channel-related protocol buffers.
-      # GN version: //extensions/browser/api/cast_channel:cast_channel_proto
-      'target_name': 'cast_channel_proto',
-      'type': 'static_library',
-      'sources': [
-          'browser/api/cast_channel/cast_channel.proto',
-          'browser/api/cast_channel/logging.proto'
-      ],
-      'variables': {
-          'proto_in_dir': 'browser/api/cast_channel',
-          'proto_out_dir': 'extensions/browser/api/cast_channel',
-      },
-      'includes': [ '../build/protoc.gypi' ]
     },
   ]
 }

@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
-#include "extensions/browser/api/cast_channel/logging.pb.h"
+#include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/ip_endpoint.h"
 
 namespace base {
