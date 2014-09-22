@@ -80,10 +80,6 @@ const int kReorderDroppingCircleRadius = 35;
 // The padding around the outside of the experimental app list (top and sides).
 const int kExperimentalWindowPadding = 23;
 
-// Height of separator between the main view and contents switcher and of
-// the launcher page indicator.
-const int kContentsSwitcherSeparatorHeight = 1;
-
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;
 

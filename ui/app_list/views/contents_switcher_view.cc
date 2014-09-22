@@ -4,13 +4,11 @@
 
 #include "ui/app_list/views/contents_switcher_view.h"
 
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/views/contents_view.h"
-#include "ui/views/background.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
 
 namespace app_list {
 
@@ -18,20 +16,6 @@ namespace {
 
 const int kButtonSpacing = 4;
 const int kMinimumHeight = 39;
-
-class ContentsPageIndicatorView : public views::View {
- public:
-  ContentsPageIndicatorView() {};
-  virtual ~ContentsPageIndicatorView() {};
-
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
-    return gfx::Size(0, kContentsSwitcherSeparatorHeight);
-  };
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentsPageIndicatorView);
-};
 
 }  // namespace
 
@@ -53,29 +37,7 @@ void ContentsSwitcherView::AddSwitcherButton(int resource_id, int page_index) {
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
   button->set_tag(page_index);
 
-  // Add an indicator for the current launcher page.
-  app_list::ContentsPageIndicatorView* indicator =
-      new app_list::ContentsPageIndicatorView();
-  indicator->set_background(
-      views::Background::CreateSolidBackground(app_list::kPagerSelectedColor));
-  indicator->SetVisible(false);
-  page_active_indicators_[page_index] = indicator;
-
-  // A container view that will consume space when its child is not visible.
-  // TODO(calamity): Remove this once BoxLayout supports space-consuming
-  // invisible views.
-  views::View* indicator_container = new views::View();
-  indicator_container->SetLayoutManager(new views::FillLayout());
-  indicator_container->AddChildView(indicator);
-
-  // View containing the indicator view and image button.
-  views::View* button_container = new views::View();
-  button_container->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  button_container->AddChildView(indicator_container);
-  button_container->AddChildView(button);
-
-  AddChildView(button_container);
+  AddChildView(button);
 }
 
 void ContentsSwitcherView::ButtonPressed(views::Button* sender,
@@ -88,16 +50,7 @@ void ContentsSwitcherView::TotalPagesChanged() {
 
 void ContentsSwitcherView::SelectedPageChanged(int old_selected,
                                                int new_selected) {
-  // Makes the indicator visible when it is first drawn and when the
-  // selected page is changed.
-  std::map<int, views::View*>::const_iterator it =
-      page_active_indicators_.find(old_selected);
-  if (it != page_active_indicators_.end())
-    it->second->SetVisible(false);
-
-  it = page_active_indicators_.find(new_selected);
-  if (it != page_active_indicators_.end())
-    it->second->SetVisible(true);
+  // TODO(mgiuca): Visually indicate which page is now selected.
 }
 
 void ContentsSwitcherView::TransitionStarted() {

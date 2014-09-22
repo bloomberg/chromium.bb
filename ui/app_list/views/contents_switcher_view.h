@@ -44,9 +44,6 @@ class ContentsSwitcherView : public views::View,
 
   ContentsView* contents_view_;  // Owned by views hierarchy.
 
-  // Maps page indices to Views owned by views hierarchy.
-  std::map<int, views::View*> page_active_indicators_;
-
   DISALLOW_COPY_AND_ASSIGN(ContentsSwitcherView);
 };
 
