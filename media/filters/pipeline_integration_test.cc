@@ -577,6 +577,7 @@ class PipelineIntegrationTest
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
       FakeEncryptedMedia* encrypted_media) {
+    EXPECT_CALL(*source, InitSegmentReceived()).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
