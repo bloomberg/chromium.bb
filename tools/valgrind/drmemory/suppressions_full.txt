@@ -1106,44 +1106,6 @@ name=bug_99307
 *!::NetworkInfoDictionary::set_icon
 
 UNINITIALIZED READ
-name=bug_101125a
-...
-*!SkScan::AntiFillPath
-*!SkScan::AntiFillPath
-*!SkDraw::drawPath
-*!SkDevice::drawPath
-*!SkDraw::drawTextOnPath
-*!SkDevice::drawTextOnPath
-*!SkCanvas::drawTextOnPath
-*!blink::Font::drawGlyphs
-*!blink::Font::drawGlyphBuffer
-
-UNINITIALIZED READ
-name=bug_101125b
-...
-*!SkScan::AntiFillRect
-*!SkScan::AntiFillRect
-*!SkDraw::drawRect
-*!SkDevice::drawRect
-*!SkCanvas::drawRect
-*!blink::GraphicsContext::fillRect
-*!blink::GraphicsContext::drawHighlightForText
-
-UNINITIALIZED READ
-name=bug_101125c
-...
-*!morphpoints
-*!morphpath
-*!SkDraw::drawTextOnPath
-*!SkDevice::drawTextOnPath
-*!SkCanvas::drawTextOnPath
-*!blink::Font::drawGlyphs
-*!blink::Font::drawGlyphBuffer
-*!blink::Font::drawSimpleText
-*!blink::Font::drawText
-*!blink::GraphicsContext::drawText
-
-UNINITIALIZED READ
 name=bug_101781
 *!encode_one_block
 *!encode_mcu_huff
@@ -1168,59 +1130,6 @@ name=bug_105907
 *!skia::BGRAConvolve2D
 *!skia::ImageOperations::ResizeBasic*
 *!skia::ImageOperations::Resize*
-
-UNINITIALIZED READ
-name=bug_106183a
-*!blink::RenderMarquee::updateMarqueeStyle
-*!blink::RenderLayer::styleChanged
-*!blink::RenderBoxModelObject::styleDidChange
-*!blink::RenderBox::styleDidChange
-*!blink::RenderBlock::styleDidChange
-*!blink::RenderObject::setStyle
-
-UNINITIALIZED READ
-name=bug_106183b
-*!blink::ComplexTextController*
-...
-*!blink::Font::selectionRectForComplexText
-*!blink::Font::selectionRectForText
-*!blink::InlineTextBox::positionForOffset
-*!blink::RenderText::localCaretRect
-*!blink::VisiblePosition::localCaretRect
-*!blink::CaretBase::updateCaretRect
-*!blink::FrameSelection::localCaretRect
-*!blink::FrameSelection::recomputeCaretRect
-*!blink::FrameSelection::updateAppearance
-
-UNINITIALIZED READ
-name=bug_106183c
-*!blink::ComplexTextController*
-...
-*!blink::Font::drawComplexText
-*!blink::Font::drawText
-*!blink::GraphicsContext::drawText
-*!blink::paintTextWithShadows
-...
-*!blink::RenderLineBoxList::paint
-*!blink::RenderBlock::paintContents
-*!blink::RenderBlock::paintObject
-*!blink::RenderBlock::paint
-
-UNINITIALIZED READ
-name=bug_106552
-...
-*!JSONStringValueSerializer::SerializeInternal
-*!JSONStringValueSerializer::Serialize
-*!JsonPrefStore::SerializeData
-*!ImportantFileWriter::DoScheduledWrite
-*!JsonPrefStore::CommitPendingWrite
-*!JsonPrefStore::~JsonPrefStore
-*!base::RefCounted<>::Release
-*!scoped_refptr<>::operator=
-*!PrefService::~PrefService
-*!scoped_ptr<>::~scoped_ptr
-*!TestingProfile::~TestingProfile
-*!ExtensionTestingProfile::~ExtensionTestingProfile
 
 UNINITIALIZED READ
 name=bug_108147
