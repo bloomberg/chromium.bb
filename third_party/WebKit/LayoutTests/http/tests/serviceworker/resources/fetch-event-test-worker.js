@@ -15,12 +15,6 @@ function handleNullBody(event) {
   event.respondWith(new Response(null));
 }
 
-function handleReject(event) {
-  event.respondWith(new Promise(function(resolve, reject) {
-      reject('rejected!');
-    }));
-}
-
 function handleFetch(event) {
   event.respondWith(fetch('other.html'));
 }
@@ -55,7 +49,6 @@ self.addEventListener('fetch', function(event) {
       { pattern: '?referrer', fn: handleReferrer },
       { pattern: '?ignore', fn: function() {} },
       { pattern: '?null', fn: handleNullBody },
-      { pattern: '?reject', fn: handleReject },
       { pattern: '?fetch', fn: handleFetch },
       { pattern: '?form-post', fn: handleFormPost },
       { pattern: '?multiple-respond-with', fn: handleMultipleRespondWith }

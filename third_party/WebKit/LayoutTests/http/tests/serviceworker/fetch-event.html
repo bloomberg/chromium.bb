@@ -99,21 +99,6 @@ async_test(function(t) {
   }, 'Service Worker responds to fetch event with null response body', properties);
 
 async_test(function(t) {
-    var scope = 'resources/simple.html?reject';
-    service_worker_unregister_and_register(t, worker, scope)
-      .then(function(reg) { return wait_for_activated(t, reg); })
-      .then(function() { return with_iframe(scope); })
-      .then(function(frame) {
-          assert_equals(frame.contentDocument.body.textContent,
-                        '',
-                        'Response should be a NetworkError');
-          unload_iframe(frame);
-          return service_worker_unregister_and_done(t, scope);
-        })
-      .catch(unreached_rejection(t));
-  }, 'Service Worker rejects fetch event', properties);
-
-async_test(function(t) {
     var scope = 'resources/simple.html?fetch';
     service_worker_unregister_and_register(t, worker, scope)
       .then(function(reg) { return wait_for_activated(t, reg); })
