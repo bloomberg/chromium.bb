@@ -426,6 +426,10 @@
       'target_name': 'gfx_test_support',
       'type': 'static_library',
       'sources': [
+        'image/image_unittest_util.cc',
+        'image/image_unittest_util.h',
+        'image/image_unittest_util_ios.mm',
+        'image/image_unittest_util_mac.mm',
         'test/fontconfig_util_linux.cc',
         'test/fontconfig_util_linux.h',
         'test/gfx_util.cc',

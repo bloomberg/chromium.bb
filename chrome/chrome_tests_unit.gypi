@@ -1487,6 +1487,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/message_center/message_center.gyp:message_center_test_support',
       ],
       'export_dependent_settings': [
@@ -1656,8 +1657,6 @@
         'test/logging/win/mof_data_parser.h',
         'test/logging/win/test_log_collector.cc',
         'test/logging/win/test_log_collector.h',
-        '../ui/gfx/image/image_unittest_util.cc',
-        '../ui/gfx/image/image_unittest_util.h',
       ],
       'conditions': [
         ['OS!="ios"', {
