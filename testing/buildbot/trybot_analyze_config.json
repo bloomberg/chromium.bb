@@ -22,6 +22,7 @@
     "exclusions": [
       "chrome/test/data/.*",
       "content/test/data/.*",
+      "net/data/.*",
       "tools/clang/scripts/plugin_flags.sh",
       "tools/clang/scripts/update.py",
       "tools/clang/scripts/update.sh",
