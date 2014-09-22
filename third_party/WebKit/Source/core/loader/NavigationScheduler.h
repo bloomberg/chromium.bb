@@ -70,7 +70,7 @@ private:
 
 class NavigationScheduler FINAL {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_ALLOCATION();
 public:
     explicit NavigationScheduler(LocalFrame*);
     ~NavigationScheduler();

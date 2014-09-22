@@ -65,7 +65,7 @@ bool isBackForwardLoadType(FrameLoadType);
 
 class FrameLoader FINAL {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_ALLOCATION();
 public:
     static ResourceRequest requestFromHistoryItem(HistoryItem*, ResourceRequestCachePolicy);
 

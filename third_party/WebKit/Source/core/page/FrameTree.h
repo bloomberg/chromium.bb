@@ -30,7 +30,7 @@ class TreeScope;
 
 class FrameTree FINAL {
     WTF_MAKE_NONCOPYABLE(FrameTree);
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_ALLOCATION();
 public:
     explicit FrameTree(Frame* thisFrame);
     ~FrameTree();
