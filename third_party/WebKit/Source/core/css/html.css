@@ -787,6 +787,11 @@ option {
     min-height: 1.2em;
 }
 
+select:-internal-list-box option,
+select:-internal-list-box optgroup {
+    line-height: initial !important;
+}
+
 select:-internal-list-box:focus option:checked {
     background-color: -internal-active-list-box-selection !important;
     color: -internal-active-list-box-selection-text !important;
