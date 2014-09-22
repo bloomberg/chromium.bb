@@ -36767,7 +36767,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Count of how many instances of WebCore::Page use various features. Each
     WebCore::Page instance has a WebCore::UseCounter instance. It records and
-    reports feature usage (e.g. via UseCounter::count() method).
+    reports feature usage (e.g. via UseCounter::count() method). NOTE: dev
+    numbers from 34.0.1800.1 to 34.0.1833.4 are wrong (see crbug.com/341631).
   </summary>
 </histogram>
 
