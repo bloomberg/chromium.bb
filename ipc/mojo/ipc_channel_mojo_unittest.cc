@@ -13,6 +13,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
+#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "ipc/mojo/ipc_channel_mojo_readers.h"
 
 #if defined(OS_POSIX)
@@ -59,9 +60,10 @@ class ListenerThatExpectsOK : public IPC::Listener {
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
-    channel_ = IPC::ChannelMojo::Create(
-        IPCTestBase::GetChannelName(name), IPC::Channel::MODE_CLIENT, listener,
-        main_message_loop_.message_loop_proxy());
+    channel_ = IPC::ChannelMojo::Create(NULL,
+                                        IPCTestBase::GetChannelName(name),
+                                        IPC::Channel::MODE_CLIENT,
+                                        listener);
   }
 
   void Connect() {
@@ -71,8 +73,8 @@ class ChannelClient {
   IPC::ChannelMojo* channel() const { return channel_.get(); }
 
  private:
-  scoped_ptr<IPC::ChannelMojo> channel_;
   base::MessageLoopForIO main_message_loop_;
+  scoped_ptr<IPC::ChannelMojo> channel_;
 };
 
 class IPCChannelMojoTest : public IPCTestBase {
@@ -80,9 +82,19 @@ class IPCChannelMojoTest : public IPCTestBase {
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::TaskRunner* runner) OVERRIDE {
-    return IPC::ChannelMojo::CreateFactory(
-        handle, IPC::Channel::MODE_SERVER, runner);
+    host_.reset(new IPC::ChannelMojoHost(task_runner()));
+    return IPC::ChannelMojo::CreateServerFactory(host_.get(), handle);
   }
+
+  virtual bool DidStartClient() OVERRIDE {
+    bool ok = IPCTestBase::DidStartClient();
+    DCHECK(ok);
+    host_->OnClientLaunched(client_process());
+    return ok;
+  }
+
+ private:
+  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 
@@ -149,13 +161,12 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestClient) {
 // Close given handle before use to simulate an error.
 class ErraticChannelMojo : public IPC::ChannelMojo {
  public:
-  ErraticChannelMojo(
-      const IPC::ChannelHandle& channel_handle,
-      IPC::Channel::Mode mode,
-      IPC::Listener* listener,
-      scoped_refptr<base::TaskRunner> runner)
-      : ChannelMojo(channel_handle, mode, listener, runner) {
-  }
+  ErraticChannelMojo(IPC::ChannelMojoHost* host,
+                     const IPC::ChannelHandle& channel_handle,
+                     IPC::Channel::Mode mode,
+                     IPC::Listener* listener,
+                     scoped_refptr<base::TaskRunner> runner)
+      : ChannelMojo(host, channel_handle, mode, listener) {}
 
   virtual void OnConnected(mojo::ScopedMessagePipeHandle pipe) {
     MojoClose(pipe.get().value());
@@ -166,11 +177,10 @@ class ErraticChannelMojo : public IPC::ChannelMojo {
 // Exists to create ErraticChannelMojo.
 class ErraticChannelFactory : public IPC::ChannelFactory {
  public:
-  explicit ErraticChannelFactory(
-      const IPC::ChannelHandle& handle,
-      base::TaskRunner* runner)
-      : handle_(handle), runner_(runner) {
-  }
+  explicit ErraticChannelFactory(IPC::ChannelMojoHost* host,
+                                 const IPC::ChannelHandle& handle,
+                                 base::TaskRunner* runner)
+      : host_(host), handle_(handle), runner_(runner) {}
 
   virtual std::string GetName() const OVERRIDE {
     return "";
@@ -178,12 +188,12 @@ class ErraticChannelFactory : public IPC::ChannelFactory {
 
   virtual scoped_ptr<IPC::Channel> BuildChannel(
       IPC::Listener* listener) OVERRIDE {
-    return scoped_ptr<IPC::Channel>(
-        new ErraticChannelMojo(
-            handle_, IPC::Channel::MODE_SERVER, listener, runner_));
+    return scoped_ptr<IPC::Channel>(new ErraticChannelMojo(
+        host_, handle_, IPC::Channel::MODE_SERVER, listener, runner_));
   }
 
  private:
+  IPC::ChannelMojoHost* host_;
   IPC::ChannelHandle handle_;
   scoped_refptr<base::TaskRunner> runner_;
 };
@@ -215,9 +225,20 @@ class IPCChannelMojoErrorTest : public IPCTestBase {
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::TaskRunner* runner) OVERRIDE {
+    host_.reset(new IPC::ChannelMojoHost(task_runner()));
     return scoped_ptr<IPC::ChannelFactory>(
-        new ErraticChannelFactory(handle, runner));
+        new ErraticChannelFactory(host_.get(), handle, runner));
   }
+
+  virtual bool DidStartClient() OVERRIDE {
+    bool ok = IPCTestBase::DidStartClient();
+    DCHECK(ok);
+    host_->OnClientLaunched(client_process());
+    return ok;
+  }
+
+ private:
+  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 class ListenerThatQuits : public IPC::Listener {

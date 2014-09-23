@@ -28,8 +28,12 @@
       'sources': [
         'ipc_channel_mojo.cc',
         'ipc_channel_mojo.h',
+        'ipc_channel_mojo_host.cc',
+        'ipc_channel_mojo_host.h',
         'ipc_channel_mojo_readers.cc',
         'ipc_channel_mojo_readers.h',
+        'ipc_mojo_bootstrap.cc',
+        'ipc_mojo_bootstrap.h',
         'ipc_message_pipe_reader.cc',
         'ipc_message_pipe_reader.h',
       ],
@@ -62,6 +66,7 @@
       'sources': [
         'run_all_unittests.cc',
         'ipc_channel_mojo_unittest.cc',
+        'ipc_mojo_bootstrap_unittest.cc',
       ],
       'conditions': [
       ],

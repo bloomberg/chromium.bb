@@ -77,11 +77,18 @@ class IPCTestBase : public base::MultiProcessTest {
   // done after connecting to the channel.
   bool StartClient();
 
+#if defined(OS_POSIX)
+  // A StartClient() variant that allows caller to pass the FD of IPC pipe
+  bool StartClientWithFD(int ipcfd);
+#endif
+
   // Waits for the client to shut down, returning true if successful. Note that
   // this does not initiate client shutdown; that must be done by the test
   // (somehow). This must be called before the end of the test whenever
   // StartClient() was called successfully.
   bool WaitForClientShutdown();
+
+  IPC::ChannelHandle GetTestChannelHandle();
 
   // Use this to send IPC messages (when you don't care if you're using a
   // channel or a proxy).
@@ -99,7 +106,11 @@ class IPCTestBase : public base::MultiProcessTest {
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle, base::TaskRunner* runner);
 
+  virtual bool DidStartClient();
+
  private:
+  std::string GetTestMainName() const;
+
   std::string test_client_name_;
   scoped_ptr<base::MessageLoop> message_loop_;
 

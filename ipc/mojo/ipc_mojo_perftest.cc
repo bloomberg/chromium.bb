@@ -5,6 +5,7 @@
 #include "base/lazy_instance.h"
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "mojo/embedder/test_embedder.h"
 
 namespace {
@@ -31,8 +32,15 @@ public:
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::TaskRunner* runner) OVERRIDE {
-    return IPC::ChannelMojo::CreateFactory(
-        handle, IPC::Channel::MODE_SERVER, runner);
+    host_.reset(new IPC::ChannelMojoHost(task_runner()));
+    return IPC::ChannelMojo::CreateServerFactory(host_.get(), handle);
+  }
+
+  virtual bool DidStartClient() OVERRIDE {
+    bool ok = IPCTestBase::DidStartClient();
+    DCHECK(ok);
+    host_->OnClientLaunched(client_process());
+    return ok;
   }
 
   void set_io_thread_task_runner(base::TaskRunner* runner) {
@@ -41,6 +49,7 @@ public:
 
  private:
   base::TaskRunner* io_thread_task_runner_;
+  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 MojoChannelPerfTest::MojoChannelPerfTest()
@@ -73,10 +82,11 @@ MojoTestClient::MojoTestClient() {
 
 scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
     IPC::Listener* listener) {
-  return scoped_ptr<IPC::Channel>(IPC::ChannelMojo::Create(
-      IPCTestBase::GetChannelName("PerformanceClient"),
-      IPC::Channel::MODE_CLIENT, listener,
-      task_runner()));
+  return scoped_ptr<IPC::Channel>(
+      IPC::ChannelMojo::Create(NULL,
+                               IPCTestBase::GetChannelName("PerformanceClient"),
+                               IPC::Channel::MODE_CLIENT,
+                               listener));
 }
 
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {

@@ -34,6 +34,10 @@ namespace gfx {
 class Size;
 }
 
+namespace IPC {
+class ChannelMojoHost;
+}
+
 namespace content {
 class AudioRendererHost;
 class BrowserCdmManager;
@@ -259,6 +263,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
   scoped_ptr<IPC::ChannelProxy> channel_;
+
+  // A host object ChannelMojo needs. The lifetime is bound to
+  // the RenderProcessHostImpl, not the channel.
+  scoped_ptr<IPC::ChannelMojoHost> channel_mojo_host_;
 
   // True if fast shutdown has been performed on this RPH.
   bool fast_shutdown_started_;

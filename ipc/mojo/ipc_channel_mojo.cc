@@ -8,7 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "ipc/mojo/ipc_channel_mojo_readers.h"
+#include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "mojo/embedder/embedder.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -19,69 +21,27 @@ namespace IPC {
 
 namespace {
 
-// IPC::Listener for bootstrap channels.
-// It should never receive any message.
-class NullListener : public Listener {
- public:
-  virtual bool OnMessageReceived(const Message&) OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void OnChannelError() OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void OnBadMessageReceived(const Message& message) OVERRIDE {
-    NOTREACHED();
-  }
-};
-
-base::LazyInstance<NullListener> g_null_listener = LAZY_INSTANCE_INITIALIZER;
-
 class MojoChannelFactory : public ChannelFactory {
  public:
-  MojoChannelFactory(
-      ChannelHandle channel_handle,
-      Channel::Mode mode,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner)
-      : channel_handle_(channel_handle),
-        mode_(mode),
-        io_thread_task_runner_(io_thread_task_runner) {
-  }
+  MojoChannelFactory(ChannelMojoHost* host,
+                     ChannelHandle channel_handle,
+                     Channel::Mode mode)
+      : host_(host), channel_handle_(channel_handle), mode_(mode) {}
 
   virtual std::string GetName() const OVERRIDE {
     return channel_handle_.name;
   }
 
   virtual scoped_ptr<Channel> BuildChannel(Listener* listener) OVERRIDE {
-    return ChannelMojo::Create(
-        channel_handle_,
-        mode_,
-        listener,
-        io_thread_task_runner_).PassAs<Channel>();
+    return ChannelMojo::Create(host_, channel_handle_, mode_, listener)
+        .PassAs<Channel>();
   }
 
  private:
+  ChannelMojoHost* host_;
   ChannelHandle channel_handle_;
   Channel::Mode mode_;
-  scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 };
-
-mojo::embedder::PlatformHandle ToPlatformHandle(
-    const ChannelHandle& handle) {
-#if defined(OS_POSIX) && !defined(OS_NACL)
-  return mojo::embedder::PlatformHandle(handle.socket.fd);
-#elif defined(OS_WIN)
-  return mojo::embedder::PlatformHandle(handle.pipe.handle);
-#else
-#error "Unsupported Platform!"
-#endif
-}
 
 } // namespace
 
@@ -95,53 +55,59 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 //------------------------------------------------------------------------------
 
 // static
-scoped_ptr<ChannelMojo> ChannelMojo::Create(
-    const ChannelHandle &channel_handle, Mode mode, Listener* listener,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  return make_scoped_ptr(
-      new ChannelMojo(channel_handle, mode, listener, io_thread_task_runner));
+scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojoHost* host,
+                                            const ChannelHandle& channel_handle,
+                                            Mode mode,
+                                            Listener* listener) {
+  return make_scoped_ptr(new ChannelMojo(host, channel_handle, mode, listener));
 }
 
 // static
-scoped_ptr<ChannelFactory> ChannelMojo::CreateFactory(
-    const ChannelHandle &channel_handle, Mode mode,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
+scoped_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
+    ChannelMojoHost* host,
+    const ChannelHandle& channel_handle) {
   return make_scoped_ptr(
-      new MojoChannelFactory(
-          channel_handle, mode,
-          io_thread_task_runner)).PassAs<ChannelFactory>();
+             new MojoChannelFactory(host, channel_handle, Channel::MODE_SERVER))
+      .PassAs<ChannelFactory>();
 }
 
-ChannelMojo::ChannelMojo(const ChannelHandle& channel_handle,
+// static
+scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
+    const ChannelHandle& channel_handle) {
+  return make_scoped_ptr(
+             new MojoChannelFactory(NULL, channel_handle, Channel::MODE_CLIENT))
+      .PassAs<ChannelFactory>();
+}
+
+ChannelMojo::ChannelMojo(ChannelMojoHost* host,
+                         const ChannelHandle& handle,
                          Mode mode,
-                         Listener* listener,
-                         scoped_refptr<base::TaskRunner> io_thread_task_runner)
-    : bootstrap_(
-          Channel::Create(channel_handle, mode, g_null_listener.Pointer())),
+                         Listener* listener)
+    : host_(host),
       mode_(mode),
       listener_(listener),
       peer_pid_(base::kNullProcessId),
       weak_factory_(this) {
-  if (base::MessageLoopProxy::current() == io_thread_task_runner.get()) {
-    InitOnIOThread();
-  } else {
-    io_thread_task_runner->PostTask(FROM_HERE,
-                                    base::Bind(&ChannelMojo::InitOnIOThread,
-                                               weak_factory_.GetWeakPtr()));
-  }
+  // Create MojoBootstrap after all members are set as it touches
+  // ChannelMojo from a different thread.
+  bootstrap_ = MojoBootstrap::Create(handle, mode, this);
+  if (host_)
+    host_->OnChannelCreated(this);
 }
 
 ChannelMojo::~ChannelMojo() {
   Close();
+
+  if (host_)
+    host_->OnChannelDestroyed();
 }
 
-void ChannelMojo::InitOnIOThread() {
+void ChannelMojo::InitControlReader(
+    mojo::embedder::ScopedPlatformHandle handle) {
+  DCHECK(base::MessageLoopForIO::IsCurrent());
   mojo::embedder::ChannelInfo* channel_info;
   mojo::ScopedMessagePipeHandle control_pipe =
-      mojo::embedder::CreateChannelOnIOThread(
-          mojo::embedder::ScopedPlatformHandle(
-              ToPlatformHandle(bootstrap_->TakePipeHandle())),
-          &channel_info);
+      mojo::embedder::CreateChannelOnIOThread(handle.Pass(), &channel_info);
   channel_info_.reset(channel_info);
 
   switch (mode_) {
@@ -161,13 +127,23 @@ void ChannelMojo::InitOnIOThread() {
 
 bool ChannelMojo::Connect() {
   DCHECK(!message_reader_);
-  return control_reader_->Connect();
+  DCHECK(!control_reader_);
+  return bootstrap_->Connect();
 }
 
 void ChannelMojo::Close() {
   control_reader_.reset();
   message_reader_.reset();
   channel_info_.reset();
+}
+
+void ChannelMojo::OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) {
+  InitControlReader(handle.Pass());
+  control_reader_->Connect();
+}
+
+void ChannelMojo::OnBootstrapError() {
+  listener_->OnChannelError();
 }
 
 void ChannelMojo::OnConnected(mojo::ScopedMessagePipeHandle pipe) {
@@ -212,11 +188,16 @@ base::ProcessId ChannelMojo::GetPeerPID() const {
 }
 
 base::ProcessId ChannelMojo::GetSelfPID() const {
-  return bootstrap_->GetSelfPID();
+  return base::GetCurrentProcId();
 }
 
 ChannelHandle ChannelMojo::TakePipeHandle() {
-  return bootstrap_->TakePipeHandle();
+  NOTREACHED();
+  return ChannelHandle();
+}
+
+void ChannelMojo::OnClientLaunched(base::ProcessHandle handle) {
+  bootstrap_->OnClientLaunched(handle);
 }
 
 void ChannelMojo::OnMessageReceived(Message& message) {

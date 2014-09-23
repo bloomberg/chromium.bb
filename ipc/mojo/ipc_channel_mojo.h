@@ -14,6 +14,7 @@
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_export.h"
 #include "ipc/mojo/ipc_message_pipe_reader.h"
+#include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -30,6 +31,8 @@ class ServerControlReader;
 class ClientControlReader;
 class MessageReader;
 }
+
+class ChannelMojoHost;
 
 // Mojo-based IPC::Channel implementation over a platform handle.
 //
@@ -55,20 +58,30 @@ class MessageReader;
 // TODO(morrita): Add APIs to create extra MessagePipes to let
 //                Mojo-based objects talk over this Channel.
 //
-class IPC_MOJO_EXPORT ChannelMojo : public Channel {
+class IPC_MOJO_EXPORT ChannelMojo : public Channel,
+                                    public MojoBootstrap::Delegate {
  public:
   // Create ChannelMojo. A bootstrap channel is created as well.
-  static scoped_ptr<ChannelMojo> Create(
-      const ChannelHandle &channel_handle, Mode mode, Listener* listener,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner);
+  // |host| must not be null.
+  static scoped_ptr<ChannelMojo> Create(ChannelMojoHost* host,
+                                        const ChannelHandle& channel_handle,
+                                        Mode mode,
+                                        Listener* listener);
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
-  static scoped_ptr<ChannelFactory> CreateFactory(
-      const ChannelHandle &channel_handle, Mode mode,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner);
+  // |host| must not be null.
+  static scoped_ptr<ChannelFactory> CreateServerFactory(
+      ChannelMojoHost* host,
+      const ChannelHandle& channel_handle);
+
+  static scoped_ptr<ChannelFactory> CreateClientFactory(
+      const ChannelHandle& channel_handle);
 
   virtual ~ChannelMojo();
+
+  // ChannelMojoHost tells the client handle using this API.
+  void OnClientLaunched(base::ProcessHandle handle);
 
   // Channel implementation
   virtual bool Connect() OVERRIDE;
@@ -92,6 +105,11 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel {
 
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
+  // MojoBootstrapDelegate implementation
+  virtual void OnPipeAvailable(
+      mojo::embedder::ScopedPlatformHandle handle) OVERRIDE;
+  virtual void OnBootstrapError() OVERRIDE;
+
   // Called from MessagePipeReader implementations
   void OnMessageReceived(Message& message);
   void OnConnected(mojo::ScopedMessagePipeHandle pipe);
@@ -100,10 +118,10 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel {
   void set_peer_pid(base::ProcessId pid) { peer_pid_ = pid; }
 
  protected:
-  ChannelMojo(const ChannelHandle& channel_handle,
+  ChannelMojo(ChannelMojoHost* host,
+              const ChannelHandle& channel_handle,
               Mode mode,
-              Listener* listener,
-              scoped_refptr<base::TaskRunner> io_thread_task_runner);
+              Listener* listener);
 
  private:
   struct ChannelInfoDeleter {
@@ -115,9 +133,10 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel {
   // notifications invoked by them.
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
-  void InitOnIOThread();
+  void InitControlReader(mojo::embedder::ScopedPlatformHandle handle);
 
-  scoped_ptr<Channel> bootstrap_;
+  scoped_ptr<MojoBootstrap> bootstrap_;
+  ChannelMojoHost* const host_;
   Mode mode_;
   Listener* listener_;
   base::ProcessId peer_pid_;

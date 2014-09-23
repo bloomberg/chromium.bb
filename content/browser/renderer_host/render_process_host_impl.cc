@@ -137,6 +137,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -669,10 +670,15 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
-    return IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateFactory(
-            channel_id, IPC::Channel::MODE_SERVER, runner),
-        this, runner.get());
+    if (!channel_mojo_host_) {
+      channel_mojo_host_.reset(new IPC::ChannelMojoHost(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    }
+
+    return IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateServerFactory(
+                                         channel_mojo_host_.get(), channel_id),
+                                     this,
+                                     runner.get());
   }
 
   return IPC::ChannelProxy::Create(
@@ -2096,6 +2102,9 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // This way, Mojo can be safely used from the renderer in response to any
   // Chrome IPC message.
   MaybeActivateMojo();
+
+  if (channel_mojo_host_)
+    channel_mojo_host_->OnClientLaunched(child_process_launcher_->GetHandle());
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());

@@ -229,10 +229,7 @@ scoped_ptr<IPC::SyncChannel> ChildThread::CreateChannel(bool use_mojo_channel) {
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
     return IPC::SyncChannel::Create(
-        IPC::ChannelMojo::CreateFactory(
-            channel_name_,
-            IPC::Channel::MODE_CLIENT,
-            ChildProcess::current()->io_message_loop_proxy()),
+        IPC::ChannelMojo::CreateClientFactory(channel_name_),
         this,
         ChildProcess::current()->io_message_loop_proxy(),
         true,
