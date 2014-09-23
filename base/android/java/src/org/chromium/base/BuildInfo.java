@@ -55,6 +55,11 @@ public class BuildInfo {
     }
 
     @CalledByNative
+    public static String getDeviceManufacturer() {
+        return Build.MANUFACTURER;
+    }
+
+    @CalledByNative
     public static String getDeviceModel() {
         return Build.MODEL;
     }

@@ -40,6 +40,10 @@ class BASE_EXPORT BuildInfo {
     return device_;
   }
 
+  const char* manufacturer() const {
+    return manufacturer_;
+  }
+
   const char* model() const {
     return model_;
   }
@@ -98,6 +102,7 @@ class BASE_EXPORT BuildInfo {
   // std::string.c_str() doesn't guarantee that memory won't be allocated when
   // it is called.
   const char* const device_;
+  const char* const manufacturer_;
   const char* const model_;
   const char* const brand_;
   const char* const android_build_id_;
