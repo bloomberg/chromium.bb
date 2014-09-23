@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
@@ -23,16 +23,16 @@ class MockScreenOrientationClient : public blink::WebScreenOrientationClient {
   virtual ~MockScreenOrientationClient();
 
   void ResetData();
-  void UpdateDeviceOrientation(blink::WebFrame*,
-                               blink::WebScreenOrientationType);
+  void UpdateDeviceOrientation(blink::WebLocalFrame* main_frame,
+                               blink::WebScreenOrientationType orientation);
 
   blink::WebScreenOrientationType CurrentOrientationType() const;
   unsigned CurrentOrientationAngle() const;
 
  private:
   // From blink::WebScreenOrientationClient.
-  virtual void lockOrientation(blink::WebScreenOrientationLockType,
-                               blink::WebLockOrientationCallback*);
+  virtual void lockOrientation(blink::WebScreenOrientationLockType orientation,
+                               blink::WebLockOrientationCallback* callback);
   virtual void unlockOrientation();
 
   void UpdateLockSync(blink::WebScreenOrientationLockType,
@@ -44,7 +44,7 @@ class MockScreenOrientationClient : public blink::WebScreenOrientationClient {
   blink::WebScreenOrientationType SuitableOrientationForCurrentLock();
   static unsigned OrientationTypeToAngle(blink::WebScreenOrientationType);
 
-  blink::WebFrame* main_frame_;
+  blink::WebLocalFrame* main_frame_;
   blink::WebScreenOrientationLockType current_lock_;
   blink::WebScreenOrientationType device_orientation_;
   blink::WebScreenOrientationType current_orientation_;

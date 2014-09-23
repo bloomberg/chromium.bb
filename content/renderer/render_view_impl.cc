@@ -3128,7 +3128,7 @@ void RenderViewImpl::OnOrientationChange() {
                     observers_,
                     OrientationChangeEvent());
 
-  webview()->mainFrame()->sendOrientationChangeEvent();
+  webview()->mainFrame()->toWebLocalFrame()->sendOrientationChangeEvent();
 }
 
 void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,

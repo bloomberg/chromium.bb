@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -28,7 +28,7 @@ void MockScreenOrientationClient::ResetData() {
 }
 
 void MockScreenOrientationClient::UpdateDeviceOrientation(
-    blink::WebFrame* main_frame,
+    blink::WebLocalFrame* main_frame,
     blink::WebScreenOrientationType orientation) {
   main_frame_ = main_frame;
   if (device_orientation_ == orientation)
