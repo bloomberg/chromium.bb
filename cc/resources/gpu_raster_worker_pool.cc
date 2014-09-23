@@ -13,6 +13,8 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_gpu_raster.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/skia/include/core/SkMultiPictureDraw.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
@@ -23,19 +25,23 @@ namespace {
 class RasterBufferImpl : public RasterBuffer {
  public:
   RasterBufferImpl(ResourceProvider* resource_provider,
-                   const Resource* resource)
+                   const Resource* resource,
+                   SkMultiPictureDraw* multi_picture_draw)
       : resource_provider_(resource_provider),
         resource_(resource),
-        surface_(resource_provider->LockForWriteToSkSurface(resource->id())) {}
+        surface_(resource_provider->LockForWriteToSkSurface(resource->id())),
+        multi_picture_draw_(multi_picture_draw) {}
   virtual ~RasterBufferImpl() {
     resource_provider_->UnlockForWriteToSkSurface(resource_->id());
   }
 
   // Overridden from RasterBuffer:
   virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
-    skia::RefPtr<SkCanvas> canvas = surface_
-                                        ? skia::SharePtr(surface_->getCanvas())
-                                        : skia::AdoptRef(SkCreateNullCanvas());
+    if (!surface_)
+      return skia::AdoptRef(SkCreateNullCanvas());
+
+    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(recorder_.beginRecording(
+        resource_->size().width(), resource_->size().height()));
 
     // Balanced with restore() call in ReleaseSkCanvas. save()/restore() calls
     // are needed to ensure that canvas returns to its previous state after use.
@@ -43,14 +49,23 @@ class RasterBufferImpl : public RasterBuffer {
     return canvas;
   }
   virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {
+    if (!surface_)
+      return;
+
     // Balanced with save() call in AcquireSkCanvas.
     canvas->restore();
+
+    // Add the canvas and recorded picture to |multi_picture_draw_|.
+    skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder_.endRecording());
+    multi_picture_draw_->add(surface_->getCanvas(), picture.get());
   }
 
  private:
   ResourceProvider* resource_provider_;
   const Resource* resource_;
   SkSurface* surface_;
+  SkMultiPictureDraw* multi_picture_draw_;
+  SkPictureRecorder recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
@@ -188,7 +203,7 @@ scoped_ptr<RasterBuffer> GpuRasterWorkerPool::AcquireBufferForRaster(
   resource_provider_->AcquireSkSurface(resource->id());
 
   return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(resource_provider_, resource));
+      new RasterBufferImpl(resource_provider_, resource, &multi_picture_draw_));
 }
 
 void GpuRasterWorkerPool::ReleaseBufferForRaster(
@@ -224,6 +239,10 @@ void GpuRasterWorkerPool::RunTasksOnOriginThread() {
 
   ScopedGpuRaster gpu_raster(context_provider_);
   task_graph_runner_->RunUntilIdle();
+
+  // Draw each all of the pictures that were collected.  This will also clear
+  // the pictures and canvases added to |multi_picture_draw_|
+  multi_picture_draw_.draw();
 }
 
 }  // namespace cc

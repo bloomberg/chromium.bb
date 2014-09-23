@@ -350,8 +350,14 @@ int Picture::Raster(SkCanvas* canvas,
   canvas->translate(layer_rect_.x(), layer_rect_.y());
   if (playback_) {
     playback_->draw(canvas);
-  } else {
+  } else if (callback) {
+    // If we have a callback, we need to call |draw()|, |drawPicture()| doesn't
+    // take a callback.  This is used by |AnalysisCanvas| to early out.
     picture_->draw(canvas, callback);
+  } else {
+    // Prefer to call |drawPicture()| on the canvas since it could place the
+    // entire picture on the canvas instead of parsing the skia operations.
+    canvas->drawPicture(picture_.get());
   }
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);

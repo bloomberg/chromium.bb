@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
+#include "third_party/skia/include/core/SkMultiPictureDraw.h"
 
 namespace cc {
 class ContextProvider;
@@ -54,6 +55,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
   RasterizerClient* client_;
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
+  SkMultiPictureDraw multi_picture_draw_;
 
   bool run_tasks_on_origin_thread_pending_;
 
