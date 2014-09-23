@@ -560,8 +560,7 @@
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptor*FileDescriptorWatcherEPNS0_7WatcherE
    fun:_ZN4base16MessageLoopForIO19WatchFileDescriptor*MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
    ...
-   fun:_ZN3IPC7Channel11ChannelImpl7ConnectEv
-   fun:_ZN3IPC7Channel7ConnectEv
+   fun:_ZN3IPC*Channel*ConnectEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
 }
 {
@@ -3637,6 +3636,16 @@
    fun:_ZN5blink18PageWidgetDelegate16handleInputEventEPN7blink4PageERNS_22PageWidgetEventHandlerERKNS_13WebInputEventE
 }
 {
+   bug_385396e
+   Memcheck:Uninitialized
+   fun:_ZN5blink15roundedIntPointERKNS_11LayoutPointE
+   fun:_ZNK5blink15HitTestLocation12roundedPointEv
+   fun:_ZN5blink10RenderView7hitTestERKNS_14HitTestRequestERKNS_15HitTestLocationERNS_13HitTestResultE
+   fun:_ZN5blink10RenderView7hitTestERKNS_14HitTestRequestERNS_13HitTestResultE
+   fun:_ZN5blink12EventHandler20hitTestResultAtPointERKNS_11LayoutPointEjRKNS_10LayoutSizeE
+   fun:_ZN5blink12EventHandler18targetGestureEventERKNS_20PlatformGestureEventEb
+}
+{
    bug_387435
    Memcheck:Leak
    fun:_Znw*
@@ -3975,6 +3984,15 @@
    fun:_ZN5blink11RenderBlock11paintObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
 {
+   bug_411235
+   Memcheck:Overlap
+   fun:memcpy@@GLIBC_2.14
+   fun:IncrementalCopyFastPath
+   fun:BrotliDecompress
+   fun:BrotliDecompressBuffer
+   fun:_ZN12_GLOBAL__N_115Woff2UncompressEPhmPKhmj
+}
+{
    bug_415092
    Memcheck:Leak
    fun:_Znw*
@@ -3996,4 +4014,41 @@
    fun:_ZN5blink9Scheduler15tickSharedTimerEv
    fun:_ZN5blink9Scheduler18sharedTimerAdapterEv
    fun:_ZN7content17BlinkPlatformImpl9DoTimeoutEv
+}
+{
+   bug_417048a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZNK5blink17RenderLineBoxList7hitTestEPNS_20RenderBoxModelObjectERKNS_14HitTestRequestERNS_13HitTestResultERKNS_15HitTestLocationERKNS_11LayoutPointENS_13HitTestActionE
+   fun:_ZN5blink*Render*_14HitTestRequestERNS_13HitTestResultERKNS_15HitTestLocationERKNS_11LayoutPointENS_13HitTestActionE
+}
+{
+   bug_417048b
+   Memcheck:Uninitialized
+   fun:_ZN5blink13InlineFlowBox45clearDescendantsHaveSameLineHeightAndBaselineEv
+   fun:_ZN5blinkL25setLogicalWidthForTextRunEPNS_13RootInlineBoxEPNS_7BidiRunEPNS_10RenderTextEfRKNS*
+   fun:_ZN5blink15RenderBlockFlow41computeInlineDirectionPositionsForSegmentEPNS_13RootInlineBoxERKNS*
+   fun:_ZN5blink15RenderBlockFlow38computeInlineDirectionPositionsForLineEPNS_13RootInlineBoxERKNS*
+}
+{
+   bug_417048c
+   Memcheck:Uninitialized
+   fun:_ZNK5blink13InlineFlowBox35constrainToLineTopAndBottomIfNeededERNS_10LayoutRectE
+   fun:_ZN5blink13InlineFlowBox28paintBoxDecorationBackgroundERNS_9PaintInfoERKNS_11LayoutPointE
+   fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZN5blink13RootInlineBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZNK5blink18LineBoxListPainter5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_11LayoutPointE
+}
+{
+   bug_417048d
+   Memcheck:Uninitialized
+   ...
+   fun:_ZNK5blink13RootInlineBox13maxLogicalTopEv
+   fun:_ZN5blinkL22computeUnderlineOffsetENS_21TextUnderlinePositionERKNS_11FontMetricsEPKNS_13InlineTextBoxEf
+   fun:_ZN5blink13InlineTextBox15paintDecorationEPNS_15GraphicsContextERKNS_10FloatPointENS_14TextDecorationE
+   fun:_ZN5blink13InlineTextBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZN5blink13RootInlineBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZNK5blink17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
