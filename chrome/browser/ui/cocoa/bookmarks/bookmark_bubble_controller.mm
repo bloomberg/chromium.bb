@@ -250,7 +250,8 @@ using base::UserMetricsAction;
     // |-remove:| calls |-close| so don't do it.
     [self remove:sender];
   } else {
-    [self ok:sender];
+    [self stopPulsingBookmarkButton];
+    [self dismissWithoutEditing:nil];
   }
 }
 
