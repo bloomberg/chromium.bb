@@ -1,0 +1,5 @@
+PASS: Debugger was enabled
+PASS: Listener was set and we expect that DOM agent was silently enabled.
+PASS: DOM agent was disabled successfully.
+PASS: The second attempt to disable DOM agent failed as expected.
+

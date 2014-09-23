@@ -1,0 +1,66 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.startDumpingProtocolMessages();
+    InspectorTest.startCollectingProtocolMessages();
+    InspectorTest.sendCommand("Debugger.enable", {}, setEventListenerBreakpoint);
+
+    function dumpCollectedMessages()
+    {
+        var messages = InspectorTest.stopCollectingProtocolMessages();
+        for (var i = 0; i < messages.length; ++i)
+            InspectorTest.log(messages[i].side + ": " + messages[i].message);
+    }
+
+    function finishIfError(message)
+    {
+        if (message.result)
+            return;
+        dumpCollectedMessages();
+        InspectorTest.log("FAIL: " + JSON.stringify(message));
+        InspectorTest.completeTest();
+    }
+
+    function setEventListenerBreakpoint(message)
+    {
+        finishIfError(message);
+        InspectorTest.log("PASS: Debugger was enabled");
+        InspectorTest.sendCommand("DOMDebugger.setEventListenerBreakpoint", {'eventName':'click'}, disableDOMAgent);
+    }
+
+    function disableDOMAgent(message)
+    {
+        finishIfError(message);
+        InspectorTest.log("PASS: Listener was set and we expect that DOM agent was silently enabled.");
+        InspectorTest.sendCommand("DOM.disable", {}, disableDOMAgent2);
+    }
+
+    function disableDOMAgent2(message)
+    {
+        finishIfError(message);
+        InspectorTest.log("PASS: DOM agent was disabled successfully.");
+        InspectorTest.sendCommand("DOM.disable", {}, finish);
+    }
+
+    function finish(message)
+    {
+        if (!message.error) {
+            dumpCollectedMessages();
+            InspectorTest.log("FAIL: we expected an error but it wasn't happen.");
+            InspectorTest.completeTest();
+            return;
+        }
+
+        InspectorTest.log("PASS: The second attempt to disable DOM agent failed as expected.");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

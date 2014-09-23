@@ -39,6 +39,26 @@ InspectorTest.startDumpingProtocolMessages = function()
     InspectorTest._dumpInspectorProtocolMessages = true;
 }
 
+InspectorTest.startCollectingProtocolMessages = function()
+{
+    InspectorTest._collectProtocolMessages = true;
+    InspectorTest._collectedMessages = [];
+}
+
+InspectorTest.pushMarkerMessage = function(message)
+{
+    if (InspectorTest._collectProtocolMessages)
+        InspectorTest._collectedMessages.push({"side": "test", "message": message});
+}
+
+InspectorTest.stopCollectingProtocolMessages = function()
+{
+    var messages = InspectorTest._collectedMessages;
+    InspectorTest._collectedMessages = [];
+    InspectorTest._collectProtocolMessages = false;
+    return messages;
+}
+
 /**
  * @param {string} method
  * @param {object} params
@@ -52,6 +72,8 @@ InspectorTest.sendCommand = function(method, params, handler)
                           "params": params,
                           "id": this._requestId };
 
+    if (InspectorTest._collectProtocolMessages)
+        InspectorTest._collectedMessages.push({"side": "frontend", "message": JSON.stringify(messageObject)});
     if (InspectorTest._dumpInspectorProtocolMessages)
         testRunner.logToStderr("frontend: " + JSON.stringify(messageObject));
     InspectorFrontendHost.sendMessageToBackend(JSON.stringify(messageObject));
@@ -140,9 +162,11 @@ InspectorTest.sendRawCommand = function(command, handler)
  */
 InspectorFrontendAPI.dispatchMessage = function(messageOrObject)
 {
-    if (InspectorTest._dumpInspectorProtocolMessages)
-        testRunner.logToStderr("backend: " + (typeof messageOrObject === "string" ? messageOrObject : JSON.stringify(messageOrObject)));
     var messageObject = (typeof messageOrObject === "string" ? JSON.parse(messageOrObject) : messageOrObject);
+    if (InspectorTest._collectProtocolMessages)
+        InspectorTest._collectedMessages.push({"side": "backend", "message": JSON.stringify(messageObject)});
+    if (InspectorTest._dumpInspectorProtocolMessages)
+        testRunner.logToStderr("backend: " + JSON.stringify(messageObject));
     var messageId = messageObject["id"];
     try {
         if (typeof messageId === "number") {

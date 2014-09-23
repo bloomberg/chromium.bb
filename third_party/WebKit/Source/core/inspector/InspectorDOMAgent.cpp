@@ -536,10 +536,13 @@ bool InspectorDOMAgent::enabled() const
     return m_state->getBoolean(DOMAgentState::domAgentEnabled);
 }
 
-void InspectorDOMAgent::disable(ErrorString*)
+void InspectorDOMAgent::disable(ErrorString* errorString)
 {
-    if (!enabled())
+    if (!enabled()) {
+        if (errorString)
+            *errorString = "DOM agent hasn't been enabled";
         return;
+    }
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
     reset();
     if (m_listener)

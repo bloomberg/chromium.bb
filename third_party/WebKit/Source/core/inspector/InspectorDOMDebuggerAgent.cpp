@@ -196,6 +196,14 @@ void InspectorDOMDebuggerAgent::setBreakpoint(ErrorString* error, const String& 
         return;
     }
 
+    // Backward compatibility. Some extensions expect that DOMDebuggerAgent is always enabled.
+    // See https://stackoverflow.com/questions/25764336/chrome-extension-domdebugger-api-does-not-work-anymore
+    if (!m_domAgent->enabled())
+        m_domAgent->enable(error);
+
+    if (error->length())
+        return;
+
     RefPtr<JSONObject> eventListenerBreakpoints = m_state->getObject(DOMDebuggerAgentState::eventListenerBreakpoints);
     RefPtr<JSONObject> breakpointsByTarget = ensurePropertyObject(eventListenerBreakpoints.get(), eventName);
     if (!targetName || targetName->isEmpty())
