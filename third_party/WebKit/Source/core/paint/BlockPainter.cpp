@@ -16,6 +16,7 @@
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -84,6 +85,12 @@ void BlockPainter::paintChild(RenderBox* child, PaintInfo& paintInfo, const Layo
     LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(child, paintOffset);
     if (!child->hasSelfPaintingLayer() && !child->isFloating())
         child->paint(paintInfo, childPoint);
+}
+
+void BlockPainter::paintChildrenOfFlexibleBox(RenderFlexibleBox& renderFlexibleBox, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    for (RenderBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
+        BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(child, paintInfo, paintOffset);
 }
 
 void BlockPainter::paintChildAsInlineBlock(RenderBox* child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)

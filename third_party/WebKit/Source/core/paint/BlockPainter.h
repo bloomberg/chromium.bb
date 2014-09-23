@@ -11,6 +11,7 @@ struct PaintInfo;
 class InlineBox;
 class LayoutPoint;
 class LayoutRect;
+class RenderFlexibleBox;
 class RenderBlock;
 class RenderBox;
 class RenderObject;
@@ -28,6 +29,7 @@ public:
     // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.
     // It is expected that the caller will call this function independent of the value of paintInfo.phase.
     static void paintAsInlineBlock(RenderObject*, PaintInfo&, const LayoutPoint&);
+    static void paintChildrenOfFlexibleBox(RenderFlexibleBox&, PaintInfo&, const LayoutPoint& paintOffset);
     static void paintInlineBox(InlineBox&, PaintInfo&, const LayoutPoint& paintOffset);
 
 private:

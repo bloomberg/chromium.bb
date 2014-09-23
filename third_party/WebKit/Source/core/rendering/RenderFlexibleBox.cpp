@@ -282,8 +282,7 @@ void RenderFlexibleBox::appendChildFrameRects(ChildFrameRects& childFrameRects)
 
 void RenderFlexibleBox::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next())
-        BlockPainter(*this).paintChildAsInlineBlock(child, paintInfo, paintOffset);
+    BlockPainter::paintChildrenOfFlexibleBox(*this, paintInfo, paintOffset);
 }
 
 void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineContext>& lineContexts)

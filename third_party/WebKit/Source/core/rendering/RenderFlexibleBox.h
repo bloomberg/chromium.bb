@@ -57,6 +57,8 @@ public:
 
     bool isHorizontalFlow() const;
 
+    OrderIterator& orderIterator() { return m_orderIterator; }
+
 protected:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
 
