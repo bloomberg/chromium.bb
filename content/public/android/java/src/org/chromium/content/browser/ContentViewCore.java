@@ -2816,6 +2816,19 @@ public class ContentViewCore
 
     @CalledByNative
     private void onSmartClipDataExtracted(String text, String html, Rect clipRect) {
+        // Translate the positions by the offsets introduced by location bar. Note that the
+        // coordinates are in dp scale, and that this definitely has the potential to be
+        // different from the offsets when extractSmartClipData() was called. However,
+        // as long as OEM has a UI that consumes all the inputs and waits until the
+        // callback is called, then there shouldn't be any difference.
+        // TODO(changwan): once crbug.com/416432 is resolved, try to pass offsets as
+        // separate params for extractSmartClipData(), and apply them not the new offset
+        // values in the callback.
+        final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
+        final int offsetXInDp = (int) (mSmartClipOffsetX / deviceScale);
+        final int offsetYInDp = (int) (mSmartClipOffsetY / deviceScale);
+        clipRect.offset(-offsetXInDp, -offsetYInDp);
+
         if (mSmartClipDataListener != null ) {
             mSmartClipDataListener.onSmartClipDataExtracted(text, html, clipRect);
         }
