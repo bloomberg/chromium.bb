@@ -72,8 +72,8 @@ void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
   if (!canvas)
     return;
   // Translate the origin of content_rect to that of source_rect.
-  canvas->translate(content_rect().x() - source_rect.x(),
-                    content_rect().y() - source_rect.y());
+  canvas->translate(paint_rect().x() - source_rect.x(),
+                    paint_rect().y() - source_rect.y());
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
   DrawPicture(canvas);

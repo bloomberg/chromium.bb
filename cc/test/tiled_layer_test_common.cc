@@ -29,16 +29,20 @@ void FakeLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
   layer_->Update();
 }
 
-FakeLayerUpdater::FakeLayerUpdater() : prepare_count_(0), update_count_(0) {}
+FakeLayerUpdater::FakeLayerUpdater()
+    : prepare_count_(0), update_count_(0), last_contents_width_scale_(0.f) {
+}
 
 FakeLayerUpdater::~FakeLayerUpdater() {}
 
-void FakeLayerUpdater::PrepareToUpdate(const gfx::Rect& content_rect,
+void FakeLayerUpdater::PrepareToUpdate(const gfx::Size& content_size,
+                                       const gfx::Rect& paint_rect,
                                        const gfx::Size& tile_size,
                                        float contents_width_scale,
                                        float contents_height_scale) {
   prepare_count_++;
-  last_update_rect_ = content_rect;
+  last_update_rect_ = paint_rect;
+  last_contents_width_scale_ = contents_width_scale;
   if (!rect_to_invalidate_.IsEmpty()) {
     layer_->InvalidateContentRect(rect_to_invalidate_);
     rect_to_invalidate_ = gfx::Rect();
