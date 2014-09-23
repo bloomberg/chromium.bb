@@ -598,7 +598,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (roleValue() == IgnoredRole)
         return true;
 
-    if (roleValue() == PresentationalRole || inheritsPresentationalRole())
+    if ((roleValue() == NoneRole || roleValue() == PresentationalRole) || inheritsPresentationalRole())
         return true;
 
     // An ARIA tree can only have tree items and static text as children.
@@ -2296,7 +2296,7 @@ bool AXRenderObject::inheritsPresentationalRole() const
 
     QualifiedName tagName = toElement(elementNode)->tagQName();
     if (tagName == ulTag || tagName == olTag || tagName == dlTag)
-        return parent->roleValue() == PresentationalRole;
+        return (parent->roleValue() == NoneRole || parent->roleValue() == PresentationalRole);
 
     return false;
 }

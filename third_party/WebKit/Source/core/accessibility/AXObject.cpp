@@ -95,6 +95,7 @@ static ARIARoleMap* createARIARoleMap()
         { "menuitemradio", MenuItemRole },
         { "note", NoteRole },
         { "navigation", NavigationRole },
+        { "none", NoneRole },
         { "option", ListBoxOptionRole },
         { "presentation", PresentationalRole },
         { "progressbar", ProgressIndicatorRole },

@@ -126,6 +126,7 @@ enum AccessibilityRole {
     MenuListPopupRole,
     MenuRole,
     NavigationRole,
+    NoneRole,
     NoteRole,
     OutlineRole,
     ParagraphRole,

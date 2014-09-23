@@ -245,7 +245,7 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
     AccessibilityRole role = ariaRoleToWebCoreRole(ariaRole);
 
     // ARIA states if an item can get focus, it should not be presentational.
-    if (role == PresentationalRole && canSetFocusAttribute())
+    if ((role == NoneRole || role == PresentationalRole) && canSetFocusAttribute())
         return UnknownRole;
 
     if (role == ButtonRole)
