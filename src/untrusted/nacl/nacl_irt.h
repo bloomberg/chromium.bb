@@ -25,8 +25,9 @@ extern struct nacl_irt_tls __libnacl_irt_tls;
 extern struct nacl_irt_clock __libnacl_irt_clock;
 extern struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
 
-/* This declaration is defined within libpthread. */
+/* These declarations are defined within libpthread. */
 extern struct nacl_irt_thread __libnacl_irt_thread;
+extern struct nacl_irt_futex __libnacl_irt_futex;
 
 extern int __libnacl_irt_query(const char *interface,
                                void *table, size_t table_size);

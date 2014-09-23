@@ -81,5 +81,5 @@ const struct nacl_irt_futex nacl_irt_futex = {
   nacl_irt_futex_wake,
 };
 
-extern struct nacl_irt_futex __nc_irt_futex
+extern struct nacl_irt_futex __libnacl_irt_futex
   __attribute__((alias("nacl_irt_futex")));

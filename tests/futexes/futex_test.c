@@ -17,6 +17,13 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
+#if TEST_IRT_FUTEX
+#elif TEST_FUTEX_SYSCALLS
+# include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#elif defined(__GLIBC__)
+#else
+# include "native_client/src/untrusted/nacl/nacl_irt.h"
+#endif
 
 /*
  * This tests the futex implementations used in nacl-glibc and
@@ -53,8 +60,6 @@ static int futex_wake(volatile int *addr, int nwake, int *count) {
 }
 
 #elif TEST_FUTEX_SYSCALLS
-
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 static int futex_wait(volatile int *addr, int val,
                       const struct timespec *abstime) {
@@ -98,15 +103,13 @@ static int futex_wake(volatile int *addr, int nwake, int *count) {
 
 #else
 
-#include "native_client/src/untrusted/pthread/pthread_internal.h"
-
 static int futex_wait(volatile int *addr, int val,
                       const struct timespec *abstime) {
-  return __nc_irt_futex.futex_wait_abs(addr, val, abstime);
+  return __libnacl_irt_futex.futex_wait_abs(addr, val, abstime);
 }
 
 static int futex_wake(volatile int *addr, int nwake, int *count) {
-  return __nc_irt_futex.futex_wake(addr, nwake, count);
+  return __libnacl_irt_futex.futex_wake(addr, nwake, count);
 }
 
 #endif

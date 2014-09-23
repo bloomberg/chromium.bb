@@ -12,8 +12,6 @@
 
 struct nc_combined_tdb;
 
-extern struct nacl_irt_futex __nc_irt_futex;
-
 extern int __nc_thread_initialized;
 extern pthread_t __nc_initial_thread_id;
 

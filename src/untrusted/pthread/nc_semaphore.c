@@ -84,7 +84,7 @@ int sem_wait(sem_t *sem) {
 
   __sync_fetch_and_add(&sem->nwaiters, 1);
   do {
-    __nc_irt_futex.futex_wait_abs(&sem->count, 0, NULL);
+    __libnacl_irt_futex.futex_wait_abs(&sem->count, 0, NULL);
   } while (!decrement_if_positive(&sem->count));
   __sync_fetch_and_sub(&sem->nwaiters, 1);
   return 0;
@@ -118,7 +118,7 @@ int sem_post(sem_t *sem) {
    */
   if (sem->nwaiters != 0) {
     int woken_count;
-    __nc_irt_futex.futex_wake(&sem->count, 1, &woken_count);
+    __libnacl_irt_futex.futex_wake(&sem->count, 1, &woken_count);
   }
   return 0;
 }

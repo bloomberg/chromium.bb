@@ -113,8 +113,9 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only,
           __sync_val_compare_and_swap(&mutex->mutex_state,
                                       LOCKED_WITHOUT_WAITERS,
                                       LOCKED_WITH_WAITERS) != UNLOCKED) {
-        int rc = __nc_irt_futex.futex_wait_abs(&mutex->mutex_state,
-                                               LOCKED_WITH_WAITERS, abstime);
+        int rc = __libnacl_irt_futex.futex_wait_abs(&mutex->mutex_state,
+                                                    LOCKED_WITH_WAITERS,
+                                                    abstime);
         if (abstime != NULL && rc == ETIMEDOUT)
           return ETIMEDOUT;
       }
@@ -233,7 +234,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
      */
     mutex->mutex_state = UNLOCKED;
     int woken;
-    __nc_irt_futex.futex_wake(&mutex->mutex_state, 1, &woken);
+    __libnacl_irt_futex.futex_wake(&mutex->mutex_state, 1, &woken);
   }
   return 0;
 }

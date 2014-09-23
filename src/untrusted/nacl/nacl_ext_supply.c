@@ -24,6 +24,7 @@ extern struct nacl_irt_basic __libnacl_irt_basic __attribute__((weak));
 extern struct nacl_irt_fdio __libnacl_irt_fdio __attribute__((weak));
 extern struct nacl_irt_memory __libnacl_irt_memory __attribute__((weak));
 extern struct nacl_irt_thread __libnacl_irt_thread __attribute__((weak));
+extern struct nacl_irt_futex __libnacl_irt_futex __attribute__((weak));
 extern struct nacl_irt_clock __libnacl_irt_clock __attribute__((weak));
 
 /* Declarations are listed in the same order as in irt_dev.h. */
@@ -62,6 +63,10 @@ static const struct nacl_irt_ext_struct nacl_irt_ext_structs[] = {
     .interface_ident = NACL_IRT_THREAD_v0_1,
     .table = &__libnacl_irt_thread,
     .tablesize = sizeof(__libnacl_irt_thread),
+  }, {
+    .interface_ident = NACL_IRT_FUTEX_v0_1,
+    .table = &__libnacl_irt_futex,
+    .tablesize = sizeof(__libnacl_irt_futex),
   }, {
     .interface_ident = NACL_IRT_CLOCK_v0_1,
     .table = &__libnacl_irt_clock,

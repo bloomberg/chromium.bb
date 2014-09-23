@@ -61,7 +61,8 @@ static int pulse(pthread_cond_t *cond, int count) {
   __sync_fetch_and_add(&cond->sequence_number, 1);
 
   int unused_woken_count;
-  __nc_irt_futex.futex_wake(&cond->sequence_number, count, &unused_woken_count);
+  __libnacl_irt_futex.futex_wake(&cond->sequence_number, count,
+                                 &unused_woken_count);
   return 0;
 }
 
@@ -90,8 +91,8 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
   if (err != 0)
     return err;
 
-  int status = __nc_irt_futex.futex_wait_abs(&cond->sequence_number,
-                                             old_value, abstime);
+  int status = __libnacl_irt_futex.futex_wait_abs(&cond->sequence_number,
+                                                  old_value, abstime);
 
   err = pthread_mutex_lock(mutex);
   if (err != 0)

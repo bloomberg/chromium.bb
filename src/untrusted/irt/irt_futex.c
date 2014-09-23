@@ -33,5 +33,5 @@ const struct nacl_irt_futex nacl_irt_futex = {
  * This name is used inside the IRT itself and in libpthread_private,
  * by the private copies of nc_mutex and nc_cond.
  */
-extern struct nacl_irt_futex __nc_irt_futex
+extern struct nacl_irt_futex __libnacl_irt_futex
   __attribute__((alias("nacl_irt_futex")));
