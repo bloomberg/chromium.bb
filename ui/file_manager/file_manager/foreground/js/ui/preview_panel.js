@@ -412,7 +412,7 @@ PreviewPanel.Thumbnails.prototype = {
 
   /**
    * Set visibility of the thumbnails.
-   * @param {boolean} hidden Whether to hide the thumbnails or not.
+   * @param {boolean} value Whether to hide the thumbnails or not.
    */
   set hidden(value) {
     this.element_.hidden = value;

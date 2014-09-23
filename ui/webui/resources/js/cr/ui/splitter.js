@@ -38,7 +38,6 @@ cr.define('cr.ui', function() {
    * not take the page zoom into account so it returns the physical pixels
    * instead of the logical pixel size.
    * @param {!Document} doc The document to get the page zoom factor for.
-   * @param {number} The zoom factor of the document.
    */
   function getZoomFactor(doc) {
     var dummyElement = doc.createElement('div');
@@ -209,7 +208,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles splitter moves. Updates width of the element being resized.
-     * @param {number} changeX The change of splitter horizontal position.
+     * @param {number} deltaX The change of splitter horizontal position.
      * @protected
      */
     handleSplitterDragMove: function(deltaX) {

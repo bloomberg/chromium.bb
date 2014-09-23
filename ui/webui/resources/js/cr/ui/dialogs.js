@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui.dialogs', function() {
-
+  /**
+   * @constructor
+   */
   function BaseDialog(parentNode) {
     this.parentNode_ = parentNode;
     this.document_ = parentNode.ownerDocument;
@@ -205,7 +207,10 @@ cr.define('cr.ui.dialogs', function() {
     }, 0);
   };
 
-  BaseDialog.prototype.hide = function(onHide) {
+  /**
+   * @param {Function=} opt_onHide
+   */
+  BaseDialog.prototype.hide = function(opt_onHide) {
     // Restore focusability.
     for (var i = 0; i < this.deactivatedNodes_.length; i++) {
       var node = this.deactivatedNodes_[i];
@@ -232,13 +237,15 @@ cr.define('cr.ui.dialogs', function() {
     setTimeout(function() {
       // Wait until the transition is done before removing the dialog.
       self.parentNode_.removeChild(self.container_);
-      if (onHide)
-        onHide();
+      if (opt_onHide)
+        opt_onHide();
     }, BaseDialog.ANIMATE_STABLE_DURATION);
   };
 
   /**
    * AlertDialog contains just a message and an ok button.
+   * @constructor
+   * @extends {cr.ui.dialogs.BaseDialog}
    */
   function AlertDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);
@@ -253,6 +260,8 @@ cr.define('cr.ui.dialogs', function() {
 
   /**
    * ConfirmDialog contains a message, an ok button, and a cancel button.
+   * @constructor
+   * @extends {cr.ui.dialogs.BaseDialog}
    */
   function ConfirmDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);
@@ -263,6 +272,8 @@ cr.define('cr.ui.dialogs', function() {
   /**
    * PromptDialog contains a message, a text input, an ok button, and a
    * cancel button.
+   * @constructor
+   * @extends {cr.ui.dialogs.BaseDialog}
    */
   function PromptDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);

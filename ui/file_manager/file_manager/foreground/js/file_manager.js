@@ -2376,7 +2376,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @param {Event} Unmount event.
+   * @param {Event} event Unmount event.
    * @private
    */
   FileManager.prototype.onExternallyUnmounted_ = function(event) {
@@ -2621,7 +2621,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Called when a dialog is shown or hidden.
-   * @param {boolean} flag True if a dialog is shown, false if hidden.
+   * @param {boolean} show True if a dialog is shown, false if hidden.
    */
   FileManager.prototype.onDialogShownOrHidden = function(show) {
     if (show) {
@@ -3036,7 +3036,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @param {Event} Key event.
    * @private
    */
   FileManager.prototype.onFilenameInputInput_ = function() {
@@ -3044,7 +3043,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @param {Event} Key event.
+   * @param {Event} event Key event.
    * @private
    */
   FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
@@ -3053,7 +3052,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @param {Event} Focus event.
+   * @param {Event} event Focus event.
    * @private
    */
   FileManager.prototype.onFilenameInputFocus_ = function(event) {
@@ -3893,7 +3892,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * Performs search and displays results.
    *
-   * @param {string} query Query that will be searched for.
+   * @param {string} searchString Query that will be searched for.
    * @param {function()=} opt_onSearchRescan Function that will be called when
    *     the search directory is rescanned (i.e. search results are displayed).
    * @param {function()=} opt_onClearSearch Function to be called when search

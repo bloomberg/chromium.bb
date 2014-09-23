@@ -142,8 +142,8 @@ ThumbnailLoader.THUMBNAIL_MAX_HEIGHT = 500;
  *     for downloading thumbnails. By default optimizations are disabled.
  * @param {function(Image, Object)=} opt_onSuccess Success callback,
  *     accepts the image and the transform.
- * @param {function=} opt_onError Error callback.
- * @param {function=} opt_onGeneric Callback for generic image used.
+ * @param {function()=} opt_onError Error callback.
+ * @param {function()=} opt_onGeneric Callback for generic image used.
  */
 ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
     opt_onSuccess, opt_onError, opt_onGeneric) {

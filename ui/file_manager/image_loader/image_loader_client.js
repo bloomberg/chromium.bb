@@ -123,7 +123,7 @@ ImageLoaderClient.prototype.handleMessage_ = function(message) {
  * @param {function} callback Callback used to return response.
  * @param {Object=} opt_options Loader options, such as: scale, maxHeight,
  *     width, height and/or cache.
- * @param {function=} opt_isValid Function returning false in case
+ * @param {function(): boolean=} opt_isValid Function returning false in case
  *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.
  */

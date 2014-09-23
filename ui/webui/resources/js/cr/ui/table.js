@@ -216,7 +216,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Ensures that a given index is inside the viewport.
-     * @param {number} index The index of the item to scroll into view.
+     * @param {number} i The index of the item to scroll into view.
      * @return {boolean} Whether any scrolling was needed.
      */
     scrollIndexIntoView: function(i) {
@@ -261,7 +261,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Sort data by the given column.
-     * @param {number} index The index of the column to sort by.
+     * @param {number} i The index of the column to sort by.
      */
     sort: function(i) {
       var cm = this.columnModel_;

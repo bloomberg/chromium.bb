@@ -8,7 +8,7 @@
  * This class is an extended class, to manage the status of the dialogs.
  *
  * @param {HTMLElement} parentNode Parent node of the dialog.
- * @extends {cr.ui.dialogs.FileManagerDialogBase}
+ * @extends {cr.ui.dialogs.BaseDialog}
  * @constructor
  */
 var FileManagerDialogBase = function(parentNode) {

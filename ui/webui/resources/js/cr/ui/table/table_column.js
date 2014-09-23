@@ -11,27 +11,22 @@ cr.define('cr.ui.table', function() {
 
   /**
    * A table column that wraps column ids and settings.
-   * @param {!Array} columnIds Array of column ids.
+   * @param {string} id
+   * @param {string} name
+   * @param {number} width
+   * @param {boolean=} opt_endAlign
    * @constructor
-   * @extends {EventTarget}
+   * @extends {cr.EventTarget}
    */
-  function TableColumn(id, name, width, endAlign) {
+  function TableColumn(id, name, width, opt_endAlign) {
     this.id_ = id;
     this.name_ = name;
     this.width_ = width;
-    this.endAlign_ = endAlign;
+    this.endAlign_ = !!opt_endAlign;
   }
 
   TableColumn.prototype = {
     __proto__: EventTarget.prototype,
-
-    id_: null,
-
-    name_: null,
-
-    width_: null,
-
-    endAlign_: false,
 
     defaultOrder_: 'asc',
 

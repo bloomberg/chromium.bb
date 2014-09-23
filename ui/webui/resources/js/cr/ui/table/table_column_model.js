@@ -57,7 +57,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Sets name of column at the given index.
      * @param {number} index The index of the column.
-     * @param {string} Column name.
+     * @param {string} name Column name.
      */
     setName: function(index, name) {
       if (index < 0 || index >= this.columns_.size - 1)
@@ -90,7 +90,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Sets width of column at the given index.
      * @param {number} index The index of the column.
-     * @param {number} Column width.
+     * @param {number} width Column width.
      */
     setWidth: function(index, width) {
       if (index < 0 || index >= this.columns_.size - 1)
@@ -131,7 +131,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Render the column header.
      * @param {number} index The index of the column.
-     * @param {cr.ui.Table} Owner table.
+     * @param {cr.ui.Table} table Owner table.
      */
     renderHeader: function(index, table) {
       var c = this.columns_[index];

@@ -222,7 +222,7 @@ FolderShortcutsDataModel.prototype = {
    * Returns the entries in the given range as a new array instance. The
    * arguments and return value are compatible with Array.slice().
    *
-   * @param {number} start Where to start the selection.
+   * @param {number} begin Where to start the selection.
    * @param {number=} opt_end Where to end the selection.
    * @return {Array.<Entry>} Entries in the selected range.
    */
@@ -452,7 +452,7 @@ FolderShortcutsDataModel.prototype = {
 
   /**
    * Fires a 'permuted' event, which is compatible with cr.ui.ArrayDataModel.
-   * @param {Array.<number>} Permutation array.
+   * @param {Array.<number>} permutation Permutation array.
    */
   firePermutedEvent_: function(permutation) {
     var permutedEvent = new Event('permuted');

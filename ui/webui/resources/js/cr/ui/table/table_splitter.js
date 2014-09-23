@@ -40,7 +40,7 @@ cr.define('cr.ui', function() {
     /**
      * Handles start of the splitter dragging.
      * Saves starting width of the column and changes the cursor.
-     * @param {Event} e Splitter event.
+     * @override
      */
     handleSplitterDragStart: function() {
       var cm = this.table_.columnModel;
@@ -52,7 +52,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles spliter moves. Sets new width of the column.
-     * @param {Event} e Splitter event.
+     * @override
      */
     handleSplitterDragMove: function(deltaX) {
       this.table_.columnModel.setWidth(this.columnIndex,
@@ -61,7 +61,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles end of the splitter dragging. Restores cursor.
-     * @param {Event} e Splitter event.
+     * @override
      */
     handleSplitterDragEnd: function() {
       this.ownerDocument.documentElement.classList.remove('col-resize');
