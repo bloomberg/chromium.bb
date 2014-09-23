@@ -68,8 +68,27 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   friend class AudioRendererMixerManagerTest;
 
   // Define a key so that only those AudioRendererMixerInputs from the same
-  // RenderView and with the same AudioParameters can be mixed together.
+  // RenderView and with the same AudioParameters can be mixed together.  The
+  // first value is the RenderViewId.
   typedef std::pair<int, media::AudioParameters> MixerKey;
+
+  // Custom compare operator for the AudioRendererMixerMap.  Allows reuse of
+  // mixers where only irrelevant keys mismatch; e.g., effects, bits per sample.
+  struct MixerKeyCompare {
+    bool operator()(const MixerKey& a, const MixerKey& b) const {
+      if (a.first != b.first)
+        return a.first < b.first;
+      if (a.second.sample_rate() != b.second.sample_rate())
+        return a.second.sample_rate() < b.second.sample_rate();
+      if (a.second.channels() != b.second.channels())
+        return a.second.channels() < b.second.channels();
+
+      // Ignore effects(), bits_per_sample(), format(), and frames_per_buffer(),
+      // these parameters do not affect mixer reuse.  All AudioRendererMixer
+      // units disable FIFO, so frames_per_buffer() can be safely ignored.
+      return a.second.channel_layout() < b.second.channel_layout();
+    }
+  };
 
   // Map of MixerKey to <AudioRendererMixer, Count>.  Count allows
   // AudioRendererMixerManager to keep track explicitly (v.s. RefCounted which
@@ -78,7 +97,8 @@ class CONTENT_EXPORT AudioRendererMixerManager {
     media::AudioRendererMixer* mixer;
     int ref_count;
   };
-  typedef std::map<MixerKey, AudioRendererMixerReference> AudioRendererMixerMap;
+  typedef std::map<MixerKey, AudioRendererMixerReference, MixerKeyCompare>
+      AudioRendererMixerMap;
 
   // Overrides the AudioRendererSink implementation for unit testing.
   void SetAudioRendererSinkForTesting(media::AudioRendererSink* sink);

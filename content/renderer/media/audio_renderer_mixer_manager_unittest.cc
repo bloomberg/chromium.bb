@@ -35,7 +35,7 @@ class AudioRendererMixerManagerTest : public testing::Test {
   AudioRendererMixerManagerTest()
       : fake_config_(AudioParameters(), AudioParameters()) {
     AudioParameters output_params(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO,
         kSampleRate,
         16,
@@ -85,7 +85,7 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   EXPECT_EQ(mixer_count(), 0);
 
   media::AudioParameters params1(
-      media::AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
+      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
       kBitsPerChannel, kBufferSize);
 
   media::AudioRendererMixer* mixer1 = GetMixer(kRenderViewId, params1);
@@ -101,7 +101,7 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   EXPECT_EQ(mixer_count(), 1);
 
   media::AudioParameters params2(
-      media::AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate * 2,
+      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate * 2,
       kBitsPerChannel, kBufferSize * 2);
   media::AudioRendererMixer* mixer2 = GetMixer(kRenderViewId, params2);
   ASSERT_TRUE(mixer2);
@@ -117,6 +117,54 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   EXPECT_EQ(mixer_count(), 0);
 }
 
+// Verify GetMixer() correctly deduplicates mixer with irrelevant AudioParameter
+// differences.
+TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
+  EXPECT_CALL(*mock_sink_.get(), Start()).Times(2);
+  EXPECT_CALL(*mock_sink_.get(), Stop()).Times(2);
+  EXPECT_EQ(mixer_count(), 0);
+
+  media::AudioParameters params1(AudioParameters::AUDIO_PCM_LINEAR,
+                                 kChannelLayout,
+                                 kSampleRate,
+                                 kBitsPerChannel,
+                                 kBufferSize);
+  media::AudioRendererMixer* mixer1 = GetMixer(kRenderViewId, params1);
+  ASSERT_TRUE(mixer1);
+  EXPECT_EQ(mixer_count(), 1);
+
+  // Different formats, bit depths, and buffer sizes should not result in a
+  // different mixer.
+  media::AudioParameters params2(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 kChannelLayout,
+                                 kSampleRate,
+                                 kBitsPerChannel * 2,
+                                 kBufferSize * 2,
+                                 AudioParameters::NO_EFFECTS);
+  EXPECT_EQ(mixer1, GetMixer(kRenderViewId, params2));
+  EXPECT_EQ(mixer_count(), 1);
+  RemoveMixer(kRenderViewId, params2);
+  EXPECT_EQ(mixer_count(), 1);
+
+  // Modify some parameters that do matter.
+  media::AudioParameters params3(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 media::CHANNEL_LAYOUT_MONO,
+                                 kSampleRate * 2,
+                                 kBitsPerChannel,
+                                 kBufferSize,
+                                 AudioParameters::NO_EFFECTS);
+  ASSERT_NE(params3.channel_layout(), params1.channel_layout());
+
+  EXPECT_NE(mixer1, GetMixer(kRenderViewId, params3));
+  EXPECT_EQ(mixer_count(), 2);
+  RemoveMixer(kRenderViewId, params3);
+  EXPECT_EQ(mixer_count(), 1);
+
+  // Remove final mixer.
+  RemoveMixer(kRenderViewId, params1);
+  EXPECT_EQ(mixer_count(), 0);
+}
+
 // Verify CreateInput() provides AudioRendererMixerInput with the appropriate
 // callbacks and they are working as expected.  Also, verify that separate
 // mixers are created for separate render views, even though the AudioParameters
@@ -128,7 +176,7 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(2);
 
   media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
+      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
       kBitsPerChannel, kBufferSize);
 
   // Create two mixer inputs and ensure this doesn't instantiate any mixers yet.
