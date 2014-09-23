@@ -101,10 +101,9 @@ const int numberOfPagesToConsiderForCoalescing = 100;
 enum CallbackInvocationMode {
     GlobalMarking,
     ThreadLocalMarking,
-    PostMarking,
-    WeaknessProcessing,
 };
 
+class CallbackStack;
 class HeapStats;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
@@ -787,94 +786,6 @@ private:
     void clearMemory(PageMemory*);
 };
 
-// The CallbackStack contains all the visitor callbacks used to trace and mark
-// objects. A specific CallbackStack instance contains at most bufferSize elements.
-// If more space is needed a new CallbackStack instance is created and chained
-// together with the former instance. I.e. a logical CallbackStack can be made of
-// multiple chained CallbackStack object instances.
-// There are two logical callback stacks. One containing all the marking callbacks and
-// one containing the weak pointer callbacks.
-class CallbackStack {
-public:
-    CallbackStack(CallbackStack** first)
-        : m_limit(&(m_buffer[bufferSize]))
-        , m_current(&(m_buffer[0]))
-        , m_next(*first)
-    {
-#if ENABLE(ASSERT)
-        clearUnused();
-#endif
-        *first = this;
-    }
-
-    ~CallbackStack();
-    void clearUnused();
-
-    bool isEmpty();
-
-    CallbackStack* takeCallbacks(CallbackStack** first);
-
-    class Item {
-    public:
-        Item() { }
-        Item(void* object, VisitorCallback callback)
-            : m_object(object)
-            , m_callback(callback)
-        {
-        }
-        void* object() { return m_object; }
-        VisitorCallback callback() { return m_callback; }
-
-    private:
-        void* m_object;
-        VisitorCallback m_callback;
-    };
-
-    static void init(CallbackStack** first);
-    static void shutdown(CallbackStack** first);
-    static void clear(CallbackStack** first)
-    {
-        if (!(*first)->isEmpty()) {
-            shutdown(first);
-            init(first);
-        }
-    }
-    template<CallbackInvocationMode Mode> bool popAndInvokeCallback(CallbackStack** first, Visitor*);
-    static void invokeCallbacks(CallbackStack** first, Visitor*);
-
-    Item* allocateEntry(CallbackStack** first)
-    {
-        if (m_current < m_limit)
-            return m_current++;
-        return (new CallbackStack(first))->allocateEntry(first);
-    }
-
-#if ENABLE(ASSERT)
-    bool hasCallbackForObject(const void*);
-#endif
-
-    bool numberOfBlocksExceeds(int blocks)
-    {
-        CallbackStack* current = this;
-        for (int i = 0; i < blocks; ++i) {
-            if (!current->m_next)
-                return false;
-            current = current->m_next;
-        }
-        return true;
-    }
-
-private:
-    void invokeOldestCallbacks(Visitor*);
-    bool currentBlockIsEmpty() { return m_current == &(m_buffer[0]); }
-
-    static const size_t bufferSize = 200;
-    Item m_buffer[bufferSize];
-    Item* m_limit;
-    Item* m_current;
-    CallbackStack* m_next;
-};
-
 // Non-template super class used to pass a heap around to other classes.
 class BaseHeap {
 public:
@@ -1085,7 +996,7 @@ public:
 
     // Pop the top of the marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
-    template<CallbackInvocationMode Mode> static bool popAndInvokeTraceCallback(Visitor*);
+    template<CallbackInvocationMode Mode> static bool popAndInvokeTraceCallback(CallbackStack**, Visitor*);
 
     // Remove an item from the post-marking callback stack and call
     // the callback with the visitor and the object pointer. Returns

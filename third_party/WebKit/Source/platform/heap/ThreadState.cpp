@@ -34,6 +34,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/AddressSanitizer.h"
+#include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
@@ -693,7 +694,16 @@ void ThreadState::pushWeakObjectPointerCallback(void* object, WeakPointerCallbac
 
 bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
 {
-    return m_weakCallbackStack->popAndInvokeCallback<WeaknessProcessing>(&m_weakCallbackStack, visitor);
+    // For weak processing we should never reach orphaned pages since orphaned
+    // pages are not traced and thus objects on those pages are never be
+    // registered as objects on orphaned pages. We cannot assert this here since
+    // we might have an off-heap collection. We assert it in
+    // Heap::pushWeakObjectPointerCallback.
+    if (CallbackStack::Item* item = m_weakCallbackStack->pop(&m_weakCallbackStack)) {
+        item->call(visitor);
+        return true;
+    }
+    return false;
 }
 
 WrapperPersistentRegion* ThreadState::takeWrapperPersistentRegion()
