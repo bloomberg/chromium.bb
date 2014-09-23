@@ -6,6 +6,7 @@
 #define UI_EVENTS_GESTURE_DETECTION_BITSET_32_H_
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 namespace ui {
 
@@ -20,7 +21,10 @@ struct BitSet32 {
   explicit inline BitSet32(uint32_t value) : value(value) {}
 
   // Gets the value associated with a particular bit index.
-  static inline uint32_t value_for_bit(uint32_t n) { return 0x80000000 >> n; }
+  static inline uint32_t value_for_bit(uint32_t n) {
+    DCHECK_LE(n, 31U);
+    return 0x80000000 >> n;
+  }
 
   // Clears the bit set.
   inline void clear() { value = 0; }
@@ -86,6 +90,7 @@ struct BitSet32 {
   // Gets the inde of the specified bit in the set, which is the number of
   // marked bits that appear before the specified bit.
   inline uint32_t get_index_of_bit(uint32_t n) const {
+    DCHECK_LE(n, 31U);
     return popcnt(value & ~(0xffffffffUL >> n));
   }
 

@@ -919,7 +919,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   // Ack'ing the outstanding event should flush the pending touch queue.
   InputHostMsg_HandleInputEvent_ACK_Params ack;
   ack.type = blink::WebInputEvent::TouchStart;
-  ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+  ack.state = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   EXPECT_FALSE(widget_host_->ShouldForwardTouchEvent());
 
