@@ -374,6 +374,7 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       dispatching_touch_ack_(NULL),
       dispatching_touch_(false),
       has_handlers_(true),
+      drop_remaining_touches_in_sequence_(false),
       touchmove_slop_suppressor_(new TouchMoveSlopSuppressor(
           config.touchmove_slop_suppression_length_dips)),
       send_touch_events_async_(false),
