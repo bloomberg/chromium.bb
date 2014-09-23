@@ -359,6 +359,11 @@ void ScriptStreamer::notifyFinished(Resource* resource)
 {
     ASSERT(isMainThread());
     ASSERT(m_resource == resource);
+    // A special case: empty scripts. We didn't receive any data before this
+    // notification. In that case, there won't be a "parsing complete"
+    // notification either, and we should not wait for it.
+    if (!m_firstDataChunkReceived)
+        suppressStreaming();
     m_stream->didFinishLoading();
     m_loadingFinished = true;
     notifyFinishedToClient();

@@ -259,6 +259,28 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming)
     EXPECT_FALSE(sourceCode.streamer());
 }
 
+TEST_F(ScriptStreamingTest, EmptyScripts)
+{
+    // Empty scripts should also be streamed properly, that is, the upper layer
+    // (ScriptResourceClient) should be notified when an empty script has been
+    // loaded.
+    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    TestScriptResourceClient client;
+    pendingScript().watchForLoad(&client);
+    EXPECT_TRUE(started);
+
+    // Finish the script without sending any data.
+    finish();
+    // The finished notification should arrive immediately and not be cycled
+    // through a background thread.
+    EXPECT_TRUE(client.finished());
+
+    bool errorOccurred = false;
+    ScriptSourceCode sourceCode = pendingScript().getSource(KURL(), errorOccurred);
+    EXPECT_FALSE(errorOccurred);
+    EXPECT_FALSE(sourceCode.streamer());
+}
+
 } // namespace
 
 } // namespace blink
