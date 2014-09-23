@@ -116,15 +116,20 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlThreatType) {
             SafeBrowsingDatabaseManager::GetHashThreatType(
                 kSafeHostHash, full_hashes));
 
+  size_t index = 100;
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
             SafeBrowsingDatabaseManager::GetUrlThreatType(
-                kMalwareUrl, full_hashes));
+                kMalwareUrl, full_hashes, &index));
+  EXPECT_EQ(0U, index);
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
             SafeBrowsingDatabaseManager::GetUrlThreatType(
-                kPhishingUrl, full_hashes));
+                kPhishingUrl, full_hashes, &index));
+  EXPECT_EQ(1U, index);
 
+  index = 100;
   EXPECT_EQ(SB_THREAT_TYPE_SAFE,
             SafeBrowsingDatabaseManager::GetUrlThreatType(
-                kSafeUrl, full_hashes));
+                kSafeUrl, full_hashes, &index));
+  EXPECT_EQ(100U, index);
 }

@@ -439,8 +439,6 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[2].list_id);
 
   // Test metadata parsing.
-  // TODO(shess): Currently the code doesn't actually put the metadata anywhere,
-  // this is just testing that metadata doesn't break parsing.
   const std::string get_hash3(base::StringPrintf(
       "45\n"
       "%s:32:2:m\n"
@@ -459,14 +457,17 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[0].list_id);
+  EXPECT_EQ(std::string("ab"), full_hashes[0].metadata);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[1].list_id);
+  EXPECT_EQ(std::string("xy"), full_hashes[1].metadata);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[2].list_id);
+  EXPECT_EQ(std::string(), full_hashes[2].metadata);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
@@ -528,6 +529,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
                    "0123456789hashhashhashhashhashha",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[0].list_id);
+  EXPECT_EQ(std::string(), full_hashes[0].metadata);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestFormatHash) {

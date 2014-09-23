@@ -499,12 +499,10 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
       || io_data->IsDataReductionProxyEnabled()
 #endif
   ) {
-    bool is_subresource_request =
-        resource_type != content::RESOURCE_TYPE_MAIN_FRAME;
     content::ResourceThrottle* throttle =
         SafeBrowsingResourceThrottleFactory::Create(request,
                                                     resource_context,
-                                                    is_subresource_request,
+                                                    resource_type,
                                                     safe_browsing_.get());
     if (throttle)
       throttles->push_back(throttle);

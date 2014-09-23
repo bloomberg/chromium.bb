@@ -26,7 +26,7 @@ static const int kCheckUrlTimeoutMs = 5000;
 
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
-    bool is_subresource,
+    content::ResourceType resource_type,
     SafeBrowsingService* safe_browsing)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
@@ -34,7 +34,8 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
       database_manager_(safe_browsing->database_manager()),
       ui_manager_(safe_browsing->ui_manager()),
       request_(request),
-      is_subresource_(is_subresource) {
+      is_subresource_(resource_type != content::RESOURCE_TYPE_MAIN_FRAME),
+      is_subframe_(resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
 }
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {
@@ -80,7 +81,9 @@ const char* SafeBrowsingResourceThrottle::GetNameForLogging() const {
 // SafeBrowsingService::Client implementation, called on the IO thread once
 // the URL has been classified.
 void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
-    const GURL& url, SBThreatType threat_type) {
+    const GURL& url,
+    SBThreatType threat_type,
+    const std::string& metadata) {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
   CHECK(url == url_being_checked_) << "Was expecting: " << url_being_checked_
@@ -120,7 +123,9 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
   resource.original_url = request_->original_url();
   resource.redirect_urls = redirect_urls_;
   resource.is_subresource = is_subresource_;
+  resource.is_subframe = is_subframe_;
   resource.threat_type = threat_type;
+  resource.threat_metadata = metadata;
   resource.callback = base::Bind(
       &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   resource.render_process_host_id = info->GetChildID();
@@ -213,7 +218,8 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
   CHECK(defer_state_ != DEFERRED_NONE);
 
   database_manager_->CancelCheck(this);
-  OnCheckBrowseUrlResult(url_being_checked_, SB_THREAT_TYPE_SAFE);
+  OnCheckBrowseUrlResult(
+      url_being_checked_, SB_THREAT_TYPE_SAFE, std::string());
 }
 
 void SafeBrowsingResourceThrottle::ResumeRequest() {

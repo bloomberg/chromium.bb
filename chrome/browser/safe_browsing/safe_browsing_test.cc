@@ -350,7 +350,8 @@ class SafeBrowsingServerTestHelper
 
   // Callbacks for SafeBrowsingDatabaseManager::Client.
   virtual void OnCheckBrowseUrlResult(const GURL& url,
-                                      SBThreatType threat_type) OVERRIDE {
+                                      SBThreatType threat_type,
+                                      const std::string& metadata) OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     EXPECT_TRUE(safe_browsing_test_->is_checked_url_in_db());
     safe_browsing_test_->set_is_checked_url_safe(

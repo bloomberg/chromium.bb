@@ -1,0 +1,23 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package safe_browsing;
+
+// Everything below this comment was copied from the page
+// <https://developers.google.com/safe-browsing/developers_guide_v3>,
+// section "Full Hash Metadata".
+
+// Metadata for the goog-malware-shavar list.
+message MalwarePatternType {
+  enum PATTERN_TYPE {
+    LANDING = 1;
+    DISTRIBUTION = 2;
+  }
+
+  required PATTERN_TYPE pattern_type = 1;
+}

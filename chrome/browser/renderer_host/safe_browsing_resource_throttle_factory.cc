@@ -25,14 +25,14 @@ void SafeBrowsingResourceThrottleFactory::RegisterFactory(
 ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    bool is_subresource,
+    content::ResourceType resource_type,
     SafeBrowsingService* service) {
   if (factory_)
     return factory_->CreateResourceThrottle(
-        request, resource_context, is_subresource, service);
+        request, resource_context, resource_type, service);
 
 #if defined(FULL_SAFE_BROWSING)
-  return new SafeBrowsingResourceThrottle(request, is_subresource, service);
+  return new SafeBrowsingResourceThrottle(request, resource_type, service);
 #elif defined(MOBILE_SAFE_BROWSING)
   return NULL;
 #else

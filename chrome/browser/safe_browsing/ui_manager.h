@@ -44,7 +44,9 @@ class SafeBrowsingUIManager
     GURL original_url;
     std::vector<GURL> redirect_urls;
     bool is_subresource;
+    bool is_subframe;
     SBThreatType threat_type;
+    std::string threat_metadata;
     UrlCheckCallback callback;  // This is called back on the IO thread.
     int render_process_host_id;
     int render_view_id;

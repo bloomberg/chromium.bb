@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/metadata.pb.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -501,31 +502,135 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTest);
 };
 
+enum MalwareMetadataTestType {
+  METADATA_NONE,
+  METADATA_LANDING,
+  METADATA_DISTRIBUTION,
+};
+
+class SafeBrowsingServiceMetadataTest
+    : public SafeBrowsingServiceTest,
+      public ::testing::WithParamInterface<MalwareMetadataTestType> {
+ public:
+  SafeBrowsingServiceMetadataTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    SafeBrowsingServiceTest::SetUpOnMainThread();
+    g_browser_process->safe_browsing_service()->ui_manager()->AddObserver(
+        &observer_);
+  }
+
+  virtual void TearDownOnMainThread() OVERRIDE {
+    g_browser_process->safe_browsing_service()->ui_manager()->RemoveObserver(
+        &observer_);
+    SafeBrowsingServiceTest::TearDownOnMainThread();
+  }
+
+  void GenUrlFullhashResultWithMetadata(const GURL& url,
+                                        SBFullHashResult* full_hash) {
+    GenUrlFullhashResult(url, safe_browsing_util::MALWARE, full_hash);
+
+    safe_browsing::MalwarePatternType proto;
+    switch (GetParam()) {
+      case METADATA_NONE:
+        full_hash->metadata = std::string();
+        break;
+      case METADATA_LANDING:
+        proto.set_pattern_type(safe_browsing::MalwarePatternType::LANDING);
+        full_hash->metadata = proto.SerializeAsString();
+        break;
+      case METADATA_DISTRIBUTION:
+        proto.set_pattern_type(safe_browsing::MalwarePatternType::DISTRIBUTION);
+        full_hash->metadata = proto.SerializeAsString();
+        break;
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceMetadataTest);
+};
+
 namespace {
 
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwareFile[] = "files/downloads/dangerous/dangerous.exe";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
+const char kMalwareIFrame[] = "files/safe_browsing/malware_iframe.html";
+const char kMalwareImg[] = "files/safe_browsing/malware_image.png";
 
 // This test goes through DownloadResourceHandler.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->AddObserver(&observer_);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
   SBFullHashResult malware_full_hash;
-  GenUrlFullhashResult(url, safe_browsing_util::MALWARE, &malware_full_hash);
+  GenUrlFullhashResultWithMetadata(url, &malware_full_hash);
   EXPECT_CALL(observer_,
               OnSafeBrowsingMatch(IsUnsafeResourceFor(url))).Times(1);
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
   SetupResponseForUrl(url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), url);
+  // All types should show the interstitial.
   EXPECT_TRUE(ShowingInterstitialPage());
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->RemoveObserver(&observer_);
 }
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareIFrame) {
+  GURL main_url = test_server()->GetURL(kMalwarePage);
+  GURL iframe_url = test_server()->GetURL(kMalwareIFrame);
+
+  // Add the iframe url as malware and then load the parent page.
+  SBFullHashResult malware_full_hash;
+  GenUrlFullhashResultWithMetadata(iframe_url, &malware_full_hash);
+  EXPECT_CALL(observer_, OnSafeBrowsingMatch(IsUnsafeResourceFor(iframe_url)))
+      .Times(1);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(iframe_url)))
+      .Times(1);
+  SetupResponseForUrl(iframe_url, malware_full_hash);
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  // All types should show the interstitial.
+  EXPECT_TRUE(ShowingInterstitialPage());
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
+  GURL main_url = test_server()->GetURL(kMalwarePage);
+  GURL img_url = test_server()->GetURL(kMalwareImg);
+
+  // Add the img url as malware and then load the parent page.
+  SBFullHashResult malware_full_hash;
+  GenUrlFullhashResultWithMetadata(img_url, &malware_full_hash);
+  switch (GetParam()) {
+    case METADATA_NONE:
+    case METADATA_DISTRIBUTION:
+      EXPECT_CALL(observer_, OnSafeBrowsingMatch(IsUnsafeResourceFor(img_url)))
+          .Times(1);
+      EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(img_url)))
+          .Times(1);
+      break;
+    case METADATA_LANDING:
+      // No interstitial shown, so no notifications expected.
+      break;
+  }
+  SetupResponseForUrl(img_url, malware_full_hash);
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  // Subresource which is tagged as a landing page should not show an
+  // interstitial, the other types should.
+  switch (GetParam()) {
+    case METADATA_NONE:
+    case METADATA_DISTRIBUTION:
+      EXPECT_TRUE(ShowingInterstitialPage());
+      break;
+    case METADATA_LANDING:
+      EXPECT_FALSE(ShowingInterstitialPage());
+      break;
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(MaybeSetMetadata,
+                        SafeBrowsingServiceMetadataTest,
+                        testing::Values(METADATA_NONE,
+                                        METADATA_LANDING,
+                                        METADATA_DISTRIBUTION));
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
   GURL url = test_server()->GetURL(kEmptyPage);

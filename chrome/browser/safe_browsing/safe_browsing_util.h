@@ -90,6 +90,7 @@ struct SBFullHashResult {
   SBFullHash hash;
   // TODO(shess): Refactor to allow ListType here.
   int list_id;
+  std::string metadata;
 };
 
 // Caches individual response from GETHASH request.

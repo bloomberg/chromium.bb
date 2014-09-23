@@ -131,7 +131,9 @@ class BufferReader {
   DISALLOW_COPY_AND_ASSIGN(BufferReader);
 };
 
-bool ParseGetHashMetadata(size_t hash_count, BufferReader* reader) {
+bool ParseGetHashMetadata(size_t hash_count,
+                          BufferReader* reader,
+                          std::vector<SBFullHashResult>* full_hashes) {
   for (size_t i = 0; i < hash_count; ++i) {
     base::StringPiece line;
     if (!reader->GetLine(&line))
@@ -144,6 +146,11 @@ bool ParseGetHashMetadata(size_t hash_count, BufferReader* reader) {
     const void* meta_data;
     if (!reader->RefData(&meta_data, meta_data_len))
       return false;
+
+    if (full_hashes) {
+      (*full_hashes)[full_hashes->size() - hash_count + i].metadata.assign(
+          reinterpret_cast<const char*>(meta_data), meta_data_len);
+    }
   }
   return true;
 }
@@ -223,7 +230,7 @@ bool ParseGetHash(const char* chunk_data,
     // Ignore hash results from lists we don't recognize.
     if (full_hash.list_id < 0) {
       reader.Advance(hash_len * hash_count);
-      if (has_metadata && !ParseGetHashMetadata(hash_count, &reader))
+      if (has_metadata && !ParseGetHashMetadata(hash_count, &reader, NULL))
         return false;
       continue;
     }
@@ -234,9 +241,7 @@ bool ParseGetHash(const char* chunk_data,
       full_hashes->push_back(full_hash);
     }
 
-    // Discard the metadata for now.
-    // TODO(mattm): handle the metadata (see crbug.com/176648).
-    if (has_metadata && !ParseGetHashMetadata(hash_count, &reader))
+    if (has_metadata && !ParseGetHashMetadata(hash_count, &reader, full_hashes))
       return false;
   }
 

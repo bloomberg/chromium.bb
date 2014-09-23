@@ -3082,6 +3082,7 @@
           'sources': [ '<@(chrome_browser_basic_safe_browsing_sources)' ],
           'dependencies': [
             'safe_browsing_chunk_proto',
+            'safe_browsing_metadata_proto',
             'safe_browsing_report_proto',
           ],
           'conditions': [
@@ -3431,6 +3432,19 @@
       'target_name': 'safe_browsing_chunk_proto',
       'type': 'static_library',
       'sources': [ 'browser/safe_browsing/chunk.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/safe_browsing',
+        'proto_out_dir': 'chrome/browser/safe_browsing',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing full hash metadata
+      # protocol buffer.
+      # GN version: //chrome/browser/safe_browsing:metadata_proto
+      'target_name': 'safe_browsing_metadata_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/safe_browsing/metadata.proto' ],
       'variables': {
         'proto_in_dir': 'browser/safe_browsing',
         'proto_out_dir': 'chrome/browser/safe_browsing',

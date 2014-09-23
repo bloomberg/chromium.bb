@@ -323,6 +323,7 @@ static_library("browser") {
         ".", "//chrome")
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",
+      "//chrome/browser/safe_browsing:metadata_proto",
       "//chrome/browser/safe_browsing:report_proto",
     ]
     if (safe_browsing_mode == 1) {

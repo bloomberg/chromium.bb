@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_THROTTLE_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "content/public/common/resource_type.h"
 
 class SafeBrowsingService;
 
@@ -32,7 +33,7 @@ class SafeBrowsingResourceThrottleFactory {
   static content::ResourceThrottle* Create(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      bool is_subresource,
+      content::ResourceType resource_type,
       SafeBrowsingService* service);
 
  protected:
@@ -42,7 +43,7 @@ class SafeBrowsingResourceThrottleFactory {
   virtual content::ResourceThrottle* CreateResourceThrottle(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      bool is_subresource,
+      content::ResourceType resource_type,
       SafeBrowsingService* service) = 0;
 
  private:

@@ -67,6 +67,7 @@ class SafeBrowsingDatabaseManager
     // contain SB_THREAT_TYPE_SAFE.
     std::vector<GURL> urls;
     std::vector<SBThreatType> url_results;
+    std::vector<std::string> url_metadata;
     std::vector<SBFullHash> full_hashes;
     std::vector<SBThreatType> full_hash_results;
 
@@ -100,7 +101,8 @@ class SafeBrowsingDatabaseManager
 
     // Called when the result of checking a browse URL is known.
     virtual void OnCheckBrowseUrlResult(const GURL& url,
-                                        SBThreatType threat_type) {}
+                                        SBThreatType threat_type,
+                                        const std::string& metadata) {}
 
     // Called when the result of checking a download URL is known.
     virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
@@ -246,7 +248,8 @@ class SafeBrowsingDatabaseManager
   // |full_hashes|, or SAFE if none match.
   static SBThreatType GetUrlThreatType(
       const GURL& url,
-      const std::vector<SBFullHashResult>& full_hashes);
+      const std::vector<SBFullHashResult>& full_hashes,
+      size_t* index);
 
   // Called to stop operations on the io_thread. This may be called multiple
   // times during the life of the DatabaseManager. Should be called on IO
