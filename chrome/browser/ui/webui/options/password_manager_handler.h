@@ -46,17 +46,6 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   // Called when the JS PasswordManager object is initialized.
   void HandleUpdatePasswordLists(const base::ListValue* args);
 
-  // Checks if |origin| is valid for adding a new entry. Called while the user
-  // is editing an origin.
-  void HandleCheckOriginValidityForAdding(const base::ListValue* args);
-
-  // Adds a new password entry with |origin|, |username_value|, and
-  // |password_value|.
-  void HandleAddPassword(const base::ListValue* args);
-
-  // Updates the entry at |index| with |password_value|.
-  void HandleUpdatePassword(const base::ListValue* args);
-
   // Removes a saved password entry.
   // |value| the entry index to be removed.
   void HandleRemoveSavedPassword(const base::ListValue* args);

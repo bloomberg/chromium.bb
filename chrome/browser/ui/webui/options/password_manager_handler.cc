@@ -53,22 +53,10 @@ void PasswordManagerHandler::GetLocalizedValues(
       IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE },
     { "passwordSearchPlaceholder",
       IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS },
-    { "newPasswordUrlFieldPlaceholder",
-      IDS_PASSWORDS_PAGE_URL_INSTRUCTION },
-    { "newPasswordUsernameFieldPlaceholder",
-      IDS_PASSWORDS_PAGE_USERNAME_INSTRUCTION },
-    { "newPasswordPasswordFieldPlaceholder",
-      IDS_PASSWORDS_PAGE_PASSWORD_INSTRUCTION },
-    { "editPasswordInvalidUrlTooltip",
-      IDS_PASSWORDS_PAGE_INVALID_URL_TOOLTIP },
-    { "editPasswordInvalidPasswordTooltip",
-      IDS_PASSWORDS_PAGE_INVALID_PASSWORD_TOOLTIP },
     { "passwordShowButton",
       IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON },
     { "passwordHideButton",
       IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON },
-    { "passwordOverwriteButton",
-      IDS_PASSWORDS_PAGE_VIEW_OVERWRITE_BUTTON },
     { "passwordsNoPasswordsDescription",
       IDS_PASSWORDS_PAGE_VIEW_NO_PASSWORDS_DESCRIPTION },
     { "passwordsNoExceptionsDescription",
@@ -101,18 +89,6 @@ void PasswordManagerHandler::RegisterMessages() {
       base::Bind(&PasswordManagerHandler::HandleUpdatePasswordLists,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "checkOriginValidityForAdding",
-      base::Bind(&PasswordManagerHandler::HandleCheckOriginValidityForAdding,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "addPassword",
-      base::Bind(&PasswordManagerHandler::HandleAddPassword,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "updatePassword",
-      base::Bind(&PasswordManagerHandler::HandleUpdatePassword,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "removeSavedPassword",
       base::Bind(&PasswordManagerHandler::HandleRemoveSavedPassword,
                  base::Unretained(this)));
@@ -128,44 +104,6 @@ void PasswordManagerHandler::RegisterMessages() {
 
 void PasswordManagerHandler::InitializeHandler() {
   password_manager_presenter_.Initialize();
-}
-
-void PasswordManagerHandler::HandleCheckOriginValidityForAdding(
-    const base::ListValue* args) {
-  std::string origin;
-  const bool success = args->GetString(0, &origin);
-  DCHECK(success);  // Don't CHECK here since the renderer might be compromised.
-  web_ui()->CallJavascriptFunction(
-      "PasswordManager.originValidityCheckComplete",
-      base::StringValue(origin),
-      base::FundamentalValue(
-          PasswordManagerPresenter::CheckOriginValidityForAdding(
-              GURL(origin))));
-}
-
-void PasswordManagerHandler::HandleAddPassword(const base::ListValue* args) {
-  std::string origin;
-  base::string16 username_value;
-  base::string16 password_value;
-  if (!args->GetString(0, &origin) || !args->GetString(1, &username_value) ||
-      !args->GetString(2, &password_value)) {
-    NOTREACHED();
-    return;
-  }
-  password_manager_presenter_.AddPassword(GURL(origin), username_value,
-                                          password_value);
-}
-
-void PasswordManagerHandler::HandleUpdatePassword(const base::ListValue* args) {
-  int index;
-  base::string16 password_value;
-  if (!ExtractIntegerValue(args, &index) || index < 0 ||
-      !args->GetString(1, &password_value)) {
-    NOTREACHED();
-    return;
-  }
-  password_manager_presenter_.UpdatePassword(static_cast<size_t>(index),
-                                             password_value);
 }
 
 void PasswordManagerHandler::HandleRemoveSavedPassword(

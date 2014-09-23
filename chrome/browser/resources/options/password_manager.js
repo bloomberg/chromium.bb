@@ -55,13 +55,6 @@ cr.define('options', function() {
      */
     lastQuery_: null,
 
-    /**
-     * Whether a search query filter is applied to the current data model.
-     * @type {boolean}
-     * @private
-     */
-    filterIsActive_: false,
-
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -165,7 +158,6 @@ cr.define('options', function() {
      * @param {!Array} entries The list of saved password data.
      */
     setSavedPasswordsList_: function(entries) {
-      this.filterIsActive_ = !!this.lastQuery_;
       if (this.lastQuery_) {
         // Implement password searching here in javascript, rather than in C++.
         // The number of saved passwords shouldn't be too big for us to handle.
@@ -182,9 +174,6 @@ cr.define('options', function() {
           return false;
         };
         entries = entries.filter(filter);
-      } else {
-        // Adds the Add New Entry row.
-        entries.push(null);
       }
       this.savedPasswordsList_.dataModel = new ArrayDataModel(entries);
       this.updateListVisibility_(this.savedPasswordsList_);
@@ -208,7 +197,7 @@ cr.define('options', function() {
      */
     showPassword_: function(index, password) {
       var model = this.savedPasswordsList_.dataModel;
-      if (this.filterIsActive_) {
+      if (this.lastQuery_) {
         // When a filter is active, |index| does not represent the current
         // index in the model, but each entry stores its original index, so
         // we can find the item using a linear search.
@@ -224,53 +213,6 @@ cr.define('options', function() {
       var item = this.savedPasswordsList_.getListItemByIndex(index);
       item.showPassword(password);
     },
-
-    /**
-     * Forwards the validity of the origin to the Add New Entry row.
-     * @param {string} url The origin.
-     * @param {boolean} valid The validity of the origin for adding.
-     * @private
-     */
-    originValidityCheckComplete_: function(url, valid) {
-      // There is no Add New Entry row when a filter is active.
-      if (this.filterIsActive_)
-        return;
-      // Since no filter is active, the Add New Entry row always exists and its
-      // item is the last one.
-      var model = this.savedPasswordsList_.dataModel;
-      assert(model.length > 0);
-      var addRowItem = this.savedPasswordsList_.getListItemByIndex(
-          model.length - 1);
-      addRowItem.originValidityCheckComplete(url, valid);
-    },
-  };
-
-  /**
-   * Requests the browser to check the validity of the origin being edited by
-   * the user in the Add New Entry row.
-   * @param {string} url The origin being edited.
-   */
-  PasswordManager.checkOriginValidityForAdding = function(url) {
-    chrome.send('checkOriginValidityForAdding', [url]);
-  };
-
-  /**
-   * Adds a new password entry.
-   * @param {string} url The origin.
-   * @param {string} username The username value.
-   * @param {string} password The password value.
-   */
-  PasswordManager.addPassword = function(url, username, password) {
-    chrome.send('addPassword', [url, username, password]);
-  };
-
-  /**
-   * Updates the password value of an entry.
-   * @param {number} rowIndex The row to update.
-   * @param {string} newPassword The new password value.
-   */
-  PasswordManager.updatePassword = function(rowIndex, newPassword) {
-    chrome.send('updatePassword', [String(rowIndex), newPassword]);
   };
 
   /**
@@ -297,8 +239,7 @@ cr.define('options', function() {
   cr.makePublic(PasswordManager, [
     'setSavedPasswordsList',
     'setPasswordExceptionsList',
-    'showPassword',
-    'originValidityCheckComplete'
+    'showPassword'
   ]);
 
   // Export
