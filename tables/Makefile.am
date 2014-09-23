@@ -13,7 +13,6 @@ table_files = \
 	bo.ctb \
 	boxes.ctb \
 	braille-patterns.cti \
-	braille-patternsin.cti \
 	br-in-g1.utb \
 	ca-chardefs.cti \
 	ca-g1.ctb \
