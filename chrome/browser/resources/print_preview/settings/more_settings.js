@@ -112,6 +112,10 @@ cr.define('print_preview', function() {
         fadeOutElement(this.getElement(), noAnimation);
         return;
       }
+      // When capabilities are not known yet, don't change the state to avoid
+      // unnecessary fade in/out cycles.
+      if (!this.capabilitiesReady_)
+        return;
 
       var all = this.settingsToShow_ == MoreSettings.SettingsToShow.ALL;
       this.getChildElement('.more-settings-label').textContent =
@@ -126,10 +130,9 @@ cr.define('print_preview', function() {
           }, 0);
 
       // Magic 6 is chosen as the number of sections when it still feels like
-      // manageable and not too crowded. Also, when capabilities are not know
-      // yet, ignore this limit to avoid unnecessary fade in/out cycles.
+      // manageable and not too crowded.
       var hasSectionsToToggle =
-          (availableSections > 6 || !this.capabilitiesReady_) &&
+          availableSections > 6 &&
           this.settingsSections_.some(function(section) {
             return section.hasCollapsibleContent();
           });
