@@ -19,7 +19,8 @@ struct FormData {
   FormData(const FormData& data);
   ~FormData();
 
-  // Used in testing.
+  // Used in testing, and in recording metrics and setting preferences, where
+  // false positives/negatives aren't super important.
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 

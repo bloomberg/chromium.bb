@@ -13,6 +13,7 @@ namespace prefs {
 extern const char kAutofillAuxiliaryProfilesEnabled[];
 extern const char kAutofillEnabled[];
 extern const char kAutofillMacAddressBookQueried[];
+extern const char kAutofillMacAddressBookShowedCount[];
 extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPositiveUploadRate[];
 extern const char kAutofillUseMacAddressBook[];

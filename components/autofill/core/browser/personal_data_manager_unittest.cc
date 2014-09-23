@@ -2726,6 +2726,24 @@ TEST_F(PersonalDataManagerTest, ShowAddressBookPrompt) {
 
   EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
 }
+
+// Tests that the logic to show the access Address Book prompt respects the
+// preference that indicates the total number of times the prompt has already
+// been shown.
+TEST_F(PersonalDataManagerTest, MaxTimesToShowAddressBookPrompt) {
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
+
+  AutofillType type(ADDRESS_HOME_STREET_ADDRESS);
+
+  prefs_->SetBoolean(prefs::kAutofillEnabled, true);
+  EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
+
+  prefs_->SetInteger(prefs::kAutofillMacAddressBookShowedCount, 4);
+  EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
+
+  prefs_->SetInteger(prefs::kAutofillMacAddressBookShowedCount, 6);
+  EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
+}
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace autofill

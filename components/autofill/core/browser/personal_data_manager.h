@@ -211,6 +211,12 @@ class PersonalDataManager : public KeyedService,
   // grant Chrome access to the user's address book.
   bool ShouldShowAccessAddressBookSuggestion(AutofillType type);
 
+  // The access Address Book prompt was shown for a form.
+  void ShowedAccessAddressBookPrompt();
+
+  // The number of times that the access address book prompt was shown.
+  int AccessAddressBookPromptCount();
+
   // The Chrome binary is in the process of being changed, or has been changed.
   // Future attempts to access the Address Book might incorrectly present a
   // blocking dialog.

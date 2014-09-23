@@ -225,6 +225,10 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillUseMacAddressBook,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAutofillMacAddressBookShowedCount,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
@@ -299,6 +303,18 @@ bool AutofillManager::AccessAddressBook() {
   if (!personal_data_)
     return false;
   return personal_data_->AccessAddressBook();
+}
+
+void AutofillManager::ShowedAccessAddressBookPrompt() {
+  if (!personal_data_)
+    return;
+  return personal_data_->ShowedAccessAddressBookPrompt();
+}
+
+int AutofillManager::AccessAddressBookPromptCount() {
+  if (!personal_data_)
+    return 0;
+  return personal_data_->AccessAddressBookPromptCount();
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 

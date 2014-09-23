@@ -152,6 +152,10 @@ class AutofillExternalDelegate
 
   base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_;
 
+  // Whether the access Address Book prompt has ever been shown for the current
+  // |query_form_|. This variable is only used on OSX.
+  bool has_shown_address_book_prompt;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };
 

@@ -1805,6 +1805,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.MacAddressBook.NumShowsBeforeSelected">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The number of times that the access Address Book prompt has been shown when
+    the user selects the prompt.
+  </summary>
+</histogram>
+
 <histogram name="AutoFill.ProfileCount">
   <obsolete>
     Deprecated as of 3/2011, replaced by Autofill.StoredProfileCount.

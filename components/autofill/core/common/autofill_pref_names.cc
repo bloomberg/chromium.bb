@@ -22,6 +22,12 @@ const char kAutofillEnabled[] = "autofill.enabled";
 const char kAutofillMacAddressBookQueried[] =
     "autofill.auxiliary_profiles_queried";
 
+// The number of times that the access Address Book prompt has been shown. It
+// will only show for a fixed number of instances, and then it will stop
+// showing.
+const char kAutofillMacAddressBookShowedCount[] =
+    "autofill.mac_address_book_prompt_showed_count";
+
 // Double that indicates negative (for not matched forms) upload rate.
 const char kAutofillNegativeUploadRate[] = "autofill.negative_upload_rate";
 

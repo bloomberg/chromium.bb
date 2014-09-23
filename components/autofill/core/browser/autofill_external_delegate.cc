@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -49,7 +50,8 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       display_warning_if_disabled_(false),
       has_suggestion_(false),
       has_shown_popup_for_current_edit_(false),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      has_shown_address_book_prompt(false) {
   DCHECK(manager);
 }
 
@@ -60,6 +62,9 @@ void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormFieldData& field,
                                        const gfx::RectF& element_bounds,
                                        bool display_warning_if_disabled) {
+  if (query_form_ != form)
+    has_shown_address_book_prompt = false;
+
   query_form_ = form;
   query_field_ = field;
   display_warning_if_disabled_ = display_warning_if_disabled;
@@ -117,8 +122,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // updated to match.
   InsertDataListValues(&values, &labels, &icons, &ids);
 
-// Temporarily disabled. See http://crbug.com/408695
-#if 0
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (values.empty() &&
       manager_->ShouldShowAccessAddressBookSuggestion(query_form_,
@@ -129,10 +132,13 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     icons.push_back(base::ASCIIToUTF16("macContactsIcon"));
     ids.push_back(POPUP_ITEM_ID_MAC_ACCESS_CONTACTS);
 
-    EmitHistogram(SHOWED_ACCESS_ADDRESS_BOOK_ENTRY);
+    if (!has_shown_address_book_prompt) {
+      has_shown_address_book_prompt = true;
+      EmitHistogram(SHOWED_ACCESS_ADDRESS_BOOK_ENTRY);
+      manager_->ShowedAccessAddressBookPrompt();
+    }
   }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-#endif
 
   if (values.empty()) {
     // No suggestions, any popup currently showing is obsolete.
@@ -201,6 +207,9 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_MAC_ACCESS_CONTACTS) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     EmitHistogram(SELECTED_ACCESS_ADDRESS_BOOK_ENTRY);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Autofill.MacAddressBook.NumShowsBeforeSelected",
+        manager_->AccessAddressBookPromptCount());
 
     // User wants to give Chrome access to user's address book.
     manager_->AccessAddressBook();

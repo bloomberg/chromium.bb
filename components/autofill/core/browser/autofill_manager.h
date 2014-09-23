@@ -99,6 +99,12 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // this method has no effect. The return value reflects whether the user was
   // prompted with a modal dialog.
   bool AccessAddressBook();
+
+  // The access Address Book prompt was shown for a form.
+  void ShowedAccessAddressBookPrompt();
+
+  // The number of times that the access address book prompt was shown.
+  int AccessAddressBookPromptCount();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Called from our external delegate so they cannot be private.
