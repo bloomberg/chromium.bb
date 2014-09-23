@@ -61,9 +61,6 @@ SharedModuleService::ImportStatus SharedModuleService::CheckImports(
       }
     } else if (!SharedModuleInfo::IsSharedModule(imported_module)) {
       return IMPORT_STATUS_UNRECOVERABLE;
-    } else if (!SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
-                                                             extension->id())) {
-      return IMPORT_STATUS_UNRECOVERABLE;
     } else if (version_required.IsValid() &&
                imported_module->version()->CompareTo(version_required) < 0) {
       if (imported_module->from_webstore()) {

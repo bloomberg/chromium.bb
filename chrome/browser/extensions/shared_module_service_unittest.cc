@@ -268,7 +268,11 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
       CreateExtensionImportingModule(shared_module->id(),
                                      nonwhitelisted_id,
                                      "1.0");
-  EXPECT_FALSE(InstallExtension(nonwhitelisted_extension.get(), false));
+  // This should succeed because only CRX installer (and by extension the
+  // WebStore Installer) checks the shared module whitelist.  InstallExtension
+  // bypasses the whitelist check because the SharedModuleService does not
+  // care about whitelists.
+  EXPECT_TRUE(InstallExtension(nonwhitelisted_extension.get(), false));
 }
 
 }  // namespace extensions

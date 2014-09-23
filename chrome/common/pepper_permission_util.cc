@@ -62,11 +62,6 @@ bool IsExtensionOrSharedModuleWhitelisted(
         extension_set->GetByID(it->extension_id);
     if (imported_extension &&
         SharedModuleInfo::IsSharedModule(imported_extension) &&
-        // We check the whitelist explicitly even though the extension should
-        // never have been allowed to be installed in the first place if this
-        // fails.  See SharedModuleService::CheckImports for details.
-        SharedModuleInfo::IsExportAllowedByWhitelist(imported_extension,
-                                                     host) &&
         HostIsInSet(it->extension_id, whitelist)) {
       return true;
     }

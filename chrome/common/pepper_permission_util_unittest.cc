@@ -115,15 +115,19 @@ TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
   extensions.Insert(shared_module);
   EXPECT_TRUE(IsExtensionOrSharedModuleWhitelisted(
       GURL(extension_url), &extensions, whitelist));
-  scoped_refptr<Extension> bad_ext =
+  scoped_refptr<Extension> not_in_sm_whitelist =
       CreateExtensionImportingModule(shared_module->id(), bad_id);
-  std::string bad_extension_url = std::string("chrome-extension://") +
-                                  bad_ext->id() + std::string("/foo.html");
+  std::string not_in_sm_whitelist_url = std::string("chrome-extension://") +
+                                        not_in_sm_whitelist->id() +
+                                        std::string("/foo.html");
 
-  extensions.Insert(bad_ext);
-  // This should fail because bad_ext is not whitelisted to use shared_module.
-  EXPECT_FALSE(IsExtensionOrSharedModuleWhitelisted(
-      GURL(bad_extension_url), &extensions, whitelist));
+  extensions.Insert(not_in_sm_whitelist);
+  // This should succeed, even though |not_in_sm_whitelist| is not whitelisted
+  // to use shared_module, because the pepper permission utility does not care
+  // about that whitelist.  It is possible to install against the whitelist as
+  // an unpacked extension.
+  EXPECT_TRUE(IsExtensionOrSharedModuleWhitelisted(
+      GURL(not_in_sm_whitelist_url), &extensions, whitelist));
 
   // Note that the whitelist should be empty after this call, so tests checking
   // for failure to import will fail because of this.
