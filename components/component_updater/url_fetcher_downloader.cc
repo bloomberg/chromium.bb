@@ -4,6 +4,8 @@
 
 #include "components/component_updater/url_fetcher_downloader.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "components/component_updater/component_updater_utils.h"
@@ -90,8 +92,8 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void UrlFetcherDownloader::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
+    int64_t current,
+    int64_t total) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   downloaded_bytes_ = current;

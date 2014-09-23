@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -51,7 +52,7 @@ std::string SanitizeForPath(const std::string& input) {
 
 // Set the component's hash to the multi-CRX PNaCl package.
 void SetPnaclHash(CrxComponent* component) {
-  static const uint8 sha256_hash[32] = {
+  static const uint8_t sha256_hash[32] = {
       // This corresponds to AppID: hnimpnehoodheedghdeeijklkeaacbdc
       0x7d, 0x8c, 0xfd, 0x47, 0xee, 0x37, 0x44, 0x36,
       0x73, 0x44, 0x89, 0xab, 0xa4, 0x00, 0x21, 0x32,

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/version.h"

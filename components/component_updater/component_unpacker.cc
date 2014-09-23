@@ -4,6 +4,7 @@
 
 #include "components/component_updater/component_unpacker.h"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -50,13 +51,14 @@ class CRXValidator {
       return;
     is_delta_ = crx_file::CrxFile::HeaderIsDelta(header);
 
-    std::vector<uint8> key(header.key_size);
-    len = fread(&key[0], sizeof(uint8), header.key_size, crx_file);
+    std::vector<uint8_t> key(header.key_size);
+    len = fread(&key[0], sizeof(uint8_t), header.key_size, crx_file);
     if (len < header.key_size)
       return;
 
-    std::vector<uint8> signature(header.signature_size);
-    len = fread(&signature[0], sizeof(uint8), header.signature_size, crx_file);
+    std::vector<uint8_t> signature(header.signature_size);
+    len =
+        fread(&signature[0], sizeof(uint8_t), header.signature_size, crx_file);
     if (len < header.signature_size)
       return;
 
@@ -74,7 +76,7 @@ class CRXValidator {
     }
 
     const size_t kBufSize = 8 * 1024;
-    scoped_ptr<uint8[]> buf(new uint8[kBufSize]);
+    scoped_ptr<uint8_t[]> buf(new uint8_t[kBufSize]);
     while ((len = fread(buf.get(), 1, kBufSize, crx_file)) > 0)
       verifier.VerifyUpdate(buf.get(), base::checked_cast<int>(len));
 
@@ -89,18 +91,18 @@ class CRXValidator {
 
   bool is_delta() const { return is_delta_; }
 
-  const std::vector<uint8>& public_key() const { return public_key_; }
+  const std::vector<uint8_t>& public_key() const { return public_key_; }
 
  private:
   bool valid_;
   bool is_delta_;
-  std::vector<uint8> public_key_;
+  std::vector<uint8_t> public_key_;
 };
 
 }  // namespace
 
 ComponentUnpacker::ComponentUnpacker(
-    const std::vector<uint8>& pk_hash,
+    const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
     const std::string& fingerprint,
     ComponentInstaller* installer,
@@ -171,7 +173,7 @@ bool ComponentUnpacker::Verify() {
   // File is valid and the digital signature matches. Now make sure
   // the public key hash matches the expected hash. If they do we fully
   // trust this CRX.
-  uint8 hash[32] = {};
+  uint8_t hash[32] = {};
   scoped_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
   sha256->Update(&(validator.public_key()[0]), validator.public_key().size());
   sha256->Finish(hash, arraysize(hash));

@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/component_updater/component_unpacker.h"
 
@@ -131,9 +131,9 @@ class OutOfProcessPatcher
  public:
   virtual void Patch(const std::string& operation,
                      scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     base::FilePath& input_abs_path,
-                     base::FilePath& patch_abs_path,
-                     base::FilePath& output_abs_path,
+                     const base::FilePath& input_abs_path,
+                     const base::FilePath& patch_abs_path,
+                     const base::FilePath& output_abs_path,
                      base::Callback<void(int result)> callback) = 0;
 
  protected:

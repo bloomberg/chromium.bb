@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -63,10 +64,10 @@ const int kDaysBetweenSwReporterRuns = 7;
 // CRX hash. The extension id is: gkmgaooipdjhmangpemjhigmamcehddo. The hash was
 // generated in Python with something like this:
 // hashlib.sha256().update(open("<file>.crx").read()[16:16+294]).digest().
-const uint8 kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
-                             0xf4, 0xc9, 0x78, 0x6c, 0x0c, 0x24, 0x73, 0x3e,
-                             0x05, 0xa5, 0x62, 0x4b, 0x2e, 0xc7, 0xb7, 0x1c,
-                             0x5f, 0xea, 0xf0, 0x88, 0xf6, 0x97, 0x9b, 0xc7};
+const uint8_t kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
+                               0xf4, 0xc9, 0x78, 0x6c, 0x0c, 0x24, 0x73, 0x3e,
+                               0x05, 0xa5, 0x62, 0x4b, 0x2e, 0xc7, 0xb7, 0x1c,
+                               0x5f, 0xea, 0xf0, 0x88, 0xf6, 0x97, 0x9b, 0xc7};
 
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
@@ -186,7 +187,7 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
   virtual base::FilePath GetBaseDirectory() const { return install_dir(); }
 
-  virtual void GetHash(std::vector<uint8>* hash) const { GetPkHash(hash); }
+  virtual void GetHash(std::vector<uint8_t>* hash) const { GetPkHash(hash); }
 
   virtual std::string GetName() const { return "Software Reporter Tool"; }
 
@@ -208,7 +209,7 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
   static base::FilePath VersionPath() { return base::FilePath(version_dir_); }
 
  private:
-  static void GetPkHash(std::vector<uint8>* hash) {
+  static void GetPkHash(std::vector<uint8_t>* hash) {
     DCHECK(hash);
     hash->assign(kSha256Hash, kSha256Hash + sizeof(kSha256Hash));
   }

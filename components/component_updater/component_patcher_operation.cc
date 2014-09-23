@@ -4,6 +4,7 @@
 
 #include "components/component_updater/component_patcher_operation.h"
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/bind.h"
@@ -107,7 +108,7 @@ void DeltaUpdateOp::DoneRunning(ComponentUnpacker::Error error,
 // Uses the hash as a checksum to confirm that the file now residing in the
 // output directory probably has the contents it should.
 ComponentUnpacker::Error DeltaUpdateOp::CheckHash() {
-  std::vector<uint8> expected_hash;
+  std::vector<uint8_t> expected_hash;
   if (!base::HexStringToBytes(output_sha256_, &expected_hash) ||
       expected_hash.size() != crypto::kSHA256Length)
     return ComponentUnpacker::kDeltaVerificationFailure;
@@ -116,7 +117,7 @@ ComponentUnpacker::Error DeltaUpdateOp::CheckHash() {
   if (!output_file_mmapped.Initialize(output_abs_path_))
     return ComponentUnpacker::kDeltaVerificationFailure;
 
-  uint8 actual_hash[crypto::kSHA256Length] = {0};
+  uint8_t actual_hash[crypto::kSHA256Length] = {0};
   const scoped_ptr<SecureHash> hasher(SecureHash::Create(SecureHash::SHA256));
   hasher->Update(output_file_mmapped.data(), output_file_mmapped.length());
   hasher->Finish(actual_hash, sizeof(actual_hash));

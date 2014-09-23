@@ -4,8 +4,8 @@
 
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 
+#include <stdint.h>
 #include <string.h>
-
 #include <string>
 #include <vector>
 
@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -45,10 +46,10 @@ namespace component_updater {
 namespace {
 
 // CRX hash. The extension id is: oimompecagnajdejgnnjijobebaeigek.
-const uint8 kSha2Hash[] = {0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49,
-                           0x6d, 0xd9, 0x89, 0xe1, 0x41, 0x04, 0x86, 0x4a,
-                           0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58, 0x9b, 0xfb,
-                           0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef};
+const uint8_t kSha2Hash[] = {0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49,
+                             0x6d, 0xd9, 0x89, 0xe1, 0x41, 0x04, 0x86, 0x4a,
+                             0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58, 0x9b, 0xfb,
+                             0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef};
 
 // File name of the Widevine CDM component manifest on different platforms.
 const char kWidevineCdmManifestName[] = "WidevineCdm";
@@ -247,7 +248,7 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
       const base::FilePath& path,
       scoped_ptr<base::DictionaryValue> manifest) OVERRIDE;
   virtual base::FilePath GetBaseDirectory() const OVERRIDE;
-  virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
+  virtual void GetHash(std::vector<uint8_t>* hash) const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
   // Checks and updates CDM adapter if necessary to make sure the latest CDM
@@ -309,7 +310,7 @@ base::FilePath WidevineCdmComponentInstallerTraits::GetBaseDirectory() const {
 }
 
 void WidevineCdmComponentInstallerTraits::GetHash(
-    std::vector<uint8>* hash) const {
+    std::vector<uint8_t>* hash) const {
   hash->assign(kSha2Hash, kSha2Hash + arraysize(kSha2Hash));
 }
 

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_COMPONENT_UPDATER_PING_MANAGER_H_
 #define COMPONENTS_COMPONENT_UPDATER_COMPONENT_UPDATER_PING_MANAGER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace component_updater {
 

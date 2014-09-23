@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_CLD_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_CLD_COMPONENT_INSTALLER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "components/component_updater/default_component_installer.h"
 
 namespace test {
@@ -49,7 +51,7 @@ class CldComponentInstallerTraits : public ComponentInstallerTraits {
       const base::FilePath& path,
       scoped_ptr<base::DictionaryValue> manifest) OVERRIDE;
   virtual base::FilePath GetBaseDirectory() const OVERRIDE;
-  virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
+  virtual void GetHash(std::vector<uint8_t>* hash) const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);

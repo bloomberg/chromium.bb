@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_CRX_DOWNLOADER_H_
 #define COMPONENTS_COMPONENT_UPDATER_CRX_DOWNLOADER_H_
 
+#include <stdint.h>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -49,10 +50,10 @@ class CrxDownloader {
 
     int error;
 
-    int64 downloaded_bytes;  // -1 means that the byte count is unknown.
-    int64 total_bytes;
+    int64_t downloaded_bytes;  // -1 means that the byte count is unknown.
+    int64_t total_bytes;
 
-    uint64 download_time_ms;
+    uint64_t download_time_ms;
   };
 
   // Contains the progress or the outcome of the download.
@@ -67,10 +68,10 @@ class CrxDownloader {
 
     // Number of bytes actually downloaded, not including the bytes downloaded
     // as a result of falling back on urls.
-    int64 downloaded_bytes;
+    int64_t downloaded_bytes;
 
     // Number of bytes expected to be downloaded.
-    int64 total_bytes;
+    int64_t total_bytes;
   };
 
   // The callback fires only once, regardless of how many urls are tried, and

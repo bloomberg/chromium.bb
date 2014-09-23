@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <string.h>
-
 #include <vector>
 
 #include "base/base_paths.h"
@@ -50,10 +50,10 @@ const char kPepperFlashManifestName[] = "Flapper";
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 // CRX hash. The extension id is: mimojjlkmoijpicakmndhoigimigcmbb.
-const uint8 kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
-                           0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
-                           0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
-                           0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
+const uint8_t kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
+                             0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
+                             0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
+                             0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 
 // If we don't have a Pepper Flash component, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
@@ -215,7 +215,7 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
                                content::PepperPluginInfo* plugin_info) {
   if (!flash_version.IsValid())
     return false;
-  const std::vector<uint16> ver_nums = flash_version.components();
+  const std::vector<uint16_t> ver_nums = flash_version.components();
   if (ver_nums.size() < 3)
     return false;
 

@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
@@ -120,7 +121,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
   // Context for a crx download url request.
   struct CRXContext {
     ComponentInstaller* installer;
-    std::vector<uint8> pk_hash;
+    std::vector<uint8_t> pk_hash;
     std::string id;
     std::string fingerprint;
     CRXContext() : installer(NULL) {}
@@ -319,7 +320,7 @@ void CrxUpdateService::ScheduleNextRun(StepDelayInterval step_delay) {
 
   // Keep the delay short if in the middle of an update (step_delay),
   // or there are new requested_work_items_ that have not been processed yet.
-  int64 delay_seconds = 0;
+  int64_t delay_seconds = 0;
   if (!HasOnDemandItems()) {
     switch (step_delay) {
       case kStepDelayShort:

@@ -28,6 +28,7 @@
 #define COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_COMPONENT_UPDATER_SERVICE_H_
 #define COMPONENTS_COMPONENT_UPDATER_COMPONENT_UPDATER_SERVICE_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -74,7 +75,7 @@ class ComponentInstaller {
 // can be overriden at the registration time. This is a temporary change until
 // the issue 340448 is resolved.
 struct CrxComponent {
-  std::vector<uint8> pk_hash;
+  std::vector<uint8_t> pk_hash;
   ComponentInstaller* installer;
   Version version;
   std::string fingerprint;

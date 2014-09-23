@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_COMPONENT_UNPACKER_H_
 #define COMPONENTS_COMPONENT_UPDATER_COMPONENT_UNPACKER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -94,7 +95,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // Constructs an unpacker for a specific component unpacking operation.
   // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
   // location of the CRX.
-  ComponentUnpacker(const std::vector<uint8>& pk_hash,
+  ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
                     const base::FilePath& path,
                     const std::string& fingerprint,
                     ComponentInstaller* installer,
@@ -139,7 +140,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // Finish is responsible for calling the callback provided in Start().
   void Finish();
 
-  std::vector<uint8> pk_hash_;
+  std::vector<uint8_t> pk_hash_;
   base::FilePath path_;
   base::FilePath unpack_path_;
   base::FilePath unpack_diff_path_;

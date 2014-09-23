@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_URL_FETCHER_DOWNLOADER_H_
 #define COMPONENTS_COMPONENT_UPDATER_URL_FETCHER_DOWNLOADER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -37,16 +39,16 @@ class UrlFetcherDownloader : public CrxDownloader,
   // Overrides for URLFetcherDelegate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current,
-                                          int64 total) OVERRIDE;
+                                          int64_t current,
+                                          int64_t total) OVERRIDE;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::Time download_start_time_;
 
-  int64 downloaded_bytes_;
-  int64 total_bytes_;
+  int64_t downloaded_bytes_;
+  int64_t total_bytes_;
 
   base::ThreadChecker thread_checker_;
 

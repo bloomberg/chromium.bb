@@ -37,7 +37,7 @@ namespace component_updater {
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
 // The extension id is: dpedmmgabcgnikllifiidmijgoiihfgf
-const uint8 kPublicKeySHA256[32] = {
+const uint8_t kPublicKeySHA256[32] = {
     0x3f, 0x43, 0xcc, 0x60, 0x12, 0x6d, 0x8a, 0xbb,
     0x85, 0x88, 0x3c, 0x89, 0x6e, 0x88, 0x75, 0x65,
     0xb9, 0x46, 0x09, 0xe8, 0xca, 0x92, 0xdd, 0x82,
@@ -96,7 +96,7 @@ base::FilePath CldComponentInstallerTraits::GetBaseDirectory() const {
   return result;
 }
 
-void CldComponentInstallerTraits::GetHash(std::vector<uint8>* hash) const {
+void CldComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
   hash->assign(kPublicKeySHA256,
                kPublicKeySHA256 + arraysize(kPublicKeySHA256));
 }

@@ -7,10 +7,14 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include <stdint.h>
 #include <functional>
 #include <iomanip>
+#include <limits>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
@@ -199,8 +203,8 @@ HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
 // in the job. If the values are not known or if an error has occurred,
 // a value of -1 is reported.
 HRESULT GetJobByteCount(IBackgroundCopyJob* job,
-                        int64* downloaded_bytes,
-                        int64* total_bytes) {
+                        int64_t* downloaded_bytes,
+                        int64_t* total_bytes) {
   *downloaded_bytes = -1;
   *total_bytes = -1;
 
@@ -212,10 +216,12 @@ HRESULT GetJobByteCount(IBackgroundCopyJob* job,
   if (FAILED(hr))
     return hr;
 
-  if (job_progress.BytesTransferred <= kint64max)
+  const uint64_t kMaxNumBytes =
+      static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
+  if (job_progress.BytesTransferred <= kMaxNumBytes)
     *downloaded_bytes = job_progress.BytesTransferred;
 
-  if (job_progress.BytesTotal <= kint64max &&
+  if (job_progress.BytesTotal <= kMaxNumBytes &&
       job_progress.BytesTotal != BG_SIZE_UNKNOWN)
     *total_bytes = job_progress.BytesTotal;
 
@@ -516,8 +522,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
           ? download_end_time - download_start_time_
           : base::TimeDelta();
 
-  int64 downloaded_bytes = -1;
-  int64 total_bytes = -1;
+  int64_t downloaded_bytes = -1;
+  int64_t total_bytes = -1;
   GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
 
   if (FAILED(error) && job_) {
@@ -613,8 +619,8 @@ void BackgroundDownloader::OnStateTransferring() {
   // data and it is making progress.
   job_stuck_begin_time_ = base::Time::Now();
 
-  int64 downloaded_bytes = -1;
-  int64 total_bytes = -1;
+  int64_t downloaded_bytes = -1;
+  int64_t total_bytes = -1;
   HRESULT hr = GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
   if (FAILED(hr))
     return;

@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
 #define COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -69,7 +71,7 @@ class ComponentInstallerTraits {
   virtual base::FilePath GetBaseDirectory() const = 0;
 
   // Returns the component's SHA2 hash as raw bytes.
-  virtual void GetHash(std::vector<uint8>* hash) const = 0;
+  virtual void GetHash(std::vector<uint8_t>* hash) const = 0;
 
   // Returns the human-readable name of the component.
   virtual std::string GetName() const = 0;

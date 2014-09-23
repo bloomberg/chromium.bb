@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_EV_WHITELIST_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_EV_WHITELIST_COMPONENT_INSTALLER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "components/component_updater/default_component_installer.h"
 
@@ -33,7 +35,7 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
       const base::FilePath& path,
       scoped_ptr<base::DictionaryValue> manifest) OVERRIDE;
   virtual base::FilePath GetBaseDirectory() const OVERRIDE;
-  virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
+  virtual void GetHash(std::vector<uint8_t>* hash) const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);

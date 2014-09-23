@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,9 +86,9 @@ ChromeOutOfProcessPatcher::~ChromeOutOfProcessPatcher() {
 void ChromeOutOfProcessPatcher::Patch(
     const std::string& operation,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::FilePath& input_abs_path,
-    base::FilePath& patch_abs_path,
-    base::FilePath& output_abs_path,
+    const base::FilePath& input_abs_path,
+    const base::FilePath& patch_abs_path,
+    const base::FilePath& output_abs_path,
     base::Callback<void(int result)> callback) {
   host_ = new PatchHost(callback, task_runner);
   scoped_ptr<IPC::Message> patch_message;
