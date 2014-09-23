@@ -137,6 +137,9 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     return;
   bool need_label = false;
   bool need_avatar = false;
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  if (delegate->IsUserSupervised())
+    need_label =  true;
   switch (status) {
     case user::LOGGED_IN_LOCKED:
     case user::LOGGED_IN_USER:
@@ -175,7 +178,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     }
   }
 
-  if (status == user::LOGGED_IN_SUPERVISED) {
+  if (delegate->IsUserSupervised()) {
     label_->SetText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL));
   } else if (status == user::LOGGED_IN_GUEST) {

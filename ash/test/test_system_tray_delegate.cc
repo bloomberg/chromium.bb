@@ -8,6 +8,7 @@
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/system/user/login_status.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 
@@ -67,6 +68,10 @@ user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   if (delegate->IsScreenLocked())
     return user::LOGGED_IN_LOCKED;
   return login_status_;
+}
+
+bool TestSystemTrayDelegate::IsUserSupervised() const {
+  return login_status_ == ash::user::LOGGED_IN_SUPERVISED;
 }
 
 bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {

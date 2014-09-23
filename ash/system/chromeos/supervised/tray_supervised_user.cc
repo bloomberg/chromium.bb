@@ -29,7 +29,8 @@ const char TraySupervisedUser::kNotificationId[] =
 TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
-      status_(ash::user::LOGGED_IN_NONE) {
+      status_(ash::user::LOGGED_IN_NONE),
+      is_user_supervised_(false) {
 }
 
 TraySupervisedUser::~TraySupervisedUser() {
@@ -48,7 +49,8 @@ void TraySupervisedUser::UpdateMessage() {
 views::View* TraySupervisedUser::CreateDefaultView(
     user::LoginStatus status) {
   CHECK(tray_view_ == NULL);
-  if (status != ash::user::LOGGED_IN_SUPERVISED)
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  if (!delegate->IsUserSupervised())
     return NULL;
 
   tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_SUPERVISED_USER);
@@ -66,14 +68,18 @@ void TraySupervisedUser::OnViewClicked(views::View* sender) {
 
 void TraySupervisedUser::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
-  if (status == status_)
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+
+  bool is_user_supervised = delegate->IsUserSupervised();
+  if (status == status_ && is_user_supervised == is_user_supervised_)
     return;
-  if (status == ash::user::LOGGED_IN_SUPERVISED &&
+
+  if (is_user_supervised &&
       status_ != ash::user::LOGGED_IN_LOCKED) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     CreateOrUpdateNotification(delegate->GetSupervisedUserMessage());
   }
   status_ = status;
+  is_user_supervised_ = is_user_supervised;
 }
 
 void TraySupervisedUser::CreateOrUpdateNotification(

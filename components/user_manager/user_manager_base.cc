@@ -634,6 +634,10 @@ void UserManagerBase::NotifyLocalStateChanged() {
       UserManager::Observer, observer_list_, LocalStateChanged(this));
 }
 
+void UserManagerBase::ForceUpdateState() {
+  UpdateLoginState();
+}
+
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular and supervised users are allowed to be manually removed.
   if (!user || (user->GetType() != USER_TYPE_REGULAR &&

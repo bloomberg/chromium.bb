@@ -83,6 +83,10 @@ class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
     return base::string16();
   }
 
+  virtual bool IsUserSupervised() const OVERRIDE {
+    return false;
+  }
+
   virtual bool SystemShouldUpgrade() const OVERRIDE {
     return UpgradeDetector::GetInstance()->notify_upgrade();
   }
