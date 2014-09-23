@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "extensions/browser/api/declarative/rules_registry.h"
+#include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 
 class GURL;
@@ -24,6 +24,7 @@ class BrowserContext;
 namespace extensions {
 
 class AppViewGuestDelegate;
+class ContentRulesRegistry;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
 class MimeHandlerViewGuest;
@@ -33,6 +34,7 @@ class WebViewGuestDelegate;
 class WebViewPermissionHelper;
 class WebViewPermissionHelperDelegate;
 class WebRequestEventRouterDelegate;
+class RulesCacheDelegate;
 class SettingsObserver;
 class SettingsStorageFactory;
 class ValueStoreCache;
@@ -94,6 +96,12 @@ class ExtensionsAPIClient {
   // Creates a delegate for WebRequestEventRouter.
   virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
       const;
+
+  // TODO(wjmaclean): Remove this when (if) ContentRulesRegistry code moves
+  // to extensions/browser/api.
+  virtual scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
+      content::BrowserContext* browser_context,
+      RulesCacheDelegate* cache_delegate) const;
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

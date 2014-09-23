@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_RULES_REGISTRY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_RULES_REGISTRY_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CHROME_CONTENT_RULES_REGISTRY_H_
+#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CHROME_CONTENT_RULES_REGISTRY_H_
 
 #include <map>
 #include <set>
@@ -20,7 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/declarative/declarative_rule.h"
-#include "extensions/browser/api/declarative/rules_registry.h"
+#include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/info_map.h"
 
 class ContentPermissions;
@@ -47,7 +47,7 @@ class RulesRegistryService;
 
 typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
 
-// The ContentRulesRegistry is responsible for managing
+// The ChromeContentRulesRegistry is responsible for managing
 // the internal representation of rules for the Declarative Content API.
 //
 // Here is the high level overview of this functionality:
@@ -59,23 +59,26 @@ typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
 // is delegated to a URLMatcher, because this is capable of evaluating many
 // of such URL related condition attributes in parallel.
-class ContentRulesRegistry : public RulesRegistry,
-                             public content::NotificationObserver {
+class ChromeContentRulesRegistry : public ContentRulesRegistry,
+                                   public content::NotificationObserver {
  public:
   // For testing, |ui_part| can be NULL. In that case it constructs the
   // registry with storage functionality suspended.
-  ContentRulesRegistry(content::BrowserContext* browser_context,
-                       RulesCacheDelegate* cache_delegate);
+  ChromeContentRulesRegistry(content::BrowserContext* browser_context,
+                             RulesCacheDelegate* cache_delegate);
 
+  // ChromeContentRulesRegistry implementation:
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.
-  void Apply(content::WebContents* contents,
-             const std::vector<std::string>& matching_css_selectors);
+  virtual void Apply(
+      content::WebContents* contents,
+      const std::vector<std::string>& matching_css_selectors) OVERRIDE;
 
   // Applies all content rules given that a tab was just navigated.
-  void DidNavigateMainFrame(content::WebContents* tab,
-                            const content::LoadCommittedDetails& details,
-                            const content::FrameNavigateParams& params);
+  virtual void DidNavigateMainFrame(
+      content::WebContents* tab,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
 
   // Implementation of RulesRegistry:
   virtual std::string AddRulesImpl(
@@ -96,17 +99,17 @@ class ContentRulesRegistry : public RulesRegistry,
   bool IsEmpty() const;
 
  protected:
-  virtual ~ContentRulesRegistry();
+  virtual ~ChromeContentRulesRegistry();
 
   // Virtual for testing:
   virtual base::Time GetExtensionInstallationTime(
       const std::string& extension_id) const;
 
  private:
-  friend class DeclarativeContentRulesRegistryTest;
+  friend class DeclarativeChromeContentRulesRegistryTest;
 
-  std::set<ContentRule*>
-  GetMatches(const RendererContentMatchData& renderer_data) const;
+  std::set<ContentRule*> GetMatches(
+      const RendererContentMatchData& renderer_data) const;
 
   // Scans the rules for the set of conditions they're watching.  If the set has
   // changed, calls InstructRenderProcess() for each RenderProcessHost in the
@@ -143,9 +146,9 @@ class ContentRulesRegistry : public RulesRegistry,
 
   scoped_refptr<InfoMap> extension_info_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentRulesRegistry);
+  DISALLOW_COPY_AND_ASSIGN(ChromeContentRulesRegistry);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_RULES_REGISTRY_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CHROME_CONTENT_RULES_REGISTRY_H_

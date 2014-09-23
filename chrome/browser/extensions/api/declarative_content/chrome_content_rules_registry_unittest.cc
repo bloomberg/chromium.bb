@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 
 #include <string>
 
@@ -24,21 +24,21 @@ using content::WebContents;
 
 // Must be outside the anonymous namespace to be a friend of
 // ContentRulesRegistry.
-class DeclarativeContentRulesRegistryTest : public testing::Test {
+class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
  protected:
   static const std::map<int, std::set<ContentRule*> >& active_rules(
-      const ContentRulesRegistry& registry) {
+      const ChromeContentRulesRegistry& registry) {
     return registry.active_rules_;
   }
 };
 
 namespace {
 
-TEST_F(DeclarativeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
+TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   TestExtensionEnvironment env;
 
-  scoped_refptr<ContentRulesRegistry> registry(
-      new ContentRulesRegistry(env.profile(), NULL));
+  scoped_refptr<ChromeContentRulesRegistry> registry(
+      new ChromeContentRulesRegistry(env.profile(), NULL));
 
   EXPECT_EQ(0u, active_rules(*registry.get()).size());
 

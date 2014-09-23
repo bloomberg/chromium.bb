@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -16,8 +15,10 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
+#include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -91,9 +92,9 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     RulesCacheDelegate* content_rules_cache_delegate =
         new RulesCacheDelegate(false /*log_storage_init_delay*/);
     cache_delegates_.push_back(content_rules_cache_delegate);
-    scoped_refptr<ContentRulesRegistry> content_rules_registry(
-        new ContentRulesRegistry(browser_context_,
-                                 content_rules_cache_delegate));
+    scoped_refptr<ContentRulesRegistry> content_rules_registry =
+        ExtensionsAPIClient::Get()->CreateContentRulesRegistry(
+            browser_context_, content_rules_cache_delegate);
     RegisterRulesRegistry(content_rules_registry);
     content_rules_registry_ = content_rules_registry.get();
   }

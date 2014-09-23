@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 
@@ -85,6 +86,14 @@ scoped_refptr<RulesRegistry> ChromeExtensionsAPIClient::GetRulesRegistry(
 WebRequestEventRouterDelegate*
 ChromeExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
   return new ChromeExtensionWebRequestEventRouterDelegate();
+}
+
+scoped_refptr<ContentRulesRegistry>
+ChromeExtensionsAPIClient::CreateContentRulesRegistry(
+    content::BrowserContext* browser_context,
+    RulesCacheDelegate* cache_delegate) const {
+  return scoped_refptr<ContentRulesRegistry>(
+      new ChromeContentRulesRegistry(browser_context, cache_delegate));
 }
 
 }  // namespace extensions
