@@ -1,2 +1,2 @@
 # http://crbug.com/416620
-ApplicationManagerTest.NoArgs
+ApplicationManagerTest.*

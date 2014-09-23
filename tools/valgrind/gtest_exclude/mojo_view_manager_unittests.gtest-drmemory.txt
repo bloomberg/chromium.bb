@@ -1,2 +1,2 @@
 # http://crbug.com/416621
-ViewManagerTest.TwoClientsGetDifferentConnectionIds
+ViewManagerTest.*
