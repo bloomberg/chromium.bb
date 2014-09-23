@@ -105,4 +105,14 @@ base::TimeDelta AudioParameters::GetBufferDuration() const {
       static_cast<float>(sample_rate_));
 }
 
+bool AudioParameters::Equals(const AudioParameters& other) const {
+  return format_ == other.format() &&
+         sample_rate_ == other.sample_rate() &&
+         channel_layout_ == other.channel_layout() &&
+         channels_ == other.channels() &&
+         bits_per_sample_ == other.bits_per_sample() &&
+         frames_per_buffer_ == other.frames_per_buffer() &&
+         effects_ == other.effects();
+}
+
 }  // namespace media

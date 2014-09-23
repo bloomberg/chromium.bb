@@ -273,7 +273,7 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
     DVLOG(1) << "DUCKING not forced ON for output";
   }
 
-  if (source_params_ == params)
+  if (source_params_.Equals(params))
     return;
 
   // Reset the |source_params_|, |sink_params_| and |loopback_fifo_| to match

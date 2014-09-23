@@ -85,6 +85,9 @@ class MEDIA_EXPORT AudioParameters {
   // and sample_rate().
   base::TimeDelta GetBufferDuration() const;
 
+  // Comparison with other AudioParams.
+  bool Equals(const AudioParameters& other) const;
+
   Format format() const { return format_; }
   ChannelLayout channel_layout() const { return channel_layout_; }
   int sample_rate() const { return sample_rate_; }
@@ -92,17 +95,6 @@ class MEDIA_EXPORT AudioParameters {
   int frames_per_buffer() const { return frames_per_buffer_; }
   int channels() const { return channels_; }
   int effects() const { return effects_; }
-
-  // Comparison with other AudioParams.
-  bool operator==(const AudioParameters& other) const {
-    return format_ == other.format() &&
-           sample_rate_ == other.sample_rate() &&
-           channel_layout_ == other.channel_layout() &&
-           channels_ == other.channels() &&
-           bits_per_sample_ == other.bits_per_sample() &&
-           frames_per_buffer_ == other.frames_per_buffer() &&
-           effects_ == other.effects();
-  }
 
  private:
   // These members are mutable to support entire struct assignment. They should
