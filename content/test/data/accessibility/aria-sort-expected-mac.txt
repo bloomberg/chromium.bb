@@ -1,0 +1,37 @@
+AXWebArea
+    AXTable
+        AXRow
+            AXCell
+                AXStaticText AXValue='Alphabet'
+        AXRow
+            AXCell
+                AXStaticText AXValue='A'
+        AXRow
+            AXCell
+                AXStaticText AXValue='B'
+        AXColumn
+        AXGroup
+    AXTable
+        AXRow
+            AXCell
+                AXStaticText AXValue='Alphabet'
+        AXRow
+            AXCell
+                AXStaticText AXValue='A'
+        AXRow
+            AXCell
+                AXStaticText AXValue='B'
+        AXColumn
+        AXGroup
+    AXTable
+        AXRow
+            AXCell
+                AXStaticText AXValue='Alphabet'
+        AXRow
+            AXCell
+                AXStaticText AXValue='A'
+        AXRow
+            AXCell
+                AXStaticText AXValue='B'
+        AXColumn
+        AXGroup

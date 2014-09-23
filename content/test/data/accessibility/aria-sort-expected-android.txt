@@ -1,0 +1,28 @@
+android.webkit.WebView focusable focused scrollable
+    android.widget.GridView collection row_count=3 column_count=1
+        android.view.View
+            android.view.View clickable collection_item name='Alphabet' row_span=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='A' row_index=1 row_span=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='B' row_index=2 row_span=1 column_span=1
+        android.view.View
+        android.view.View
+    android.widget.GridView collection row_count=3 column_count=1
+        android.view.View
+            android.view.View clickable collection_item name='Alphabet' row_span=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='A' row_index=1 row_span=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='B' row_index=2 row_span=1 column_span=1
+        android.view.View
+        android.view.View
+    android.widget.GridView collection row_count=3 column_count=1
+        android.view.View
+            android.view.View clickable collection_item name='Alphabet' row_span=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='A' row_index=1 row_span=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='B' row_index=2 row_span=1 column_span=1
+        android.view.View
+        android.view.View
