@@ -70,6 +70,7 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
         return CSSPropertyTransform;
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY:
+    case CSSPropertyWebkitPerspectiveOrigin:
         return CSSPropertyPerspectiveOrigin;
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:

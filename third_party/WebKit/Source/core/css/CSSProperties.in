@@ -350,7 +350,7 @@ visibility animatable, inherited
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size animatable, custom_all
 -webkit-perspective custom_all
--webkit-perspective-origin custom_all
+-webkit-perspective-origin use_handlers_for=CSSPropertyPerspectiveOrigin
 -webkit-perspective-origin-x converter=convertLength
 -webkit-perspective-origin-y converter=convertLength
 -webkit-print-color-adjust inherited, type_name=PrintColorAdjust

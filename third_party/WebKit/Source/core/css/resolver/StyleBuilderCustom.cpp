@@ -812,25 +812,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState
         state.style()->setFilter(operations);
 }
 
-// FIXME: We should use the same system for this as the rest of the pseudo-shorthands (e.g. background-position)
-void StyleBuilderFunctions::applyInitialCSSPropertyWebkitPerspectiveOrigin(StyleResolverState& state)
-{
-    applyInitialCSSPropertyWebkitPerspectiveOriginX(state);
-    applyInitialCSSPropertyWebkitPerspectiveOriginY(state);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyWebkitPerspectiveOrigin(StyleResolverState& state)
-{
-    applyInheritCSSPropertyWebkitPerspectiveOriginX(state);
-    applyInheritCSSPropertyWebkitPerspectiveOriginY(state);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitPerspectiveOrigin(StyleResolverState&, CSSValue* value)
-{
-    // This is expanded in the parser
-    ASSERT_NOT_REACHED();
-}
-
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(StyleResolverState& state)
 {
     state.style()->setTextEmphasisFill(RenderStyle::initialTextEmphasisFill());

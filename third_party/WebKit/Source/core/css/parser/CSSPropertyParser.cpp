@@ -1162,7 +1162,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return true;
         }
         break;
-    case CSSPropertyPerspectiveOrigin: {
+    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyWebkitPerspectiveOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
         if (!list || list->length() == 3)
             return false;
@@ -1170,18 +1171,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (list->length() == 1)
             list->append(cssValuePool().createValue(50, CSSPrimitiveValue::CSS_PERCENTAGE));
         addProperty(propId, list.release(), important);
-        return true;
-    }
-    case CSSPropertyWebkitPerspectiveOrigin: {
-        if (m_valueList->size() > 2)
-            return false;
-        RefPtrWillBeRawPtr<CSSValue> originX = nullptr;
-        RefPtrWillBeRawPtr<CSSValue> originY = nullptr;
-        parse2ValuesFillPosition(m_valueList, originX, originY);
-        if (!originX)
-            return false;
-        addProperty(CSSPropertyWebkitPerspectiveOriginX, originX.release(), important);
-        addProperty(CSSPropertyWebkitPerspectiveOriginY, originY.release(), important);
         return true;
     }
     case CSSPropertyAnimationDelay:
