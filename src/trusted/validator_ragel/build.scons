@@ -86,6 +86,16 @@ env.AddNodeToTestSuite(
     ['small_tests', 'validator_tests'],
     'run_gen_dfa_test')
 
+trie_test = env.CommandTest(
+    'trie_test.out',
+    ['${PYTHON}', env.File('trie_test.py'), '--verbose'],
+    direct_emulation=False)
+
+env.AddNodeToTestSuite(
+    trie_test,
+    ['small_tests', 'validator_tests'],
+    'run_trie_test')
+
 dll_env = env.Clone(COMPONENT_STATIC=False)
 
 if env.Bit('windows'):
