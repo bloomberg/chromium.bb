@@ -63,6 +63,8 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
                           const SkBitmap& pixels) OVERRIDE;
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE;
+  virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      GetVideoEncodeAcceleratorSupportedProfiles() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<RendererGpuVideoAcceleratorFactories>;

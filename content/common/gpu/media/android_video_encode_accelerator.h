@@ -34,10 +34,9 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   AndroidVideoEncodeAccelerator();
   virtual ~AndroidVideoEncodeAccelerator();
 
-  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles();
-
   // media::VideoEncodeAccelerator implementation.
+  virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      GetSupportedProfiles() OVERRIDE;
   virtual bool Initialize(media::VideoFrame::Format format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,

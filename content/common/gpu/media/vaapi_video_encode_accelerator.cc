@@ -104,7 +104,6 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
   const size_t size;
 };
 
-// static
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<SupportedProfile> profiles;
@@ -116,8 +115,8 @@ VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
   SupportedProfile profile;
   profile.profile = media::H264PROFILE_MAIN;
   profile.max_resolution.SetSize(1920, 1088);
-  profile.max_framerate.numerator = kDefaultFramerate;
-  profile.max_framerate.denominator = 1;
+  profile.max_framerate_numerator = kDefaultFramerate;
+  profile.max_framerate_denominator = 1;
   profiles.push_back(profile);
 
   // This is actually only constrained (see crbug.com/345569).

@@ -45,6 +45,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
                     const SkBitmap& pixels));
   MOCK_METHOD1(CreateSharedMemory, base::SharedMemory*(size_t size));
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
+               std::vector<VideoEncodeAccelerator::SupportedProfile>());
 
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       OVERRIDE;

@@ -280,7 +280,6 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   delete this;
 }
 
-// static
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<SupportedProfile> profiles;
@@ -290,14 +289,14 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   if (cmd_line->HasSwitch(switches::kEnableWebRtcHWVp8Encoding)) {
     profile.profile = media::VP8PROFILE_ANY;
     profile.max_resolution.SetSize(1920, 1088);
-    profile.max_framerate.numerator = 30;
-    profile.max_framerate.denominator = 1;
+    profile.max_framerate_numerator = 30;
+    profile.max_framerate_denominator = 1;
     profiles.push_back(profile);
   } else {
     profile.profile = media::H264PROFILE_MAIN;
     profile.max_resolution.SetSize(1920, 1088);
-    profile.max_framerate.numerator = 30;
-    profile.max_framerate.denominator = 1;
+    profile.max_framerate_numerator = 30;
+    profile.max_framerate_denominator = 1;
     profiles.push_back(profile);
   }
 

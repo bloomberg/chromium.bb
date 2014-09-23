@@ -1,4 +1,5 @@
 include_rules = [
   "+third_party/libxml",  # For parsing WinSAT results files.
   "+third_party/libXNVCtrl",  # For NV driver version query.
+  "+media/video",  # For VideoEncodeAccelerator::SupportedProfile.
 ]

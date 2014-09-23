@@ -29,6 +29,8 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   virtual ~VaapiVideoEncodeAccelerator();
 
   // media::VideoEncodeAccelerator implementation.
+  virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      GetSupportedProfiles() OVERRIDE;
   virtual bool Initialize(media::VideoFrame::Format format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
@@ -41,9 +43,6 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   virtual void RequestEncodingParametersChange(uint32 bitrate,
                                                uint32 framerate) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-
-  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles();
 
  private:
   // Reference picture list.

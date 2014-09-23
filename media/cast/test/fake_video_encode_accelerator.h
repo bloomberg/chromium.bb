@@ -28,6 +28,8 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
       std::vector<uint32>* stored_bitrates);
   virtual ~FakeVideoEncodeAccelerator();
 
+  virtual std::vector<VideoEncodeAccelerator::SupportedProfile>
+      GetSupportedProfiles() OVERRIDE;
   virtual bool Initialize(media::VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           VideoCodecProfile output_profile,

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
+#include "media/video/video_encode_accelerator.h"
 
 class SkBitmap;
 
@@ -27,7 +28,6 @@ class Size;
 namespace media {
 
 class VideoDecodeAccelerator;
-class VideoEncodeAccelerator;
 
 // Helper interface for specifying factories needed to instantiate a hardware
 // video accelerator.
@@ -72,6 +72,10 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
 
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
+
+  // Returns the supported codec profiles of video encode accelerator.
+  virtual std::vector<VideoEncodeAccelerator::SupportedProfile>
+      GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<GpuVideoAcceleratorFactories>;

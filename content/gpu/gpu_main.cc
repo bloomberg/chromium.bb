@@ -22,6 +22,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
@@ -328,6 +329,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(OS_MACOSX)
     gpu_info.sandboxed = Sandbox::SandboxIsCurrentlyActive();
 #endif
+
+    gpu_info.video_encode_accelerator_supported_profiles =
+        content::GpuVideoEncodeAccelerator::GetSupportedProfiles();
   } else {
     dead_on_arrival = true;
   }

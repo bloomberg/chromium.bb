@@ -157,6 +157,13 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo::GPUDevice)
   IPC_STRUCT_TRAITS_MEMBER(device_string)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(media::VideoEncodeAccelerator::SupportedProfile)
+  IPC_STRUCT_TRAITS_MEMBER(profile)
+  IPC_STRUCT_TRAITS_MEMBER(max_resolution)
+  IPC_STRUCT_TRAITS_MEMBER(max_framerate_numerator)
+  IPC_STRUCT_TRAITS_MEMBER(max_framerate_denominator)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(initialization_time)
   IPC_STRUCT_TRAITS_MEMBER(optimus)
@@ -192,6 +199,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics_info_state)
   IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
 #endif
+  IPC_STRUCT_TRAITS_MEMBER(video_encode_accelerator_supported_profiles)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)

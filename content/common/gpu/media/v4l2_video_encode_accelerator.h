@@ -46,6 +46,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   virtual ~V4L2VideoEncodeAccelerator();
 
   // media::VideoEncodeAccelerator implementation.
+  virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      GetSupportedProfiles() OVERRIDE;
   virtual bool Initialize(media::VideoFrame::Format format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
@@ -58,9 +60,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   virtual void RequestEncodingParametersChange(uint32 bitrate,
                                                uint32 framerate) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-
-  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles();
 
  private:
   // Auto-destroy reference for BitstreamBuffer, for tracking buffers passed to

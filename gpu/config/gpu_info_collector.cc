@@ -156,6 +156,8 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   basic_gpu_info->direct_rendering = context_gpu_info.direct_rendering;
   basic_gpu_info->context_info_state = context_gpu_info.context_info_state;
   basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
+  basic_gpu_info->video_encode_accelerator_supported_profiles =
+      context_gpu_info.video_encode_accelerator_supported_profiles;
 }
 
 }  // namespace gpu

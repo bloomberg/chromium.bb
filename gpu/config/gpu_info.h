@@ -18,6 +18,7 @@
 #include "gpu/config/dx_diag_node.h"
 #include "gpu/config/gpu_performance_stats.h"
 #include "gpu/gpu_export.h"
+#include "media/video/video_encode_accelerator.h"
 
 namespace gpu {
 
@@ -176,6 +177,9 @@ struct GPU_EXPORT GPUInfo {
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
 #endif
+
+  std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      video_encode_accelerator_supported_profiles;
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 
@@ -199,6 +203,11 @@ struct GPU_EXPORT GPUInfo {
     // Markers indicating that a GPUDevice is being described.
     virtual void BeginGPUDevice() = 0;
     virtual void EndGPUDevice() = 0;
+
+    // Markers indicating that a VideoEncodeAccelerator::SupportedProfile is
+    // being described.
+    virtual void BeginVideoEncodeAcceleratorSupportedProfile() = 0;
+    virtual void EndVideoEncodeAcceleratorSupportedProfile() = 0;
 
     // Markers indicating that "auxiliary" attributes of the GPUInfo
     // (according to the DevTools protocol) are being described.

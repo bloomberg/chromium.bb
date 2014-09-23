@@ -32,6 +32,11 @@ FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {
   weak_this_factory_.InvalidateWeakPtrs();
 }
 
+std::vector<VideoEncodeAccelerator::SupportedProfile>
+FakeVideoEncodeAccelerator::GetSupportedProfiles() {
+  return std::vector<VideoEncodeAccelerator::SupportedProfile>();
+}
+
 bool FakeVideoEncodeAccelerator::Initialize(
     media::VideoFrame::Format input_format,
     const gfx::Size& input_visible_size,

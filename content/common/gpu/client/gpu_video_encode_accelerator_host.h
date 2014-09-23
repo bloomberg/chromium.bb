@@ -44,15 +44,12 @@ class GpuVideoEncodeAcceleratorHost
   GpuVideoEncodeAcceleratorHost(GpuChannelHost* channel,
                                 CommandBufferProxyImpl* impl);
 
-  // Static query for the supported profiles.  This query proxies to
-  // GpuVideoEncodeAccelerator::GetSupportedProfiles().
-  static std::vector<SupportedProfile> GetSupportedProfiles();
-
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
   // media::VideoEncodeAccelerator implementation.
+  virtual std::vector<SupportedProfile> GetSupportedProfiles() OVERRIDE;
   virtual bool Initialize(media::VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,

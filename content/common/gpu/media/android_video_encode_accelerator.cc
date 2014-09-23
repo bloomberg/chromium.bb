@@ -77,7 +77,6 @@ AndroidVideoEncodeAccelerator::~AndroidVideoEncodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-// static
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<MediaCodecBridge::CodecsInfo> codecs_info =
@@ -105,8 +104,8 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
     // encoder?  Sure would be.  Too bad it doesn't.  So we hard-code some
     // reasonable defaults.
     profile.max_resolution.SetSize(1920, 1088);
-    profile.max_framerate.numerator = 30;
-    profile.max_framerate.denominator = 1;
+    profile.max_framerate_numerator = 30;
+    profile.max_framerate_denominator = 1;
     profiles.push_back(profile);
   }
   return profiles;

@@ -63,7 +63,7 @@ class GpuVideoEncodeAccelerator
 
  private:
   // Create the appropriate platform-specific VEA.
-  void CreateEncoder();
+  static scoped_ptr<media::VideoEncodeAccelerator> CreateEncoder();
 
   // IPC handlers, proxying media::VideoEncodeAccelerator for the renderer
   // process.

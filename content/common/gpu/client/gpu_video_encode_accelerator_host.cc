@@ -39,12 +39,6 @@ GpuVideoEncodeAcceleratorHost::~GpuVideoEncodeAcceleratorHost() {
     impl_->RemoveDeletionObserver(this);
 }
 
-// static
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-GpuVideoEncodeAcceleratorHost::GetSupportedProfiles() {
-  return GpuVideoEncodeAccelerator::GetSupportedProfiles();
-}
-
 bool GpuVideoEncodeAcceleratorHost::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -73,6 +67,14 @@ void GpuVideoEncodeAcceleratorHost::OnChannelError() {
     channel_ = NULL;
   }
   NOTIFY_ERROR(kPlatformFailureError) << "OnChannelError()";
+}
+
+std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+GpuVideoEncodeAcceleratorHost::GetSupportedProfiles() {
+  DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return std::vector<media::VideoEncodeAccelerator::SupportedProfile>();
+  return channel_->gpu_info().video_encode_accelerator_supported_profiles;
 }
 
 bool GpuVideoEncodeAcceleratorHost::Initialize(

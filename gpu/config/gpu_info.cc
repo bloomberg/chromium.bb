@@ -17,6 +17,19 @@ void EnumerateGPUDevice(gpu::GPUInfo::Enumerator* enumerator,
   enumerator->EndGPUDevice();
 }
 
+void EnumerateVideoEncodeAcceleratorSupportedProfile(
+    gpu::GPUInfo::Enumerator* enumerator,
+    const media::VideoEncodeAccelerator::SupportedProfile profile) {
+  enumerator->BeginVideoEncodeAcceleratorSupportedProfile();
+  enumerator->AddInt("profile", profile.profile);
+  enumerator->AddInt("maxResolutionWidth", profile.max_resolution.width());
+  enumerator->AddInt("maxResolutionHeight", profile.max_resolution.height());
+  enumerator->AddInt("maxFramerateNumerator", profile.max_framerate_numerator);
+  enumerator->AddInt("maxFramerateDenominator",
+                     profile.max_framerate_denominator);
+  enumerator->EndVideoEncodeAcceleratorSupportedProfile();
+}
+
 }  // namespace
 
 namespace gpu {
@@ -88,6 +101,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     CollectInfoResult dx_diagnostics_info_state;
     DxDiagNode dx_diagnostics;
 #endif
+    std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+        video_encode_accelerator_supported_profiles;
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -143,6 +158,11 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt("DxDiagnosticsInfoState", dx_diagnostics_info_state);
 #endif
   // TODO(kbr): add dx_diagnostics on Windows.
+  for (size_t ii = 0; ii < video_encode_accelerator_supported_profiles.size();
+       ++ii) {
+    EnumerateVideoEncodeAcceleratorSupportedProfile(
+        enumerator, video_encode_accelerator_supported_profiles[ii]);
+  }
   enumerator->EndAuxAttributes();
 }
 

@@ -35,7 +35,11 @@ void CreateVideoEncodeAccelerator(
 
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 GetSupportedVideoEncodeAcceleratorProfiles() {
-  return GpuVideoEncodeAcceleratorHost::GetSupportedProfiles();
+  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
+      RenderThreadImpl::current()->GetGpuFactories();
+  if (!gpu_factories.get())
+    return std::vector<media::VideoEncodeAccelerator::SupportedProfile>();
+  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
 }
 
 }  // namespace content

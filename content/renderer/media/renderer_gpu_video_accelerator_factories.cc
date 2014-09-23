@@ -245,4 +245,11 @@ RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
   return task_runner_;
 }
 
+std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+RendererGpuVideoAcceleratorFactories::
+    GetVideoEncodeAcceleratorSupportedProfiles() {
+  return gpu_channel_host_->gpu_info()
+      .video_encode_accelerator_supported_profiles;
+}
+
 }  // namespace content

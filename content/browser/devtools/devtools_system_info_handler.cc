@@ -66,6 +66,10 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
   virtual void EndGPUDevice() OVERRIDE {
   }
 
+  virtual void BeginVideoEncodeAcceleratorSupportedProfile() OVERRIDE {}
+
+  virtual void EndVideoEncodeAcceleratorSupportedProfile() OVERRIDE {}
+
   virtual void BeginAuxAttributes() OVERRIDE {
     in_aux_attributes_ = true;
   }
