@@ -263,6 +263,11 @@ bool ServiceProcessControl::GetHistograms(
   DCHECK(!histograms_callback.is_null());
   histograms_callback_.Reset();
 
+#if defined(OS_MACOSX)
+  // TODO(vitalybuka): Investigate why it crashes MAC http://crbug.com/406227.
+  return false;
+#endif  // OS_MACOSX
+
   // If the service process is already running then connect to it.
   if (!CheckServiceProcessReady())
     return false;
