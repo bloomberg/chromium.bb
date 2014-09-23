@@ -49,7 +49,6 @@ class InspectorConsoleMessage;
 class InspectorFrontend;
 class InjectedScriptManager;
 class InspectorTimelineAgent;
-class InspectorTracingAgent;
 class InstrumentingAgents;
 class ResourceError;
 class ResourceLoader;
@@ -66,7 +65,7 @@ typedef String ErrorString;
 class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    InspectorConsoleAgent(InspectorTimelineAgent*, InspectorTracingAgent*, InjectedScriptManager*);
+    InspectorConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -105,7 +104,6 @@ protected:
     virtual ConsoleMessageStorage* messageStorage() = 0;
 
     RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
-    RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     bool m_enabled;

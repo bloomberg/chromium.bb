@@ -31,9 +31,6 @@ public:
     virtual void restore() OVERRIDE;
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
 
-    void consoleTimeline(const String& title);
-    void consoleTimelineEnd(const String& title);
-
     // Protocol method implementations.
     virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*) OVERRIDE;
     virtual void end(ErrorString*);
@@ -45,13 +42,10 @@ private:
     InspectorTracingAgent(InspectorClient*, InspectorWorkerAgent*);
 
     void emitMetadataEvents();
-    void innerStart(const String& categoryFilter, bool fromConsole);
     String sessionId();
-    void notifyTracingStopped();
 
     int m_layerTreeId;
     InspectorClient* m_client;
-    Vector<String> m_consoleTimelines;
     InspectorFrontend::Tracing* m_frontend;
     InspectorWorkerAgent* m_workerAgent;
 };

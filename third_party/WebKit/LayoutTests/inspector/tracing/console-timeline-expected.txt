@@ -1,0 +1,83 @@
+CONSOLE WARNING: console.timeline is deprecated. Please use the console.time instead.
+CONSOLE WARNING: console.timelineEnd is deprecated. Please use the console.timeEnd instead.
+Tests console.timeline and timelineEnd commands.
+
+
+Running: testStartStopTimeline
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'one'
+timestamp 2
+
+Running: testStartStopMultiple
+error: Event Timeline 'one' has already been started
+error: Event Timeline 'two' has already been started
+error: Unexpected async event Timeline 'two', phase F
+error: Unexpected async event Timeline 'one', phase F
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'one'
+Timeline 'two'
+Timeline 'two'
+Timeline 'two'
+timestamp 2
+Timeline 'one'
+timestamp 3
+Timeline 'two'
+timestamp 4
+Timeline 'one'
+timestamp 5
+
+Running: testStartMultipleStopInsideEvals
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'two'
+timestamp 2
+timestamp 3
+Timeline 'two'
+timestamp 4
+timestamp 5
+Timeline 'one'
+timestamp 6 - FAIL
+
+Running: testStopUnknown
+error: Unexpected async event Timeline 'two', phase F
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'two'
+timestamp 2
+Timeline 'one'
+timestamp 3
+
+Running: testStartFromPanel
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'one'
+timestamp 2
+
+Running: testStopFromPanel
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'two'
+timestamp 2
+
+Running: testRacyStart
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'two'
+timestamp 2
+
+Running: testRacyStart2
+timestamp 0
+Timeline 'one'
+timestamp 1
+Timeline 'two'
+timestamp 2
+

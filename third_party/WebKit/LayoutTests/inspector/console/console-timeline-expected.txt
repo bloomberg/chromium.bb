@@ -1,4 +1,6 @@
+CONSOLE WARNING: console.timeline is deprecated. Please use the console.time instead.
 CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE WARNING: console.timelineEnd is deprecated. Please use the console.timeEnd instead.
 CONSOLE DEBUG: Timeline 'one' finished.
 CONSOLE DEBUG: Timeline 'one' started.
 CONSOLE DEBUG: Timeline 'one' started.

@@ -51,8 +51,8 @@
     [CallWith=ScriptState] void timeEnd(optional DOMString title = null);
     void timeStamp(optional DOMString title = null);
 
-    [CallWith=ScriptState] void timeline(optional DOMString title = null);
-    [CallWith=ScriptState] void timelineEnd(optional DOMString title = null);
+    [DeprecateAs=ConsoleTimeline,CallWith=ScriptState] void timeline(optional DOMString title = null);
+    [DeprecateAs=ConsoleTimelineEnd,CallWith=ScriptState] void timelineEnd(optional DOMString title = null);
 
     [CallWith=(ScriptArguments,ScriptState)] void group();
     [CallWith=(ScriptArguments,ScriptState)] void groupCollapsed();

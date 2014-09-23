@@ -36,7 +36,7 @@
 namespace blink {
 
 WorkerConsoleAgent::WorkerConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager, WorkerGlobalScope* workerGlobalScope)
-    : InspectorConsoleAgent(timelineAgent, 0, injectedScriptManager)
+    : InspectorConsoleAgent(timelineAgent, injectedScriptManager)
     , m_workerGlobalScope(workerGlobalScope)
 {
 }

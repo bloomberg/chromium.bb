@@ -182,14 +182,25 @@ void ConsoleBase::timeStamp(const String& title)
     InspectorInstrumentation::consoleTimeStamp(context(), title);
 }
 
+static String formatTimelineTitle(const String& title)
+{
+    return String::format("Timeline '%s'", title.utf8().data());
+}
+
 void ConsoleBase::timeline(ScriptState* scriptState, const String& title)
 {
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::consoleTimeline(context(), title, scriptState);
+
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", formatTimelineTitle(title).utf8().data(), this);
 }
 
 void ConsoleBase::timelineEnd(ScriptState* scriptState, const String& title)
 {
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::consoleTimelineEnd(context(), title, scriptState);
+
+    TRACE_EVENT_COPY_ASYNC_END0("blink.console", formatTimelineTitle(title).utf8().data(), this);
 }
 
 void ConsoleBase::group(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)

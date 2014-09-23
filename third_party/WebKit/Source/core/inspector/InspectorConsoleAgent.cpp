@@ -39,7 +39,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTimelineAgent.h"
-#include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
@@ -66,10 +65,9 @@ static const char tracingBasedTimeline[] = "tracingBasedTimeline";
 
 int InspectorConsoleAgent::s_enabledAgentCount = 0;
 
-InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent, InjectedScriptManager* injectedScriptManager)
+InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorConsoleAgent>("Console")
     , m_timelineAgent(timelineAgent)
-    , m_tracingAgent(tracingAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
     , m_enabled(false)
@@ -86,7 +84,6 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
 void InspectorConsoleAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_timelineAgent);
-    visitor->trace(m_tracingAgent);
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }
@@ -177,17 +174,13 @@ void InspectorConsoleAgent::setTracingBasedTimeline(ErrorString*, bool enabled)
 void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
     UseCounter::count(context, UseCounter::DevToolsConsoleTimeline);
-    if (m_tracingAgent && m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
-        m_tracingAgent->consoleTimeline(title);
-    else
+    if (!m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
         m_timelineAgent->consoleTimeline(context, title, scriptState);
 }
 
 void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
-    if (m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
-        m_tracingAgent->consoleTimelineEnd(title);
-    else
+    if (!m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
         m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
 }
 

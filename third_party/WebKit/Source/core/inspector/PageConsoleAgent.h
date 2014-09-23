@@ -43,9 +43,9 @@ class Page;
 class PageConsoleAgent FINAL : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent, Page* page)
+    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, Page* page)
     {
-        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, timelineAgent, tracingAgent, page));
+        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, timelineAgent, page));
     }
     virtual ~PageConsoleAgent();
     virtual void trace(Visitor*) OVERRIDE;
@@ -56,7 +56,7 @@ protected:
     virtual ConsoleMessageStorage* messageStorage() OVERRIDE;
 
 private:
-    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*, InspectorTracingAgent*, Page*);
+    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*, Page*);
     virtual void clearMessages(ErrorString*) OVERRIDE;
     virtual void addInspectedNode(ErrorString*, int nodeId) OVERRIDE;
 

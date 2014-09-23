@@ -504,6 +504,8 @@ public:
         NotificationPermissionRequested = 535,
         MediaStreamLabel = 536,
         MediaStreamStop = 537,
+        ConsoleTimeline = 538,
+        ConsoleTimelineEnd = 539,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

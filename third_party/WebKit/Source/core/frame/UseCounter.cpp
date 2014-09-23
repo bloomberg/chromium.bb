@@ -786,6 +786,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case XHRProgressEventTotalSize:
         return "The XMLHttpRequest progress event property 'totalSize' is deprecated. Please use 'total' instead.";
 
+    case ConsoleTimeline:
+        return "console.timeline is deprecated. Please use the console.time instead.";
+
+    case ConsoleTimelineEnd:
+        return "console.timelineEnd is deprecated. Please use the console.timeEnd instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

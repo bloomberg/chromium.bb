@@ -18,7 +18,6 @@ namespace blink {
 
 namespace TracingAgentState {
 const char sessionId[] = "sessionId";
-const char tracingStartedFromProtocol[] = "tracingStartedFromProtocol";
 const char tracingStarted[] = "tracingStarted";
 }
 
@@ -42,23 +41,19 @@ void InspectorTracingAgent::restore()
 
 void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, const String&, const double*)
 {
-    m_state->setBoolean(TracingAgentState::tracingStartedFromProtocol, true);
-    innerStart(categoryFilter, false);
-}
-
-void InspectorTracingAgent::end(ErrorString* errorString)
-{
-    m_state->setBoolean(TracingAgentState::tracingStarted, false);
-    m_consoleTimelines.clear();
-    notifyTracingStopped();
-}
-
-void InspectorTracingAgent::innerStart(const String& categoryFilter, bool fromConsole)
-{
+    if (m_state->getBoolean(TracingAgentState::tracingStarted))
+        return;
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
     m_state->setBoolean(TracingAgentState::tracingStarted, true);
     m_client->enableTracing(categoryFilter);
     emitMetadataEvents();
+}
+
+void InspectorTracingAgent::end(ErrorString* errorString)
+{
+    m_client->disableTracing();
+    m_state->setBoolean(TracingAgentState::tracingStarted, false);
+    m_workerAgent->setTracingSessionId(String());
 }
 
 String InspectorTracingAgent::sessionId()
@@ -80,34 +75,6 @@ void InspectorTracingAgent::setLayerTreeId(int layerTreeId)
 {
     m_layerTreeId = layerTreeId;
     TRACE_EVENT_INSTANT2(devtoolsMetadataEventCategory, "SetLayerTreeId", "sessionId", sessionId().utf8(), "layerTreeId", m_layerTreeId);
-}
-
-void InspectorTracingAgent::consoleTimeline(const String& title)
-{
-    m_consoleTimelines.append(title);
-    if (m_state->getBoolean(TracingAgentState::tracingStarted))
-        return;
-    innerStart("-*,disabled-by-default-devtools.timeline", true);
-}
-
-void InspectorTracingAgent::consoleTimelineEnd(const String& title)
-{
-    size_t index = m_consoleTimelines.find(title);
-    if (index == kNotFound)
-        return;
-
-    m_consoleTimelines.remove(index);
-    if (!m_consoleTimelines.size()
-        && m_state->getBoolean(TracingAgentState::tracingStarted)
-        && !m_state->getBoolean(TracingAgentState::tracingStartedFromProtocol))
-        notifyTracingStopped();
-    m_state->setBoolean(TracingAgentState::tracingStarted, false);
-}
-
-void InspectorTracingAgent::notifyTracingStopped()
-{
-    m_client->disableTracing();
-    m_workerAgent->setTracingSessionId(String());
 }
 
 void InspectorTracingAgent::setFrontend(InspectorFrontend* frontend)
