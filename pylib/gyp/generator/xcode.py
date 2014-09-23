@@ -486,7 +486,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
 def AddSourceToTarget(source, type, pbxp, xct):
   # TODO(mark): Perhaps source_extensions and library_extensions can be made a
   # little bit fancier.
-  source_extensions = ['c', 'cc', 'cpp', 'cxx', 'm', 'mm', 's']
+  source_extensions = ['c', 'cc', 'cpp', 'cxx', 'm', 'mm', 's', 'swift']
 
   # .o is conceptually more of a "source" than a "library," but Xcode thinks
   # of "sources" as things to compile and "libraries" (or "frameworks") as
