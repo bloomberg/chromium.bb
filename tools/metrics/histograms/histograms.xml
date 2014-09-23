@@ -19031,6 +19031,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Cellular.DevicePresenceStatus"
+    enum="BooleanPresent">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the presence of a Cellular device in
+    the system. A sample is emitted once every 3 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Cellular.DHCPOptionFailureDetected"
     enum="NetworkDHCPOptionFailure">
   <obsolete>
@@ -19223,6 +19232,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DeviceRemovedEvent" enum="DeviceTechnologyType">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the network device removed events for
+    each device type.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.DHCPClientStatus" enum="NetworkDhcpClientStatus">
   <owner>pstew@chromium.org</owner>
   <summary>
@@ -19239,6 +19256,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     encountered by Shill for each network technology.  This indicates that Shill
     is using minimal DHCP options due to suspected MTU issues on the return path
     from the DHCP server back to the client.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.DevicePresenceStatus"
+    enum="BooleanPresent">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the presence of an Ethernet device in
+    the system. A sample is emitted once every 3 minutes.
   </summary>
 </histogram>
 
@@ -19583,6 +19609,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Chrome OS network usage metric.  Broad category of reason client
     disconnected a WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.DevicePresenceStatus" enum="BooleanPresent">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the presence of a WiFi device in the
+    system. A sample is emitted once every 3 minutes.
   </summary>
 </histogram>
 
@@ -19952,7 +19986,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.WiMax.DHCPOptionFailureDetected"
+<histogram name="Network.Shill.Wimax.DevicePresenceStatus"
+    enum="BooleanPresent">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the presence of a WiMax device in the
+    system. A sample is emitted once every 3 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wimax.DHCPOptionFailureDetected"
     enum="NetworkDHCPOptionFailure">
   <obsolete>
     Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
@@ -19966,7 +20009,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.WiMax.ExpiredLeaseLengthSeconds" units="seconds">
+<histogram name="Network.Shill.Wimax.ExpiredLeaseLengthSeconds" units="seconds">
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
@@ -19975,7 +20018,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.WiMax.TimeToConfig" units="milliseconds">
+<histogram name="Network.Shill.Wimax.TimeToConfig" units="milliseconds">
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
@@ -19983,7 +20026,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.WiMax.TimeToInitialize" units="milliseconds">
+<histogram name="Network.Shill.Wimax.TimeToInitialize" units="milliseconds">
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to initialize a WiMax
@@ -19991,7 +20034,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.WiMax.TimeToOnline" units="milliseconds">
+<histogram name="Network.Shill.Wimax.TimeToOnline" units="milliseconds">
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
@@ -38898,6 +38941,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Orphan"/>
 </enum>
 
+<enum name="BooleanPresent" type="int">
+  <int value="0" label="Not Present"/>
+  <int value="1" label="Present"/>
+</enum>
+
 <enum name="BooleanProfileSignedIn" type="int">
   <int value="0" label="Profile was not Signed In"/>
   <int value="1" label="Profile was Signed In"/>
@@ -39620,6 +39668,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="10" label="REGISTER_CANCEL_ON_PRINTER"/>
   <int value="11" label="REGISTER_TIMEOUT"/>
   <int value="12" label="LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO"/>
+</enum>
+
+<enum name="DeviceTechnologyType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ethernet"/>
+  <int value="2" label="WiFi"/>
+  <int value="3" label="WiMax"/>
+  <int value="4" label="Cellular"/>
 </enum>
 
 <enum name="DevToolsAction" type="int">
@@ -47017,25 +47073,27 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="NetworkServiceError" type="int">
-  <summary>
-    The error types come from the connman_service_error enum in
-    flimflam/include/service.h
-  </summary>
   <int value="0" label="UNKNOWN"/>
-  <int value="1" label="OUT_OF_RANGE"/>
-  <int value="2" label="PIN_MISSING"/>
-  <int value="3" label="DHCP_FAILED"/>
-  <int value="4" label="CONNECT_FAILED"/>
-  <int value="5" label="BAD_PASSPHRASE"/>
-  <int value="6" label="BAD_WEPKEY"/>
-  <int value="7" label="ACTIVATION_FAILED"/>
-  <int value="8" label="NEED_EVDO"/>
-  <int value="9" label="NEED_HOME_NETWORK"/>
-  <int value="10" label="OTASP_FAILED"/>
-  <int value="11" label="AAA_FAILED"/>
-  <int value="12" label="INTERNAL"/>
-  <int value="13" label="DNS_LOOKUP_FAILED"/>
-  <int value="14" label="HTTP_GET_FAILED"/>
+  <int value="1" label="AAA_FAILED"/>
+  <int value="2" label="ACTIVATION_FAILED"/>
+  <int value="3" label="BAD_PASSPHRASE"/>
+  <int value="4" label="BAD_WEPKEY"/>
+  <int value="5" label="CONNECT_FAILED"/>
+  <int value="6" label="DHCP_FAILED"/>
+  <int value="7" label="DNS_LOOKUP_FAILED"/>
+  <int value="8" label="EAP_AUTHENTICATION_FAILED"/>
+  <int value="9" label="EAP_LOCAL_TLS_FAILED"/>
+  <int value="10" label="EAP_REMOTE_TLS_FAILED"/>
+  <int value="11" label="HTTP_GET_FAILED"/>
+  <int value="12" label="IPSEC_CERT_AUTH_FAILED"/>
+  <int value="13" label="IPSEC_PSK_AUTH_FAILED"/>
+  <int value="14" label="INTERNAL"/>
+  <int value="15" label="NEED_EVDO"/>
+  <int value="16" label="NEED_HOME_NETWORK"/>
+  <int value="17" label="OTASP_FAILED"/>
+  <int value="18" label="OUT_OF_RANGE"/>
+  <int value="19" label="PPP_AUTH_FAILED"/>
+  <int value="20" label="PIN_MISSING"/>
 </enum>
 
 <enum name="NetworkTechnology" type="int">
