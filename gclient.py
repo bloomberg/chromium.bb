@@ -342,6 +342,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self._file_list = []
+    # List of host names from which dependencies are allowed.
+    # Default is an empty set, meaning unspecified in DEPS file, and hence all
+    # hosts will be allowed. Non-empty set means whitelist of hosts.
+    # allowed_hosts var is scoped to its DEPS file, and so it isn't recursive.
+    self._allowed_hosts = frozenset()
     # If it is not set to True, the dependency wasn't processed for its child
     # dependency, i.e. its DEPS wasn't read.
     self._deps_parsed = False
@@ -687,6 +692,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           rel_deps.add(os.path.normpath(os.path.join(self.name, d)))
         self.recursedeps = rel_deps
 
+    if 'allowed_hosts' in local_scope:
+      try:
+        self._allowed_hosts = frozenset(local_scope.get('allowed_hosts'))
+      except TypeError:  # raised if non-iterable
+        pass
+      if not self._allowed_hosts:
+        logging.warning("allowed_hosts is specified but empty %s",
+                        self._allowed_hosts)
+        raise gclient_utils.Error(
+            'ParseDepsFile(%s): allowed_hosts must be absent '
+            'or a non-empty iterable' % self.name)
+
     # Convert the deps into real Dependency.
     deps_to_add = []
     for name, url in deps.iteritems():
@@ -755,6 +772,21 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             if options.verbose:
               print('Using parent\'s revision date %s since we are in a '
                     'different repository.' % options.revision)
+
+  def findDepsFromNotAllowedHosts(self):
+    """Returns a list of depenecies from not allowed hosts.
+
+    If allowed_hosts is not set, allows all hosts and returns empty list.
+    """
+    if not self._allowed_hosts:
+      return []
+    bad_deps = []
+    for dep in self._dependencies:
+      if isinstance(dep.url, basestring):
+        parsed_url = urlparse.urlparse(dep.url)
+        if parsed_url.netloc and parsed_url.netloc not in self._allowed_hosts:
+          bad_deps.append(dep)
+    return bad_deps
 
   # Arguments number differs from overridden method
   # pylint: disable=W0221
@@ -1053,6 +1085,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   @property
   @gclient_utils.lockedmethod
+  def allowed_hosts(self):
+    return self._allowed_hosts
+
+  @property
+  @gclient_utils.lockedmethod
   def file_list(self):
     return tuple(self._file_list)
 
@@ -1077,7 +1114,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     out = []
     for i in ('name', 'url', 'parsed_url', 'safesync_url', 'custom_deps',
               'custom_vars', 'deps_hooks', 'file_list', 'should_process',
-              'processed', 'hooks_ran', 'deps_parsed', 'requirements'):
+              'processed', 'hooks_ran', 'deps_parsed', 'requirements',
+              'allowed_hosts'):
       # First try the native property if it exists.
       if hasattr(self, '_' + i):
         value = getattr(self, '_' + i, False)
@@ -2085,6 +2123,27 @@ def CMDhookinfo(parser, args):
   print '; '.join(' '.join(hook) for hook in client.GetHooks(options))
   return 0
 
+
+def CMDverify(parser, args):
+  """Verifies the DEPS file deps are only from allowed_hosts."""
+  (options, args) = parser.parse_args(args)
+  client = GClient.LoadCurrentConfig(options)
+  if not client:
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
+  client.RunOnDeps(None, [])
+  # Look at each first-level dependency of this gclient only.
+  for dep in client.dependencies:
+    bad_deps = dep.findDepsFromNotAllowedHosts()
+    if not bad_deps:
+      continue
+    print "There are deps from not allowed hosts in file %s" % dep.deps_file
+    for bad_dep in bad_deps:
+      print "\t%s at %s" % (bad_dep.name, bad_dep.url)
+    print "allowed_hosts:", ', '.join(dep.allowed_hosts)
+    sys.stdout.flush()
+    raise gclient_utils.Error(
+        'dependencies from disallowed hosts; check your DEPS file.')
+  return 0
 
 class OptionParser(optparse.OptionParser):
   gclientfile_default = os.environ.get('GCLIENT_FILE', '.gclient')

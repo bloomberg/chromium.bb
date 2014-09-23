@@ -907,6 +907,124 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
+  def testDepsFromNotAllowedHostsUnspecified(self):
+    """Verifies gclient works fine with DEPS without allowed_hosts."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    dep = obj.dependencies[0]
+    self.assertEquals([], dep.findDepsFromNotAllowedHosts())
+    self.assertEquals(frozenset(), dep.allowed_hosts)
+    self._get_processed()
+
+  def testDepsFromNotAllowedHostsOK(self):
+    """Verifies gclient works fine with DEPS with proper allowed_hosts."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', '.DEPS.git'),
+        'allowed_hosts = ["example.com"]\n'
+        'deps = {\n'
+        '  "bar": "svn://example.com/bar",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    dep = obj.dependencies[0]
+    self.assertEquals([], dep.findDepsFromNotAllowedHosts())
+    self.assertEquals(frozenset(['example.com']), dep.allowed_hosts)
+    self._get_processed()
+
+  def testDepsFromNotAllowedHostsBad(self):
+    """Verifies gclient works fine with DEPS with proper allowed_hosts."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', '.DEPS.git'),
+        'allowed_hosts = ["other.com"]\n'
+        'deps = {\n'
+        '  "bar": "svn://example.com/bar",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    dep = obj.dependencies[0]
+    self.assertEquals(frozenset(['other.com']), dep.allowed_hosts)
+    self.assertEquals([dep.dependencies[0]], dep.findDepsFromNotAllowedHosts())
+    self._get_processed()
+
+  def testDepsParseFailureWithEmptyAllowedHosts(self):
+    """Verifies gclient fails with defined but empty allowed_hosts."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'allowed_hosts = []\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    try:
+      obj.RunOnDeps('None', [])
+      self.assertFalse("unreachable code")
+    except gclient_utils.Error, e:
+      self.assertIn('allowed_hosts must be', str(e))
+    finally:
+      self._get_processed()
+
+  def testDepsParseFailureWithNonIterableAllowedHosts(self):
+    """Verifies gclient fails with defined but non-iterable allowed_hosts."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'allowed_hosts = None\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    try:
+      obj.RunOnDeps('None', [])
+      self.assertFalse("unreachable code")
+    except gclient_utils.Error, e:
+      self.assertIn('allowed_hosts must be', str(e))
+    finally:
+      self._get_processed()
+
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
