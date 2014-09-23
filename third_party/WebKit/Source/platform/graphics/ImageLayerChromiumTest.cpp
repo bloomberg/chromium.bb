@@ -27,7 +27,6 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
-#include "public/platform/WebImageLayer.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <gtest/gtest.h>
