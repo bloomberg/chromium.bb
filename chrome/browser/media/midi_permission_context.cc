@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/midi_permission_context.h"
 
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 #include "url/gurl.h"
 
 MidiPermissionContext::MidiPermissionContext(Profile* profile)

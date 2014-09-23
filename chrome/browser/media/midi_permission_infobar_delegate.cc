@@ -5,10 +5,10 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

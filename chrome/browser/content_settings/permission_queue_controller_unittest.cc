@@ -6,11 +6,11 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"

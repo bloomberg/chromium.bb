@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_BUBBLE_REQUEST_IMPL_H_
 
 #include "base/callback.h"
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 
 class GURL;
 

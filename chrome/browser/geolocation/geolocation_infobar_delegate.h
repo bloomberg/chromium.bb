@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/content_settings/permission_request_id.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "url/gurl.h"
 

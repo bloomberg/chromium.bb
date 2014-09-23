@@ -25,8 +25,8 @@
 // per site settings) are queried on the UI thread while the system level
 // permissions are considered I/O and thus checked in the blocking thread pool.
 
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 #include "url/gurl.h"
 
 namespace content {

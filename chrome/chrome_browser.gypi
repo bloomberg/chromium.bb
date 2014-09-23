@@ -307,8 +307,6 @@
       'browser/content_settings/permission_infobar_delegate.h',
       'browser/content_settings/permission_queue_controller.cc',
       'browser/content_settings/permission_queue_controller.h',
-      'browser/content_settings/permission_request_id.cc',
-      'browser/content_settings/permission_request_id.h',
       'browser/content_settings/tab_specific_content_settings.cc',
       'browser/content_settings/tab_specific_content_settings.h',
       'browser/crash_upload_list.cc',

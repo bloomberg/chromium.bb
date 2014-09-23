@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_REQUEST_ID_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_REQUEST_ID_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PERMISSION_REQUEST_ID_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PERMISSION_REQUEST_ID_H_
 
 #include <string>
 
@@ -39,4 +39,4 @@ class PermissionRequestID {
   // Purposefully do not disable copying, as this is stored in STL containers.
 };
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_REQUEST_ID_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PERMISSION_REQUEST_ID_H_
