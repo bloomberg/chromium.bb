@@ -1308,7 +1308,5 @@ crbug.com/415039 [ Android ] media/video-autoplay.html [ Crash ]
 
 crbug.com/415089 http/tests/serviceworker/fetch-access-control.html  [ Pass Timeout ]
 
-crbug.com/400659 [ Mavericks ] media/gc-while-playing.html [ Failure ]
-
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
 crbug.com/416637 [ Debug ] virtual/threaded/animations/webkit-perspective.html [ Crash ]
