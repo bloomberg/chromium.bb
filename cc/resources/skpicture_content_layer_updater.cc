@@ -23,23 +23,27 @@ SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
 SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
 
 void SkPictureContentLayerUpdater::PrepareToUpdate(
-    const gfx::Rect& content_rect,
-    const gfx::Size&,
+    const gfx::Size& content_size,
+    const gfx::Rect& paint_rect,
+    const gfx::Size& tile_size,
     float contents_width_scale,
     float contents_height_scale) {
   SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(
-      content_rect.width(), content_rect.height(), NULL, 0);
-  DCHECK_EQ(content_rect.width(), canvas->getBaseLayerSize().width());
-  DCHECK_EQ(content_rect.height(), canvas->getBaseLayerSize().height());
+  SkCanvas* canvas =
+      recorder.beginRecording(paint_rect.width(), paint_rect.height(), NULL, 0);
+  DCHECK_EQ(paint_rect.width(), canvas->getBaseLayerSize().width());
+  DCHECK_EQ(paint_rect.height(), canvas->getBaseLayerSize().height());
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
-  PaintContents(
-      canvas, content_rect, contents_width_scale, contents_height_scale);
+  PaintContents(canvas,
+                content_size,
+                paint_rect,
+                contents_width_scale,
+                contents_height_scale);
   base::TimeDelta duration =
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddRecord(
-      duration, content_rect.width() * content_rect.height());
+      duration, paint_rect.width() * paint_rect.height());
   picture_ = skia::AdoptRef(recorder.endRecording());
 }
 
