@@ -329,9 +329,8 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
     NSString* layoutId = (NSString*)TISGetInputSourceProperty(
         ref, kTISPropertyInputSourceID);
     if ([layoutId isEqualToString:@"com.apple.keylayout.Belgian"] ||
-        [layoutId isEqualToString:@"com.apple.keylayout.French"] ||
-        [layoutId isEqualToString:@"com.apple.keylayout.French-numerical"] ||
-        [layoutId isEqualToString:@"com.apple.keylayout.Italian"]) {
+        [layoutId isEqualToString:@"com.apple.keylayout.Italian"] ||
+        [layoutId hasPrefix:@"com.apple.keylayout.French"]) {
       keyCode = 0x29;
     } else if ([layoutId isEqualToString:@"com.apple.keylayout.Turkish"]) {
       keyCode = 0x28;
