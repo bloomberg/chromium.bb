@@ -364,6 +364,9 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     if 'url(' in line and file_extension == 'css':
       return True
 
+    if '<include' in line and file_extension in ('css', 'html', 'js'):
+      return True
+
     return input_api.re.match(
         r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line)
 
