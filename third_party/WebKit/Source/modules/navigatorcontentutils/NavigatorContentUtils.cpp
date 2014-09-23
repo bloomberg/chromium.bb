@@ -68,7 +68,7 @@ static void initCustomSchemeHandlerWhitelist()
         schemeWhitelist->add(schemes[i]);
 }
 
-static bool verifyCustomHandlerURL(const KURL& baseURL, const String& url, ExceptionState& exceptionState)
+static bool verifyCustomHandlerURL(const Document& document, const String& url, ExceptionState& exceptionState)
 {
     // The specification requires that it is a SyntaxError if the "%s" token is
     // not present.
@@ -84,10 +84,17 @@ static bool verifyCustomHandlerURL(const KURL& baseURL, const String& url, Excep
     String newURL = url;
     newURL.remove(index, WTF_ARRAY_LENGTH(token) - 1);
 
-    KURL kurl(baseURL, newURL);
+    KURL kurl = document.completeURL(url);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + baseURL.string() + "' is invalid.");
+        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + document.baseURL().string() + "' is invalid.");
+        return false;
+    }
+
+    // The specification says that the API throws SecurityError exception if the
+    // URL's origin differs from the document's origin.
+    if (!document.securityOrigin()->canRequest(kurl)) {
+        exceptionState.throwSecurityError("Can only register custom handler in the document's origin.");
         return false;
     }
 
@@ -149,17 +156,17 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const 
     if (!navigator.frame())
         return;
 
-    ASSERT(navigator.frame()->document());
-    KURL baseURL = navigator.frame()->document()->baseURL();
+    Document* document = navigator.frame()->document();
+    ASSERT(document);
 
-    if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
+    if (!verifyCustomHandlerURL(*document, url, exceptionState))
         return;
 
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return;
 
     ASSERT(navigator.frame()->page());
-    NavigatorContentUtils::from(*navigator.frame()->page())->client()->registerProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url), title);
+    NavigatorContentUtils::from(*navigator.frame()->page())->client()->registerProtocolHandler(scheme, document->completeURL(url), title);
 }
 
 static String customHandlersStateString(const NavigatorContentUtilsClient::CustomHandlersState state)
@@ -193,16 +200,14 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator& navigator, 
     if (document->activeDOMObjectsAreStopped())
         return declined;
 
-    KURL baseURL = document->baseURL();
-
-    if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
+    if (!verifyCustomHandlerURL(*document, url, exceptionState))
         return declined;
 
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return declined;
 
     ASSERT(navigator.frame()->page());
-    return customHandlersStateString(NavigatorContentUtils::from(*navigator.frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, KURL(ParsedURLString, url)));
+    return customHandlersStateString(NavigatorContentUtils::from(*navigator.frame()->page())->client()->isProtocolHandlerRegistered(scheme, document->completeURL(url)));
 }
 
 void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
@@ -210,17 +215,17 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, cons
     if (!navigator.frame())
         return;
 
-    ASSERT(navigator.frame()->document());
-    KURL baseURL = navigator.frame()->document()->baseURL();
+    Document* document = navigator.frame()->document();
+    ASSERT(document);
 
-    if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
+    if (!verifyCustomHandlerURL(*document, url, exceptionState))
         return;
 
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return;
 
     ASSERT(navigator.frame()->page());
-    NavigatorContentUtils::from(*navigator.frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url));
+    NavigatorContentUtils::from(*navigator.frame()->page())->client()->unregisterProtocolHandler(scheme, document->completeURL(url));
 }
 
 const char* NavigatorContentUtils::supplementName()

@@ -19,15 +19,14 @@ public:
     NavigatorContentUtilsClientMock() { }
     virtual ~NavigatorContentUtilsClientMock() { }
 
-    virtual void registerProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&, const String& title);
+    virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title);
 
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL& baseURL, const KURL&);
-    virtual void unregisterProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&);
+    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL&);
+    virtual void unregisterProtocolHandler(const String& scheme, const KURL&);
 
 private:
     typedef struct {
         String scheme;
-        KURL baseURL;
         KURL url;
         String title;
     } ProtocolInfo;

@@ -260,15 +260,14 @@ public:
 
     // Registers a new URL handler for the given protocol.
     virtual void registerProtocolHandler(const WebString& scheme,
-        const WebURL& baseUrl,
         const WebURL& url,
         const WebString& title) { }
 
     // Unregisters a given URL handler for the given protocol.
-    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& baseUrl, const WebURL& url) { }
+    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& url) { }
 
     // Check if a given URL handler is registered for the given protocol.
-    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebURL& baseUrl, const WebURL& url)
+    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebURL& url)
     {
         return WebCustomHandlersNew;
     }

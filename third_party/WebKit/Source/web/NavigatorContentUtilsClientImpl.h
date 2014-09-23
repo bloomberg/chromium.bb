@@ -17,9 +17,9 @@ public:
     static PassOwnPtr<NavigatorContentUtilsClientImpl> create(WebViewImpl*);
     virtual ~NavigatorContentUtilsClientImpl() { }
 
-    virtual void registerProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&, const String& title) OVERRIDE;
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL& baseURL, const KURL&) OVERRIDE;
-    virtual void unregisterProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&) OVERRIDE;
+    virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title) OVERRIDE;
+    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL&) OVERRIDE;
+    virtual void unregisterProtocolHandler(const String& scheme, const KURL&) OVERRIDE;
 
 private:
     explicit NavigatorContentUtilsClientImpl(WebViewImpl*);
