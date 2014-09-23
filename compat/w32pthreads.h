@@ -39,6 +39,7 @@
 #include <windows.h>
 #include <process.h>
 
+#include "libavutil/attributes.h"
 #include "libavutil/common.h"
 #include "libavutil/internal.h"
 #include "libavutil/mem.h"
@@ -69,22 +70,34 @@ static void (WINAPI *cond_init)(pthread_cond_t *cond);
 static void (WINAPI *cond_signal)(pthread_cond_t *cond);
 static BOOL (WINAPI *cond_wait)(pthread_cond_t *cond, pthread_mutex_t *mutex,
                                 DWORD milliseconds);
-// #else
-// #define cond_init      InitializeConditionVariable
-// #define cond_broadcast WakeAllConditionVariable
-// #define cond_signal    WakeConditionVariable
-// #define cond_wait      SleepConditionVariableCS
-// #endif
+//#else
+//#define cond_init      InitializeConditionVariable
+//#define cond_broadcast WakeAllConditionVariable
+//#define cond_signal    WakeConditionVariable
+//#define cond_wait      SleepConditionVariableCS
 
-static unsigned __stdcall attribute_align_arg win32thread_worker(void *arg)
+//#define CreateEvent(a, reset, init, name)                   \
+//    CreateEventEx(a, name,                                  \
+//                  (reset ? CREATE_EVENT_MANUAL_RESET : 0) | \
+//                  (init ? CREATE_EVENT_INITIAL_SET : 0),    \
+//                  EVENT_ALL_ACCESS)
+// CreateSemaphoreExA seems to be desktop-only, but as long as we don't
+// use named semaphores, it doesn't matter if we use the W version.
+//#define CreateSemaphore(a, b, c, d) \
+//    CreateSemaphoreExW(a, b, c, d, 0, SEMAPHORE_ALL_ACCESS)
+//#define InitializeCriticalSection(x) InitializeCriticalSectionEx(x, 0, 0)
+//#define WaitForSingleObject(a, b) WaitForSingleObjectEx(a, b, FALSE)
+//#endif
+
+static av_unused unsigned __stdcall attribute_align_arg win32thread_worker(void *arg)
 {
     pthread_t *h = arg;
     h->ret = h->func(h->arg);
     return 0;
 }
 
-static int pthread_create(pthread_t *thread, const void *unused_attr,
-                          void *(*start_routine)(void*), void *arg)
+static av_unused int pthread_create(pthread_t *thread, const void *unused_attr,
+                                    void *(*start_routine)(void*), void *arg)
 {
     thread->func   = start_routine;
     thread->arg    = arg;
@@ -93,7 +106,7 @@ static int pthread_create(pthread_t *thread, const void *unused_attr,
     return !thread->handle;
 }
 
-static void pthread_join(pthread_t thread, void **value_ptr)
+static av_unused void pthread_join(pthread_t thread, void **value_ptr)
 {
     DWORD ret = WaitForSingleObject(thread.handle, INFINITE);
     if (ret != WAIT_OBJECT_0)
@@ -135,7 +148,7 @@ typedef struct  win32_cond_t {
     volatile int is_broadcast;
 } win32_cond_t;
 
-static int pthread_cond_init(pthread_cond_t *cond, const void *unused_attr)
+static av_unused int pthread_cond_init(pthread_cond_t *cond, const void *unused_attr)
 {
     win32_cond_t *win32_cond = NULL;
     if (cond_init) {
@@ -160,7 +173,7 @@ static int pthread_cond_init(pthread_cond_t *cond, const void *unused_attr)
     return 0;
 }
 
-static void pthread_cond_destroy(pthread_cond_t *cond)
+static av_unused void pthread_cond_destroy(pthread_cond_t *cond)
 {
     win32_cond_t *win32_cond = cond->ptr;
     /* native condition variables do not destroy */
@@ -176,7 +189,7 @@ static void pthread_cond_destroy(pthread_cond_t *cond)
     cond->ptr = NULL;
 }
 
-static void pthread_cond_broadcast(pthread_cond_t *cond)
+static av_unused void pthread_cond_broadcast(pthread_cond_t *cond)
 {
     win32_cond_t *win32_cond = cond->ptr;
     int have_waiter;
@@ -207,7 +220,7 @@ static void pthread_cond_broadcast(pthread_cond_t *cond)
     pthread_mutex_unlock(&win32_cond->mtx_broadcast);
 }
 
-static int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
+static av_unused int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 {
     win32_cond_t *win32_cond = cond->ptr;
     int last_waiter;
@@ -239,7 +252,7 @@ static int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
     return pthread_mutex_lock(mutex);
 }
 
-static void pthread_cond_signal(pthread_cond_t *cond)
+static av_unused void pthread_cond_signal(pthread_cond_t *cond)
 {
     win32_cond_t *win32_cond = cond->ptr;
     int have_waiter;
@@ -264,7 +277,7 @@ static void pthread_cond_signal(pthread_cond_t *cond)
     pthread_mutex_unlock(&win32_cond->mtx_broadcast);
 }
 
-static void w32thread_init(void)
+static av_unused void w32thread_init(void)
 {
     // TODO(dalecurtis): Upstream incorrectly assumes Vista+.  Reported.
 // #if _WIN32_WINNT < 0x0600

@@ -141,9 +141,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   if host_os == target_os and not config_only:
     libraries = [
-        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 55)),
-        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 55)),
-        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 52)),
+        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 56)),
+        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 56)),
+        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 54)),
     ]
     PrintAndCheckCall(
         ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)

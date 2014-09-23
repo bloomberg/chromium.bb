@@ -84,6 +84,7 @@ typedef struct {
     int icy_metaint;
     char *icy_metadata_headers;
     char *icy_metadata_packet;
+    AVDictionary *metadata;
 #if CONFIG_ZLIB
     int compressed;
     z_stream inflate_stream;
@@ -110,9 +111,10 @@ static const AVOption options[] = {
     { "post_data", "set custom HTTP post data", OFFSET(post_data), AV_OPT_TYPE_BINARY, .flags = D | E },
     { "mime_type", "export the MIME type", OFFSET(mime_type), AV_OPT_TYPE_STRING, { 0 }, 0, 0, AV_OPT_FLAG_EXPORT | AV_OPT_FLAG_READONLY },
     { "cookies", "set cookies to be sent in applicable future requests, use newline delimited Set-Cookie HTTP field value syntax", OFFSET(cookies), AV_OPT_TYPE_STRING, { 0 }, 0, 0, D },
-    { "icy", "request ICY metadata", OFFSET(icy), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, D },
+    { "icy", "request ICY metadata", OFFSET(icy), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, 1, D },
     { "icy_metadata_headers", "return ICY metadata headers", OFFSET(icy_metadata_headers), AV_OPT_TYPE_STRING, { 0 }, 0, 0, AV_OPT_FLAG_EXPORT },
     { "icy_metadata_packet", "return current ICY metadata packet", OFFSET(icy_metadata_packet), AV_OPT_TYPE_STRING, { 0 }, 0, 0, AV_OPT_FLAG_EXPORT },
+    { "metadata", "metadata read from the bitstream", OFFSET(metadata), AV_OPT_TYPE_DICT, {0}, 0, 0, AV_OPT_FLAG_EXPORT },
     { "auth_type", "HTTP authentication type", OFFSET(auth_state.auth_type), AV_OPT_TYPE_INT, { .i64 = HTTP_AUTH_NONE }, HTTP_AUTH_NONE, HTTP_AUTH_BASIC, D | E, "auth_type"},
     { "none", "No auth method set, autodetect", 0, AV_OPT_TYPE_CONST, { .i64 = HTTP_AUTH_NONE }, 0, 0, D | E, "auth_type"},
     { "basic", "HTTP basic authentication", 0, AV_OPT_TYPE_CONST, { .i64 = HTTP_AUTH_BASIC }, 0, 0, D | E, "auth_type"},
@@ -138,21 +140,16 @@ void ff_http_init_auth_state(URLContext *dest, const URLContext *src)
            sizeof(HTTPAuthState));
 }
 
-/* return non zero if error */
-static int http_open_cnx(URLContext *h, AVDictionary **options)
+static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
 {
     const char *path, *proxy_path, *lower_proto = "tcp", *local_path;
     char hostname[1024], hoststr[1024], proto[10];
     char auth[1024], proxyauth[1024] = "";
     char path1[MAX_URL_SIZE];
     char buf[1024], urlbuf[MAX_URL_SIZE];
-    int port, use_proxy, err, location_changed = 0, redirects = 0, attempts = 0;
-    HTTPAuthType cur_auth_type, cur_proxy_auth_type;
+    int port, use_proxy, err, location_changed = 0;
     HTTPContext *s = h->priv_data;
 
-    /* fill the dest addr */
-redo:
-    /* needed in any case to build the host string */
     av_url_split(proto, sizeof(proto), auth, sizeof(auth),
                  hostname, sizeof(hostname), &port,
                  path1, sizeof(path1), s->location);
@@ -160,7 +157,7 @@ redo:
 
     proxy_path = getenv("http_proxy");
     use_proxy  = !ff_http_match_no_proxy(getenv("no_proxy"), hostname) &&
-                 proxy_path != NULL && av_strstart(proxy_path, "http://", NULL);
+                 proxy_path && av_strstart(proxy_path, "http://", NULL);
 
     if (!strcmp(proto, "https")) {
         lower_proto = "tls";
@@ -192,14 +189,31 @@ redo:
         err = ffurl_open(&s->hd, buf, AVIO_FLAG_READ_WRITE,
                          &h->interrupt_callback, options);
         if (err < 0)
-            goto fail;
+            return err;
     }
 
+    err = http_connect(h, path, local_path, hoststr,
+                       auth, proxyauth, &location_changed);
+    if (err < 0)
+        return err;
+
+    return location_changed;
+}
+
+/* return non zero if error */
+static int http_open_cnx(URLContext *h, AVDictionary **options)
+{
+    HTTPAuthType cur_auth_type, cur_proxy_auth_type;
+    HTTPContext *s = h->priv_data;
+    int location_changed, attempts = 0, redirects = 0;
+redo:
     cur_auth_type       = s->auth_state.auth_type;
     cur_proxy_auth_type = s->auth_state.auth_type;
-    if (http_connect(h, path, local_path, hoststr,
-                     auth, proxyauth, &location_changed) < 0)
+
+    location_changed = http_open_cnx_internal(h, options);
+    if (location_changed < 0)
         goto fail;
+
     attempts++;
     if (s->http_code == 401) {
         if ((cur_auth_type == HTTP_AUTH_NONE || s->auth_state.stale) &&
@@ -376,11 +390,11 @@ static void parse_content_range(URLContext *h, const char *p)
 
 static int parse_content_encoding(URLContext *h, const char *p)
 {
-    HTTPContext *s = h->priv_data;
-
     if (!av_strncasecmp(p, "gzip", 4) ||
         !av_strncasecmp(p, "deflate", 7)) {
 #if CONFIG_ZLIB
+        HTTPContext *s = h->priv_data;
+
         s->compressed = 1;
         inflateEnd(&s->inflate_stream);
         if (inflateInit2(&s->inflate_stream, 32 + 15) != Z_OK) {
@@ -413,6 +427,8 @@ static int parse_icy(HTTPContext *s, const char *tag, const char *p)
     int len = 4 + strlen(p) + strlen(tag);
     int is_first = !s->icy_metadata_headers;
     int ret;
+
+    av_dict_set(&s->metadata, tag, p, 0);
 
     if (s->icy_metadata_headers)
         len += strlen(s->icy_metadata_headers);
@@ -549,8 +565,11 @@ static int get_cookies(HTTPContext *s, char **cookies, const char *path,
         set_cookies = NULL;
 
         while ((param = av_strtok(cookie, "; ", &next_param))) {
-            cookie = NULL;
-            if        (!av_strncasecmp("path=",   param, 5)) {
+            if (cookie) {
+                // first key-value pair is the actual cookie value
+                cvalue = av_strdup(param);
+                cookie = NULL;
+            } else if (!av_strncasecmp("path=",   param, 5)) {
                 av_free(cpath);
                 cpath = av_strdup(&param[5]);
             } else if (!av_strncasecmp("domain=", param, 7)) {
@@ -559,14 +578,8 @@ static int get_cookies(HTTPContext *s, char **cookies, const char *path,
                 int leading_dot = (param[7] == '.');
                 av_free(cdomain);
                 cdomain = av_strdup(&param[7+leading_dot]);
-            } else if (!av_strncasecmp("secure",  param, 6) ||
-                       !av_strncasecmp("comment", param, 7) ||
-                       !av_strncasecmp("max-age", param, 7) ||
-                       !av_strncasecmp("version", param, 7)) {
-                // ignore Comment, Max-Age, Secure and Version
             } else {
-                av_free(cvalue);
-                cvalue = av_strdup(param);
+                // ignore unknown attributes
             }
         }
         if (!cdomain)
@@ -829,7 +842,8 @@ static int http_buf_read(URLContext *h, uint8_t *buf, int size)
         memcpy(buf, s->buf_ptr, len);
         s->buf_ptr += len;
     } else {
-        if (!s->willclose && s->filesize >= 0 && s->off >= s->filesize)
+        if ((!s->willclose || s->chunksize < 0) &&
+            s->filesize >= 0 && s->off >= s->filesize)
             return AVERROR_EOF;
         len = ffurl_read(s->hd, buf, size);
     }
@@ -928,6 +942,32 @@ static int http_read_stream_all(URLContext *h, uint8_t *buf, int size)
     return pos;
 }
 
+static void update_metadata(HTTPContext *s, char *data)
+{
+    char *key;
+    char *val;
+    char *end;
+    char *next = data;
+
+    while (*next) {
+        key = next;
+        val = strstr(key, "='");
+        if (!val)
+            break;
+        end = strstr(val, "';");
+        if (!end)
+            break;
+
+        *val = '\0';
+        *end = '\0';
+        val += 2;
+
+        av_dict_set(&s->metadata, key, val, 0);
+
+        next = end + 2;
+    }
+}
+
 static int store_icy(URLContext *h, int size)
 {
     HTTPContext *s = h->priv_data;
@@ -956,6 +996,7 @@ static int store_icy(URLContext *h, int size)
             data[len + 1] = 0;
             if ((ret = av_opt_set(s, "icy_metadata_packet", data, 0)) < 0)
                 return ret;
+            update_metadata(s, data);
         }
         s->icy_data_read = 0;
         remaining        = s->icy_metaint;

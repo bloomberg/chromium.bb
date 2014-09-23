@@ -33,9 +33,11 @@ OBJS-$(CONFIG_RTPDEC)                    += rdt.o                       \
                                             rtpdec_amr.o                \
                                             rtpdec_asf.o                \
                                             rtpdec_g726.o               \
+                                            rtpdec_h261.o               \
                                             rtpdec_h263.o               \
                                             rtpdec_h263_rfc2190.o       \
                                             rtpdec_h264.o               \
+                                            rtpdec_hevc.o               \
                                             rtpdec_ilbc.o               \
                                             rtpdec_jpeg.o               \
                                             rtpdec_latm.o               \
@@ -192,11 +194,13 @@ OBJS-$(CONFIG_IMAGE_BMP_PIPE_DEMUXER)     += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_DPX_PIPE_DEMUXER)     += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_EXR_PIPE_DEMUXER)     += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_J2K_PIPE_DEMUXER)     += img2dec.o img2.o
+OBJS-$(CONFIG_IMAGE_JPEGLS_PIPE_DEMUXER)  += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_PICTOR_PIPE_DEMUXER)  += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_PNG_PIPE_DEMUXER)     += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_SGI_PIPE_DEMUXER)     += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_SUNRAST_PIPE_DEMUXER) += img2dec.o img2.o
 OBJS-$(CONFIG_IMAGE_TIFF_PIPE_DEMUXER)    += img2dec.o img2.o
+OBJS-$(CONFIG_IMAGE_WEBP_PIPE_DEMUXER)    += img2dec.o img2.o
 OBJS-$(CONFIG_INGENIENT_DEMUXER)         += ingenientdec.o rawdec.o
 OBJS-$(CONFIG_IPMOVIE_DEMUXER)           += ipmovie.o
 OBJS-$(CONFIG_IRCAM_DEMUXER)             += ircamdec.o ircam.o pcm.o
@@ -360,6 +364,7 @@ OBJS-$(CONFIG_RTP_MUXER)                 += rtp.o         \
                                             rtpenc_aac.o     \
                                             rtpenc_latm.o    \
                                             rtpenc_amr.o     \
+                                            rtpenc_h261.o    \
                                             rtpenc_h263.o    \
                                             rtpenc_h263_rfc2190.o \
                                             rtpenc_jpeg.o \
@@ -485,6 +490,7 @@ OBJS-$(CONFIG_HLS_PROTOCOL)              += hlsproto.o
 OBJS-$(CONFIG_HTTP_PROTOCOL)             += http.o httpauth.o urldecode.o
 OBJS-$(CONFIG_HTTPPROXY_PROTOCOL)        += http.o httpauth.o urldecode.o
 OBJS-$(CONFIG_HTTPS_PROTOCOL)            += http.o httpauth.o urldecode.o
+OBJS-$(CONFIG_ICECAST_PROTOCOL)          += icecast.o
 OBJS-$(CONFIG_MMSH_PROTOCOL)             += mmsh.o mms.o asf.o
 OBJS-$(CONFIG_MMST_PROTOCOL)             += mmst.o mms.o asf.o
 OBJS-$(CONFIG_MD5_PROTOCOL)              += md5proto.o
