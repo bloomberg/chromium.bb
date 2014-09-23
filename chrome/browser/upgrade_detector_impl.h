@@ -79,11 +79,6 @@ class UpgradeDetectorImpl :
   // has passed and we should start notifying the user.
   base::RepeatingTimer<UpgradeDetectorImpl> upgrade_notification_timer_;
 
-  // We use this factory to create callback tasks for UpgradeDetected. We pass
-  // the task to the actual upgrade detection code, which is in
-  // DetectUpgradeTask.
-  base::WeakPtrFactory<UpgradeDetectorImpl> weak_factory_;
-
   // True if this build is a dev or canary channel build.
   bool is_unstable_channel_;
 
@@ -96,6 +91,11 @@ class UpgradeDetectorImpl :
 
   // The date the binaries were built.
   base::Time build_date_;
+
+  // We use this factory to create callback tasks for UpgradeDetected. We pass
+  // the task to the actual upgrade detection code, which is in
+  // DetectUpgradeTask.
+  base::WeakPtrFactory<UpgradeDetectorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImpl);
 };

@@ -303,11 +303,12 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   PrinterJobQueueHandler job_queue_handler_;
 
   base::TimeTicks last_job_fetch_time_;
-  base::WeakPtrFactory<PrinterJobHandler> weak_ptr_factory_;
 
   base::Time job_start_time_;
   base::Time spooling_start_time_;
   base::Time last_caps_update_time_;
+
+  base::WeakPtrFactory<PrinterJobHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterJobHandler);
 };

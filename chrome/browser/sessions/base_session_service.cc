@@ -76,11 +76,11 @@ BaseSessionService::BaseSessionService(SessionType type,
                                        Profile* profile,
                                        const base::FilePath& path)
     : profile_(profile),
-      weak_factory_(this),
       pending_reset_(false),
       commands_since_reset_(0),
       sequence_token_(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken()) {
+          content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
+      weak_factory_(this) {
   if (profile) {
     // We should never be created when incognito.
     DCHECK(!profile->IsOffTheRecord());

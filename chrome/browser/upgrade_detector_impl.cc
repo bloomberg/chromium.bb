@@ -187,10 +187,10 @@ base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
 }  // namespace
 
 UpgradeDetectorImpl::UpgradeDetectorImpl()
-    : weak_factory_(this),
-      is_unstable_channel_(false),
+    : is_unstable_channel_(false),
       is_auto_update_enabled_(true),
-      build_date_(base::GetBuildTime()) {
+      build_date_(base::GetBuildTime()),
+      weak_factory_(this) {
   CommandLine command_line(*CommandLine::ForCurrentProcess());
   // The different command line switches that affect testing can't be used
   // simultaneously, if they do, here's the precedence order, based on the order

@@ -171,9 +171,6 @@ class BaseSessionService {
   // The backend.
   scoped_refptr<SessionBackend> backend_;
 
-  // Used to invoke Save.
-  base::WeakPtrFactory<BaseSessionService> weak_factory_;
-
   // Commands we need to send over to the backend.
   std::vector<SessionCommand*>  pending_commands_;
 
@@ -186,6 +183,9 @@ class BaseSessionService {
 
   // A token to make sure that all tasks will be serialized.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
+
+  // Used to invoke Save.
+  base::WeakPtrFactory<BaseSessionService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSessionService);
 };
