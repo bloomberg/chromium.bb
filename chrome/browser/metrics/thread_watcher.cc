@@ -534,7 +534,9 @@ void ThreadWatcherList::ParseCommandLine(
     uint32* unresponsive_threshold,
     CrashOnHangThreadMap* crash_on_hang_threads) {
   // Initialize |unresponsive_threshold| to a default value.
-  *unresponsive_threshold = kUnresponsiveCount;
+  // TODO(rtenneti): Changed the default value to 4 times, until we can triage
+  // hangs automatically (and to reduce the crash dumps).
+  *unresponsive_threshold = kUnresponsiveCount * 4;
 
   // Increase the unresponsive_threshold on the Stable and Beta channels to
   // reduce the number of crashes due to ThreadWatcher.
