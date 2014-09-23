@@ -83,52 +83,6 @@
 
 namespace blink {
 
-// Allocates new storage via fastMalloc.
-// Returns 0 if array failed to convert for any reason.
-static float* jsArrayToFloatArray(v8::Handle<v8::Array> array, uint32_t len, ExceptionState& exceptionState)
-{
-    // Convert the data element-by-element.
-    if (len > std::numeric_limits<uint32_t>::max() / sizeof(float)) {
-        exceptionState.throwTypeError("Array length exceeds supported limit.");
-        return 0;
-    }
-    float* data = static_cast<float*>(fastMalloc(len * sizeof(float)));
-
-    for (uint32_t i = 0; i < len; i++) {
-        v8::Local<v8::Value> val = array->Get(i);
-        float value = toFloat(val, exceptionState);
-        if (exceptionState.hadException()) {
-            fastFree(data);
-            return 0;
-        }
-        data[i] = value;
-    }
-    return data;
-}
-
-// Allocates new storage via fastMalloc.
-// Returns 0 if array failed to convert for any reason.
-static int* jsArrayToIntArray(v8::Handle<v8::Array> array, uint32_t len, ExceptionState& exceptionState)
-{
-    // Convert the data element-by-element.
-    if (len > std::numeric_limits<uint32_t>::max() / sizeof(int)) {
-        exceptionState.throwTypeError("Array length exceeds supported limit.");
-        return 0;
-    }
-    int* data = static_cast<int*>(fastMalloc(len * sizeof(int)));
-
-    for (uint32_t i = 0; i < len; i++) {
-        v8::Local<v8::Value> val = array->Get(i);
-        int ival = toInt32(val, exceptionState);
-        if (exceptionState.hadException()) {
-            fastFree(data);
-            return 0;
-        }
-        data[i] = ival;
-    }
-    return data;
-}
-
 static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& args, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (args.getType()) {
@@ -581,28 +535,27 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     v8::Handle<v8::Array> array = v8::Local<v8::Array>::Cast(info[1]);
-    uint32_t len = array->Length();
-    float* data = jsArrayToFloatArray(array, len, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (array->Length() > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(float)) {
+        exceptionState.throwTypeError("Array length exceeds supported limit.");
         return;
-    if (!data) {
-        // FIXME: consider different / better exception type.
-        exceptionState.throwDOMException(SyntaxError, "Failed to convert array argument");
-        exceptionState.throwIfNeeded();
+    }
+    v8::TryCatch block;
+    Vector<float> implArray = toImplArray<float>(array, 0, info.GetIsolate());
+    if (block.HasCaught()) {
+        block.ReThrow();
         return;
     }
     switch (functionToCall) {
-    case kUniform1v: context->uniform1fv(location, data, len); break;
-    case kUniform2v: context->uniform2fv(location, data, len); break;
-    case kUniform3v: context->uniform3fv(location, data, len); break;
-    case kUniform4v: context->uniform4fv(location, data, len); break;
-    case kVertexAttrib1v: context->vertexAttrib1fv(index, data, len); break;
-    case kVertexAttrib2v: context->vertexAttrib2fv(index, data, len); break;
-    case kVertexAttrib3v: context->vertexAttrib3fv(index, data, len); break;
-    case kVertexAttrib4v: context->vertexAttrib4fv(index, data, len); break;
+    case kUniform1v: context->uniform1fv(location, implArray.data(), implArray.size()); break;
+    case kUniform2v: context->uniform2fv(location, implArray.data(), implArray.size()); break;
+    case kUniform3v: context->uniform3fv(location, implArray.data(), implArray.size()); break;
+    case kUniform4v: context->uniform4fv(location, implArray.data(), implArray.size()); break;
+    case kVertexAttrib1v: context->vertexAttrib1fv(index, implArray.data(), implArray.size()); break;
+    case kVertexAttrib2v: context->vertexAttrib2fv(index, implArray.data(), implArray.size()); break;
+    case kVertexAttrib3v: context->vertexAttrib3fv(index, implArray.data(), implArray.size()); break;
+    case kVertexAttrib4v: context->vertexAttrib4fv(index, implArray.data(), implArray.size()); break;
     default: ASSERT_NOT_REACHED(); break;
     }
-    fastFree(data);
 }
 
 static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, FunctionToCall functionToCall, ExceptionState& exceptionState)
@@ -652,24 +605,23 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, Func
         return;
     }
     v8::Handle<v8::Array> array = v8::Local<v8::Array>::Cast(info[indexArrayArgumentIndex]);
-    uint32_t len = array->Length();
-    int* data = jsArrayToIntArray(array, len, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (array->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(int)) {
+        exceptionState.throwTypeError("Array length exceeds supported limit.");
         return;
-    if (!data) {
-        // FIXME: consider different / better exception type.
-        exceptionState.throwDOMException(SyntaxError, "Failed to convert array argument");
-        exceptionState.throwIfNeeded();
+    }
+    v8::TryCatch block;
+    Vector<int> implArray = toImplArray<int>(array, 0, info.GetIsolate());
+    if (block.HasCaught()) {
+        block.ReThrow();
         return;
     }
     switch (functionToCall) {
-    case kUniform1v: context->uniform1iv(location, data, len); break;
-    case kUniform2v: context->uniform2iv(location, data, len); break;
-    case kUniform3v: context->uniform3iv(location, data, len); break;
-    case kUniform4v: context->uniform4iv(location, data, len); break;
+    case kUniform1v: context->uniform1iv(location, implArray.data(), implArray.size()); break;
+    case kUniform2v: context->uniform2iv(location, implArray.data(), implArray.size()); break;
+    case kUniform3v: context->uniform3iv(location, implArray.data(), implArray.size()); break;
+    case kUniform4v: context->uniform4iv(location, implArray.data(), implArray.size()); break;
     default: ASSERT_NOT_REACHED(); break;
     }
-    fastFree(data);
 }
 
 void V8WebGLRenderingContext::uniform1fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -767,23 +719,22 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
         return;
     }
     v8::Handle<v8::Array> array = v8::Local<v8::Array>::Cast(info[2]);
-    uint32_t len = array->Length();
-    float* data = jsArrayToFloatArray(array, len, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (array->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(float)) {
+        exceptionState.throwTypeError("Array length exceeds supported limit.");
         return;
-    if (!data) {
-        // FIXME: consider different / better exception type.
-        exceptionState.throwDOMException(SyntaxError, "failed to convert Array value");
-        exceptionState.throwIfNeeded();
+    }
+    v8::TryCatch block;
+    Vector<float> implArray = toImplArray<float>(array, 0, info.GetIsolate());
+    if (block.HasCaught()) {
+        block.ReThrow();
         return;
     }
     switch (matrixSize) {
-    case 2: context->uniformMatrix2fv(location, transpose, data, len); break;
-    case 3: context->uniformMatrix3fv(location, transpose, data, len); break;
-    case 4: context->uniformMatrix4fv(location, transpose, data, len); break;
+    case 2: context->uniformMatrix2fv(location, transpose, implArray.data(), implArray.size()); break;
+    case 3: context->uniformMatrix3fv(location, transpose, implArray.data(), implArray.size()); break;
+    case 4: context->uniformMatrix4fv(location, transpose, implArray.data(), implArray.size()); break;
     default: ASSERT_NOT_REACHED(); break;
     }
-    fastFree(data);
 }
 
 void V8WebGLRenderingContext::uniformMatrix2fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

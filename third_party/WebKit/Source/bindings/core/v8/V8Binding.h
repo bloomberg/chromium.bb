@@ -580,6 +580,14 @@ struct NativeValueTraits<String> {
 };
 
 template<>
+struct NativeValueTraits<int> {
+    static inline int nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return toInt32(value);
+    }
+};
+
+template<>
 struct NativeValueTraits<unsigned> {
     static inline unsigned nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
     {
