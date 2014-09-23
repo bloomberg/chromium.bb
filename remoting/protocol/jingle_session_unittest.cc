@@ -521,5 +521,19 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
   EXPECT_TRUE(!host_socket_.get());
 }
 
+TEST_F(JingleSessionTest, TestCancelChannelCreation) {
+  CreateSessionManagers(1, FakeAuthenticator::REJECT_CHANNEL);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  client_session_->GetTransportChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  client_session_->GetTransportChannelFactory()->CancelChannelCreation(
+      kChannelName);
+
+  EXPECT_TRUE(!client_socket_.get());
+}
+
 }  // namespace protocol
 }  // namespace remoting

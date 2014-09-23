@@ -85,7 +85,6 @@ JingleSession::~JingleSession() {
   STLDeleteContainerPointers(transport_info_requests_.begin(),
                              transport_info_requests_.end());
 
-  channel_multiplexer_.reset();
   DCHECK(channels_.empty());
 
   session_manager_->SessionDestroyed(this);
@@ -274,7 +273,7 @@ void JingleSession::CancelChannelCreation(const std::string& name) {
   if (it != channels_.end()) {
     DCHECK(!it->second->is_connected());
     delete it->second;
-    DCHECK(!channels_[name]);
+    DCHECK(channels_.find(name) == channels_.end());
   }
 }
 
