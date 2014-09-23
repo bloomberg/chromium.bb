@@ -28,12 +28,14 @@ class MemoryPressureObserver {
 
   // The reported memory pressure. Note: The value is intentionally abstracted
   // since the real amount of free memory is only estimated (due to e.g. zram).
+  // Note: The bigger the index of the pressure level, the more resources are
+  // in use.
   enum MemoryPressure {
-    MEMORY_PRESSURE_UNKNOWN,   // The memory pressure cannot be determined.
-    MEMORY_PRESSURE_LOW,       // Single call if memory fill level is below 50%.
-    MEMORY_PRESSURE_MODERATE,  // Polled for memory fill level of ~50 .. 75%.
-    MEMORY_PRESSURE_HIGH,      // Polled for memory fill level of ~75% .. 90%.
-    MEMORY_PRESSURE_CRITICAL,  // Polled for memory fill level of above ~90%.
+    MEMORY_PRESSURE_UNKNOWN = 0,   // The memory pressure cannot be determined.
+    MEMORY_PRESSURE_LOW,           // Single call if fill level is below 50%.
+    MEMORY_PRESSURE_MODERATE,      // Polled for fill level of ~50 .. 75%.
+    MEMORY_PRESSURE_HIGH,          // Polled for fill level of ~75% .. 90%.
+    MEMORY_PRESSURE_CRITICAL,      // Polled for fill level of above ~90%.
   };
   // The observer.
   virtual void OnMemoryPressure(MemoryPressure pressure) = 0;

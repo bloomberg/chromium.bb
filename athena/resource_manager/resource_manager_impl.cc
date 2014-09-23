@@ -81,10 +81,28 @@ class ResourceManagerImpl : public ResourceManager,
   // Manage the resources for our activities.
   void ManageResource();
 
+  // Check that the visibility of activities is properly set.
+  void UpdateVisibilityStates();
+
+  // Check if activities can be unloaded to reduce memory pressure.
+  void TryToUnloadAnActivity();
+
   // Order our activity list to the order of activities of the stream.
   // TODO(skuhne): Once the ActivityManager is responsible to create this list
   // for us, we can remove this code here.
   void UpdateActivityOrder();
+
+  // Resources were released and a quiet period is needed before we release
+  // more since it takes a while to trickle through the system.
+  void OnResourcesReleased();
+
+  // The memory pressure has increased, previously applied measures did not show
+  // effect and immediate action is required.
+  void OnMemoryPressureIncreased();
+
+  // Returns true when the previous memory release was long enough ago to try
+  // unloading another activity.
+  bool AllowedToUnloadActivity();
 
   // The sorted (new(front) -> old(back)) activity list.
   // TODO(skuhne): Once the ActivityManager is responsible to create this list
@@ -115,7 +133,7 @@ class ResourceManagerImpl : public ResourceManager,
   bool in_overview_mode_;
 
   // True if we are in split view mode.
-  bool in_splitview_mode_;
+  bool in_split_view_mode_;
 
   // The last time the resource manager was called to release resources.
   // Avoid too aggressive resource de-allocation by enforcing a wait time of
@@ -145,7 +163,7 @@ ResourceManagerImpl::ResourceManagerImpl(ResourceManagerDelegate* delegate)
       queued_command_(false),
       activity_order_changed_(false),
       in_overview_mode_(false),
-      in_splitview_mode_(false),
+      in_split_view_mode_(false),
       next_resource_management_time_(base::Time::Now()),
       wait_time_for_resource_deallocation_(base::TimeDelta::FromMilliseconds(
           delegate_->MemoryPressureIntervalInMS())) {
@@ -205,7 +223,7 @@ void ResourceManagerImpl::OnOverviewModeExit() {
 
 void ResourceManagerImpl::OnSplitViewModeEnter() {
   // Re-apply the memory pressure to make sure enough items are visible.
-  in_splitview_mode_ = true;
+  in_split_view_mode_ = true;
   ManageResource();
 }
 
@@ -213,7 +231,7 @@ void ResourceManagerImpl::OnSplitViewModeEnter() {
 void ResourceManagerImpl::OnSplitViewModeExit() {
   // We don't do immediately something yet. The next ManageResource call will
   // come soon.
-  in_splitview_mode_ = false;
+  in_split_view_mode_ = false;
 }
 
 void ResourceManagerImpl::OnWindowStackingChanged() {
@@ -241,6 +259,8 @@ void ResourceManagerImpl::OnWindowRemoved(aura::Window* removed_window,
 
 void ResourceManagerImpl::OnMemoryPressure(
       MemoryPressureObserver::MemoryPressure pressure) {
+  if (pressure > current_memory_pressure_)
+    OnMemoryPressureIncreased();
   current_memory_pressure_ = pressure;
   ManageResource();
 }
@@ -259,38 +279,26 @@ void ResourceManagerImpl::ManageResource() {
     return;
   }
 
-  // TODO(skuhne): This algorithm needs to take all kinds of predictive analysis
-  // and running applications into account. For this first patch we only do a
-  // very simple "floating window" algorithm which is surely not good enough.
-  size_t max_running_activities = 5;
-  switch (current_memory_pressure_) {
-    case MEMORY_PRESSURE_UNKNOWN:
-      // If we do not know how much memory we have we assume that it must be a
-      // high consumption.
-      // Fallthrough.
-    case MEMORY_PRESSURE_HIGH:
-      max_running_activities = 5;
-      break;
-    case MEMORY_PRESSURE_CRITICAL:
-      max_running_activities = 0;
-      break;
-    case MEMORY_PRESSURE_MODERATE:
-      max_running_activities = 7;
-      break;
-    case MEMORY_PRESSURE_LOW:
-      // This doesn't really matter. We do not change anything but turning
-      // activities visible.
-      max_running_activities = 10000;
-      break;
-  }
+  // Check that the visibility of items is properly set. Note that this might
+  // already trigger a release of resources. If this happens,
+  // AllowedToUnloadActivity() will return false.
+  UpdateVisibilityStates();
 
+  // Since resource deallocation takes time, we avoid to release more resources
+  // in short succession. Note that we come here periodically and if one call
+  // is not triggering an unload, the next one will.
+  if (AllowedToUnloadActivity())
+    TryToUnloadAnActivity();
+}
+
+void ResourceManagerImpl::UpdateVisibilityStates() {
   // The first n activities should be treated as "visible", means they updated
   // in overview mode and will keep their layer resources for faster switch
   // times. Usually we use |kMaxVisibleActivities| items, but when the memory
   // pressure gets critical we only hold as many as are really visible.
   size_t max_activities = kMaxVisibleActivities;
   if (current_memory_pressure_ == MEMORY_PRESSURE_CRITICAL)
-    max_activities = 1 + (in_splitview_mode_ ? 1 : 0);
+    max_activities = in_split_view_mode_ ? 2 : 1;
 
   // Restart and / or bail if the order of activities changes due to our calls.
   activity_order_changed_ = false;
@@ -318,11 +326,10 @@ void ResourceManagerImpl::ManageResource() {
           (current_memory_pressure_ != MEMORY_PRESSURE_LOW ||
            visiblity_state == Activity::ACTIVITY_VISIBLE)) {
         activity->SetCurrentState(visiblity_state);
-        // If we turned an activity invisible, we should not at the same time
-        // throw an activity out of memory. Thus we grant one more invisible
-        // Activity in that case.
+        // If we turned an activity invisible, we are already releasing memory
+        // and can hold off releasing more for now.
         if (visiblity_state == Activity::ACTIVITY_INVISIBLE)
-          max_running_activities++;
+          OnResourcesReleased();
       }
     }
 
@@ -334,23 +341,33 @@ void ResourceManagerImpl::ManageResource() {
       ++index;
     }
   }
+}
 
-  // If there is only a low memory pressure, or our last call to release
-  // resources cannot have had any impact yet, we return.
-  // TODO(skuhne): The upper part of this function bumps up the state (to
-  // visible) and the lower part might unload one. Going forward this algorithm
-  // will change significantly and when it does we might want to break this into
-  // two separate pieces.
-  if (current_memory_pressure_ == MEMORY_PRESSURE_LOW ||
-      base::Time::Now() < next_resource_management_time_)
-    return;
-  // Do not release too many activities in short succession since it takes time
-  // to release resources. As such wait the memory pressure interval before the
-  // next call.
-  next_resource_management_time_ = base::Time::Now() +
-                                   wait_time_for_resource_deallocation_;
+void ResourceManagerImpl::TryToUnloadAnActivity() {
+  // TODO(skuhne): This algorithm needs to take all kinds of predictive analysis
+  // and running applications into account. For this first patch we only do a
+  // very simple "floating window" algorithm which is surely not good enough.
+  size_t max_running_activities = 5;
+  switch (current_memory_pressure_) {
+    case MEMORY_PRESSURE_UNKNOWN:
+      // If we do not know how much memory we have we assume that it must be a
+      // high consumption.
+      // Fallthrough.
+    case MEMORY_PRESSURE_HIGH:
+      max_running_activities = 5;
+      break;
+    case MEMORY_PRESSURE_CRITICAL:
+      max_running_activities = 0;
+      break;
+    case MEMORY_PRESSURE_MODERATE:
+      max_running_activities = 7;
+      break;
+    case MEMORY_PRESSURE_LOW:
+      NOTREACHED();
+      return;
+  }
 
-  // Check if/which activity we want to unload.
+  // Check if / which activity we want to unload.
   Activity* oldest_media_activity = NULL;
   std::vector<Activity*> unloadable_activities;
   for (std::vector<Activity*>::iterator it = activity_list_.begin();
@@ -369,10 +386,12 @@ void ResourceManagerImpl::ManageResource() {
   }
 
   if (unloadable_activities.size() > max_running_activities) {
+    OnResourcesReleased();
     unloadable_activities.back()->SetCurrentState(Activity::ACTIVITY_UNLOADED);
     return;
   } else if (current_memory_pressure_ == MEMORY_PRESSURE_CRITICAL) {
     if (oldest_media_activity) {
+      OnResourcesReleased();
       oldest_media_activity->SetCurrentState(Activity::ACTIVITY_UNLOADED);
       LOG(WARNING) << "Unloading item to releave critical memory pressure";
       return;
@@ -420,6 +439,24 @@ void ResourceManagerImpl::UpdateActivityOrder() {
 
   // Remember that the activity order has changed.
   activity_order_changed_ = true;
+}
+
+void ResourceManagerImpl::OnResourcesReleased() {
+  // Do not release too many activities in short succession since it takes time
+  // to release resources. As such wait the memory pressure interval before the
+  // next call.
+  next_resource_management_time_ = base::Time::Now() +
+                                   wait_time_for_resource_deallocation_;
+}
+
+void ResourceManagerImpl::OnMemoryPressureIncreased() {
+  // By setting the timer to Now, the next call will immediately be performed.
+  next_resource_management_time_ = base::Time::Now();
+}
+
+bool ResourceManagerImpl::AllowedToUnloadActivity() {
+  return current_memory_pressure_ != MEMORY_PRESSURE_LOW &&
+         base::Time::Now() >= next_resource_management_time_;
 }
 
 // static

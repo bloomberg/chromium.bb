@@ -244,22 +244,35 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
   EXPECT_NE(Activity::ACTIVITY_INVISIBLE, app4->GetCurrentState());
 }
 
-// Make sure that an activity which got just demoted from visible to invisible,
+// Make sure that an activity which got just reduced from visible to invisible,
 // does not get thrown out of memory in the same step.
 TEST_F(ResourceManagerTest, NoUnloadFromVisible) {
+  // The timeout override in milliseconds.
+  const int kTimeoutOverrideInMs = 20;
+  // Tell the resource manager to wait for 20ms between calls.
+  ResourceManager::Get()->SetWaitTimeBetweenResourceManageCalls(
+      kTimeoutOverrideInMs);
+
   // Create a few dummy activities in the reverse order as we need them.
   TestActivity* app2 = CreateActivity("app2");
   TestActivity* app1 = CreateActivity("app1");
   app1->SetCurrentState(Activity::ACTIVITY_VISIBLE);
   app2->SetCurrentState(Activity::ACTIVITY_VISIBLE);
 
-  // Applying low resource pressure should turn one item ivisible.
+  // Applying low resource pressure should turn one item invisible.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
       MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
 
-  // Applying low resource pressure again will unload it.
+  // Trying to apply the memory pressure again does not do anything.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+
+  // Waiting and applying the pressure again should unload it.
+  usleep(kTimeoutOverrideInMs * 1000);
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
       MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
