@@ -275,6 +275,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(
   strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TITLE));
   strings.SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
+  strings.SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
   strings.SetString("enterPinTitle",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TITLE));
   strings.SetString("enterPinMessage",
