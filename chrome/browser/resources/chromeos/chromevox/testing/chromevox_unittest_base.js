@@ -30,6 +30,13 @@ ChromeVoxUnitTestBase.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
+  closureModuleDeps: [
+    'cvox.ChromeVoxTester',
+    'cvox.ChromeVoxUserCommands',
+    'cvox.SpokenListBuilder',
+  ],
+
+  /** @override */
   browsePreload: DUMMY_URL,
 
   /**
@@ -141,6 +148,18 @@ ChromeVoxUnitTestBase.prototype = {
   },
 
   /**
+   * Asserts the TTS engine spoke a certain string. Clears the TTS buffer.
+   * @param {string} expectedText The expected text.
+   * @return {ChromeVoxUnitTestBase} this.
+   */
+  assertSpoken: function(expectedText) {
+    assertEquals(expectedText,
+                 cvox.ChromeVoxTester.testTts().getUtterancesAsString());
+    cvox.ChromeVoxTester.clearUtterances();
+    return this; // for chaining.
+  },
+
+  /**
    * Asserts a list of utterances are in the correct queue mode.
    * @param {cvox.SpokenListBuilder|Array} expectedList A list
    *     of [text, queueMode] tuples OR a SpokenListBuilder with the expected
@@ -167,5 +186,32 @@ ChromeVoxUnitTestBase.prototype = {
       expectedText, expectedQueueMode, text, queueMode) {
     assertEquals(expectedQueueMode, queueMode);
     assertEquals(expectedText, text);
+  },
+
+  /**
+   * Focuses an element.
+   * @param {string} id The id of the element to focus.
+   * @return {ChromeVoxUnitTestBase} this.
+   */
+  setFocus: function(id) {
+    $(id).focus();
+    return this; // for chaining.
+  },
+
+  /**
+   * Executes a ChromeVox user command.
+   * @param {string} command The name of the command to run.
+   * @return {ChromeVoxUnitTestBase} this.
+   */
+  userCommand: function(command) {
+    cvox.ChromeVoxUserCommands.commands[command]();
+    return this; // for chaining.
+  },
+
+  /**
+   * @return {cvox.SpokenListBuilder} A new builder.
+   */
+  spokenList: function() {
+    return new cvox.SpokenListBuilder();
   }
 };

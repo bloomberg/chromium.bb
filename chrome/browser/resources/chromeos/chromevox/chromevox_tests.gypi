@@ -140,6 +140,7 @@
         'common/page_selection_test.unitjs',
         'common/selection_util_test.unitjs',
         'common/spannable_test.unitjs',
+        'chromevox/injected/event_watcher_test.unitjs',
         'chromevox/injected/live_regions_test.unitjs',
         'host/chrome/braille_display_manager_test.unitjs',
         'host/chrome/braille_input_handler_test.unitjs',
