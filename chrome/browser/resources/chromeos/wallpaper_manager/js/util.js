@@ -104,3 +104,15 @@ WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
     }, onFailure);
   });
 };
+
+/**
+ * Runs chrome.test.sendMessage in test environment. Does nothing if running
+ * in production environment.
+ *
+ * @param {string} message Test message to send.
+ */
+WallpaperUtil.testSendMessage = function(message) {
+  var test = chrome.test || window.top.chrome.test;
+  if (test)
+    test.sendMessage(message);
+};

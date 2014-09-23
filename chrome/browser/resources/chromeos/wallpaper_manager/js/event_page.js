@@ -232,6 +232,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     w.onClosed.addListener(function() {
       chrome.wallpaperPrivate.restoreMinimizedWindows();
     });
+    WallpaperUtil.testSendMessage('wallpaper-window-created');
   });
 });
 

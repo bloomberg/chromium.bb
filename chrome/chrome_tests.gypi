@@ -963,6 +963,7 @@
         'browser/chromeos/extensions/virtual_keyboard_browsertest.cc',
         'browser/chromeos/extensions/virtual_keyboard_browsertest.h',
         'browser/chromeos/extensions/wallpaper_apitest.cc',
+        'browser/chromeos/extensions/wallpaper_manager_browsertest.cc',
         'browser/chromeos/extensions/wallpaper_private_apitest.cc',
         'browser/chromeos/file_manager/drive_test_util.cc',
         'browser/chromeos/file_manager/drive_test_util.h',
