@@ -561,7 +561,6 @@ if (is_linux) {
       "nss/lib/freebl/blapi.h",
       "nss/lib/freebl/blapii.h",
       "nss/lib/freebl/blapit.h",
-      "nss/lib/freebl/build_config_mac.h",
       "nss/lib/freebl/camellia.c",
       "nss/lib/freebl/camellia.h",
       "nss/lib/freebl/chacha20/chacha20.c",
@@ -627,6 +626,7 @@ if (is_linux) {
       "nss/lib/freebl/mpi/mp_gf2m.c",
       "nss/lib/freebl/mpi/mp_gf2m.h",
       "nss/lib/freebl/mpi/primes.c",
+      "nss/lib/freebl/nss_build_config_mac.h",
       "nss/lib/freebl/poly1305/poly1305-donna-x64-sse2-incremental-source.c",
       "nss/lib/freebl/poly1305/poly1305.c",
       "nss/lib/freebl/poly1305/poly1305.h",
@@ -1070,7 +1070,7 @@ if (is_linux) {
       ]
       cflags += [
         "-include",
-        rebase_path("//third_party/nss/nss/lib/freebl/build_config_mac.h",
+        rebase_path("//third_party/nss/nss/lib/freebl/nss_build_config_mac.h",
                     root_build_dir),
       ]
       defines += [
