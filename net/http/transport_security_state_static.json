@@ -1216,6 +1216,9 @@
     { "name": "xn--maraa-rta.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "otakurepublic.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "mqas.net", "include_subdomains": true, "mode": "force-https" },
+    { "name": "dlc.viasinc.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "www.viasinc.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "viasinc.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
