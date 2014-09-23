@@ -175,6 +175,6 @@ inline bool operator!=(const FloatBox& a, const FloatBox& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif
