@@ -390,15 +390,21 @@ void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
 {
     for (size_t i = 0; i < dataList->size(); ++i) {
         RefPtrWillBeMember<CSSRuleSourceData>& data = dataList->at(i);
-        if (data->type == CSSRuleSourceData::STYLE_RULE) {
+
+        // The m_sourceData->append()'ed types should be exactly the same as in collectFlatRules().
+        switch (data->type) {
+        case CSSRuleSourceData::STYLE_RULE:
+        case CSSRuleSourceData::IMPORT_RULE:
+        case CSSRuleSourceData::KEYFRAMES_RULE:
             m_sourceData->append(data);
-        } else if (data->type == CSSRuleSourceData::IMPORT_RULE) {
-            m_sourceData->append(data);
-        } else if (data->type == CSSRuleSourceData::MEDIA_RULE) {
+            break;
+        case CSSRuleSourceData::MEDIA_RULE:
+        case CSSRuleSourceData::SUPPORTS_RULE:
             m_sourceData->append(data);
             flattenSourceData(&data->childRules);
-        } else if (data->type == CSSRuleSourceData::SUPPORTS_RULE) {
-            flattenSourceData(&data->childRules);
+            break;
+        default:
+            break;
         }
     }
 }
@@ -1561,18 +1567,18 @@ static void collectFlatRules(PassRefPtrWillBeRawPtr<CSSRuleList> ruleList, CSSRu
         // The result->append()'ed types should be exactly the same as in ParsedStyleSheet::flattenSourceData().
         switch (rule->type()) {
         case CSSRule::STYLE_RULE:
-            result->append(rule);
-            continue;
         case CSSRule::IMPORT_RULE:
-        case CSSRule::MEDIA_RULE:
+        case CSSRule::KEYFRAMES_RULE:
             result->append(rule);
+            break;
+        case CSSRule::MEDIA_RULE:
+        case CSSRule::SUPPORTS_RULE:
+            result->append(rule);
+            collectFlatRules(asCSSRuleList(rule), result);
             break;
         default:
             break;
         }
-        RefPtrWillBeRawPtr<CSSRuleList> childRuleList = asCSSRuleList(rule);
-        if (childRuleList)
-            collectFlatRules(childRuleList, result);
     }
 }
 

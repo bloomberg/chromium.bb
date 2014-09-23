@@ -1,0 +1,18 @@
+Tests that adding new rule in the stylesheet end works as expected.
+
+Styled element
+[expanded] 
+element.style  { ()
+
+[expanded] 
+#other, div  { (different-rule-types.css:32 -> different-rule-types.css:32:1)
+
+[expanded] 
+#other, div  { (different-rule-types.css:32 -> different-rule-types.css:32:1)
+
+[expanded] 
+div  { (user agent stylesheet)
+display: block;
+
+
+

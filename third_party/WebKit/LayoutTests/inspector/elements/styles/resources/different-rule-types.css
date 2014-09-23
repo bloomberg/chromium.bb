@@ -1,0 +1,29 @@
+@import url("different-rule-types-import.css");
+
+@media (min-width: 1px) {
+    .inspected {
+        margin: 1em;
+    }
+}
+
+@keyframes drop {
+    0% {
+        -webkit-transform: scale(0);
+        opacity: 1
+    }
+    100% {
+        -webkit-transform: scale(1);
+        opacity: 1
+    }
+}
+
+@supports (display: block) {
+    .inspected {
+        border: 1px solid blue;
+    }
+}
+
+.inspected {
+    color: blue;
+}
+
