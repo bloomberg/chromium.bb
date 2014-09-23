@@ -37,7 +37,7 @@ public:
     virtual ~WebImageLayer() { }
 
     virtual WebLayer* layer() = 0;
-    virtual void setBitmap(SkBitmap) = 0;
+    virtual void setImageBitmap(const SkBitmap&) = 0;
 };
 
 } // namespace blink

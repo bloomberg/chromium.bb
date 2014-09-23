@@ -930,7 +930,7 @@ void GraphicsLayer::setContentsToImage(Image* image)
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
         }
-        m_imageLayer->setBitmap(nativeImage->bitmap());
+        m_imageLayer->setImageBitmap(nativeImage->bitmap());
         m_imageLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
         updateContentsRect();
     } else {
