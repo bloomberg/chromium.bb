@@ -12,7 +12,8 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
     : PictureLayer(client),
       update_count_(0),
       push_properties_count_(0),
-      always_update_resources_(false) {
+      always_update_resources_(false),
+      output_surface_created_count_(0) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
@@ -36,5 +37,9 @@ void FakePictureLayer::PushPropertiesTo(LayerImpl* layer) {
   push_properties_count_++;
 }
 
+void FakePictureLayer::OnOutputSurfaceCreated() {
+  PictureLayer::OnOutputSurfaceCreated();
+  output_surface_created_count_++;
+}
 
 }  // namespace cc

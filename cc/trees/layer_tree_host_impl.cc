@@ -2115,6 +2115,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
   client_->SetMaxSwapsPendingOnImplThread(max_frames_pending);
   client_->OnCanDrawStateChanged(CanDraw());
 
+  // There will not be anything to draw here, so set high res
+  // to avoid checkerboards, typically when we are recovering
+  // from lost context.
+  active_tree_->SetRequiresHighResToDraw();
+
   return true;
 }
 
