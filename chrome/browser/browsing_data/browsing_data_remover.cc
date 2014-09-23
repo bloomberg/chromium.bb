@@ -310,7 +310,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // that were visited.
     power::OriginPowerMap* origin_power_map =
         power::OriginPowerMapFactory::GetForBrowserContext(profile_);
-    origin_power_map->ClearOriginMap();
+    if (origin_power_map)
+      origin_power_map->ClearOriginMap();
 
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history: we have no mechanism to track when these items were
