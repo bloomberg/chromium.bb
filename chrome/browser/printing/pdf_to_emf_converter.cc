@@ -35,14 +35,14 @@ class RefCountedTempDir
     : public base::RefCountedThreadSafe<RefCountedTempDir,
                                         BrowserThread::DeleteOnFileThread> {
  public:
-  RefCountedTempDir() { temp_dir_.CreateUniqueTempDir(); }
+  RefCountedTempDir() { ignore_result(temp_dir_.CreateUniqueTempDir()); }
   bool IsValid() const { return temp_dir_.IsValid(); }
   const base::FilePath& GetPath() const { return temp_dir_.path(); }
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::FILE>;
   friend class base::DeleteHelper<RefCountedTempDir>;
-  ~RefCountedTempDir() {};
+  ~RefCountedTempDir() {}
 
   base::ScopedTempDir temp_dir_;
   DISALLOW_COPY_AND_ASSIGN(RefCountedTempDir);
@@ -199,7 +199,7 @@ class PdfToEmfConverterImpl : public PdfToEmfConverter {
 };
 
 ScopedTempFile CreateTempFile(scoped_refptr<RefCountedTempDir>* temp_dir) {
-  if (!(*temp_dir))
+  if (!temp_dir->get())
     *temp_dir = new RefCountedTempDir();
   ScopedTempFile file;
   if (!(*temp_dir)->IsValid())
@@ -309,7 +309,6 @@ void PdfToEmfUtilityProcessHostClient::OnProcessStarted() {
   if (!utility_process_host_)
     return OnFailed();
 
-  base::ProcessHandle process = utility_process_host_->GetData().handle;
   scoped_refptr<base::RefCountedMemory> data = data_;
   data_ = NULL;
   BrowserThread::PostTaskAndReplyWithResult(
@@ -391,7 +390,7 @@ void PdfToEmfUtilityProcessHostClient::OnPageDone(bool success,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (get_page_callbacks_.empty())
     return OnFailed();
-  scoped_ptr<LazyEmf> emf;
+  scoped_ptr<MetafilePlayer> emf;
   GetPageCallbackData& data = get_page_callbacks_.front();
   if (success)
     emf.reset(new LazyEmf(temp_dir_, data.emf().Pass()));
@@ -459,7 +458,7 @@ PdfToEmfConverterImpl::PdfToEmfConverterImpl() : weak_ptr_factory_(this) {
 }
 
 PdfToEmfConverterImpl::~PdfToEmfConverterImpl() {
-  if (utility_client_)
+  if (utility_client_.get())
     utility_client_->Stop();
 }
 
@@ -467,7 +466,7 @@ void PdfToEmfConverterImpl::Start(
     const scoped_refptr<base::RefCountedMemory>& data,
     const PdfRenderSettings& conversion_settings,
     const StartCallback& start_callback) {
-  DCHECK(!utility_client_);
+  DCHECK(!utility_client_.get());
   utility_client_ = new PdfToEmfUtilityProcessHostClient(
       weak_ptr_factory_.GetWeakPtr(), conversion_settings);
   utility_client_->Start(data, start_callback);
