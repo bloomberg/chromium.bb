@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
@@ -47,8 +46,7 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
 
   virtual scoped_ptr<Resource> CreateResource(
       PrioritizedResourceManager* manager) = 0;
-  virtual void PrepareToUpdate(const gfx::Size& content_size,
-                               const gfx::Rect& paint_rect,
+  virtual void PrepareToUpdate(const gfx::Rect& content_rect,
                                const gfx::Size& tile_size,
                                float contents_width_scale,
                                float contents_height_scale) {}
@@ -60,7 +58,6 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
   // Set true by the layer when it is known that the entire output bounds will
   // be rasterized.
   virtual void SetFillsBoundsCompletely(bool fills_bounds) {}
-  virtual void SetBackgroundColor(SkColor background_color) {}
 
  protected:
   virtual ~LayerUpdater() {}

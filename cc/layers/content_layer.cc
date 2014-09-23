@@ -115,7 +115,6 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   updater_->SetOpaque(contents_opaque());
   if (client_)
     updater_->SetFillsBoundsCompletely(client_->FillsBoundsCompletely());
-  updater_->SetBackgroundColor(background_color());
 
   SetTextureFormat(
       layer_tree_host()->GetRendererCapabilities().best_texture_format);

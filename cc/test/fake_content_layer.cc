@@ -12,7 +12,7 @@ namespace cc {
 
 class FakeContentLayerUpdater : public ContentLayerUpdater {
  public:
-  using ContentLayerUpdater::paint_rect;
+  using ContentLayerUpdater::content_rect;
 
  private:
   virtual ~FakeContentLayerUpdater() {}
@@ -43,7 +43,8 @@ bool FakeContentLayer::Update(ResourceUpdateQueue* queue,
 }
 
 gfx::Rect FakeContentLayer::LastPaintRect() const {
-  return (static_cast<FakeContentLayerUpdater*>(Updater()))->paint_rect();
+  return (static_cast<FakeContentLayerUpdater*>
+          (Updater()))->content_rect();
 }
 
 void FakeContentLayer::PushPropertiesTo(LayerImpl* layer) {

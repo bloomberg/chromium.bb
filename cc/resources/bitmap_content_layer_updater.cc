@@ -54,34 +54,31 @@ scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::CreateResource(
       new Resource(this, PrioritizedResource::Create(manager)));
 }
 
-void BitmapContentLayerUpdater::PrepareToUpdate(const gfx::Size& content_size,
-                                                const gfx::Rect& paint_rect,
+void BitmapContentLayerUpdater::PrepareToUpdate(const gfx::Rect& content_rect,
                                                 const gfx::Size& tile_size,
                                                 float contents_width_scale,
                                                 float contents_height_scale) {
-  if (canvas_size_ != paint_rect.size()) {
+  if (canvas_size_ != content_rect.size()) {
     devtools_instrumentation::ScopedLayerTask paint_setup(
         devtools_instrumentation::kPaintSetup, layer_id_);
-    canvas_size_ = paint_rect.size();
+    canvas_size_ = content_rect.size();
     bitmap_backing_.allocN32Pixels(
         canvas_size_.width(), canvas_size_.height(), layer_is_opaque_);
     // TODO(danak): Remove when skia does the check for us: crbug.com/360384
     canvas_ = skia::AdoptRef(new SkCanvas(bitmap_backing_));
-    DCHECK_EQ(paint_rect.width(), canvas_->getBaseLayerSize().width());
-    DCHECK_EQ(paint_rect.height(), canvas_->getBaseLayerSize().height());
+    DCHECK_EQ(content_rect.width(), canvas_->getBaseLayerSize().width());
+    DCHECK_EQ(content_rect.height(), canvas_->getBaseLayerSize().height());
   }
 
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
-  PaintContents(canvas_.get(),
-                content_size,
-                paint_rect,
-                contents_width_scale,
-                contents_height_scale);
+  PaintContents(
+      canvas_.get(), content_rect, contents_width_scale, contents_height_scale);
   base::TimeDelta duration =
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddPaint(
-      duration, paint_rect.width() * paint_rect.height());
+      duration,
+      content_rect.width() * content_rect.height());
 }
 
 void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
@@ -90,8 +87,11 @@ void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                               const gfx::Vector2d& dest_offset,
                                               bool partial_update) {
   CHECK(canvas_);
-  ResourceUpdate upload = ResourceUpdate::Create(
-      texture, &bitmap_backing_, paint_rect(), source_rect, dest_offset);
+  ResourceUpdate upload = ResourceUpdate::Create(texture,
+                                                 &bitmap_backing_,
+                                                 content_rect(),
+                                                 source_rect,
+                                                 dest_offset);
   if (partial_update)
     queue->AppendPartialUpload(upload);
   else

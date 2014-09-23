@@ -289,27 +289,6 @@ TEST_F(TiledLayerTest, PushDirtyTiles) {
   EXPECT_FALSE(layer_impl->HasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, Scale) {
-  layer_tree_host_->SetDeviceScaleFactor(1.5);
-
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
-  scoped_ptr<FakeTiledLayerImpl> layer_impl =
-      make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
-  RenderSurfaceLayerList render_surface_layer_list;
-
-  layer_tree_host_->root_layer()->AddChild(layer);
-
-  layer->SetBounds(gfx::Size(100, 200));
-  CalcDrawProps(&render_surface_layer_list);
-
-  // Change the width so that it doesn't divide cleanly by the scale.
-  layer->SetBounds(gfx::Size(101, 200));
-  UpdateAndPush(layer, layer_impl);
-
-  EXPECT_EQ(1.5, layer->fake_layer_updater()->last_contents_width_scale());
-}
-
 TEST_F(TiledLayerTest, PushOccludedDirtyTiles) {
   scoped_refptr<FakeTiledLayer> layer =
       make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
@@ -893,13 +872,11 @@ TEST_F(TiledLayerTest, VerifyUpdateRectWhenContentBoundsAreScaled) {
   layer_tree_host_->root_layer()->AddChild(layer);
 
   gfx::Rect layer_bounds(0, 0, 300, 200);
-  gfx::Rect content_bounds(0, 0, 150, 250);
+  gfx::Rect content_bounds(0, 0, 200, 250);
 
   layer->SetBounds(layer_bounds.size());
   layer->SetContentBounds(content_bounds.size());
   layer->draw_properties().visible_content_rect = content_bounds;
-  layer->draw_properties().contents_scale_x = .5f;
-  layer->draw_properties().contents_scale_y = 1.25f;
 
   // On first update, the update_rect includes all tiles, even beyond the
   // boundaries of the layer.
@@ -910,9 +887,7 @@ TEST_F(TiledLayerTest, VerifyUpdateRectWhenContentBoundsAreScaled) {
   resource_manager_->PrioritizeTextures();
   layer->SavePaintProperties();
   layer->Update(queue_.get(), NULL);
-
-  // Update rect is 200x300 (tile size of 100x100). Scaled this gives 400x240.
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 400, 240), layer->update_rect());
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 300, 300 * 0.8), layer->update_rect());
   UpdateTextures();
 
   // After the tiles are updated once, another invalidate only needs to update
@@ -933,7 +908,7 @@ TEST_F(TiledLayerTest, VerifyUpdateRectWhenContentBoundsAreScaled) {
   resource_manager_->PrioritizeTextures();
   layer->SavePaintProperties();
   layer->Update(queue_.get(), NULL);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(60, 80, 20, 8), layer->update_rect());
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(45, 80, 15, 8), layer->update_rect());
 }
 
 TEST_F(TiledLayerTest, VerifyInvalidationWhenContentsScaleChanges) {
@@ -1717,11 +1692,7 @@ TEST_F(TiledLayerTest, NonIntegerContentsScaleIsNotDistortedDuringPaint) {
   layer->InvalidateContentRect(content_rect);
   layer->Update(queue_.get(), NULL);
 
-  // Rounding leads to an extra pixel.
-  gfx::Rect expanded_layer_rect(layer_rect);
-  expanded_layer_rect.set_height(32);
-  EXPECT_RECT_EQ(expanded_layer_rect,
-                 layer->tracking_layer_painter()->PaintedRect());
+  EXPECT_RECT_EQ(layer_rect, layer->tracking_layer_painter()->PaintedRect());
 }
 
 TEST_F(TiledLayerTest,
@@ -1756,11 +1727,7 @@ TEST_F(TiledLayerTest,
   layer->SetNeedsDisplayRect(layer_rect);
   layer->Update(queue_.get(), NULL);
 
-  // Rounding leads to an extra pixel.
-  gfx::Rect expanded_layer_rect(layer_rect);
-  expanded_layer_rect.set_height(32);
-  EXPECT_RECT_EQ(expanded_layer_rect,
-                 layer->tracking_layer_painter()->PaintedRect());
+  EXPECT_RECT_EQ(layer_rect, layer->tracking_layer_painter()->PaintedRect());
 }
 
 }  // namespace

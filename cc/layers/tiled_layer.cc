@@ -462,8 +462,12 @@ void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
                                     const OcclusionTracker<Layer>* occlusion) {
   // The update_rect should be in layer space. So we have to convert the
   // paint_rect from content space to layer space.
-  float width_scale = 1 / draw_properties().contents_scale_x;
-  float height_scale = 1 / draw_properties().contents_scale_y;
+  float width_scale =
+      paint_properties().bounds.width() /
+      static_cast<float>(content_bounds().width());
+  float height_scale =
+      paint_properties().bounds.height() /
+      static_cast<float>(content_bounds().height());
   update_rect_ = gfx::ScaleRect(update_rect, width_scale, height_scale);
 
   // Calling PrepareToUpdate() calls into WebKit to paint, which may have the
@@ -472,11 +476,8 @@ void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
   // the SkCanvas until the paint finishes, so we grab a local reference here to
   // hold the updater alive until the paint completes.
   scoped_refptr<LayerUpdater> protector(Updater());
-  Updater()->PrepareToUpdate(content_bounds(),
-                             paint_rect,
-                             tiler_->tile_size(),
-                             1.f / width_scale,
-                             1.f / height_scale);
+  Updater()->PrepareToUpdate(
+      paint_rect, tiler_->tile_size(), 1.f / width_scale, 1.f / height_scale);
 
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
