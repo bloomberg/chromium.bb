@@ -78,6 +78,7 @@ content::WebUIDataSource* CreateImageburnerUIHTMLSource() {
   source->AddLocalizedString("retryButton", IDS_IMAGEBURN_RETRY_BUTTON);
   source->AddString("moreInfoLink", base::ASCIIToUTF16(kMoreInfoLink));
 
+  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("image_burner.js", IDR_IMAGEBURNER_JS);
   source->SetDefaultResource(IDR_IMAGEBURNER_HTML);

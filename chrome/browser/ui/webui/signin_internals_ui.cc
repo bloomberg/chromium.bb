@@ -19,9 +19,9 @@ content::WebUIDataSource* CreateSignInInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISignInInternalsHost);
 
+  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("signin_internals.js",
-                            IDR_SIGNIN_INTERNALS_INDEX_JS);
+  source->AddResourcePath("signin_internals.js", IDR_SIGNIN_INTERNALS_INDEX_JS);
   source->SetDefaultResource(IDR_SIGNIN_INTERNALS_INDEX_HTML);
   return source;
 }

@@ -34,7 +34,7 @@ function copyAttributes_(source, destination) {
   for (var i in source)
     destination[i] = source[i];
   return destination;
-};
+}
 
 /**
  * Apply localization to |element| with i18n_template.js if available.
@@ -42,9 +42,9 @@ function copyAttributes_(source, destination) {
  * @private
  */
 function localize_(element) {
-  if (window.i18nTemplate && window.templateData)
-    i18nTemplate.process(element, templateData);
-};
+  if (window.i18nTemplate && window.loadTimeData)
+    i18nTemplate.process(element, loadTimeData);
+}
 
 /**
  * Returns 'N/A' (Not Available) text if |value| is undefined.
@@ -518,7 +518,6 @@ function dump() {
 
 function onLoad() {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
-  localize_(document);
 
   cr.quota.onAvailableSpaceUpdated.addEventListener('update',
                                                     handleAvailableSpace);

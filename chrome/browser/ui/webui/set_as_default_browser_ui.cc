@@ -64,6 +64,7 @@ enum MakeChromeDefaultResult {
 content::WebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
   content::WebUIDataSource* data_source = content::WebUIDataSource::Create(
       chrome::kChromeUIMetroFlowHost);
+  data_source->SetUseJsonJSFormatV2();
   data_source->AddLocalizedString("page-title", IDS_METRO_FLOW_TAB_TITLE);
   data_source->AddLocalizedString("flowTitle", IDS_METRO_FLOW_TITLE_SHORT);
   data_source->AddLocalizedString("flowDescription",
@@ -74,7 +75,7 @@ content::WebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
                                   IDS_METRO_FLOW_LOGO_STRING_ALT);
   data_source->SetJsonPath("strings.js");
   data_source->AddResourcePath("set_as_default_browser.js",
-      IDR_SET_AS_DEFAULT_BROWSER_JS);
+                               IDR_SET_AS_DEFAULT_BROWSER_JS);
   data_source->SetDefaultResource(IDR_SET_AS_DEFAULT_BROWSER_HTML);
   return data_source;
 }

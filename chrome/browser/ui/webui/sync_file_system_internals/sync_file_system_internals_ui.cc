@@ -21,6 +21,7 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(
           chrome::kChromeUISyncFileSystemInternalsHost);
+  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath(
       "utils.js",

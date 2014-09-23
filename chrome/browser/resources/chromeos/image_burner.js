@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var localStrings;
 var browserBridge;
 
 /**
@@ -102,10 +101,10 @@ State.prototype = {
       $('warning-text').textContent = this.state.warningText;
 
     if (this.isInitialState() && this.state != State.StatesEnum.DEVICE_NONE) {
-      $('warning-button').textContent = localStrings.getString('confirmButton');
+      $('warning-button').textContent = loadTimeData.getString('confirmButton');
     } else if (this.state == State.StatesEnum.FAIL) {
       $('warning-button').textContent =
-          localStrings.getString('retryButton');
+          loadTimeData.getString('retryButton');
     }
   },
 
@@ -184,7 +183,7 @@ DeviceSelection.prototype = {
     this.selectedDevice = devicePath;
 
     $('warning-text').textContent =
-        localStrings.getStringF('warningDevices', label);
+        loadTimeData.getStringF('warningDevices', label);
   },
 
   /**
@@ -303,7 +302,7 @@ DeviceSelection.prototype = {
  * @constructor
  */
 function BrowserBridge() {
-  this.currentState = new State(localStrings);
+  this.currentState = new State(loadTimeData);
   this.deviceSelection = new DeviceSelection();
   // We will use these often so it makes sence making them class members to
   // avoid frequent document.getElementById calls.
@@ -426,7 +425,7 @@ BrowserBridge.prototype = {
   reportDeviceTooSmall: function(deviceSize) {
     this.currentState.changeState(State.StatesEnum.ERROR_DEVICE_TOO_SMALL);
     $('warning-text').textContent =
-        localStrings.getStringF('warningNoSpace', deviceSize);
+        loadTimeData.getStringF('warningNoSpace', deviceSize);
   },
 
   /**
@@ -439,10 +438,7 @@ BrowserBridge.prototype = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  localStrings = new LocalStrings();
   browserBridge = new BrowserBridge();
-
-  jstProcess(new JsEvalContext(templateData), $('more-info-link'));
 
   $('cancel-button').onclick =
       browserBridge.sendCancelMessage.bind(browserBridge);
