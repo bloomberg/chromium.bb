@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/rect.h"
@@ -52,7 +53,7 @@ struct AX_EXPORT AXNodeData {
   std::vector<std::pair<AXBoolAttribute, bool> > bool_attributes;
   std::vector<std::pair<AXIntListAttribute, std::vector<int32> > >
       intlist_attributes;
-  std::vector<std::pair<std::string, std::string> > html_attributes;
+  base::StringPairs html_attributes;
   std::vector<int32> child_ids;
 };
 
