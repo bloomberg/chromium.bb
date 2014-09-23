@@ -1052,9 +1052,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
 
-// Flaky: http://crbug.com/407409
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       DISABLED_ComponentExtensionRuntimeReload) {
+                       ComponentExtensionRuntimeReload) {
   // Ensure that we wait until the background page is run (to register the
   // OnLaunched listener) before trying to open the application. This is similar
   // to LoadAndLaunchPlatformApp, but we want to load as a component extension.
@@ -1076,9 +1075,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   }
 
   {
-    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
-        extension->id(), "chrome.runtime.reload();"));
     ExtensionTestMessageListener launched_listener("Launched", false);
+    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+        extension->id(),
+        // NoWait actually waits for a domAutomationController.send() which is
+        // implicitly append to the script. Since reload() restarts the
+        // extension, the send after reload may not get executed. To get around
+        // this, send first, then execute the reload().
+        "window.domAutomationController.send(0);"
+        "chrome.runtime.reload();"));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   }
 }
