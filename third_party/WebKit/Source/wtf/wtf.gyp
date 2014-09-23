@@ -59,9 +59,6 @@
               '_SCL_SECURE_NO_DEPRECATE',
               'CRASH=__debugbreak',
             ],
-            'include_dirs': [
-              'os-win32',
-            ],
           }],
         ],
       },
