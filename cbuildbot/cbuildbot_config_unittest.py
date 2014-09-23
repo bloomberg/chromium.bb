@@ -172,6 +172,8 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testValidVMTestType(self):
     """Verify vm_tests has an expected value"""
     for build_name, config in cbuildbot_config.config.iteritems():
+      if config['vm_tests'] is None:
+        continue
       for test_type in config['vm_tests']:
         self.assertTrue(
           test_type in constants.VALID_VM_TEST_TYPES,
