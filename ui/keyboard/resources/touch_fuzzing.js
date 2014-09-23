@@ -71,7 +71,7 @@
       if (!key)
         return;
       // Ignore touches that aren't close.
-      return key.distanceTo(x,y) <= MAX_TOUCH_FUZZ_DISTANCE ?
+      return key.distanceTo(x, y) <= MAX_TOUCH_FUZZ_DISTANCE ?
           key.key : null;
     },
 
@@ -88,11 +88,13 @@
 
   /**
    * Container for caching a key's data.
-   * @param {Object} key The key to cache.
-   * @param {number} left The x-coordinate of the left edge of the key.
-   * @param {number} top The y-coordinate of the top edge of the key.
-   * @param {number} width The width of the key in px.
-   * @param {number} height The height of the key in px.
+   * @param {{style: {left: number, top: number, width: number,
+   *                  height: number}}} key The key to cache.
+   *     left: The x-coordinate of the left edge of the key.
+   *     top: The y-coordinate of the top edge of the key.
+   *     width: The width of the key in px.
+   *     height: The height of the key in px.
+   * @constructor
    */
   var Key = function(key) {
     this.key = key;
@@ -109,9 +111,9 @@
      * Manhattan distance from the the provided point to the key.
      * @param {number} x The x-coordinate of the point.
      * @param {number} y The y-coordinate of the point.
-     * @return {number}.
+     * @return {number}
      */
-    distanceTo: function (x, y) {
+    distanceTo: function(x, y) {
       return Math.abs(this.intersect(new Line(x))) +
           Math.abs(this.intersect(new Line(y, true)));
     },
@@ -144,9 +146,10 @@
 
   /**
    * Object representing the line y = c or x = c.
-   * @param {number} The x or y coordinate of the intersection line depending on
-   *    on orientation.
+   * @param {number} c The x or y coordinate of the intersection line depending
+   *     on orientation.
    * @param {Orientation} orientation The orientation of the line.
+   * @constructor
    */
   var Line = function(c, orientation) {
     this.c = c;
@@ -161,12 +164,12 @@
      * @return {number} Zero if they intersect, negative if the point is before
      *    the line, positive if it's after.
      */
-    testPoint: function (x, y) {
+    testPoint: function(x, y) {
       var c = this.rotated ? y : x;
       return this.c == c ? 0 : c - this.c;
     },
 
-    test: function (key) {
+    test: function(key) {
       // Key already provides an intersect method. If the key is to the right of
       // the line, then the line is to the left of the key.
       return -1 * key.intersect(this);
@@ -175,7 +178,8 @@
 
   /**
    * A node used to split 2D space.
-   * @param {Line} The line to split the space with.
+   * @param {Line} line The line to split the space with.
+   * @constructor
    */
   var DecisionNode = function(line) {
     this.decision = line;
@@ -207,8 +211,8 @@
      * @return {DecisionNode | LeafNode}
      */
     findClosestNode: function(x, y) {
-      return this.search(function(node){
-        return node.decision.testPoint(x,y) >= 0;
+      return this.search(function(node) {
+        return node.decision.testPoint(x, y) >= 0;
       });
     },
 
@@ -221,7 +225,7 @@
         return;
       var pass = [];
       var fail = [];
-      for (var i = 0; i< data.length; i++) {
+      for (var i = 0; i < data.length; i++) {
         var result = this.decision.test(data[i]);
         // Add to both branches if result == 0.
         if (result >= 0)
@@ -239,7 +243,7 @@
         if (array.length == 1) {
           return new LeafNode(array[0]);
         } else {
-          var splits = findSplits(array, !currentRotation)
+          var splits = findSplits(array, !currentRotation);
           var tree = createBinaryTree(0, splits.length - 1, splits);
           tree.populate(array);
           return tree;
@@ -265,7 +269,7 @@
      * Searches for the first leaf that matches the search function.
      * @param {Function<DecisionNode>: Boolean} searchFn The function used to
      *    determine whether to search in the left or right subtree.
-     * @param {DecisionNode | LeafNode} The node that most closely matches the
+     * @return {DecisionNode | LeafNode} The node that most closely matches the
      *    search parameters.
      */
     search: function(searchFn) {
@@ -281,7 +285,7 @@
      * @return {boolean} Whether it belongs in the right branch.
      */
     test: function(key) {
-      return this.decision.testKey(key)
+      return this.decision.testKey(key);
     },
   };
 
@@ -318,14 +322,14 @@
 
   /**
    * Calculates the optimum split points on the specified axis.
-   * @param {Array<Keys>} allKeys All keys in the keyset.
-   * @param {Partition=} axis Whether to split on the y-axis instead.
-   * @return {Array<Line>} The optimum split points.
+   * @param {Array.<Keys>} allKeys All keys in the keyset.
+   * @param {Orientation} orientation Whether to split on the y-axis instead.
+   * @return {Array.<Line>} The optimum split points.
    */
   var findSplits = function(allKeys, orientation) {
     /**
      * Returns the minimum edge on the key.
-     * @param {Key} The key.
+     * @param {Key} key The key.
      * @return {number}
      */
     var getMin = function(key) {
@@ -334,7 +338,7 @@
 
     /**
      * Returns the maximum edge on the key.
-     * @param {Key} The key.
+     * @param {Key} key The key.
      */
     var getMax = function(key) {
       return orientation == Orientation.HORIZONTAL ? key.bottom : key.right;

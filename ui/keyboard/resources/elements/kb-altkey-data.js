@@ -31,7 +31,7 @@
        * @param {boolean=} opt_force If true, force the creation of a list
        *    even if empty. Used when constructing a set of alternates for keys
        *    with hintTexts.
-       * @return {?Object.{id: string, list: string}}
+       * @return {?{id: string, list: string}}
        */
        getAltkeys: function(char, opt_force) {
         var id = idMap[char];

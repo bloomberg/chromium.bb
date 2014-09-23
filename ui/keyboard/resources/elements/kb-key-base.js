@@ -172,7 +172,7 @@ Polymer('kb-key-base', {
 
   /**
    * Handles a swipe flick that originated from this key.
-   * @param {detail} The details of the swipe.
+   * @param {detail} detail The details of the swipe.
    */
   onFlick: function(detail) {
     if (!(detail.direction & SwipeDirection.UP) || !this.hintTextValue)

@@ -421,7 +421,7 @@
    * Realigns a given row based on the parameters provided.
    * @param {!kb-row} row The row to realign.
    * @param {!AlignmentOptions} params The parameters used to align the keyset.
-   * @param {number} The height of the keys.
+   * @param {number} keyHeight The height of the keys.
    * @param {number} heightOffset The offset caused by rows above it.
    */
   function realignRow(row, params, keyHeight, heightOffset) {
@@ -536,7 +536,7 @@
     exports.recordKeysets();
   }
 
-  /*
+  /**
    * Realigns a given keyset.
    * @param {Object} keyset The keyset to realign.
    * @param {!AlignmentOptions} params The parameters used to align the keyset.
@@ -545,7 +545,7 @@
     var rows = keyset.querySelectorAll('kb-row').array();
     keyset.style.fontSize = (params.availableHeight /
       FONT_SIZE_RATIO / rows.length) + 'px';
-    var heightOffset  = 0;
+    var heightOffset = 0;
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
       var rowHeight =

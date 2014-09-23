@@ -746,7 +746,7 @@ Polymer('kb-keyboard', {
     this.onNonControlKeyTyped();
   },
 
-  /*
+  /**
    * Handles key-longpress event that is sent by kb-key-base.
    * @param {CustomEvent} event The key-longpress event dispatched by
    *     kb-key-base.
