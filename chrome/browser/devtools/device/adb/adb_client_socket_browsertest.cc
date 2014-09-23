@@ -101,11 +101,12 @@ class AdbClientSocketTest : public InProcessBrowserTest,
         webview->CreatePages();
 
     ASSERT_EQ(1U, chrome_pages.size());
-    ASSERT_EQ(0U, chrome_beta_pages.size());
+    ASSERT_EQ(1U, chrome_beta_pages.size());
     ASSERT_EQ(2U, webview_pages.size());
 
     // Check that we have non-empty description for webview pages.
     ASSERT_EQ(0U, chrome_pages[0]->GetTarget()->GetDescription().size());
+    ASSERT_EQ(0U, chrome_beta_pages[0]->GetTarget()->GetDescription().size());
     ASSERT_NE(0U, webview_pages[0]->GetTarget()->GetDescription().size());
     ASSERT_NE(0U, webview_pages[1]->GetTarget()->GetDescription().size());
 
