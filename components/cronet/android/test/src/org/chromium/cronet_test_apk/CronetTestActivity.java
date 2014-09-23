@@ -6,10 +6,12 @@ package org.chromium.cronet_test_apk;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
+import org.chromium.base.PathUtils;
 import org.chromium.net.ChromiumUrlRequestFactory;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
@@ -17,7 +19,9 @@ import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -61,6 +65,19 @@ public class CronetTestActivity extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (!loadTestFiles()) {
+            Log.e(TAG, "Loading test files failed");
+            return;
+        }
+
+        try {
+            System.loadLibrary("cronet_tests");
+        } catch (UnsatisfiedLinkError e) {
+            Log.e(TAG, "libcronet_test initialization failed.", e);
+            finish();
+            return;
+        }
+
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,
                                100 * 1024)
@@ -92,6 +109,50 @@ public class CronetTestActivity extends Activity {
         String appUrl = getUrlFromIntent(getIntent());
         if (appUrl != null) {
             startWithURL(appUrl);
+        }
+    }
+
+    private boolean loadTestFiles() {
+        String testFilePath = "test";
+        String toPath = PathUtils.getDataDirectory(getApplicationContext());
+        AssetManager assetManager = getAssets();
+        try {
+            String[] files = assetManager.list(testFilePath);
+            Log.i(TAG, "Begin loading " + files.length + " test files.");
+            for (String file : files) {
+                Log.i(TAG, "Loading " + file);
+                if (!copyTestFile(assetManager,
+                                  testFilePath + "/" + file,
+                                  toPath + "/" + file)) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Helper function to copy a file to a destination.
+    private static boolean copyTestFile(AssetManager assetManager,
+                                        String testFile,
+                                        String testFileCopy) {
+        try {
+            InputStream in = assetManager.open(testFile);
+            OutputStream out = new FileOutputStream(testFileCopy);
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+              out.write(buffer, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

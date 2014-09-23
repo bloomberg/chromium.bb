@@ -400,6 +400,7 @@
           'type': 'none',
           'sources': [
             'cronet/android/test/src/org/chromium/cronet_test_apk/CronetTestUtil.java',
+            'cronet/android/test/javatests/src/org/chromium/cronet_test_apk/MockUrlRequestJobTest.java',
           ],
           'variables': {
             'jni_gen_package': 'cronet_tests',
@@ -411,14 +412,24 @@
           'type': 'shared_library',
           'sources': [
             'cronet/android/test/cronet_test_jni.cc',
+            'cronet/android/test/mock_url_request_job_test.cc',
+            'cronet/android/test/mock_url_request_job_test.h',
+            '../net/base/directory_lister.cc',
+            '../net/base/directory_lister.h',
+            '../net/url_request/url_request_file_job.cc',
+            '../net/url_request/url_request_file_job.h',
           ],
           'dependencies': [
             'cronet_static',
             'cronet_tests_jni_headers',
             '../base/base.gyp:base',
             '../net/net.gyp:net',
+            '../net/net.gyp:net_test_support',
             '../net/net.gyp:quic_tools',
             '../url/url.gyp:url_lib',
+            '../base/base.gyp:base_i18n',
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/icu/icu.gyp:icuuc',
           ],
         },
         {
@@ -431,6 +442,7 @@
             'apk_name': 'CronetTest',
             'java_in_dir': 'cronet/android/test',
             'resource_dir': 'cronet/android/test/res',
+            'asset_location': 'cronet/android/test/assets',
             'native_lib_target': 'libcronet_tests',
           },
           'includes': [ '../build/java_apk.gypi' ],
