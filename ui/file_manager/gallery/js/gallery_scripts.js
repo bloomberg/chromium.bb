@@ -10,7 +10,7 @@
 
 //<include src="../../file_manager/foreground/js/metrics.js">
 
-//<include src="../../image_loader/image_loader_client.js"/>
+//<include src="../../image_loader/image_loader_client.js">
 
 //<include src="../../../webui/resources/js/cr.js">
 //<include src="../../../webui/resources/js/event_tracker.js">
@@ -36,23 +36,23 @@
 //<include src="../../file_manager/common/js/util.js">
 //<include src="../../file_manager/common/js/volume_manager_common.js">
 //<include src="../../file_manager/foreground/js/file_type.js">
-//<include src="../../file_manager/foreground/js/thumbnail_loader.js"/>
+//<include src="../../file_manager/foreground/js/thumbnail_loader.js">
 //<include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
 
-//<include src="image_editor/image_util.js"/>
-//<include src="image_editor/viewport.js"/>
-//<include src="image_editor/image_buffer.js"/>
-//<include src="image_editor/image_view.js"/>
-//<include src="image_editor/commands.js"/>
-//<include src="image_editor/image_editor.js"/>
-//<include src="image_editor/image_transform.js"/>
-//<include src="image_editor/image_adjust.js"/>
-//<include src="image_editor/filter.js"/>
-//<include src="image_editor/image_encoder.js"/>
-//<include src="image_editor/exif_encoder.js"/>
+//<include src="image_editor/image_util.js">
+//<include src="image_editor/viewport.js">
+//<include src="image_editor/image_buffer.js">
+//<include src="image_editor/image_view.js">
+//<include src="image_editor/commands.js">
+//<include src="image_editor/image_editor.js">
+//<include src="image_editor/image_transform.js">
+//<include src="image_editor/image_adjust.js">
+//<include src="image_editor/filter.js">
+//<include src="image_editor/image_encoder.js">
+//<include src="image_editor/exif_encoder.js">
 
-//<include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
-//<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js"/>
+//<include src="../../file_manager/foreground/js/metadata/metadata_cache.js">
+//<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js">
 
 //<include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
 //<include src="../../file_manager/foreground/js/share_client.js">
