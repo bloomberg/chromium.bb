@@ -40,8 +40,7 @@ TestURLRequest::TestURLRequest(TestingInstance* instance)
       ppb_url_loader_interface_(NULL),
       ppb_url_response_interface_(NULL),
       ppb_core_interface_(NULL),
-      ppb_var_interface_(NULL),
-      url_loader_(kInvalidResource) {
+      ppb_var_interface_(NULL) {
 }
 
 bool TestURLRequest::Init() {
@@ -65,10 +64,6 @@ bool TestURLRequest::Init() {
     instance_->AppendError("PPB_Var interface not available");
   if (!ppb_url_loader_interface_) {
     instance_->AppendError("PPB_URLLoader interface not available");
-  } else {
-    url_loader_ = ppb_url_loader_interface_->Create(instance_->pp_instance());
-    if (url_loader_ == kInvalidResource)
-      instance_->AppendError("Failed to create URLLoader");
   }
   return EnsureRunningOverHTTP();
 }
@@ -106,7 +101,14 @@ std::string TestURLRequest::TestCreateAndIsURLRequestInfo() {
             ppb_url_request_interface_->IsURLRequestInfo(kInvalidResource));
   ASSERT_NE(PP_TRUE,
             ppb_url_request_interface_->IsURLRequestInfo(kNotAResource));
-  ASSERT_NE(PP_TRUE, ppb_url_request_interface_->IsURLRequestInfo(url_loader_));
+
+  PP_Resource url_loader =
+      ppb_url_loader_interface_->Create(instance_->pp_instance());
+  ASSERT_NE(kInvalidResource, url_loader);
+
+  ASSERT_NE(PP_TRUE, ppb_url_request_interface_->IsURLRequestInfo(url_loader));
+  ppb_url_loader_interface_->Close(url_loader);
+  ppb_core_interface_->ReleaseResource(url_loader);
 
   // IsURLRequestInfo: Current URLRequestInfo resource -> true.
   std::string error;
@@ -289,15 +291,20 @@ std::string TestURLRequest::TestSetProperty() {
 std::string TestURLRequest::LoadAndCompareBody(
     PP_Resource url_request, const std::string& expected_body) {
   TestCompletionCallback callback(instance_->pp_instance(), PP_REQUIRED);
+
+  PP_Resource url_loader =
+      ppb_url_loader_interface_->Create(instance_->pp_instance());
+  ASSERT_NE(kInvalidResource, url_loader);
+
   callback.WaitForResult(ppb_url_loader_interface_->Open(
-      url_loader_, url_request,
+      url_loader, url_request,
       callback.GetCallback().pp_completion_callback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
   std::string error;
   PP_Resource url_response =
-      ppb_url_loader_interface_->GetResponseInfo(url_loader_);
+      ppb_url_loader_interface_->GetResponseInfo(url_loader);
   if (url_response == kInvalidResource) {
     error = "PPB_URLLoader::GetResponseInfo() returned invalid resource";
   } else {
@@ -311,7 +318,7 @@ std::string TestURLRequest::LoadAndCompareBody(
       const size_t kBufferSize = 32;
       char buf[kBufferSize];
       callback.WaitForResult(ppb_url_loader_interface_->ReadResponseBody(
-          url_loader_, buf, kBufferSize,
+          url_loader, buf, kBufferSize,
           callback.GetCallback().pp_completion_callback()));
       if (callback.failed())
         error.assign(callback.errors());
@@ -327,7 +334,8 @@ std::string TestURLRequest::LoadAndCompareBody(
   }
   ppb_core_interface_->ReleaseResource(url_response);
 
-  ppb_url_loader_interface_->Close(url_loader_);
+  ppb_url_loader_interface_->Close(url_loader);
+  ppb_core_interface_->ReleaseResource(url_loader);
   return error;
 }
 

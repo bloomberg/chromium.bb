@@ -21,7 +21,6 @@ class FileRef;
 class TestURLRequest : public TestCase {
  public:
   explicit TestURLRequest(TestingInstance* instance);
-  ~TestURLRequest() { ppb_core_interface_->ReleaseResource(url_loader_); }
 
   // TestCase implementation.
   virtual bool Init();
@@ -44,8 +43,6 @@ class TestURLRequest : public TestCase {
   const PPB_URLResponseInfo* ppb_url_response_interface_;
   const PPB_Core* ppb_core_interface_;
   const PPB_Var* ppb_var_interface_;
-
-  PP_Resource url_loader_;
 };
 
 #endif  // PAPPI_TESTS_TEST_URL_REQUEST_H_
