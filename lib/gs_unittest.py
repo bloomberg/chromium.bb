@@ -379,6 +379,30 @@ class CopyIntoTest(CopyTest):
     return ctx.CopyInto(*args, filename=self.FILE, **kwargs)
 
 
+class MoveTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
+  """Tests GSContext.Move() functionality."""
+
+  GIVEN_REMOTE = EXPECTED_REMOTE = 'gs://test/path/file'
+
+  def setUp(self):
+    self.local_path = os.path.join(self.tempdir, 'file')
+    osutils.WriteFile(self.local_path, '')
+
+  def _Move(self, ctx, src, dst, **kwargs):
+    return ctx.Move(src, dst, **kwargs)
+
+  def Move(self, ctx=None, **kwargs):
+    if ctx is None:
+      ctx = self.ctx
+    return self._Move(ctx, self.local_path, self.GIVEN_REMOTE, **kwargs)
+
+  def testBasic(self):
+    """Simple move test."""
+    self.Move()
+    self.gs_mock.assertCommandContains(
+        ['mv', '--', self.local_path, self.EXPECTED_REMOTE])
+
+
 #pylint: disable=E1101,W0212
 class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
   """Tests GSContext.__init__() functionality."""

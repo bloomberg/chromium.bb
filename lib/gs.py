@@ -742,6 +742,16 @@ class GSContext(object):
     """Returns size of an object."""
     return self.DoCommand(['du', path], redirect_stdout=True, **kwargs)
 
+  def Move(self, src_path, dest_path, **kwargs):
+    """Move/rename to/from GS bucket.
+
+    Args:
+      src_path: Fully qualified local path or full gs:// path of the src file.
+      dest_path: Fully qualified local path or full gs:// path of the dest file.
+    """
+    cmd = ['mv', '--', src_path, dest_path]
+    return self.DoCommand(cmd, **kwargs)
+
   def SetACL(self, upload_url, acl=None):
     """Set access on a file already in google storage.
 
