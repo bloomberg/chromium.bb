@@ -15,6 +15,7 @@ group("mojo") {
     "//mojo/public",
     "//mojo/services",
     "//mojo/shell:mojo_shell",
+    "//mojo/tools/package_manager",
   ]
 
   if (is_linux) {
