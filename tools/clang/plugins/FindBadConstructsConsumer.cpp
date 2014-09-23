@@ -101,13 +101,11 @@ void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
     CheckCtorDtorWeight(record_location, record);
   }
 
-  if (!implementation_file || options_.check_virtuals_in_implementations) {
-    bool warn_on_inline_bodies = !implementation_file;
+  bool warn_on_inline_bodies = !implementation_file;
 
-    // Check that all virtual methods are marked accordingly with both
-    // virtual and OVERRIDE.
-    CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
-  }
+  // Check that all virtual methods are marked accordingly with both
+  // virtual and OVERRIDE.
+  CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
 
   CheckRefCountedDtors(record_location, record);
 

@@ -26,10 +26,7 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
   bool parsed = true;
 
   for (size_t i = 0; i < args.size() && parsed; ++i) {
-    if (args[i] == "skip-virtuals-in-implementations") {
-      // TODO(rsleevi): Remove this once http://crbug.com/115047 is fixed.
-      options_.check_virtuals_in_implementations = false;
-    } else if (args[i] == "check-base-classes") {
+    if (args[i] == "check-base-classes") {
       // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
       options_.check_base_classes = true;
     } else if (args[i] == "check-weak-ptr-factory-order") {
