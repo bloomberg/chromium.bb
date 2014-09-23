@@ -248,8 +248,6 @@ DisplayController::~DisplayController() {
 }
 
 void DisplayController::Start() {
-  // Created here so that Shell has finished being created. Adds itself
-  // as a ShellObserver.
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->display_manager()->set_delegate(this);
 }

@@ -242,8 +242,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   explicit RootWindowController(AshWindowTreeHost* host);
   enum RootWindowType {
     PRIMARY,
-    SECONDARY,
-    VIRTUAL_KEYBOARD
+    SECONDARY
   };
 
   // Initializes the RootWindowController.  |is_primary| is true if

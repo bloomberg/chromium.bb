@@ -274,13 +274,6 @@ void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
   controller->Init(RootWindowController::SECONDARY, false /* first run */);
 }
 
-void RootWindowController::CreateForVirtualKeyboardDisplay(
-    AshWindowTreeHost* host) {
-  RootWindowController* controller = new RootWindowController(host);
-  controller->Init(RootWindowController::VIRTUAL_KEYBOARD,
-                   false /* first run */);
-}
-
 // static
 RootWindowController* RootWindowController::ForShelf(
     const aura::Window* window) {
@@ -718,14 +711,6 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
   ash_host_->AsWindowTreeHost()->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window);
-
-  if (root_window_type == VIRTUAL_KEYBOARD) {
-    aura::Window* virtual_keyboard_parent_container = GetContainer(
-        kShellWindowId_VirtualKeyboardParentContainer);
-    virtual_keyboard_parent_container->SetBounds(root_window->bounds());
-    shell->InitKeyboard();
-    return;
-  }
 
   CreateSystemBackground(first_run_after_boot);
 
