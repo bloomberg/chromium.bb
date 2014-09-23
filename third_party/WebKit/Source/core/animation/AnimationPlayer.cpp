@@ -610,6 +610,9 @@ bool AnimationPlayer::update(TimingUpdateReason reason)
 
     if (m_content) {
         double inheritedTime = m_idle || isNull(m_timeline->currentTimeInternal()) ? nullValue() : currentTimeInternal();
+        // Special case for end-exclusivity when playing backwards.
+        if (inheritedTime == 0 && m_playbackRate < 0)
+            inheritedTime = -1;
         m_content->updateInheritedTime(inheritedTime, reason);
     }
 
