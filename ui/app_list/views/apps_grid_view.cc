@@ -1401,6 +1401,7 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
       !IsFolderItem(drag_view_->item()) &&
       CanDropIntoTarget(nearest_tile_index)) {
     *drop_target = nearest_tile_index;
+    DCHECK(IsValidIndex(*drop_target));
     return true;
   }
 
@@ -1437,6 +1438,7 @@ void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
   *drop_target =
       std::min(Index(pagination_model_.selected_page(), row * cols_ + col),
                GetLastViewIndex());
+  DCHECK(IsValidIndex(*drop_target));
 }
 
 void AppsGridView::OnReorderTimer() {
@@ -1551,6 +1553,8 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     } else if (drop_attempt_ == DROP_FOR_FOLDER &&
                IsValidIndex(folder_drop_target_)) {
       ReparentItemToAnotherFolder(drag_view_, folder_drop_target_);
+    } else {
+      NOTREACHED();
     }
     SetViewHidden(drag_view_, false /* show */, true /* no animate */);
   }
@@ -2096,9 +2100,10 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
   gfx::Rect bounds = GetContentsBounds();
   gfx::Size total_tile_size = GetTotalTileSize();
   int col = ClampToRange(
-      (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_);
-  int row = ClampToRange(
-      (point.y() - bounds.y()) / total_tile_size.height(), 0, rows_per_page_);
+      (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_ - 1);
+  int row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(),
+                         0,
+                         rows_per_page_ - 1);
   return Index(pagination_model_.selected_page(), row * cols_ + col);
 }
 

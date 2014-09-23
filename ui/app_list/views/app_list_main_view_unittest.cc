@@ -264,12 +264,9 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
   drop_target_tile.Offset(first_slot_tile.width() * 2, 0);
   gfx::Point point = drop_target_tile.CenterPoint();
   SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
-  SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
-  base::RunLoop().RunUntilIdle();
 
   // Drop it.
   FolderGridView()->EndDrag(false);
-  base::RunLoop().RunUntilIdle();
 
   // Folder icon view should be gone and there is only one item view.
   EXPECT_EQ(1, RootViewModel()->view_size());
@@ -282,6 +279,35 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
   EXPECT_EQ(first_slot_tile, RootViewModel()->view_at(0)->bounds());
 
   // Single item folder should be auto removed.
+  EXPECT_EQ(NULL,
+            delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
+}
+
+// Tests dragging an item out of a single item folder and dropping it onto the
+// page switcher. Regression test for http://crbug.com/415530/.
+TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
+  AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
+  const gfx::Rect first_slot_tile = folder_item_view->bounds();
+
+  delegate_->GetTestModel()->PopulateApps(20);
+
+  EXPECT_EQ(1, FolderViewModel()->view_size());
+  EXPECT_EQ(21, RootViewModel()->view_size());
+
+  AppListItemView* dragged = StartDragForReparent(0);
+
+  gfx::Rect main_view_bounds = main_view_->bounds();
+  // Drag the reparent item to the page switcher.
+  gfx::Point point =
+      gfx::Point(main_view_bounds.width() / 2,
+                 main_view_bounds.bottom() - first_slot_tile.height());
+  SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
+
+  // Drop it.
+  FolderGridView()->EndDrag(false);
+
+  // The folder should be destroyed.
+  EXPECT_EQ(21, RootViewModel()->view_size());
   EXPECT_EQ(NULL,
             delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
 }
