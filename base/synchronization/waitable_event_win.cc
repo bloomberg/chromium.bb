@@ -17,30 +17,27 @@ WaitableEvent::WaitableEvent(bool manual_reset, bool signaled)
     : handle_(CreateEvent(NULL, manual_reset, signaled, NULL)) {
   // We're probably going to crash anyways if this is ever NULL, so we might as
   // well make our stack reports more informative by crashing here.
-  CHECK(handle_);
+  CHECK(handle_.IsValid());
 }
 
 WaitableEvent::WaitableEvent(HANDLE handle)
     : handle_(handle) {
-  CHECK(handle) << "Tried to create WaitableEvent from NULL handle";
+  CHECK(handle_.IsValid()) << "Tried to create WaitableEvent from NULL handle";
 }
 
 WaitableEvent::~WaitableEvent() {
-  CloseHandle(handle_);
 }
 
 HANDLE WaitableEvent::Release() {
-  HANDLE rv = handle_;
-  handle_ = INVALID_HANDLE_VALUE;
-  return rv;
+  return handle_.Take();
 }
 
 void WaitableEvent::Reset() {
-  ResetEvent(handle_);
+  ResetEvent(handle_.Get());
 }
 
 void WaitableEvent::Signal() {
-  SetEvent(handle_);
+  SetEvent(handle_.Get());
 }
 
 bool WaitableEvent::IsSignaled() {
@@ -49,7 +46,7 @@ bool WaitableEvent::IsSignaled() {
 
 void WaitableEvent::Wait() {
   base::ThreadRestrictions::AssertWaitAllowed();
-  DWORD result = WaitForSingleObject(handle_, INFINITE);
+  DWORD result = WaitForSingleObject(handle_.Get(), INFINITE);
   // It is most unexpected that this should ever fail.  Help consumers learn
   // about it if it should ever fail.
   DCHECK_EQ(WAIT_OBJECT_0, result) << "WaitForSingleObject failed";
@@ -62,7 +59,8 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
   // is in milliseconds.  If there are 5.5ms left, should the delay be 5 or 6?
   // It should be 6 to avoid returning too early.
   double timeout = ceil(max_time.InMillisecondsF());
-  DWORD result = WaitForSingleObject(handle_, static_cast<DWORD>(timeout));
+  DWORD result = WaitForSingleObject(handle_.Get(),
+                                     static_cast<DWORD>(timeout));
   switch (result) {
     case WAIT_OBJECT_0:
       return true;

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "base/win/scoped_handle.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -53,6 +53,7 @@ class BASE_EXPORT WaitableEvent {
   // Create a WaitableEvent from an Event HANDLE which has already been
   // created. This objects takes ownership of the HANDLE and will close it when
   // deleted.
+  // TODO(rvargas): Pass ScopedHandle instead (and on Release).
   explicit WaitableEvent(HANDLE event_handle);
 
   // Releases ownership of the handle from this object.
@@ -90,7 +91,7 @@ class BASE_EXPORT WaitableEvent {
   bool TimedWait(const TimeDelta& max_time);
 
 #if defined(OS_WIN)
-  HANDLE handle() const { return handle_; }
+  HANDLE handle() const { return handle_.Get(); }
 #endif
 
   // Wait, synchronously, on multiple events.
@@ -140,7 +141,7 @@ class BASE_EXPORT WaitableEvent {
   friend class WaitableEventWatcher;
 
 #if defined(OS_WIN)
-  HANDLE handle_;
+  win::ScopedHandle handle_;
 #else
   // On Windows, one can close a HANDLE which is currently being waited on. The
   // MSDN documentation says that the resulting behaviour is 'undefined', but
