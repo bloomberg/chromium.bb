@@ -30,19 +30,6 @@ remoting.WindowFrame = function(titleBar) {
   this.titleBar_ = titleBar;
 
   /**
-   * @type {remoting.OptionsMenu}
-   * @private
-   */
-  this.optionsMenu_ = new remoting.OptionsMenu(
-      titleBar.querySelector('.menu-send-ctrl-alt-del'),
-      titleBar.querySelector('.menu-send-print-screen'),
-      titleBar.querySelector('.menu-resize-to-client'),
-      titleBar.querySelector('.menu-shrink-to-fit'),
-      titleBar.querySelector('.menu-new-connection'),
-      titleBar.querySelector('.window-fullscreen'),
-      titleBar.querySelector('.menu-start-stop-recording'));
-
-  /**
    * @type {HTMLElement}
    * @private
    */
@@ -71,7 +58,7 @@ remoting.WindowFrame = function(titleBar) {
    */
   this.optionsMenuList_ = /** @type {HTMLElement} */
       (optionsButton.querySelector('.window-options-menu'));
-  base.debug.assert(this.optionsMenu_ != null);
+  base.debug.assert(this.optionsMenuList_ != null);
 
   /**
    * @type {Array.<{cls:string, fn: function()}>}
@@ -103,11 +90,24 @@ remoting.WindowFrame = function(titleBar) {
 };
 
 /**
+ * @return {remoting.OptionsMenu}
+ */
+remoting.WindowFrame.prototype.createOptionsMenu = function() {
+  return new remoting.OptionsMenu(
+      this.titleBar_.querySelector('.menu-send-ctrl-alt-del'),
+      this.titleBar_.querySelector('.menu-send-print-screen'),
+      this.titleBar_.querySelector('.menu-resize-to-client'),
+      this.titleBar_.querySelector('.menu-shrink-to-fit'),
+      this.titleBar_.querySelector('.menu-new-connection'),
+      this.titleBar_.querySelector('.window-fullscreen'),
+      this.titleBar_.querySelector('.menu-start-stop-recording'));
+};
+
+/**
  * @param {remoting.ClientSession} clientSession The client session, or null if
  *     there is no connection.
  */
 remoting.WindowFrame.prototype.setClientSession = function(clientSession) {
-  this.optionsMenu_.setClientSession(clientSession);
   this.clientSession_ = clientSession;
   var windowTitle = document.head.querySelector('title');
   if (this.clientSession_) {
@@ -215,7 +215,7 @@ remoting.WindowFrame.prototype.handleWindowStateChange_ = function() {
  * @private
  */
 remoting.WindowFrame.prototype.onShowOptionsMenu_ = function() {
-  this.optionsMenu_.onShow();
+  remoting.optionsMenu.onShow();
   this.titleBar_.classList.add('menu-opened');
 };
 

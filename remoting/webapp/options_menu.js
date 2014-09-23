@@ -69,6 +69,8 @@ remoting.OptionsMenu.prototype.setClientSession = function(clientSession) {
 
 remoting.OptionsMenu.prototype.onShow = function() {
   if (this.clientSession_) {
+    this.resizeToClient_.hidden =
+        this.clientSession_.getMode() == remoting.ClientSession.Mode.IT2ME;
     remoting.MenuButton.select(
         this.resizeToClient_, this.clientSession_.getResizeToClient());
     remoting.MenuButton.select(
@@ -133,3 +135,8 @@ remoting.OptionsMenu.prototype.onStartStopRecording_ = function() {
     this.clientSession_.startStopRecording();
   }
 }
+
+/**
+ * @type {remoting.OptionsMenu}
+ */
+remoting.optionsMenu = null;

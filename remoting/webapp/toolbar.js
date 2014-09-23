@@ -42,18 +42,22 @@ remoting.Toolbar = function(toolbar) {
    * @private
    */
   this.stubRight_ = 0;
+
   /**
-   * @type {remoting.OptionsMenu}
+   * @type {remoting.MenuButton}
    * @private
    */
-  this.optionsMenu_ = new remoting.OptionsMenu(
-      document.getElementById('send-ctrl-alt-del'),
-      document.getElementById('send-print-screen'),
-      document.getElementById('screen-resize-to-client'),
-      document.getElementById('screen-shrink-to-fit'),
-      document.getElementById('new-connection'),
-      document.getElementById('toggle-full-screen'),
-      null);
+  this.screenOptionsMenu_ = new remoting.MenuButton(
+      document.getElementById('screen-options-menu'),
+      this.onShowOptionsMenu_.bind(this));
+  /**
+   * @type {remoting.MenuButton}
+   * @private
+   */
+  this.sendKeysMenu_ = new remoting.MenuButton(
+      document.getElementById('send-keys-menu')
+  );
+
 
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', this.center.bind(this), false);
@@ -72,6 +76,21 @@ remoting.Toolbar = function(toolbar) {
     }
   }
   this.toolbar_.addEventListener('mousemove', stopTimer, false);
+};
+
+
+/**
+ * @return {remoting.OptionsMenu}
+ */
+remoting.Toolbar.prototype.createOptionsMenu = function() {
+  return new remoting.OptionsMenu(
+      document.getElementById('send-ctrl-alt-del'),
+      document.getElementById('send-print-screen'),
+      document.getElementById('screen-resize-to-client'),
+      document.getElementById('screen-shrink-to-fit'),
+      document.getElementById('new-connection'),
+      document.getElementById('toggle-full-screen'),
+      null);
 };
 
 /**
@@ -113,7 +132,6 @@ remoting.Toolbar.prototype.toggle = function() {
  *     there is no connection.
  */
 remoting.Toolbar.prototype.setClientSession = function(clientSession) {
-  this.optionsMenu_.setClientSession(clientSession);
   var connectedTo = document.getElementById('connected-to');
   connectedTo.innerText =
       clientSession ? clientSession.getHostDisplayName() : "";
@@ -156,6 +174,16 @@ remoting.Toolbar.onMouseMove = function(event) {
     document.removeEventListener('mousemove',
                                  remoting.Toolbar.onMouseMove, false);
   }
+};
+
+/**
+ * Updates the options menu to reflect the current scale-to-fit and full-screen
+ * settings.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.Toolbar.prototype.onShowOptionsMenu_ = function() {
+  remoting.optionsMenu.onShow();
 };
 
 /** @type {remoting.Toolbar} */

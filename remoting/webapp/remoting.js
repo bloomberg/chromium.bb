@@ -61,6 +61,7 @@ remoting.init = function() {
     remoting.fullscreen = new remoting.FullscreenAppsV2();
     remoting.windowFrame = new remoting.WindowFrame(
         document.getElementById('title-bar'));
+    remoting.optionsMenu = remoting.windowFrame.createOptionsMenu();
   } else {
     remoting.oauth2 = new remoting.OAuth2();
     if (!remoting.oauth2.isAuthenticated()) {
@@ -68,6 +69,9 @@ remoting.init = function() {
     }
     remoting.identity = remoting.oauth2;
     remoting.fullscreen = new remoting.FullscreenAppsV1();
+    remoting.toolbar = new remoting.Toolbar(
+        document.getElementById('session-toolbar'));
+    remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
   }
   remoting.stats = new remoting.ConnectionStats(
       document.getElementById('statistics'));
@@ -78,8 +82,6 @@ remoting.init = function() {
       document.getElementById('host-list-error-message'),
       document.getElementById('host-list-refresh-failed-button'),
       document.getElementById('host-list-loading-indicator'));
-  remoting.toolbar = new remoting.Toolbar(
-      document.getElementById('session-toolbar'));
   remoting.clipboard = new remoting.Clipboard();
   var sandbox = /** @type {HTMLIFrameElement} */
       document.getElementById('wcs-sandbox');

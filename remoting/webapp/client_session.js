@@ -142,19 +142,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   /** @private */
   this.callPluginGotFocus_ = this.pluginGotFocus_.bind(this);
   /** @private */
-  this.callToggleFullScreen_ = remoting.fullscreen.toggle.bind(
-      remoting.fullscreen);
-  /** @private */
   this.callOnFullScreenChanged_ = this.onFullScreenChanged_.bind(this)
-
-  /** @private */
-  this.screenOptionsMenu_ = new remoting.MenuButton(
-      document.getElementById('screen-options-menu'),
-      this.onShowOptionsMenu_.bind(this));
-  /** @private */
-  this.sendKeysMenu_ = new remoting.MenuButton(
-      document.getElementById('send-keys-menu')
-  );
 
   /** @type {HTMLMediaElement} @private */
   this.video_ = null;
@@ -171,14 +159,6 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
     img.style.left = event.x + 'px';
   };
 
-  /** @type {HTMLElement} @private */
-  this.resizeToClientButton_ =
-      document.getElementById('screen-resize-to-client');
-  /** @type {HTMLElement} @private */
-  this.shrinkToFitButton_ = document.getElementById('screen-shrink-to-fit');
-  /** @type {HTMLElement} @private */
-  this.fullScreenButton_ = document.getElementById('toggle-full-screen');
-
   /** @type {remoting.GnubbyAuthHandler} @private */
   this.gnubbyAuthHandler_ = null;
 
@@ -187,16 +167,6 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
 
   /** @type {remoting.VideoFrameRecorder} @private */
   this.videoFrameRecorder_ = null;
-
-  if (this.mode_ == remoting.ClientSession.Mode.IT2ME) {
-    // Resize-to-client is not supported for IT2Me hosts.
-    this.resizeToClientButton_.hidden = true;
-  } else {
-    this.resizeToClientButton_.hidden = false;
-  }
-
-  this.fullScreenButton_.addEventListener(
-      'click', this.callToggleFullScreen_, false);
 
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
@@ -595,10 +565,6 @@ remoting.ClientSession.prototype.removePlugin = function() {
     this.plugin_ = null;
   }
 
-  // Delete event handlers that aren't relevent when not connected.
-  this.fullScreenButton_.removeEventListener(
-      'click', this.callToggleFullScreen_, false);
-
   // Leave full-screen mode, and stop listening for related events.
   var listener = this.callOnFullScreenChanged_;
   remoting.fullscreen.activate(
@@ -611,6 +577,7 @@ remoting.ClientSession.prototype.removePlugin = function() {
   } else {
     remoting.toolbar.setClientSession(null);
   }
+  remoting.optionsMenu.setClientSession(null);
   document.body.classList.remove('connected');
 
   // Remove mediasource-rendering class from the container - this will also
@@ -967,6 +934,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     } else {
       remoting.toolbar.setClientSession(this);
     }
+    remoting.optionsMenu.setClientSession(this);
     document.body.classList.add('connected');
 
     this.container_.addEventListener('mousemove',
@@ -1302,19 +1270,6 @@ remoting.ClientSession.prototype.onFullScreenChanged_ = function (fullscreen) {
   } else {
     htmlNode.classList.remove('full-screen');
   }
-};
-
-/**
- * Updates the options menu to reflect the current scale-to-fit and full-screen
- * settings.
- * @return {void} Nothing.
- * @private
- */
-remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
-  remoting.MenuButton.select(this.resizeToClientButton_, this.resizeToClient_);
-  remoting.MenuButton.select(this.shrinkToFitButton_, this.shrinkToFit_);
-  remoting.MenuButton.select(this.fullScreenButton_,
-                             remoting.fullscreen.isActive());
 };
 
 /**

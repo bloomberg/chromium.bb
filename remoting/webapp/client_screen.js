@@ -321,8 +321,10 @@ remoting.onConnected = function(clientSession) {
   setConnectionInterruptedButtonsText_();
   document.getElementById('access-code-entry').value = '';
   remoting.setMode(remoting.AppMode.IN_SESSION);
-  remoting.toolbar.center();
-  remoting.toolbar.preview();
+  if (!base.isAppsV2()) {
+    remoting.toolbar.center();
+    remoting.toolbar.preview();
+  }
   remoting.clipboard.startSession();
   updateStatistics_();
   remoting.hangoutSessionEvents.raiseEvent(
