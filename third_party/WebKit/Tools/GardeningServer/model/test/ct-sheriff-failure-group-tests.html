@@ -6,12 +6,14 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-failure-group.html">
 
+<link rel="import" href="../ct-sheriff-failure-group-data.html">
+
 <script>
 (function () {
 
 var assert = chai.assert;
 
-describe('ct-failure-group', function() {
+describe('ct-sheriff-failure-group', function() {
 
   beforeEach(function() {
     localStorage.removeItem('CTFailureGroupAnnotations');
@@ -41,6 +43,16 @@ describe('ct-failure-group', function() {
       failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
       var group = new CTFailureGroup('', new CTStepFailureGroupData(
           [failure]));
+      assert.equal(group.category, 'failedOnce');
+    });
+
+    it('should be "failedOnce" when each failure only failed once', function() {
+      var failure = newFailureWithAnnotation();
+      failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
+      var failure2 = newFailureWithAnnotation();
+      failure2.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
+      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+          [failure, failure2]));
       assert.equal(group.category, 'failedOnce');
     });
 

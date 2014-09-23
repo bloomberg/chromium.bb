@@ -32,8 +32,11 @@ CTStepFailureGroupData.prototype.failureKeys = function() {
 };
 
 CTStepFailureGroupData.prototype.failedOnce = function() {
-  var totalFailures = 0;
+  if (!this.failures.length)
+    return false;
+
   for (var i = 0; i < this.failures.length; i++) {
+    var totalFailures = 0;
     var resultNodes = this.failures[i].resultNodesByBuilder;
     for (var r in resultNodes) {
       totalFailures += resultNodes[r].failingBuildCount;
@@ -41,6 +44,6 @@ CTStepFailureGroupData.prototype.failedOnce = function() {
         return false;
     }
   }
-  return totalFailures == 1;
+  return true;
 };
 </script>
