@@ -1040,4 +1040,7 @@ unsigned MaskPrefixLength(const IPAddressNumber& mask) {
   return CommonPrefixLength(mask, all_ones);
 }
 
+ScopedWifiOptions::~ScopedWifiOptions() {
+}
+
 }  // namespace net

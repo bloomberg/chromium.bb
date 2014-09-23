@@ -24,6 +24,7 @@
 #include <iphlpapi.h>
 #include <objbase.h>
 #include "base/win/windows_version.h"
+#include "net/base/net_util_win.h"
 #elif !defined(OS_ANDROID)
 #include <net/if.h>
 #endif  // OS_WIN
@@ -788,6 +789,114 @@ TEST(NetUtilTest, GetNetworkList) {
     EXPECT_STREQ(it->name.c_str(), name);
 #endif
   }
+}
+
+namespace {
+
+#if defined(OS_WIN)
+bool read_int_or_bool(DWORD data_size,
+                      PVOID data) {
+  switch (data_size) {
+    case 1:
+      return !!*reinterpret_cast<uint8*>(data);
+    case 4:
+      return !!*reinterpret_cast<uint32*>(data);
+    default:
+      LOG(FATAL) << "That is not a type I know!";
+      return false;
+  }
+}
+
+int GetWifiOptions() {
+  const internal::WlanApi& wlanapi = internal::WlanApi::GetInstance();
+  if (!wlanapi.initialized)
+    return -1;
+
+  internal::WlanHandle client;
+  DWORD cur_version = 0;
+  const DWORD kMaxClientVersion = 2;
+  DWORD result = wlanapi.OpenHandle(
+      kMaxClientVersion, &cur_version, &client);
+  if (result != ERROR_SUCCESS)
+    return -1;
+
+  WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
+  result = wlanapi.enum_interfaces_func(client, NULL, &interface_list_ptr);
+  if (result != ERROR_SUCCESS)
+    return -1;
+  scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
+      interface_list_ptr);
+
+  for (unsigned i = 0; i < interface_list->dwNumberOfItems; ++i) {
+    WLAN_INTERFACE_INFO* info = &interface_list->InterfaceInfo[i];
+    DWORD data_size;
+    PVOID data;
+    int options = 0;
+    result = wlanapi.query_interface_func(
+        client,
+        &info->InterfaceGuid,
+        wlan_intf_opcode_background_scan_enabled,
+        NULL,
+        &data_size,
+        &data,
+        NULL);
+    if (result != ERROR_SUCCESS)
+      continue;
+    if (!read_int_or_bool(data_size, data)) {
+      options |= WIFI_OPTIONS_DISABLE_SCAN;
+    }
+    internal::WlanApi::GetInstance().free_memory_func(data);
+
+    result = wlanapi.query_interface_func(
+        client,
+        &info->InterfaceGuid,
+        wlan_intf_opcode_media_streaming_mode,
+        NULL,
+        &data_size,
+        &data,
+        NULL);
+    if (result != ERROR_SUCCESS)
+      continue;
+    if (read_int_or_bool(data_size, data)) {
+      options |= WIFI_OPTIONS_MEDIA_STREAMING_MODE;
+    }
+    internal::WlanApi::GetInstance().free_memory_func(data);
+
+    // Just the the options from the first succesful
+    // interface.
+    return options;
+  }
+
+  // No wifi interface found.
+  return -1;
+}
+
+#else  // OS_WIN
+
+int GetWifiOptions() {
+  // Not supported.
+  return -1;
+}
+
+#endif  // OS_WIN
+
+void TryChangeWifiOptions(int options) {
+  int previous_options = GetWifiOptions();
+  scoped_ptr<ScopedWifiOptions> scoped_options = SetWifiOptions(options);
+  EXPECT_EQ(previous_options | options, GetWifiOptions());
+  scoped_options.reset();
+  EXPECT_EQ(previous_options, GetWifiOptions());
+}
+
+};  // namespace
+
+// Test SetWifiOptions().
+TEST(NetUtilTest, SetWifiOptionsTest) {
+  TryChangeWifiOptions(0);
+  TryChangeWifiOptions(WIFI_OPTIONS_DISABLE_SCAN);
+  TryChangeWifiOptions(WIFI_OPTIONS_MEDIA_STREAMING_MODE);
+  TryChangeWifiOptions(WIFI_OPTIONS_DISABLE_SCAN |
+                       WIFI_OPTIONS_MEDIA_STREAMING_MODE);
 }
 
 struct NonUniqueNameTestData {

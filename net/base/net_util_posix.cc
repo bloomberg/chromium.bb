@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -283,5 +284,10 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
   return WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
 }
+
+scoped_ptr<ScopedWifiOptions> SetWifiOptions(int options) {
+  return scoped_ptr<ScopedWifiOptions>();
+}
+
 
 }  // namespace net

@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/values.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
@@ -90,6 +91,27 @@ class CastTransportSenderImplTest : public ::testing::Test {
     task_runner_->RunTasks();
   }
 
+  void InitWithOptions() {
+    scoped_ptr<base::DictionaryValue> options(
+        new base::DictionaryValue);
+    options->SetBoolean("DHCP", true);
+    options->SetBoolean("disable_wifi_scan", true);
+    options->SetBoolean("media_streaming_mode", true);
+    options->SetInteger("pacer_target_burst_size", 20);
+    options->SetInteger("pacer_max_burst_size", 100);
+    transport_sender_.reset(
+        new CastTransportSenderImpl(NULL,
+                                    &testing_clock_,
+                                    net::IPEndPoint(),
+                                    options.Pass(),
+                                    base::Bind(&UpdateCastTransportStatus),
+                                    BulkRawEventsCallback(),
+                                    base::TimeDelta(),
+                                    task_runner_,
+                                    &transport_));
+    task_runner_->RunTasks();
+  }
+
   void InitWithLogging() {
     transport_sender_.reset(new CastTransportSenderImpl(
         NULL,
@@ -150,6 +172,12 @@ TEST_F(CastTransportSenderImplTest, InitWithLogging) {
   InitWithLogging();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
   EXPECT_EQ(5, num_times_callback_called_);
+}
+
+TEST_F(CastTransportSenderImplTest, InitWithOptions) {
+  InitWithOptions();
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(0, num_times_callback_called_);
 }
 
 TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {

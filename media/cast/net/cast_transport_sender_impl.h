@@ -56,11 +56,14 @@ class CastTransportSenderImpl : public CastTransportSender {
   // |raw_events_callback| is a null callback.
   // |options| contains optional settings for the transport, possible
   // keys are:
-  //   "DSCP" (value doesn't matter) - turns DSCP on
+  //   "DSCP" (value ignored) - turns DSCP on
   //   "pacer_target_burst_size": int - specifies how many packets to send
   //                                    per 10 ms ideally.
   //   "pacer_max_burst_size": int - specifies how many pakcets to send
   //                                 per 10 ms, max
+  //   "disable_wifi_scan" (value ignored) - disable wifi scans while streaming
+  //   "media_streaming_mode" (value ignored) - turn media streaming mode on
+  // Note, these options may be ignored on some platforms.
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,
@@ -164,6 +167,8 @@ class CastTransportSenderImpl : public CastTransportSender {
   // socket. We record the corresponding bytes sent for the most recent ACKed
   // audio packet.
   int64 last_byte_acked_for_audio_;
+
+  scoped_ptr<net::ScopedWifiOptions> wifi_options_autoreset_;
 
   base::WeakPtrFactory<CastTransportSenderImpl> weak_factory_;
 

@@ -518,6 +518,28 @@ enum WifiPHYLayerProtocol {
 // Currently only available on OS_WIN.
 NET_EXPORT WifiPHYLayerProtocol GetWifiPHYLayerProtocol();
 
+enum WifiOptions {
+  // Disables background SSID scans.
+  WIFI_OPTIONS_DISABLE_SCAN =  1 << 0,
+  // Enables media streaming mode.
+  WIFI_OPTIONS_MEDIA_STREAMING_MODE = 1 << 1
+};
+
+class NET_EXPORT ScopedWifiOptions {
+ public:
+  ScopedWifiOptions() {}
+  virtual ~ScopedWifiOptions();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedWifiOptions);
+};
+
+// Set temporary options on all wifi interfaces.
+// |options| is an ORed bitfield of WifiOptions.
+// Options are automatically disabled when the scoped pointer
+// is freed. Currently only available on OS_WIN.
+NET_EXPORT scoped_ptr<ScopedWifiOptions> SetWifiOptions(int options);
+
 // Returns number of matching initial bits between the addresses |a1| and |a2|.
 unsigned CommonPrefixLength(const IPAddressNumber& a1,
                             const IPAddressNumber& a2);

@@ -106,6 +106,16 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     transport_->StartReceiving(
         base::Bind(&CastTransportSenderImpl::OnReceivedPacket,
                    weak_factory_.GetWeakPtr()));
+    int wifi_options = 0;
+    if (options->HasKey("disable_wifi_scan")) {
+      wifi_options |= net::WIFI_OPTIONS_DISABLE_SCAN;
+    }
+    if (options->HasKey("media_streaming_mode")) {
+      wifi_options |= net::WIFI_OPTIONS_MEDIA_STREAMING_MODE;
+    }
+    if (wifi_options) {
+      wifi_options_autoreset_ = net::SetWifiOptions(wifi_options);
+    }
   }
 }
 
