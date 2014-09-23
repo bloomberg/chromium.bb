@@ -1422,7 +1422,7 @@ void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
 // static
 bool ChromeContentRendererClient::WasWebRequestUsedBySomeExtensions() {
 #if defined(ENABLE_EXTENSIONS)
-  return g_current_client->extension_dispatcher_delegate_
+  return g_current_client->extension_dispatcher_
       ->WasWebRequestUsedBySomeExtensions();
 #else
   return false;

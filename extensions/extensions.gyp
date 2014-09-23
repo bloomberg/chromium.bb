@@ -874,6 +874,8 @@
         'renderer/resources/uncaught_exception_handler.js',
         'renderer/resources/unload_event.js',
         'renderer/resources/utils.js',
+        'renderer/resources/web_request_custom_bindings.js',
+        'renderer/resources/web_request_internal_custom_bindings.js',
         'renderer/runtime_custom_bindings.cc',
         'renderer/runtime_custom_bindings.h',
         'renderer/safe_builtins.cc',

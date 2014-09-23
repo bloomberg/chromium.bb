@@ -148,6 +148,8 @@ class Dispatcher : public content::RenderProcessObserver,
                                      RequestSender* request_sender,
                                      V8SchemaRegistry* v8_schema_registry);
 
+  bool WasWebRequestUsedBySomeExtensions() const { return webrequest_used_; }
+
  private:
   friend class ::ChromeRenderViewTest;
   FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
@@ -310,6 +312,9 @@ class Dispatcher : public content::RenderProcessObserver,
   // the observer is destroyed before the UserScriptSet.
   ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
       user_script_set_manager_observer_;
+
+  // Status of webrequest usage.
+  bool webrequest_used_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

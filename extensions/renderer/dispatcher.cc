@@ -185,7 +185,8 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
       is_webkit_initialized_(false),
-      user_script_set_manager_observer_(this) {
+      user_script_set_manager_observer_(this),
+      webrequest_used_(false) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(extensions::switches::kExtensionProcess) ||
@@ -531,6 +532,11 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_UNCAUGHT_EXCEPTION_HANDLER_JS));
   resources.push_back(std::make_pair("unload_event", IDR_UNLOAD_EVENT_JS));
   resources.push_back(std::make_pair("utils", IDR_UTILS_JS));
+  resources.push_back(std::make_pair("webRequest",
+                                     IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+       std::make_pair("webRequestInternal",
+                      IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS));
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
@@ -982,7 +988,7 @@ void Dispatcher::OnUpdateTabSpecificPermissions(
 }
 
 void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
-  delegate_->HandleWebRequestAPIUsage(webrequest_used);
+  webrequest_used_ = webrequest_used;
 }
 
 void Dispatcher::OnUserScriptsUpdated(

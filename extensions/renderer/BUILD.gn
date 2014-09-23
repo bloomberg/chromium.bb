@@ -106,6 +106,8 @@ source_set("renderer") {
     "resources/uncaught_exception_handler.js",
     "resources/unload_event.js",
     "resources/utils.js",
+    "resources/web_request_custom_bindings.js",
+    "resources/web_request_internal_custom_bindings.js",
     "runtime_custom_bindings.cc",
     "runtime_custom_bindings.h",
     "safe_builtins.cc",

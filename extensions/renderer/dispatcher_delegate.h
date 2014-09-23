@@ -83,10 +83,6 @@ class DispatcherDelegate {
       int tab_id,
       const std::string& extension_id,
       const extensions::URLPatternSet& origin_set) {}
-
-  // Allows the delegate to respond to reports from the browser about WebRequest
-  // API usage from within this process.
-  virtual void HandleWebRequestAPIUsage(bool webrequest_used) {}
 };
 
 }  // namespace extensions

@@ -51,8 +51,7 @@
 
 using extensions::NativeHandler;
 
-ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate()
-    : webrequest_used_(false) {
+ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate() {
 }
 
 ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
@@ -212,9 +211,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("webRequest", IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("webRequestInternal",
-                             IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
 #if defined(ENABLE_WEBRTC)
   source_map->RegisterSource("cast.streaming.rtpStream",
                              IDR_CAST_STREAMING_RTP_STREAM_CUSTOM_BINDINGS_JS);
@@ -345,9 +341,4 @@ void ChromeExtensionsDispatcherDelegate::UpdateTabSpecificPermissions(
                                     extensions::ManifestPermissionSet(),
                                     origin_set,
                                     extensions::URLPatternSet()));
-}
-
-void ChromeExtensionsDispatcherDelegate::HandleWebRequestAPIUsage(
-    bool webrequest_used) {
-  webrequest_used_ = webrequest_used;
 }
