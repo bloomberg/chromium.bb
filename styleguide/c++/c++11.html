@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="c++11.css">
+<style>
+table tbody tr td:first-child {
+  font-weight: bold;
+  font-size: 110%;
+}
+</style>
+</head>
+<body>
+<div id="content">
+<h1>C++11 use in Chromium</h1>
+
+<p><i>This document lives at src/styleguide/c++/c++11.html in a Chromium
+checkout.</i></p>
+
+<p>This document summarizes the features of C++11 (both in the language itself
+and in enhancements to the Standard Library) and describes which features are
+allowed in Chromium and contains pointers to more detailed information. The
+Guide applies to Chromium and its subprojects. Subprojects can choose to be
+more restrictive if they need to compile on more toolchains than Chromium.</p>
+
+<p>You can propose to make a feature available or to ban a
+feature by sending an email to chromium-dev. Ideally include a short blurb
+on what the feature is, and why you think it should or should not be allowed.
+Ideally, the list will arrive at some consensus and the wiki page will be
+updated to mention that consensus. If there's no consensus,
+<code>src/styleguide/C++/OWNERS</code> get to decide -- for divisive features, we expect
+the decision to be to not use the feature yet and possibly discuss it again a
+few months later, when we have more experience with the language.</p>
+
+<p class="warning">Unless otherwise noted, <strong>no</strong> C++11
+<strong>library</strong> features are allowed.</p>
+
+<h2 id="whitelist">C++11 Allowed Features</h2>
+
+<p>The following features are currently allowed.</p>
+
+<table id="whitelist_lang_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:220px;'>Feature</th>
+<th style='width:260px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+<tr>
+<td>Angle Bracket Parsing in Templates</td>
+<td><code>&gt;&gt;</code> for <code>&gt; &gt;</code> and <br />
+<code>&lt;::</code> for <code>&lt; ::</code></td>
+<td>More intuitive parsing of template parameters</td>
+<td><a href="http://stackoverflow.com/questions/15785496/c-templates-angle-brackets-pitfall-what-is-the-c11-fix">
+C++ Templates Angle Brackets Pitfall</a></td>
+<td>Recommended to increase readability. Approved without discussion.</td>
+</tr>
+
+<tr>
+<td>Local Types as Template Arguments</td>
+<td></td>
+<td>Allows local and unnamed types as template arguments</td>
+<td><a href="http://stackoverflow.com/questions/742607/using-local-classes-with-stl-algorithms">
+Local types, types without linkage and unnamed types as template arguments</a></td>
+<td>Usage should be rare. Approved without discussion.</td>
+</tr>
+
+<tr>
+<td>Standard Integers</td>
+<td>Typedefs within <code>&lt;stdint.h&gt;</code>
+and <code>&lt;inttypes&gt;</code></td>
+<td>Provides fixed-size integers independent of platforms</td>
+<td><a href="http://www.cplusplus.com/reference/cstdint/">
+&lt;stdint.h&gt; (cstdint)</a></td>
+<td>Already in common use in the codebase. Approved without discussion.</td>
+</tr>
+
+</tbody>
+</table>
+
+<h2 id="blacklist">C++11 Blacklist (Disallowed and Banned Features)</h2>
+
+<p>This section lists features that are not allowed to be used yet.
+
+<h3 id="blacklist_banned">C++11 Banned Features</h3>
+
+<p>None yet! This section will list C++11 features that are not allowed in the
+Chromium codebase.
+</p>
+
+<!--
+<table id="banned_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature or Library</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Status</th>
+</tr>
+
+</tbody>
+</table>
+-->
+
+<h3 id="blacklist_review">C++11 Features To Be Discussed</h3>
+
+<p>The following C++ language features are currently disallowed.
+See the top of this page on how to propose moving a feature from this list
+into the allowed or banned sections. Note that not all of these features
+work in all our compilers yet.</p>
+
+<table id="blacklist_review_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td>Aliases</td>
+<td><code>using <i>new_alias</i> = <i>typename</i></code></td>
+<td>Allow parameterized typedefs</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/type_alias">Type alias (using syntax)</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Alignment Features</td>
+<td>
+<code>alignas</code> specifier,
+<code>std::alignment_of&lt;T&gt;</code>,
+<code>std::aligned_union&lt;Size, ...Types&gt;</code> and
+<code>std::max_align_t</code></td>
+<td>Object alignment</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/alignment_of">std::alignment_of</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Attributes</td>
+<td><code>[[<i>attribute_name</i>]]</code></td>
+<td>Attaches properties to declarations that
+specific compiler implementations may use.</td>
+<td><a href="http://www.codesynthesis.com/~boris/blog/2012/04/18/cxx11-generalized-attributes/">
+C++11 generalized attributes</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Automatic Types</td>
+<td><code>auto</code></td>
+<td>Automatic type deduction</td>
+<td><a href="http://go/totw:4">
+Tip of the Week #4: Use <code>const auto&</code> and
+<code>auto</code> to replace complex declarations</a></td>
+<td><a
+href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#auto">Google
+Style Guide on <code>auto</code></a></td>
+</tr>
+
+<tr>
+<td>Constant Expressions</td>
+<td><code>constexpr</code></td>
+<td>Compile-time constant expressions</td>
+<td><a href="http://go/totw:57">
+Tip of the Week #57: <code>constexpr</code> is forever</a></td>
+<td>Not supported in MSVS2013. <a
+href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#constexpr">Google
+Style Guide on <code>constexpr</code></a></td>
+</tr>
+
+<tr>
+<td>Declared Type Accessor</td>
+<td><code>decltype(<i>expression</i>)</code></td>
+<td>Provides a means to determine the type of an expression at compile-time,
+useful most often in templates.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/decltype">
+decltype specifier</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Default Function Creation</td>
+<td><code><i>Function</i>(<i>arguments</i>) = default;</code></td>
+<td>Instructs the compiler to generate a default version
+of the indicated function</td>
+<td><a href="http://stackoverflow.com/questions/823935/whats-the-point-in-defaulting-functions-in-c11">
+What's the point in defaulting functions in C++11?</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Default Function Template Arguments</td>
+<td><code>template &lt;typename T = <i>type</i>&gt; <br />
+&nbsp;&nbsp;<i>type</i> <i>Function</i>(T <i>var</i>) {}</code></td>
+<td>Allow function templates, like classes, to have default arguments</td>
+<td><a href="http://stackoverflow.com/questions/2447458/default-template-arguments-for-function-templates">
+Default Template Arguments for Function Templates</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Delegated Constructors</td>
+<td><code>Class() : Class(0) {}</code><br />
+<code>Class(<i>type</i> <i>var</i>) : Class(<i>var</i>, 0)</code></td>
+<td>Allow overloaded constructors to use common initialization code</td>
+<td><a href="https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/introduction_to_the_c_11_feature_delegating_constructors?lang=en">
+Introduction to the C++11 feature: delegating constructors</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Enumerated Type Classes</td>
+<td><code>enum class <i>classname</i></code></td>
+<td>Provide enums as full classes, with no implicit
+conversion to booleans or integers</td>
+<td><a href="http://stackoverflow.com/questions/6936030/do-we-really-need-enum-class-in-c11">
+enum-class</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Exception Features</td>
+<td><code>noexcept</code>, <code>exception_ptr</code>,
+<code>current_exception()</code>, <code>rethrow_exception</code>,
+and <code>nested_exception</code></td>
+<td>Enhancements to exception throwing and handling</td>
+<td><a href="http://en.cppreference.com/w/cpp/error/exception">
+std::exception</a></td>
+<td>Exceptions are banned by the
+<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Exceptions">
+C++ Style Guide</a>.</td>
+</tr>
+
+<tr>
+<td>Explicit Conversion Operators</td>
+<td><code>explicit operator <i>type</i>() {
+<br />&nbsp;&nbsp;// code<br /> }</code></td>
+<td>Allows conversion operators that cannot be implicitly invoked</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/explicit">
+explicit specifier</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Final Declarations</td>
+<td><code>final</code></td>
+<td>Indicates that a class or function is final and cannot be overridden</td>
+<td><a href="http://go/totw:54">
+Tip of the Week #54: Controlling Your Inheritance</a></td>
+<td><code>FINAL</code> is already widely used in the codebase.</td>
+</tr>
+
+<tr>
+<td>Function Local Variable</td>
+<td><code>__func__</code></td>
+<td>Provides a local variable of the name of the enclosing
+function for logging purposes</td>
+<td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=338">
+The __func__ Predeclared Identifier is Coming to C++</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Function Suppression</td>
+<td><code><i>Function</i>(<i>arguments</i>) = delete;</code></td>
+<td>Suppresses the implementation of a function, especially a
+synthetic function such as a copy constructor</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>(Uniform) Initialization Syntax</td>
+<td><code><i>type</i> <i>name</i> { [<i>value</i> ..., <i>value</i>]};</code></td>
+<td>Allows any object of primitive, aggregate or class
+type to be initialized using brace syntax</td>
+<td><a href="http://go/totw:58">
+Tip of the Week #58: Initializer Lists and the Uniform Initialization Syntax</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Inline Namespaces</td>
+<td><code>inline</code></td>
+<td>Allows better versioning of namespaces</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/namespace">Namespaces</a></td>
+<td>Under investigation, unclear how it will work with
+components</td>
+</tr>
+
+<tr>
+<td>Lambda Expressions</td>
+<td><code>[<i>captures</i>](<i>params</i>) -&gt; <i>ret</i> { <i>body</i> }</code></td>
+<td>Anonymous functions</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/lambda">Lambda functions</a></td>
+<td>No default captures (<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Lambda_expressions">Google Style Guide</a>).</td>
+</tr>
+
+<tr>
+<td><code>long long</code> Type</td>
+<td><code>long long <i>var</i>= <i>value</i>;</code></td>
+<td>An integer of at least 64 bits</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/types">
+Fundamental types</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Non-Static Class Member Initializers</td>
+<td>
+<code>
+class C {<br />
+  <i>type</i> <i>var</i> = <i>value</i>;<br/>
+  C()  // copy-initializes <i>var</i><br/>
+</code>
+<td>Allows non-static class members to be initialized at their definitions (outside constructors)</td>
+<td><a href="http://go/totw:61">
+Tip of the Week #58: Non-Static Class Member Initializers</a> and
+<a href="http://en.cppreference.com/w/cpp/language/data_members">
+Non-static data members</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Null Pointer Constant</td>
+<td><code>nullptr</code></td>
+<td>Declares a type-safe null pointer</td>
+<td><a href="http://go/totw:39">
+Tip of the Week #39: Prefer C++11’s nullptr to NULL or 0</a></td>
+<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#0_and_nullptr/NULL">Google Style Guidwe</a>.
+</td>
+</tr>
+
+<tr>
+<td>Overrides</td>
+<td><code>override</code></td>
+<td>Indicates that a class or function overrides a base implementation</td>
+<td><a href="http://go/totw:54">
+Tip of the Week #54: Controlling Your Inheritance</a></td>
+<td><code>OVERRIDE</code> is already widely used in the codebase.</td>
+</tr>
+
+<tr>
+<td>Range-Based For Loops</td>
+<td><code>for (<i>type</i> <i>var</i> : <i>range</i>)</code></td>
+<td>Facilitates a more concise syntax for iterating over the elements
+of a container (or a range of iterators) in a <code>for</code> loop</td>
+<td>TODO: documentation link/a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Raw String Literals</td>
+<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
+<td>Allows a string to be encoded without any escape
+sequences, easing parsing in regex expressions, for example</td>
+<td>TODO: documentation linkRaw String Literals</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Rvalue References (and Move Semantics)</td>
+<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
+<td>Reference that only binds to a temporary object</td>
+<td>TODO: documentation linkstruction and assignment</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Static Assertions</td>
+<td><code>static_assert(<i>bool</i>, <i>string</i>)</code></td>
+<td>Tests compile-time conditions</td>
+<td><<a href="http://en.cppreference.com/w/cpp/language/static_assert">Static Assertion</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Union Class Members</td>
+<td><code>union <i>name</i> { <i>class</i> <i>var</i>}</code></td>
+<td>Allows class type members</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/union">
+Union declarations</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>User-Defined Literals</td>
+<td><code><i>type</i> <i>var</i> = <i>literal_value</i>_<i>type</i></code></td>
+<td>Allows user-defined literal expressions</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>UTF-8 String Literals</td>
+<td><code>u8&quot;<i>string</i>&quot;</code></td>
+<td>Enforces UTF-8 encoding on all string literals</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">
+string literal</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>UTF-16 and UTF-32 Support (16-Bit and 32-Bit Character Types)</td>
+<td><code>char16_t</code> and <code>char32_t</code></td>
+<td>Provides character types for handling 16-bit
+and 32-bit code units (useful for encoding
+UTF-16 and UTF-32 string data)</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/types">
+Fundamental types</a></td>
+<td>Non-UTF-8 text is banned by the
+<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Non-ASCII_Characters">
+C++ Style Guide</a>. However, may be useful for
+consuming non-ASCII data.</td>
+</tr>
+
+
+<tr>
+<td>Variadic Macros</td>
+<td><code>#define <i>MACRO</i>(...) <i>Impl</i>(<i>args</i>, __VA_ARGS__)</code></td>
+<td>Allows macros that accept a variable number of arguments</td>
+<td><a href="http://stackoverflow.com/questions/4786649/are-variadic-macros-nonstandard">
+Are Variadic macros nonstandard?</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Variadic Templates</td>
+<td><code>template &lt;<i>typename</i> ... <i>arg</i>&gt;</code></td>
+<td>Allows templates that accept a variable number of arguments</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+</tbody>
+</table>
+
+<h3 id="blacklist_stdlib">C++11 Standard Library features</h3>
+
+<details>
+
+<p><summary class="note">All C++11 <strong>Standard Library features are currently
+banned</strong>, because they are not supported on all of our toolchains yet.
+In particular, chromium/android is currently using STLport, and chromium/mac is
+currently using libstdc++4.2, which predate C++11.
+</summary></p>
+
+<table id="banned_stdlib" class="unlined striped">
+
+<tbody>
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Style Guide Usage</th>
+</tr>
+
+<tr>
+<td>Address Retrieval</td>
+<td><code>std::addressof()</code></td>
+<td>Obtains the address of an object even with overloaded <code>operator&amp;</code></td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/addressof">std::addressof</a></td>
+<td>Usage should be rare as
+<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Operator_Overloading">
+Operator Overloading</a> is rare and <code>&amps;</code>
+should suffice in most cases. May be preferable
+over <code>&amps;</code> for performing object
+identity checks.</td>
+</tr>
+
+<tr>
+<td>Aligned Storage</td>
+<td><code>std::aligned_storage&lt;Size, Align&gt;::type</code></td>
+<td>Declare uninitialized storage having a specified alignment.</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/aligned_storage">std::aligned_storage</a></td>
+<td>Note: <code>std::aligned_storage</code> is allowed, but some other C++11
+alignment features are still disallowed.</td>
+</tr>
+
+<tr>
+<td>Allocator Traits</td>
+<td><code>std::allocator_traits</code></td>
+<td>Provides an interface for accessing custom allocators</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/allocator_traits">
+std::allocator_traits</a></td>
+<td>Usage should be rare.</td>
+</tr>
+
+<tr>
+<td>Atomics</td>
+<td><code>std::atomic</code> and others in <code>&lt;atomic&gt;</code></td>
+<td>Fine-grained atomic types and operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/atomic">&lt;atomic&gt;</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Arrays</td>
+<td><code>std::array</code></td>
+<td>A fixed-size replacement for built-in arrays, with STL support</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/array">
+std::array</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Begin and End Non-Member Functions</td>
+<td><code>std::begin()</code> and <code>std::end()</code></td>
+<td>Allows use of free functions on any container, including
+built-in arrays</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/begin">
+std::begin</a> and
+<a href="http://en.cppreference.com/w/cpp/iterator/end">
+std::end</a></td>
+<td>Useful for built-in arrays.</td>
+</tr>
+
+<tr>
+<td>Bind Operations</td>
+<td><code>std::bind(<i>function</i>, <i>args</i>, ...)</code></td>
+<td>Declares a function object bound to certain arguments</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>C Floating-Point Environment</td>
+<td><code>&lt;cfenv&gt;</code></td>
+<td>Provides floating point status flags and control modes for C-compatible code</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/cfenv">Standard library header &lt;cfenv&gt;</a></td>
+<td>Compilers do not support use</td>
+</tr>
+
+<tr>
+<td>Chrono Library</td>
+<td><code>&lt;chrono&gt;</code></td>
+<td>Provides a standard date and time library</td>
+<td><a href="http://en.cppreference.com/w/cpp/chrono">Date and time utilities</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Complex Inverse Trigonometric and Hyperbolic Functions</td>
+<td>Functions within <code>&lt;complex&gt;</code></td>
+<td>Adds inverse trigonomentric and hyperbolic non-member functions to
+the <code>&lt;complex&gt;</code> library.</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/complex">std::complex</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Conditional Type Selection</td>
+<td><code>std::enable_if</code> and <code>std::conditional</code></td>
+<td>Enables compile-time conditional type selection</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/enable_if">
+std::enable_if</a> and
+<a href="http://en.cppreference.com/w/cpp/types/conditional">
+conditional</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Constant Iterator Methods on Containers</td>
+<td><code>std::cbegin()</code> and <code>std::cend()</code></td>
+<td>Enforces iteration methods that don't change container contents</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Construct Elements in Containers</td>
+<td><code>emplace()</code>,<code>emplace_back()</code>,
+<code>emplace_front()</code>, <code>emplace_hint()</code></td>
+<td>Constructs elements directly within a container without a copy
+or a move</td>
+<td>TODO: documentation link</td>
+<td>Use where element construction within a container
+is needed.</td>
+</tr>
+
+<tr>
+<td>Container Compaction Functions</td>
+<td><code>std::vector::shrink_to_fit()</code>,
+<code>std::deque::shrink_to_fit()</code>, and
+<code>std::string::shrink_to_fit()</code></td>
+<td>Requests the removal of unused space
+in the container</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/vector/shrink_to_fit">
+std::vector::shrink_to_fit</a>,
+<a href="http://en.cppreference.com/w/cpp/container/deque/shrink_to_fit">
+std::deque::shrink_to_fit</a>, and
+<a href="http://en.cppreference.com/w/cpp/string/basic_string/shrink_to_fit">
+std::basic_string::shrink_to_fit</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Date/Time String Formatting Specifiers</td>
+<td><code>std::strftime()</code></td>
+<td>Converts date and time information into a
+formatted string using new specifiers</td>
+<td><a href="http://en.cppreference.com/w/cpp/chrono/c/strftime">
+std::strftime</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Function Return Type Deduction</td>
+<td><code>std::result_of&lt;<i>Functor(ArgTypes...)</i>&gt;</code></td>
+<td>Extracts the return type from the type signature of
+a function call invocation at compile-time.</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/result_of">
+std::result_of</a></td>
+<td>
+<a href="http://stackoverflow.com/questions/15486951/why-does-stdresult-of-take-an-unrelated-function-type-as-a-type-argument">
+Why does std::result_of take an (unrelated) function type as a type argument?
+</a></td>
+</tr>
+
+<tr>
+<td>Function Objects</td>
+<td><code>std::function</code></td>
+<td>Wraps a standard polymorphic function</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Forward Lists</td>
+<td><code>std::forward_list</code></td>
+<td>Provides an efficient singly linked list</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/forward_list">
+std::forward_list</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Gamma Natural Log</td>
+<td><code>std::lgamma()</code></td>
+<td>Computes the natural log of the gamma of a
+floating point value</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/math/lgamma">
+std::lgamma</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Garbage Collection Features</td>
+<td><code>std::{un}declare_reachable()</code> and
+<code>std::{un}declare_no_pointers()</code></td>
+<td>Enables garbage collection implementations</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/gc/declare_reachable">
+std::declare_reachable</a>
+and <a href="http://en.cppreference.com/w/cpp/memory/gc/declare_no_pointers">
+std::declare_no_pointers</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Heap Validation</td>
+<td><code>std::is_heap()</code></td>
+<td>Checks whether an iterator range is in fact a heap</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Is Nan</td>
+<td><code>std::isnan()</code></td>
+<td>Determines if a floating point value is not-a-number</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/math/isnan">std::isnan</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Iterator Operators</td>
+<td><code>std::next()</code> and <code>std::prev()</code></td>
+<td>Copies an iterator and increments or decrements the copy by
+some value</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/next">std::next</a>
+and <a href="http://en.cppreference.com/w/cpp/iterator/prev">std::prev</a>
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Initializer Lists</td>
+<td><code>std::initializer_list&lt;T&gt;</code></td>
+<td>Allows containers to be initialized with aggregate elements</td>
+<td><a href="http://go/totw:58">
+Tip of the Week #58: Initializer Lists and the Uniform Initialization Syntax</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Move Semantics</td>
+<td><code>std::move()</code></td>
+<td>Facilitates efficient move operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/move">
+<code>std::move</code> reference</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Pointer Traits Class Template</td>
+<td><code>std::pointer_traits</code></td>
+<td>Provides a standard way to access properties
+of pointers and pointer-like types</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/pointer_traits">
+std::pointer_traits</a></td>
+<td>Useful for determining the element type
+pointed at by a (possibly smart) pointer.</td>
+</tr>
+
+<tr>
+<td>Random Number Generators</td>
+<td>Functions within <code>&lt;random&gt;</code></td>
+<td>Random number generation algorithms and utilities</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/random">
+Pseudo-random number generation</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Ratio Template Class</td>
+<td><code>std::ratio&lt;<i>numerator</i>, <i>denominator</i>&gt;</code></td>
+<td>Provides compile-time rational numbers</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Reference Wrapper Classes</td>
+<td><code>std::reference_wrapper</code> and
+<code>std::ref()</code>, <code>std::cref()</code></td>
+<td>Allows you to wrap a reference within a standard
+object (and use those within containers)</td>
+<td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=217">
+Reference Wrappers</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Regex Library</td>
+<td><code>&lt;regex&gt;</code></td>
+<td>Provides a standard regular expressions library</td>
+<td><a href="http://en.cppreference.com/w/cpp/regex">Regular expressions library</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Shared Pointers</td>
+<td><code>std::shared_ptr</code></td>
+<td>Allows shared ownership of a pointer through reference counts</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
+<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Ownership_and_Smart_Pointers">
+Ownership and Smart Pointers</a></td>
+</tr>
+
+<tr>
+<td>Soft Program Exits</td>
+<td><code>std::at_quick_exit()</code>
+and <code>std::quick_exit()</code></td>
+<td>Allows registration of functions to be called upon exit,
+allowing cleaner program exit than <code>abort()</code> or
+<code>exit</code></td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/program/quick_exit">
+std:quick_exit</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>String Direct Reference Functions</td>
+<td><code>std::string::front()</code> and <code>std::string::back()</code></td>
+<td>Returns a reference to the front or back of a string</td>
+<td><a href="http://en.cppreference.com/w/cpp/string/basic_string/front">
+std::basic_string::front</a> and
+<a href="http://en.cppreference.com/w/cpp/string/basic_string/back">
+std::basic_string::back</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>String to Number Functions</td>
+<td><code>std::stoi()</code>, <code>std::stol()</code>,
+<code>std::stoul()</code>, <code>std::stoll</code>, <code>std::stoull()</code>,
+<code>std::stof()</code>, <code>std::stod()</code>, <code>std::stold()</code>,
+and <code>std::to_string()</code></td>
+<td>Converts strings to numbers</td>
+<td><a href="http://en.cppreference.com/w/cpp/string/basic_string/stol">
+std::stoi, std::stol, std::stoll</a>,
+<a href="http://en.cppreference.com/w/cpp/string/basic_string/stoul">
+std::stoul, std::stoull</a>, and
+<a href="http://en.cppreference.com/w/cpp/string/basic_string/stof">
+std::stof, std::stod, std::stold</a> </td>
+<td></td>
+</tr>
+
+<tr>
+<td>STL Algorithms</td>
+<td>Functions within <code>&lt;algorithm&gt;</code>.</td>
+<td>Enhancements to the set of STL algorithms</td>
+<td><a href="http://go/totw:21">
+Tip of the Week #21: New C++11 STL Algorithms</a>. See
+the <a href="http://en.cppreference.com/w/cpp/algorithm">
+Algorithms library</a> for a complete list.</td>
+<td></td>
+</tr>
+
+<tr>
+<td>System Errors</td>
+<td><code>&lt;system_error&gt;</code></td>
+<td>Provides a standard system error library</td>
+<td><a href="http://en.cppreference.com/w/cpp/error/system_error">std::system_error</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Trailing Return Types</td>
+<td><code>auto <i>function declaration</i> -> <i>return_type</i></code></td>
+<td>Allows trailing function return value syntax</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/function">
+Declaring functions</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Thread Library</td>
+<td><code>&lt;thread&gt; support, including &lt;future&gt;,
+&lt;mutex&gt;, &lt;condition_variable&gt;</code></td>
+<td>Provides a standard mulitthreading library using <code>std::thread</code> and associates</td>
+<td><a href="http://en.cppreference.com/w/cpp/thread">Thread support library</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Tuples</td>
+<td><code>std::tuple</code></td>
+<td>A fixed-size ordered collection of values of mixed types</td>
+<td>TODO: documentation link</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Type-Generic Math Functions</td>
+<td>Functions within <code>&lt;ctgmath&gt;</code></td>
+<td>Provides a means to call real or complex functions
+based on the type of arguments</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/ctgmath">
+Standard library header &lt;ctgmath&gt;</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Type Info Enhancements</td>
+<td><code>std::type_index</code> and <code>std::type_info::hash_code()</code></td>
+<td>Allows type information (most often within containers)
+that can be copied, assigned, or hashed</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/type_index">
+std::type_index</a> and
+<a href="http://en.cppreference.com/w/cpp/types/type_info/hash_code">
+std::type_info::hash_code</a></td>
+<td><code>std::type_index</code> is a thin wrapper for
+<code>std::type_info</code>, allowing you to use it directly
+within both associative and unordered containers</td>
+</tr>
+
+<tr>
+<td>Type Traits</td>
+<td>Class templates within <code>&lt;type_traits&gt;</code></td>
+<td>Allows compile-time inspection of the properties of types</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/type_traits">
+Standard library header &lt;type_traits&gt;</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Unique Pointers</td>
+<td><code>std::unique_ptr&lt;<i>type</i>&gt;</code></td>
+<td>Defines a pointer with clear and unambiguous ownership</td>
+<td>TODO: documentation link</td>
+<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Ownership_and_Smart_Pointers">
+Ownership and Smart Pointers</a></td>
+</tr>
+
+<tr>
+<td>Unordered Associative Containers</td>
+<td><code>std::unordered_set</code>, <code>std::unordered_map</code>,
+<code>std::unordered_multiset</code>, and <code>std::unordered_multimap</code></td>
+<td>Allows efficient containers of key/value pairs</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/unordered_map">std::unordered_map</a>
+and <a href="http://en.cppreference.com/w/cpp/container/unordered_set">std::unordered_set</a>
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Variadic Copy Macro</td>
+<td><code>va_copy(va_list <i>dest</i>, va_list <i>src</i>)</code></td>
+<td>Makes a copy of the variadic function arguments</td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Weak Pointers</td>
+<td><code>std::weak_ptr</code></td>
+<td>Allows a weak reference to a <code>std::shared_ptr</code></td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/weak_ptr">
+std::weak_ptr</a></td>
+<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Ownership_and_Smart_Pointers">
+Ownership and Smart Pointers</a></td>
+</tr>
+
+<tr>
+<td>Wide String Support</td>
+<td><code>std::wstring_convert</code>,
+<code>std::wbuffer_convert</code>.
+<code>std::codecvt_utf8</code>, <code>std::codecvt_utf16</code>,
+and <code>std::codecvt_utf8_utf16</code></td>
+<td>Converts between string encodings</td>
+<td><a href="http://en.cppreference.com/w/cpp/locale/wstring_convert">
+std::wstring_convert</a>,
+<a href="http://en.cppreference.com/w/cpp/locale/wbuffer_convert">
+std::wbuffer_convert</a>,
+<a href="http://en.cppreference.com/w/cpp/locale/codecvt_utf8">
+std::codecvt_utf8</a>,
+<a href="http://en.cppreference.com/w/cpp/locale/codecvt_utf16">
+std::codecvt_utf16</a>, and
+<a href="http://en.cppreference.com/w/cpp/locale/codecvt_utf8_utf16">
+std::codecvt_utf8_utf16</a>
+</td>
+<td>Non-UTF-8 text is banned by the
+<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Non-ASCII_Characters">
+C++ Style Guide</a>. However, may be useful for
+consuming non-ASCII data.</td>
+</tr>
+
+</tbody>
+</table>
+
+</details>
+
+</div>
+</body>
+</html>
