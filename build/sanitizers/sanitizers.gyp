@@ -45,6 +45,15 @@
         'ldflags': [
           '-Wl,-u_sanitizer_options_link_helper',
         ],
+        'target_conditions': [
+          ['_type=="executable"', {
+            'xcode_settings': {
+              'OTHER_LDFLAGS': [
+                '-Wl,-u,__sanitizer_options_link_helper',
+              ],
+            },
+          }],
+        ],
       },
     },
   ],

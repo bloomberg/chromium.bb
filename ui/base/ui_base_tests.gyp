@@ -34,6 +34,17 @@
             '../resources/ui_resources.gyp:ui_test_pak',
           ],
           'includes': [ 'ui_base_tests_bundle.gypi' ],
+          # ui_base_tests_bundle doesn't actually contain a shared library and
+          # therefore should not depend on sanitizer_options or any other
+          # libraries. Adding such a dependency will result in creating a
+          # broken shared library within the bundle.
+          'conditions': [
+            ['use_sanitizer_options==1', {
+              'dependencies!': [
+                '../../build/sanitizers/sanitizers.gyp:sanitizer_options',
+              ],
+            }],
+          ],
         },
       ],
     }],

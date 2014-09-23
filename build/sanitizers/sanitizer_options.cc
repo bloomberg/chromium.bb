@@ -7,6 +7,11 @@
 
 #include "build/build_config.h"
 
+#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)
+#include <crt_externs.h>  // for _NSGetArgc, _NSGetArgv
+#include <string.h>
+#endif  // ADDRESS_SANITIZER && OS_MACOSX
+
 // Functions returning default options are declared weak in the tools' runtime
 // libraries. To make the linker pick the strong replacements for those
 // functions from this module, we explicitly force its inclusion by passing
@@ -61,6 +66,8 @@ const char *kAsanDefaultOptions =
 const char *kAsanDefaultOptions =
     "strict_memcmp=0 replace_intrin=0 check_printf=1 use_sigaltstack=1 "
     "strip_path_prefix=Release/../../ ";
+static const char kNaClDefaultOptions[] = "handle_segv=0";
+static const char kNaClFlag[] = "--type=nacl-loader";
 #endif  // OS_LINUX
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
@@ -71,6 +78,18 @@ __attribute__((visibility("default")))
 // stripped by the linker.
 __attribute__((used))
 const char *__asan_default_options() {
+#if defined(OS_MACOSX)
+  char*** argvp = _NSGetArgv();
+  int* argcp = _NSGetArgc();
+  if (!argvp || !argcp) return kAsanDefaultOptions;
+  char** argv = *argvp;
+  int argc = *argcp;
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argv[i], kNaClFlag) == 0) {
+      return kNaClDefaultOptions;
+    }
+  }
+#endif
   return kAsanDefaultOptions;
 }
 #endif  // OS_LINUX || OS_MACOSX
