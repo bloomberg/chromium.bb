@@ -28,6 +28,10 @@ namespace data_reduction_proxy {
 
 namespace {
 
+const int kMinFailedRequestsWhenUnavailable = 1;
+const int kMaxSuccessfulRequestsWhenUnavailable = 0;
+const int kMaxFailedRequestsBeforeReset = 3;
+
 // Records a net error code that resulted in bypassing the data reduction
 // proxy (|is_primary| is true) or the data reduction proxy fallback.
 void RecordDataReductionProxyBypassOnNetworkError(
@@ -79,9 +83,11 @@ DataReductionProxyUsageStats::DataReductionProxyUsageStats(
       last_bypass_type_(BYPASS_EVENT_TYPE_MAX),
       triggering_request_(true),
       ui_thread_proxy_(ui_thread_proxy),
-      eligible_num_requests_through_proxy_(0),
-      actual_num_requests_through_proxy_(0),
+      successful_requests_through_proxy_count_(0),
+      proxy_net_errors_count_(0),
       unavailable_(false) {
+  DCHECK(params);
+
   NetworkChangeNotifier::AddNetworkChangeObserver(this);
 };
 
@@ -93,13 +99,10 @@ void DataReductionProxyUsageStats::OnUrlRequestCompleted(
     const net::URLRequest* request, bool started) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (request->status().status() == net::URLRequestStatus::SUCCESS) {
-    if (data_reduction_proxy_params_->IsDataReductionProxyEligible(request)) {
-      bool was_received_via_proxy =
-          data_reduction_proxy_params_->WasDataReductionProxyUsed(
-              request, NULL);
-      IncrementRequestCounts(was_received_via_proxy);
-    }
+  if (request->status().status() == net::URLRequestStatus::SUCCESS &&
+      data_reduction_proxy_params_->WasDataReductionProxyUsed(request, NULL)) {
+    successful_requests_through_proxy_count_++;
+    NotifyUnavailabilityIfChanged();
   }
 }
 
@@ -109,40 +112,23 @@ void DataReductionProxyUsageStats::OnNetworkChanged(
   ClearRequestCounts();
 }
 
-void DataReductionProxyUsageStats::IncrementRequestCounts(
-    bool was_received_via_proxy) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (was_received_via_proxy) {
-    actual_num_requests_through_proxy_++;
-  }
-  eligible_num_requests_through_proxy_++;
-
-  // To account for the case when the proxy works for a little while and then
-  // gets blocked, we reset the counts occasionally.
-  if (eligible_num_requests_through_proxy_ > 50
-      && actual_num_requests_through_proxy_ > 0) {
-    ClearRequestCounts();
-  } else {
-    MaybeNotifyUnavailability();
-  }
-}
-
 void DataReductionProxyUsageStats::ClearRequestCounts() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  eligible_num_requests_through_proxy_ = 0;
-  actual_num_requests_through_proxy_ = 0;
-  MaybeNotifyUnavailability();
+  successful_requests_through_proxy_count_ = 0;
+  proxy_net_errors_count_ = 0;
 }
 
-void DataReductionProxyUsageStats::MaybeNotifyUnavailability() {
+void DataReductionProxyUsageStats::NotifyUnavailabilityIfChanged() {
   bool prev_unavailable = unavailable_;
-  unavailable_ = (eligible_num_requests_through_proxy_ > 0 &&
-      actual_num_requests_through_proxy_ == 0);
+  unavailable_ =
+      (proxy_net_errors_count_ >= kMinFailedRequestsWhenUnavailable &&
+          successful_requests_through_proxy_count_ <=
+              kMaxSuccessfulRequestsWhenUnavailable);
   if (prev_unavailable != unavailable_) {
-     ui_thread_proxy_->PostTask(FROM_HERE, base::Bind(
-          &DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread,
-          base::Unretained(this),
-          unavailable_));
+    ui_thread_proxy_->PostTask(FROM_HERE, base::Bind(
+        &DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread,
+        base::Unretained(this),
+        unavailable_));
   }
 }
 
@@ -240,15 +226,29 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   }
 }
 
-void DataReductionProxyUsageStats::RecordBypassEventHistograms(
+void DataReductionProxyUsageStats::OnProxyFallback(
     const net::ProxyServer& bypassed_proxy,
-    int net_error) const {
+    int net_error) {
   DataReductionProxyTypeInfo data_reduction_proxy_info;
   if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
       data_reduction_proxy_params_->IsDataReductionProxy(
       bypassed_proxy.host_port_pair(), &data_reduction_proxy_info)) {
     if (data_reduction_proxy_info.is_ssl)
       return;
+
+    proxy_net_errors_count_++;
+
+    // To account for the case when the proxy is reachable for sometime, and
+    // then gets blocked, we reset counts when number of errors exceed
+    // the threshold.
+    if (proxy_net_errors_count_ >= kMaxFailedRequestsBeforeReset &&
+        successful_requests_through_proxy_count_ >
+            kMaxSuccessfulRequestsWhenUnavailable) {
+      ClearRequestCounts();
+    } else {
+      NotifyUnavailabilityIfChanged();
+    }
+
     if (!data_reduction_proxy_info.is_fallback) {
       RecordDataReductionProxyBypassInfo(
           true, false, bypassed_proxy, BYPASS_EVENT_TYPE_NETWORK_ERROR);
