@@ -125,8 +125,6 @@ component("events") {
     "//ui/gfx/geometry",
   ]
 
-  forward_dependent_configs_from = [ ":events_base" ]
-
   if (use_x11) {
     sources += [ "x/events_x.cc" ]
     configs += [

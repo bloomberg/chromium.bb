@@ -53,10 +53,9 @@ if (enable_plugins) {
 
 if (is_component_build) {
   shared_library("content") {
-    deps = content_shared_components + [
+    public_deps = content_shared_components + [
       "//content/public/app:both_sources",
     ]
-    forward_dependent_configs_from = deps
   }
 } else {
   group("content") {

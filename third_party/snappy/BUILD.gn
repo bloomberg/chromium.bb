@@ -31,7 +31,7 @@ static_library("snappy") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  direct_dependent_configs = [ ":snappy_config" ]
+  public_configs = [ ":snappy_config" ]
 
   if (is_clang) {
     # snappy-stubs-internal.h unapologetically has: using namespace std

@@ -69,13 +69,13 @@ template("generate_jni") {
 
   group(target_name) {
     deps = [ ":$foreach_target_name" ]
-    direct_dependent_configs = [ ":jni_includes_${target_name}" ]
+    public_configs = [ ":jni_includes_${target_name}" ]
 
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    if (defined(invoker.forward_dependent_configs_from)) {
-      forward_dependent_configs_from = invoker.forward_dependent_configs_from
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
     }
   }
 }
@@ -95,7 +95,7 @@ template("generate_jni") {
 #   jar_file: the path to the .jar. If not provided, will default to the sdk's
 #     android.jar
 #
-#   deps, forward_dependent_configs_from: As normal
+#   deps, public_deps: As normal
 #
 # Example
 #   generate_jar_jni("foo_jni") {
@@ -163,10 +163,10 @@ template("generate_jar_jni") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    if (defined(invoker.forward_dependent_configs_from)) {
-      forward_dependent_configs_from = invoker.forward_dependent_configs_from
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
     }
-    direct_dependent_configs = [ ":jni_includes_${target_name}" ]
+    public_configs = [ ":jni_includes_${target_name}" ]
   }
 }
 

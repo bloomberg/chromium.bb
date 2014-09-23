@@ -55,7 +55,7 @@ source_set("opus") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  direct_dependent_configs = [ ":opus_config" ]
+  public_configs = [ ":opus_config" ]
 
   if (is_win) {
     defines += [

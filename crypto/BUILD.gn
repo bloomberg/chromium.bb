@@ -285,11 +285,11 @@ group("platform") {
       #
       # We always need our SSL header search path to come before the system one
       # so our versions are used. The libssl target will add the search path we
-      # want, but according to GN's ordering rules, direct_dependent_configs'
-      # search path will get applied before ones inherited from our
-      # dependencies. Therefore, we need to explicitly list our custom libssl's
-      # config here before the system one.
-      direct_dependent_configs = [
+      # want, but according to GN's ordering rules, public_configs' search path
+      # will get applied before ones inherited from our dependencies.
+      # Therefore, we need to explicitly list our custom libssl's config here
+      # before the system one.
+      public_configs = [
         "//net/third_party/nss/ssl:ssl_config",
         "//third_party/nss:system_nss_no_ssl_config",
       ]

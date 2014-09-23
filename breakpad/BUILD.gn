@@ -294,7 +294,7 @@ if (is_mac) {
     ]
 
     configs += [ ":internal_config" ]
-    direct_dependent_configs = [ ":breakpad_config" ]
+    public_configs = [ ":breakpad_config" ]
 
     defines = [ "USE_PROTECTED_ALLOCATIONS=1" ]
     include_dirs = [
@@ -310,7 +310,7 @@ if (is_mac) {
   }
 
   group("client") {
-    direct_dependent_configs = [ ":client_config" ]
+    public_configs = [ ":client_config" ]
   }
 }
 
@@ -447,7 +447,7 @@ if (is_linux || is_android) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    direct_dependent_configs = [ ":client_config" ]
+    public_configs = [ ":client_config" ]
 
     if (cpu_arch == "arm" && is_chromeos) {
       # Avoid running out of registers in
@@ -678,13 +678,13 @@ if (is_ios) {
 
 if (is_win) {
   group("client") {
-    direct_dependent_configs = [ ":client_config" ]
+    public_configs = [ ":client_config" ]
   }
 
   source_set("breakpad_handler") {
     configs += [ ":handler_config" ]
     if (is_win) {
-      direct_dependent_configs = [ ":handler_config" ]
+      public_configs = [ ":handler_config" ]
     }
 
     defines = [ "BREAKPAD_NO_TERMINATE_THREAD" ]

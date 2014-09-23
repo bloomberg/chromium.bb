@@ -182,13 +182,12 @@ source_set("test_support") {
     "gaia/oauth2_token_service_test_util.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//base/test:test_support",
     "//net",
     "//net:test_support",
   ]
-  forward_dependent_configs_from = deps
 
   if (enable_extensions) {
     sources += [

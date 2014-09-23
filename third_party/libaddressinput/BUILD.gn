@@ -112,7 +112,7 @@ static_library("util") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":libaddressinput_config" ]
+  public_configs = [ ":libaddressinput_config" ]
 
   include_dirs = [ "$root_gen_dir/third_party/libaddressinput" ]
 
@@ -157,7 +157,7 @@ static_library("libaddressinput") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":libaddressinput_config" ]
+  public_configs = [ ":libaddressinput_config" ]
 
   deps = [
     ":strings",

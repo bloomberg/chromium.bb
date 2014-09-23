@@ -8,11 +8,10 @@ import("//build/config/ui.gni")
 # See //content/BUILD.gn for how this works.
 group("browser") {
   if (is_component_build) {
-    deps = [ "//content" ]
+    public_deps = [ "//content" ]
   } else {
-    deps = [ ":browser_sources" ]
+    public_deps = [ ":browser_sources" ]
   }
-  forward_dependent_configs_from = deps
 }
 
 source_set("browser_sources") {
@@ -41,11 +40,14 @@ source_set("browser_sources") {
 
   configs += [ "//content:content_implementation" ]
 
+  public_deps = [
+    # We expose skia headers in the public API.
+    "//skia",
+  ]
   deps = [
     "//content/browser",
     "//content/public/common:common_sources",
     "//net",
-    "//skia",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",
@@ -56,7 +58,4 @@ source_set("browser_sources") {
     # include headers from each other.
     "//content/browser",
   ]
-
-  # We expose skia headers in the public API.
-  forward_dependent_configs_from = [ "//skia" ]
 }

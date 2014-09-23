@@ -65,7 +65,7 @@ shared_library("freetype2") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ ":freetype2_config" ]
  
-  direct_dependent_configs = [ ":freetype2_config" ]
+  public_configs = [ ":freetype2_config" ]
 
   libs = [ "z" ]
 }

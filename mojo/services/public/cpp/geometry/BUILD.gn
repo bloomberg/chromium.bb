@@ -6,16 +6,16 @@
 component("geometry") {
   output_name = "mojo_geometry_lib"
 
+  public_deps = [
+    "//ui/gfx",
+  ]
   deps = [
     "//skia",
-    "//ui/gfx",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//mojo/services/public/interfaces/geometry",
   ]
-
-  forward_dependent_configs_from = [ "//ui/gfx" ]
 
   defines = [
     "MOJO_GEOMETRY_IMPLEMENTATION",

@@ -14,18 +14,16 @@ if (!is_ios) {
      "web_contents_main_frame_observer.h",
     ]
 
-    deps = [
+    public_deps = [
       "//components/dom_distiller/core",
+    ]
+    deps = [
       "//components/resources",
       "//components/strings",
       "//content/public/browser",
       "//net",
       "//skia",
       "//sync",
-    ]
-
-    forward_dependent_configs_from = [
-      "//components/dom_distiller/core",
     ]
   }
 }

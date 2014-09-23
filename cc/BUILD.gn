@@ -478,19 +478,18 @@ component("cc") {
     cflags = [ "/wd4267" ]  # size_t -> int
   }
 
+  public_deps = [
+    "//skia",
+  ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//media",
-    "//skia",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-  ]
-  forward_dependent_configs_from = [
-    "//skia",
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]
@@ -628,11 +627,11 @@ source_set("test_support") {
 
   public_deps = [
     ":cc",
+    "//gpu:test_support",
   ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gl_in_process_context",
@@ -650,10 +649,6 @@ source_set("test_support") {
   if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
     deps += [ "//third_party/mesa:osmesa" ]
   }
-
-  forward_dependent_configs_from = [
-    "//gpu:test_support",
-  ]
 }
 
 test("cc_unittests") {

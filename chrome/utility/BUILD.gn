@@ -15,6 +15,7 @@ static_library("utility") {
   sources = rebase_path(gypi_values.chrome_utility_sources, ".", "..")
   defines = []
 
+  public_deps = []
   deps = [
     "//base",
     "//components/strings",
@@ -40,7 +41,7 @@ static_library("utility") {
       #"//third_party/libexif",  TODO(GYP)
     ]
 
-    forward_dependent_configs_from = [
+    public_deps += [
       "//chrome/common/extensions/api",
     ]
 

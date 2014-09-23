@@ -201,7 +201,7 @@ source_set("libjpeg") {
 
   configs += [ ":libjpeg_config" ]
 
-  direct_dependent_configs = [ ":libjpeg_config" ]
+  public_configs = [ ":libjpeg_config" ]
 
   # MemorySanitizer doesn't support assembly code, so keep it disabled in
   # MSan builds for now.

@@ -16,9 +16,11 @@ component("ash") {
 
   defines = [ "ASH_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     "//ash/resources",
     "//ash/strings",
+  ]
+  deps = [
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -48,11 +50,6 @@ component("ash") {
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
-  ]
-
-  forward_dependent_configs_from = [
-    "//ash/resources",
-    "//ash/strings",
   ]
 
   if (is_win) {
@@ -134,8 +131,10 @@ component("ash_with_content") {
 
   defines = [ "ASH_WITH_CONTENT_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     ":ash",
+  ]
+  deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
@@ -154,18 +153,16 @@ component("ash_with_content") {
     "//ui/web_dialogs",
     "//url",
   ]
-
-  forward_dependent_configs_from = [
-    ":ash",
-  ]
 }
 
 static_library("test_support") {
   testonly = true
   sources = gypi_values.ash_test_support_sources
 
-  deps = [
+  public_deps = [
     ":ash",
+  ]
+  deps = [
     "//ash/resources",
     "//content/test:test_support",
     "//skia",
@@ -178,8 +175,6 @@ static_library("test_support") {
     "//ui/views",
     "//ui/views:test_support",
   ]
-
-  forward_dependent_configs_from = [ ":ash" ]
 
   if (is_win) {
     sources += [

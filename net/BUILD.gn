@@ -84,26 +84,24 @@ component("net") {
     "NET_IMPLEMENTATION"
   ]
   configs += [ ":net_win_size_truncation" ]
-  direct_dependent_configs = [ ":net_config" ]
+  public_configs = [ ":net_config" ]
   include_dirs = []
 
+  public_deps = [
+    "//crypto",
+    "//crypto:platform"
+  ]
   deps = [
    ":net_resources",
     "//base",
     "//base:i18n",
     "//base:prefs",
     "//base/third_party/dynamic_annotations",
-    "//crypto",
-    "//crypto:platform",
     "//net/base/registry_controlled_domains",
     "//sdch",
     "//third_party/icu",
     "//third_party/zlib",
     "//url",
-  ]
-  forward_dependent_configs_from = [
-    "//crypto",
-    "//crypto:platform"
   ]
 
   if (use_kerberos) {
@@ -697,7 +695,7 @@ source_set("test_support") {
 
   configs += [ ":net_win_size_truncation" ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//base/test:test_support",
     "//crypto",
@@ -709,7 +707,7 @@ source_set("test_support") {
   ]
 
   if (is_ios) {
-    deps += [ "//third_party/nss" ]
+    public_deps += [ "//third_party/nss" ]
   }
 
   if (!is_android) {
@@ -722,7 +720,7 @@ source_set("test_support") {
   }
 
   if (use_v8_in_net) {
-    deps += [ ":net_with_v8" ]
+    public_deps += [ ":net_with_v8" ]
   }
 
   if (!enable_mdns) {
@@ -733,14 +731,12 @@ source_set("test_support") {
   }
 
   if (use_nss_certs) {
-    deps += ["//crypto:platform" ]
+    public_deps += ["//crypto:platform" ]
   } else {
     sources -= [
       "test/cert_test_util_nss.cc",
     ]
   }
-
-  forward_dependent_configs_from = deps
 }
 
 source_set("balsa") {
@@ -788,15 +784,15 @@ if (use_v8_in_net) {
       "//build/config/compiler:wexit_time_destructors",
     ]
 
-    deps = [
+    public_deps = [
       ":net",
+    ]
+    deps = [
       "//base",
       "//gin",
       "//url",
       "//v8",
     ]
-
-    forward_dependent_configs_from = [ ":net" ]
   }
 }
 

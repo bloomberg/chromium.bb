@@ -79,7 +79,7 @@ static_library("browser") {
     cflags = [ "/wd4267" ]
   }
 
-  direct_dependent_configs = [ ":password_manager_config" ]
+  public_configs = [ ":password_manager_config" ]
 
   # Sync (not supported in Android WebView).
   if (!is_android || !is_android_webview_build) {
@@ -106,15 +106,13 @@ source_set("test_support") {
     "test_password_store.h",
   ]
 
-  deps = [
+  public_deps = [
     ":browser",
+  ]
+  deps = [
     "//base",
     "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-
-  forward_dependent_configs_from = [
-    ":browser",
   ]
 }

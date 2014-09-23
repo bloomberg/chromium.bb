@@ -60,7 +60,7 @@ static_library("libxslt") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  direct_dependent_configs = [ ":libxslt_config" ]
+  public_configs = [ ":libxslt_config" ]
 
   if (is_linux || is_android) {
     include_dirs = [ "linux" ]

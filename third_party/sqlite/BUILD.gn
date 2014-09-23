@@ -86,7 +86,7 @@ source_set("sqlite") {
     ]
   }
 
-  direct_dependent_configs = [ ":sqlite_config" ]
+  public_configs = [ ":sqlite_config" ]
 
   deps = [
     "//third_party/icu",

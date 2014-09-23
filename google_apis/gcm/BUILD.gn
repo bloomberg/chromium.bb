@@ -45,16 +45,16 @@ component("gcm") {
 
   defines = [ "GCM_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     ":proto",
+  ]
+  deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
     "//third_party/leveldatabase",
     "//url",
   ]
-
-  forward_dependent_configs_from = [ ":proto" ]
 }
 
 proto_library("proto") {
@@ -83,13 +83,13 @@ static_library("test_support") {
     "monitoring/fake_gcm_stats_recorder.h",
   ]
 
-  deps = [
+  public_deps = [
     ":gcm",
+  ]
+  deps = [
     "//base",
     "//testing/gtest",
   ]
-
-  forward_dependent_configs_from = [ ":gcm" ]
 }
 
 # A standalone MCS (mobile connection server) client.

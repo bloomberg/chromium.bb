@@ -328,7 +328,7 @@ template("grit") {
     # Deps set on the template invocation will go on the grit script running
     # target rather than this library.
     deps = [ ":$grit_custom_target" ]
-    direct_dependent_configs = [ ":$grit_config" ]
+    public_configs = [ ":$grit_config" ]
 
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility

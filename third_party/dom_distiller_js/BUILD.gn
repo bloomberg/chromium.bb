@@ -9,9 +9,8 @@ config("dependent_config") {
 }
 
 source_set("proto") {
-  deps = [ ":dom_distiller_proto" ]
-  direct_dependent_configs = [ ":dependent_config" ]
-  forward_dependent_configs_from = [ ":dom_distiller_proto" ]
+  public_deps = [ ":dom_distiller_proto" ]
+  public_configs = [ ":dependent_config" ]
 }
 
 proto_library("dom_distiller_proto") {

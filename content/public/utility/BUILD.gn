@@ -5,11 +5,10 @@
 # See //content/BUILD.gn for how this works.
 group("utility") {
   if (is_component_build) {
-    deps = [ "//content" ]
+    public_deps = [ "//content" ]
   } else {
-    deps = [ ":utility_sources" ]
+    public_deps = [ ":utility_sources" ]
   }
-  forward_dependent_configs_from = deps
 }
 
 source_set("utility_sources") {

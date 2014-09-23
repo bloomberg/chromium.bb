@@ -67,29 +67,25 @@ static_library("base") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  deps = [
+  public_deps = [
     "//base",
+    "//net",
+    "//remoting/proto",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+  deps = [
     "//base/third_party/dynamic_annotations",
     "//media",
     "//media:shared_memory_support",
-    "//net",
-    "//remoting/proto",
     "//remoting/resources",
     #"//third_party/libvpx",  TODO(GYP)
     "//third_party/libyuv",
     "//third_party/opus",
-    "//third_party/protobuf:protobuf_lite",
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
-  forward_dependent_configs_from = [
-    "//base",
-    "//net",
-    "//remoting/proto",
-    "//third_party/protobuf:protobuf_lite",
-  ]
 }
 

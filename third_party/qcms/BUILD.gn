@@ -23,7 +23,7 @@ source_set("qcms") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  direct_dependent_configs = [ ":qcms_config" ]
+  public_configs = [ ":qcms_config" ]
 
   if (cpu_arch == "x86" || cpu_arch == "x64") {
     defines = [ "SSE2_ENABLE" ]

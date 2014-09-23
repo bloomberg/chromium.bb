@@ -16,12 +16,10 @@ source_set("js") {
     "waiting_callback.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//gin",
     "//mojo/common",
     "//v8",
   ]
-
-  forward_dependent_configs_from = deps
 }

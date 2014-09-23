@@ -58,15 +58,13 @@ component("gin") {
   ]
 
   defines = [ "GIN_IMPLEMENTATION" ]
-  deps = [
+
+  public_deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//v8",
   ]
-
-  forward_dependent_configs_from = [
-    "//base",
-    "//v8",
+  deps = [
+    "//base/third_party/dynamic_annotations",
   ]
 }
 
@@ -98,15 +96,12 @@ source_set("gin_test") {
     "test/v8_test.h",
   ]
 
-  deps = [
+  public_deps = [
     ":gin",
     "//testing/gtest",
-    "//v8",
   ]
-
-  forward_dependent_configs_from = [
-    ":gin",
-    "//testing/gtest",
+  deps = [
+    "//v8",
   ]
 }
 

@@ -43,7 +43,7 @@ component("dbus") {
     "//third_party/protobuf:protobuf_lite",
   ]
 
-  direct_dependent_configs = [
+  public_configs = [
     "//build/config/linux:dbus",
   ]
 }

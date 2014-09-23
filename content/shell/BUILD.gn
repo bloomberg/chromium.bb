@@ -343,8 +343,7 @@ copy("copy_shell_resources") {
   sources = [ "$target_gen_dir/shell_resources.pak" ]
   outputs = [ "$root_out_dir/shell_resources.pak" ]
 
-  deps = [ ":content_shell_resources_grit" ]
-  forward_dependent_configs_from = [ ":content_shell_resources_grit" ]
+  public_deps = [ ":content_shell_resources_grit" ]
 }
 
 # Font copies.
@@ -378,10 +377,10 @@ if (is_android) {
 }
 
 group("resources") {
-  deps = [
+  public_deps = [
     ":copy_shell_resources",
   ]
-  forward_dependent_configs_from = [ ":copy_shell_resources" ]
+  deps = []
 
   if (is_mac) {
     # TODO(GYP) Mac bundle resources.

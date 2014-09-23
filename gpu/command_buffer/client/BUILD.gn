@@ -99,7 +99,7 @@ gles2_implementation_source_files = [
 # an implementation.
 source_set("gles2_interface") {
   sources = [ "gles2_interface.h" ]
-  direct_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
     "//base",
   ]

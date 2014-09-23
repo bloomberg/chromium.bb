@@ -408,6 +408,9 @@ component("ppapi_shared") {
     "PPAPI_THUNK_IMPLEMENTATION",
   ]
 
+  public_deps = [
+    blink_target,
+  ]
   deps = [
     ":ppapi_c",
     "//base",
@@ -429,9 +432,6 @@ component("ppapi_shared") {
   } else if (is_win) {
     cflags = [ "/wd4267" ]  # size_t to int truncation.
   }
-
-  deps += [ blink_target ]
-  forward_dependent_configs_from = [ blink_target ]
 }
 
 source_set("ppapi_ipc") {

@@ -37,7 +37,7 @@ component("google_toolbox_for_mac") {
     ":google_toolbox_for_mac_config",
     "//build/config/compiler:no_chromium_code",
   ]
-  direct_dependent_configs = [ ":google_toolbox_for_mac_config" ]
+  public_configs = [ ":google_toolbox_for_mac_config" ]
 
   if (!is_ios) {
     sources += [

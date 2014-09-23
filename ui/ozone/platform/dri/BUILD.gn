@@ -67,7 +67,7 @@ source_set("dri_common") {
     "//ui/gfx/geometry",
   ]
 
-  direct_dependent_configs = [
+  public_configs = [
     ":libdrm",
   ]
 }
@@ -145,7 +145,7 @@ if (ozone_platform_gbm) {
       "//ui/events/ozone:events_ozone_evdev",
     ]
 
-    direct_dependent_configs = [
+    public_configs = [
       ":libgbm",
     ]
   }

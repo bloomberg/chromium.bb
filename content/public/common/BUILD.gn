@@ -8,11 +8,10 @@ import("//content/common/common.gni")
 # See //content/BUILD.gn for how this works.
 group("common") {
   if (is_component_build) {
-    deps = [ "//content" ]
+    public_deps = [ "//content" ]
   } else {
-    deps = [ ":common_sources" ]
+    public_deps = [ ":common_sources" ]
   }
-  forward_dependent_configs_from = deps
 }
 
 source_set("common_sources") {
@@ -25,8 +24,10 @@ source_set("common_sources") {
     "//content:content_implementation",
   ]
 
-  deps = [
+  public_deps = [
     "//content/common",
+  ]
+  deps = [
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink_headers",
@@ -34,8 +35,6 @@ source_set("common_sources") {
     "//ui/base",
     "//ui/gfx",
   ]
-
-  forward_dependent_configs_from = [ "//content/common" ]
 
   if (!enable_plugins) {
     sources -= [

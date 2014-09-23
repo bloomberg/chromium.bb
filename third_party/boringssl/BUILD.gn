@@ -28,7 +28,7 @@ gypi_values = exec_script(
 component("boringssl") {
   sources = gypi_values.boringssl_lib_sources
 
-  direct_dependent_configs = [ ":openssl_config" ]
+  public_configs = [ ":openssl_config" ]
 
   cflags = []
   defines = [

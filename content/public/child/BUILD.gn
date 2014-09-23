@@ -7,11 +7,10 @@ import("//content/child/child.gni")
 # See //content/BUILD.gn for how this works.
 group("child") {
   if (is_component_build) {
-    deps = [ "//content" ]
+    public_deps = [ "//content" ]
   } else {
-    deps = [ ":child_sources" ]
+    public_deps = [ ":child_sources" ]
   }
-  forward_dependent_configs_from = deps
 }
 
 source_set("child_sources") {

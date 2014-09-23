@@ -20,7 +20,7 @@ if (use_system_harfbuzz) {
     packages = [ "harfbuzz" ]
   }
   group("harfbuzz-ng") {
-    direct_dependent_configs = [ ":harfbuzz_pkgconfig" ]
+    public_configs = [ ":harfbuzz_pkgconfig" ]
   }
 
 } else {
@@ -129,7 +129,7 @@ if (use_system_harfbuzz) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    direct_dependent_configs = [ ":harfbuzz-ng_config" ]
+    public_configs = [ ":harfbuzz-ng_config" ]
 
     deps = [
       "//third_party/icu:icuuc",

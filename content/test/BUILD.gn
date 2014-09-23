@@ -15,6 +15,7 @@ content_tests_gypi_values = exec_script(
 # GYP version //content/content_tests.gypi:test_support_content
 static_library("test_support") {
   testonly = true
+  public_deps = []
   deps = [
     "//cc/blink",
     "//content/public/app:both",
@@ -42,6 +43,9 @@ static_library("test_support") {
     sources = rebase_path(content_tests_gypi_values.test_support_content_sources,
                           ".", "//content")
 
+    public_deps += [
+      "//third_party/WebKit/public:blink",
+    ]
     deps += [
       "//content/browser/speech/proto",
       "//content/public/child:child_sources",
@@ -58,14 +62,9 @@ static_library("test_support") {
       "//ppapi:ppapi_unittest_shared",
       "//storage/browser",
       "//storage/common",
-      "//third_party/WebKit/public:blink",
       "//ui/surface",
       "//v8",
       "//webkit/common/gpu",
-    ]
-
-    forward_dependent_configs_from = [
-      "//third_party/WebKit/public:blink",
     ]
 
     if (enable_plugins) {

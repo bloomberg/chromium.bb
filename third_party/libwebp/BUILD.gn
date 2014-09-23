@@ -193,7 +193,7 @@ group("libwebp") {
     ":libwebp_enc",
     ":libwebp_utils",
   ]
-  direct_dependent_configs = [
+  public_configs = [
     ":libwebp_config"
   ]
   if (use_dsp_neon) {

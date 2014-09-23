@@ -68,6 +68,9 @@ source_set("test_support") {
   ]
 
   # New deps should go in the non-iOS section below.
+  public_deps = [
+    "//content/test:test_support",
+  ]
   deps = [
     "//base:prefs_test_support",
     "//base/test:test_support",
@@ -91,7 +94,6 @@ source_set("test_support") {
     "//components/signin/core/browser:test_support",
     "//components/sync_driver:test_support",
     "//content/public/app:both",
-    "//content/test:test_support",
     "//ui/gfx:test_support",
     "//net",
     "//net:test_support",
@@ -103,10 +105,6 @@ source_set("test_support") {
     "//testing/gtest",
     "//third_party/zlib",
     "//ui/message_center:test_support",
-  ]
-
-  forward_dependent_configs_from = [
-    "//content/test:test_support",
   ]
 
   if (!is_ios) {

@@ -205,7 +205,7 @@ if (is_linux) {
       "nspr/pr/src/threads/prtpd.c",
     ]
 
-    direct_dependent_configs = [ ":nspr_config" ]
+    public_configs = [ ":nspr_config" ]
 
     configs -= [
       "//build/config/compiler:chromium_code",
@@ -348,10 +348,10 @@ if (is_linux) {
       "nss/lib/nss/nssver.c",
     ]
 
-    deps = [ ":nss_static" ]
+    public_deps = [ ":nss_static" ]
 
     if (include_nss_root_certs) {
-      deps += [ ":nssckbi" ]
+      public_deps += [ ":nssckbi" ]
     }
 
     if (component_mode == "shared_library") {
@@ -362,8 +362,6 @@ if (is_linux) {
         ldflags = [ rebase_path("nss/exports_win.def", root_build_dir) ]
       }
     }
-
-    forward_dependent_configs_from = deps
   }
 
   config("nssckbi_config") {
@@ -441,12 +439,11 @@ if (is_linux) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     include_dirs = [ "nss/lib/ckfw" ]
-    direct_dependent_configs = [ ":nssckbi_config" ]
+    public_configs = [ ":nssckbi_config" ]
 
-    deps = [
+    public_deps = [
       ":nss_static",
     ]
-    forward_dependent_configs_from = deps
   }
 
   config("nss_static_config") {
@@ -841,7 +838,7 @@ if (is_linux) {
       ]
     }
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    direct_dependent_configs = [ ":nss_static_config" ]
+    public_configs = [ ":nss_static_config" ]
 
     cflags = []
 
@@ -1148,12 +1145,13 @@ if (is_linux) {
       ]
     }
 
+    public_deps = [
+      ":nspr",
+    ]
     deps = [
       ":nspr",
       "//third_party/sqlite",
     ]
-
-    forward_dependent_configs_from = [ ":nspr" ]
   }
 }  # Windows/Mac/iOS.
 

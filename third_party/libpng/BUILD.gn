@@ -64,7 +64,7 @@ source_set("libpng_sources") {
     }
   }
 
-  direct_dependent_configs = [ ":libpng_config" ]
+  public_configs = [ ":libpng_config" ]
 
   public_deps = [ "//third_party/zlib" ]
 }

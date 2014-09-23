@@ -46,23 +46,20 @@ static_library("core") {
     "viewer.h",
   ]
 
+  public_deps = [
+    "//components/dom_distiller/core/proto",
+    "//third_party/dom_distiller_js:proto",
+  ]
   deps = [
     "//base",
-    "//components/dom_distiller/core/proto",
     "//components/leveldb_proto",
     "//components/resources",
     "//components/strings",
     "//net",
     "//skia",
     "//sync",
-    "//third_party/dom_distiller_js:proto",
     "//ui/base",
     "//url",
-  ]
-
-  forward_dependent_configs_from = [
-    "//components/dom_distiller/core/proto",
-    "//third_party/dom_distiller_js:proto",
   ]
 
   if (is_android) {

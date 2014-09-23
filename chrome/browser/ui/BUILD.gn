@@ -18,7 +18,6 @@ static_library("ui") {
   sources = []
   defines = []
   libs = []
-  forward_dependent_configs_from = []
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -27,6 +26,10 @@ static_library("ui") {
   # However, this means browser_ui and browser should more or less
   # have the same dependencies. Once browser_ui is untangled from
   # browser, then we can clean up these dependencies.
+  public_deps = [
+    "//components/dom_distiller/core",
+    "//sync",
+  ]
   deps = [
     # NOTE: New dependencies should generally be added in the OS!="ios"
     # dependencies block below, rather than here.
@@ -41,7 +44,6 @@ static_library("ui") {
     "//chrome/common",
     "//chrome/common/net",
     "//components/auto_login_parser",
-    "//components/dom_distiller/core",
     "//components/dom_distiller/webui",
     "//components/feedback/proto",
     "//components/invalidation",
@@ -54,7 +56,6 @@ static_library("ui") {
     "//content/public/common",
     "//crypto",
     "//skia",
-    "//sync",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/libusb",
@@ -70,11 +71,6 @@ static_library("ui") {
     "//ui/resources",
     "//ui/snapshot",
     "//ui/strings",
-  ]
-
-  forward_dependent_configs_from = [
-    "//components/dom_distiller/core",
-    "//sync",
   ]
 
   if (!is_ios) {
@@ -311,28 +307,22 @@ static_library("ui") {
   if (is_win) {
     sources += rebase_path(gypi_values.chrome_browser_ui_win_sources,
                            ".", "//chrome")
+    public_deps += [
+      "//ui/views",
+      "//ui/views/controls/webview",
+    ]
     deps += [
       "//chrome/installer/util:strings",
       "//third_party/wtl",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//ui/app_list",
-      "//ui/views",
-      "//ui/views/controls/webview",
       #'metro_utils',  TODO(GYP)
       #'../google_update/google_update.gyp:google_update',  TODO(GYP)
     ]
-    forward_dependent_configs_from += [
-      "//ui/views",
-      "//ui/views/controls/webview",
-    ]
   } else {  # 'OS!="win"
     if (toolkit_views) {
-      deps += [
-        "//ui/views",
-        "//ui/views/controls/webview",
-      ]
-      forward_dependent_configs_from += [
+      public_deps += [
         "//ui/views",
         "//ui/views/controls/webview",
       ]
@@ -454,8 +444,10 @@ source_set("test_support") {
     "website_settings/mock_permission_bubble_request.h",
   ]
 
-  deps = [
+  public_deps = [
     ":ui",
+  ]
+  deps = [
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
     "//content/public/browser",
@@ -465,9 +457,5 @@ source_set("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
-  ]
-
-  forward_dependent_configs_from = [
-    ":ui",
   ]
 }

@@ -45,7 +45,7 @@ static_library("zlib") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":zlib_config" ]
+  public_configs = [ ":zlib_config" ]
 }
 
 static_library("minizip") {
@@ -81,7 +81,7 @@ static_library("minizip") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  direct_dependent_configs = [ ":zlib_config" ]
+  public_configs = [ ":zlib_config" ]
 }
 
 static_library("zip") {

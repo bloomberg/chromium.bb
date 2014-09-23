@@ -142,11 +142,11 @@ static_library("libxml") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":libxml_config" ]
-  forward_dependent_configs_from = [ "//third_party/icu:icuuc" ]
-
-  deps = [
+  public_configs = [ ":libxml_config" ]
+  public_deps = [
     "//third_party/icu:icuuc",
+  ]
+  deps = [
     "//third_party/zlib",
   ]
 

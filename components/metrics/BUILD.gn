@@ -44,14 +44,14 @@ source_set("metrics") {
     "persisted_logs.h",
   ]
 
+  public_deps = [
+    "//components/metrics/proto",
+  ]
   deps = [
     "//base",
-    "//components/metrics/proto",
     "//components/variations",
     "//third_party/zlib",
   ]
-
-  forward_dependent_configs_from = [ "//components/metrics/proto" ]
 }
 
 # GYP version: components/metrics.gypi:metrics_gpu
@@ -61,12 +61,12 @@ source_set("gpu") {
     "gpu/gpu_metrics_provider.h",
   ]
 
-  deps = [
+  public_deps = [
     ":metrics",
+  ]
+  deps = [
     "//gpu/config",
   ]
-
-  forward_dependent_configs_from = [ ":metrics" ]
 }
 
 # GYP version: components/metrics.gypi:metrics_net
@@ -82,12 +82,12 @@ static_library("net") {
     "net/wifi_access_point_info_provider_chromeos.h",
   ]
 
-  deps = [
+  public_deps = [
     ":metrics",
+  ]
+  deps = [
     "//net",
   ]
-
-  forward_dependent_configs_from = [ ":metrics" ]
 }
 
 # GYP version: components/metrics.gypi:metrics_profiler
@@ -100,13 +100,13 @@ source_set("profiler") {
     "profiler/tracking_synchronizer_observer.h",
   ]
 
-  deps = [
+  public_deps = [
     ":metrics",
+  ]
+  deps = [
     "//base",
     "//content/public/browser",
   ]
-
-  forward_dependent_configs_from = [ ":metrics" ]
 }
 
 # GYP version: components/metrics.gypi:metrics_test_support
@@ -116,11 +116,9 @@ static_library("test_support") {
     "test_metrics_service_client.h",
   ]
 
-  deps = [
+  public_deps = [
     ":metrics",
   ]
-
-  forward_dependent_configs_from = [ ":metrics" ]
 }
 
 # TODO(GYP): metrics_chromeos

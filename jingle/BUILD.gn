@@ -13,13 +13,14 @@ if (enable_webrtc || !is_android) {
   # GYP version: jingle/jingle.gyp:jingle_glue
   static_library("jingle_glue") {
     sources = jingle_includes.jingle_glue_sources
+    public_deps = [
+      "//third_party/libjingle",
+    ]
     deps = [
       "//base",
       "//base/third_party/dynamic_annotations",
       "//net",
-      "//third_party/libjingle",
     ]
-    forward_dependent_configs_from = [ "//third_party/libjingle" ]
   }
 
   # A library for sending and receiving peer-issued notifications.
@@ -77,15 +78,17 @@ if (enable_webrtc || !is_android) {
     defines = [
      "_CRT_SECURE_NO_WARNINGS",
     ]
+
+    public_deps = [
+      "//third_party/libjingle",
+    ]
     deps = [
       "//base",
       "//net",
       "//third_party/expat",
       "//url",
       ":jingle_glue",
-      "//third_party/libjingle",
     ]
-    forward_dependent_configs_from = [ "//third_party/libjingle" ]
   }
 
   # GYP version: jingle/jingle.gyp:notifier_test_util
@@ -148,6 +151,9 @@ if (enable_webrtc || !is_android) {
       ]
     }
 
+    public_deps = [
+      "//third_party/libjingle",
+    ]
     deps = [
       ":jingle_glue",
       ":notifier",
@@ -159,9 +165,7 @@ if (enable_webrtc || !is_android) {
       "//net:test_support",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/libjingle",
     ]
-    forward_dependent_configs_from = [ "//third_party/libjingle" ]
   }
 } else {
   # !enable_webrtc and is_android

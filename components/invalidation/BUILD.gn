@@ -76,6 +76,9 @@ static_library("invalidation") {
     ]
   }
 
+  public_deps = [
+    "//third_party/cacheinvalidation",
+  ]
   deps = [
     "//base",
     "//components/gcm_driver",
@@ -84,15 +87,10 @@ static_library("invalidation") {
     "//components/signin/core/browser",
     "//google_apis",
     "//jingle:notifier",
-    "//third_party/cacheinvalidation",
 
     # TODO(sync): Remove this (http://crbug.com/133352);
     "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
-  ]
-
-  forward_dependent_configs_from = [
-    "//third_party/cacheinvalidation",
   ]
 }
 

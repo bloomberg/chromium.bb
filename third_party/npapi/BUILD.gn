@@ -20,5 +20,5 @@ source_set("npapi") {
     "bindings/npruntime.h",
   ]
 
-  direct_dependent_configs = [ ":npapi_config" ]
+  public_configs = [ ":npapi_config" ]
 }

@@ -148,7 +148,7 @@ source_set("test_support_perf") {
     "//testing/gtest",
   ]
 
-  direct_dependent_configs = [ ":perf_test_config" ]
+  public_configs = [ ":perf_test_config" ]
 }
 
 source_set("run_all_unittests") {

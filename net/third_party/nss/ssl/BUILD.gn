@@ -57,7 +57,7 @@ component("libssl") {
     "bodge/secitem_array.c",
   ]
 
-  direct_dependent_configs = [ ":ssl_config" ]
+  public_configs = [ ":ssl_config" ]
 
   cflags = []
   defines = [
@@ -88,7 +88,7 @@ component("libssl") {
 
     # Must be after ssl_config since we want our SSL headers to take
     # precedence.
-    direct_dependent_configs += [
+    public_configs += [
       "//third_party/nss:system_nss_no_ssl_config"
     ]
   } else if (is_mac) {
@@ -114,11 +114,10 @@ component("libssl") {
     sources -= [
       "bodge/secitem_array.c",
     ]
-    deps = [
+    public_deps = [
       "//third_party/nss:nspr",
       "//third_party/nss:nss",
     ]
-    forward_dependent_configs_from = deps
   }
 
   if (is_clang) {

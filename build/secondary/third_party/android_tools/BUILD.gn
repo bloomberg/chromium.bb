@@ -12,7 +12,7 @@ config("cpu_features_include") {
 # //build/android/cpufeatures.gypi:cpufeatures
 source_set("cpu_features") {
   sources = [ "ndk/sources/android/cpufeatures/cpu-features.c" ]
-  direct_dependent_configs = [ ":cpu_features_include" ]
+  public_configs = [ ":cpu_features_include" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

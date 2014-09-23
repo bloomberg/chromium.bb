@@ -62,7 +62,7 @@ component("fontconfig") {
     "//build/config/linux:freetype2",
   ]
 
-  direct_dependent_configs = [ ":fontconfig_config" ]
+  public_configs = [ ":fontconfig_config" ]
 
   if (is_clang) {
     # Work around a null-conversion warning. See crbug.com/358852.

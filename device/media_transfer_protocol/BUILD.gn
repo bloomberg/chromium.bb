@@ -27,9 +27,8 @@ static_library("media_transfer_protocol") {
 
   configs += [ "//build/config/linux:dbus" ]
 
-  deps = [
+  public_deps = [
     ":mtp_file_entry_proto",
     ":mtp_storage_info_proto",
   ]
-  forward_dependent_configs_from = deps
 }

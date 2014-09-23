@@ -139,6 +139,9 @@ static_library("protocol") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
+  public_deps = [
+    "//third_party/libjingle",
+  ]
   deps = [
     "//base",
     "//crypto",
@@ -146,10 +149,5 @@ static_library("protocol") {
     "//jingle:notifier",
     "//net",
     "//remoting/base",
-    "//third_party/libjingle",
-  ]
-
-  forward_dependent_configs_from = [
-    "//third_party/libjingle",
   ]
 }

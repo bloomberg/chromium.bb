@@ -8,11 +8,10 @@ import("//content/renderer/renderer.gni")
 # See //content/BUILD.gn for how this works.
 group("renderer") {
   if (is_component_build) {
-    deps = [ "//content" ]
+    public_deps = [ "//content" ]
   } else {
-    deps = [ ":renderer_sources" ]
+    public_deps = [ ":renderer_sources" ]
   }
-  forward_dependent_configs_from = deps
 }
 
 source_set("renderer_sources") {

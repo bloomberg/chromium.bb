@@ -197,7 +197,7 @@ template("generated_extensions_api") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    direct_dependent_configs = [ ":$generated_config_name" ]
+    public_configs = [ ":$generated_config_name" ]
 
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility

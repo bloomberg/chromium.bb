@@ -75,7 +75,7 @@ static_library("cacheinvalidation") {
     "src/google/cacheinvalidation/include/types.h",
   ]
 
-  direct_dependent_configs = [ ":cacheinvalidation_config" ]
+  public_configs = [ ":cacheinvalidation_config" ]
 
   deps = [
     "src/google/cacheinvalidation:cacheinvalidation_proto_cpp",

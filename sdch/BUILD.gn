@@ -38,7 +38,7 @@ static_library("sdch") {
     "open-vcdiff/vsprojects/stdint.h",
   ]
 
-  direct_dependent_configs = [ ":sdch_config" ]
+  public_configs = [ ":sdch_config" ]
 
   deps = [
     "//base",

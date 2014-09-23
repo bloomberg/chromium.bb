@@ -13,11 +13,7 @@ source_set("chromium") {
     "../public/cpp/environment/lib/logging.cc",
   ]
 
-  deps = [
-    ":chromium_impl",
-  ]
-
-  forward_dependent_configs_from = [
+  public_deps = [
     ":chromium_impl",
   ]
 }

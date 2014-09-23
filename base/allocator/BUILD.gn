@@ -184,7 +184,7 @@ if (!is_android) {
         "//build/config/win:nominmax",
       ]
 
-      direct_dependent_configs = [ ":nocmt" ]
+      public_configs = [ ":nocmt" ]
 
       deps += [
         ":prep_libc",

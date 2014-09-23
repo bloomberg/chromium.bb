@@ -35,9 +35,11 @@ static_library("omnibox") {
     "url_prefix.h",
   ]
 
+  public_deps = [
+    "//components/metrics/proto",
+  ]
   deps = [
     "//base",
-    "//components/metrics/proto",
     "//components/resources",
     "//components/search_engines",
     "//components/strings",
@@ -46,10 +48,6 @@ static_library("omnibox") {
     "//net",
     "//ui/base",
     "//url",
-  ]
-
-  forward_dependent_configs_from = [
-    "//components/metrics/proto",
   ]
 }
 

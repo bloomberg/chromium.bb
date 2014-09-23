@@ -16,6 +16,9 @@ source_set("aura") {
     "window_tree_host_mojo_delegate.h",
   ]
 
+  public_deps = [
+    "//mojo/services/public/cpp/view_manager",
+  ]
   deps = [
     "//cc",
     "//skia",
@@ -26,11 +29,6 @@ source_set("aura") {
     "//ui/gl",
     "//mojo/cc",
     "//mojo/public/gles2:for_shared_library",
-    "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/native_viewport",
-  ]
-
-  forward_dependent_configs_from = [
-    "//mojo/services/public/cpp/view_manager",
   ]
 }

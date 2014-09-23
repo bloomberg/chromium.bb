@@ -67,14 +67,14 @@ config("system_libsrtp_config") {
 
 if (use_system_libsrtp) {
   group("libsrtp") {
-    direct_dependent_configs = [ ":libsrtp_config", ":system_libsrtp_config" ]
+    public_configs = [ ":libsrtp_config", ":system_libsrtp_config" ]
     libs = [ "-lsrtp" ]
   }
 } else {
   static_library("libsrtp") {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    direct_dependent_configs = [ ":libsrtp_config" ]
+    public_configs = [ ":libsrtp_config" ]
 
     sources = [
       # includes

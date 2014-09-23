@@ -33,6 +33,12 @@ static_library("browser") {
 
   # iOS/non-iOS shared deps. New dependencies should generally be added in the
   # non-iOS deps below.
+  public_deps = [
+    "//components/autofill/core/browser",
+    "//content/public/browser",
+    "//sql",
+    "//sync",
+  ]
   deps = [
     "//base/allocator",
     "//chrome:extra_resources",
@@ -122,13 +128,6 @@ static_library("browser") {
     "//ui/shell_dialogs",
     "//ui/strings",
     "//ui/resources",
-  ]
-
-  forward_dependent_configs_from = [
-    "//components/autofill/core/browser",
-    "//content/public/browser",
-    "//sql",
-    "//sync",
   ]
 
   sources += rebase_path(gypi_values.chrome_browser_undo_sources,
@@ -243,13 +242,12 @@ static_library("browser") {
     ]
   }
   if (enable_extensions) {
+    public_deps += [ "//chrome/browser/extensions" ]
     deps += [
-      "//chrome/browser/extensions",
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
     ]
-    forward_dependent_configs_from += [ "//chrome/browser/extensions" ]
     sources += rebase_path(gypi_values.chrome_browser_extensions_sources,
                            ".", "//chrome")
   }
@@ -521,14 +519,16 @@ static_library("browser") {
   if (is_win) {
     sources += rebase_path(gypi_values.chrome_browser_win_sources,
                            ".", "//chrome")
+    public_deps += [
+      "//ui/views",
+      "//ui/views/controls/webview",
+    ]
     deps += [
       "//chrome:version_header",
       "//chrome/installer/util:strings",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
-      "//ui/views",
-      "//ui/views/controls/webview",
       #"chrome_process_finder",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf_constants",  TODO(GYP)
@@ -536,10 +536,6 @@ static_library("browser") {
       #"../google_update/google_update.gyp:google_update",  TODO(GYP)
       #"../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages",  TODO(GYP)
       #"../win8/win8.gyp:metro_viewer",  TODO(GYP)
-    ]
-    forward_dependent_configs_from += [
-      "//ui/views",
-      "//ui/views/controls/webview",
     ]
   } else {
     # Non-Windows.
@@ -775,11 +771,13 @@ source_set("test_support") {
     "sync/profile_sync_service_mock.h",
   ]
 
-  deps = [
+  public_deps = [
     ":browser",
+    "//chrome/browser/ui:test_support",
+  ]
+  deps = [
     "//base:prefs_test_support",
     "//chrome/browser",
-    "//chrome/browser/ui:test_support",
     "//chrome/common",
     "//chrome/common/safe_browsing:proto",
     "//components/invalidation",
@@ -793,11 +791,6 @@ source_set("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
-  ]
-
-  forward_dependent_configs_from = [
-    ":browser",
-    "//chrome/browser/ui:test_support",
   ]
 
   if (!is_ios) {
@@ -869,12 +862,10 @@ source_set("test_support") {
       "policy/test/local_policy_test_server.cc",
       "policy/test/local_policy_test_server.h",
     ]
-    policy_deps = [
+    public_deps += [
       "//components/policy:policy_component_test_support",
       "//components/policy:test_support",
     ]
-    deps += policy_deps
-    forward_dependent_configs_from += policy_deps
   }
 
   if (safe_browsing_mode == 1) {

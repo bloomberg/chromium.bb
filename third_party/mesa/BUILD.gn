@@ -15,7 +15,7 @@ config("mesa_headers_config") {
 generated_src_dir = "src/chromium_gensrc"
 
 source_set("mesa_headers") {
-  direct_dependent_configs = [ ":mesa_headers_config" ]
+  public_configs = [ ":mesa_headers_config" ]
 }
 
 # This config must generally be prepended to the configs list so that the Mesa

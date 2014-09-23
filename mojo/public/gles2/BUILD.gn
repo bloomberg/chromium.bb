@@ -16,7 +16,7 @@ static_library("gles2") {
     ":gles2_config",
     "//third_party/khronos:khronos_headers",
   ]
-  direct_dependent_configs = [
+  public_configs = [
     ":gles2_config",
     "//third_party/khronos:khronos_headers",
   ]

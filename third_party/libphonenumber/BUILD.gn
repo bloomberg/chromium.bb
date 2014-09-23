@@ -49,15 +49,16 @@ static_library("libphonenumber_without_metadata") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":libphonenumber_config" ]
+  public_configs = [ ":libphonenumber_config" ]
 
+  public_deps = [
+    ":proto",
+  ]
   deps = [
     ":proto",
     "//third_party/icu",
     "//third_party/protobuf:protobuf_lite",
   ]
-
-  forward_dependent_configs_from = [ ":proto" ]
 }
 
 # Library used by clients that includes production metadata.
@@ -70,10 +71,9 @@ static_library("libphonenumber") {
     #"src/phonenumbers/metadata.cc",
   ]
 
-  deps = [
+  public_deps = [
     ":libphonenumber_without_metadata",
   ]
-  forward_dependent_configs_from = deps
 }
 
 # GYP version: third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests

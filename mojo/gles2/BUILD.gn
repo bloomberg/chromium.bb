@@ -39,7 +39,7 @@ component("gles2") {
     ":gles2_use_mojo",
     ":mojo_use_gles2",
   ]
-  direct_dependent_configs = [ ":gles2_use_mojo" ]
+  public_configs = [ ":gles2_use_mojo" ]
   all_dependent_configs = [ ":mojo_use_gles2" ]
 
   sources = [

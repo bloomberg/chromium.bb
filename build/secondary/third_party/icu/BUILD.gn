@@ -256,7 +256,7 @@ component("icui18n") {
   ]
 
   configs += [ ":icu_code" ]
-  direct_dependent_configs = [ ":icu_config" ]
+  public_configs = [ ":icu_config" ]
 
   cflags = []
   if (is_android || is_linux) {
@@ -470,7 +470,7 @@ component("icuuc") {
     "//build/config/compiler:no_chromium_code",
   ]
 
-  direct_dependent_configs = [ ":icu_config" ]
+  public_configs = [ ":icu_config" ]
 
   if (is_win || icu_use_data_file) {
     sources += [ "source/stubdata/stubdata.c" ]

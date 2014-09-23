@@ -13,7 +13,7 @@ config("dl_config") {
 
 # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl
 source_set("dl") {
-  direct_dependent_configs = [ ":dl_config" ]
+  public_configs = [ ":dl_config" ]
   sources = [
     "api/omxtypes.h",
     "sp/api/omxSP.h",

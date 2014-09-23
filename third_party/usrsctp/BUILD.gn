@@ -87,7 +87,7 @@ static_library("usrsctp") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":usrsctp_config" ]
+  public_configs = [ ":usrsctp_config" ]
 
   if (use_openssl) {
     defines += [ "SCTP_USE_OPENSSL_SHA1" ]

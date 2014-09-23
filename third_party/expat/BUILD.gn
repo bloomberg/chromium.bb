@@ -8,7 +8,7 @@ if (is_linux) {
   }
 
   group("expat") {
-    direct_dependent_configs = [ ":expat_config" ]
+    public_configs = [ ":expat_config" ]
   }
 } else {
   config("expat_config") {
@@ -24,7 +24,7 @@ if (is_linux) {
       "files/lib/xmltok.c",
     ]
 
-    direct_dependent_configs = [ ":expat_config" ]
+    public_configs = [ ":expat_config" ]
 
     defines = [ "_LIB" ]
     if (is_win) {

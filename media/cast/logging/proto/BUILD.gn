@@ -9,10 +9,7 @@ source_set("proto") {
   sources = [
     "proto_utils.cc",
   ]
-  deps = [
-    ":cast_logging_proto",
-  ]
-  forward_dependent_configs_from = [
+  public_deps = [
     ":cast_logging_proto",
   ]
 }

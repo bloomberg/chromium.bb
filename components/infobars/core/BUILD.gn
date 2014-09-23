@@ -19,13 +19,12 @@ static_library("core") {
     "infobars_switches.h",
   ]
 
+  public_deps = [
+    "//skia",
+  ]
   deps = [
     "//base",
-    "//skia",
     "//ui/gfx",
     "//ui/strings",
   ]
-
-  # This target exposes Skia headers in its public headers.
-  forward_dependent_configs_from = [ "//skia" ]
 }

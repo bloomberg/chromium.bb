@@ -51,7 +51,7 @@ static_library("libusb") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":libusb_config" ]
+  public_configs = [ ":libusb_config" ]
 
   if (is_posix) {
     defines = [

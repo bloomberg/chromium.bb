@@ -117,14 +117,13 @@ config("jingle_all_dependent_configs") {
 
 # From third_party/libjingle/libjingle.gyp's target_defaults.
 group("jingle_deps") {
+  public_deps = [
+    "//third_party/expat",
+  ]
   deps = [
     "//base",
     "//net",
-    "//third_party/expat",
     "//crypto:platform",
-  ]
-  forward_dependent_configs_from = [
-    "//third_party/expat",
   ]
 }
 

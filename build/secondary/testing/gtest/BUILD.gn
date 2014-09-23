@@ -106,7 +106,7 @@ static_library("gtest") {
   include_dirs = [ "." ]
 
   all_dependent_configs = [ ":gtest_config" ]
-  direct_dependent_configs = [ ":gtest_direct_config" ]
+  public_configs = [ ":gtest_direct_config" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

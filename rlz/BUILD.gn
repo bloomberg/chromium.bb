@@ -53,7 +53,7 @@ source_set("rlz_lib") {
     "win/lib/rlz_value_store_registry.h",
   ]
 
-  direct_dependent_configs = [ ":rlz_config" ]
+  public_configs = [ ":rlz_config" ]
 
   deps = [
     "//base",

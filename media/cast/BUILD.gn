@@ -45,15 +45,13 @@ source_set("common") {
     "logging/stats_event_subscriber.h",
   ]
 
+  public_deps = [
+    "//media/cast/logging/proto",
+  ]
   deps = [
     "//base",
     "//crypto",
-    "//media/cast/logging/proto",
     "//net",
-  ]
-
-  forward_dependent_configs_from = [
-    "//media/cast/logging/proto",
   ]
 }
 

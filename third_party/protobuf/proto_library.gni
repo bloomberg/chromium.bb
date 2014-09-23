@@ -140,15 +140,15 @@ template("proto_library") {
       configs += invoker.extra_configs
     }
 
-    direct_dependent_configs = [ "//third_party/protobuf:using_proto" ]
+    public_configs = [ "//third_party/protobuf:using_proto" ]
 
-    deps = [
-      ":$action_name",
+    public_deps = [
+      # The generated headers reference headers within protobuf_lite, so
+      # dependencies must be able to find those headers too.
       "//third_party/protobuf:protobuf_lite",
     ]
-
-    # The generated headers reference headers within protobuf_lite, so
-    # dependencies must be able to find those headers too.
-    forward_dependent_configs_from = [ "//third_party/protobuf:protobuf_lite" ]
+    deps = [
+      ":$action_name",
+    ]
   }
 }

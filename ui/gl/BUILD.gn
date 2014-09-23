@@ -325,7 +325,7 @@ source_set("gl_unittest_utils") {
   ]
 
   configs += [ "//third_party/khronos:khronos_headers" ]
-  direct_dependent_configs = [ ":gl_unittest_utils_config" ]
+  public_configs = [ ":gl_unittest_utils_config" ]
 
   deps = [
     ":gl",

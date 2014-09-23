@@ -43,7 +43,7 @@ source_set("freetype") {
     "build",
   ]
 
-  direct_dependent_configs = [ ":freetype_config" ]
+  public_configs = [ ":freetype_config" ]
 
   deps = [
     "//third_party/libpng",
