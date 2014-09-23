@@ -48,9 +48,8 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/gpu_raster_worker_pool.h"
-#include "cc/resources/image_copy_raster_worker_pool.h"
-#include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/memory_history.h"
+#include "cc/resources/one_copy_raster_worker_pool.h"
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -59,6 +58,7 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/zero_copy_raster_worker_pool.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_host.h"
@@ -1976,7 +1976,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         GpuRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
                                     context_provider,
                                     resource_provider_.get());
-  } else if (UseOneCopyTextureUpload() && context_provider) {
+  } else if (UseOneCopyRasterizer() && context_provider) {
     // We need to create a staging resource pool when using copy rasterizer.
     staging_resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
@@ -1987,13 +1987,13 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    raster_worker_pool_ = ImageCopyRasterWorkerPool::Create(
-        proxy_->ImplThreadTaskRunner(),
-        RasterWorkerPool::GetTaskGraphRunner(),
-        context_provider,
-        resource_provider_.get(),
-        staging_resource_pool_.get());
-  } else if (!UseZeroCopyTextureUpload() && context_provider) {
+    raster_worker_pool_ =
+        OneCopyRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                        RasterWorkerPool::GetTaskGraphRunner(),
+                                        context_provider,
+                                        resource_provider_.get(),
+                                        staging_resource_pool_.get());
+  } else if (!UseZeroCopyRasterizer() && context_provider) {
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(),
         GL_TEXTURE_2D,
@@ -2012,9 +2012,9 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              resource_provider_->best_texture_format());
 
     raster_worker_pool_ =
-        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
-                                      RasterWorkerPool::GetTaskGraphRunner(),
-                                      resource_provider_.get());
+        ZeroCopyRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                         RasterWorkerPool::GetTaskGraphRunner(),
+                                         resource_provider_.get());
   }
 
   tile_manager_ =
@@ -2041,7 +2041,7 @@ bool LayerTreeHostImpl::UsePendingTreeForSync() const {
   return settings_.impl_side_painting;
 }
 
-bool LayerTreeHostImpl::UseZeroCopyTextureUpload() const {
+bool LayerTreeHostImpl::UseZeroCopyRasterizer() const {
   // Note: we use zero-copy by default when the renderer is using
   // shared memory resources.
   return (settings_.use_zero_copy ||
@@ -2049,7 +2049,7 @@ bool LayerTreeHostImpl::UseZeroCopyTextureUpload() const {
          GetRendererCapabilities().using_map_image;
 }
 
-bool LayerTreeHostImpl::UseOneCopyTextureUpload() const {
+bool LayerTreeHostImpl::UseOneCopyRasterizer() const {
   // Sync query support is required by one-copy rasterizer.
   return settings_.use_one_copy && GetRendererCapabilities().using_map_image &&
          resource_provider_->use_sync_query();

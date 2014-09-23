@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/image_copy_raster_worker_pool.h"
+#include "cc/resources/one_copy_raster_worker_pool.h"
 
 #include <algorithm>
 
@@ -84,21 +84,21 @@ class RasterBufferImpl : public RasterBuffer {
 }  // namespace
 
 // static
-scoped_ptr<RasterWorkerPool> ImageCopyRasterWorkerPool::Create(
+scoped_ptr<RasterWorkerPool> OneCopyRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool) {
   return make_scoped_ptr<RasterWorkerPool>(
-      new ImageCopyRasterWorkerPool(task_runner,
-                                    task_graph_runner,
-                                    context_provider,
-                                    resource_provider,
-                                    resource_pool));
+      new OneCopyRasterWorkerPool(task_runner,
+                                  task_graph_runner,
+                                  context_provider,
+                                  resource_provider,
+                                  resource_pool));
 }
 
-ImageCopyRasterWorkerPool::ImageCopyRasterWorkerPool(
+OneCopyRasterWorkerPool::OneCopyRasterWorkerPool(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
@@ -114,25 +114,27 @@ ImageCopyRasterWorkerPool::ImageCopyRasterWorkerPool(
   DCHECK(context_provider_);
 }
 
-ImageCopyRasterWorkerPool::~ImageCopyRasterWorkerPool() {
+OneCopyRasterWorkerPool::~OneCopyRasterWorkerPool() {
 }
 
-Rasterizer* ImageCopyRasterWorkerPool::AsRasterizer() { return this; }
+Rasterizer* OneCopyRasterWorkerPool::AsRasterizer() {
+  return this;
+}
 
-void ImageCopyRasterWorkerPool::SetClient(RasterizerClient* client) {
+void OneCopyRasterWorkerPool::SetClient(RasterizerClient* client) {
   client_ = client;
 }
 
-void ImageCopyRasterWorkerPool::Shutdown() {
-  TRACE_EVENT0("cc", "ImageCopyRasterWorkerPool::Shutdown");
+void OneCopyRasterWorkerPool::Shutdown() {
+  TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::Shutdown");
 
   TaskGraph empty;
   task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
   task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
 }
 
-void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
-  TRACE_EVENT0("cc", "ImageCopyRasterWorkerPool::ScheduleTasks");
+void OneCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
+  TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::ScheduleTasks");
 
   if (raster_pending_.none())
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
@@ -154,7 +156,7 @@ void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
     new_raster_finished_tasks[task_set] = CreateRasterFinishedTask(
         task_runner_.get(),
-        base::Bind(&ImageCopyRasterWorkerPool::OnRasterFinished,
+        base::Bind(&OneCopyRasterWorkerPool::OnRasterFinished,
                    raster_finished_weak_ptr_factory_.GetWeakPtr(),
                    task_set));
   }
@@ -201,8 +203,8 @@ void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
 }
 
-void ImageCopyRasterWorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "ImageCopyRasterWorkerPool::CheckForCompletedTasks");
+void OneCopyRasterWorkerPool::CheckForCompletedTasks() {
+  TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::CheckForCompletedTasks");
 
   task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                             &completed_tasks_);
@@ -222,23 +224,21 @@ void ImageCopyRasterWorkerPool::CheckForCompletedTasks() {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
 }
 
-scoped_ptr<RasterBuffer> ImageCopyRasterWorkerPool::AcquireBufferForRaster(
+scoped_ptr<RasterBuffer> OneCopyRasterWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   DCHECK_EQ(resource->format(), resource_pool_->resource_format());
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource_pool_, resource));
 }
 
-void ImageCopyRasterWorkerPool::ReleaseBufferForRaster(
+void OneCopyRasterWorkerPool::ReleaseBufferForRaster(
     scoped_ptr<RasterBuffer> buffer) {
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
-void ImageCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
-  TRACE_EVENT1("cc",
-               "ImageCopyRasterWorkerPool::OnRasterFinished",
-               "task_set",
-               task_set);
+void OneCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
+  TRACE_EVENT1(
+      "cc", "OneCopyRasterWorkerPool::OnRasterFinished", "task_set", task_set);
 
   DCHECK(raster_pending_[task_set]);
   raster_pending_[task_set] = false;
@@ -252,7 +252,7 @@ void ImageCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
-ImageCopyRasterWorkerPool::StateAsValue() const {
+OneCopyRasterWorkerPool::StateAsValue() const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
 
@@ -266,7 +266,7 @@ ImageCopyRasterWorkerPool::StateAsValue() const {
 
   return state;
 }
-void ImageCopyRasterWorkerPool::StagingStateAsValueInto(
+void OneCopyRasterWorkerPool::StagingStateAsValueInto(
     base::debug::TracedValue* staging_state) const {
   staging_state->SetInteger("staging_resource_count",
                             resource_pool_->total_resource_count());

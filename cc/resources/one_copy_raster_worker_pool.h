@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_IMAGE_COPY_RASTER_WORKER_POOL_H_
-#define CC_RESOURCES_IMAGE_COPY_RASTER_WORKER_POOL_H_
+#ifndef CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_
+#define CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -23,11 +23,11 @@ class ResourcePool;
 class ResourceProvider;
 class ScopedResource;
 
-class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
-                                            public Rasterizer,
-                                            public RasterizerTaskClient {
+class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
+                                          public Rasterizer,
+                                          public RasterizerTaskClient {
  public:
-  virtual ~ImageCopyRasterWorkerPool();
+  virtual ~OneCopyRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
@@ -51,11 +51,11 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) OVERRIDE;
 
  protected:
-  ImageCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                            TaskGraphRunner* task_graph_runner,
-                            ContextProvider* context_provider,
-                            ResourceProvider* resource_provider,
-                            ResourcePool* resource_pool);
+  OneCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                          TaskGraphRunner* task_graph_runner,
+                          ContextProvider* context_provider,
+                          ResourceProvider* resource_provider,
+                          ResourcePool* resource_pool);
 
  private:
   void OnRasterFinished(TaskSet task_set);
@@ -77,12 +77,12 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   TaskGraph graph_;
   Task::Vector completed_tasks_;
 
-  base::WeakPtrFactory<ImageCopyRasterWorkerPool>
+  base::WeakPtrFactory<OneCopyRasterWorkerPool>
       raster_finished_weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageCopyRasterWorkerPool);
+  DISALLOW_COPY_AND_ASSIGN(OneCopyRasterWorkerPool);
 };
 
 }  // namespace cc
 
-#endif  // CC_RESOURCES_IMAGE_COPY_RASTER_WORKER_POOL_H_
+#endif  // CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_

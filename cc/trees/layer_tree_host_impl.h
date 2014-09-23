@@ -519,8 +519,8 @@ class CC_EXPORT LayerTreeHostImpl
   void EnforceZeroBudget(bool zero_budget);
 
   bool UsePendingTreeForSync() const;
-  bool UseZeroCopyTextureUpload() const;
-  bool UseOneCopyTextureUpload() const;
+  bool UseZeroCopyRasterizer() const;
+  bool UseOneCopyRasterizer() const;
 
   void ScrollViewportBy(gfx::Vector2dF scroll_delta);
   void AnimatePageScale(base::TimeTicks monotonic_time);

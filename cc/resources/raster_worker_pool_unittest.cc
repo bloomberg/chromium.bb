@@ -9,8 +9,7 @@
 
 #include "base/cancelable_callback.h"
 #include "cc/resources/gpu_raster_worker_pool.h"
-#include "cc/resources/image_copy_raster_worker_pool.h"
-#include "cc/resources/image_raster_worker_pool.h"
+#include "cc/resources/one_copy_raster_worker_pool.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
@@ -19,6 +18,7 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
+#include "cc/resources/zero_copy_raster_worker_pool.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -35,8 +35,8 @@ const size_t kLargeResourceDimension = 1000U;
 
 enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
-  RASTER_WORKER_POOL_TYPE_IMAGE,
-  RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
+  RASTER_WORKER_POOL_TYPE_ZERO_COPY,
+  RASTER_WORKER_POOL_TYPE_ONE_COPY,
   RASTER_WORKER_POOL_TYPE_GPU
 };
 
@@ -148,14 +148,14 @@ class RasterWorkerPoolTest
             resource_provider_.get(),
             kMaxTransferBufferUsageBytes);
         break;
-      case RASTER_WORKER_POOL_TYPE_IMAGE:
-        raster_worker_pool_ = ImageRasterWorkerPool::Create(
+      case RASTER_WORKER_POOL_TYPE_ZERO_COPY:
+        raster_worker_pool_ = ZeroCopyRasterWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
             RasterWorkerPool::GetTaskGraphRunner(),
             resource_provider_.get());
         break;
-      case RASTER_WORKER_POOL_TYPE_IMAGE_COPY:
-        raster_worker_pool_ = ImageCopyRasterWorkerPool::Create(
+      case RASTER_WORKER_POOL_TYPE_ONE_COPY:
+        raster_worker_pool_ = OneCopyRasterWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
             RasterWorkerPool::GetTaskGraphRunner(),
             context_provider_.get(),
@@ -371,8 +371,8 @@ TEST_P(RasterWorkerPoolTest, LargeResources) {
 INSTANTIATE_TEST_CASE_P(RasterWorkerPoolTests,
                         RasterWorkerPoolTest,
                         ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
-                                          RASTER_WORKER_POOL_TYPE_IMAGE,
-                                          RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
+                                          RASTER_WORKER_POOL_TYPE_ZERO_COPY,
+                                          RASTER_WORKER_POOL_TYPE_ONE_COPY,
                                           RASTER_WORKER_POOL_TYPE_GPU));
 
 }  // namespace
