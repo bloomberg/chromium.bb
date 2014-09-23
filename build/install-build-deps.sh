@@ -139,7 +139,8 @@ dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libfontconfig1-dbg
 # arm cross toolchain packages needed to build chrome on armhf
 arm_list="libc6-dev-armhf-cross
           linux-libc-dev-armhf-cross
-          g++-arm-linux-gnueabihf"
+          g++-arm-linux-gnueabihf
+          linux-libc-dev:i386"
 
 # Packages to build NaCl, its toolchains, and its ports.
 naclports_list="ant autoconf bison cmake gawk intltool xutils-dev xsltproc"
