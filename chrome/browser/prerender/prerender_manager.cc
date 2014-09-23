@@ -55,6 +55,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -1096,14 +1097,19 @@ void PrerenderManager::PendingSwap::AboutToNavigateRenderView(
       target_route_id_, url_);
 }
 
-void PrerenderManager::PendingSwap::ProvisionalChangeToMainFrameUrl(
-        const GURL& url,
-        content::RenderFrameHost* render_frame_host) {
-  // We must only cancel the pending swap if the |url| navigated to is not
+void PrerenderManager::PendingSwap::DidStartProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
+  if (render_frame_host->GetParent())
+    return;
+
+  // We must only cancel the pending swap if the url navigated to is not
   // the URL being attempted to be swapped in. That's because in the normal
   // flow, a ProvisionalChangeToMainFrameUrl will happen for the URL attempted
   // to be swapped in immediately after the pending swap has issued its merge.
-  if (url != url_)
+  if (validated_url != url_)
     prerender_data_->ClearPendingSwap();
 }
 

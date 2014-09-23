@@ -51,9 +51,9 @@ class PrerenderTabHelper
   virtual ~PrerenderTabHelper();
 
   // content::WebContentsObserver implementation.
-  virtual void ProvisionalChangeToMainFrameUrl(
-      const GURL& url,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DidGetRedirectForResourceRequest(
+      content::RenderViewHost* render_view_host,
+      const content::ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
@@ -65,6 +65,10 @@ class PrerenderTabHelper
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       ui::PageTransition transition_type) OVERRIDE;
+
+  // Called when the URL of the main frame changed, either when the load
+  // commits, or a redirect happens.
+  void MainFrameUrlDidChange(const GURL& url);
 
   // Called when a password form has been submitted.
   void PasswordSubmitted(const autofill::PasswordForm& form);

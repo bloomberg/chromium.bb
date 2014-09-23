@@ -16,6 +16,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
@@ -81,19 +82,13 @@ PrerenderTabHelper::PrerenderTabHelper(
 PrerenderTabHelper::~PrerenderTabHelper() {
 }
 
-void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
-    const GURL& url,
-    content::RenderFrameHost* render_frame_host) {
-  url_ = url;
-  RecordEvent(EVENT_MAINFRAME_CHANGE);
-  RecordEventIfLoggedInURL(EVENT_MAINFRAME_CHANGE_DOMAIN_LOGGED_IN, url);
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (!prerender_manager)
+void PrerenderTabHelper::DidGetRedirectForResourceRequest(
+    content::RenderViewHost* render_view_host,
+    const content::ResourceRedirectDetails& details) {
+  if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
     return;
-  if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
-    return;
-  ReportTabHelperURLSeenToLocalPredictor(prerender_manager, url,
-                                         web_contents());
+
+  MainFrameUrlDidChange(details.new_url);
 }
 
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
@@ -174,6 +169,21 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
     next_load_is_control_prerender_ = false;
     next_load_origin_ = ORIGIN_NONE;
   }
+
+  MainFrameUrlDidChange(validated_url);
+}
+
+void PrerenderTabHelper::MainFrameUrlDidChange(const GURL& url) {
+  url_ = url;
+  RecordEvent(EVENT_MAINFRAME_CHANGE);
+  RecordEventIfLoggedInURL(EVENT_MAINFRAME_CHANGE_DOMAIN_LOGGED_IN, url);
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (!prerender_manager)
+    return;
+  if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
+    return;
+  ReportTabHelperURLSeenToLocalPredictor(prerender_manager, url,
+                                         web_contents());
 }
 
 void PrerenderTabHelper::PasswordSubmitted(const autofill::PasswordForm& form) {
