@@ -129,7 +129,7 @@ def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
 
-def ConfigureHostArchFlags(host, extra_cflags=[]):
+def ConfigureHostArchFlags(host, extra_cflags, options):
   """ Return flags passed to LLVM and binutils configure for compilers and
   compile flags. """
   configure_args = []
@@ -152,10 +152,11 @@ def ConfigureHostArchFlags(host, extra_cflags=[]):
 
   extra_cxx_args = list(extra_cc_args)
 
-  cc, cxx = CompilersForHost(host)
+  if not options.gcc:
+    cc, cxx = CompilersForHost(host)
 
-  configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
-  configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
+    configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
+    configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
 
   if TripleIsWindows(host):
     # The i18n support brings in runtime dependencies on MinGW DLLs
@@ -169,11 +170,15 @@ def ConfigureHostArchFlags(host, extra_cflags=[]):
       # LLVM's linux->mingw cross build needs this
       configure_args.append('CC_FOR_BUILD=gcc')
   else:
-    configure_args.extend(
-      ['CFLAGS=' + ' '.join(extra_cflags),
-       'LDFLAGS=-L%(' + GSDJoin('abs_libcxx', host) + ')s/lib',
-       'CXXFLAGS=-stdlib=libc++ -I%(' + GSDJoin('abs_libcxx', host) +
-         ')s/include/c++/v1 ' + ' '.join(extra_cflags)])
+    if options.gcc:
+      configure_args.extend(['CFLAGS=' + ' '.join(extra_cflags),
+                             'CXXFLAGS=' + ' '.join(extra_cflags)])
+    else:
+      configure_args.extend(
+       ['CFLAGS=' + ' '.join(extra_cflags),
+        'LDFLAGS=-L%(' + GSDJoin('abs_libcxx', host) + ')s/lib',
+        'CXXFLAGS=-stdlib=libc++ -I%(' + GSDJoin('abs_libcxx', host) +
+        ')s/include/c++/v1 ' + ' '.join(extra_cflags)])
 
   return configure_args
 
@@ -341,8 +346,10 @@ def TestsuiteSources(GetGitSyncCmds):
   return sources
 
 
-def CopyHostLibcxxForLLVMBuild(host, dest):
+def CopyHostLibcxxForLLVMBuild(host, dest, options):
   """Copy libc++ to the working directory for build tools."""
+  if options.gcc:
+    return []
   if TripleIsLinux(host):
     libname = 'libc++.so.1'
   elif TripleIsMac(host):
@@ -353,7 +360,7 @@ def CopyHostLibcxxForLLVMBuild(host, dest):
           command.Copy('%(' + GSDJoin('abs_libcxx', host) +')s/lib/' + libname,
                        os.path.join(dest, libname))]
 
-def HostLibs(host):
+def HostLibs(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
     return GSDJoin(component_name, host)
@@ -384,7 +391,8 @@ def HostLibs(host):
           ],
       },
     })
-  else:
+  elif not options.gcc:
+    # Libc++ is only tested with the clang build
     libs.update({
         H('libcxx'): {
             'dependencies': ['libcxx_src', 'libcxxabi_src'],
@@ -431,7 +439,7 @@ def HostTools(host, options):
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(binutils_pnacl_src)s/configure'] +
-                  ConfigureHostArchFlags(host, warning_flags) +
+                  ConfigureHostArchFlags(host, warning_flags, options) +
                   ['--prefix=',
                   '--disable-silent-rules',
                   '--target=arm-pc-nacl',
@@ -501,7 +509,7 @@ def HostTools(host, options):
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(llvm_src)s/configure'] +
-                  ConfigureHostArchFlags(host) +
+                  ConfigureHostArchFlags(host, [], options) +
                   LLVMConfigureAssertionsFlags(options) +
                   ['--prefix=/',
                    '--enable-shared',
@@ -516,7 +524,8 @@ def HostTools(host, options):
                    '--with-clang-srcdir=%(abs_clang_src)s'])] +
               CopyHostLibcxxForLLVMBuild(
                   host,
-                  os.path.join('Release+Asserts', 'lib')) +
+                  os.path.join('Release+Asserts', 'lib'),
+                  options) +
               [command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
@@ -539,16 +548,15 @@ def HostTools(host, options):
   if TripleIsWindows(host):
     tools[H('binutils_pnacl')]['dependencies'].append('libdl')
     tools[H('llvm')]['dependencies'].append('libdl')
-  else:
+  elif not options.gcc:
     tools[H('binutils_pnacl')]['dependencies'].append(H('libcxx'))
     tools[H('llvm')]['dependencies'].append(H('libcxx'))
   return tools
 
 
-def TargetLibCompiler(host):
+def TargetLibCompiler(host, options):
   def H(component_name):
     return GSDJoin(component_name, host)
-  host_lib = 'libdl' if TripleIsWindows(host) else H('libcxx')
   compiler = {
       # Because target_lib_compiler is not a memoized target, its name doesn't
       # need to have the host appended to it (it can be different on different
@@ -557,11 +565,11 @@ def TargetLibCompiler(host):
       'target_lib_compiler': {
           'type': 'work',
           'output_subdir': 'target_lib_compiler',
-          'dependencies': [ H('binutils_pnacl'), H('llvm'), host_lib ],
+          'dependencies': [ H('binutils_pnacl'), H('llvm') ],
           'inputs': { 'driver': PNACL_DRIVER_DIR },
           'commands': [
               command.CopyRecursive('%(' + t + ')s', '%(output)s')
-              for t in [H('llvm'), H('binutils_pnacl'), host_lib]] + [
+              for t in [H('llvm'), H('binutils_pnacl')]] + [
               command.Runnable(
                   None, pnacl_commands.InstallDriverScripts,
                   '%(driver)s', os.path.join('%(output)s', 'bin'),
@@ -570,6 +578,12 @@ def TargetLibCompiler(host):
           ]
       },
   }
+
+  if TripleIsWindows(host) or not options.gcc:
+    host_lib = 'libdl' if TripleIsWindows(host) else H('libcxx')
+    compiler['target_lib_compiler']['dependencies'].append(host_lib)
+    compiler['target_lib_compiler']['commands'].append(
+        command.CopyRecursive('%(' + host_lib + ')s', '%(output)s'))
   return compiler
 
 
@@ -727,6 +741,8 @@ if __name__ == '__main__':
                       dest='enable_llvm_assertions', default=True)
   parser.add_argument('--cmake', action='store_true', default=False,
                       help="Use LLVM's cmake ninja build instead of autoconf")
+  parser.add_argument('--gcc', action='store_true', default=False,
+                      help="Use the default compiler 'cc' instead of clang")
   parser.add_argument('--sanitize', choices=['address', 'thread', 'memory',
                                              'undefined'],
                       help="Use a sanitizer with LLVM's clang cmake build")
@@ -743,6 +759,9 @@ if __name__ == '__main__':
     print 'Use of sanitizers requires a cmake build'
     sys.exit(1)
 
+  if args.gcc and args.cmake:
+    print 'gcc build is not supported with cmake'
+    sys.exit(1)
 
   packages = {}
   upload_packages = {}
@@ -767,9 +786,9 @@ if __name__ == '__main__':
     if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
       hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
     for host in hosts:
-      packages.update(HostLibs(host))
+      packages.update(HostLibs(host, args))
       packages.update(HostTools(host, args))
-    packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple()))
+    packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
     # Don't build the target libs on Windows because of pathname issues.
     # Only the linux64 bot is canonical (i.e. it will upload its packages).
     # The other bots will use a 'work' target instead of a 'build' target for
