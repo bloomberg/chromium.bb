@@ -102,8 +102,46 @@ bool GetProperty(XID window, const std::string& property_name, long max_length,
                             property);
 }
 
+bool SupportsEWMH() {
+  static bool supports_ewmh = false;
+  static bool supports_ewmh_cached = false;
+  if (!supports_ewmh_cached) {
+    supports_ewmh_cached = true;
+
+    int wm_window = 0u;
+    if (!GetIntProperty(GetX11RootWindow(),
+                        "_NET_SUPPORTING_WM_CHECK",
+                        &wm_window)) {
+      supports_ewmh = false;
+      return false;
+    }
+
+    // It's possible that a window manager started earlier in this X session
+    // left a stale _NET_SUPPORTING_WM_CHECK property when it was replaced by a
+    // non-EWMH window manager, so we trap errors in the following requests to
+    // avoid crashes (issue 23860).
+
+    // EWMH requires the supporting-WM window to also have a
+    // _NET_SUPPORTING_WM_CHECK property pointing to itself (to avoid a stale
+    // property referencing an ID that's been recycled for another window), so
+    // we check that too.
+    gfx::X11ErrorTracker err_tracker;
+    int wm_window_property = 0;
+    bool result = GetIntProperty(
+        wm_window, "_NET_SUPPORTING_WM_CHECK", &wm_window_property);
+    supports_ewmh = !err_tracker.FoundNewError() &&
+                    result &&
+                    wm_window_property == wm_window;
+  }
+
+  return supports_ewmh;
+}
+
 bool GetWindowManagerName(std::string* wm_name) {
   DCHECK(wm_name);
+  if (!SupportsEWMH())
+    return false;
+
   int wm_window = 0;
   if (!GetIntProperty(GetX11RootWindow(),
                       "_NET_SUPPORTING_WM_CHECK",
@@ -111,25 +149,8 @@ bool GetWindowManagerName(std::string* wm_name) {
     return false;
   }
 
-  // It's possible that a window manager started earlier in this X session left
-  // a stale _NET_SUPPORTING_WM_CHECK property when it was replaced by a
-  // non-EWMH window manager, so we trap errors in the following requests to
-  // avoid crashes (issue 23860).
-
-  // EWMH requires the supporting-WM window to also have a
-  // _NET_SUPPORTING_WM_CHECK property pointing to itself (to avoid a stale
-  // property referencing an ID that's been recycled for another window), so we
-  // check that too.
   gfx::X11ErrorTracker err_tracker;
-  int wm_window_property = 0;
-  bool result = GetIntProperty(
-      wm_window, "_NET_SUPPORTING_WM_CHECK", &wm_window_property);
-  if (err_tracker.FoundNewError() || !result ||
-      wm_window_property != wm_window) {
-    return false;
-  }
-
-  result = GetStringProperty(
+  bool result = GetStringProperty(
       static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
   return !err_tracker.FoundNewError() && result;
 }
@@ -1289,6 +1310,9 @@ bool IsX11WindowFullScreen(XID window) {
 }
 
 bool WmSupportsHint(XAtom atom) {
+  if (!SupportsEWMH())
+    return false;
+
   std::vector<XAtom> supported_atoms;
   if (!GetAtomArrayProperty(GetX11RootWindow(),
                             "_NET_SUPPORTED",

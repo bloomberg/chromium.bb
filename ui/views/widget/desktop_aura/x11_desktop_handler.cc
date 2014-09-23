@@ -58,10 +58,8 @@ X11DesktopHandler::X11DesktopHandler()
                attr.your_event_mask | PropertyChangeMask |
                StructureNotifyMask | SubstructureNotifyMask);
 
-  ::Window active_window;
   wm_supports_active_window_ =
-    ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &active_window) &&
-    active_window;
+      ui::WmSupportsHint(atom_cache_.GetAtom("_NET_ACTIVE_WINDOW"));
 }
 
 X11DesktopHandler::~X11DesktopHandler() {
