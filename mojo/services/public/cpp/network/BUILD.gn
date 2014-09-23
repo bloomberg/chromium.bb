@@ -1,0 +1,21 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo_services.gypi:mojo_network_utility
+component("network") {
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+  ]
+
+  sources = [
+    "web_socket_read_queue.cc",
+    "web_socket_read_queue.h",
+    "web_socket_write_queue.cc",
+    "web_socket_write_queue.h",
+  ]
+}

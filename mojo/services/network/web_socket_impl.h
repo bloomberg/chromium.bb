@@ -16,6 +16,7 @@ class WebSocketChannel;
 
 namespace mojo {
 class NetworkContext;
+class WebSocketReadQueue;
 
 // Forms a bridge between the WebSocket mojo interface and the net::WebSocket
 // implementation.
@@ -25,22 +26,28 @@ class WebSocketImpl : public InterfaceImpl<WebSocket> {
   virtual ~WebSocketImpl();
 
  private:
-  class PendingWriteToDataPipe;
-  class DependentIOBuffer;
-
   // WebSocket methods:
   virtual void Connect(const String& url,
                        Array<String> protocols,
                        const String& origin,
+                       ScopedDataPipeConsumerHandle send_stream,
                        WebSocketClientPtr client) OVERRIDE;
   virtual void Send(bool fin,
                     WebSocket::MessageType type,
-                    ScopedDataPipeConsumerHandle data) OVERRIDE;
+                    uint32_t num_bytes) OVERRIDE;
   virtual void FlowControl(int64_t quota) OVERRIDE;
   virtual void Close(uint16_t code, const String& reason) OVERRIDE;
 
+  // Called with the data to send once it has been read from |send_stream_|.
+  void DidReadFromSendStream(bool fin,
+                             WebSocket::MessageType type,
+                             uint32_t num_bytes,
+                             const char* data);
+
   // The channel we use to send events to the network.
   scoped_ptr<net::WebSocketChannel> channel_;
+  ScopedDataPipeConsumerHandle send_stream_;
+  scoped_ptr<WebSocketReadQueue> read_queue_;
   NetworkContext* context_;
 };
 

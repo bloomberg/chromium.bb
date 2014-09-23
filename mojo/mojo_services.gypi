@@ -121,6 +121,10 @@
         'services/html_viewer/weburlloader_impl.h',
         'services/html_viewer/weblayertreeview_impl.cc',
         'services/html_viewer/weblayertreeview_impl.h',
+        'services/public/cpp/network/web_socket_read_queue.cc',
+        'services/public/cpp/network/web_socket_read_queue.h',
+        'services/public/cpp/network/web_socket_write_queue.cc',
+        'services/public/cpp/network/web_socket_write_queue.h',
       ],
     },
     {
@@ -490,6 +494,10 @@
         'services/network/url_loader_impl.h',
         'services/network/web_socket_impl.cc',
         'services/network/web_socket_impl.h',
+        'services/public/cpp/network/web_socket_read_queue.cc',
+        'services/public/cpp/network/web_socket_read_queue.h',
+        'services/public/cpp/network/web_socket_write_queue.cc',
+        'services/public/cpp/network/web_socket_write_queue.h',
       ],
     },
     {

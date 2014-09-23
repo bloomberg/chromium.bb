@@ -6,7 +6,6 @@
 #define MOJO_SERVICES_HTML_VIEWER_WEBSOCKETHANDLE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/public/interfaces/network/web_socket.mojom.h"
 #include "third_party/WebKit/public/platform/WebSocketHandle.h"
@@ -14,6 +13,7 @@
 namespace mojo {
 class NetworkService;
 class WebSocketClientImpl;
+class WebSocketWriteQueue;
 
 // Implements WebSocketHandle by talking to the mojo WebSocket interface.
 class WebSocketHandleImpl : public blink::WebSocketHandle {
@@ -38,11 +38,19 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
   virtual void close(unsigned short code,
                      const blink::WebString& reason) OVERRIDE;
 
+  // Called when we finished writing to |send_stream_|.
+  void DidWriteToSendStream(bool fin,
+                            WebSocketHandle::MessageType type,
+                            uint32_t num_bytes,
+                            const char* data);
+
   // Called when the socket is closed.
   void Disconnect();
 
   WebSocketPtr web_socket_;
   scoped_ptr<WebSocketClientImpl> client_;
+  ScopedDataPipeProducerHandle send_stream_;
+  scoped_ptr<WebSocketWriteQueue> write_queue_;
   // True if close() was called.
   bool did_close_;
 
