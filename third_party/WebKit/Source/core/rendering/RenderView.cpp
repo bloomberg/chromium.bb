@@ -27,6 +27,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/page/Page.h"
+#include "core/paint/ViewPainter.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
@@ -313,82 +314,12 @@ void RenderView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layout
 
 void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    // If we ever require layout but receive a paint anyway, something has gone horribly wrong.
-    ASSERT(!needsLayout());
-    // RenderViews should never be called to paint with an offset not on device pixels.
-    ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
-
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    // This avoids painting garbage between columns if there is a column gap.
-    if (m_frameView && style()->isOverflowPaged())
-        paintInfo.context->fillRect(paintInfo.rect, m_frameView->baseBackgroundColor());
-
-    paintObject(paintInfo, paintOffset);
-}
-
-static inline bool rendererObscuresBackground(RenderBox* rootBox)
-{
-    ASSERT(rootBox);
-    RenderStyle* style = rootBox->style();
-    if (style->visibility() != VISIBLE
-        || style->opacity() != 1
-        || style->hasFilter()
-        || style->hasTransform())
-        return false;
-
-    if (rootBox->compositingState() == PaintsIntoOwnBacking)
-        return false;
-
-    const RenderObject* rootRenderer = rootBox->rendererForRootBackground();
-    if (rootRenderer->style()->backgroundClip() == TextFillBox)
-        return false;
-
-    return true;
-}
-
-bool RenderView::rootFillsViewportBackground(RenderBox* rootBox) const
-{
-    ASSERT(rootBox);
-    // CSS Boxes always fill the viewport background (see paintRootBoxFillLayers)
-    if (!rootBox->isSVG())
-        return true;
-
-    return rootBox->frameRect().contains(frameRect());
+    ViewPainter(*this).paint(paintInfo, paintOffset);
 }
 
 void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint&)
 {
-    if (document().ownerElement() || !view())
-        return;
-
-    if (paintInfo.skipRootBackground())
-        return;
-
-    bool shouldPaintBackground = true;
-    Node* documentElement = document().documentElement();
-    if (RenderBox* rootBox = documentElement ? toRenderBox(documentElement->renderer()) : 0)
-        shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !rendererObscuresBackground(rootBox);
-
-    // If painting will entirely fill the view, no need to fill the background.
-    if (!shouldPaintBackground)
-        return;
-
-    // This code typically only executes if the root element's visibility has been set to hidden,
-    // if there is a transform on the <html>, or if there is a page scale factor less than 1.
-    // Only fill with the base background color (typically white) if we're the root document,
-    // since iframes/frames with no background in the child document should show the parent's background.
-    if (!frameView()->isTransparent()) {
-        Color baseColor = frameView()->baseBackgroundColor();
-        if (baseColor.alpha()) {
-            CompositeOperator previousOperator = paintInfo.context->compositeOperation();
-            paintInfo.context->setCompositeOperation(CompositeCopy);
-            paintInfo.context->fillRect(paintInfo.rect, baseColor);
-            paintInfo.context->setCompositeOperation(previousOperator);
-        } else {
-            paintInfo.context->clearRect(paintInfo.rect);
-        }
-    }
+    ViewPainter(*this).paintBoxDecorationBackground(paintInfo);
 }
 
 void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)

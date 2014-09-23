@@ -170,10 +170,7 @@ private:
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
-
     bool shouldInvalidatePaint(const LayoutRect&) const;
-
-    bool rootFillsViewportBackground(RenderBox* rootBox) const;
 
     void layoutContent();
 #if ENABLE(ASSERT)

@@ -5,12 +5,15 @@
 #ifndef BlockPainter_h
 #define BlockPainter_h
 
-#include "core/rendering/RenderBlock.h"
-
 namespace blink {
 
 struct PaintInfo;
+class InlineBox;
 class LayoutPoint;
+class LayoutRect;
+class RenderBlock;
+class RenderBox;
+class RenderObject;
 
 class BlockPainter {
 public:
