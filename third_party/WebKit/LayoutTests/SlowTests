@@ -102,6 +102,9 @@ crbug.com/247466 [ Linux Release ] inspector/sources/debugger/debugger-activatio
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 
+# This test uses a throttled load to stay in NETWORK_LOADING.
+crbug.com/400659 http/tests/media/gc-while-network-loading.html [ Slow ]
+
 # This has been Slow in Debug since added in r164270.
 crbug.com/330389 [ Debug ] css-parser/color3_hsl.html [ Slow ]
 
