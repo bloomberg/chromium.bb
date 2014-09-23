@@ -128,7 +128,7 @@ SearchProvider::SearchProvider(
       listener_(listener),
       suggest_results_pending_(0),
       providers_(template_url_service),
-      answers_cache_(1) {
+      answers_cache_(10) {
 }
 
 // static
