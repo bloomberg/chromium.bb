@@ -33,6 +33,18 @@ self.addEventListener('fetch', function(event) {
     if (params['ignore']) {
       return;
     }
+    if (params['reject']) {
+      event.respondWith(new Promise(function(resolve, reject) {
+          reject();
+        }));
+      return;
+    }
+    if (params['resolve-null']) {
+      event.respondWith(new Promise(function(resolve) {
+          resolve(null);
+        }));
+      return;
+    }
     event.respondWith(new Promise(function(resolve, reject) {
         var request = event.request;
         if (url) {

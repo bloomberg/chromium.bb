@@ -42,6 +42,12 @@ window.addEventListener('message', function(evt) {
             false);
         })
       .then(function() {
+          return create_failure_test_promise('./dummy?reject', false);
+        })
+      .then(function() {
+          return create_failure_test_promise('./dummy?resolve-null', false);
+        })
+      .then(function() {
           return create_success_test_promise(
             './dummy?url=' +
              encodeURIComponent(host_info['HTTP_ORIGIN'] + path),
