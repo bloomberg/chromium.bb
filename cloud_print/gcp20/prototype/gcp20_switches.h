@@ -8,6 +8,8 @@
 namespace switches {
 
 extern const char kDisableConfirmation[];
+extern const char kDisableIpv4[];
+extern const char kDisableIpv6[];
 extern const char kDisableMethodCheck[];
 extern const char kDisableXTocken[];
 extern const char kDomainName[];

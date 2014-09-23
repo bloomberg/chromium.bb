@@ -81,7 +81,6 @@ void DnsResponseBuilder::AppendA(const std::string& service_domain_name,
   // TODO(maksymb): IP to send must depends on interface from where query was
   // received.
   if (http_ipv4.empty()) {
-    LOG(ERROR) << "Invalid IP";
     return;
   }
 
@@ -96,7 +95,6 @@ void DnsResponseBuilder::AppendAAAA(const std::string& service_domain_name,
   // TODO(maksymb): IP to send must depends on interface from where query was
   // received.
   if (http_ipv6.empty()) {
-    LOG(ERROR) << "Invalid IP";
     return;
   }
 

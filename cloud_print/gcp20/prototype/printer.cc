@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/command_line_reader.h"
+#include "cloud_print/gcp20/prototype/gcp20_switches.h"
 #include "cloud_print/gcp20/prototype/local_settings.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
 #include "cloud_print/gcp20/prototype/special_io.h"
@@ -832,30 +833,51 @@ bool Printer::StartLocalDiscoveryServers() {
 bool Printer::StartDnsServer() {
   DCHECK(state_.local_settings.local_discovery);
 
+  net::IPAddressNumber ipv4;
+  net::IPAddressNumber ipv6;
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableIpv4)) {
+    ipv4 = GetLocalIp("", false);
+  }
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableIpv6)) {
+    ipv6 = GetLocalIp("", true);
+  }
+
   // TODO(maksymb): Add switch for command line to control interface name.
-  net::IPAddressNumber ip = GetLocalIp("", false);
-  if (ip.empty()) {
+  if (ipv4.empty() && ipv6.empty()) {
     LOG(ERROR) << "No local IP found. Cannot start printer.";
     return false;
   }
-  VLOG(0) << "Local address: " << net::IPAddressToString(ip);
 
   uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
 
-  std::string service_name_prefix =
-      command_line_reader::ReadServiceNamePrefix(kServiceNamePrefixDefault +
-                                                 net::IPAddressToString(ip));
-  std::replace(service_name_prefix .begin(), service_name_prefix .end(),
-               '.', '_');
+  VLOG_IF(0, !ipv4.empty())
+      << "Local IPv4 address: " << net::IPAddressToStringWithPort(ipv4, port);
+  VLOG_IF(0, !ipv6.empty())
+      << "Local IPv6 address: " << net::IPAddressToStringWithPort(ipv6, port);
+
+  std::string service_name_prefix = kServiceNamePrefixDefault;
+  if (!ipv4.empty())
+    service_name_prefix += net::IPAddressToString(ipv4);
+  service_name_prefix =
+      command_line_reader::ReadServiceNamePrefix(service_name_prefix);
+  std::replace(
+      service_name_prefix.begin(), service_name_prefix.end(), '.', '_');
 
   std::string service_domain_name =
       command_line_reader::ReadDomainName(
           base::StringPrintf(kServiceDomainNameFormatDefault,
                              base::RandInt(0, INT_MAX)));
 
-  ServiceParameters params(kServiceType, kSecondaryServiceType,
-                           service_name_prefix, service_domain_name,
-                           ip, GetLocalIp("", true), port);
+  ServiceParameters params(kServiceType,
+                           kSecondaryServiceType,
+                           service_name_prefix,
+                           service_domain_name,
+                           ipv4,
+                           ipv6,
+                           port);
 
   return dns_server_.Start(params,
                            command_line_reader::ReadTtl(kTtlDefault),

@@ -108,7 +108,10 @@ bool PrivetHttpServer::Start(uint16 port) {
 
   scoped_ptr<net::ServerSocket> server_socket(
       new net::TCPServerSocket(NULL, net::NetLog::Source()));
-  server_socket->ListenWithAddressAndPort("0.0.0.0", port, 1);
+  std::string listen_address = "::";
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIpv6))
+    listen_address = "0.0.0.0";
+  server_socket->ListenWithAddressAndPort(listen_address, port, 1);
   server_.reset(new net::HttpServer(server_socket.Pass(), this));
 
   net::IPEndPoint address;
