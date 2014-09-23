@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
+#ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
+#define EXTENSIONS_BROWSER_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
 
 #include <string>
 #include <vector>
@@ -126,4 +126,4 @@ class ParsedDataPresenter : public UploadDataPresenter {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
+#endif  // EXTENSIONS_BROWSER_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_

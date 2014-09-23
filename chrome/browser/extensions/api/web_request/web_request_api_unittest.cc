@@ -22,12 +22,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/common/extensions/api/web_request.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -35,9 +32,12 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/api/web_request/upload_data_presenter.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/warning_set.h"
+#include "extensions/common/api/web_request.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "net/base/auth.h"
@@ -55,7 +55,7 @@
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
-namespace web_request = extensions::api::web_request;
+namespace web_request = extensions::core_api::web_request;
 
 using base::BinaryValue;
 using base::DictionaryValue;

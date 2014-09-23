@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/extensions/api/web_request/form_data_parser.h"
+#include "extensions/browser/api/web_request/form_data_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
+#include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"

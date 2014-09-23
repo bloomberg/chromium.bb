@@ -86,7 +86,6 @@
       'types.json',
       'virtual_keyboard_private.json',
       'web_navigation.json',
-      'web_request.json',
       # Despite the name, this API does not rely on any
       # WebRTC-specific bits and as such does not belong in
       # the enable_webrtc==0 section below.
@@ -108,7 +107,6 @@
       'music_manager_private.idl',
       'principals_private.idl',
       'top_sites.json',
-      'web_request_internal.json',
     ],
 
     # ChromeOS-specific schemas.

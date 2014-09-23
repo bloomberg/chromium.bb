@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
+#include "extensions/browser/api/web_request/web_request_time_tracker.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"

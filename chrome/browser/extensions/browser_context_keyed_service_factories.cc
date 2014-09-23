@@ -43,7 +43,6 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
@@ -64,6 +63,7 @@
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "extensions/browser/api/power/power_api_manager.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"

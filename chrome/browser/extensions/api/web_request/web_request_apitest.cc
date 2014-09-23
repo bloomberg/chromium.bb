@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/test/extension_test_message_listener.h"

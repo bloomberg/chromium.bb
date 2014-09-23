@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 
 #include <algorithm>
 
@@ -16,9 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
-#include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
-#include "chrome/common/extensions/api/web_request.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -30,11 +27,13 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_api_utils.h"
 #include "extensions/browser/api/web_request/web_request_api_utils.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
+#include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_prefs.h"
@@ -47,6 +46,7 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
+#include "extensions/common/api/web_request.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
@@ -83,7 +83,7 @@ namespace activitylog = activity_log_web_request_constants;
 namespace helpers = extension_web_request_api_helpers;
 namespace utils = extension_web_request_api_utils;
 namespace keys = extension_web_request_api_constants;
-namespace web_request = extensions::api::web_request;
+namespace web_request = extensions::core_api::web_request;
 namespace declarative_keys = extensions::declarative_webrequest_constants;
 
 namespace {
