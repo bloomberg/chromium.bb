@@ -505,7 +505,6 @@ function addWebViewThumbnail(row, webview, screenWidth, screenHeight) {
 function addTargetToList(data, list, properties) {
   var row = document.createElement('div');
   row.className = 'row';
-  row.targetId = data.id;
 
   var propertiesBox = document.createElement('div');
   propertiesBox.className = 'properties-box';

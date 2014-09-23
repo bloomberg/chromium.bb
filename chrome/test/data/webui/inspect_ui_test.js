@@ -66,15 +66,6 @@ function testAdbTargetsListed() {
        chromePages, 'http://www.chromium.org/', '.url');
     expectNotEquals(undefined, chromiumPage);
 
-    var pageById = {};
-    Array.prototype.forEach.call(devices, function (device) {
-      var pages = device.querySelectorAll('.row');
-      Array.prototype.forEach.call(pages, function (page) {
-        expectEquals(undefined, pageById[page.targetId]);
-        pageById[page.targetId] = page;
-      });
-    });
-
     var webView = findByContentSubstring(
        browsers, 'WebView in com.sample.feed (4.0)', '.browser-name');
     expectNotEquals(undefined, webView);
