@@ -392,6 +392,7 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   if (!window_controller_)
     window_controller_.reset([[AppListWindowController alloc] init]);
 
+  [[window_controller_ appListViewController] setDelegate:nil];
   [[window_controller_ appListViewController]
       setDelegate:GetViewDelegate(profile_)];
 }

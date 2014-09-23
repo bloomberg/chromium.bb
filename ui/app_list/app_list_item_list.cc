@@ -19,6 +19,7 @@ void AppListItemList::AddObserver(AppListItemListObserver* observer) {
 }
 
 void AppListItemList::RemoveObserver(AppListItemListObserver* observer) {
+  DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
 }
 
