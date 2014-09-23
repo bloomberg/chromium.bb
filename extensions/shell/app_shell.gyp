@@ -112,12 +112,16 @@
             '<(DEPTH)/ui/display/display.gyp:display',
           ],
         }],
+        ['disable_nacl==0 and OS=="linux"', {
+          'dependencies': [
+            '<(DEPTH)/components/nacl.gyp:nacl_helper',
+          ],
+        }],
         ['disable_nacl==0', {
           'dependencies': [
             '<(DEPTH)/components/nacl.gyp:nacl',
             '<(DEPTH)/components/nacl.gyp:nacl_browser',
             '<(DEPTH)/components/nacl.gyp:nacl_common',
-            '<(DEPTH)/components/nacl.gyp:nacl_helper',
             '<(DEPTH)/components/nacl.gyp:nacl_renderer',
             '<(DEPTH)/components/nacl.gyp:nacl_switches',
           ],

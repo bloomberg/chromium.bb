@@ -22,10 +22,12 @@
 #endif
 
 #if !defined(DISABLE_NACL)
-#include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/common/nacl_switches.h"
+#if defined(OS_LINUX)
+#include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
-#endif
+#endif  // OS_LINUX
+#endif  // !DISABLE_NACL
 
 namespace {
 
@@ -59,7 +61,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
 #endif
-#if !defined(DISABLE_NACL)
+#if !defined(DISABLE_NACL) && defined(OS_LINUX)
   nacl::RegisterPathProvider();
 #endif
   extensions::RegisterPathProvider();
@@ -85,12 +87,14 @@ ShellMainDelegate::CreateContentRendererClient() {
   return renderer_client_.get();
 }
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void ShellMainDelegate::ZygoteStarting(
     ScopedVector<content::ZygoteForkDelegate>* delegates) {
 #if !defined(DISABLE_NACL)
   nacl::AddNaClZygoteForkDelegates(delegates);
-#endif
+#endif  // DISABLE_NACL
 }
+#endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
 
 content::ContentClient* ShellMainDelegate::CreateContentClient() {
   return new ShellContentClient();

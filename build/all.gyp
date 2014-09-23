@@ -253,7 +253,7 @@
             '../google_apis/gcm/gcm.gyp:*',
           ],
         }],
-        ['chromeos==1 or (OS=="linux" and use_aura==1)', {
+        ['chromeos==1 or (OS=="linux" and use_aura==1) or OS=="win"', {
           'dependencies': [
             '../extensions/shell/app_shell.gyp:*',
           ],
