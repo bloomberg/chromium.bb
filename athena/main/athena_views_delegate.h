@@ -4,25 +4,10 @@
 #ifndef ATHENA_MAIN_ATHENA_VIEWS_DELEGATE_H_
 #define ATHENA_MAIN_ATHENA_VIEWS_DELEGATE_H_
 
-#include "ui/views/views_delegate.h"
-
 namespace athena {
 
-class AthenaViewsDelegate : public views::ViewsDelegate {
- public:
-  AthenaViewsDelegate() {}
-  virtual ~AthenaViewsDelegate() {}
-
- private:
-  // views::ViewsDelegate:
-  virtual void OnBeforeWidgetInit(
-      views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
-  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(AthenaViewsDelegate);
-};
+void CreateAthenaViewsDelegate();
+void ShutdownAthenaViewsDelegate();
 
 }  // namespace athena
 

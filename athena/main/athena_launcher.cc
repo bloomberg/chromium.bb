@@ -100,7 +100,7 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> blocking_task_runner) {
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 
-  views::ViewsDelegate::views_delegate = new AthenaViewsDelegate();
+  CreateAthenaViewsDelegate();
 
   AthenaEnvState* env_state = new AthenaEnvState;
 
@@ -165,7 +165,7 @@ void ShutdownAthena() {
   athena::ExtensionsDelegate::Shutdown();
   athena::AthenaEnv::Shutdown();
 
-  delete views::ViewsDelegate::views_delegate;
+  ShutdownAthenaViewsDelegate();
 }
 
 }  // namespace athena
