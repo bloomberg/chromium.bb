@@ -7677,6 +7677,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.HostedAppUnlimitedStorageUsage" units="KB">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The usage (in kilobytes) of a hosted app with the unlimitedStorage api
+    permission, recorded once per run per app the first time we load storage for
+    the hosted app.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.IncognitoAllowed">
   <owner>kalman@chromium.org</owner>
   <summary>

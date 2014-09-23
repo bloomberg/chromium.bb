@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
@@ -91,6 +92,16 @@ ValueStore* LocalValueStoreCache::GetStorage(
       new SettingsStorageQuotaEnforcer(
           quota_, storage_factory_->Create(file_path, extension->id())));
   DCHECK(storage.get());
+
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kUnlimitedStorage) &&
+      extension->is_hosted_app()) {
+    // We're interested in the amount of space hosted apps are using. Record it
+    // the first time we load the storage for the extension.
+    UMA_HISTOGRAM_MEMORY_KB("Extensions.HostedAppUnlimitedStorageUsage",
+                            storage->GetBytesInUse());
+  }
+
   storage_map_[extension->id()] = storage;
   return storage.get();
 }
