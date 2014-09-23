@@ -35,9 +35,9 @@ ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame
 }
 
 ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebScreenOrientationClient* client)
-    : PlatformEventController(frame.page())
+    : FrameDestructionObserver(&frame)
+    , PlatformEventController(frame.page())
     , m_client(client)
-    , m_frame(frame)
     , m_dispatchEventTimer(this, &ScreenOrientationController::dispatchEventTimerFired)
 {
 }
@@ -77,35 +77,42 @@ WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameVi
 void ScreenOrientationController::updateOrientation()
 {
     ASSERT(m_orientation);
+    ASSERT(frame());
 
-    WebScreenOrientationType orientationType = screenOrientationType(m_frame.view());
+    FrameView* view = frame()->view();
+    WebScreenOrientationType orientationType = screenOrientationType(view);
     if (orientationType == WebScreenOrientationUndefined) {
         // The embedder could not provide us with an orientation, deduce it ourselves.
-        orientationType = computeOrientation(m_frame.view());
+        orientationType = computeOrientation(view);
     }
     ASSERT(orientationType != WebScreenOrientationUndefined);
 
     m_orientation->setType(orientationType);
-    m_orientation->setAngle(screenOrientationAngle(m_frame.view()));
+    m_orientation->setAngle(screenOrientationAngle(view));
+}
+
+bool ScreenOrientationController::isActiveAndVisible() const
+{
+    return m_orientation && frame() && page() && page()->visibilityState() == PageVisibilityStateVisible;
 }
 
 void ScreenOrientationController::pageVisibilityChanged()
 {
     notifyDispatcher();
 
-    if (!m_orientation || !page() || page()->visibilityState() != PageVisibilityStateVisible)
+    if (!isActiveAndVisible())
         return;
 
     // The orientation type and angle are tied in a way that if the angle has
     // changed, the type must have changed.
-    unsigned short currentAngle = screenOrientationAngle(m_frame.view());
+    unsigned short currentAngle = screenOrientationAngle(frame()->view());
 
     // FIXME: sendOrientationChangeEvent() currently send an event all the
     // children of the frame, so it should only be called on the frame on
     // top of the tree. We would need the embedder to call
     // sendOrientationChangeEvent on every WebFrame part of a WebView to be
     // able to remove this.
-    if (m_frame == m_frame.localFrameRoot() && m_orientation->angle() != currentAngle)
+    if (frame() == frame()->localFrameRoot() && m_orientation->angle() != currentAngle)
         notifyOrientationChanged();
 }
 
@@ -113,7 +120,7 @@ void ScreenOrientationController::notifyOrientationChanged()
 {
     ASSERT(RuntimeEnabledFeatures::screenOrientationEnabled());
 
-    if (!m_orientation || !page() || page()->visibilityState() != PageVisibilityStateVisible)
+    if (!isActiveAndVisible())
         return;
 
     updateOrientation();
@@ -122,7 +129,7 @@ void ScreenOrientationController::notifyOrientationChanged()
     // current frame as it will prevent side effects from the change event
     // handlers.
     WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > childFrames;
-    for (Frame* child = m_frame.tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (Frame* child = frame()->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));
     }
@@ -156,11 +163,6 @@ void ScreenOrientationController::unlock()
 {
     ASSERT(m_client);
     m_client->unlockOrientation();
-}
-
-const LocalFrame& ScreenOrientationController::frame() const
-{
-    return m_frame;
 }
 
 void ScreenOrientationController::dispatchEventTimerFired(Timer<ScreenOrientationController>*)
@@ -201,6 +203,7 @@ void ScreenOrientationController::notifyDispatcher()
 void ScreenOrientationController::trace(Visitor* visitor)
 {
     visitor->trace(m_orientation);
+    FrameDestructionObserver::trace(visitor);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }
 
