@@ -486,6 +486,15 @@
    fun:_ZN5blink20WebDevToolsAgentImpl26dispatchOnInspectorBackendERKNS_9WebStringE
    fun:_ZN7content13DevToolsAgent28OnDispatchOnInspectorBackendERKSs
 }
+{
+   bug_399852_d
+   Memcheck:Uninitialized
+   fun:_ZN5blink14DateComponents10parseMonthERKN3WTF6StringEjRj
+   ...
+   fun:_ZNK5blink24BaseDateAndTimeInputType21parseToDateComponentsERKN3WTF6StringEPNS_14DateComponentsE
+   fun:_ZNK5blink24BaseDateAndTimeInputType15typeMismatchForERKN3WTF6StringE
+   fun:_ZNK5blink24BaseDateAndTimeInputType13sanitizeValueERKN3WTF6StringE
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -3973,4 +3982,18 @@
    fun:_ZN4base22PosixDynamicThreadPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
    fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
    fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
+}
+{
+   bug_416729
+   Memcheck:Unaddressable
+   fun:_ZNK5blink6MemberINS_38PlatformSpeechSynthesisUtteranceClientEEcvPS1_Ev
+   fun:_ZNK5blink32PlatformSpeechSynthesisUtterance6clientEv
+   fun:_ZN5blink15SpeechSynthesis17didFinishSpeakingEPNS_32PlatformSpeechSynthesisUtteranceE
+   fun:_ZN5blink29PlatformSpeechSynthesizerMock16speakingFinishedEPNS_5TimerIS0_EE
+   fun:_ZN5blink5TimerINS_29PlatformSpeechSynthesizerMockEE5firedEv
+   fun:_ZN5blink12ThreadTimers24sharedTimerFiredInternalEv
+   fun:_ZN5blink12ThreadTimers16sharedTimerFiredEv
+   fun:_ZN5blink9Scheduler15tickSharedTimerEv
+   fun:_ZN5blink9Scheduler18sharedTimerAdapterEv
+   fun:_ZN7content17BlinkPlatformImpl9DoTimeoutEv
 }
