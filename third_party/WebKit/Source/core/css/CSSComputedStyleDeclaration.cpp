@@ -1041,21 +1041,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFu
     case TimingFunction::StepsFunction:
         {
             const StepsTimingFunction* stepsTimingFunction = toStepsTimingFunction(timingFunction);
-            if (stepsTimingFunction->subType() == StepsTimingFunction::Custom)
-                return CSSStepsTimingFunctionValue::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtPosition());
+            StepsTimingFunction::StepAtPosition position = stepsTimingFunction->stepAtPosition();
+            int steps = stepsTimingFunction->numberOfSteps();
+            ASSERT(position == StepsTimingFunction::Start || position == StepsTimingFunction::End);
 
-            CSSValueID valueId;
-            switch (stepsTimingFunction->subType()) {
-            case StepsTimingFunction::Start:
-                valueId = CSSValueStepStart;
-                break;
-            case StepsTimingFunction::End:
-                valueId = CSSValueStepEnd;
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-                return nullptr;
-            }
+            if (steps > 1)
+                return CSSStepsTimingFunctionValue::create(steps, position);
+            CSSValueID valueId = position == StepsTimingFunction::Start ? CSSValueStepStart : CSSValueStepEnd;
             return cssValuePool().createIdentifierValue(valueId);
         }
 

@@ -3028,7 +3028,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
 
         // There are two values.
         int numSteps;
-        StepsTimingFunction::StepAtPosition stepAtPosition = StepsTimingFunction::StepAtEnd;
+        StepsTimingFunction::StepAtPosition stepAtPosition = StepsTimingFunction::End;
 
         CSSParserValue* v = args->current();
         if (!validUnit(v, FInteger))
@@ -3045,13 +3045,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
             case CSSValueMiddle:
                 if (!RuntimeEnabledFeatures::webAnimationsAPIEnabled())
                     return nullptr;
-                stepAtPosition = StepsTimingFunction::StepAtMiddle;
+                stepAtPosition = StepsTimingFunction::Middle;
                 break;
             case CSSValueStart:
-                stepAtPosition = StepsTimingFunction::StepAtStart;
+                stepAtPosition = StepsTimingFunction::Start;
                 break;
             case CSSValueEnd:
-                stepAtPosition = StepsTimingFunction::StepAtEnd;
+                stepAtPosition = StepsTimingFunction::End;
                 break;
             default:
                 return nullptr;

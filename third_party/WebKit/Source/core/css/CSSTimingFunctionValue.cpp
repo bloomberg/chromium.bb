@@ -48,13 +48,13 @@ String CSSStepsTimingFunctionValue::customCSSText() const
 {
     String stepAtPositionString;
     switch (m_stepAtPosition) {
-    case StepsTimingFunction::StepAtStart:
+    case StepsTimingFunction::Start:
         stepAtPositionString = "start";
         break;
-    case StepsTimingFunction::StepAtMiddle:
+    case StepsTimingFunction::Middle:
         stepAtPositionString = "middle";
         break;
-    case StepsTimingFunction::StepAtEnd:
+    case StepsTimingFunction::End:
         stepAtPositionString = "end";
         break;
     default:

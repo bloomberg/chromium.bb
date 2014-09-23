@@ -428,7 +428,7 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(CSSValue* v
         return CSSTimingData::initialTimingFunction();
 
     CSSStepsTimingFunctionValue* stepsTimingFunction = toCSSStepsTimingFunctionValue(value);
-    if (stepsTimingFunction->stepAtPosition() == StepsTimingFunction::StepAtMiddle && !allowStepMiddle)
+    if (stepsTimingFunction->stepAtPosition() == StepsTimingFunction::Middle && !allowStepMiddle)
         return CSSTimingData::initialTimingFunction();
     return StepsTimingFunction::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtPosition());
 }

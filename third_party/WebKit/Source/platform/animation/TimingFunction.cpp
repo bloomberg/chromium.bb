@@ -113,30 +113,27 @@ void CubicBezierTimingFunction::range(double* minValue, double* maxValue) const
 
 String StepsTimingFunction::toString() const
 {
-    StringBuilder builder;
-    switch (this->subType()) {
-    case StepsTimingFunction::Start:
-        return "step-start";
-    case StepsTimingFunction::Middle:
-        return "step-middle";
-    case StepsTimingFunction::End:
-        return "step-end";
-    case StepsTimingFunction::Custom:
-        builder.append("steps(" + String::numberToStringECMAScript(this->numberOfSteps()) + ", ");
-
-        if (this->stepAtPosition() == StepsTimingFunction::StepAtStart)
-            builder.appendLiteral("start");
-        else if (this->stepAtPosition() == StepsTimingFunction::StepAtMiddle)
-            builder.appendLiteral("middle");
-        else if (this->stepAtPosition() == StepsTimingFunction::StepAtEnd)
-            builder.appendLiteral("end");
-        else
-            ASSERT_NOT_REACHED();
-
-        builder.append(')');
+    const char* positionString = nullptr;
+    switch (stepAtPosition()) {
+    case Start:
+        positionString = "start";
         break;
-    default:
-        ASSERT_NOT_REACHED();
+    case Middle:
+        positionString = "middle";
+        break;
+    case End:
+        positionString = "end";
+        break;
+    }
+
+    StringBuilder builder;
+    if (this->numberOfSteps() == 1) {
+        builder.append("step-");
+        builder.append(positionString);
+    } else {
+        builder.append("steps(" + String::numberToStringECMAScript(this->numberOfSteps()) + ", ");
+        builder.append(positionString);
+        builder.append(')');
     }
     return builder.toString();
 }
@@ -151,13 +148,13 @@ double StepsTimingFunction::evaluate(double fraction, double) const
 {
     double startOffset = 0;
     switch (m_stepAtPosition) {
-    case StepAtStart:
+    case Start:
         startOffset = 1;
         break;
-    case StepAtMiddle:
+    case Middle:
         startOffset = 0.5;
         break;
-    case StepAtEnd:
+    case End:
         startOffset = 0;
         break;
     default:
@@ -191,10 +188,7 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
         return false;
 
     const StepsTimingFunction& stf = toStepsTimingFunction(rhs);
-    if ((lhs.subType() == StepsTimingFunction::Custom) && (stf.subType() == StepsTimingFunction::Custom))
-        return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.stepAtPosition() == stf.stepAtPosition());
-
-    return lhs.subType() == stf.subType();
+    return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.stepAtPosition() == stf.stepAtPosition());
 }
 
 // The generic operator== *must* come after the

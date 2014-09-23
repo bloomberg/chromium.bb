@@ -170,45 +170,32 @@ private:
 
 class PLATFORM_EXPORT StepsTimingFunction FINAL : public TimingFunction {
 public:
-    enum SubType {
-        Start,
-        End,
-        Middle,
-        Custom
-    };
-
     enum StepAtPosition {
-        StepAtStart,
-        StepAtMiddle,
-        StepAtEnd
+        Start,
+        Middle,
+        End
     };
 
     static PassRefPtr<StepsTimingFunction> create(int steps, StepAtPosition stepAtPosition)
     {
-        return adoptRef(new StepsTimingFunction(Custom, steps, stepAtPosition));
+        return adoptRef(new StepsTimingFunction(steps, stepAtPosition));
     }
 
-    static StepsTimingFunction* preset(SubType subType)
+    static StepsTimingFunction* preset(StepAtPosition position)
     {
-        switch (subType) {
+        DEFINE_STATIC_REF(StepsTimingFunction, start, create(1, Start));
+        DEFINE_STATIC_REF(StepsTimingFunction, middle, create(1, Middle));
+        DEFINE_STATIC_REF(StepsTimingFunction, end, create(1, End));
+        switch (position) {
         case Start:
-            {
-                DEFINE_STATIC_REF(StepsTimingFunction, start, (adoptRef(new StepsTimingFunction(Start, 1, StepAtStart))));
-                return start;
-            }
+            return start;
         case Middle:
-            {
-                DEFINE_STATIC_REF(StepsTimingFunction, middle, (adoptRef(new StepsTimingFunction(Middle, 1, StepAtMiddle))));
-                return middle;
-            }
+            return middle;
         case End:
-            {
-                DEFINE_STATIC_REF(StepsTimingFunction, end, (adoptRef(new StepsTimingFunction(End, 1, StepAtEnd))));
-                return end;
-            }
+            return end;
         default:
             ASSERT_NOT_REACHED();
-            return 0;
+            return end;
         }
     }
 
@@ -223,20 +210,16 @@ public:
     int numberOfSteps() const { return m_steps; }
     StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
 
-    SubType subType() const { return m_subType; }
-
 private:
-    StepsTimingFunction(SubType subType, int steps, StepAtPosition stepAtPosition)
+    StepsTimingFunction(int steps, StepAtPosition stepAtPosition)
         : TimingFunction(StepsFunction)
         , m_steps(steps)
         , m_stepAtPosition(stepAtPosition)
-        , m_subType(subType)
     {
     }
 
     int m_steps;
     StepAtPosition m_stepAtPosition;
-    SubType m_subType;
 };
 
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&, const TimingFunction&);
