@@ -5,6 +5,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Updates and correction to Hungarian braille tables, thanks to Hammer
   Attila.
 
+** Other changes
+- When compiling with mingw or cygwin resulting dll is liblouis.dll.
+
 * Noteworthy changes in release 2.6.0 (2014-9-1)
 This is the first release by the new maintainer team. A lot of work by
 people from across the community contributed to this release. There
