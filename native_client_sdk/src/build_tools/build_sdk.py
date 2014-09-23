@@ -572,6 +572,7 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
 
   if set(toolchains) & set(['glibc', 'newlib']):
     GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR)
+    GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR)
 
   if 'arm' in toolchains:
     GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm')
