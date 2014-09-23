@@ -163,9 +163,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   BackgroundContentsServiceFactory::GetInstance();
 #endif
   BookmarkModelFactory::GetInstance();
-#if !defined(OS_ANDROID)
   BookmarkUndoServiceFactory::GetInstance();
-#endif
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif

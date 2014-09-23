@@ -451,6 +451,29 @@ public class BookmarksBridge {
     }
 
     /**
+     * Undo the last undoable action on the top of the bookmark undo stack
+     */
+    public void undo() {
+        nativeUndo(mNativeBookmarksBridge);
+    }
+
+    /**
+     * Start grouping actions for a single undo operation
+     * Note: This only works with BookmarkModel, not partner bookmarks.
+     */
+    public void startGroupingUndos() {
+        nativeStartGroupingUndos(mNativeBookmarksBridge);
+    }
+
+    /**
+     * End grouping actions for a single undo operation
+     * Note: This only works with BookmarkModel, not partner bookmarks.
+     */
+    public void endGroupingUndos() {
+        nativeEndGroupingUndos(mNativeBookmarksBridge);
+    }
+
+    /**
      * A bridge function to BookmarkModelFactory::GetForProfile.
      */
     public static long getNativeBookmarkModel(Profile profile) {
@@ -618,9 +641,13 @@ public class BookmarksBridge {
             BookmarkId newParentId, int index);
     private native BookmarkId nativeAddBookmark(long nativeBookmarksBridge, BookmarkId parent,
             int index, String title, String url);
+    private native void nativeUndo(long nativeBookmarksBridge);
+    private native void nativeStartGroupingUndos(long nativeBookmarksBridge);
+    private native void nativeEndGroupingUndos(long nativeBookmarksBridge);
     private static native long nativeGetNativeBookmarkModel(Profile profile);
     private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
     private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarksBridge);
+
     private native long nativeInit(Profile profile);
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
     private native void nativeDestroy(long nativeBookmarksBridge);

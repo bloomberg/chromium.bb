@@ -2162,14 +2162,6 @@
       'browser/sync/sync_ui_util.h',
       'browser/tab_contents/background_contents.cc',
       'browser/tab_contents/background_contents.h',
-      'browser/undo/bookmark_undo_service.cc',
-      'browser/undo/bookmark_undo_service_factory.cc',
-      'browser/undo/bookmark_undo_service_factory.h',
-      'browser/undo/bookmark_undo_service.h',
-      'browser/undo/bookmark_undo_utils.cc',
-      'browser/undo/bookmark_undo_utils.h',
-      'browser/undo/undo_manager.cc',
-      'browser/undo/undo_manager.h',
     ],
     # Cross-platform Aura files.
     'chrome_browser_aura_sources': [
@@ -2319,6 +2311,16 @@
       'browser/supervised_user/supervised_user_url_filter.cc',
       'browser/supervised_user/supervised_user_url_filter.h',
       'browser/supervised_user/supervised_users.h',
+    ],
+    'chrome_browser_undo_sources': [
+      'browser/undo/bookmark_undo_service.cc',
+      'browser/undo/bookmark_undo_service_factory.cc',
+      'browser/undo/bookmark_undo_service_factory.h',
+      'browser/undo/bookmark_undo_service.h',
+      'browser/undo/bookmark_undo_utils.cc',
+      'browser/undo/bookmark_undo_utils.h',
+      'browser/undo/undo_manager.cc',
+      'browser/undo/undo_manager.h',
     ],
     'chrome_browser_webrtc_sources': [
       # TODO(brettw) should webrtc_log_list.cc go here?
@@ -2875,6 +2877,10 @@
         '../content/content.gyp:content_browser',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
+      ],
+      # sources applied to all configurations
+      'sources': [
+        '<@(chrome_browser_undo_sources)',
       ],
       'conditions': [
         ['OS != "ios"', {

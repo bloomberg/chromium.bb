@@ -16,6 +16,10 @@
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 
+namespace bookmarks {
+class ScopedGroupBookmarkActions;
+}
+
 class Profile;
 
 // The delegate to fetch bookmarks information for the Android native
@@ -130,6 +134,12 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
       jstring j_title,
       jstring j_url);
 
+  void Undo(JNIEnv* env, jobject obj);
+
+  void StartGroupingUndos(JNIEnv* env, jobject obj);
+
+  void EndGroupingUndos(JNIEnv* env, jobject obj);
+
  private:
   virtual ~BookmarksBridge();
 
@@ -189,6 +199,7 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   JavaObjectWeakGlobalRef weak_java_ref_;
   BookmarkModel* bookmark_model_;  // weak
   ChromeBookmarkClient* client_;   // weak
+  scoped_ptr<bookmarks::ScopedGroupBookmarkActions> grouped_bookmark_actions_;
 
   // Information about the Partner bookmarks (must check for IsLoaded()).
   // This is owned by profile.

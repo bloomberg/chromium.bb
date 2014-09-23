@@ -16,9 +16,13 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/undo/bookmark_undo_service.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "chrome/browser/undo/undo_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -667,6 +671,30 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::AddBookmark(
       Java_BookmarksBridge_createBookmarkId(
           env, new_node->id(), GetBookmarkType(new_node));
   return new_java_obj;
+}
+
+void BookmarksBridge::Undo(JNIEnv* env, jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsLoaded());
+  BookmarkUndoService* undo_service =
+      BookmarkUndoServiceFactory::GetForProfile(profile_);
+  UndoManager* undo_manager = undo_service->undo_manager();
+  undo_manager->Undo();
+}
+
+void BookmarksBridge::StartGroupingUndos(JNIEnv* env, jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsLoaded());
+  DCHECK(!grouped_bookmark_actions_.get()); // shouldn't have started already
+  grouped_bookmark_actions_.reset(
+      new bookmarks::ScopedGroupBookmarkActions(bookmark_model_));
+}
+
+void BookmarksBridge::EndGroupingUndos(JNIEnv* env, jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsLoaded());
+  DCHECK(grouped_bookmark_actions_.get()); // should only call after start
+  grouped_bookmark_actions_.reset();
 }
 
 ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(

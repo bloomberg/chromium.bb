@@ -530,9 +530,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   model->RemoveObserver(this);
 
   // Changes made to the bookmark model due to sync should not be undoable.
-#if !defined(OS_ANDROID)
   ScopedSuspendBookmarkUndo suspend_undo(profile_);
-#endif
 
   // Notify UI intensive observers of BookmarkModel that we are about to make
   // potentially significant changes to it, so the updates may be batched. For

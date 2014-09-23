@@ -131,6 +131,9 @@ static_library("browser") {
     "//sync",
   ]
 
+  sources += rebase_path(gypi_values.chrome_browser_undo_sources,
+                         ".", "//chrome")
+
   if (!is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_non_ios_sources,
                            ".", "//chrome")

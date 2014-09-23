@@ -67,9 +67,8 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
                            ->GetBookmarkTaskRunner(),
                        content::BrowserThread::GetMessageLoopProxyForThread(
                            content::BrowserThread::UI));
-#if !defined(OS_ANDROID)
   bool register_bookmark_undo_service_as_observer = true;
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   register_bookmark_undo_service_as_observer =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBookmarkUndo);
@@ -78,7 +77,6 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     bookmark_model->AddObserver(
         BookmarkUndoServiceFactory::GetForProfile(profile));
   }
-#endif  // !defined(OS_ANDROID)
   return bookmark_model;
 }
 
