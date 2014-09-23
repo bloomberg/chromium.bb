@@ -396,6 +396,21 @@ def _CheckNoDEPSGIT(input_api, output_api):
   return []
 
 
+def _CheckValidHostsInDEPS(input_api, output_api):
+  """Checks that DEPS file deps are from allowed_hosts."""
+  # Run only if DEPS file has been modified to annoy fewer bystanders.
+  if all(f.LocalPath() != 'DEPS' for f in input_api.AffectedFiles()):
+    return []
+  # Outsource work to gclient verify
+  try:
+    input_api.subprocess.check_output(['gclient', 'verify'])
+    return []
+  except input_api.subprocess.CalledProcessError, error:
+    return [output_api.PresubmitError(
+        'DEPS file must have only git dependencies.',
+        long_text=error.output)]
+
+
 def _CheckNoBannedFunctions(input_api, output_api):
   """Make sure that banned functions are not used."""
   warnings = []
@@ -1406,6 +1421,7 @@ def _CheckForIPCRules(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
+  results.extend(_CheckValidHostsInDEPS(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
   return results
 
