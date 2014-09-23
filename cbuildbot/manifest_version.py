@@ -614,7 +614,7 @@ class BuildSpecsManager(object):
     url = BuildSpecsManager._GetStatusUrl(builder, version)
     ctx = gs.GSContext(retries=retries)
     try:
-      output = ctx.Cat(url).output
+      output = ctx.Cat(url)
     except gs.GSNoSuchKey:
       return BuilderStatus(BuilderStatus.STATUS_MISSING, None)
 

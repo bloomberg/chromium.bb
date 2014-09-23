@@ -450,7 +450,7 @@ class BuildData(object):
     build_data_per_url = {}
     def _ReadMetadataURL(url):
       # Read the metadata.json URL and parse json into a dict.
-      metadata_dict = json.loads(gs_ctx.Cat(url, print_cmd=False).output)
+      metadata_dict = json.loads(gs_ctx.Cat(url, print_cmd=False))
 
       # Read the file next to url which indicates whether the metadata has
       # been gathered before, and with what stats version.
@@ -459,7 +459,7 @@ class BuildData(object):
         gathered_url = url + '.gathered'
         if gs_ctx.Exists(gathered_url, print_cmd=False):
           gathered_dict = json.loads(gs_ctx.Cat(gathered_url,
-                                                print_cmd=False).output)
+                                                print_cmd=False))
 
         sheets_version = gathered_dict.get(BuildData.SHEETS_VER_KEY)
         carbon_version = gathered_dict.get(BuildData.CARBON_VER_KEY)
@@ -761,7 +761,7 @@ def FindLatestFullVersion(builder, version):
   base_url = archive_lib.GetBaseUploadURI(config)
   latest_file_url = os.path.join(base_url, 'LATEST-%s' % version)
   try:
-    return gs_ctx.Cat(latest_file_url).output.strip()
+    return gs_ctx.Cat(latest_file_url).strip()
   except gs.GSNoSuchKey:
     return None
 
@@ -785,7 +785,7 @@ def GetBuildMetadata(builder, full_version):
   try:
     archive_url = os.path.join(base_url, full_version)
     metadata_url = os.path.join(archive_url, constants.METADATA_JSON)
-    output = gs_ctx.Cat(metadata_url).output
+    output = gs_ctx.Cat(metadata_url)
     return CBuildbotMetadata(json.loads(output))
   except gs.GSNoSuchKey:
     return None
@@ -807,7 +807,7 @@ def GetLatestMilestone():
 
   cros_build_lib.Info('Getting latest milestone from %s', latest_url)
   try:
-    content = gs_ctx.Cat(latest_url).output.strip()
+    content = gs_ctx.Cat(latest_url).strip()
 
     # Expected syntax is like the following: "R35-1234.5.6-rc7".
     assert content.startswith('R')

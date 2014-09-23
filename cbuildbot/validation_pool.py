@@ -2753,7 +2753,7 @@ class ValidationPool(object):
     url = cls.GetCLStatusURL(bot, change)
     ctx = gs.GSContext()
     try:
-      return ctx.Cat('%s/status' % url).output
+      return ctx.Cat('%s/status' % url)
     except gs.GSNoSuchKey:
       logging.debug('No status yet for %r', url)
       return None

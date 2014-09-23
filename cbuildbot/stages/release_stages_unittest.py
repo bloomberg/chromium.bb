@@ -77,7 +77,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
 
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
+      mock_gs_ctx.Cat.return_value = self.SIGNER_RESULT
       notifier = mock.Mock()
 
       stage = self.ConstructStage()
@@ -94,7 +94,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     """Test _WaitForSigningResults when there are no signed images."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
+      mock_gs_ctx.Cat.return_value = self.SIGNER_RESULT
       notifier = mock.Mock()
 
       stage = self.ConstructStage()
@@ -107,7 +107,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     """Test _WaitForSigningResults when the signers report an error."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = """
+      mock_gs_ctx.Cat.return_value = """
           { "status": { "status": "failed" }, "board": "link",
             "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
           """
@@ -127,7 +127,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     """Test _WaitForSigningResults when invalid Json is received.."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = "{"
+      mock_gs_ctx.Cat.return_value = "{"
       notifier = mock.Mock()
 
       stage = self.ConstructStage()
@@ -158,7 +158,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     """Test that _CheckForResults works when signing works."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
+      mock_gs_ctx.Cat.return_value = self.SIGNER_RESULT
       notifier = mock.Mock()
 
       stage = self.ConstructStage()
@@ -188,9 +188,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     """Verify _CheckForResults handles partial signing results."""
     def catChan2Success(url):
       if url.startswith('chan2'):
-        result = mock.Mock()
-        result.output = self.SIGNER_RESULT
-        return result
+        return self.SIGNER_RESULT
       else:
         raise release_stages.gs.GSNoSuchKey()
 
@@ -222,7 +220,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     """Verify _CheckForResults handles unexpected Json values."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = "{}"
+      mock_gs_ctx.Cat.return_value = "{}"
       notifier = mock.Mock()
 
       stage = self.ConstructStage()

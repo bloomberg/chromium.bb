@@ -140,12 +140,12 @@ class SDKFetcher(object):
                                              constants.PARTIAL_METADATA_JSON)
         try:
           raw_json = self.gs_ctx.Cat(metadata_path,
-                                     debug_level=logging.DEBUG).output
+                                     debug_level=logging.DEBUG)
         except gs.GSNoSuchKey:
           logging.info('Could not read %s, falling back to %s',
                        metadata_path, partial_metadata_path)
           raw_json = self.gs_ctx.Cat(partial_metadata_path,
-                                     debug_level=logging.DEBUG).output
+                                     debug_level=logging.DEBUG)
 
         ref.AssignText(raw_json)
 
@@ -187,7 +187,7 @@ class SDKFetcher(object):
       version = git.GetChromiteTrackingBranch()
     version_file = '%s/LATEST-%s' % (self.gs_base, version)
     try:
-      full_version = self.gs_ctx.Cat(version_file).output
+      full_version = self.gs_ctx.Cat(version_file)
       assert full_version.startswith('R')
       return full_version
     except gs.GSNoSuchKey:

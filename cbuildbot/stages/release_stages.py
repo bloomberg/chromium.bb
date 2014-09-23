@@ -146,7 +146,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       MalformedResultsException if it failed to parse.
     """
     try:
-      signer_txt = gs_ctx.Cat(url).output
+      signer_txt = gs_ctx.Cat(url)
     except gs.GSNoSuchKey:
       return None
 

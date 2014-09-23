@@ -9,6 +9,7 @@ from __future__ import print_function
 import collections
 import contextlib
 import datetime
+import errno
 import getpass
 import hashlib
 import logging
@@ -129,7 +130,7 @@ class GSCounter(object):
   def Get(self):
     """Get the current value of a counter."""
     try:
-      return int(self.ctx.Cat(self.path).output)
+      return int(self.ctx.Cat(self.path))
     except GSNoSuchKey:
       return 0
 
@@ -383,17 +384,16 @@ class GSContext(object):
     """Returns the contents of a GS object."""
     kwargs.setdefault('redirect_stdout', True)
     if not path.startswith(BASE_GS_URL):
-      # gsutil doesn't support cat-ting a local path, so just run 'cat' in that
-      # case.
-      kwargs.pop('retries', None)
-      kwargs.pop('headers', None)
-      if not os.path.exists(path):
-        raise GSNoSuchKey('%s: file does not exist' % path)
+      # gsutil doesn't support cat-ting a local path, so read it ourselves.
       try:
-        return cros_build_lib.RunCommand(['cat', path], **kwargs)
-      except cros_build_lib.RunCommandError as e:
-        raise GSCommandError(e.msg, e.result, e.exception)
-    return self.DoCommand(['cat', path], **kwargs)
+        return osutils.ReadFile(path)
+      except Exception as e:
+        if getattr(e, 'errno', None) == errno.ENOENT:
+          raise GSNoSuchKey('%s: file does not exist' % path)
+        else:
+          raise GSContextException(str(e))
+    else:
+      return self.DoCommand(['cat', path], **kwargs).output
 
   def CopyInto(self, local_path, remote_dir, filename=None, **kwargs):
     """Upload a local file into a directory in google storage.
