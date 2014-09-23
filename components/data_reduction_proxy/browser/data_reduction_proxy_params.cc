@@ -24,16 +24,21 @@
 using base::FieldTrialList;
 
 namespace {
+
 const char kEnabled[] = "Enabled";
-}
+const char kDefaultOrigin[] = "https://proxy.googlezip.net:443/";
+const char kDevOrigin[] = "http://proxy-dev.googlezip.net:443/";
+const char kDevFallbackOrigin[] = "http://proxy-dev.googlezip.net:80/";
+const char kDefaultFallbackOrigin[] = "http://compress.googlezip.net:80/";
+const char kDefaultSslOrigin[] = "http://ssl.googlezip.net:1043/";
+const char kDefaultAltOrigin[] = "https://proxy.googlezip.net:443/";
+const char kDefaultAltFallbackOrigin[] = "http://compress.googlezip.net:80/";
+const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
+const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
+
+}  // namespace
 
 namespace data_reduction_proxy {
-
-// static
-bool DataReductionProxyParams::IsIncludedInFieldTrial() {
-  return base::FieldTrialList::FindFullName(
-      "DataCompressionProxyRollout") == kEnabled;
-}
 
 // static
 bool DataReductionProxyParams::IsIncludedInAlternativeFieldTrial() {
@@ -54,15 +59,13 @@ bool DataReductionProxyParams::IsIncludedInPromoFieldTrial() {
 
 // static
 bool DataReductionProxyParams::IsIncludedInPreconnectHintingFieldTrial() {
-  return IsIncludedInFieldTrial() &&
-      FieldTrialList::FindFullName(
+  return FieldTrialList::FindFullName(
           "DataCompressionProxyPreconnectHints") == kEnabled;
 }
 
 // static
 bool DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() {
-  return IsIncludedInFieldTrial() &&
-      FieldTrialList::FindFullName(
+  return FieldTrialList::FindFullName(
           "DataCompressionProxyCriticalBypass") == kEnabled;
 }
 
@@ -391,30 +394,26 @@ bool DataReductionProxyParams::IsBypassedByDataReductionProxyLocalRules(
 }
 
 std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
-#if defined(DATA_REDUCTION_DEV_HOST)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
     return std::string();
   if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
       (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
          kEnabled)) {
-    return DATA_REDUCTION_DEV_HOST;
+    return kDevOrigin;
   }
-#endif
   return std::string();
 }
 
 std::string DataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
-#if defined(DATA_REDUCTION_DEV_FALLBACK_HOST)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
     return std::string();
   if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
       (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
            kEnabled)) {
-    return DATA_REDUCTION_DEV_FALLBACK_HOST;
+    return kDevFallbackOrigin;
   }
-#endif
   return std::string();
 }
 
@@ -503,53 +502,33 @@ bool DataReductionProxyParams::ArePrimaryAndFallbackBypassed(
   return found != retry_map.end();
 }
 
+// TODO(kundaji): Remove tests for macro definitions.
 std::string DataReductionProxyParams::GetDefaultOrigin() const {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  return SPDY_PROXY_AUTH_ORIGIN;
-#endif
-  return std::string();
+  return kDefaultOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {
-#if defined(DATA_REDUCTION_FALLBACK_HOST)
-  return DATA_REDUCTION_FALLBACK_HOST;
-#endif
-  return std::string();
+  return kDefaultFallbackOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultSSLOrigin() const {
-#if defined(DATA_REDUCTION_PROXY_SSL_ORIGIN)
-  return DATA_REDUCTION_PROXY_SSL_ORIGIN;
-#endif
-  return std::string();
+  return kDefaultSslOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultAltOrigin() const {
-#if defined(DATA_REDUCTION_PROXY_ALT_ORIGIN)
-  return DATA_REDUCTION_PROXY_ALT_ORIGIN;
-#endif
-  return std::string();
+  return kDefaultAltOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultAltFallbackOrigin() const {
-#if defined(DATA_REDUCTION_PROXY_ALT_FALLBACK_ORIGIN)
-  return DATA_REDUCTION_PROXY_ALT_FALLBACK_ORIGIN;
-#endif
-  return std::string();
+  return kDefaultAltFallbackOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultProbeURL() const {
-#if defined(DATA_REDUCTION_PROXY_PROBE_URL)
-  return DATA_REDUCTION_PROXY_PROBE_URL;
-#endif
-  return std::string();
+  return kDefaultProbeUrl;
 }
 
 std::string DataReductionProxyParams::GetDefaultWarmupURL() const {
-#if defined(DATA_REDUCTION_PROXY_WARMUP_URL)
-  return DATA_REDUCTION_PROXY_WARMUP_URL;
-#endif
-  return std::string();
+  return kDefaultWarmupUrl;
 }
 
 }  // namespace data_reduction_proxy

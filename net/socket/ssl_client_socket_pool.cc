@@ -488,18 +488,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                  base::TimeDelta::FromMinutes(1),
                                  100);
     }
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-    bool using_data_reduction_proxy = params_->host_and_port().Equals(
-        HostPortPair::FromURL(GURL(SPDY_PROXY_AUTH_ORIGIN)));
-    if (using_data_reduction_proxy) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.SSL_Connection_Latency_DataReductionProxy",
-          connect_duration,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(1),
-          100);
-    }
-#endif
 
     UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_2",
                                connect_duration,

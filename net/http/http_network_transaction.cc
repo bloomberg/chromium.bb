@@ -63,12 +63,6 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include <algorithm>
-#include "net/proxy/proxy_server.h"
-#endif
-
-
 using base::Time;
 using base::TimeDelta;
 

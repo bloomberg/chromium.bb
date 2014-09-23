@@ -52,12 +52,9 @@ DataReductionProxyChromeSettingsFactory::
 
 KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  int flags = 0;
-  if (DataReductionProxyParams::IsIncludedInFieldTrial()) {
-    flags |= (DataReductionProxyParams::kAllowed |
-              DataReductionProxyParams::kFallbackAllowed |
-              DataReductionProxyParams::kAlternativeAllowed);
-  }
+  int flags = DataReductionProxyParams::kAllowed |
+      DataReductionProxyParams::kFallbackAllowed |
+      DataReductionProxyParams::kAlternativeAllowed;
   if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())

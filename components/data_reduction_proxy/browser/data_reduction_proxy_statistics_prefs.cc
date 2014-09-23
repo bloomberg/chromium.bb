@@ -105,7 +105,6 @@ base::ListValue* DataReductionProxyStatisticsPrefs::GetList(
 void DataReductionProxyStatisticsPrefs::WritePrefs() {
   if (delay_ == base::TimeDelta())
       return;
-  DCHECK(delayed_task_posted_);
 
   for (DataReductionProxyPrefMap::iterator iter = pref_map_.begin();
        iter != pref_map_.end(); ++iter) {

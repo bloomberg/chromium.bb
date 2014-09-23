@@ -74,7 +74,7 @@ void DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
 
 DataReductionProxyUsageStats::DataReductionProxyUsageStats(
     DataReductionProxyParams* params,
-    MessageLoopProxy* ui_thread_proxy)
+    const scoped_refptr<MessageLoopProxy>& ui_thread_proxy)
     : data_reduction_proxy_params_(params),
       last_bypass_type_(BYPASS_EVENT_TYPE_MAX),
       triggering_request_(true),

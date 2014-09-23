@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
@@ -21,10 +22,8 @@ namespace data_reduction_proxy {
 
 namespace {
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 // A bypass delay more than this is treated as a long delay.
 const int kLongBypassDelayInSeconds = 30 * 60;
-#endif
 
 // Increments an int64, stored as a string, in a ListPref at the specified
 // index.  The value must already exist and be a string representation of a
@@ -299,7 +298,6 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     NOTREACHED();
     return UNKNOWN_TYPE;
   }
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   DataReductionProxyParams params(
         DataReductionProxyParams::kAllowed |
         DataReductionProxyParams::kFallbackAllowed |
@@ -310,7 +308,6 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
       return LONG_BYPASS;
     return SHORT_BYPASS;
   }
-#endif
   if (request->response_info().headers.get() &&
       HasDataReductionProxyViaHeader(request->response_info().headers.get(),
                                      NULL)) {
@@ -470,7 +467,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 
 void UpdateContentLengthPrefs(int received_content_length,
                               int original_content_length,
-                              bool with_data_reduction_proxy_enabled,
+                              PrefService* profile_prefs,
                               DataReductionProxyRequestType request_type,
                               DataReductionProxyStatisticsPrefs* prefs) {
   int64 total_received = prefs->GetInt64(
@@ -479,11 +476,16 @@ void UpdateContentLengthPrefs(int received_content_length,
       data_reduction_proxy::prefs::kHttpOriginalContentLength);
   total_received += received_content_length;
   total_original += original_content_length;
-  prefs->SetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength,
-                  total_received);
-  prefs->SetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength,
-                  total_original);
+  prefs->SetInt64(
+      data_reduction_proxy::prefs::kHttpReceivedContentLength,
+      total_received);
+  prefs->SetInt64(
+      data_reduction_proxy::prefs::kHttpOriginalContentLength,
+      total_original);
 
+  bool with_data_reduction_proxy_enabled =
+      profile_prefs->GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled);
   UpdateContentLengthPrefsForDataReductionProxy(
       received_content_length,
       original_content_length,

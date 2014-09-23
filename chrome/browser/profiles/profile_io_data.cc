@@ -42,6 +42,7 @@
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +53,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_config_service.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/sync_driver/pref_names.h"
@@ -858,17 +863,11 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 #endif  // defined(OS_CHROMEOS)
 }
 
-#if defined(OS_ANDROID)
 bool ProfileIOData::IsDataReductionProxyEnabled() const {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   return data_reduction_proxy_enabled_.GetValue() ||
          CommandLine::ForCurrentProcess()->HasSwitch(
             data_reduction_proxy::switches::kEnableDataReductionProxy);
-#else
-  return false;
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 }
-#endif
 
 base::WeakPtr<net::HttpServerProperties>
 ProfileIOData::http_server_properties() const {
@@ -1024,10 +1023,8 @@ void ProfileIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_safesearch_);
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   network_delegate->set_data_reduction_proxy_enabled_pref(
       &data_reduction_proxy_enabled_);
-#endif
   network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
   network_delegate_.reset(network_delegate);
 
@@ -1045,7 +1042,6 @@ void ProfileIOData::Init(
           profile_params_->proxy_config_service.release(),
           command_line,
           quick_check_enabled_.GetValue()));
-
   transport_security_state_.reset(new net::TransportSecurityState());
   transport_security_persister_.reset(
       new net::TransportSecurityPersister(
@@ -1206,9 +1202,7 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_metrics_.Destroy();
 #endif
   safe_browsing_enabled_.Destroy();
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy_enabled_.Destroy();
-#endif
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();

@@ -35,11 +35,17 @@
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_delegate.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -93,14 +99,6 @@
 #if defined(USE_NSS) || defined(OS_IOS)
 #include "net/ocsp/nss_ocsp.h"
 #endif
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_delegate.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
@@ -630,40 +628,7 @@ void IOThread::InitAsync() {
 
   globals_->ssl_config_service = GetSSLConfigService();
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  int drp_flags = 0;
-  if (data_reduction_proxy::DataReductionProxyParams::
-          IsIncludedInFieldTrial()) {
-    drp_flags |=
-        (data_reduction_proxy::DataReductionProxyParams::kAllowed |
-         data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
-         data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed);
-  }
-  if (data_reduction_proxy::DataReductionProxyParams::
-          IsIncludedInPromoFieldTrial())
-    drp_flags |= data_reduction_proxy::DataReductionProxyParams::kPromoAllowed;
-  if (data_reduction_proxy::DataReductionProxyParams::
-          IsIncludedInHoldbackFieldTrial())
-    drp_flags |= data_reduction_proxy::DataReductionProxyParams::kHoldback;
-  globals_->data_reduction_proxy_params.reset(
-      new data_reduction_proxy::DataReductionProxyParams(drp_flags));
-  globals_->data_reduction_proxy_auth_request_handler.reset(
-      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
-          DataReductionProxyChromeSettings::GetClient(),
-          globals_->data_reduction_proxy_params.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-  globals_->data_reduction_proxy_delegate.reset(
-      new data_reduction_proxy::DataReductionProxyDelegate(
-          globals_->data_reduction_proxy_auth_request_handler.get()));
-  // This is the same as in ProfileImplIOData except that we do not collect
-  // usage stats.
-  network_delegate->set_data_reduction_proxy_params(
-      globals_->data_reduction_proxy_params.get());
-  network_delegate->set_data_reduction_proxy_auth_request_handler(
-      globals_->data_reduction_proxy_auth_request_handler.get());
-  network_delegate->set_on_resolve_proxy_handler(
-      base::Bind(data_reduction_proxy::OnResolveProxyHandler));
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
+  SetupDataReductionProxy(network_delegate);
 
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
@@ -1068,9 +1033,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
       globals.enable_user_alternate_protocol_ports;
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   params->proxy_delegate = globals.data_reduction_proxy_delegate.get();
-#endif
 }
 
 base::TimeTicks IOThread::creation_time() const {
@@ -1123,6 +1086,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
           system_proxy_config_service_.release(),
           command_line,
           quick_check_enabled_.GetValue()));
+  DCHECK(globals_->data_reduction_proxy_params);
 
   net::HttpNetworkSession::Params system_params;
   InitializeNetworkSessionParams(&system_params);
@@ -1158,6 +1122,42 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   }
 
   ConfigureQuicGlobals(command_line, group, params, globals_);
+}
+
+void IOThread::SetupDataReductionProxy(
+    ChromeNetworkDelegate* network_delegate) {
+  // TODO(kundaji): Move flags initialization to DataReductionProxyParams and
+  // merge with flag initialization in
+  // data_reduction_proxy_chrome_settings_factory.cc.
+  int flags = data_reduction_proxy::DataReductionProxyParams::kAllowed |
+      data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
+      data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed;
+  if (data_reduction_proxy::DataReductionProxyParams::
+      IsIncludedInPromoFieldTrial()) {
+    flags |= data_reduction_proxy::DataReductionProxyParams::kPromoAllowed;
+  }
+  if (data_reduction_proxy::DataReductionProxyParams::
+      IsIncludedInHoldbackFieldTrial()) {
+    flags |= data_reduction_proxy::DataReductionProxyParams::kHoldback;
+  }
+  globals_->data_reduction_proxy_params.reset(
+      new data_reduction_proxy::DataReductionProxyParams(flags));
+  globals_->data_reduction_proxy_auth_request_handler.reset(
+      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
+          DataReductionProxyChromeSettings::GetClient(),
+          globals_->data_reduction_proxy_params.get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  globals_->data_reduction_proxy_delegate.reset(
+      new data_reduction_proxy::DataReductionProxyDelegate(
+          globals_->data_reduction_proxy_auth_request_handler.get()));
+  // This is the same as in ProfileImplIOData except that we do not collect
+  // usage stats.
+  network_delegate->set_data_reduction_proxy_params(
+      globals_->data_reduction_proxy_params.get());
+  network_delegate->set_data_reduction_proxy_auth_request_handler(
+      globals_->data_reduction_proxy_auth_request_handler.get());
+  network_delegate->set_on_resolve_proxy_handler(
+      base::Bind(data_reduction_proxy::OnResolveProxyHandler));
 }
 
 // static

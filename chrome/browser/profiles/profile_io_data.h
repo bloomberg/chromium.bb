@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/content_browser_client.h"
@@ -32,10 +33,6 @@
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
-#endif // SPDY_PROXY_AUTH_ORIGIN
 
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
@@ -186,13 +183,11 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   // TODO(feng): move the function to protected area.
   // IsDataReductionProxyEnabled() should be used as public API.
   BooleanPrefMember* data_reduction_proxy_enabled() const {
     return &data_reduction_proxy_enabled_;
   }
-#endif
 
   BooleanPrefMember* printing_enabled() const {
     return &printing_enabled_;
@@ -264,11 +259,9 @@ class ProfileIOData {
   // should only be called from there.
   bool GetMetricsEnabledStateOnIOThread() const;
 
-#if defined(OS_ANDROID)
   // Returns whether or not data reduction proxy is enabled in the browser
   // instance on which this profile resides.
   bool IsDataReductionProxyEnabled() const;
-#endif
 
   void set_client_cert_store_factory_for_testing(
     const base::Callback<scoped_ptr<net::ClientCertStore>()>& factory) {
@@ -383,7 +376,6 @@ class ProfileIOData {
   void set_channel_id_service(
       net::ChannelIDService* channel_id_service) const;
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params()
       const {
     return data_reduction_proxy_params_.get();
@@ -451,7 +443,6 @@ class ProfileIOData {
     data_reduction_proxy_auth_request_handler_ =
         data_reduction_proxy_auth_request_handler.Pass();
   }
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   ChromeNetworkDelegate* network_delegate() const {
     return network_delegate_.get();
@@ -623,9 +614,7 @@ class ProfileIOData {
   mutable BooleanPrefMember enable_do_not_track_;
   mutable BooleanPrefMember force_safesearch_;
   mutable BooleanPrefMember safe_browsing_enabled_;
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   mutable BooleanPrefMember data_reduction_proxy_enabled_;
-#endif
   mutable BooleanPrefMember printing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;
@@ -656,7 +645,6 @@ class ProfileIOData {
 #endif
   mutable scoped_ptr<net::ChannelIDService> channel_id_service_;
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   // data_reduction_proxy_* classes must be declared before |network_delegate_|.
   // The data_reduction_proxy_* classes are passed in to |network_delegate_|,
   // so this ordering ensures that the |network_delegate_| never references
@@ -672,7 +660,6 @@ class ProfileIOData {
       data_reduction_proxy_chrome_configurator_;
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
       data_reduction_proxy_auth_request_handler_;
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>

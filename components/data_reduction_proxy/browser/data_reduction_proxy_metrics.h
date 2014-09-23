@@ -11,6 +11,8 @@ namespace net {
 class URLRequest;
 }
 
+class PrefService;
+
 namespace data_reduction_proxy {
 
 class DataReductionProxyStatisticsPrefs;
@@ -53,7 +55,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 void UpdateContentLengthPrefs(
     int received_content_length,
     int original_content_length,
-    bool with_data_reduction_proxy_enabled,
+    PrefService* profile_prefs,
     DataReductionProxyRequestType request_type,
     DataReductionProxyStatisticsPrefs* prefs);
 

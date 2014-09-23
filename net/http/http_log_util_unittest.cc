@@ -53,22 +53,6 @@ TEST(HttpLogUtilTest, ElideHeaderValueForNetLog) {
   // Leave whitespace intact.
   EXPECT_EQ("NTLM  [4 bytes were stripped] ", ElideHeaderValueForNetLog(
       NetLog::LOG_STRIP_PRIVATE_DATA, "WWW-Authenticate", "NTLM  1234 "));
-
-  // Extra elisions for SPDY_PROXY_AUTH_ORIGIN.
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  EXPECT_EQ("ps=123, [7 bytes were stripped], c=foo, v=bar",
-            ElideHeaderValueForNetLog(
-                NetLog::LOG_STRIP_PRIVATE_DATA,
-                "Chrome-Proxy", "ps=123, sid=456, c=foo, v=bar"));
-  EXPECT_EQ("[7 bytes were stripped], ps=123, c=foo, v=bar",
-            ElideHeaderValueForNetLog(
-                NetLog::LOG_STRIP_PRIVATE_DATA,
-                "Chrome-Proxy", "sid=456, ps=123, c=foo, v=bar"));
-  EXPECT_EQ("ps=123, c=foo, v=bar, [7 bytes were stripped]",
-            ElideHeaderValueForNetLog(
-                NetLog::LOG_STRIP_PRIVATE_DATA,
-                "Chrome-Proxy", "ps=123, c=foo, v=bar, sid=456"));
-#endif
 }
 
 }  // namspace net

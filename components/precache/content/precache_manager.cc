@@ -55,12 +55,8 @@ bool PrecacheManager::IsPrecachingEnabled() {
 
 bool PrecacheManager::IsPrecachingAllowed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   return user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
       data_reduction_proxy::prefs::kDataReductionProxyEnabled);
-#else
-  return false;
-#endif
 }
 
 void PrecacheManager::StartPrecaching(

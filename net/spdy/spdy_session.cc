@@ -743,11 +743,6 @@ void SpdySession::InitializeWithSocket(
       "Net.SpdyVersion2",
       protocol_ - kProtoSPDYMinimumVersion,
       kProtoSPDYMaximumVersion - kProtoSPDYMinimumVersion + 1);
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessions_DataReductionProxy",
-                        host_port_pair().Equals(HostPortPair::FromURL(
-                            GURL(SPDY_PROXY_AUTH_ORIGIN))));
-#endif
 
   net_log_.AddEvent(NetLog::TYPE_SPDY_SESSION_INITIALIZED,
                     base::Bind(&NetLogSpdyInitializedCallback,

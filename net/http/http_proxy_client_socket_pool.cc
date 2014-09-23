@@ -70,12 +70,13 @@ HttpProxySocketParams::~HttpProxySocketParams() {}
 
 // HttpProxyConnectJobs will time out after this many seconds.  Note this is on
 // top of the timeout for the transport socket.
-#if (defined(OS_ANDROID) || defined(OS_IOS)) && defined(SPDY_PROXY_AUTH_ORIGIN)
+// TODO(kundaji): Proxy connect timeout should be independent of platform and be
+// based on proxy. Bug http://crbug.com/407446.
+#if defined(OS_ANDROID) || defined(OS_IOS)
 static const int kHttpProxyConnectJobTimeoutInSeconds = 10;
 #else
 static const int kHttpProxyConnectJobTimeoutInSeconds = 30;
 #endif
-
 
 HttpProxyConnectJob::HttpProxyConnectJob(
     const std::string& group_name,
@@ -384,7 +385,9 @@ HttpProxyConnectJobFactory::HttpProxyConnectJobFactory(
       net_log_(net_log) {
   base::TimeDelta max_pool_timeout = base::TimeDelta();
 
-#if (defined(OS_ANDROID) || defined(OS_IOS)) && defined(SPDY_PROXY_AUTH_ORIGIN)
+// TODO(kundaji): Proxy connect timeout should be independent of platform and be
+// based on proxy. Bug http://crbug.com/407446.
+#if (defined(OS_ANDROID) || defined(OS_IOS))
 #else
   if (transport_pool_)
     max_pool_timeout = transport_pool_->ConnectionTimeout();

@@ -83,6 +83,8 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
     registry->RegisterInt64Pref(
         data_reduction_proxy::prefs::
             kDailyHttpContentLengthLastUpdateDate, 0L);
+    registry->RegisterBooleanPref(
+        data_reduction_proxy::prefs::kDataReductionProxyEnabled, false);
   }
 
   TestingPrefServiceSimple pref_service_;
@@ -95,10 +97,13 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
 
   UpdateContentLengthPrefs(
       kReceivedLength, kOriginalLength,
-      false, UNKNOWN_TYPE, statistics_prefs_.get());
+      &pref_service_, UNKNOWN_TYPE, statistics_prefs_.get());
+
   EXPECT_EQ(kReceivedLength,
             statistics_prefs_->GetInt64(
                 data_reduction_proxy::prefs::kHttpReceivedContentLength));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
   EXPECT_EQ(kOriginalLength,
             statistics_prefs_->GetInt64(
                 data_reduction_proxy::prefs::kHttpOriginalContentLength));
@@ -106,10 +111,13 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
   // Record the same numbers again, and total lengths should be doubled.
   UpdateContentLengthPrefs(
       kReceivedLength, kOriginalLength,
-      false, UNKNOWN_TYPE, statistics_prefs_.get());
+      &pref_service_, UNKNOWN_TYPE, statistics_prefs_.get());
+
   EXPECT_EQ(kReceivedLength * 2,
             statistics_prefs_->GetInt64(
                 data_reduction_proxy::prefs::kHttpReceivedContentLength));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
   EXPECT_EQ(kOriginalLength * 2,
             statistics_prefs_->GetInt64(
                 data_reduction_proxy::prefs::kHttpOriginalContentLength));

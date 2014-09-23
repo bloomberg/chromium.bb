@@ -88,7 +88,8 @@ ProxyServer::ProxyServer(Scheme scheme, const HostPortPair& host_port_pair)
 const HostPortPair& ProxyServer::host_port_pair() const {
   // Doesn't make sense to call this if the URI scheme doesn't
   // have concept of a host.
-  DCHECK(is_valid() && !is_direct());
+  DCHECK(is_valid());
+  DCHECK(!is_direct());
   return host_port_pair_;
 }
 

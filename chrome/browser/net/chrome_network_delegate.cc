@@ -132,22 +132,11 @@ void UpdateContentLengthPrefs(
       profile->IsOffTheRecord()) {
     return;
   }
-#if defined(OS_ANDROID) && defined(SPDY_PROXY_AUTH_ORIGIN)
-  // If Android ever goes multi profile, the profile should be passed so that
-  // the browser preference will be taken.
-  bool with_data_reduction_proxy_enabled =
-      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled);
-#else
-  bool with_data_reduction_proxy_enabled = false;
-#endif
-
   data_reduction_proxy::UpdateContentLengthPrefs(
       received_content_length,
       original_content_length,
-      with_data_reduction_proxy_enabled,
-      request_type,
-      statistics_prefs);
+      profile->GetPrefs(),
+      request_type, statistics_prefs);
 }
 
 void StoreAccumulatedContentLength(

@@ -35,8 +35,9 @@ class DataReductionProxyUsageStats
 
   // MessageLoopProxy instance is owned by io_thread. |params| outlives
   // this class instance.
-  DataReductionProxyUsageStats(DataReductionProxyParams* params,
-                               base::MessageLoopProxy* ui_thread_proxy);
+  DataReductionProxyUsageStats(
+      DataReductionProxyParams* params,
+      const scoped_refptr<base::MessageLoopProxy>& ui_thread_proxy);
   virtual ~DataReductionProxyUsageStats();
 
   // Sets the callback to be called on the UI thread when the unavailability
@@ -102,7 +103,7 @@ class DataReductionProxyUsageStats
   DataReductionProxyBypassType last_bypass_type_;
   // True if the last request triggered the current bypass.
   bool triggering_request_;
-  base::MessageLoopProxy* ui_thread_proxy_;
+  const scoped_refptr<base::MessageLoopProxy> ui_thread_proxy_;
 
   // The following 2 fields are used to determine if data reduction proxy is
   // unreachable. We keep a count of requests which should go through

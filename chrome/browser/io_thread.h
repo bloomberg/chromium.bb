@@ -37,13 +37,11 @@ namespace chrome_browser_net {
 class DnsProbeService;
 }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 namespace data_reduction_proxy {
 class DataReductionProxyAuthRequestHandler;
 class DataReductionProxyDelegate;
 class DataReductionProxyParams;
 }
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 namespace extensions {
 class EventRouterForwarder;
@@ -201,14 +199,12 @@ class IOThread : public content::BrowserThreadDelegate {
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
     scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-      data_reduction_proxy_params;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
-      data_reduction_proxy_auth_request_handler;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyDelegate>
-      data_reduction_proxy_delegate;
-#endif
+    scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+        data_reduction_proxy_params;
+    scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+        data_reduction_proxy_auth_request_handler;
+    scoped_ptr<data_reduction_proxy::DataReductionProxyDelegate>
+        data_reduction_proxy_delegate;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
@@ -318,6 +314,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // Configures QUIC options based on the flags in |command_line| as
   // well as the QUIC field trial group.
   void ConfigureQuic(const base::CommandLine& command_line);
+
+  // Set up data reduction proxy related objects on IO thread globals.
+  void SetupDataReductionProxy(ChromeNetworkDelegate* network_delegate);
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
 #if defined(ENABLE_EXTENSIONS)

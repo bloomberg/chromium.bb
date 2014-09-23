@@ -55,16 +55,12 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   // exception is a request that is fetched via the Chrome Proxy and does not
   // authenticate with the origin.
   if (request_->response_info().did_use_http_auth) {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
     if (headers.HasHeader(net::HttpRequestHeaders::kAuthorization) ||
         !(request_->response_info().headers &&
             data_reduction_proxy::HasDataReductionProxyViaHeader(
                 request_->response_info().headers, NULL))) {
       return;
     }
-#else
-    return;
-#endif
   }
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(

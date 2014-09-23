@@ -890,8 +890,6 @@ TEST_F(DataReductionProxyProtocolTest, OnResolveProxyHandler) {
   // With Finch trial set, should only bypass if LOAD flag is set and the
   // effective proxy is the data compression proxy.
   base::FieldTrialList field_trial_list(new BadEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyRollout",
-                                         "Enabled");
   base::FieldTrialList::CreateFieldTrial("DataCompressionProxyCriticalBypass",
                                          "Enabled");
   EXPECT_TRUE(

@@ -57,10 +57,6 @@ class DataReductionProxyParams {
 
   typedef std::vector<GURL> DataReductionProxyList;
 
-  // Returns true if this client is part of the data reduction proxy field
-  // trial.
-  static bool IsIncludedInFieldTrial();
-
   // Returns true if this client is part of field trial to use an alternative
   // configuration for the data reduction proxy.
   static bool IsIncludedInAlternativeFieldTrial();

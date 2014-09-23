@@ -17574,6 +17574,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.SpdySessions_DataReductionProxy"
     enum="BooleanDataReductionProxy">
+  <obsolete>
+    Deprecated 7/21/2014. No longer tracked.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>rch@chromium.org</owner>
@@ -17736,6 +17739,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.SSL_Connection_Latency_DataReductionProxy"
     units="milliseconds">
+  <obsolete>
+    Deprecated 7/21/2014. No longer tracked.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <summary>

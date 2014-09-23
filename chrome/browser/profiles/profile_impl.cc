@@ -47,6 +47,7 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -81,6 +82,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/domain_reliability/monitor.h"
@@ -113,13 +117,6 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
-#endif
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -653,7 +650,6 @@ void ProfileImpl::DoFinalInit() {
   scoped_ptr<DataReductionProxyChromeConfigurator> chrome_configurator;
   scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
       data_reduction_proxy_statistics_prefs;
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this);
   data_reduction_proxy_params =
@@ -692,7 +688,6 @@ void ProfileImpl::DoFinalInit() {
               commit_delay));
   data_reduction_proxy_chrome_settings->SetDataReductionProxyStatisticsPrefs(
       data_reduction_proxy_statistics_prefs.get());
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
@@ -706,14 +701,11 @@ void ProfileImpl::DoFinalInit() {
                 chrome_configurator.Pass(),
                 data_reduction_proxy_params.Pass(),
                 data_reduction_proxy_statistics_prefs.Pass());
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(
       data_reduction_proxy_chrome_configurator,
       prefs_.get(),
       g_browser_process->local_state(),
       GetRequestContext());
-#endif
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(

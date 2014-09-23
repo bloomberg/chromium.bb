@@ -226,7 +226,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
   DataReductionProxySettings* data_reduction_proxy_settings =
@@ -245,7 +244,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       data_reduction_proxy_settings->params());
   aw_network_delegate->set_data_reduction_proxy_auth_request_handler(
       data_reduction_proxy_auth_request_handler_.get());
-#endif
 
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
