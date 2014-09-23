@@ -14,9 +14,11 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "ipc/ipc_message_macros.h"
 #include "net/base/url_util.h"
 
 using content::WebContents;
@@ -45,6 +47,14 @@ MimeHandlerViewGuest::MimeHandlerViewGuest(
 }
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
+}
+
+WindowController* MimeHandlerViewGuest::GetExtensionWindowController() const {
+  return NULL;
+}
+
+WebContents* MimeHandlerViewGuest::GetAssociatedWebContents() const {
+  return web_contents();
 }
 
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
@@ -115,6 +125,8 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
 }
 
 void MimeHandlerViewGuest::DidInitialize() {
+  extension_function_dispatcher_.reset(
+      new ExtensionFunctionDispatcher(browser_context(), this));
   if (delegate_)
     delegate_->AttachHelpers();
 }
@@ -133,6 +145,23 @@ void MimeHandlerViewGuest::HandleKeyboardEvent(
   // See http://crbug.com/229882.
   embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(web_contents(),
                                                               event);
+}
+
+bool MimeHandlerViewGuest::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewGuest, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void MimeHandlerViewGuest::OnRequest(
+    const ExtensionHostMsg_Request_Params& params) {
+  if (extension_function_dispatcher_) {
+    extension_function_dispatcher_->Dispatch(
+        params, web_contents()->GetRenderViewHost());
+  }
 }
 
 }  // namespace extensions

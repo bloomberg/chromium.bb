@@ -5,18 +5,24 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_GUEST_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_GUEST_H_
 
+#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/guest_view.h"
 
 namespace extensions {
 
 class MimeHandlerViewGuestDelegate;
 
-class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
+class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
+                             public ExtensionFunctionDispatcher::Delegate {
  public:
   static GuestViewBase* Create(content::BrowserContext* browser_context,
                                int guest_instance_id);
 
   static const char Type[];
+
+  // ExtensionFunctionDispatcher::Delegate implementation.
+  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // GuestViewBase implementation.
   virtual const char* GetAPINamespace() const OVERRIDE;
@@ -35,12 +41,18 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
+  // content::WebContentsObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
  private:
   MimeHandlerViewGuest(content::BrowserContext* browser_context,
                        int guest_instance_id);
   virtual ~MimeHandlerViewGuest();
 
+  void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
   scoped_ptr<MimeHandlerViewGuestDelegate> delegate_;
+  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };
