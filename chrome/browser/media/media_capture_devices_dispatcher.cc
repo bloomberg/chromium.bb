@@ -566,6 +566,14 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowHttpScreenCapture);
 
+  // If basic conditions (screen capturing is enabled and origin is secure)
+  // aren't fulfilled, we'll use "invalid state" as result. Otherwise, we set
+  // it after checking permission.
+  // TODO(grunell): It would be good to change this result for something else,
+  // probably a new one.
+  content::MediaStreamRequestResult result =
+      content::MEDIA_DEVICE_INVALID_STATE;
+
   // Approve request only when the following conditions are met:
   //  1. Screen capturing is enabled via command line switch or white-listed for
   //     the given origin.
@@ -626,14 +634,16 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       ui = GetDevicesForDesktopCapture(devices, screen_id, capture_audio,
                                        display_notification, application_title,
                                        application_title);
+      DCHECK(!devices.empty());
     }
+
+    // The only case when devices can be empty is if the user has denied
+    // permission.
+    result = devices.empty() ? content::MEDIA_DEVICE_PERMISSION_DENIED
+                             : content::MEDIA_DEVICE_OK;
   }
 
-  callback.Run(
-    devices,
-    devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
-                      content::MEDIA_DEVICE_OK,
-    ui.Pass());
+  callback.Run(devices, result, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
@@ -711,7 +721,21 @@ void MediaCaptureDevicesDispatcher::
 
   content::MediaStreamDevices devices;
 
+  // Set an initial error result. If neither audio or video is allowed, we'll
+  // never try to get any device below but will just create |ui| and return an
+  // empty list with "invalid state" result. If at least one is allowed, we'll
+  // try to get device(s), and if failure, we want to return "no hardware"
+  // result.
+  // TODO(grunell): The invalid state result should be changed to a new denied
+  // result + a dcheck to ensure at least one of audio or video types is
+  // capture.
+  content::MediaStreamRequestResult result =
+      (audio_allowed || video_allowed) ? content::MEDIA_DEVICE_NO_HARDWARE
+                                       : content::MEDIA_DEVICE_INVALID_STATE;
+
   // Get the exact audio or video device if an id is specified.
+  // We only set any error result here and before running the callback change
+  // it to OK if we have any device.
   if (audio_allowed && !request.requested_audio_device_id.empty()) {
     const content::MediaStreamDevice* audio_device =
         GetRequestedAudioDevice(request.requested_audio_device_id);
@@ -742,14 +766,12 @@ void MediaCaptureDevicesDispatcher::
 
   scoped_ptr<content::MediaStreamUI> ui;
   if (!devices.empty()) {
+    result = content::MEDIA_DEVICE_OK;
     ui = media_stream_capture_indicator_->RegisterMediaStream(
         web_contents, devices);
   }
-  callback.Run(
-    devices,
-    devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
-                      content::MEDIA_DEVICE_OK,
-    ui.Pass());
+
+  callback.Run(devices, result, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::ProcessRegularMediaAccessRequest(
