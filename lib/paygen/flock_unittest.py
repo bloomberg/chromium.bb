@@ -3,7 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Test flock library."""
+"""Test flock library.
+
+DEPRECATED: Should be migrated to chromite.lib.locking_unittest.
+"""
 
 from __future__ import print_function
 

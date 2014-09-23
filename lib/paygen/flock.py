@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A library for managing file locks."""
+"""A library for managing file locks.
+
+DEPRECATED: Should be merged into chromite.lib.locking.
+"""
 
 from __future__ import print_function
 
