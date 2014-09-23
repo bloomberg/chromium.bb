@@ -39,10 +39,6 @@ found in the LICENSE file.
 
       <iframe id="wcs-sandbox" src="wcs_sandbox.html" hidden></iframe>
 
-      <div class="dialog-screen"
-           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings home.host-setup home.host-install"
-           hidden></div>
-
       <div id="scroller">
         <div class="inset home-screen full-height"
              data-ui-mode="home"
@@ -59,36 +55,6 @@ found in the LICENSE file.
 
         </div>  <!-- inset -->
 
-        <meta-include src="webapp/html/dialog_auth.html"/>
-
-        <div class="dialog-container"
-             data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
-             hidden>
-
-          <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
-          <meta-include src="webapp/html/dialog_host_setup.html"/>
-          <meta-include src="webapp/html/dialog_host_install.html"/>
-          <meta-include src="webapp/html/dialog_host.html"/>
-
-          <div id="client-dialog"
-               class="kd-modaldialog"
-               data-ui-mode="home.client">
-
-            <meta-include src="webapp/html/dialog_client_unconnected.html"/>
-            <meta-include src="webapp/html/dialog_client_connecting.html"/>
-            <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
-            <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
-            <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
-            <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
-            <meta-include src="webapp/html/dialog_client_session_finished.html"/>
-          </div>
-
-          <meta-include src="webapp/html/dialog_connection_history.html"/>
-          <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
-          <meta-include src="webapp/html/dialog_manage_pairings.html"/>
-
-        </div>  <!-- dialog-container -->
-
         <div id="session-mode"
              data-ui-mode="in-session home.client"
              class="full-height"
@@ -103,6 +69,40 @@ found in the LICENSE file.
         </div>
 
       </div>  <!-- scroller -->
+
+      <meta-include src="webapp/html/dialog_auth.html"/>
+
+      <div class="dialog-screen"
+           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings home.host-setup home.host-install"
+           hidden></div>
+
+      <div class="dialog-container"
+           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
+           hidden>
+
+        <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
+        <meta-include src="webapp/html/dialog_host_setup.html"/>
+        <meta-include src="webapp/html/dialog_host_install.html"/>
+        <meta-include src="webapp/html/dialog_host.html"/>
+
+        <div id="client-dialog"
+             class="kd-modaldialog"
+             data-ui-mode="home.client">
+
+          <meta-include src="webapp/html/dialog_client_unconnected.html"/>
+          <meta-include src="webapp/html/dialog_client_connecting.html"/>
+          <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
+          <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
+          <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
+          <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
+          <meta-include src="webapp/html/dialog_client_session_finished.html"/>
+        </div>
+
+        <meta-include src="webapp/html/dialog_connection_history.html"/>
+        <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
+        <meta-include src="webapp/html/dialog_manage_pairings.html"/>
+
+      </div>  <!-- dialog-container -->
 
     </div>  <!-- window-body -->
 
