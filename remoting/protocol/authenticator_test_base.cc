@@ -15,7 +15,7 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/fake_session.h"
+#include "remoting/protocol/fake_stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
@@ -111,8 +111,8 @@ void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
 }
 
 void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
-  client_fake_socket_.reset(new FakeSocket());
-  host_fake_socket_.reset(new FakeSocket());
+  client_fake_socket_.reset(new FakeStreamSocket());
+  host_fake_socket_.reset(new FakeStreamSocket());
   client_fake_socket_->PairWith(host_fake_socket_.get());
 
   client_auth_->SecureAndAuthenticate(

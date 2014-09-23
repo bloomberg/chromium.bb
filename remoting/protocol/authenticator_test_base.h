@@ -24,7 +24,7 @@ namespace protocol {
 
 class Authenticator;
 class ChannelAuthenticator;
-class FakeSocket;
+class FakeStreamSocket;
 
 class AuthenticatorTestBase : public testing::Test {
  public:
@@ -60,8 +60,8 @@ class AuthenticatorTestBase : public testing::Test {
   std::string host_cert_;
   scoped_ptr<Authenticator> host_;
   scoped_ptr<Authenticator> client_;
-  scoped_ptr<FakeSocket> client_fake_socket_;
-  scoped_ptr<FakeSocket> host_fake_socket_;
+  scoped_ptr<FakeStreamSocket> client_fake_socket_;
+  scoped_ptr<FakeStreamSocket> host_fake_socket_;
   scoped_ptr<ChannelAuthenticator> client_auth_;
   scoped_ptr<ChannelAuthenticator> host_auth_;
   MockChannelDoneCallback client_callback_;

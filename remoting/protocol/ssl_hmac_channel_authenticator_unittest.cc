@@ -70,8 +70,8 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
   }
 
   void RunChannelAuth(bool expected_fail) {
-    client_fake_socket_.reset(new FakeSocket());
-    host_fake_socket_.reset(new FakeSocket());
+    client_fake_socket_.reset(new FakeStreamSocket());
+    host_fake_socket_.reset(new FakeStreamSocket());
     client_fake_socket_->PairWith(host_fake_socket_.get());
 
     client_auth_->SecureAndAuthenticate(
@@ -131,8 +131,8 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_cert_;
-  scoped_ptr<FakeSocket> client_fake_socket_;
-  scoped_ptr<FakeSocket> host_fake_socket_;
+  scoped_ptr<FakeStreamSocket> client_fake_socket_;
+  scoped_ptr<FakeStreamSocket> host_fake_socket_;
   scoped_ptr<ChannelAuthenticator> client_auth_;
   scoped_ptr<ChannelAuthenticator> host_auth_;
   MockChannelDoneCallback client_callback_;

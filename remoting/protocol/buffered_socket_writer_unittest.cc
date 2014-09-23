@@ -48,7 +48,7 @@ class BufferedSocketWriterTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    socket_.reset(new FakeSocket());
+    socket_.reset(new FakeStreamSocket());
     writer_.reset(new BufferedSocketWriter());
     writer_->Init(socket_.get(), base::Bind(
         &BufferedSocketWriterTest::OnWriteFailed, base::Unretained(this)));
@@ -98,7 +98,7 @@ class BufferedSocketWriterTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FakeSocket> socket_;
+  scoped_ptr<FakeStreamSocket> socket_;
   scoped_ptr<BufferedSocketWriter> writer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_2_;
