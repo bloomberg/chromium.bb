@@ -27,24 +27,10 @@ void PersistSystemInputMethod(const std::string& input_method) {
         language_prefs::kPreferredKeyboardLayout, input_method);
 }
 
-// Update user LRU keyboard layout for login screen
-static void SetUserLRUInputMethod(
-    const std::string& input_method,
-    const chromeos::input_method::InputMethodManager* const manager,
-    Profile* profile) {
-  // Skip if it's not a keyboard layout. Drop input methods including
-  // extension ones.
-  if (!manager->IsLoginKeyboard(input_method))
-    return;
-
-  PrefService* const local_state = g_browser_process->local_state();
-
-  if (profile == NULL)
-    return;
-
-  const std::string username = profile->GetProfileName();
-  if (base::SysInfo::IsRunningOnChromeOS() && !username.empty() &&
-      !local_state->ReadOnly()) {
+static void SetUserLRUInputMethodPreference(const std::string& username,
+                                            const std::string& input_method,
+                                            PrefService* local_state) {
+  if (!username.empty() && !local_state->ReadOnly()) {
     bool update_succeed = false;
     {
       // Updater may have side-effects, therefore we do not replace
@@ -75,6 +61,25 @@ static void SetUserLRUInputMethod(
                << prefs::kUsersLRUInputMethod << "' for '" << username << "'";
     }
   }
+}
+
+// Update user LRU keyboard layout for login screen
+static void SetUserLRUInputMethod(
+    const std::string& input_method,
+    const chromeos::input_method::InputMethodManager* const manager,
+    Profile* profile) {
+  // Skip if it's not a keyboard layout. Drop input methods including
+  // extension ones.
+  if (!manager->IsLoginKeyboard(input_method))
+    return;
+
+  if (profile == NULL)
+    return;
+
+  PrefService* const local_state = g_browser_process->local_state();
+
+  SetUserLRUInputMethodPreference(
+      profile->GetProfileName(), input_method, local_state);
 }
 
 void PersistUserInputMethod(const std::string& input_method,
@@ -144,6 +149,12 @@ void InputMethodPersistence::InputMethodChanged(
 void InputMethodPersistence::OnSessionStateChange(
     InputMethodManager::UISessionState new_ui_session) {
   ui_session_ = new_ui_session;
+}
+
+void SetUserLRUInputMethodPreferenceForTesting(const std::string& username,
+                                               const std::string& input_method,
+                                               PrefService* const local_state) {
+  SetUserLRUInputMethodPreference(username, input_method, local_state);
 }
 
 }  // namespace input_method

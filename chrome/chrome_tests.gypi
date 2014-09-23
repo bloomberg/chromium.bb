@@ -990,6 +990,7 @@
         'browser/chromeos/login/login_manager_test.cc',
         'browser/chromeos/login/login_manager_test.h',
         'browser/chromeos/login/login_screen_policy_browsertest.cc',
+        'browser/chromeos/login/login_ui_keyboard_browsertest.cc',
         'browser/chromeos/login/login_utils_browsertest.cc',
         'browser/chromeos/login/mixin_based_browser_test.cc',
         'browser/chromeos/login/mixin_based_browser_test.h',
