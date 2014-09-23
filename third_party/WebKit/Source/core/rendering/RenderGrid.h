@@ -52,6 +52,13 @@ public:
     const Vector<LayoutUnit>& columnPositions() const { return m_columnPositions; }
     const Vector<LayoutUnit>& rowPositions() const { return m_rowPositions; }
 
+    typedef Vector<RenderBox*, 1> GridCell;
+    const GridCell& gridCell(int row, int column) { return m_grid[row][column]; }
+    const Vector<RenderBox*>& itemsOverflowingGridArea() { return m_gridItemsOverflowingGridArea; }
+    int paintIndexForGridItem(const RenderBox* renderBox) { return m_gridItemsIndexesMap.get(renderBox); }
+
+    bool gridIsDirty() const { return m_gridIsDirty; }
+
 private:
     virtual bool isRenderGrid() const OVERRIDE { return true; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
@@ -122,8 +129,6 @@ private:
     virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE;
     void paintChild(RenderBox*, PaintInfo&, const LayoutPoint&);
 
-    bool gridIsDirty() const { return m_gridIsDirty; }
-
 #if ENABLE(ASSERT)
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);
 #endif
@@ -141,7 +146,6 @@ private:
         return m_grid.size();
     }
 
-    typedef Vector<RenderBox*, 1> GridCell;
     typedef Vector<Vector<GridCell> > GridRepresentation;
     GridRepresentation m_grid;
     bool m_gridIsDirty;

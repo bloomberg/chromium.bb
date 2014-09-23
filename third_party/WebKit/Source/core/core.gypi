@@ -1493,6 +1493,8 @@
             'paint/BoxPainter.h',
             'paint/BackgroundImageGeometry.cpp',
             'paint/BackgroundImageGeometry.h',
+            'paint/GridPainter.cpp',
+            'paint/GridPainter.h',
             'paint/DetailsMarkerPainter.cpp',
             'paint/DetailsMarkerPainter.h',
             'paint/InlineFlowBoxPainter.cpp',
