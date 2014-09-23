@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-map-branches
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 09/23/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 68b1017
+.\"    Source: depot_tools 28bf2be
 .\"  Language: English
 .\"
-.TH "GIT\-MAP\-BRANCHES" "1" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
+.TH "GIT\-MAP\-BRANCHES" "1" "09/23/2014" "depot_tools 28bf2be" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -95,6 +95,21 @@ red
 .sp -1
 .IP \(bu 2.3
 .\}
+
+\fIbranch\-heads\fR
+branches are
+blue\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+
 {NO UPSTREAM}
 is a special placeholder in
 magenta\&.
@@ -137,13 +152,13 @@ Given the hypothetical demo repo in \fBgit-map\fR(1)\*(Aqs EXAMPLE section, and 
 .\}
 .nf
 \fB$ git map\-branches\fR
+{NO_UPSTREAM}
+  no_upstream
 origin/master
   cool_feature
     subfeature
   fixit
-\fB    frozen_branch *
-\fR{NO UPSTREAM}
-  no_upstream
+\fB    frozen_branch *\fR
 .fi
 .if n \{\
 .RE

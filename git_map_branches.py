@@ -19,6 +19,7 @@ Branches are colorized as follows:
     * Note that multiple branches may be Cyan, if they are all on the same
       commit, and you have that commit checked out.
   * Green - a local branch
+  * Blue - a 'branch-heads' branch
   * Magenta - a tag
   * Magenta '{NO UPSTREAM}' - If you have local branches which do not track any
     upstream, then you will see this.
@@ -27,6 +28,7 @@ Branches are colorized as follows:
 import argparse
 import collections
 import sys
+import subprocess2
 
 from third_party import colorama
 from third_party.colorama import Fore, Style
@@ -126,7 +128,7 @@ class BranchMapper(object):
         continue
 
       parent = branch_info.upstream
-      if parent and not self.__branches_info[parent]:
+      if not self.__branches_info[parent]:
         branch_upstream = upstream(branch)
         # If git can't find the upstream, mark the upstream as gone.
         if branch_upstream:
@@ -156,6 +158,8 @@ class BranchMapper(object):
   def __color_for_branch(self, branch, branch_hash):
     if branch.startswith('origin'):
       color = Fore.RED
+    elif branch.startswith('branch-heads'):
+      color = Fore.BLUE
     elif self.__is_invalid_parent(branch) or branch in self.__tag_set:
       color = Fore.MAGENTA
     elif self.__current_hash.startswith(branch_hash):
@@ -163,7 +167,7 @@ class BranchMapper(object):
     else:
       color = Fore.GREEN
 
-    if self.__current_hash.startswith(branch_hash):
+    if branch_hash and self.__current_hash.startswith(branch_hash):
       color += Style.BRIGHT
     else:
       color += Style.NORMAL
@@ -177,7 +181,10 @@ class BranchMapper(object):
     if branch_info:
       branch_hash = branch_info.hash
     else:
-      branch_hash = hash_one(branch, short=True)
+      try:
+        branch_hash = hash_one(branch, short=True)
+      except subprocess2.CalledProcessError:
+        branch_hash = None
 
     line = OutputLine()
 
@@ -233,7 +240,8 @@ class BranchMapper(object):
     if self.verbosity >= 2:
       import git_cl  # avoid heavy import cost unless we need it
       none_text = '' if self.__is_invalid_parent(branch) else 'None'
-      url = git_cl.Changelist(branchref=branch).GetIssueURL()
+      url = git_cl.Changelist(
+          branchref=branch).GetIssueURL() if branch_hash else None
       line.append(url or none_text, color=Fore.BLUE if url else Fore.WHITE)
 
     self.output.append(line)

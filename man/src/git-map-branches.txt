@@ -21,6 +21,7 @@ Git map-branches displays all local branches such that:
    (`*`) after the name.
 * Local branches are [green]#green#.
 * Remote branches are [red]#red# (usually, the root of all other branches).
+* 'branch-heads' branches are [blue]#blue#.
 * `{NO UPSTREAM}` is a special placeholder in [fuchsia]#magenta#.
 ** Branches which have this as their parent are usually misconfigured, and
    should be assigned a parent by checking out the branch and running git branch

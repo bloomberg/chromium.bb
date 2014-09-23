@@ -790,6 +790,11 @@ Remote branches are <span class="red">red</span> (usually, the root of all other
 </li>
 <li>
 <p>
+<em>branch-heads</em> branches are <span class="blue">blue</span>.
+</p>
+</li>
+<li>
+<p>
 <code>{NO UPSTREAM}</code> is a special placeholder in <span class="fuchsia">magenta</span>.
 </p>
 <div class="ulist"><ul>
@@ -820,13 +825,13 @@ Branches which have this as their parent are usually misconfigured, and
 assuming that the <code>frozen_changes</code> branch was currently checked out, running
 <em>git map-branches</em> would result in an output like:</p></div>
 <div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+<span style="color: #d338d3"></span><span style="color: #d338d3">{NO_UPSTREAM}
+</span><span style="color: #19c518"></span><span style="color: #19c518">  no_upstream
+</span><span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
 </span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
 </span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
 </span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
-</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    frozen_branch *
-</span><span style="font-weight: bold; color: #d338d3"></span><span style="color: #d338d3">{NO UPSTREAM}
-</span><span style="color: #19c518"></span><span style="color: #19c518">  no_upstream</span>
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    frozen_branch *</span>
 </code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
@@ -860,7 +865,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-04-10 14:23:11 PDT
+Last updated 2014-09-23 13:01:42 EST
 </div>
 </div>
 </body>
