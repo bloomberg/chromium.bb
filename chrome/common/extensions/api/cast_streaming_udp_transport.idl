@@ -31,6 +31,12 @@ namespace cast.streaming.udpTransport {
     // Attributes of this object will be used to activate optional
     // behaviours in the transport. Normally this is only used for
     // experimentation. Must be called before setDestination.
-    [nocompile] static void setOptions(object options);
+    // |transportId| : The transport ID that is created by
+    // chrome.cast.streaming.session.create().
+    // |options| : A dictionary of key-value pairs of options.
+    // See media/cast/net/cast_transport_sender_impl.h for supported
+    // options.
+    [nocompile] static void setOptions(long transportId,
+                                       object options);
   };
 };

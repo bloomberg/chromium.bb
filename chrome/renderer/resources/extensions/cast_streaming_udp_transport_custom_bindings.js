@@ -17,6 +17,10 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     function(transportId, destination) {
       natives.SetDestinationCastUdpTransport(transportId, destination);
   });
+  apiFunctions.setHandleRequest('setOptions',
+    function(transportId, options) {
+      natives.SetOptionsCastUdpTransport(transportId, options);
+  });
 });
 
 exports.binding = binding.generate();

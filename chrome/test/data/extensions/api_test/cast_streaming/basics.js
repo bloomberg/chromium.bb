@@ -30,6 +30,7 @@ chrome.test.runTests([
         var videoParams = rtpStream.getSupportedParams(videoId)[0];
         chrome.test.assertTrue(!!audioParams.payload.codecName);
         chrome.test.assertTrue(!!videoParams.payload.codecName);
+       udpTransport.setOptions(udpId, {DSCP: true});
         udpTransport.setDestination(udpId,
                                     {address: "127.0.0.1", port: 2344});
         rtpStream.onStarted.addListener(
