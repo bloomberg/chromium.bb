@@ -170,7 +170,6 @@ html[dir='rtl'] .display-filter-button {
               inset 0 1px 2px rgba(255, 255, 255, 0.75);
   box-sizing: border-box;
   color: rgb(68, 68, 68);
-  cursor: default;
   display: inline-block;
   letter-spacing: normal;
   line-height: 2em;
@@ -247,16 +246,18 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
 .entry-box,
 .site-domain-row {
   align-items: center;
-  cursor: default;
   display: flex;
-  /* An odd line-height ensures a consistent baseline on all platforms. */
-  line-height: 1.75em;
   margin-bottom: 6px;
   /* The box should be no bigger than its parent. */
   max-width: 100%;
   min-height: 2em;
   overflow: hidden;
   padding-bottom: 1px;
+}
+
+.entry-box {
+  /* Ensures a consistent baseline on all platforms. */
+  line-height: 1.75em;
 }
 
 .site-domain-wrapper {
@@ -461,10 +462,6 @@ html[dir='rtl'] .site-domain {
   background-position-x: right;
 }
 
-.site-domain button {
-  color: rgb(48, 57, 66);
-}
-
 .site-domain button:hover {
   text-decoration: none;
 }
@@ -506,7 +503,8 @@ html .expand .site-domain-arrow {
   visibility: visible;
 }
 
-.entry .title > a {
+.entry .title > a,
+.site-domain .link-button {
   color: rgb(48, 57, 66);
   margin: 2px;
   padding: 2px;
