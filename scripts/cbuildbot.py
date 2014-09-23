@@ -1676,7 +1676,7 @@ def _SetupCidb(options, build_config):
   # the chromeos.chrome waterfall).
   # See crbug.com/406940
   waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
-  if not waterfall in ('chromeos', 'chromiumos', 'chromiumos.tryserver'):
+  if not waterfall in constants.CIDB_KNOWN_WATERFALLS:
     cidb.CIDBConnectionFactory.SetupNoCidb()
     return
 

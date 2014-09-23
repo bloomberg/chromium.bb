@@ -91,7 +91,7 @@ class BuildStartStage(generic_stages.BuilderStage):
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
         waterfall = d['buildbot-master-name']
-        assert waterfall in ('chromeos', 'chromiumos', 'chromiumos.tryserver')
+        assert waterfall in constants.CIDB_KNOWN_WATERFALLS
         build_id = db.InsertBuild(
              builder_name=d['builder-name'],
              waterfall=waterfall,
