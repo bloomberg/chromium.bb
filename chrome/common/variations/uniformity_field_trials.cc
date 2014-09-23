@@ -9,12 +9,26 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/common/variations/variation_ids.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {
 
 namespace {
+
+const int MINIMIUM_ID = 3300000;
+
+const int UNIFORMITY_1_PERCENT_BASE  = MINIMIUM_ID;
+const int UNIFORMITY_1_PERCENT_LIMIT = UNIFORMITY_1_PERCENT_BASE + 100;
+const int UNIFORMITY_5_PERCENT_BASE  = UNIFORMITY_1_PERCENT_LIMIT;
+const int UNIFORMITY_5_PERCENT_LIMIT = UNIFORMITY_5_PERCENT_BASE + 20;
+const int UNIFORMITY_10_PERCENT_BASE  = UNIFORMITY_5_PERCENT_LIMIT;
+const int UNIFORMITY_10_PERCENT_LIMIT = UNIFORMITY_10_PERCENT_BASE + 10;
+const int UNIFORMITY_20_PERCENT_BASE  = UNIFORMITY_10_PERCENT_LIMIT;
+const int UNIFORMITY_20_PERCENT_LIMIT = UNIFORMITY_20_PERCENT_BASE + 5;
+const int UNIFORMITY_50_PERCENT_BASE  = UNIFORMITY_20_PERCENT_LIMIT;
+// A uniformity trial used to compare one-time-randomized and
+// session-randomized FieldTrials.
+const int UNIFORMITY_SESSION_RANDOMIZED_5_PERCENT_BASE  = 3300139;
 
 // Set up a uniformity field trial. |one_time_randomized| indicates if the
 // field trial is one-time randomized or session-randomized. |trial_name_string|
