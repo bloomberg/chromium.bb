@@ -193,11 +193,16 @@
     "dependencies": ["permission:chromeosInfoPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "chromeWebViewInternal": {
+  "chromeWebViewInternal": [{
     "internal": true,
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "internal": true,
+    "channel": "dev",
+    "contexts": ["webui"],
+    "matches": ["chrome://chrome-signin/*"]
+  }],
   "cloudPrintPrivate": {
     "dependencies": ["permission:cloudPrintPrivate"],
     "contexts": ["blessed_extension"]
@@ -731,8 +736,8 @@
     // webview uses webRequestInternal API.
     "channel": "stable",
     "internal": true,
-    "dependencies": ["permission:webview"],
-    "contexts": ["unblessed_extension"]
+    "contexts": ["webui"],
+    "matches": ["chrome://chrome-signin/*"]
   }],
   "webrtcAudioPrivate": {
     "dependencies": ["permission:webrtcAudioPrivate"],
@@ -765,10 +770,9 @@
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
   }, {
-    // Component extensions can use the webViewRequest API from iframes.
-    "location": "component",
-    "dependencies": ["permission:webview"],
-    "contexts": ["unblessed_extension"]
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": ["chrome://chrome-signin/*"]
   }],
   "webviewTag": {
     "internal": true,

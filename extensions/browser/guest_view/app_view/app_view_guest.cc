@@ -143,6 +143,7 @@ int AppViewGuest::GetTaskPrefix() const {
 void AppViewGuest::CreateWebContents(
     const std::string& embedder_extension_id,
     int embedder_render_process_id,
+    const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   std::string app_id;

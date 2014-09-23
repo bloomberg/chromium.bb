@@ -186,6 +186,7 @@ int WebViewGuest::GetTaskPrefix() const {
 void WebViewGuest::CreateWebContents(
     const std::string& embedder_extension_id,
     int embedder_render_process_id,
+    const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   content::RenderProcessHost* embedder_render_process_host =
@@ -210,12 +211,20 @@ void WebViewGuest::CreateWebContents(
   std::string url_encoded_partition = net::EscapeQueryParamValue(
       storage_partition_id, false);
   // The SiteInstance of a given webview tag is based on the fact that it's
-  // a guest process in addition to which platform application the tag
-  // belongs to and what storage partition is in use, rather than the URL
-  // that the tag is being navigated to.
+  // a guest process in addition to which platform application or which WebUI
+  // page the tag belongs to and what storage partition is in use, rather than
+  // the URL that the tag is being navigated to.
+  std::string partition_domain;
+  if (embedder_extension_id.empty()) {
+    DCHECK(content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+        embedder_render_process_id));
+    partition_domain = embedder_site_url.host();
+  } else {
+    partition_domain = embedder_extension_id;
+  }
   GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
                                      content::kGuestScheme,
-                                     embedder_extension_id.c_str(),
+                                     partition_domain.c_str(),
                                      persist_storage ? "persist" : "",
                                      url_encoded_partition.c_str()));
 
@@ -760,7 +769,6 @@ void WebViewGuest::PushWebViewStateToIOThread() {
     NOTREACHED();
     return;
   }
-  DCHECK(embedder_extension_id() == partition_domain);
 
   WebViewRendererState::WebViewInfo web_view_info;
   web_view_info.embedder_process_id = embedder_render_process_id();
@@ -1113,7 +1121,6 @@ void WebViewGuest::DestroyUnattachedWindows() {
 
 GURL WebViewGuest::ResolveURL(const std::string& src) {
   if (!in_extension()) {
-    NOTREACHED();
     return GURL(src);
   }
 

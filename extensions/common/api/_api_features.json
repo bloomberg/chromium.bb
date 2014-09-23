@@ -73,16 +73,14 @@
       "channel": "stable",
       "contexts": ["blessed_extension"]
     }, {
-      // Component extensions can use the guestViewInternal API from iframes.
-      "location": "component",
-      "internal": true,
-      "dependencies": ["permission:webview"],
-      "contexts": ["unblessed_extension"]
-    }, {
       "internal": true,
       "channel": "trunk",
       "contexts": ["webui"],
-      "matches": ["chrome://extensions-frame/*", "chrome://extensions/*"]
+      "matches": [
+        "chrome://extensions-frame/*",
+        "chrome://extensions/*",
+        "chrome://chrome-signin/*"
+      ]
     }
   ],
   "hid": {
@@ -252,10 +250,9 @@
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
   }, {
-    // Component extensions can use the webViewInternal API from iframes.
-    "location": "component",
     "internal": true,
-    "dependencies": ["permission:webview"],
-    "contexts": ["unblessed_extension"]
+    "channel": "dev",
+    "contexts": ["webui"],
+    "matches": ["chrome://chrome-signin/*"]
   }]
 }

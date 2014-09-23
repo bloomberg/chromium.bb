@@ -24,6 +24,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
   virtual void CreateWebContents(
       const std::string& embedder_extension_id,
       int embedder_render_process_id,
+      const GURL& embedder_site_url,
       const base::DictionaryValue& create_params,
       const WebContentsCreatedCallback& callback) OVERRIDE;
   virtual void DidAttachToEmbedder() OVERRIDE;

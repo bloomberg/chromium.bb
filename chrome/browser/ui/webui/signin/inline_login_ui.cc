@@ -25,6 +25,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
         content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome-extension:;");
+  source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
   source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
 

@@ -136,11 +136,12 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
   int embedder_process_id =
       embedder_web_contents->GetRenderProcessHost()->GetID();
 
+  const GURL& embedder_site_url = embedder_web_contents->GetLastCommittedURL();
   Feature::Availability availability = feature->IsAvailableToContext(
       embedder_extension,
       process_map->GetMostLikelyContextType(embedder_extension,
                                             embedder_process_id),
-      embedder_web_contents->GetLastCommittedURL());
+      embedder_site_url);
   if (!availability.is_available()) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
@@ -151,6 +152,7 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
 
   CreateWebContents(embedder_extension_id,
                     embedder_process_id,
+                    embedder_site_url,
                     create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
                                AsWeakPtr(),
