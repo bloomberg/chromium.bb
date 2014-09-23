@@ -540,25 +540,14 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
-    v8::TryCatch block;
-    {% if method.idl_type == 'void' %}
-    PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
-    if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}");
-        block.ReThrow();
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
+    if (v8Value.IsEmpty())
         return false;
-    }
-    {% else %}
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
-    if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}");
-        block.ReThrow();
-        return false;
-    }
+    {% if method.idl_type != 'void' %}
     {{method.private_script_v8_value_to_local_cpp_value}};
-    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     {% endif %}
+    RELEASE_ASSERT(!exceptionState.hadException());
     return true;
 }
 {% endmacro %}

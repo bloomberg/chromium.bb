@@ -17,11 +17,9 @@ class ScriptState;
 class PrivateScriptRunner {
 public:
     static v8::Handle<v8::Value> installClassIfNeeded(LocalFrame*, String className);
-    static v8::Handle<v8::Value> runDOMAttributeGetter(ScriptState*, String className, String attributeName, v8::Handle<v8::Value> holder);
-    static void runDOMAttributeSetter(ScriptState*, String className, String attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value);
-    static v8::Handle<v8::Value> runDOMMethod(ScriptState*, String className, String methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[]);
-
-    static void rethrowExceptionInPrivateScript(v8::Isolate*, v8::TryCatch&, ScriptState*, ExceptionState::Context, const char* propertyName, const char* interfaceName);
+    static v8::Handle<v8::Value> runDOMAttributeGetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder);
+    static bool runDOMAttributeSetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value);
+    static v8::Handle<v8::Value> runDOMMethod(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[]);
 };
 
 } // namespace blink

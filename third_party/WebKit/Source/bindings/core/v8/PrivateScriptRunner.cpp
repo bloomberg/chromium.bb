@@ -186,54 +186,9 @@ v8::Handle<v8::Value> PrivateScriptRunner::installClassIfNeeded(LocalFrame* fram
     return classObjectOfPrivateScript(scriptState, className);
 }
 
-v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder)
-{
-    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
-    v8::Handle<v8::Value> descriptor = classObject->GetOwnPropertyDescriptor(v8String(scriptState->isolate(), attributeName));
-    if (descriptor.IsEmpty() || !descriptor->IsObject()) {
-        fprintf(stderr, "Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-    v8::Handle<v8::Value> getter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(scriptState->isolate(), "get"));
-    if (getter.IsEmpty() || !getter->IsFunction()) {
-        fprintf(stderr, "Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-    initializeHolderIfNeeded(scriptState, classObject, holder);
-    return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(getter), scriptState->executionContext(), holder, 0, 0, scriptState->isolate());
-}
+namespace {
 
-void PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value)
-{
-    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
-    v8::Handle<v8::Value> descriptor = classObject->GetOwnPropertyDescriptor(v8String(scriptState->isolate(), attributeName));
-    if (descriptor.IsEmpty() || !descriptor->IsObject()) {
-        fprintf(stderr, "Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-    v8::Handle<v8::Value> setter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(scriptState->isolate(), "set"));
-    if (setter.IsEmpty() || !setter->IsFunction()) {
-        fprintf(stderr, "Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-    initializeHolderIfNeeded(scriptState, classObject, holder);
-    v8::Handle<v8::Value> argv[] = { v8Value };
-    V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(setter), scriptState->executionContext(), holder, WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate());
-}
-
-v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState, String className, String methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[])
-{
-    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
-    v8::Handle<v8::Value> method = classObject->Get(v8String(scriptState->isolate(), methodName));
-    if (method.IsEmpty() || !method->IsFunction()) {
-        fprintf(stderr, "Private script error: Target DOM method was not found. (Class name = %s, Method name = %s)\n", className.utf8().data(), methodName.utf8().data());
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-    initializeHolderIfNeeded(scriptState, classObject, holder);
-    return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
-}
-
-void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, ScriptState* scriptStateInUserScript, ExceptionState::Context errorContext, const char* propertyName, const char* interfaceName)
+void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, ScriptState* scriptStateInUserScript, ExceptionState::Context errorContext, const char* propertyName, const char* interfaceName)
 {
     v8::Handle<v8::Value> exception = block.Exception();
     RELEASE_ASSERT(!exception.IsEmpty() && exception->IsObject());
@@ -274,6 +229,76 @@ void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, 
     fprintf(stderr, "Private script error: %s was thrown.\n", exceptionName.utf8().data());
     dumpV8Message(tryCatchMessage);
     RELEASE_ASSERT_NOT_REACHED();
+}
+
+} // namespace
+
+v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder)
+{
+    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Handle<v8::Value> descriptor = classObject->GetOwnPropertyDescriptor(v8String(scriptState->isolate(), attributeName));
+    if (descriptor.IsEmpty() || !descriptor->IsObject()) {
+        fprintf(stderr, "Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    v8::Handle<v8::Value> getter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(scriptState->isolate(), "get"));
+    if (getter.IsEmpty() || !getter->IsFunction()) {
+        fprintf(stderr, "Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    initializeHolderIfNeeded(scriptState, classObject, holder);
+    v8::TryCatch block;
+    v8::Handle<v8::Value> result = V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(getter), scriptState->executionContext(), holder, 0, 0, scriptState->isolate());
+    if (block.HasCaught()) {
+        rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, attributeName, className);
+        block.ReThrow();
+        return v8::Handle<v8::Value>();
+    }
+    return result;
+}
+
+bool PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value)
+{
+    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Handle<v8::Value> descriptor = classObject->GetOwnPropertyDescriptor(v8String(scriptState->isolate(), attributeName));
+    if (descriptor.IsEmpty() || !descriptor->IsObject()) {
+        fprintf(stderr, "Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    v8::Handle<v8::Value> setter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(scriptState->isolate(), "set"));
+    if (setter.IsEmpty() || !setter->IsFunction()) {
+        fprintf(stderr, "Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className, attributeName);
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    initializeHolderIfNeeded(scriptState, classObject, holder);
+    v8::Handle<v8::Value> argv[] = { v8Value };
+    v8::TryCatch block;
+    V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(setter), scriptState->executionContext(), holder, WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate());
+    if (block.HasCaught()) {
+        rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, attributeName, className);
+        block.ReThrow();
+        return false;
+    }
+    return true;
+}
+
+v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState, ScriptState* scriptStateInUserScript, const char* className, const char* methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[])
+{
+    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Handle<v8::Value> method = classObject->Get(v8String(scriptState->isolate(), methodName));
+    if (method.IsEmpty() || !method->IsFunction()) {
+        fprintf(stderr, "Private script error: Target DOM method was not found. (Class name = %s, Method name = %s)\n", className, methodName);
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    initializeHolderIfNeeded(scriptState, classObject, holder);
+    v8::TryCatch block;
+    v8::Handle<v8::Value> result = V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
+    if (block.HasCaught()) {
+        rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, methodName, className);
+        block.ReThrow();
+        return v8::Handle<v8::Value>();
+    }
+    return result;
 }
 
 } // namespace blink

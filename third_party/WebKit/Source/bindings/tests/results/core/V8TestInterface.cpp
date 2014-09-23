@@ -2113,16 +2113,12 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::Handle<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
     v8::Handle<v8::Value> argv[] = { valueHandle };
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
-    if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterfaceImplementation");
-        block.ReThrow();
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (v8Value.IsEmpty())
         return false;
-    }
     TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
-    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
+    RELEASE_ASSERT(!exceptionState.hadException());
     return true;
 }
 
@@ -2144,13 +2140,9 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder);
-    if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation");
-        block.ReThrow();
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder);
+    if (v8Value.IsEmpty())
         return false;
-    }
     TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
     RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
@@ -2175,14 +2167,7 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* 
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
-    v8::TryCatch block;
-    PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
-    if (block.HasCaught()) {
-        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), block, scriptStateInUserScript, ExceptionState::SetterContext, "stringAttribute", "TestInterfaceImplementation");
-        block.ReThrow();
-        return false;
-    }
-    return true;
+    return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
 }
 
 } // namespace blink
