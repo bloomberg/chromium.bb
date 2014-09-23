@@ -1132,39 +1132,6 @@ name=bug_105907
 *!skia::ImageOperations::Resize*
 
 UNINITIALIZED READ
-name=bug_108147
-...
-*!SkDraw::drawPosText
-*!SkDevice::drawPosText
-*!SkCanvas::drawPosText
-*!blink::Font::drawGlyphs
-*!blink::Font::drawGlyphBuffer
-*!blink::Font::drawSimpleText
-*!blink::Font::drawText
-
-UNINITIALIZED READ
-name=bug_108620
-*!blink::PlatformEvent::PlatformEvent
-*!blink::PlatformMouseEvent::PlatformMouseEvent
-*!blink::EventHandler::fakeMouseMoveEventTimerFired
-*!blink::Timer<>::fired
-*!blink::ThreadTimers::sharedTimerFiredInternal
-*!blink::ThreadTimers::sharedTimerFired
-*!content::BlinkPlatformImpl::DoTimeout
-*!base::BaseTimer<>::TimerTask::Run
-
-UNINITIALIZED READ
-name=bug_109496
-...
-*!blink::ImageBuffer::platformTransformColorSpace
-*!blink::ImageBuffer::transformColorSpace
-*!blink::RenderSVGResourceFilter::postApplyResource
-...
-*!blink::RenderSVGShape::paint*
-...
-*!blink::RenderSVGRoot*_Zpaint*_ZL9PaintInfoERKNS_*
-
-UNINITIALIZED READ
 name=bug_112278
 *!fetch_texel_2d_f_rgba8888
 *!sample_2d_linear
@@ -1244,47 +1211,6 @@ name=bug_115419_2
 *!gpu::CommandParser::ProcessCommand
 *!gpu::GpuScheduler::PutChanged
 *!webkit::gpu::GLInProcessContext::PumpCommands
-
-UNINITIALIZED READ
-name=bug_116475
-...
-*!base::Histogram::BucketIndex
-*!base::Histogram::Add
-*!webkit_glue::WebKitPlatformSupportImpl::histogramCustomCounts
-*!blink::PlatformSupport::histogramCustomCounts
-*!blink::CCLayerTreeHostImpl::optimizeRenderPasses*
-*!blink::CCLayerTreeHostImpl::drawLayers
-*!blink::CCSingleThreadProxy::doComposite
-
-UNINITIALIZED READ
-name=bug_122245a
-...
-*!SkScalerContext::internalGetPath
-*!SkScalerContext::getMetrics
-*!SkGlyphCache::lookupMetrics
-
-UNINITIALIZED READ
-name=bug_122245b
-...
-*!SkRect::roundOut
-*!SkScalerContext::getMetrics
-*!SkGlyphCache::lookupMetrics
-*!SkGlyphCache::getGlyphIDMetrics
-*!sk_getMetrics_glyph_00
-*!SkDraw::drawPosText
-*!SkDevice::drawPosText
-*!SkGpuDevice::drawPosText
-*!SkCanvas::drawPosText
-*!blink::Font::drawGlyphs
-*!blink::Font::drawGlyphBuffer
-*!blink::Font::drawSimpleText
-*!blink::Font::drawText
-*!blink::GraphicsContext::drawBidiText
-*!blink::CanvasRenderingContext2D::drawTextInternal
-*!blink::CanvasRenderingContext2D::strokeText
-*!blink::CanvasRenderingContext2DInternal::strokeTextCallback
-*!v8::internal::HandleApiCallHelper<>
-*!v8::internal::Builtin_HandleApiCall
 
 UNINITIALIZED READ
 name=bug_138058
