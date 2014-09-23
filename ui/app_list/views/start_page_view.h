@@ -24,8 +24,7 @@ class TileItemView;
 // The start page for the experimental app list.
 class APP_LIST_EXPORT StartPageView : public views::View,
                                       public ui::ListModelObserver,
-                                      public SearchBoxViewDelegate,
-                                      public AppListViewDelegateObserver {
+                                      public SearchBoxViewDelegate {
  public:
   StartPageView(AppListMainView* app_list_main_view,
                 AppListViewDelegate* view_delegate);
@@ -66,9 +65,6 @@ class APP_LIST_EXPORT StartPageView : public views::View,
 
   // Overridden from SearchBoxViewDelegate:
   virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;
-
-  // Overridden from AppListViewDelegateObserver:
-  virtual void OnProfilesChanged() OVERRIDE;
 
   // Overridden from ui::ListModelObserver:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;

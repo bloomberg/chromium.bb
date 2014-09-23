@@ -89,11 +89,9 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
   AddChildView(tiles_container_);
 
   SetModel(view_delegate_->GetModel());
-  view_delegate_->AddObserver(this);
 }
 
 StartPageView::~StartPageView() {
-  view_delegate_->RemoveObserver(this);
   if (search_results_model_)
     search_results_model_->RemoveObserver(this);
 }
@@ -242,10 +240,6 @@ void StartPageView::QueryChanged(SearchBoxView* sender) {
   app_list_main_view_->OnStartPageSearchTextfieldChanged(
       sender->search_box()->text());
   sender->search_box()->SetText(base::string16());
-}
-
-void StartPageView::OnProfilesChanged() {
-  SetModel(view_delegate_->GetModel());
 }
 
 void StartPageView::ListItemsAdded(size_t start, size_t count) {
