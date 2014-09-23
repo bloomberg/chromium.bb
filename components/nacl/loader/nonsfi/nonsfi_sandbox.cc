@@ -61,9 +61,9 @@ ResultExpr RestrictFcntlCommands() {
   // libevent and SetNonBlocking. As the latter mix O_NONBLOCK to
   // the return value of F_GETFL, so we need to allow O_ACCMODE in
   // addition to O_NONBLOCK.
-  const unsigned long denied_mask = ~(O_ACCMODE | O_NONBLOCK);
+  const uint64_t kAllowedMask = O_ACCMODE | O_NONBLOCK;
   return If((cmd == F_SETFD && long_arg == FD_CLOEXEC) || cmd == F_GETFL ||
-                (cmd == F_SETFL && (long_arg & denied_mask) == 0),
+                (cmd == F_SETFL && (long_arg & ~kAllowedMask) == 0),
             Allow()).Else(CrashSIGSYS());
 }
 
@@ -78,10 +78,9 @@ ResultExpr RestrictClone() {
 
 ResultExpr RestrictFutexOperation() {
   // TODO(hamaji): Allow only FUTEX_PRIVATE_FLAG futexes.
-  const int kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
-  const int kOperationMask = ~kAllowedFutexFlags;
+  const uint64_t kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
   const Arg<int> op(1);
-  return Switch(op & kOperationMask)
+  return Switch(op & ~kAllowedFutexFlags)
       .CASES((FUTEX_WAIT,
               FUTEX_WAKE,
               FUTEX_REQUEUE,
@@ -113,20 +112,20 @@ ResultExpr RestrictSocketcall() {
 ResultExpr RestrictMprotect() {
   // TODO(jln, keescook, drewry): Limit the use of mprotect by adding
   // some features to linux kernel.
-  const uint32_t denied_mask = ~(PROT_READ | PROT_WRITE | PROT_EXEC);
+  const uint64_t kAllowedMask = PROT_READ | PROT_WRITE | PROT_EXEC;
   const Arg<int> prot(2);
-  return If((prot & denied_mask) == 0, Allow()).Else(CrashSIGSYS());
+  return If((prot & ~kAllowedMask) == 0, Allow()).Else(CrashSIGSYS());
 }
 
 ResultExpr RestrictMmap() {
-  const uint32_t denied_flag_mask = ~(MAP_SHARED | MAP_PRIVATE |
-                                      MAP_ANONYMOUS | MAP_STACK | MAP_FIXED);
+  const uint64_t kAllowedFlagMask =
+      MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK | MAP_FIXED;
   // When PROT_EXEC is specified, IRT mmap of Non-SFI NaCl helper
   // calls mmap without PROT_EXEC and then adds PROT_EXEC by mprotect,
   // so we do not need to allow PROT_EXEC in mmap.
-  const uint32_t denied_prot_mask = ~(PROT_READ | PROT_WRITE);
+  const uint64_t kAllowedProtMask = PROT_READ | PROT_WRITE;
   const Arg<int> prot(2), flags(3);
-  return If((prot & denied_prot_mask) == 0 && (flags & denied_flag_mask) == 0,
+  return If((prot & ~kAllowedProtMask) == 0 && (flags & ~kAllowedFlagMask) == 0,
             Allow()).Else(CrashSIGSYS());
 }
 

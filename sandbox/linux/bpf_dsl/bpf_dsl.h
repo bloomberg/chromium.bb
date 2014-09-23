@@ -43,8 +43,8 @@ class SandboxBPF;
 //          if (sysno == __NR_fcntl) {
 //            Arg<int> fd(0), cmd(1);
 //            Arg<unsigned long> flags(2);
-//            const unsigned long kBadFlags = ~(O_ACCMODE | O_NONBLOCK);
-//            return If(fd == 0 && cmd == F_SETFL && (flags & kBadFlags) == 0,
+//            const uint64_t kGoodFlags = O_ACCMODE | O_NONBLOCK;
+//            return If(fd == 0 && cmd == F_SETFL && (flags & ~kGoodFlags) == 0,
 //                      Allow())
 //                .ElseIf(cmd == F_DUPFD || cmd == F_DUPFD_CLOEXEC,
 //                        Error(EMFILE))

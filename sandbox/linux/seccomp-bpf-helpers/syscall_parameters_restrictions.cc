@@ -142,11 +142,11 @@ ResultExpr RestrictMmapFlags() {
   // Significantly, we don't permit MAP_HUGETLB, or the newer flags such as
   // MAP_POPULATE.
   // TODO(davidung), remove MAP_DENYWRITE with updated Tegra libraries.
-  const uint32_t denied_mask =
-      ~(MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK | MAP_NORESERVE |
-        MAP_FIXED | MAP_DENYWRITE);
+  const uint64_t kAllowedMask = MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS |
+                                MAP_STACK | MAP_NORESERVE | MAP_FIXED |
+                                MAP_DENYWRITE;
   const Arg<int> flags(3);
-  return If((flags & denied_mask) == 0, Allow()).Else(CrashSIGSYS());
+  return If((flags & ~kAllowedMask) == 0, Allow()).Else(CrashSIGSYS());
 }
 
 ResultExpr RestrictMprotectFlags() {
@@ -154,9 +154,9 @@ ResultExpr RestrictMprotectFlags() {
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit weird undocumented flags such as
   // PROT_GROWSDOWN.
-  const uint32_t denied_mask = ~(PROT_READ | PROT_WRITE | PROT_EXEC);
+  const uint64_t kAllowedMask = PROT_READ | PROT_WRITE | PROT_EXEC;
   const Arg<int> prot(2);
-  return If((prot & denied_mask) == 0, Allow()).Else(CrashSIGSYS());
+  return If((prot & ~kAllowedMask) == 0, Allow()).Else(CrashSIGSYS());
 }
 
 ResultExpr RestrictFcntlCommands() {
@@ -165,15 +165,15 @@ ResultExpr RestrictFcntlCommands() {
   // allowed ones, and the variable is a "denied" mask because of the negation
   // operator.
   // Glibc overrides the kernel's O_LARGEFILE value. Account for this.
-  int kOLargeFileFlag = O_LARGEFILE;
+  uint64_t kOLargeFileFlag = O_LARGEFILE;
   if (IsArchitectureX86_64() || IsArchitectureI386() || IsArchitectureMips())
     kOLargeFileFlag = 0100000;
 
   const Arg<int> cmd(1);
   const Arg<long> long_arg(2);
 
-  unsigned long denied_mask = ~(O_ACCMODE | O_APPEND | O_NONBLOCK | O_SYNC |
-                                kOLargeFileFlag | O_CLOEXEC | O_NOATIME);
+  const uint64_t kAllowedMask = O_ACCMODE | O_APPEND | O_NONBLOCK | O_SYNC |
+                                kOLargeFileFlag | O_CLOEXEC | O_NOATIME;
   return Switch(cmd)
       .CASES((F_GETFL,
               F_GETFD,
@@ -185,7 +185,7 @@ ResultExpr RestrictFcntlCommands() {
               F_DUPFD_CLOEXEC),
              Allow())
       .Case(F_SETFL,
-            If((long_arg & denied_mask) == 0, Allow()).Else(CrashSIGSYS()))
+            If((long_arg & ~kAllowedMask) == 0, Allow()).Else(CrashSIGSYS()))
       .Default(CrashSIGSYS());
 }
 
@@ -226,10 +226,9 @@ ResultExpr RestrictKillTarget(pid_t target_pid, int sysno) {
 }
 
 ResultExpr RestrictFutex() {
-  const int kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
-  const int kOperationMask = ~kAllowedFutexFlags;
+  const uint64_t kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
   const Arg<int> op(1);
-  return Switch(op & kOperationMask)
+  return Switch(op & ~kAllowedFutexFlags)
       .CASES((FUTEX_WAIT,
               FUTEX_WAKE,
               FUTEX_REQUEUE,
