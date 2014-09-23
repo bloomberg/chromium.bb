@@ -33,6 +33,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -775,8 +776,7 @@ void IdentityGetAuthTokenFunction::ShowLoginPopup() {
 
 void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
     const IssueAdviceInfo& issue_advice) {
-  const std::string locale = g_browser_process->local_state()->GetString(
-      prefs::kApplicationLocale);
+  const std::string locale = extension_l10n_util::CurrentLocaleOrDefault();
 
   gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(
       this, GetProfile(), token_key_.get(), oauth2_client_id_, locale));
