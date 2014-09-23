@@ -142,8 +142,7 @@ ScopedVpxCodec CreateVP9Codec(const webrtc::DesktopSize& size,
 
   // Use the lowest level of noise sensitivity so as to spend less time
   // on motion estimation and inter-prediction mode.
-  // Note that this is configured via the same parameter as for VP8.
-  if (vpx_codec_control(codec.get(), VP8E_SET_NOISE_SENSITIVITY, 0))
+  if (vpx_codec_control(codec.get(), VP9E_SET_NOISE_SENSITIVITY, 0))
     return ScopedVpxCodec();
 
   return codec.Pass();
