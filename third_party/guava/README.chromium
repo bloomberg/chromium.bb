@@ -1,15 +1,22 @@
 Name: Guava: Google Core Libraries for Java 1.6+
 Short Name: guava-libraries
 URL: https://code.google.com/p/guava-libraries/
-Version: v13.0.1
+Version: NONE
 License: Apache 2.0
-License File: src/COPYING
+License File: COPYING
 Security Critical: no
 
 Description:
-The Guava project contains several of Google's core libraries that we rely on
-in our Java-based projects: collections, caching, primitives support,
-concurrency libraries, common annotations, string processing, I/O, and so forth.
+The Guava project contains several of Google's core libraries.
+
+This file and the COPYING license file are currently just a placeholders,
+as guava was removed in: https://codereview.chromium.org/574103002/.
+Because DEPS are not automatically removed on all bots, this file needs to stay
+around until they do, to make the android_aosp bot happy, since it has a
+requirement for license information for all directories in third_party. The
+current COPYING file is a copy of the one from the guava repository.
+See http://crbug.com/380688 for details.
+TODO(nyquist): Remove this file when http://crbug.com/380688 has been fixed.
 
 Local Modifications:
 None.

@@ -62,13 +62,6 @@ def DoJavac(
   checking will be enabled.
   """
 
-  # Compiling guava with certain orderings of input files causes a compiler
-  # crash... Sorted order works, so use that.
-  # See https://code.google.com/p/guava-libraries/issues/detail?id=950
-  # TODO(cjhopman): Remove this when we have update guava or the compiler to a
-  # version without this problem.
-  java_files.sort()
-
   jar_inputs = []
   for path in classpath:
     if os.path.exists(path + '.TOC'):

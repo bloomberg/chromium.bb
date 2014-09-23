@@ -477,9 +477,6 @@ deps_os = {
     'src/third_party/freetype':
      Var('chromium_git') + '/chromium/src/third_party/freetype.git' + '@' + 'a2b9955b49034a51dfbc8bf9f4e9d312149cecac',
 
-    'src/third_party/guava/src':
-     Var('chromium_git') + '/external/guava-libraries.git' + '@' + 'c523556ab7d0f05afadebd20e7768d4c16af8771',
-
    'src/third_party/elfutils/src':
      Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
 
