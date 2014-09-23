@@ -22,6 +22,8 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -37,6 +39,8 @@ public class CastWindowAndroid extends LinearLayout {
 
     private ContentViewCore mContentViewCore;
     private ContentViewRenderView mContentViewRenderView;
+    private NavigationController mNavigationController;
+    private WebContents mWebContents;
     private WebContentsObserverAndroid mWebContentsObserver;
     private WindowAndroid mWindow;
 
@@ -81,10 +85,10 @@ public class CastWindowAndroid extends LinearLayout {
     public void loadUrl(String url) {
         if (url == null) return;
 
-        if (TextUtils.equals(url, mContentViewCore.getUrl())) {
-            mContentViewCore.reload(true);
+        if (TextUtils.equals(url, mWebContents.getUrl())) {
+            mNavigationController.reload(true);
         } else {
-            mContentViewCore.loadUrl(new LoadUrlParams(normalizeUrl(url)));
+            mNavigationController.loadUrl(new LoadUrlParams(normalizeUrl(url)));
         }
 
         // TODO(aurimas): Remove this when crbug.com/174541 is fixed.
@@ -117,6 +121,8 @@ public class CastWindowAndroid extends LinearLayout {
         mContentViewCore = new ContentViewCore(context);
         ContentView view = ContentView.newInstance(context, mContentViewCore);
         mContentViewCore.initialize(view, view, nativeWebContents, mWindow);
+        mWebContents = mContentViewCore.getWebContents();
+        mNavigationController = mWebContents.getNavigationController();
 
         if (getParent() != null) mContentViewCore.onShow();
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(view,
@@ -126,11 +132,11 @@ public class CastWindowAndroid extends LinearLayout {
         view.requestFocus();
         mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
 
-        mWebContentsObserver = new WebContentsObserverAndroid(mContentViewCore.getWebContents()) {
+        mWebContentsObserver = new WebContentsObserverAndroid(mWebContents) {
             @Override
             public void didStopLoading(String url) {
-                Uri intentUri = Uri.parse(mContentViewCore
-                        .getOriginalUrlForActiveNavigationEntry());
+                Uri intentUri = Uri.parse(mNavigationController
+                        .getOriginalUrlForVisibleNavigationEntry());
                 Log.v(TAG, "Broadcast ACTION_PAGE_LOADED: scheme=" + intentUri.getScheme()
                         + ", host=" + intentUri.getHost());
                 LocalBroadcastManager.getInstance(getContext()).sendBroadcast(
