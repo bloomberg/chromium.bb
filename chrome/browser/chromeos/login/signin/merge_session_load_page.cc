@@ -90,6 +90,7 @@ std::string MergeSessionLoadPage::GetHTMLContents() {
   bool rtl = base::i18n::IsRTL();
   strings.SetString("textdirection", rtl ? "rtl" : "ltr");
 
+  webui::UseVersion2 version2;
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_MERGE_SESSION_LOAD_HTML));

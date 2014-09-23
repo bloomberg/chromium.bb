@@ -106,11 +106,6 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSingleSelectionModelTest) {
       "list_single_selection_model_test.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, LocalStringsTest) {
-  AddLibrary(IDR_WEBUI_JS_LOCAL_STRINGS);
-  RunTest(base::FilePath(FILE_PATH_LITERAL("local_strings_test.html")));
-}
-
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuTest) {
   AddLibrary(IDR_WEBUI_JS_ASSERT);
   AddLibrary(IDR_WEBUI_JS_CR);

@@ -54,7 +54,6 @@ function WallpaperManager(dialogDom) {
    * Returns a translated string.
    *
    * Wrapper function to make dealing with translated strings more concise.
-   * Equivilant to localStrings.getString(id).
    *
    * @param {string} id The id of the string to return.
    * @return {string} The translated string.

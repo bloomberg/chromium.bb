@@ -26,10 +26,9 @@ body {
   width: 80%;
 }
 </style>
-<script src="../../../../ui/webui/resources/js/local_strings.js"></script>
+<script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
 
 <script>
-var localStrings = new LocalStrings();
 
 function sendCommand(cmd) {
   window.domAutomationController.setAutomationId(1);
@@ -47,8 +46,8 @@ function forceLoad() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var showDelayTime = localStrings.getString('show_delay_time');
-  var totalWaitTime = localStrings.getString('total_wait_time');
+  var showDelayTime = loadTimeData.getString('show_delay_time');
+  var totalWaitTime = loadTimeData.getString('total_wait_time');
   window.setTimeout(showPage, showDelayTime);
   window.setTimeout(forceLoad, totalWaitTime);
 });

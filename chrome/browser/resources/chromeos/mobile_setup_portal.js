@@ -24,8 +24,6 @@ cr.define('mobile', function() {
     INVALID_DEVICE_INFO: 2
   };
 
-  var localStrings = new LocalStrings();
-
   function PortalImpl() {
     // Mobile device information.
     this.deviceInfo_ = null;
@@ -98,14 +96,14 @@ cr.define('mobile', function() {
           $('carrierPage').contentWindow.location.href =
               PORTAL_OFFLINE_PAGE_URL;
           $('statusHeader').textContent =
-              localStrings.getString('portal_unreachable_header');
+              loadTimeData.getString('portal_unreachable_header');
           this.startSpinner_();
           break;
         case CarrierPageType.INVALID_DEVICE_INFO:
           $('carrierPage').contentWindow.location.href =
               INVALID_DEVICE_INFO_PAGE_URL;
           $('statusHeader').textContent =
-              localStrings.getString('invalid_device_info_header');
+              loadTimeData.getString('invalid_device_info_header');
           this.stopSpinner_();
           break;
         case CarrierPageType.NOT_SET:

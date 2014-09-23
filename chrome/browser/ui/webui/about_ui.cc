@@ -705,7 +705,7 @@ std::string AboutStats(const std::string& query) {
           base::JSONWriter::OPTIONS_PRETTY_PRINT,
           &data);
     if (query == kStringsJsPath)
-      data = "var templateData = " + data + ";";
+      data = "loadTimeData.data = " + data + ";";
   } else if (query == "raw") {
     // Dump the raw counters which have changed in text format.
     data = "<pre>";

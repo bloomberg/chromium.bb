@@ -35,8 +35,6 @@ cr.define('mobile', function() {
   SimUnlock.PIN_MIN_LENGTH = 4;
   SimUnlock.PUK_LENGTH = 8;
 
-  SimUnlock.localStrings_ = new LocalStrings();
-
   SimUnlock.prototype = {
     initialized_: false,
     mode_: SimUnlock.SIM_DIALOG_UNLOCK,
@@ -61,11 +59,10 @@ cr.define('mobile', function() {
           break;
         case SimUnlock.SIM_LOCKED_PIN:
           if (error == SimUnlock.ERROR_OK) {
-            pinMessage = SimUnlock.localStrings_.getStringF(
-                'enterPinTriesMessage', tries);
+            pinMessage = loadTimeData.getStringF('enterPinTriesMessage', tries);
             $('pin-error-msg').classList.remove('error');
           } else if (error == SimUnlock.ERROR_PIN) {
-              pinMessage = SimUnlock.localStrings_.getStringF(
+              pinMessage = loadTimeData.getStringF(
                   'incorrectPinTriesMessage', tries);
             $('pin-error-msg').classList.add('error');
           }
@@ -77,10 +74,10 @@ cr.define('mobile', function() {
           break;
         case SimUnlock.SIM_NOT_LOCKED_ASK_PIN:
           if (error == SimUnlock.ERROR_OK) {
-            pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
+            pinMessage = loadTimeData.getString('enterPinMessage');
             $('pin-error-msg').classList.remove('error');
           } else if (error == SimUnlock.ERROR_PIN) {
-              pinMessage = SimUnlock.localStrings_.getStringF(
+              pinMessage = loadTimeData.getStringF(
                   'incorrectPinTriesMessage', tries);
             $('pin-error-msg').classList.add('error');
           }
@@ -93,10 +90,10 @@ cr.define('mobile', function() {
         case SimUnlock.SIM_NOT_LOCKED_CHANGE_PIN:
           SimUnlock.prepareChoosePinDialog(true);
           if (error == SimUnlock.ERROR_OK) {
-            pinMessage = SimUnlock.localStrings_.getString('changePinMessage');
+            pinMessage = loadTimeData.getString('changePinMessage');
             $('choose-pin-msg').classList.remove('error');
           } else if (error == SimUnlock.ERROR_PIN) {
-              pinMessage = SimUnlock.localStrings_.getStringF(
+              pinMessage = loadTimeData.getStringF(
                   'incorrectPinTriesMessage', tries);
             $('choose-pin-msg').classList.add('error');
           }
@@ -114,8 +111,7 @@ cr.define('mobile', function() {
         case SimUnlock.SIM_LOCKED_PUK:
           $('puk-input').value = '';
           if (tries && tries >= 0) {
-            var pukMessage = SimUnlock.localStrings_.getStringF(
-                'enterPukWarning', tries);
+            var pukMessage = loadTimeData.getStringF('enterPukWarning', tries);
             $('puk-warning-msg').textContent = pukMessage;
           }
           $('enter-puk-confirm').disabled = true;
@@ -388,15 +384,15 @@ cr.define('mobile', function() {
     if (changePin) {
       $('choose-pin-content-area').classList.remove('choose-pin-content-area');
       $('choose-pin-content-area').classList.add('change-pin-content-area');
-      var title = SimUnlock.localStrings_.getString('changePinTitle');
+      var title = loadTimeData.getString('changePinTitle');
       $('choose-pin-title').textContent = title;
     } else {
       $('choose-pin-content-area').classList.remove('change-pin-content-area');
       $('choose-pin-content-area').classList.add('choose-pin-content-area');
-      var pinMessage = SimUnlock.localStrings_.getString('choosePinMessage');
+      var pinMessage = loadTimeData.getString('choosePinMessage');
       $('choose-pin-msg').classList.remove('error');
       $('choose-pin-msg').textContent = pinMessage;
-      var title = SimUnlock.localStrings_.getString('choosePinTitle');
+      var title = loadTimeData.getString('choosePinTitle');
       $('choose-pin-title').textContent = title;
     }
     $('old-pin-label').hidden = !changePin;

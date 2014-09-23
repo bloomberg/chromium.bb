@@ -23,11 +23,24 @@ function LoadTimeData() {}
   LoadTimeData.prototype = {
     /**
      * Sets the backing object.
+     *
+     * Note that there is no getter for |data_| to discourage abuse of the form:
+     *
+     *     var value = loadTimeData.data()['key'];
+     *
      * @param {Object} value The de-serialized page data.
      */
     set data(value) {
       expect(!this.data_, 'Re-setting data.');
       this.data_ = value;
+    },
+
+    /**
+     * Returns a JsEvalContext for |data_|.
+     * @returns {JsEvalContext}
+     */
+    createJsEvalContext: function() {
+      return new JsEvalContext(this.data_);
     },
 
     /**

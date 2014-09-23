@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var localStrings;
-
 // Contents of lines that act as delimiters for multi-line values.
 var DELIM_START = '---------- START ----------';
 var DELIM_END = '---------- END ----------';
@@ -33,7 +31,7 @@ function handleDrop(e) {
 }
 
 function showError(fileName) {
-  $('status').textContent = localStrings.getStringF('parseError', fileName);
+  $('status').textContent = loadTimeData.getStringF('parseError', fileName);
 }
 
 /**
@@ -43,10 +41,10 @@ function changeCollapsedStatus() {
   var valueDiv = getValueDivForButton(this);
   if (valueDiv.parentNode.className == 'number-collapsed') {
     valueDiv.parentNode.className = 'number-expanded';
-    this.textContent = localStrings.getString('collapseBtn');
+    this.textContent = loadTimeData.getString('collapseBtn');
   } else {
     valueDiv.parentNode.className = 'number-collapsed';
-    this.textContent = localStrings.getString('expandBtn');
+    this.textContent = loadTimeData.getString('expandBtn');
   }
 }
 
@@ -58,7 +56,7 @@ function collapseAll() {
   for (var i = 0; i < valueDivs.length; i++) {
     var button = getButtonForValueDiv(valueDivs[i]);
     if (button && button.className != 'button-hidden') {
-      button.textContent = localStrings.getString('expandBtn');
+      button.textContent = loadTimeData.getString('expandBtn');
       valueDivs[i].parentNode.className = 'number-collapsed';
     }
   }
@@ -72,7 +70,7 @@ function expandAll() {
   for (var i = 0; i < valueDivs.length; i++) {
     var button = getButtonForValueDiv(valueDivs[i]);
     if (button && button.className != 'button-hidden') {
-      button.textContent = localStrings.getString('collapseBtn');
+      button.textContent = loadTimeData.getString('collapseBtn');
       valueDivs[i].parentNode.className = 'number-expanded';
     }
   }
@@ -89,7 +87,7 @@ function collapseMultiLineStrings() {
     button.onclick = changeCollapsedStatus;
     if (valueDivs[i].scrollHeight > (nameDivs[i].scrollHeight * 2)) {
       button.className = '';
-      button.textContent = localStrings.getString('expandBtn');
+      button.textContent = loadTimeData.getString('expandBtn');
       valueDivs[i].parentNode.className = 'number-collapsed';
     } else {
       button.className = 'button-hidden';
@@ -109,7 +107,7 @@ function importLog(file) {
       if (parseSystemLog(this.result)) {
         // Reset table title and status
         $('tableTitle').textContent =
-              localStrings.getStringF('logFileTableTitle', file.name);
+              loadTimeData.getStringF('logFileTableTitle', file.name);
         $('status').textContent = '';
       } else {
         showError(file.name);
@@ -170,7 +168,7 @@ function parseSystemLog(text) {
     details.push({'statName': name, 'statValue': value});
   }
 
-  templateData['details'] = details;
+  var templateData = {'details': details};
   i18nTemplate.process(document, templateData);
   jstProcess(new JsEvalContext(templateData), $('t'));
 
@@ -179,7 +177,7 @@ function parseSystemLog(text) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  localStrings = new LocalStrings();
+  jstProcess(loadTimeData.createJsEvalContext(), $('t'));
 
   $('collapseAll').onclick = collapseAll;
   $('expandAll').onclick = expandAll;
