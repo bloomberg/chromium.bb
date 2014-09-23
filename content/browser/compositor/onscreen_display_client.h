@@ -34,14 +34,21 @@ class OnscreenDisplayClient : cc::DisplayClient {
   // cc::DisplayClient implementation.
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DisplayDamaged() OVERRIDE;
+  virtual void DidSwapBuffers() OVERRIDE;
+  virtual void DidSwapBuffersComplete() OVERRIDE;
 
  private:
+  void ScheduleDraw();
   void Draw();
 
   scoped_ptr<cc::OutputSurface> output_surface_;
   scoped_ptr<cc::Display> display_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool scheduled_draw_;
+  // True if a draw should be scheduled, but it's hit the limit on max frames
+  // pending.
+  bool deferred_draw_;
+  int pending_frames_;
 
   base::WeakPtrFactory<OnscreenDisplayClient> weak_ptr_factory_;
 

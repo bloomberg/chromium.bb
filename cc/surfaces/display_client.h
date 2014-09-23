@@ -15,6 +15,8 @@ class DisplayClient {
  public:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
   virtual void DisplayDamaged() = 0;
+  virtual void DidSwapBuffers() = 0;
+  virtual void DidSwapBuffersComplete() = 0;
 
  protected:
   virtual ~DisplayClient() {}

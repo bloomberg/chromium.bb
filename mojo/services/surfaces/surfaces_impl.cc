@@ -98,4 +98,10 @@ scoped_ptr<cc::OutputSurface> SurfacesImpl::CreateOutputSurface() {
 void SurfacesImpl::DisplayDamaged() {
 }
 
+void SurfacesImpl::DidSwapBuffers() {
+}
+
+void SurfacesImpl::DidSwapBuffersComplete() {
+}
+
 }  // namespace mojo

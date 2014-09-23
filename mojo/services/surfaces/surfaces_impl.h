@@ -52,6 +52,8 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
   // DisplayClient implementation.
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DisplayDamaged() OVERRIDE;
+  virtual void DidSwapBuffers() OVERRIDE;
+  virtual void DidSwapBuffersComplete() OVERRIDE;
 
   cc::SurfaceFactory* factory() { return &factory_; }
 

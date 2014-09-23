@@ -21,6 +21,8 @@ OnscreenDisplayClient::OnscreenDisplayClient(
           new cc::Display(this, manager, HostSharedBitmapManager::current())),
       task_runner_(task_runner),
       scheduled_draw_(false),
+      deferred_draw_(false),
+      pending_frames_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -33,9 +35,19 @@ scoped_ptr<cc::OutputSurface> OnscreenDisplayClient::CreateOutputSurface() {
 }
 
 void OnscreenDisplayClient::DisplayDamaged() {
-  if (scheduled_draw_)
+  if (scheduled_draw_ || deferred_draw_)
     return;
   TRACE_EVENT0("content", "OnscreenDisplayClient::DisplayDamaged");
+  if (pending_frames_ >= display_->GetMaxFramesPending()) {
+    deferred_draw_ = true;
+  } else {
+    ScheduleDraw();
+  }
+}
+
+void OnscreenDisplayClient::ScheduleDraw() {
+  DCHECK(!deferred_draw_);
+  DCHECK(!scheduled_draw_);
   scheduled_draw_ = true;
   task_runner_->PostTask(
       FROM_HERE,
@@ -46,6 +58,18 @@ void OnscreenDisplayClient::Draw() {
   TRACE_EVENT0("content", "OnscreenDisplayClient::Draw");
   scheduled_draw_ = false;
   display_->Draw();
+}
+
+void OnscreenDisplayClient::DidSwapBuffers() {
+  pending_frames_++;
+}
+
+void OnscreenDisplayClient::DidSwapBuffersComplete() {
+  pending_frames_--;
+  if ((pending_frames_ < display_->GetMaxFramesPending()) && deferred_draw_) {
+    deferred_draw_ = false;
+    ScheduleDraw();
+  }
 }
 
 }  // namespace content

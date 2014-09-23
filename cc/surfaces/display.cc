@@ -132,6 +132,14 @@ bool Display::Draw() {
   return true;
 }
 
+void Display::DidSwapBuffers() {
+  client_->DidSwapBuffers();
+}
+
+void Display::DidSwapBuffersComplete() {
+  client_->DidSwapBuffersComplete();
+}
+
 void Display::OnSurfaceDamaged(SurfaceId surface) {
   if (aggregator_ && aggregator_->previous_contained_surfaces().count(surface))
     client_->DisplayDamaged();
@@ -139,6 +147,12 @@ void Display::OnSurfaceDamaged(SurfaceId surface) {
 
 SurfaceId Display::CurrentSurfaceId() {
   return current_surface_id_;
+}
+
+int Display::GetMaxFramesPending() {
+  if (!output_surface_)
+    return OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
+  return output_surface_->capabilities().max_frames_pending;
 }
 
 }  // namespace cc

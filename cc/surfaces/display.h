@@ -47,6 +47,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   bool Draw();
 
   SurfaceId CurrentSurfaceId();
+  int GetMaxFramesPending();
 
   // OutputSurfaceClient implementation.
   virtual void DeferredInitialize() OVERRIDE {}
@@ -55,8 +56,8 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
                                      base::TimeDelta interval) OVERRIDE {}
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
-  virtual void DidSwapBuffers() OVERRIDE {}
-  virtual void DidSwapBuffersComplete() OVERRIDE {}
+  virtual void DidSwapBuffers() OVERRIDE;
+  virtual void DidSwapBuffersComplete() OVERRIDE;
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE {}
   virtual void SetExternalDrawConstraints(
