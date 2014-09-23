@@ -89,15 +89,15 @@ bool WillHandleBrowserAboutURL(GURL* url,
 }
 
 bool HandleNonNavigationAboutURL(const GURL& url) {
-  const std::string host(url.host());
+  const std::string spec(url.spec());
 
-  if (host == chrome::kChromeUIRestartHost) {
+  if (LowerCaseEqualsASCII(spec, chrome::kChromeUIRestartURL)) {
     // Call AttemptRestart after chrome::Navigate() completes to avoid access of
     // gtk objects after they are destroyed by BrowserWindowGtk::Close().
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&chrome::AttemptRestart));
     return true;
-  } else if (host == chrome::kChromeUIQuitHost) {
+  } else if (LowerCaseEqualsASCII(spec, chrome::kChromeUIQuitURL)) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&chrome::AttemptExit));
     return true;
@@ -107,7 +107,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #if !defined(OFFICIAL_BUILD)
 
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
-  if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
+  if (LowerCaseEqualsASCII(spec, chrome::kChromeUIIPCURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
     chrome::ShowAboutIPCDialog();
     return true;

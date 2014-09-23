@@ -125,7 +125,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (IsAsanDebugURL(url))
     return HandleAsanDebugURL(url);
 
-  if (url.host() == kChromeUIBrowserCrashHost) {
+  if (url == GURL(kChromeUIBrowserCrashURL)) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
     return true;
