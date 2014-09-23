@@ -165,7 +165,6 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       elevated_for_testing_(false),
       did_init_(false),
       did_shutdown_(false),
-      waiting_for_permissions_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -546,9 +545,6 @@ void SupervisedUserService::LoadBlacklist(const base::FilePath& path) {
 }
 
 bool SupervisedUserService::AccessRequestsEnabled() {
-  if (waiting_for_permissions_)
-    return false;
-
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   GoogleServiceAuthError::State state = service->GetAuthError().state();
@@ -559,14 +555,12 @@ bool SupervisedUserService::AccessRequestsEnabled() {
 }
 
 void SupervisedUserService::OnPermissionRequestIssued() {
-  waiting_for_permissions_ = false;
   // TODO(akuegel): Figure out how to show the result of issuing the permission
   // request in the UI. Currently, we assume the permission request was created
   // successfully.
 }
 
 void SupervisedUserService::AddAccessRequest(const GURL& url) {
-  waiting_for_permissions_ = true;
   permissions_creator_->CreatePermissionRequest(
       SupervisedUserURLFilter::Normalize(url),
       base::Bind(&SupervisedUserService::OnPermissionRequestIssued,

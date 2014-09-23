@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SERVICE_H_
 
+#include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -323,9 +325,6 @@ class SupervisedUserService : public KeyedService,
 
   // Used to create permission requests.
   scoped_ptr<PermissionRequestCreator> permissions_creator_;
-
-  // True iff we are waiting for a permission request to be issued.
-  bool waiting_for_permissions_;
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
 };
