@@ -129,6 +129,20 @@
     DOMString? psk;
   };
 
+  // The information about a user associated with Easy unlock service.
+  dictionary UserInfo {
+    // The user id.
+    DOMString userId;
+
+    // Whether the user is logged in. If not logged in, the app is running on
+    // the signin screen.
+    boolean loggedIn;
+
+    // Whether all data needed to use Easy unlock service has been loaded for
+    // the user.
+    boolean dataReady;
+  };
+
   // Callback for crypto methods that return a single array buffer.
   callback DataCallback = void(optional ArrayBuffer data);
 
@@ -147,6 +161,12 @@
 
   // Callback for the getRemoteDevices() method.
   callback GetRemoteDevicesCallback = void(Device[] devices);
+
+  // Callback for the |getUserInfo()| method. Note that the callback argument is
+  // a list for future use (on signin screen there may be more than one user
+  // associated with the easy unlock service). Currently the method returns at
+  // most one user.
+  callback GetUserInfoCallback = void(UserInfo[] users);
 
   interface Functions {
     // Gets localized strings required to render the API.
@@ -268,5 +288,16 @@
     // success, the user session will be started.
     static void trySignInSecret(ArrayBuffer signInSecret,
                                 EmptyCallback callback);
+
+    // Retrieves information about the user associated with the Easy unlock
+    // service.
+    static void getUserInfo(GetUserInfoCallback callback);
+  };
+
+  interface Events {
+    // Event fired when the data for the user currently associated with
+    // Easy unlock service is updated.
+    // |userInfo| The updated user information.
+    static void onUserInfoUpdated(UserInfo userInfo);
   };
 };

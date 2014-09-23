@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 // static
@@ -46,7 +48,12 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
-    return new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableEasySignin)) {
+      return new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
+    } else {
+      return NULL;
+    }
   }
 #endif
   return new EasyUnlockServiceRegular(Profile::FromBrowserContext(context));

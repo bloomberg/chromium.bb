@@ -152,6 +152,10 @@ void EasyUnlockScreenlockStateHandler::OnScreenDidLock() {
 void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock() {
 }
 
+void EasyUnlockScreenlockStateHandler::OnFocusedUserChanged(
+    const std::string& user_id) {
+}
+
 void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
     bool trial_run,
     ScreenlockBridge::UserPodCustomIconOptions* icon_options) {

@@ -33,6 +33,8 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   static BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
       GetFactoryInstance();
 
+  static const bool kServiceRedirectedInIncognito = true;
+
   explicit EasyUnlockPrivateAPI(content::BrowserContext* context);
   virtual ~EasyUnlockPrivateAPI();
 
@@ -51,6 +53,8 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
 };
 
+// TODO(tbarzic): Replace SyncExtensionFunction/AsyncExtensionFunction overrides
+// with UIThreadExtensionFunction throughout the file.
 class EasyUnlockPrivateGetStringsFunction : public SyncExtensionFunction {
  public:
   EasyUnlockPrivateGetStringsFunction();
@@ -308,6 +312,21 @@ class EasyUnlockPrivateTrySignInSecretFunction :
   virtual bool RunAsync() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateTrySignInSecretFunction);
+};
+
+class EasyUnlockPrivateGetUserInfoFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getUserInfo",
+                             EASYUNLOCKPRIVATE_GETUSERINFO)
+  EasyUnlockPrivateGetUserInfoFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateGetUserInfoFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetUserInfoFunction);
 };
 
 }  // namespace api

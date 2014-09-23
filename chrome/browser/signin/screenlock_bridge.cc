@@ -137,6 +137,13 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
     FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidUnlock());
 }
 
+void ScreenlockBridge::SetFocusedUser(const std::string& user_id) {
+  if (user_id == focused_user_id_)
+    return;
+  focused_user_id_ = user_id;
+  FOR_EACH_OBSERVER(Observer, observers_, OnFocusedUserChanged(user_id));
+}
+
 bool ScreenlockBridge::IsLocked() const {
   return lock_handler_ != NULL;
 }

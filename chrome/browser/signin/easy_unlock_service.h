@@ -94,23 +94,32 @@ class EasyUnlockService : public KeyedService {
   explicit EasyUnlockService(Profile* profile);
   virtual ~EasyUnlockService();
 
-  // Does service type specific initialization.
+  // Does a service type specific initialization.
   virtual void InitializeInternal() = 0;
+
+  // Does a service type specific shutdown. Called from |Shutdown|.
+  virtual void ShutdownInternal() = 0;
 
   // Service type specific tests for whether the service is allowed. Returns
   // false if service is not allowed. If true is returned, the service may still
   // not be allowed if common tests fail (e.g. if Bluetooth is not available).
   virtual bool IsAllowedInternal() = 0;
 
+  // KeyedService override:
+  virtual void Shutdown() OVERRIDE;
+
   // Exposes the profile to which the service is attached to subclasses.
   Profile* profile() const { return profile_; }
 
-  // Installs the Easy unlock component app if it isn't installed or enables
-  // the app if it is installed but disabled.
+  // Installs the Easy unlock component app if it isn't installed and enables
+  // the app if it is disabled.
   void LoadApp();
 
   // Disables the Easy unlock component app if it's loaded.
   void DisableAppIfLoaded();
+
+  // Unloads the Easy unlock component app if it's loaded.
+  void UnloadApp();
 
   // Reloads the Easy unlock component app if it's loaded.
   void ReloadApp();
@@ -118,8 +127,14 @@ class EasyUnlockService : public KeyedService {
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();
 
+  // Notifies the easy unlock app that the user state has been updated.
+  void NotifyUserUpdated();
+
   // Notifies observers that the turn off flow status changed.
   void NotifyTurnOffOperationStatusChanged();
+
+  // Resets |screenlock_state_handler_|.
+  void ResetScreenlockStateHandler();
 
  private:
   // A class to detect whether a bluetooth adapter is present.
@@ -143,6 +158,9 @@ class EasyUnlockService : public KeyedService {
   class PowerMonitor;
   scoped_ptr<PowerMonitor> power_monitor_;
 #endif
+
+  // Whether the service has been shut down.
+  bool shut_down_;
 
   ObserverList<EasyUnlockServiceObserver> observers_;
 

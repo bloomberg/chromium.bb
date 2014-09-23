@@ -41971,6 +41971,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="893" label="ACCESSIBILITY_PRIVATE_SETFOCUSRING"/>
   <int value="894" label="USB_GETCONFIGURATION"/>
   <int value="895" label="WEBVIEWINTERNAL_SETALLOWTRANSPARENCY"/>
+  <int value="896" label="EASYUNLOCKPRIVATE_GETUSERINFO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

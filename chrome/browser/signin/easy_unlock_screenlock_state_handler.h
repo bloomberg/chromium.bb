@@ -63,6 +63,7 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // ScreenlockBridge::Observer:
   virtual void OnScreenDidLock() OVERRIDE;
   virtual void OnScreenDidUnlock() OVERRIDE;
+  virtual void OnFocusedUserChanged(const std::string& user_id) OVERRIDE;
 
   // Updates icon's tooltip options.
   // |trial_run|: Whether the trial Easy Unlock run is in progress.

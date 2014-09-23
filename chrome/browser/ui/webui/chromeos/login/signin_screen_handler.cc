@@ -327,6 +327,7 @@ SigninScreenHandler::~SigninScreenHandler() {
     max_mode_delegate_.reset(NULL);
   }
   ScreenlockBridge::Get()->SetLockHandler(NULL);
+  ScreenlockBridge::Get()->SetFocusedUser("");
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -1326,6 +1327,7 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id);
   WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
+  ScreenlockBridge::Get()->SetFocusedUser(user_id);
 }
 
 void SigninScreenHandler::HandleHardlockPod(const std::string& user_id) {

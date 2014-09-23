@@ -43,6 +43,7 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const OVERRIDE;
   virtual std::string GetChallenge() const OVERRIDE;
   virtual void InitializeInternal() OVERRIDE;
+  virtual void ShutdownInternal() OVERRIDE;
   virtual bool IsAllowedInternal() OVERRIDE;
 
   // Callback when the controlling pref changes.

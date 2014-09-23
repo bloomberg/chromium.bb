@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/linked_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
@@ -563,6 +566,29 @@ EasyUnlockPrivateTrySignInSecretFunction::
 bool EasyUnlockPrivateTrySignInSecretFunction::RunAsync() {
   SetError("Not implemented");
   SendResponse(false);
+  return true;
+}
+
+EasyUnlockPrivateGetUserInfoFunction::EasyUnlockPrivateGetUserInfoFunction() {
+}
+
+EasyUnlockPrivateGetUserInfoFunction::~EasyUnlockPrivateGetUserInfoFunction() {
+}
+
+bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
+  EasyUnlockService* service =
+      EasyUnlockService::Get(Profile::FromBrowserContext(browser_context()));
+  std::vector<linked_ptr<easy_unlock_private::UserInfo> > users;
+  std::string user_id = service->GetUserEmail();
+  if (!user_id.empty()) {
+    users.push_back(
+        linked_ptr<easy_unlock_private::UserInfo>(
+            new easy_unlock_private::UserInfo()));
+    users[0]->user_id = user_id;
+    users[0]->logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
+    users[0]->data_ready = service->GetRemoteDevices() != NULL;
+  }
+  results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
   return true;
 }
 

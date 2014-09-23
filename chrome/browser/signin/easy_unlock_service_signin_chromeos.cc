@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -14,7 +13,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 
 namespace {
@@ -93,11 +91,11 @@ EasyUnlockServiceSignin::UserData::~UserData() {}
 EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
     : EasyUnlockService(profile),
       allow_cryptohome_backoff_(true),
+      service_active_(false),
       weak_ptr_factory_(this) {
 }
 
 EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {
-  STLDeleteContainerPairSecondPointers(user_data_.begin(), user_data_.end());
 }
 
 EasyUnlockService::Type EasyUnlockServiceSignin::GetType() const {
@@ -164,19 +162,72 @@ std::string EasyUnlockServiceSignin::GetChallenge() const {
 }
 
 void EasyUnlockServiceSignin::InitializeInternal() {
+  if (chromeos::LoginState::Get()->IsUserLoggedIn())
+    return;
+
+  service_active_ = true;
+
+  chromeos::LoginState::Get()->AddObserver(this);
+  ScreenlockBridge* screenlock_bridge = ScreenlockBridge::Get();
+  screenlock_bridge->AddObserver(this);
+  if (!screenlock_bridge->focused_user_id().empty())
+    OnFocusedUserChanged(screenlock_bridge->focused_user_id());
+}
+
+void EasyUnlockServiceSignin::ShutdownInternal() {
+  if (!service_active_)
+    return;
+  service_active_ = false;
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  ScreenlockBridge::Get()->RemoveObserver(this);
+  chromeos::LoginState::Get()->RemoveObserver(this);
+  STLDeleteContainerPairSecondPointers(user_data_.begin(), user_data_.end());
+  user_data_.clear();
 }
 
 bool EasyUnlockServiceSignin::IsAllowedInternal() {
-  return !user_id_.empty() &&
-         FindLoadedDataForCurrentUser() &&
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kEnableEasySignin);
+  return service_active_ &&
+         !user_id_.empty() &&
+         !chromeos::LoginState::Get()->IsUserLoggedIn();
+}
+
+void EasyUnlockServiceSignin::OnScreenDidLock() {
+}
+
+void EasyUnlockServiceSignin::OnScreenDidUnlock() {
+}
+
+void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
+  if (user_id_ == user_id)
+    return;
+
+  // Setting or clearing the user_id may changed |IsAllowed| value, so in these
+  // cases update the app state. Otherwise, it's enough to notify the app the
+  // user data has been updated.
+  bool should_update_app_state = user_id_.empty() != user_id.empty();
+  user_id_ = user_id;
+
+  ResetScreenlockStateHandler();
+
+  if (should_update_app_state) {
+    UpdateAppState();
+  } else {
+    NotifyUserUpdated();
+  }
+
+  LoadCurrentUserDataIfNeeded();
+}
+
+void EasyUnlockServiceSignin::LoggedInStateChanged() {
+  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
+    return;
+  UnloadApp();
+  Shutdown();
 }
 
 void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
-  if (user_id_.empty() ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kEnableEasySignin))
+  if (user_id_.empty() || !service_active_)
     return;
 
   std::map<std::string, UserData*>::iterator it = user_data_.find(user_id_);
@@ -210,12 +261,18 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     chromeos::EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
         user_id, devices, &data->remote_devices_value);
   }
+
+  // If the fetched data belongs to the currently focused user, notify the app
+  // that it has to refresh it's user data.
+  if (user_id == user_id_)
+    NotifyUserUpdated();
 }
 
 const EasyUnlockServiceSignin::UserData*
     EasyUnlockServiceSignin::FindLoadedDataForCurrentUser() const {
   if (user_id_.empty())
     return NULL;
+
   std::map<std::string, UserData*>::const_iterator it =
       user_data_.find(user_id_);
   if (it == user_data_.end())

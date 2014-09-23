@@ -165,6 +165,12 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   OnPrefsChanged();
 }
 
+void EasyUnlockServiceRegular::ShutdownInternal() {
+  turn_off_flow_.reset();
+  turn_off_flow_status_ = EasyUnlockService::IDLE;
+  registrar_.RemoveAll();
+}
+
 bool EasyUnlockServiceRegular::IsAllowedInternal() {
 #if defined(OS_CHROMEOS)
   if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser())

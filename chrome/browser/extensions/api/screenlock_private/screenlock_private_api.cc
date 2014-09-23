@@ -114,6 +114,10 @@ void ScreenlockPrivateEventRouter::OnScreenDidUnlock() {
       new base::FundamentalValue(false));
 }
 
+void ScreenlockPrivateEventRouter::OnFocusedUserChanged(
+    const std::string& user_id) {
+}
+
 void ScreenlockPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     base::Value* arg) {

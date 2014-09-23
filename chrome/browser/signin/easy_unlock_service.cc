@@ -18,11 +18,13 @@
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
@@ -128,6 +130,7 @@ class EasyUnlockService::PowerMonitor :
 EasyUnlockService::EasyUnlockService(Profile* profile)
     : profile_(profile),
       bluetooth_detector_(new BluetoothDetector(this)),
+      shut_down_(false),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -160,6 +163,9 @@ void EasyUnlockService::RegisterProfilePrefs(
 }
 
 bool EasyUnlockService::IsAllowed() {
+  if (shut_down_)
+    return false;
+
   if (!IsAllowedInternal())
     return false;
 
@@ -205,6 +211,22 @@ void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void  EasyUnlockService::Shutdown() {
+  if (shut_down_)
+    return;
+  shut_down_ = true;
+
+  ShutdownInternal();
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  ResetScreenlockStateHandler();
+  bluetooth_detector_.reset();
+#if defined(OS_CHROMEOS)
+  power_monitor_.reset();
+#endif
+}
+
 void EasyUnlockService::LoadApp() {
   DCHECK(IsAllowed());
 
@@ -231,13 +253,15 @@ void EasyUnlockService::LoadApp() {
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
     extension_service->EnableExtension(extension_misc::kEasyUnlockAppId);
+
+    NotifyUserUpdated();
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void EasyUnlockService::DisableAppIfLoaded() {
   // Make sure lock screen state set by the extension gets reset.
-  screenlock_state_handler_.reset();
+  ResetScreenlockStateHandler();
 
   extensions::ComponentLoader* loader = GetComponentLoader(profile_);
   if (!loader->Exists(extension_misc::kEasyUnlockAppId))
@@ -249,16 +273,21 @@ void EasyUnlockService::DisableAppIfLoaded() {
                                       extensions::Extension::DISABLE_RELOAD);
 }
 
+void EasyUnlockService::UnloadApp() {
+  GetComponentLoader(profile_)->Remove(extension_misc::kEasyUnlockAppId);
+}
+
 void EasyUnlockService::ReloadApp() {
   // Make sure lock screen state set by the extension gets reset.
-  screenlock_state_handler_.reset();
+  ResetScreenlockStateHandler();
 
-  if (GetComponentLoader(profile_)->Exists(extension_misc::kEasyUnlockAppId)) {
-    extensions::ExtensionSystem* extension_system =
-        extensions::ExtensionSystem::Get(profile_);
-    extension_system->extension_service()->ReloadExtension(
-        extension_misc::kEasyUnlockAppId);
-  }
+  if (!GetComponentLoader(profile_)->Exists(extension_misc::kEasyUnlockAppId))
+    return;
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile_);
+  extension_system->extension_service()->ReloadExtension(
+      extension_misc::kEasyUnlockAppId);
+  NotifyUserUpdated();
 }
 
 void EasyUnlockService::UpdateAppState() {
@@ -277,9 +306,35 @@ void EasyUnlockService::UpdateAppState() {
   }
 }
 
+void EasyUnlockService::NotifyUserUpdated() {
+  std::string user_id = GetUserEmail();
+  if (user_id.empty())
+    return;
+
+  // Notify the easy unlock app that the user info changed.
+  extensions::api::easy_unlock_private::UserInfo info;
+  info.user_id = user_id;
+  info.logged_in = GetType() == TYPE_REGULAR;
+  info.data_ready = GetRemoteDevices() != NULL;
+
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(info.ToValue().release());
+
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::api::easy_unlock_private::OnUserInfoUpdated::kEventName,
+      args.Pass()));
+
+  extensions::EventRouter::Get(profile_)->DispatchEventToExtension(
+       extension_misc::kEasyUnlockAppId, event.Pass());
+}
+
 void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {
   FOR_EACH_OBSERVER(
       EasyUnlockServiceObserver, observers_, OnTurnOffOperationStatusChanged());
+}
+
+void EasyUnlockService::ResetScreenlockStateHandler() {
+  screenlock_state_handler_.reset();
 }
 
 void EasyUnlockService::Initialize() {

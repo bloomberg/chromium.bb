@@ -14,9 +14,13 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
+#include "chromeos/login/login_state.h"
 
 // EasyUnlockService instance that should be used for signin profile.
-class EasyUnlockServiceSignin : public EasyUnlockService {
+class EasyUnlockServiceSignin : public EasyUnlockService,
+                                public ScreenlockBridge::Observer,
+                                public chromeos::LoginState::Observer {
  public:
   explicit EasyUnlockServiceSignin(Profile* profile);
   virtual ~EasyUnlockServiceSignin();
@@ -65,8 +69,17 @@ class EasyUnlockServiceSignin : public EasyUnlockService {
   virtual void ResetTurnOffFlow() OVERRIDE;
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const OVERRIDE;
   virtual std::string GetChallenge() const OVERRIDE;
-  virtual bool IsAllowedInternal() OVERRIDE;
   virtual void InitializeInternal() OVERRIDE;
+  virtual void ShutdownInternal() OVERRIDE;
+  virtual bool IsAllowedInternal() OVERRIDE;
+
+  // ScreenlockBridge::Observer implementation:
+  virtual void OnScreenDidLock() OVERRIDE;
+  virtual void OnScreenDidUnlock() OVERRIDE;
+  virtual void OnFocusedUserChanged(const std::string& user_id) OVERRIDE;
+
+  // chromeos::LoginState::Observer implementation:
+  virtual void LoggedInStateChanged() OVERRIDE;
 
   // Loads the device data associated with the user's Easy unlock keys from
   // crypthome.
@@ -78,7 +91,7 @@ class EasyUnlockServiceSignin : public EasyUnlockService {
       bool success,
       const chromeos::EasyUnlockDeviceKeyDataList& data);
 
-  // If the device data has been loaded for the current user, returns is.
+  // If the device data has been loaded for the current user, returns it.
   // Otherwise, returns NULL.
   const UserData* FindLoadedDataForCurrentUser() const;
 
@@ -93,6 +106,10 @@ class EasyUnlockServiceSignin : public EasyUnlockService {
   // service attempts to load some data. Retries will be allowed only until the
   // first data load finishes (even if it fails).
   bool allow_cryptohome_backoff_;
+
+  // Whether the service has been successfully initialized, and has not been
+  // shut down.
+  bool service_active_;
 
   base::WeakPtrFactory<EasyUnlockServiceSignin> weak_ptr_factory_;
 

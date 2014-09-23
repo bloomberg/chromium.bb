@@ -68,6 +68,7 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
   // ScreenlockBridge::Observer
   virtual void OnScreenDidLock() OVERRIDE;
   virtual void OnScreenDidUnlock() OVERRIDE;
+  virtual void OnFocusedUserChanged(const std::string& user_id) OVERRIDE;
 
  private:
   friend class extensions::BrowserContextKeyedAPIFactory<

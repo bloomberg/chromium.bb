@@ -29,6 +29,8 @@ class ScreenlockBridge {
     virtual void OnScreenDidLock() = 0;
     // Invoked after the screen lock is dismissed.
     virtual void OnScreenDidUnlock() = 0;
+    // Invoked when the user focused on the lock screen changes.
+    virtual void OnFocusedUserChanged(const std::string& user_id) = 0;
    protected:
     virtual ~Observer() {}
   };
@@ -139,6 +141,7 @@ class ScreenlockBridge {
   static std::string GetAuthenticatedUserEmail(Profile* profile);
 
   void SetLockHandler(LockHandler* lock_handler);
+  void SetFocusedUser(const std::string& user_id);
 
   bool IsLocked() const;
   void Lock(Profile* profile);
@@ -149,6 +152,8 @@ class ScreenlockBridge {
 
   LockHandler* lock_handler() { return lock_handler_; }
 
+  std::string focused_user_id() const { return focused_user_id_; }
+
  private:
   friend struct base::DefaultLazyInstanceTraits<ScreenlockBridge>;
   friend struct base::DefaultDeleter<ScreenlockBridge>;
@@ -157,6 +162,8 @@ class ScreenlockBridge {
   ~ScreenlockBridge();
 
   LockHandler* lock_handler_;  // Not owned
+  // The last focused user's id.
+  std::string focused_user_id_;
   ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockBridge);
