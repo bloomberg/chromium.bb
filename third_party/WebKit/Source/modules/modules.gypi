@@ -280,6 +280,7 @@
     'modules_dictionary_idl_files': [
       'encoding/TextDecodeOptions.idl',
       'encoding/TextDecoderOptions.idl',
+      'indexeddb/IDBIndexParameters.idl',
       'notifications/NotificationOptions.idl',
       'webmidi/MIDIOptions.idl',
     ],
@@ -299,6 +300,8 @@
       '<(blink_modules_output_dir)/encoding/TextDecodeOptions.h',
       '<(blink_modules_output_dir)/encoding/TextDecoderOptions.cpp',
       '<(blink_modules_output_dir)/encoding/TextDecoderOptions.h',
+      '<(blink_modules_output_dir)/indexeddb/IDBIndexParameters.cpp',
+      '<(blink_modules_output_dir)/indexeddb/IDBIndexParameters.h',
       '<(blink_modules_output_dir)/notifications/NotificationOptions.cpp',
       '<(blink_modules_output_dir)/notifications/NotificationOptions.h',
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.cpp',

@@ -50,8 +50,8 @@ enum IDBCursorDirection {
     [CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, optional DOMString direction = "next");
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest openKeyCursor([Default=Undefined] optional any range, optional IDBCursorDirection direction = "next");
     // FIXME: should be union type http://crbug.com/240176
-    [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional Dictionary options);
-    [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
+    [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional IDBIndexParameters options);
+    [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional IDBIndexParameters options);
     [RaisesException] IDBIndex index(DOMString name);
     [RaisesException] void deleteIndex(DOMString name);
     [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);

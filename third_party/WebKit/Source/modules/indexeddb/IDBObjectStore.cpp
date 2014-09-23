@@ -404,18 +404,7 @@ private:
 };
 }
 
-IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
-{
-    bool unique = false;
-    DictionaryHelper::get(options, "unique", unique);
-
-    bool multiEntry = false;
-    DictionaryHelper::get(options, "multiEntry", multiEntry);
-
-    return createIndex(scriptState, name, keyPath, unique, multiEntry, exceptionState);
-}
-
-IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
+IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange()) {
@@ -447,7 +436,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
         return 0;
     }
 
-    if (keyPath.type() == IDBKeyPath::ArrayType && multiEntry) {
+    if (keyPath.type() == IDBKeyPath::ArrayType && options.multiEntry()) {
         exceptionState.throwDOMException(InvalidAccessError, "The keyPath argument was an array and the multiEntry option is true.");
         return 0;
     }
@@ -457,11 +446,11 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     }
 
     int64_t indexId = m_metadata.maxIndexId + 1;
-    backendDB()->createIndex(m_transaction->id(), id(), indexId, name, keyPath, unique, multiEntry);
+    backendDB()->createIndex(m_transaction->id(), id(), indexId, name, keyPath, options.unique(), options.multiEntry());
 
     ++m_metadata.maxIndexId;
 
-    IDBIndexMetadata metadata(name, indexId, keyPath, unique, multiEntry);
+    IDBIndexMetadata metadata(name, indexId, keyPath, options.unique(), options.multiEntry());
     IDBIndex* index = IDBIndex::create(metadata, this, m_transaction.get());
     m_indexMap.set(name, index);
     m_metadata.indexes.set(indexId, metadata);

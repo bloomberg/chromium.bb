@@ -26,11 +26,11 @@
 #ifndef IDBObjectStore_h
 #define IDBObjectStore_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBIndex.h"
+#include "modules/indexeddb/IDBIndexParameters.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBMetadata.h"
@@ -75,11 +75,11 @@ public:
     IDBRequest* deleteFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
     IDBRequest* clear(ScriptState*, ExceptionState&);
 
-    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const String& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
     {
         return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
     }
-    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const Vector<String>& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
     {
         return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
     }
@@ -108,8 +108,7 @@ public:
 private:
     IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 
-    IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
-    IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
+    IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, const IDBIndexParameters&, ExceptionState&);
     IDBRequest* put(ScriptState*, WebIDBPutMode, IDBAny* source, const ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;

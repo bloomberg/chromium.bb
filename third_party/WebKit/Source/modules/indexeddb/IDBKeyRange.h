@@ -26,13 +26,15 @@
 #ifndef IDBKeyRange_h
 #define IDBKeyRange_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
 
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
+class ScriptState;
+class ScriptValue;
 
 class IDBKeyRange FINAL : public GarbageCollected<IDBKeyRange>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
