@@ -323,8 +323,10 @@ const char* AppWindowFrameView::GetClassName() const { return kViewClassName; }
 
 gfx::Size AppWindowFrameView::GetMinimumSize() const {
   gfx::Size min_size = widget_->client_view()->GetMinimumSize();
-  if (!draw_frame_)
+  if (!draw_frame_) {
+    min_size.SetToMax(gfx::Size(1, 1));
     return min_size;
+  }
 
   // Ensure we can display the top of the caption area.
   gfx::Rect client_bounds = GetBoundsForClientView();
