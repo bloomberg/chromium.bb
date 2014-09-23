@@ -666,7 +666,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void set_received_response_content_length(int64 received_content_length) {
     received_response_content_length_ = received_content_length;
   }
-  int64 received_response_content_length() {
+  int64 received_response_content_length() const {
     return received_response_content_length_;
   }
 
