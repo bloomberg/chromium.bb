@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/Microtask.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -417,7 +418,9 @@ PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTrac
 
 void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
-    if (chain && !V8RecursionScope::recursionLevel(toIsolate(context))) {
+    v8::Isolate* isolate = toIsolate(context);
+    int recursionLevel = V8RecursionScope::recursionLevel(isolate);
+    if (chain && (!recursionLevel || (recursionLevel == 1 && Microtask::performingCheckpoint(isolate)))) {
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
         m_currentAsyncCallChain = chain;
         m_nestedAsyncCallCount = 1;

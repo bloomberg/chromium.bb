@@ -32,6 +32,7 @@
 #include "core/dom/Microtask.h"
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "platform/Task.h"
 #include "public/platform/WebThread.h"
 #include <v8.h>
@@ -43,11 +44,20 @@ void Microtask::performCheckpoint()
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
     ASSERT(isolateData);
-    if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint())
+    if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint() || isolateData->destructionPending())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
-    isolate->RunMicrotasks();
+    {
+        // Ensure that end-of-task-or-microtask actions are performed.
+        V8RecursionScope recursionScope(isolate);
+        isolate->RunMicrotasks();
+    }
     isolateData->setPerformingMicrotaskCheckpoint(false);
+}
+
+bool Microtask::performingCheckpoint(v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->performingMicrotaskCheckpoint();
 }
 
 static void microtaskFunctionCallback(void* data)

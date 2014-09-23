@@ -64,6 +64,7 @@ public:
     static void destroy(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
 
+    bool destructionPending() const { return m_destructionPending; }
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
     v8::Handle<v8::FunctionTemplate> toStringTemplate();
@@ -113,6 +114,7 @@ private:
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
     v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
 
+    bool m_destructionPending;
     OwnPtr<gin::IsolateHolder> m_isolateHolder;
     DOMTemplateMap m_domTemplateMapForMainWorld;
     DOMTemplateMap m_domTemplateMapForNonMainWorld;

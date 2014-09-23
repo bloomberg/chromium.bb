@@ -62,7 +62,8 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
 }
 
 V8PerIsolateData::V8PerIsolateData()
-    : m_isolateHolder(adoptPtr(new gin::IsolateHolder()))
+    : m_destructionPending(false)
+    , m_isolateHolder(adoptPtr(new gin::IsolateHolder()))
     , m_stringCache(adoptPtr(new StringCache(isolate())))
     , m_hiddenValue(adoptPtr(new V8HiddenValue()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
@@ -121,6 +122,9 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = from(isolate);
+
+    ASSERT(!data->m_destructionPending);
+    data->m_destructionPending = true;
 
     // Clear any data that may have handles into the heap,
     // prior to calling ThreadState::detach().

@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+function test()
+{
+    testRunner.waitUntilDone();
+    testRunner.showWebInspector();
+    WebInspector.inspectorView.showPanel("console");
+
+    var dbname = location.href;
+    indexedDB.deleteDatabase(dbname).onsuccess = function() {
+
+        var openRequest = indexedDB.open(dbname);
+        openRequest.onupgradeneeded = function() {
+            openRequest.result.createObjectStore('store');
+        };
+        openRequest.onsuccess = function(event) {
+            var db = event.target.result;
+            Promise.resolve().then(function() {
+                tx = db.transaction('store');
+                InspectorTest.evaluateInConsole("1 + 2");
+                try {
+                    tx.objectStore('store').get(0);
+                    InspectorTest.addResult("PASS: Transaction is still active");
+                } catch (ex) {
+                    InspectorTest.addResult("FAIL: " + ex.message);
+                } finally {
+                    InspectorTest.completeTest();
+                }
+            });
+        };
+    };
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Ensure transactions created within Promise callbacks are not deactivated due to console activity</p>
+</body>
+</html>
