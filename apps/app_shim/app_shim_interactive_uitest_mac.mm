@@ -53,11 +53,12 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
 class WindowedFilePathWatcher
     : public base::RefCountedThreadSafe<WindowedFilePathWatcher> {
  public:
-  WindowedFilePathWatcher(const base::FilePath& path) : observed_(false) {
+  WindowedFilePathWatcher(const base::FilePath& path)
+      : path_(path), observed_(false) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
         FROM_HERE,
-        base::Bind(&WindowedFilePathWatcher::Watch, this, path));
+        base::Bind(&WindowedFilePathWatcher::Watch, this));
   }
 
   void Wait() {
@@ -72,16 +73,22 @@ class WindowedFilePathWatcher
   friend class base::RefCountedThreadSafe<WindowedFilePathWatcher>;
   virtual ~WindowedFilePathWatcher() {}
 
-  void Watch(const base::FilePath& path) {
-    watcher_.Watch(
-        path, false, base::Bind(&WindowedFilePathWatcher::Observe, this));
+  void Watch() {
+    watcher_.reset(new base::FilePathWatcher);
+    watcher_->Watch(path_.DirName(),
+                    false,
+                    base::Bind(&WindowedFilePathWatcher::Observe, this));
   }
 
   void Observe(const base::FilePath& path, bool error) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WindowedFilePathWatcher::StopRunLoop, this));
+    DCHECK(!error);
+    if (base::PathExists(path_)) {
+      watcher_.reset();
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&WindowedFilePathWatcher::StopRunLoop, this));
+    }
   }
 
   void StopRunLoop() {
@@ -91,7 +98,8 @@ class WindowedFilePathWatcher
   }
 
  private:
-  base::FilePathWatcher watcher_;
+  const base::FilePath path_;
+  scoped_ptr<base::FilePathWatcher> watcher_;
   bool observed_;
   scoped_ptr<base::RunLoop> run_loop_;
 
@@ -214,8 +222,7 @@ bool HasAppShimHost(Profile* profile, const std::string& app_id) {
 namespace apps {
 
 // Shims require static libraries http://crbug.com/386024.
-// This test is flaky on OSX. http://crbug.com/415422
-#if defined(COMPONENT_BUILD) || defined(OS_MACOSX)
+#if defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
@@ -247,6 +254,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
       new WindowedFilePathWatcher(shim_path);
   web_app::UpdateAllShortcuts(base::string16(), profile(), app);
   file_watcher->Wait();
+  ASSERT_TRUE(base::PathExists(shim_path));
   NSString* bundle_id = GetBundleID(shim_path);
 
   // Case 1: Launch the shim, it should start the app.
