@@ -8,6 +8,7 @@
 # builds don't add the "${BUILDDIR}/installer/" files needed for packaging.
 
 set -e
+set -o pipefail
 if [ "$VERBOSE" ]; then
   set -x
 fi
@@ -260,7 +261,7 @@ touch debian/control
 # but it seems that we don't currently, so this is the most expediant fix.
 SAVE_LDLP=${LD_LIBRARY_PATH:-}
 unset LD_LIBRARY_PATH
-DPKG_SHLIB_DEPS=$(dpkg-shlibdeps -O "$BUILDDIR/chrome" 2> /dev/null | \
+DPKG_SHLIB_DEPS=$(dpkg-shlibdeps -O "$BUILDDIR/chrome" | \
   sed 's/^shlibs:Depends=//')
 if [ -n "$SAVE_LDLP" ]; then
   LD_LIBRARY_PATH=$SAVE_LDLP
