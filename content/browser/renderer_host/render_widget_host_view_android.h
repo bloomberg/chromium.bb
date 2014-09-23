@@ -346,11 +346,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendBeginFrame(base::TimeTicks frame_time, base::TimeDelta vsync_period);
   bool Animate(base::TimeTicks frame_time);
 
-  void OnContentScrollingChange();
-  bool IsContentScrolling() const;
-
-  float GetDpiScale() const;
-
   // Handles all unprocessed and pending readback requests.
   void AbortPendingReadbackRequests();
 
@@ -400,8 +395,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Manages selection handle rendering and manipulation.
   // This will always be NULL if |content_view_core_| is NULL.
   scoped_ptr<TouchSelectionController> selection_controller_;
-  bool touch_scrolling_;
-  size_t potentially_active_fling_count_;
 
   int accelerated_surface_route_id_;
 

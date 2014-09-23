@@ -57,6 +57,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableOrientationEvent(true);
   WebRuntimeFeatures::enableFastMobileScrolling(true);
   WebRuntimeFeatures::enableMediaCapture(true);
+  WebRuntimeFeatures::enableCompositedSelectionUpdate(true);
   // If navigation transitions gets activated via field trial, enable it in
   // blink. We don't set this to false in case the user has manually enabled
   // the feature via experimental web platform features.

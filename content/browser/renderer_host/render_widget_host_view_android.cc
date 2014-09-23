@@ -278,8 +278,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
               switches::kDisableOverscrollEdgeEffect)),
       gesture_provider_(CreateGestureProviderConfig(), this),
       gesture_text_selector_(this),
-      touch_scrolling_(false),
-      potentially_active_fling_count_(0),
       accelerated_surface_route_id_(0),
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
                                         widget_host->GetProcess()->GetID(),
@@ -477,6 +475,8 @@ void RenderWidgetHostViewAndroid::Focus() {
   host_->SetInputMethodActive(true);
   if (overscroll_effect_)
     overscroll_effect_->Enable();
+  if (selection_controller_)
+    selection_controller_->SetTemporarilyHidden(false);
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
@@ -484,6 +484,8 @@ void RenderWidgetHostViewAndroid::Blur() {
   host_->Blur();
   if (overscroll_effect_)
     overscroll_effect_->Disable();
+  if (selection_controller_)
+    selection_controller_->SetTemporarilyHidden(true);
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
@@ -735,10 +737,6 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
   DCHECK(cancel_event);
   OnTouchEvent(*cancel_event);
-
-  touch_scrolling_ = false;
-  potentially_active_fling_count_ = 0;
-  OnContentScrollingChange();
 }
 
 void RenderWidgetHostViewAndroid::SetDoubleTapSupportEnabled(bool enabled) {
@@ -812,35 +810,7 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
 
 void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
-  if (!selection_controller_)
-    return;
-
-  gfx::RectF start_rect(params.anchor_rect);
-  gfx::RectF end_rect(params.focus_rect);
-  if (params.is_anchor_first)
-    std::swap(start_rect, end_rect);
-
-  cc::ViewportSelectionBound start_bound, end_bound;
-  start_bound.visible = true;
-  end_bound.visible = true;
-  start_bound.edge_top = start_rect.origin();
-  start_bound.edge_bottom = start_rect.bottom_left();
-  end_bound.edge_top = end_rect.origin();
-  end_bound.edge_bottom = end_rect.bottom_left();
-
-  if (params.anchor_rect == params.focus_rect) {
-    if (params.anchor_rect.x() || params.anchor_rect.y())
-      start_bound.type = end_bound.type = cc::SELECTION_BOUND_CENTER;
-  } else {
-    start_bound.type = params.anchor_dir == blink::WebTextDirectionRightToLeft
-                           ? cc::SELECTION_BOUND_LEFT
-                           : cc::SELECTION_BOUND_RIGHT;
-    end_bound.type = params.focus_dir == blink::WebTextDirectionRightToLeft
-                         ? cc::SELECTION_BOUND_RIGHT
-                         : cc::SELECTION_BOUND_LEFT;
-  }
-
-  selection_controller_->OnSelectionBoundsChanged(start_bound, end_bound);
+  NOTREACHED() << "Selection bounds should be routed through the compositor.";
 }
 
 void RenderWidgetHostViewAndroid::SetBackgroundOpaque(bool opaque) {
@@ -1238,6 +1208,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (!content_view_core_)
     return;
 
+  DCHECK(selection_controller_);
+  selection_controller_->OnSelectionBoundsChanged(
+      frame_metadata.selection_start, frame_metadata.selection_end);
+
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
       frame_metadata.root_scroll_offset,
@@ -1359,15 +1333,6 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   return needs_animate;
 }
 
-void RenderWidgetHostViewAndroid::OnContentScrollingChange() {
-  if (selection_controller_)
-    selection_controller_->SetTemporarilyHidden(IsContentScrolling());
-}
-
-bool RenderWidgetHostViewAndroid::IsContentScrolling() const {
-  return touch_scrolling_ || potentially_active_fling_count_ > 0;
-}
-
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
@@ -1432,26 +1397,6 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
   if (event.type == blink::WebInputEvent::GestureScrollEnd ||
       event.type == blink::WebInputEvent::GestureFlingStart) {
     DidOverscroll(DidOverscrollParams());
-  }
-
-  switch (event.type) {
-    case blink::WebInputEvent::GestureScrollBegin:
-      touch_scrolling_ = true;
-      potentially_active_fling_count_ = 0;
-      OnContentScrollingChange();
-      break;
-    case blink::WebInputEvent::GestureScrollEnd:
-      touch_scrolling_ = false;
-      OnContentScrollingChange();
-      break;
-    case blink::WebInputEvent::GestureFlingStart:
-      touch_scrolling_ = false;
-      if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-        ++potentially_active_fling_count_;
-      OnContentScrollingChange();
-      break;
-    default:
-      break;
   }
 
   if (content_view_core_)
@@ -1615,11 +1560,6 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
 }
 
 void RenderWidgetHostViewAndroid::DidStopFlinging() {
-  if (potentially_active_fling_count_) {
-    --potentially_active_fling_count_;
-    OnContentScrollingChange();
-  }
-
   if (content_view_core_)
     content_view_core_->DidStopFlinging();
 }

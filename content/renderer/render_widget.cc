@@ -64,6 +64,7 @@
 #include "third_party/WebKit/public/web/WebPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "third_party/WebKit/public/web/WebRange.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/frame_time.h"
@@ -1818,16 +1819,22 @@ void RenderWidget::UpdateSelectionBounds() {
   if (handling_ime_event_)
     return;
 
-  ViewHostMsg_SelectionBounds_Params params;
-  GetSelectionBounds(&params.anchor_rect, &params.focus_rect);
-  if (selection_anchor_rect_ != params.anchor_rect ||
-      selection_focus_rect_ != params.focus_rect) {
-    selection_anchor_rect_ = params.anchor_rect;
-    selection_focus_rect_ = params.focus_rect;
-    webwidget_->selectionTextDirection(params.focus_dir, params.anchor_dir);
-    params.is_anchor_first = webwidget_->isSelectionAnchorFirst();
-    Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
+  // With composited selection updates, the selection bounds will be reported
+  // directly by the compositor, in which case explicit IPC selection
+  // notifications should be suppressed.
+  if (!blink::WebRuntimeFeatures::isCompositedSelectionUpdateEnabled()) {
+    ViewHostMsg_SelectionBounds_Params params;
+    GetSelectionBounds(&params.anchor_rect, &params.focus_rect);
+    if (selection_anchor_rect_ != params.anchor_rect ||
+        selection_focus_rect_ != params.focus_rect) {
+      selection_anchor_rect_ = params.anchor_rect;
+      selection_focus_rect_ = params.focus_rect;
+      webwidget_->selectionTextDirection(params.focus_dir, params.anchor_dir);
+      params.is_anchor_first = webwidget_->isSelectionAnchorFirst();
+      Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
+    }
   }
+
 #if defined(OS_MACOSX) || defined(USE_AURA)
   UpdateCompositionInfo(false);
 #endif
