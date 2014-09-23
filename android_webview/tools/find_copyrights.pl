@@ -1,9 +1,11 @@
 #!/usr/bin/perl -w
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Use: find_copyrights.pl <start-from> [exclude-dir ...]
+# Use: echo filename1.cc ... | find_copyrights.pl
+#  or: find_copyrights.pl list_file
+#  or: find_files.pl ... | find_copyrights.pl
 
 use strict;
 use warnings;
@@ -14,29 +16,10 @@ sub start_copyright_parsing();
 
 my $progname = basename($0);
 
-my $root_dir = shift @ARGV;
-my @find_args = ();
-while (@ARGV) {
-    my $path = shift @ARGV;
-    push @find_args, qw'-not ( -path', "*/$path/*", qw'-prune )'
-}
-push @find_args, qw(-follow -type f -print);
-
-open FIND, '-|', 'find', $root_dir, @find_args
-            or die "$progname: Couldn't exec find: $!\n";
-my $check_regex = '\.(asm|c(c|pp|xx)?|h(h|pp|xx)?|p(l|m)|xs|sh|php|py(|x)' .
-    '|rb|idl|java|el|sc(i|e)|cs|pas|inc|js|pac|html|dtd|xsl|mod|mm?' .
-    '|tex|mli?)$';
-my @files = ();
-while (<FIND>) {
-    chomp;
-    push @files, $_ unless (-z $_ || !m%$check_regex%);
-}
-close FIND;
-
 my $generated_file_scan_boundary = 25;
-while (@files) {
-    my $file = shift @files;
+while (<>) {
+    chomp;
+    my $file = $_;
     my $file_header = '';
     my %copyrights;
     open (F, "<$file") or die "$progname: Unable to access $file\n";

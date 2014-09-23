@@ -18,6 +18,7 @@ aren't in a third-party directory with a README.chromium file.
 
 import glob
 import imp
+import multiprocessing
 import optparse
 import os
 import re
@@ -95,6 +96,43 @@ def GetUnknownIncompatibleDirectories():
 class ScanResult(object):
   Ok, Warnings, Errors = range(3)
 
+# Needs to be a top-level function for multiprocessing
+def _FindCopyrights(files_to_scan):
+  args = [os.path.join('android_webview', 'tools', 'find_copyrights.pl')]
+  p = subprocess.Popen(
+    args=args, cwd=REPOSITORY_ROOT,
+    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  lines = p.communicate(files_to_scan)[0].splitlines()
+
+  offending_files = []
+  allowed_copyrights = '^(?:\*No copyright\*' \
+      '|20[0-9][0-9](?:-20[0-9][0-9])? The Chromium Authors\. ' \
+      'All rights reserved.*)$'
+  allowed_copyrights_re = re.compile(allowed_copyrights)
+  for l in lines:
+    entries = l.split('\t')
+    if entries[1] == "GENERATED FILE":
+      continue
+    copyrights = entries[1].split(' / ')
+    for c in copyrights:
+      if c and not allowed_copyrights_re.match(c):
+        offending_files.append(os.path.normpath(entries[0]))
+        break
+  return offending_files
+
+def _ShardString(s, delimiter, shard_len):
+  result = []
+  index = 0
+  last_pos = 0
+  for m in re.finditer(delimiter, s):
+    index += 1
+    if index % shard_len == 0:
+      result.append(s[last_pos:m.end()])
+      last_pos = m.end()
+  if not index % shard_len == 0:
+    result.append(s[last_pos:])
+  return result
+
 def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   """Checks that all files which are not in a listed third-party directory,
   and which do not use the standard Chromium license, are whitelisted.
@@ -147,26 +185,21 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   # This is not part of open source chromium, but are included on some bots.
   excluded_dirs_list.append('skia/tools/clusterfuzz-data')
 
-  args = ['android_webview/tools/find_copyrights.pl',
+  args = [os.path.join('android_webview', 'tools', 'find_files.pl'),
           '.'
           ] + excluded_dirs_list
   p = subprocess.Popen(args=args, cwd=REPOSITORY_ROOT, stdout=subprocess.PIPE)
-  lines = p.communicate()[0].splitlines()
+  files_to_scan = p.communicate()[0]
 
-  offending_files = []
-  allowed_copyrights = '^(?:\*No copyright\*' \
-      '|20[0-9][0-9](?:-20[0-9][0-9])? The Chromium Authors\. ' \
-      'All rights reserved.*)$'
-  allowed_copyrights_re = re.compile(allowed_copyrights)
-  for l in lines:
-    entries = l.split('\t')
-    if entries[1] == "GENERATED FILE":
-      continue
-    copyrights = entries[1].split(' / ')
-    for c in copyrights:
-      if c and not allowed_copyrights_re.match(c):
-        offending_files.append(os.path.normpath(entries[0]))
-        break
+  sharded_files_to_scan = _ShardString(files_to_scan, '\n', 2000)
+  pool = multiprocessing.Pool()
+  offending_files_chunks = pool.map_async(
+      _FindCopyrights, sharded_files_to_scan).get(999999)
+  pool.close()
+  pool.join()
+  # Flatten out the result
+  offending_files = \
+    [item for sublist in offending_files_chunks for item in sublist]
 
   unknown = set(offending_files) - set(whitelisted_files)
   if unknown:
