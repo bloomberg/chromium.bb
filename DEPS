@@ -121,7 +121,7 @@ deps = {
    Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/trace-viewer':
-   Var('chromium_git') + '/external/trace-viewer.git' + '@' + '5b0446a2f335aba1629fb629f02fb6b5253ef516',
+   Var('chromium_git') + '/external/trace-viewer.git' + '@' + '76a4496033c164d8be9ee8c57f702b0859cb1911',
 
   'src/third_party/WebKit':
    Var('chromium_git') + '/chromium/blink.git' + '@' +  Var('webkit_revision'),
