@@ -5,8 +5,9 @@
 
 """Client tool to perform various authentication related tasks."""
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
+import logging
 import optparse
 import sys
 
@@ -100,7 +101,7 @@ def ensure_logged_in(server_url):
         '  python auth.py login --service=%s' % (server_url, server_url))
     sys.exit(1)
   email = identity.split(':')[1]
-  print >> sys.stderr, 'Logged in to %s: %s' % (server_url, email)
+  logging.info('Logged in to %s: %s', server_url, email)
 
 
 @subcommand.usage('[options]')

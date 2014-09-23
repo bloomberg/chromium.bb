@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.15'
+__version__ = '0.4.16'
 
 import getpass
 import hashlib
@@ -956,38 +956,7 @@ def extract_isolated_command_extra_args(args):
   return (args[:index], args[index+1:])
 
 
-@subcommand.usage('task_name')
-def CMDcollect(parser, args):
-  """Retrieves results of a Swarming task.
-
-  The result can be in multiple part if the execution was sharded. It can
-  potentially have retries.
-  """
-  add_collect_options(parser)
-  add_sharding_options(parser)
-  (options, args) = parser.parse_args(args)
-  if not args:
-    parser.error('Must specify one task name.')
-  elif len(args) > 1:
-    parser.error('Must specify only one task name.')
-
-  auth.ensure_logged_in(options.swarming)
-  try:
-    return collect(
-        options.swarming,
-        args[0],
-        options.shards,
-        options.timeout,
-        options.decorate,
-        options.print_status_updates,
-        options.task_summary_json,
-        options.task_output_dir)
-  except Failure:
-    on_error.report(None)
-    return 1
-
-
-def CMDquery(parser, args):
+def CMDbots(parser, args):
   """Returns information about the bots connected to the Swarming server."""
   add_filter_options(parser)
   parser.filter_group.add_option(
@@ -1014,12 +983,12 @@ def CMDquery(parser, args):
   while True:
     url = base_url
     if cursor:
-      url += '&cursor=%s' % cursor
+      url += '&cursor=%s' % urllib.quote(cursor)
     data = net.url_read_json(url)
     if data is None:
       print >> sys.stderr, 'Failed to access %s' % options.swarming
       return 1
-    bots.extend(data['bots'])
+    bots.extend(data['items'])
     cursor = data['cursor']
     if not cursor:
       break
@@ -1052,6 +1021,94 @@ def CMDquery(parser, args):
         print '  %s' % json.dumps(dimensions, sort_keys=True)
         if bot['task']:
           print '  task: %s' % bot['task']
+  return 0
+
+
+@subcommand.usage('task_name')
+def CMDcollect(parser, args):
+  """Retrieves results of a Swarming task.
+
+  The result can be in multiple part if the execution was sharded. It can
+  potentially have retries.
+  """
+  add_collect_options(parser)
+  add_sharding_options(parser)
+  (options, args) = parser.parse_args(args)
+  if not args:
+    parser.error('Must specify one task name.')
+  elif len(args) > 1:
+    parser.error('Must specify only one task name.')
+
+  auth.ensure_logged_in(options.swarming)
+  try:
+    return collect(
+        options.swarming,
+        args[0],
+        options.shards,
+        options.timeout,
+        options.decorate,
+        options.print_status_updates,
+        options.task_summary_json,
+        options.task_output_dir)
+  except Failure:
+    on_error.report(None)
+    return 1
+
+
+@subcommand.usage('[resource name]')
+def CMDquery(parser, args):
+  """Returns raw JSON information via an URL endpoint. Use 'list' to gather the
+  list of valid values from the server.
+
+  Examples:
+    Printing the list of known URLs:
+      swarming.py query -S https://server-url list
+
+    Listing last 50 tasks on a specific bot named 'swarm1'
+      swarming.py query -S https://server-url --limit 50 bot/swarm1/tasks
+  """
+  CHUNK_SIZE = 250
+
+  parser.add_option(
+      '-L', '--limit', type='int', default=200,
+      help='Limit to enforce on limitless items (like number of tasks); '
+           'default=%default')
+  (options, args) = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Must specify only one resource name.')
+
+  auth.ensure_logged_in(options.swarming)
+
+  base_url = options.swarming + '/swarming/api/v1/client/' + args[0]
+  url = base_url
+  if options.limit:
+    url += '?limit=%d' % min(CHUNK_SIZE, options.limit)
+  data = net.url_read_json(url)
+  if data is None:
+    print >> sys.stderr, 'Failed to access %s' % options.swarming
+    return 1
+
+  # Some items support cursors. Try to get automatically if cursors are needed
+  # by looking at the 'cursor' items.
+  while (
+      data.get('cursor') and
+      (not options.limit or len(data['items']) < options.limit)):
+    url = base_url + '?cursor=%s' % urllib.quote(data['cursor'])
+    if options.limit:
+      url += '&limit=%d' % min(CHUNK_SIZE, options.limit - len(data['items']))
+    new = net.url_read_json(url)
+    if new is None:
+      print >> sys.stderr, 'Failed to access %s' % options.swarming
+      return 1
+    data['items'].extend(new['items'])
+    data['cursor'] = new['cursor']
+
+  if options.limit and len(data.get('items', [])) > options.limit:
+    data['items'] = data['items'][:options.limit]
+  data.pop('cursor', None)
+
+  json.dump(data, sys.stdout, indent=2, sort_keys=True)
+  sys.stdout.write('\n')
   return 0
 
 

@@ -1182,10 +1182,65 @@ class MainTest(TestCase):
     ]
     self.assertEqual(expected, called)
 
+  def test_query_base(self):
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/bots/botid/tasks?'
+                'limit=200',
+            {},
+            {'yo': 'dawg'},
+          ),
+        ])
+    main(
+        [
+          'query', '--swarming', 'https://localhost:1', 'bots/botid/tasks',
+        ])
+    self._check_output('{\n  "yo": "dawg"\n}\n', '')
 
-class QueryTestCase(TestCase):
+  def test_query_cursor(self):
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/bots/botid/tasks?'
+                'limit=2',
+            {},
+            {
+              'cursor': '%',
+              'extra': False,
+              'items': ['A'],
+            },
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/bots/botid/tasks?'
+                'cursor=%25&limit=1',
+            {},
+            {
+              'cursor': None,
+              'items': ['B'],
+              'ignored': True,
+            },
+          ),
+        ])
+    main(
+        [
+          'query', '--swarming', 'https://localhost:1', 'bots/botid/tasks',
+          '--limit', '2',
+        ])
+    expected = (
+        '{\n'
+        '  "extra": false, \n'
+        '  "items": [\n'
+        '    "A", \n'
+        '    "B"\n'
+        '  ]\n'
+        '}\n')
+    self._check_output(expected, '')
+
+
+class BotTestCase(TestCase):
   def setUp(self):
-    super(QueryTestCase, self).setUp()
+    super(BotTestCase, self).setUp()
     # Expected requests are always the same, independent of the test case.
     self.expected_requests(
         [
@@ -1208,7 +1263,7 @@ class QueryTestCase(TestCase):
     # Sample data retrieved from actual server.
     now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     return {
-      u'bots': [
+      u'items': [
         {
           u'created_ts': now,
           u'dimensions': {
@@ -1288,7 +1343,7 @@ class QueryTestCase(TestCase):
     # Sample data retrieved from actual server.
     now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     return {
-      u'bots': [
+      u'items': [
         {
           u'created_ts': now,
           u'dimensions': {
@@ -1316,8 +1371,8 @@ class QueryTestCase(TestCase):
       u'now': unicode(now),
     }
 
-  def test_query(self):
-    main(['query', '--swarming', 'https://localhost:1'])
+  def test_bots(self):
+    main(['bots', '--swarming', 'https://localhost:1'])
     expected = (
         u'swarm2\n'
         u'  {"cores": "8", "cpu": ["x86", "x86-64"], "cygwin": "0", "gpu": '
@@ -1336,14 +1391,14 @@ class QueryTestCase(TestCase):
         u'  task: 14856971a64c601\n')
     self._check_output(expected, '')
 
-  def test_query_bare(self):
-    main(['query', '--swarming', 'https://localhost:1', '--bare'])
+  def test_bots_bare(self):
+    main(['bots', '--swarming', 'https://localhost:1', '--bare'])
     self._check_output("swarm2\nswarm3\nswarm4\n", '')
 
-  def test_query_filter(self):
+  def test_bots_filter(self):
     main(
         [
-          'query', '--swarming', 'https://localhost:1',
+          'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Windows',
         ])
     expected = (
@@ -1353,10 +1408,10 @@ class QueryTestCase(TestCase):
           '"integrity": "high", "os": ["Windows", "Windows-6.1"]}\n')
     self._check_output(expected, '')
 
-  def test_query_filter_keep_dead(self):
+  def test_bots_filter_keep_dead(self):
     main(
         [
-          'query', '--swarming', 'https://localhost:1',
+          'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Linux', '--keep-dead',
         ])
     expected = (
@@ -1370,10 +1425,10 @@ class QueryTestCase(TestCase):
         u'  task: 14856971a64c601\n')
     self._check_output(expected, '')
 
-  def test_query_filter_dead_only(self):
+  def test_bots_filter_dead_only(self):
     main(
         [
-          'query', '--swarming', 'https://localhost:1',
+          'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Linux', '--dead-only',
         ])
     expected = (
