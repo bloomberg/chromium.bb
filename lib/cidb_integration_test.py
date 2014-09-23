@@ -166,10 +166,10 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema11(self):
-    """Run the CQ test with schema version 13."""
-    # Run the CQ test at schema version 13
-    self._PrepareFreshDatabase(13)
+  def testCQWithSchema14(self):
+    """Run the CQ test with schema version 14."""
+    # Run the CQ test at schema version 14
+    self._PrepareFreshDatabase(14)
     self._runCQTest()
 
   def _runCQTest(self):

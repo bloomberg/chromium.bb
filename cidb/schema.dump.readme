@@ -1,0 +1,11 @@
+These instructions assume you have a full chromiumos checkout at
+~/chromiumos/
+
+To generate a schema dump, run lib/cidb_integration_test.py CIDBMigrationsTest
+to bring the test database instance to the latest schema (as reflected in your
+source tree). Then, cd to ~/chromiumos/crostools/cidb/cidb_test_readonly/ and
+run:
+
+mysqldump -u `cat user.txt` -h  `cat host.txt` --password=`cat password.txt` \
+  --ssl-ca=server-ca.pem --ssl-cert=client-cert.pem --ssl-key=client-key.pem \
+  --no-data --single-transaction cidb > ~/chromiumos/chromite/cidb/schema.dump

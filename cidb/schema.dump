@@ -1,0 +1,161 @@
+-- MySQL dump 10.13  Distrib 5.5.38, for debian-linux-gnu (x86_64)
+--
+-- Host: 173.194.253.2    Database: cidb
+-- ------------------------------------------------------
+-- Server version	5.5.38-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `boardPerBuildTable`
+--
+
+DROP TABLE IF EXISTS `boardPerBuildTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boardPerBuildTable` (
+  `build_id` int(11) NOT NULL,
+  `board` varchar(80) NOT NULL,
+  `main_firmware_version` varchar(80) DEFAULT NULL,
+  `ec_firmware_version` varchar(80) DEFAULT NULL,
+  PRIMARY KEY (`build_id`,`board`),
+  KEY `build_id` (`build_id`),
+  CONSTRAINT `boardPerBuildTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `buildStageTable`
+--
+
+DROP TABLE IF EXISTS `buildStageTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `buildStageTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `build_id` int(11) NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `board` varchar(80) DEFAULT NULL,
+  `status` enum('fail','pass') NOT NULL,
+  `log_url` varchar(240) DEFAULT NULL,
+  `duration_seconds` int(11) NOT NULL,
+  `summary` blob,
+  PRIMARY KEY (`id`),
+  KEY `build_id` (`build_id`),
+  CONSTRAINT `buildStageTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `buildTable`
+--
+
+DROP TABLE IF EXISTS `buildTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `buildTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `master_build_id` int(11) DEFAULT NULL,
+  `buildbot_generation` int(11) NOT NULL,
+  `builder_name` varchar(80) NOT NULL,
+  `waterfall` enum('chromeos','chromiumos','chromiumos.tryserver','chromeos_release') NOT NULL,
+  `build_number` int(11) NOT NULL,
+  `build_config` varchar(80) NOT NULL,
+  `bot_hostname` varchar(80) NOT NULL,
+  `start_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `finish_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `status` enum('fail','pass','inflight','missing','aborted') NOT NULL DEFAULT 'inflight',
+  `status_pickle` blob,
+  `build_type` varchar(80) DEFAULT NULL,
+  `chrome_version` varchar(80) DEFAULT NULL,
+  `milestone_version` varchar(80) DEFAULT NULL,
+  `platform_version` varchar(80) DEFAULT NULL,
+  `full_version` varchar(80) DEFAULT NULL,
+  `sdk_version` varchar(80) DEFAULT NULL,
+  `toolchain_url` varchar(240) DEFAULT NULL,
+  `final` tinyint(1) NOT NULL DEFAULT '0',
+  `metadata_url` varchar(240) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `buildbot_generation` (`buildbot_generation`,`builder_name`,`waterfall`,`build_number`),
+  KEY `master_build_id` (`master_build_id`),
+  KEY `build_config_index` (`build_config`),
+  KEY `last_updated_index` (`last_updated`),
+  CONSTRAINT `buildTable_ibfk_1` FOREIGN KEY (`master_build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `childConfigPerBuildTable`
+--
+
+DROP TABLE IF EXISTS `childConfigPerBuildTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `childConfigPerBuildTable` (
+  `build_id` int(11) NOT NULL,
+  `child_config` varchar(80) NOT NULL,
+  PRIMARY KEY (`build_id`,`child_config`),
+  KEY `build_id` (`build_id`),
+  CONSTRAINT `childConfigPerBuildTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `clActionTable`
+--
+
+DROP TABLE IF EXISTS `clActionTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `clActionTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `build_id` int(11) NOT NULL,
+  `change_number` int(11) NOT NULL,
+  `patch_number` int(11) NOT NULL,
+  `change_source` enum('internal','external') NOT NULL,
+  `action` enum('picked_up','submitted','kicked_out','submit_failed','verified','pre_cq_inflight','pre_cq_passed','pre_cq_failed','pre_cq_launching','pre_cq_waiting','pre_cq_ready_to_submit') NOT NULL,
+  `reason` varchar(80) DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `build_id` (`build_id`),
+  KEY `change_number` (`change_number`,`change_source`),
+  KEY `change_number_2` (`change_number`,`patch_number`,`change_source`),
+  CONSTRAINT `clActionTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `schemaVersionTable`
+--
+
+DROP TABLE IF EXISTS `schemaVersionTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `schemaVersionTable` (
+  `schemaVersion` int(11) NOT NULL,
+  `scriptName` varchar(80) DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`schemaVersion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-09-23 14:39:52
