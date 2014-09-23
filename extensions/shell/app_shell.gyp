@@ -183,6 +183,7 @@
         '../browser/api/socket/socket_apitest.cc',
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
         '../browser/api/sockets_udp/sockets_udp_apitest.cc',
+        '../browser/guest_view/web_view/web_view_apitest.cc',
         'browser/shell_browsertest.cc',
         'test/shell_apitest.cc',
         'test/shell_apitest.h',
