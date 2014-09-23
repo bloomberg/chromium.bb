@@ -308,9 +308,7 @@ interface TestObject {
     void voidMethodVoidCallbackFunctionArg(VoidCallbackFunction voidCallbackFunctionArg);
     void voidMethodAnyCallbackFunctionOptionalAnyArg(AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgArg);
     // Custom type conversions
-    CompareHow compareHowMethod();
     any anyMethod();
-    void voidMethodCompareHowArg(CompareHow compareHowArg);
     void voidMethodEventTargetArg(EventTarget eventTargetArg);
     void voidMethodAnyArg(any anyArg);
     // DOM node types

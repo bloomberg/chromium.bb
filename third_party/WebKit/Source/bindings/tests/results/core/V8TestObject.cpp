@@ -5684,19 +5684,6 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethodCallback(const v8::
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void compareHowMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, impl->compareHowMethod());
-}
-
-static void compareHowMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::compareHowMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void anyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5707,29 +5694,6 @@ static void anyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestObjectV8Internal::anyMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void voidMethodCompareHowArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodCompareHowArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
-        return;
-    }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Range::CompareHow compareHowArg;
-    {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(compareHowArg, static_cast<Range::CompareHow>(info[0]->Int32Value()));
-    }
-    impl->voidMethodCompareHowArg(compareHowArg);
-}
-
-static void voidMethodCompareHowArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodCompareHowArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -10231,9 +10195,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"anyCallbackFunctionOptionalAnyArgMethod", TestObjectV8Internal::anyCallbackFunctionOptionalAnyArgMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodVoidCallbackFunctionArg", TestObjectV8Internal::voidMethodVoidCallbackFunctionArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodAnyCallbackFunctionOptionalAnyArg", TestObjectV8Internal::voidMethodAnyCallbackFunctionOptionalAnyArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
-    {"compareHowMethod", TestObjectV8Internal::compareHowMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"anyMethod", TestObjectV8Internal::anyMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"voidMethodCompareHowArg", TestObjectV8Internal::voidMethodCompareHowArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodEventTargetArg", TestObjectV8Internal::voidMethodEventTargetArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodAnyArg", TestObjectV8Internal::voidMethodAnyArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodAttrArg", TestObjectV8Internal::voidMethodAttrArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

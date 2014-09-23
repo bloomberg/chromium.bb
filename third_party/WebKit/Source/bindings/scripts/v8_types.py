@@ -49,7 +49,6 @@ from v8_globals import includes
 ################################################################################
 
 NON_WRAPPER_TYPES = frozenset([
-    'CompareHow',
     'Dictionary',
     'EventHandler',
     'EventListener',
@@ -101,7 +100,6 @@ CPP_UNSIGNED_TYPES = set([
     'unsigned short',
 ])
 CPP_SPECIAL_CONVERSION_RULES = {
-    'CompareHow': 'Range::CompareHow',
     'Date': 'double',
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
@@ -328,7 +326,6 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 
 INCLUDES_FOR_TYPE = {
     'object': set(),
-    'CompareHow': set(),
     'Dictionary': set(['bindings/core/v8/Dictionary.h']),
     'EventHandler': set(['bindings/core/v8/V8AbstractEventListener.h',
                          'bindings/core/v8/V8EventListenerList.h']),
@@ -461,7 +458,6 @@ V8_VALUE_TO_CPP_VALUE = {
     'long long': 'toInt64({arguments})',
     'unsigned long long': 'toUInt64({arguments})',
     # Interface types
-    'CompareHow': 'static_cast<Range::CompareHow>({v8_value}->Int32Value())',
     'Dictionary': 'Dictionary({v8_value}, {isolate})',
     'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',

@@ -48,7 +48,7 @@
     const unsigned short END_TO_END     = 2;
     const unsigned short END_TO_START   = 3;
 
-    [RaisesException, TypeChecking=Interface] short compareBoundaryPoints(CompareHow how, Range sourceRange);
+    [RaisesException, TypeChecking=Interface] short compareBoundaryPoints(unsigned short how, Range sourceRange);
 
     [RaisesException, CustomElementCallbacks] void deleteContents();
     [RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
