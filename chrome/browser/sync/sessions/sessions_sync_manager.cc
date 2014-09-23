@@ -122,7 +122,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     base_specifics->set_session_tag(current_machine_tag());
     sync_pb::SessionHeader* header_s = base_specifics->mutable_header();
     header_s->set_client_name(current_session_name_);
-    header_s->set_device_type(DeviceInfo::GetLocalDeviceType());
+    header_s->set_device_type(local_device_info->device_type());
     syncer::SyncData data = syncer::SyncData::CreateLocalData(
         current_machine_tag(), current_session_name_, specifics);
     new_changes.push_back(syncer::SyncChange(
@@ -158,7 +158,11 @@ void SessionsSyncManager::AssociateWindows(
   SyncedSession* current_session = session_tracker_.GetSession(local_tag);
   current_session->modified_time = base::Time::Now();
   header_s->set_client_name(current_session_name_);
-  header_s->set_device_type(DeviceInfo::GetLocalDeviceType());
+  // SessionDataTypeController ensures that the local device info
+  // is available before activating this datatype.
+  DCHECK(local_device_);
+  const DeviceInfo* local_device_info = local_device_->GetLocalDeviceInfo();
+  header_s->set_device_type(local_device_info->device_type());
 
   session_tracker_.ResetSessionTracking(local_tag);
   std::set<SyncedWindowDelegate*> windows =

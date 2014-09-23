@@ -8,15 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
+#include "base/callback.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace base {
 class DictionaryValue;
-}
-
-namespace chrome {
-class VersionInfo;
 }
 
 namespace browser_sync {
@@ -24,6 +20,8 @@ namespace browser_sync {
 // A class that holds information regarding the properties of a device.
 class DeviceInfo {
  public:
+  typedef base::Callback<void(const std::string&)> GetClientNameCallback;
+
   DeviceInfo(const std::string& guid,
              const std::string& client_name,
              const std::string& chrome_version,
@@ -46,7 +44,7 @@ class DeviceInfo {
 
   // The user agent is the combination of OS type, chrome version and which
   // channel of chrome(stable or beta). For more information see
-  // |DeviceInfo::MakeUserAgentForSyncApi|.
+  // |LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi|.
   const std::string& sync_user_agent() const;
 
   // Third party visible id for the device. See |public_id_| for more details.
@@ -78,36 +76,10 @@ class DeviceInfo {
   // which extension APIs can expose to third party apps.
   base::DictionaryValue* ToValue();
 
-  static sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
-
-  // Creates a |DeviceInfo| object representing the local device and passes
-  // it as parameter to the callback.
-  static void CreateLocalDeviceInfo(
-      const std::string& guid,
-      const std::string& signin_scoped_device_id,
-      base::Callback<void(const DeviceInfo& local_info)> callback);
-
   // Gets the local device name and passes it as a parameter to callback.
-  static void GetClientName(
-      base::Callback<void(const std::string& local_info)> callback);
-
-  // Helper to construct a user agent string (ASCII) suitable for use by
-  // the syncapi for any HTTP communication. This string is used by the sync
-  // backend for classifying client types when calculating statistics.
-  static std::string MakeUserAgentForSyncApi(
-      const chrome::VersionInfo& version_info);
+  static void GetClientName(const GetClientNameCallback& callback);
 
  private:
-  static void GetClientNameContinuation(
-      base::Callback<void(const std::string& local_info)> callback,
-      const std::string& session_name);
-
-  static void CreateLocalDeviceInfoContinuation(
-      const std::string& guid,
-      const std::string& signin_scoped_device_id,
-      base::Callback<void(const DeviceInfo& local_info)> callback,
-      const std::string& session_name);
-
   const std::string guid_;
 
   const std::string client_name_;

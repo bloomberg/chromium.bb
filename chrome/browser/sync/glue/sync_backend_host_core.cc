@@ -6,8 +6,8 @@
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/invalidation_adapter.h"
+#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/invalidation/invalidation_util.h"
@@ -405,7 +405,7 @@ void SyncBackendHostCore::DoInitialize(
   // building the user agent may block on some platforms.
   chrome::VersionInfo version_info;
   options->http_bridge_factory->Init(
-      DeviceInfo::MakeUserAgentForSyncApi(version_info));
+      LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(version_info));
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.

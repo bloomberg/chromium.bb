@@ -15,7 +15,6 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -25,7 +24,7 @@
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/protocol/sync.pb.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_RLZ)
@@ -103,10 +102,8 @@ std::string UIThreadSearchTermsData::GetSuggestClient() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_ANDROID)
-  sync_pb::SyncEnums::DeviceType device_type =
-      browser_sync::DeviceInfo::GetLocalDeviceType();
-  return device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE ?
-    "chrome" : "chrome-omni";
+  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE ?
+      "chrome" : "chrome-omni";
 #else
   return chrome::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
 #endif
@@ -116,9 +113,7 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_ANDROID)
-  sync_pb::SyncEnums::DeviceType device_type =
-      browser_sync::DeviceInfo::GetLocalDeviceType();
-  if (device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE) {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
     return OmniboxFieldTrial::EnableAnswersInSuggest() ?
         "chrome-mobile-ext-ansg" : "chrome-mobile-ext";
   }

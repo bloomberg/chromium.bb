@@ -9,6 +9,10 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/local_device_info_provider.h"
 
+namespace chrome {
+class VersionInfo;
+}
+
 namespace browser_sync {
 
 class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
@@ -25,8 +29,16 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
   virtual scoped_ptr<Subscription> RegisterOnInitializedCallback(
     const base::Closure& callback) OVERRIDE;
 
+  // Helper to construct a user agent string (ASCII) suitable for use by
+  // the syncapi for any HTTP communication. This string is used by the sync
+  // backend for classifying client types when calculating statistics.
+  static std::string MakeUserAgentForSyncApi(
+      const chrome::VersionInfo& version_info);
+
  private:
-  void InitializeContinuation(const DeviceInfo& local_info);
+  void InitializeContinuation(const std::string& guid,
+                              const std::string& signin_scoped_device_id,
+                              const std::string& session_name);
 
   std::string cache_guid_;
   scoped_ptr<DeviceInfo> local_device_info_;

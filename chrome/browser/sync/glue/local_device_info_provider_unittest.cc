@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
+#include "chrome/common/chrome_version_info.h"
+#include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -72,6 +75,13 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
   EXPECT_EQ(std::string(kLocalDeviceGuid), local_device_info->guid());
   EXPECT_EQ(std::string(kSigninScopedDeviceId),
             local_device_info->signin_scoped_device_id());
+  EXPECT_EQ(syncer::GetSessionNameSynchronouslyForTesting(),
+            local_device_info->client_name());
+
+  chrome::VersionInfo version_info;
+  EXPECT_EQ(browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
+                version_info),
+            local_device_info->sync_user_agent());
 }
 
 TEST_F(LocalDeviceInfoProviderTest, GetLocalSyncCacheGUID) {
