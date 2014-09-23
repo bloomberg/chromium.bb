@@ -6,7 +6,12 @@
 description("Tests that an exception is thrown when the value returned in the beforeunload callback cannot be converted to a String");
 window.jsTestIsAsync = true;
 
+var alreadyTested = false;
 function test(frame) {
+    if (alreadyTested)
+        return;
+    alreadyTested = true;
+
     frame.contentWindow.onbeforeunload = function(event) {
         return {toString: function() { throw "Exception in toString()"; }};
     };
@@ -20,7 +25,6 @@ window.onerror = function(msg) {
     testMessage = msg;
     testPassed("Exception was thrown");
     shouldBeEqualToString("testMessage", "Uncaught Exception in toString()");
-    setTimeout(finishJSTest, 0);
     return true;
 };
 </script>

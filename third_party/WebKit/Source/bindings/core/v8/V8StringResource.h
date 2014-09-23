@@ -215,13 +215,10 @@ public:
         }
 
         m_mode = DoNotExternalize;
-        v8::TryCatch block;
         m_v8Object = m_v8Object->ToString();
         // Handle the case where an exception is thrown as part of invoking toString on the object.
-        if (block.HasCaught()) {
-            block.ReThrow();
+        if (m_v8Object.IsEmpty())
             return false;
-        }
         return true;
     }
     operator String() const { return toString<String>(); }
