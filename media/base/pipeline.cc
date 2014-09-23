@@ -555,7 +555,7 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
   if (state_ != kPlaying)
     return;
 
-  renderer_->SetPlaybackRate(playback_rate_);
+  renderer_->SetPlaybackRate(playback_rate);
 }
 
 void Pipeline::VolumeChangedTask(float volume) {
