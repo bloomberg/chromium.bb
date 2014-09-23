@@ -90,6 +90,14 @@ vars = {
   'nacl_revision': '5e4816da8d5258d7f917f0e859444755c6509410', # from svn revision r13759
 }
 
+# Only these hosts are allowed for dependencies in this DEPS file.
+# If you need to add a new host, contact chrome infrastracture team.
+allowed_hosts = [
+  'chromium.googlesource.com',
+  'boringssl.googlesource.com',
+  'pdfium.googlesource.com',
+]
+
 deps = {
   'src/breakpad/src':
    Var('chromium_git') + '/external/google-breakpad/src.git' + '@' + 'a513e85a22fca048860dcbfcac132b757e524857', # from svn revision 1384
