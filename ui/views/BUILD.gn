@@ -21,7 +21,6 @@ component("views") {
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//third_party/icu",
-    "//third_party/wtl",
     "//ui/accessibility",
     "//ui/aura",
     "//ui/native_theme",

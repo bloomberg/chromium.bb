@@ -786,7 +786,6 @@
             '../ui/events/events.gyp:events_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             'mojo_base.gyp:mojo_common_lib',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_base.gyp:mojo_common_lib',

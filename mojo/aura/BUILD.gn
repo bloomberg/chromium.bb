@@ -24,7 +24,6 @@ source_set("aura") {
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gl",
-    "//webkit/common/gpu",
     "//mojo/cc",
     "//mojo/public/gles2:for_shared_library",
     "//mojo/services/public/cpp/view_manager",

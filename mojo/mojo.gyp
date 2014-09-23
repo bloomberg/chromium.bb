@@ -460,7 +460,6 @@
             '../ui/compositor/compositor.gyp:compositor',
             '../ui/events/events.gyp:events',
             '../ui/events/events.gyp:events_base',
-            '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             'mojo_cc_support',
             'mojo_native_viewport_bindings',
           ],
