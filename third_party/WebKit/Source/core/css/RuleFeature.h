@@ -67,22 +67,20 @@ public:
     unsigned maxDirectAdjacentSelectors() const { return m_metadata.maxDirectAdjacentSelectors; }
     void setMaxDirectAdjacentSelectors(unsigned value)  { m_metadata.maxDirectAdjacentSelectors = std::max(value, m_metadata.maxDirectAdjacentSelectors); }
 
-    inline bool hasSelectorForAttribute(const AtomicString& attributeName) const
+    bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
         ASSERT(!attributeName.isEmpty());
         return m_attributeInvalidationSets.contains(attributeName);
     }
 
-    inline bool hasSelectorForClass(const AtomicString& classValue) const
+    bool hasSelectorForClass(const AtomicString& classValue) const
     {
         ASSERT(!classValue.isEmpty());
         return m_classInvalidationSets.contains(classValue);
     }
 
-    inline bool hasSelectorForId(const AtomicString& idValue) const
-    {
-        return m_idInvalidationSets.contains(idValue);
-    }
+    bool hasSelectorForId(const AtomicString& idValue) const { return m_idInvalidationSets.contains(idValue); }
+    bool hasSelectorForPseudoType(CSSSelector::PseudoType pseudo) const { return m_pseudoInvalidationSets.contains(pseudo); }
 
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element&);
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element&);

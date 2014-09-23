@@ -216,6 +216,13 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
         case CSSSelector::PseudoHover:
         case CSSSelector::PseudoActive:
         case CSSSelector::PseudoFocus:
+        case CSSSelector::PseudoChecked:
+        case CSSSelector::PseudoEnabled:
+        case CSSSelector::PseudoDisabled:
+        case CSSSelector::PseudoIndeterminate:
+        case CSSSelector::PseudoLink:
+        case CSSSelector::PseudoTarget:
+        case CSSSelector::PseudoVisited:
             return &ensurePseudoInvalidationSet(selector.pseudoType());
         default:
             break;

@@ -143,7 +143,7 @@ void HTMLProgressElement::didElementStateChange()
         bool wasDeterminate = render->isDeterminate();
         render->updateFromElement();
         if (wasDeterminate != isDeterminate())
-            didAffectSelector(AffectedSelectorIndeterminate);
+            pseudoStateChanged(CSSSelector::PseudoIndeterminate);
     }
 }
 

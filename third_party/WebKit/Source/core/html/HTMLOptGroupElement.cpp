@@ -69,10 +69,12 @@ void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const Atomic
     HTMLElement::parseAttribute(name, value);
     recalcSelectOptions();
 
-    if (name == disabledAttr)
-        didAffectSelector(AffectedSelectorDisabled | AffectedSelectorEnabled);
-    else if (name == labelAttr)
+    if (name == disabledAttr) {
+        pseudoStateChanged(CSSSelector::PseudoDisabled);
+        pseudoStateChanged(CSSSelector::PseudoEnabled);
+    } else if (name == labelAttr) {
         updateGroupLabel();
+    }
 }
 
 void HTMLOptGroupElement::recalcSelectOptions()

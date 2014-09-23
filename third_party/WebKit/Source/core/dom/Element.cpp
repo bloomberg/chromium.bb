@@ -1598,11 +1598,15 @@ ElementShadow& Element::ensureShadow()
     return ensureElementRareData().ensureShadow();
 }
 
-void Element::didAffectSelector(AffectedSelectorMask mask)
+void Element::pseudoStateChanged(CSSSelector::PseudoType pseudo)
 {
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    StyleResolver* styleResolver = document().styleResolver();
+
+    if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
+        styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(pseudo, *this);
+
     if (ElementShadow* elementShadow = shadowWhereNodeCanBeDistributed(*this))
-        elementShadow->didAffectSelector(mask);
+        elementShadow->distributedNodePseudoStateChanged(pseudo);
 }
 
 void Element::setAnimationStyleChange(bool animationStyleChange)

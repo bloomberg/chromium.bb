@@ -28,6 +28,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSSelector.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ElementData.h"
@@ -60,17 +61,6 @@ class PropertySetCSSStyleDeclaration;
 class PseudoElement;
 class ShadowRoot;
 class StylePropertySet;
-
-enum AffectedSelectorType {
-    AffectedSelectorChecked = 1,
-    AffectedSelectorEnabled = 1 << 1,
-    AffectedSelectorDisabled = 1 << 2,
-    AffectedSelectorIndeterminate = 1 << 3,
-    AffectedSelectorLink = 1 << 4,
-    AffectedSelectorTarget = 1 << 5,
-    AffectedSelectorVisited = 1 << 6
-};
-typedef int AffectedSelectorMask;
 
 enum SpellcheckAttributeState {
     SpellcheckAttributeTrue,
@@ -313,7 +303,7 @@ public:
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool rendererIsNeeded(const RenderStyle&);
     void recalcStyle(StyleRecalcChange, Text* nextTextSibling = 0);
-    void didAffectSelector(AffectedSelectorMask);
+    void pseudoStateChanged(CSSSelector::PseudoType);
     void setAnimationStyleChange(bool);
     void setNeedsAnimationStyleRecalc();
 

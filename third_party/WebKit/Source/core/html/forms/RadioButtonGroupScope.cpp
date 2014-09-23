@@ -116,7 +116,7 @@ void RadioButtonGroup::updateCheckedState(HTMLInputElement* button)
     typedef WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement> >::const_iterator Iterator;
     Iterator end = m_members.end();
     for (Iterator it = m_members.begin(); it != end; ++it) {
-        (*it)->didAffectSelector(AffectedSelectorIndeterminate);
+        (*it)->pseudoStateChanged(CSSSelector::PseudoIndeterminate);
     }
 }
 

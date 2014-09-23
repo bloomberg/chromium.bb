@@ -846,7 +846,6 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
     RefPtrWillBeRawPtr<HTMLInputElement> protector(this);
     m_reflectsCheckedAttribute = false;
     m_isChecked = nowChecked;
-    setNeedsStyleRecalc(SubtreeStyleChange);
 
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         scope->updateCheckedState(this);
@@ -875,7 +874,7 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
         dispatchFormControlChangeEvent();
     }
 
-    didAffectSelector(AffectedSelectorChecked);
+    pseudoStateChanged(CSSSelector::PseudoChecked);
 }
 
 void HTMLInputElement::setIndeterminate(bool newValue)
@@ -885,7 +884,7 @@ void HTMLInputElement::setIndeterminate(bool newValue)
 
     m_isIndeterminate = newValue;
 
-    didAffectSelector(AffectedSelectorIndeterminate);
+    pseudoStateChanged(CSSSelector::PseudoIndeterminate);
 
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), CheckedControlState);

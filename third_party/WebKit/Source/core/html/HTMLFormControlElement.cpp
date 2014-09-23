@@ -171,7 +171,8 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
 void HTMLFormControlElement::disabledAttributeChanged()
 {
     setNeedsWillValidateCheck();
-    didAffectSelector(AffectedSelectorDisabled | AffectedSelectorEnabled);
+    pseudoStateChanged(CSSSelector::PseudoDisabled);
+    pseudoStateChanged(CSSSelector::PseudoEnabled);
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), EnabledControlState);
     if (isDisabledFormControl() && treeScope().adjustedFocusedElement() == this) {
