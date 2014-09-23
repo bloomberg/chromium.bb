@@ -2367,6 +2367,9 @@
 
     # Whether to allow building of the GPU-related isolates.
     'archive_gpu_tests%': 0,
+
+     # Whether to allow building of chromoting related isolates.
+    'archive_chromoting_tests%': 0,
   },
   'target_defaults': {
     'variables': {
