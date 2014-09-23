@@ -70,7 +70,6 @@
 #include "core/page/DragController.h"
 #include "core/page/DragState.h"
 #include "core/page/EditorClient.h"
-#include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -2062,23 +2061,31 @@ bool EventHandler::handleGestureShowPress()
 
 bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 {
-    TRACE_EVENT0("input", "EventHandler::handleGestureEvent");
-
     // Propagation to inner frames is handled below this function.
     ASSERT(m_frame == m_frame->localFrameRoot());
 
     // Scrolling-related gesture events invoke EventHandler recursively for each frame down
     // the chain, doing a single-frame hit-test per frame. This matches handleWheelEvent.
-    // Perhaps we could simplify things by rewriting scroll handling to work inner frame
-    // out, and then unify with other gesture events.
+    // FIXME: Add a test that traverses this path, e.g. for devtools overlay.
     if (gestureEvent.isScrollEvent())
         return handleGestureScrollEvent(gestureEvent);
 
-    // Non-scrolling related gesture events instead do a single cross-frame hit-test and
-    // jump directly to the inner most frame. This matches handleMousePressEvent etc.
-
     // Hit test across all frames and do touch adjustment as necessary for the event type.
     GestureEventWithHitTestResults targetedEvent = targetGestureEvent(gestureEvent);
+
+    return handleGestureEvent(targetedEvent);
+}
+
+bool EventHandler::handleGestureEvent(const GestureEventWithHitTestResults& targetedEvent)
+{
+    TRACE_EVENT0("input", "EventHandler::handleGestureEvent");
+
+    // Propagation to inner frames is handled below this function.
+    ASSERT(m_frame == m_frame->localFrameRoot());
+
+    // Non-scrolling related gesture events do a single cross-frame hit-test and jump
+    // directly to the inner most frame. This matches handleMousePressEvent etc.
+    ASSERT(!targetedEvent.event().isScrollEvent());
 
     // Route to the correct frame.
     if (LocalFrame* innerFrame = targetedEvent.hitTestResult().innerNodeFrame())
@@ -2134,6 +2141,8 @@ bool EventHandler::handleGestureEventInFrame(const GestureEventWithHitTestResult
 
 bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureEvent)
 {
+    TRACE_EVENT0("input", "EventHandler::handleGestureScrollEvent");
+
     RefPtrWillBeRawPtr<Node> eventTarget = nullptr;
     RefPtr<Scrollbar> scrollbar;
     if (gestureEvent.type() != PlatformEvent::GestureScrollBegin) {
@@ -2554,6 +2563,8 @@ bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, co
 
 GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGestureEvent& gestureEvent, bool readOnly)
 {
+    TRACE_EVENT0("input", "EventHandler::targetGestureEvent");
+
     ASSERT(m_frame == m_frame->localFrameRoot());
     // Scrolling events get hit tested per frame (like wheel events do).
     ASSERT(!gestureEvent.isScrollEvent());
