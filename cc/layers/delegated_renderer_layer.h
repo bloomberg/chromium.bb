@@ -15,7 +15,6 @@
 #include "cc/resources/returned_resource.h"
 
 namespace cc {
-class BlockingTaskRunner;
 
 class CC_EXPORT DelegatedRendererLayer : public Layer {
  public:
