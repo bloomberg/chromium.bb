@@ -68,6 +68,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/limits.h>
+#include <pthread.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdio.h>
@@ -150,6 +151,7 @@ void InstallAlternateStackLocked() {
       old_stack.ss_size < kSigStackSize) {
     new_stack.ss_sp = malloc(kSigStackSize);
     new_stack.ss_size = kSigStackSize;
+    memset(new_stack.ss_sp, 0, kSigStackSize);
 
     if (sys_sigaltstack(&new_stack, NULL) == -1) {
       free(new_stack.ss_sp);
@@ -186,13 +188,13 @@ void RestoreAlternateStackLocked() {
   stack_installed = false;
 }
 
-}  // namespace
+// The global exception handler stack. This is need because there may exist
+// multiple ExceptionHandler instances in a process. Each will have itself
+// registered in this stack.
+std::vector<ExceptionHandler*>* g_handler_stack_ = NULL;
+pthread_mutex_t g_handler_stack_mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
-// We can stack multiple exception handlers. In that case, this is the global
-// which holds the stack.
-std::vector<ExceptionHandler*>* ExceptionHandler::handler_stack_ = NULL;
-pthread_mutex_t ExceptionHandler::handler_stack_mutex_ =
-    PTHREAD_MUTEX_INITIALIZER;
+}  // namespace
 
 // Runs before crashing: normal context.
 ExceptionHandler::ExceptionHandler(const MinidumpDescriptor& descriptor,
@@ -212,30 +214,30 @@ ExceptionHandler::ExceptionHandler(const MinidumpDescriptor& descriptor,
   if (!IsOutOfProcess() && !minidump_descriptor_.IsFD())
     minidump_descriptor_.UpdatePath();
 
-  pthread_mutex_lock(&handler_stack_mutex_);
-  if (!handler_stack_)
-    handler_stack_ = new std::vector<ExceptionHandler*>;
+  pthread_mutex_lock(&g_handler_stack_mutex_);
+  if (!g_handler_stack_)
+    g_handler_stack_ = new std::vector<ExceptionHandler*>;
   if (install_handler) {
     InstallAlternateStackLocked();
     InstallHandlersLocked();
   }
-  handler_stack_->push_back(this);
-  pthread_mutex_unlock(&handler_stack_mutex_);
+  g_handler_stack_->push_back(this);
+  pthread_mutex_unlock(&g_handler_stack_mutex_);
 }
 
 // Runs before crashing: normal context.
 ExceptionHandler::~ExceptionHandler() {
-  pthread_mutex_lock(&handler_stack_mutex_);
+  pthread_mutex_lock(&g_handler_stack_mutex_);
   std::vector<ExceptionHandler*>::iterator handler =
-      std::find(handler_stack_->begin(), handler_stack_->end(), this);
-  handler_stack_->erase(handler);
-  if (handler_stack_->empty()) {
-    delete handler_stack_;
-    handler_stack_ = NULL;
+      std::find(g_handler_stack_->begin(), g_handler_stack_->end(), this);
+  g_handler_stack_->erase(handler);
+  if (g_handler_stack_->empty()) {
+    delete g_handler_stack_;
+    g_handler_stack_ = NULL;
     RestoreAlternateStackLocked();
     RestoreHandlersLocked();
   }
-  pthread_mutex_unlock(&handler_stack_mutex_);
+  pthread_mutex_unlock(&g_handler_stack_mutex_);
 }
 
 // Runs before crashing: normal context.
@@ -295,7 +297,7 @@ void ExceptionHandler::RestoreHandlersLocked() {
 // static
 void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
   // All the exception signals are blocked at this point.
-  pthread_mutex_lock(&handler_stack_mutex_);
+  pthread_mutex_lock(&g_handler_stack_mutex_);
 
   // Sometimes, Breakpad runs inside a process where some other buggy code
   // saves and restores signal handlers temporarily with 'signal'
@@ -322,13 +324,13 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
       // default one to avoid an infinite loop here.
       signal(sig, SIG_DFL);
     }
-    pthread_mutex_unlock(&handler_stack_mutex_);
+    pthread_mutex_unlock(&g_handler_stack_mutex_);
     return;
   }
 
   bool handled = false;
-  for (int i = handler_stack_->size() - 1; !handled && i >= 0; --i) {
-    handled = (*handler_stack_)[i]->HandleSignal(sig, info, uc);
+  for (int i = g_handler_stack_->size() - 1; !handled && i >= 0; --i) {
+    handled = (*g_handler_stack_)[i]->HandleSignal(sig, info, uc);
   }
 
   // Upon returning from this signal handler, sig will become unmasked and then
@@ -342,7 +344,7 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
     RestoreHandlersLocked();
   }
 
-  pthread_mutex_unlock(&handler_stack_mutex_);
+  pthread_mutex_unlock(&g_handler_stack_mutex_);
 
   if (info->si_pid || sig == SIGABRT) {
     // This signal was triggered by somebody sending us the signal with kill().
@@ -398,6 +400,8 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
     sys_prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
   }
   CrashContext context;
+  // Fill in all the holes in the struct to make Valgrind happy.
+  memset(&context, 0, sizeof(context));
   memcpy(&context.siginfo, info, sizeof(siginfo_t));
   memcpy(&context.context, uc, sizeof(struct ucontext));
 #if defined(__aarch64__)
@@ -449,7 +453,7 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
   // of caution than smash it into random locations.
   static const unsigned kChildStackSize = 16000;
   PageAllocator allocator;
-  uint8_t* stack = (uint8_t*) allocator.Alloc(kChildStackSize);
+  uint8_t* stack = reinterpret_cast<uint8_t*>(allocator.Alloc(kChildStackSize));
   if (!stack)
     return false;
   // clone() needs the top-most address. (scrub just to be safe)
