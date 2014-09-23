@@ -18,6 +18,8 @@ PASS foregroundOf(select1) is not originalForeground
 PASS backgroundOf(select1) is not originalBackground
 PASS foregroundOf(select2) is not originalForeground
 PASS backgroundOf(select2) is not originalBackground
+PASS foregroundOf(select3) is not originalForeground
+PASS backgroundOf(select3) is not originalBackground
 PASS select2.options.length is 3
 PASS select2.options.length is 2
 PASS foregroundOf(select2) is autofilledSelectForeground
@@ -35,4 +37,6 @@ PASS foregroundOf(select1) is originalForeground
 PASS backgroundOf(select1) is originalBackground
 PASS foregroundOf(select2) is originalForeground
 PASS backgroundOf(select2) is originalBackground
+PASS foregroundOf(select3) is originalForeground
+PASS backgroundOf(select3) is originalBackground
 

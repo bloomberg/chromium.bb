@@ -82,6 +82,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
     , m_suggestedIndex(-1)
+    , m_isAutofilledByPreview(false)
 {
 }
 
@@ -269,6 +270,8 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
 
     int previousSelectedIndex = selectedIndex();
     setSuggestedIndex(-1);
+    if (m_isAutofilledByPreview)
+        setAutofilled(false);
     setSelectedIndex(optionIndex);
 
     if (sendEvents && previousSelectedIndex != selectedIndex()) {
@@ -304,6 +307,7 @@ void HTMLSelectElement::setSuggestedValue(const String& value)
         if (isHTMLOptionElement(items[i])) {
             if (toHTMLOptionElement(items[i])->value() == value) {
                 setSuggestedIndex(optionIndex);
+                m_isAutofilledByPreview = true;
                 return;
             }
             optionIndex++;
@@ -923,6 +927,9 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     int listIndex = optionToListIndex(optionIndex);
+
+    if (selectedIndex() != optionIndex && this->isAutofilled())
+        setAutofilled(false);
 
     HTMLElement* element = 0;
     if (listIndex >= 0) {
