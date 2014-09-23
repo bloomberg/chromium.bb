@@ -166,13 +166,14 @@ StreamTextureFactorySynchronousImpl::StreamTextureFactorySynchronousImpl(
 StreamTextureFactorySynchronousImpl::~StreamTextureFactorySynchronousImpl() {}
 
 StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
-  if (!context_provider_)
+  bool had_proxy = !!context_provider_;
+  if (!had_proxy)
     context_provider_ = create_context_provider_callback_.Run();
 
   if (!context_provider_)
     return NULL;
 
-  if (observer_)
+  if (observer_ && !had_proxy)
     context_provider_->AddObserver(observer_);
   return new StreamTextureProxyImpl(context_provider_);
 }
