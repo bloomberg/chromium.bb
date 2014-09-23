@@ -310,7 +310,8 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
 
 // Test that when unloading an app while multiple apps / activities are present,
 // the proxy gets created in the correct location.
-TEST_F(AppActivityTest, TestUnloadProxyLocation) {
+// Flaky: http://crbug.com/416843.
+TEST_F(AppActivityTest, DISABLED_TestUnloadProxyLocation) {
   // Set up some activities for some applications.
   TestAppActivity* app_activity1a = CreateAppActivity(kDummyApp1);
   TestAppActivity* app_activity2a = CreateAppActivity(kDummyApp2);
