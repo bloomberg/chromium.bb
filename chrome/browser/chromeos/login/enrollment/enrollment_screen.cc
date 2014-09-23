@@ -73,7 +73,8 @@ void EnrollmentScreen::SetParameters(
   user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
   auth_token_ = auth_token;
   shark_controller_ = shark_controller;
-  DCHECK(!remora_controller_);
+  if (remora_controller_)
+    remora_controller_->RemoveObserver(this);
   remora_controller_ = remora_controller;
   if (remora_controller_)
     remora_controller_->AddObserver(this);
