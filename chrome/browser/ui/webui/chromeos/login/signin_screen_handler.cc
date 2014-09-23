@@ -175,16 +175,36 @@ std::string GetNetworkName(const std::string& service_path) {
 
 static bool SetUserInputMethodImpl(
     const std::string& username,
-    const std::string& user_input_method,
-    input_method::InputMethodManager::State* ime_state) {
-  if (!chromeos::input_method::InputMethodManager::Get()->IsLoginKeyboard(
-          user_input_method)) {
+    chromeos::input_method::InputMethodManager* manager) {
+  PrefService* const local_state = g_browser_process->local_state();
+
+  const base::DictionaryValue* users_lru_input_methods =
+      local_state->GetDictionary(prefs::kUsersLRUInputMethod);
+
+  if (users_lru_input_methods == NULL) {
+    DLOG(WARNING) << "SetUserInputMethod('" << username
+                  << "'): no kUsersLRUInputMethod";
+    return false;
+  }
+
+  std::string input_method;
+
+  if (!users_lru_input_methods->GetStringWithoutPathExpansion(username,
+                                                              &input_method)) {
+    DVLOG(0) << "SetUserInputMethod('" << username
+               << "'): no input method for this user";
+    return false;
+  }
+
+  if (input_method.empty())
+    return false;
+
+  if (!manager->IsLoginKeyboard(input_method)) {
     LOG(WARNING) << "SetUserInputMethod('" << username
-                 << "'): stored user LRU input method '" << user_input_method
+                 << "'): stored user LRU input method '" << input_method
                  << "' is no longer Full Latin Keyboard Language"
                  << " (entry dropped). Use hardware default instead.";
 
-    PrefService* const local_state = g_browser_process->local_state();
     DictionaryPrefUpdate updater(local_state, prefs::kUsersLRUInputMethod);
 
     base::DictionaryValue* const users_lru_input_methods = updater.Get();
@@ -194,14 +214,16 @@ static bool SetUserInputMethodImpl(
     return false;
   }
 
-  if (!Contains(ime_state->GetActiveInputMethodIds(), user_input_method)) {
-    if (!ime_state->EnableInputMethod(user_input_method)) {
+  if (!Contains(manager->GetActiveIMEState()->GetActiveInputMethodIds(),
+                input_method)) {
+    if (!manager->GetActiveIMEState()->EnableInputMethod(input_method)) {
       DLOG(ERROR) << "SigninScreenHandler::SetUserInputMethod('" << username
-                  << "'): user input method '" << user_input_method
+                  << "'): user input method '" << input_method
                   << "' is not enabled and enabling failed (ignored!).";
     }
   }
-  ime_state->ChangeInputMethod(user_input_method, false /* show_message */);
+  manager->GetActiveIMEState()->ChangeInputMethod(input_method,
+                                                  false /* show_message */);
 
   return true;
 }
@@ -292,9 +314,6 @@ SigninScreenHandler::SigninScreenHandler(
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  OobeUI* oobe_ui = GetOobeUI();
-  if (oobe_ui)
-    oobe_ui->RemoveObserver(this);
   chromeos::input_method::ImeKeyboard* keyboard =
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
@@ -459,11 +478,6 @@ void SigninScreenHandler::UpdateState(ErrorScreenActor::ErrorReason reason) {
   UpdateStateInternal(reason, false);
 }
 
-void SigninScreenHandler::SetFocusPODCallbackForTesting(
-    base::Closure callback) {
-  test_focus_pod_callback_ = callback;
-}
-
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::ShowImpl() {
@@ -471,11 +485,6 @@ void SigninScreenHandler::ShowImpl() {
     show_on_init_ = true;
     return;
   }
-
-  if (!ime_state_.get())
-    ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
-
-  GetOobeUI()->AddObserver(this);
 
   if (oobe_ui_ || is_enrolling_consumer_management_) {
     // Shows new user sign-in for OOBE.
@@ -785,38 +794,6 @@ void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kUsersLRUInputMethod);
 }
 
-void SigninScreenHandler::OnCurrentScreenChanged(OobeUI::Screen current_screen,
-                                                 OobeUI::Screen new_screen) {
-  if (new_screen == OobeUI::SCREEN_ACCOUNT_PICKER) {
-    // Restore active IME state if returning to user pod row screen.
-    input_method::InputMethodManager::Get()->SetState(ime_state_);
-  }
-}
-
-std::string SigninScreenHandler::GetUserLRUInputMethod(
-    const std::string& username) const {
-  PrefService* const local_state = g_browser_process->local_state();
-  const base::DictionaryValue* users_lru_input_methods =
-      local_state->GetDictionary(prefs::kUsersLRUInputMethod);
-
-  if (users_lru_input_methods == NULL) {
-    DLOG(WARNING) << "GetUserLRUInputMethod('" << username
-                  << "'): no kUsersLRUInputMethod";
-    return std::string();
-  }
-
-  std::string input_method;
-
-  if (!users_lru_input_methods->GetStringWithoutPathExpansion(username,
-                                                              &input_method)) {
-    DVLOG(0) << "GetUserLRUInputMethod('" << username
-             << "'): no input method for this user";
-    return std::string();
-  }
-
-  return input_method;
-}
-
 void SigninScreenHandler::HandleGetUsers() {
   if (delegate_)
     delegate_->HandleGetUsers();
@@ -1023,9 +1000,7 @@ bool SigninScreenHandler::ShouldLoadGaia() const {
 }
 
 // Update keyboard layout to least recently used by the user.
-void SigninScreenHandler::SetUserInputMethod(
-    const std::string& username,
-    input_method::InputMethodManager::State* ime_state) {
+void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsUserLoggedIn()) {
     // We are on sign-in screen inside user session (adding new user to
@@ -1035,12 +1010,10 @@ void SigninScreenHandler::SetUserInputMethod(
     return;
   }
 
-  bool succeed = false;
+  chromeos::input_method::InputMethodManager* const manager =
+      chromeos::input_method::InputMethodManager::Get();
 
-  const std::string input_method = GetUserLRUInputMethod(username);
-
-  if (!input_method.empty())
-    succeed = SetUserInputMethodImpl(username, input_method, ime_state);
+  const bool succeed = SetUserInputMethodImpl(username, manager);
 
   // This is also a case when LRU layout is set only for a few local users,
   // thus others need to be switched to default locale.
@@ -1049,7 +1022,7 @@ void SigninScreenHandler::SetUserInputMethod(
     DVLOG(0) << "SetUserInputMethod('" << username
                << "'): failed to set user layout. Switching to default.";
 
-    ime_state->SetInputMethodLoginDefault();
+    manager->GetActiveIMEState()->SetInputMethodLoginDefault();
   }
 }
 
@@ -1352,14 +1325,12 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 }
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
-  SetUserInputMethod(user_id, ime_state_.get());
+  SetUserInputMethod(user_id);
 #if !defined(USE_ATHENA)
   // TODO(dpolukhin):  crbug.com/408734.
   WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
 #endif
   ScreenlockBridge::Get()->SetFocusedUser(user_id);
-  if (!test_focus_pod_callback_.is_null())
-    test_focus_pod_callback_.Run();
 }
 
 void SigninScreenHandler::HandleHardlockPod(const std::string& user_id) {
@@ -1460,13 +1431,9 @@ void SigninScreenHandler::CancelPasswordChangedFlowInternal() {
   }
 }
 
-OobeUI* SigninScreenHandler::GetOobeUI() const {
-  return static_cast<OobeUI*>(web_ui()->GetController());
-}
-
 OobeUI::Screen SigninScreenHandler::GetCurrentScreen() const {
   OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
-  OobeUI* oobe_ui = GetOobeUI();
+  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
   if (oobe_ui)
     screen = oobe_ui->current_screen();
   return screen;
