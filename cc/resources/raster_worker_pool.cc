@@ -88,9 +88,6 @@ class RasterFinishedTaskImpl : public RasterizerTask {
 
 }  // namespace
 
-// This allows an external rasterize on-demand system to run raster tasks
-// with highest priority using the same task graph runner instance.
-unsigned RasterWorkerPool::kOnDemandRasterTaskPriority = 0u;
 // This allows a micro benchmark system to run tasks with highest priority,
 // since it should finish as quickly as possible.
 unsigned RasterWorkerPool::kBenchmarkRasterTaskPriority = 0u;

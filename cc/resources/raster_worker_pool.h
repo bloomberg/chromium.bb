@@ -16,7 +16,6 @@ namespace cc {
 
 class CC_EXPORT RasterWorkerPool {
  public:
-  static unsigned kOnDemandRasterTaskPriority;
   static unsigned kBenchmarkRasterTaskPriority;
   static unsigned kRasterFinishedTaskPriority;
   static unsigned kRasterTaskPriorityBase;
