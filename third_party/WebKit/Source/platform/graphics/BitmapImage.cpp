@@ -370,7 +370,7 @@ PassRefPtr<NativeImageSkia> BitmapImage::nativeImageForCurrentFrame()
 
 PassRefPtr<Image> BitmapImage::imageForDefaultFrame()
 {
-    if (frameCount() > 1)
+    if (frameCount() > 1 && frameAtIndex(0))
         return BitmapImage::create(frameAtIndex(0));
 
     return Image::imageForDefaultFrame();

@@ -106,6 +106,11 @@ public:
         m_image->advanceAnimation(0);
     }
 
+    PassRefPtr<Image> imageForDefaultFrame()
+    {
+        return m_image->imageForDefaultFrame();
+    }
+
 protected:
     virtual void SetUp() OVERRIDE
     {
@@ -228,6 +233,13 @@ TEST_F(BitmapImageTest, webpHasColorProfile)
     EXPECT_EQ(1u, decodedFramesCount());
     EXPECT_EQ(65536u, decodedSize());
     EXPECT_FALSE(m_image->hasColorProfile());
+}
+
+TEST_F(BitmapImageTest, icoHasWrongFrameDimensions)
+{
+    loadImage("/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico");
+    // This call would cause crash without fix for 408026
+    imageForDefaultFrame();
 }
 
 #endif // USE(QCMSLIB)
