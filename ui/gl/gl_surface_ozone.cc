@@ -138,6 +138,12 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE {
     return vsync_provider_.get();
   }
+  virtual bool SupportsPostSubBuffer() OVERRIDE { return true; }
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE {
+    // The actual sub buffer handling is handled at higher layers.
+    SwapBuffers();
+    return true;
+  }
 
  private:
   virtual ~GLSurfaceOzoneSurfaceless() {

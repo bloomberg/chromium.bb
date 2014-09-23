@@ -38,11 +38,13 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(output_surface_);
 
+  GLuint texture = output_surface_->current_texture_id();
+  output_surface_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
   const gfx::Size& size = frame->gl_frame_data->size;
   context_provider_->ContextGL()->ScheduleOverlayPlaneCHROMIUM(
       0,
       GL_OVERLAY_TRANSFORM_NONE_CHROMIUM,
-      output_surface_->current_texture_id(),
+      texture,
       0,
       0,
       size.width(),
@@ -51,7 +53,6 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
       0,
       1.0f,
       1.0f);
-  output_surface_->SwapBuffers();
   GpuBrowserCompositorOutputSurface::SwapBuffers(frame);
 }
 
