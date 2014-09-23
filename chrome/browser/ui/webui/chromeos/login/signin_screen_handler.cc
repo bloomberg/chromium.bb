@@ -1326,7 +1326,10 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id);
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin):  crbug.com/408734.
   WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
+#endif
   ScreenlockBridge::Get()->SetFocusedUser(user_id);
 }
 
