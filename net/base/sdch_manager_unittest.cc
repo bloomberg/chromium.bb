@@ -278,6 +278,15 @@ TEST_F(SdchManagerTest, FailToSetDotHostPrefixDomainDictionary) {
                                  GURL("http://w.x.y.z.google.com")));
 }
 
+TEST_F(SdchManagerTest, FailToSetDotHostPrefixDomainDictionaryTrailingDot) {
+  std::string dictionary_domain("x.y.z.google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  // Fail the HD with D being the domain and H having a dot requirement.
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://w.x.y.z.google.com.")));
+}
+
 TEST_F(SdchManagerTest, FailToSetRepeatPrefixWithDotDictionary) {
   // Make sure that a prefix that matches the domain postfix won't confuse
   // the validation checks.
@@ -298,6 +307,42 @@ TEST_F(SdchManagerTest, CanSetLeadingDotDomainDictionary) {
   // Verify that a leading dot in the domain is acceptable, as long as the host
   // name does not contain any dots preceding the matched domain name.
   EXPECT_TRUE(AddSdchDictionary(dictionary_text, GURL("http://www.google.com")));
+}
+
+TEST_F(SdchManagerTest,
+       CanSetLeadingDotDomainDictionaryFromURLWithTrailingDot) {
+  // Make sure that a prefix that matches the domain postfix won't confuse
+  // the validation checks.
+  std::string dictionary_domain(".google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  // Verify that a leading dot in the domain is acceptable, as long as the host
+  // name does not contain any dots preceding the matched domain name.
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://www.google.com.")));
+}
+
+TEST_F(SdchManagerTest, CannotSetLeadingDotDomainDictionary) {
+  // Make sure that a prefix that matches the domain postfix won't confuse
+  // the validation checks.
+  std::string dictionary_domain(".google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  // Verify that a leading dot in the domain does not affect the name containing
+  // dots failure.
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://www.subdomain.google.com")));
+}
+
+TEST_F(SdchManagerTest, CannotSetLeadingDotDomainDictionaryTrailingDot) {
+  // Make sure that a prefix that matches the domain postfix won't confuse
+  // the validation checks.
+  std::string dictionary_domain(".google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  // Verify that a trailing period in the URL doesn't affect the check.
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://www.subdomain.google.com.")));
 }
 
 // Make sure the order of the tests is not helping us or confusing things.
@@ -509,4 +554,3 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
 }
 
 }  // namespace net
-

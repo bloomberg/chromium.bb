@@ -13,6 +13,27 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request_http_job.h"
 
+namespace {
+
+void StripTrailingDot(GURL* gurl) {
+  std::string host(gurl->host());
+
+  if (host.empty())
+    return;
+
+  if (*host.rbegin() != '.')
+    return;
+
+  host.resize(host.size() - 1);
+
+  GURL::Replacements replacements;
+  replacements.SetHostStr(host);
+  *gurl = gurl->ReplaceComponents(replacements);
+  return;
+}
+
+}  // namespace
+
 namespace net {
 
 //------------------------------------------------------------------------------
@@ -550,10 +571,14 @@ void SdchManager::AddSdchDictionary(const std::string& dictionary_text,
     line_start = line_end + 1;
   }
 
-  if (!IsInSupportedDomain(dictionary_url))
+  // Narrow fix for http://crbug.com/389451.
+  GURL dictionary_url_normalized(dictionary_url);
+  StripTrailingDot(&dictionary_url_normalized);
+
+  if (!IsInSupportedDomain(dictionary_url_normalized))
     return;
 
-  if (!Dictionary::CanSet(domain, path, ports, dictionary_url))
+  if (!Dictionary::CanSet(domain, path, ports, dictionary_url_normalized))
     return;
 
   // TODO(jar): Remove these hacks to preclude a DOS attack involving piles of
@@ -574,7 +599,8 @@ void SdchManager::AddSdchDictionary(const std::string& dictionary_text,
            << " and server hash " << server_hash;
   Dictionary* dictionary =
       new Dictionary(dictionary_text, header_end + 2, client_hash,
-                     dictionary_url, domain, path, expiration, ports);
+                     dictionary_url_normalized, domain,
+                     path, expiration, ports);
   dictionaries_[server_hash] = dictionary;
   return;
 }
