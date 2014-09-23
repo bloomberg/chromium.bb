@@ -597,6 +597,10 @@ void ProfileChooserView::Init() {
     view_mode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
   }
 
+  // The arrow keys can be used to tab between items.
+  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+
   ShowView(view_mode_, avatar_menu_.get());
 }
 
@@ -695,6 +699,16 @@ void ProfileChooserView::WindowClosing() {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
         SyncConfirmationUIClosed(false /* configure_sync_first */);
   }
+}
+
+bool ProfileChooserView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() != ui::VKEY_DOWN &&
+      accelerator.key_code() != ui::VKEY_UP)
+    return BubbleDelegateView::AcceleratorPressed(accelerator);
+  // Move the focus up or down.
+  GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
+  return true;
 }
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
