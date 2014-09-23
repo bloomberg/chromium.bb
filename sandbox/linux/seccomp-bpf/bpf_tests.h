@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tester_compatibility_delegate.h"
@@ -66,34 +67,31 @@ namespace sandbox {
 
 // This form of BPF_TEST is now discouraged (but still allowed) in favor of
 // BPF_TEST_D and BPF_TEST_C.
-// The |policy| parameter should be a SyscallEvaluator function pointer
-// (which is now a deprecated way of expressing policies).
-// BPF_TEST() takes a C++ data type as an optional fourth parameter. If
-// present, this sets up a variable that can be accessed as "BPF_AUX". This
-// variable will be passed as an argument to the "policy" function. Policies
-// would typically use it as an argument to SandboxBPF::Trap(), if they want to
-// communicate data between the BPF_TEST() and a Trap() function. The life-time
-// of this object is the same as the life-time of the process running under the
-// seccomp-bpf policy.
-// The type specified in |aux| and the last parameter of the policy function
-// must be compatible. |aux| must not be void.
+// The |policy| parameter should be a SandboxBPFPolicy subclass.
+// BPF_TEST() takes a C++ data type as an fourth parameter. A variable
+// of this type will be allocated and a pointer to it will be
+// available within the test function as "BPF_AUX". The pointer will
+// also be passed as an argument to the policy's constructor. Policies
+// would typically use it as an argument to SandboxBPF::Trap(), if
+// they want to communicate data between the BPF_TEST() and a Trap()
+// function. The life-time of this object is the same as the life-time
+// of the process running under the seccomp-bpf policy.
+// |aux| must not be void.
 #define BPF_TEST(test_case_name, test_name, policy, aux) \
   BPF_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS(), policy, aux)
 
 // A BPF_DEATH_TEST is just the same as a BPF_TEST, but it assumes that the
 // test will fail with a particular known error condition. Use the DEATH_XXX()
 // macros from unit_tests.h to specify the expected error condition.
-#define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux)          \
-  void BPF_TEST_##test_name(                                                   \
-      sandbox::BPFTesterCompatibilityDelegate<aux>::AuxType* BPF_AUX);         \
-  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                           \
-    sandbox::SandboxBPFTestRunner bpf_test_runner(                             \
-        new sandbox::BPFTesterCompatibilityDelegate<aux>(BPF_TEST_##test_name, \
-                                                         policy));             \
-    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death);             \
-  }                                                                            \
-  void BPF_TEST_##test_name(                                                   \
-      sandbox::BPFTesterCompatibilityDelegate<aux>::AuxType* BPF_AUX)
+#define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux) \
+  void BPF_TEST_##test_name(aux* BPF_AUX);                            \
+  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                  \
+    sandbox::SandboxBPFTestRunner bpf_test_runner(                    \
+        new sandbox::BPFTesterCompatibilityDelegate<policy, aux>(     \
+            BPF_TEST_##test_name));                                   \
+    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death);    \
+  }                                                                   \
+  void BPF_TEST_##test_name(aux* BPF_AUX)
 
 // This class takes a simple function pointer as a constructor parameter and a
 // class name as a template parameter to implement the BPFTesterDelegate

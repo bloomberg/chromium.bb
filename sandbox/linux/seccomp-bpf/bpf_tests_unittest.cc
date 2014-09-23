@@ -33,22 +33,24 @@ class FourtyTwo {
   DISALLOW_COPY_AND_ASSIGN(FourtyTwo);
 };
 
-ErrorCode EmptyPolicyTakesClass(SandboxBPF* sandbox,
-                                int sysno,
-                                FourtyTwo* fourty_two) {
-  // |aux| should point to an instance of FourtyTwo.
-  BPF_ASSERT(fourty_two);
-  BPF_ASSERT(FourtyTwo::kMagicValue == fourty_two->value());
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
-  } else {
+class EmptyClassTakingPolicy : public SandboxBPFPolicy {
+ public:
+  explicit EmptyClassTakingPolicy(FourtyTwo* fourty_two) {
+    BPF_ASSERT(fourty_two);
+    BPF_ASSERT(FourtyTwo::kMagicValue == fourty_two->value());
+  }
+  virtual ~EmptyClassTakingPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
-}
+};
 
 BPF_TEST(BPFTest,
          BPFAUXPointsToClass,
-         EmptyPolicyTakesClass,
+         EmptyClassTakingPolicy,
          FourtyTwo /* *BPF_AUX */) {
   // BPF_AUX should point to an instance of FourtyTwo.
   BPF_ASSERT(BPF_AUX);
@@ -62,14 +64,14 @@ TEST(BPFTest, BPFTesterCompatibilityDelegateLeakTest) {
   // Don't do anything, simply gives dynamic tools an opportunity to detect
   // leaks.
   {
-    BPFTesterCompatibilityDelegate<FourtyTwo> simple_delegate(
-        DummyTestFunction, EmptyPolicyTakesClass);
+    BPFTesterCompatibilityDelegate<EmptyClassTakingPolicy, FourtyTwo>
+        simple_delegate(DummyTestFunction);
   }
   {
     // Test polymorphism.
     scoped_ptr<BPFTesterDelegate> simple_delegate(
-        new BPFTesterCompatibilityDelegate<FourtyTwo>(DummyTestFunction,
-                                                      EmptyPolicyTakesClass));
+        new BPFTesterCompatibilityDelegate<EmptyClassTakingPolicy, FourtyTwo>(
+            DummyTestFunction));
   }
 }
 

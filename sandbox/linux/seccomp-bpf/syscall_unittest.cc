@@ -99,18 +99,26 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-ErrorCode CopyAllArgsOnUnamePolicy(SandboxBPF* sandbox,
-                                   int sysno,
-                                   std::vector<uint64_t>* aux) {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
+class CopyAllArgsOnUnamePolicy : public SandboxBPFPolicy {
+ public:
+  explicit CopyAllArgsOnUnamePolicy(std::vector<uint64_t>* aux) : aux_(aux) {}
+  virtual ~CopyAllArgsOnUnamePolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    if (sysno == __NR_uname) {
+      return sandbox->Trap(CopySyscallArgsToAux, aux_);
+    } else {
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
+    }
   }
-  if (sysno == __NR_uname) {
-    return sandbox->Trap(CopySyscallArgsToAux, aux);
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
+
+ private:
+  std::vector<uint64_t>* aux_;
+
+  DISALLOW_COPY_AND_ASSIGN(CopyAllArgsOnUnamePolicy);
+};
 
 // We are testing Syscall::Call() by making use of a BPF filter that
 // allows us

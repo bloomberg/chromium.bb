@@ -5,6 +5,7 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
@@ -34,6 +35,7 @@
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/broker_process.h"
@@ -107,7 +109,8 @@ intptr_t IncreaseCounter(const struct arch_seccomp_data& args, void* aux) {
 
 class VerboseAPITestingPolicy : public SandboxBPFDSLPolicy {
  public:
-  VerboseAPITestingPolicy(int* counter_ptr) : counter_ptr_(counter_ptr) {}
+  explicit VerboseAPITestingPolicy(int* counter_ptr)
+      : counter_ptr_(counter_ptr) {}
   virtual ~VerboseAPITestingPolicy() {}
 
   virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
@@ -214,21 +217,30 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-ErrorCode BlacklistNanosleepPolicySigsys(SandboxBPF* sandbox,
-                                         int sysno,
-                                         int* aux) {
-  DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-  switch (sysno) {
-    case __NR_nanosleep:
-      return sandbox->Trap(EnomemHandler, aux);
-    default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+class BlacklistNanosleepTrapPolicy : public SandboxBPFDSLPolicy {
+ public:
+  explicit BlacklistNanosleepTrapPolicy(int* aux) : aux_(aux) {}
+  virtual ~BlacklistNanosleepTrapPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    switch (sysno) {
+      case __NR_nanosleep:
+        return Trap(EnomemHandler, aux_);
+      default:
+        return Allow();
+    }
   }
-}
+
+ private:
+  int* aux_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlacklistNanosleepTrapPolicy);
+};
 
 BPF_TEST(SandboxBPF,
          BasicBlacklistWithSigsys,
-         BlacklistNanosleepPolicySigsys,
+         BlacklistNanosleepTrapPolicy,
          int /* (*BPF_AUX) */) {
   // getpid() should work properly
   errno = 0;
@@ -505,26 +517,34 @@ intptr_t CountSyscalls(const struct arch_seccomp_data& args, void* aux) {
   return SandboxBPF::ForwardSyscall(args);
 }
 
-ErrorCode GreyListedPolicy(SandboxBPF* sandbox, int sysno, int* aux) {
-  // Set the global environment for unsafe traps once.
-  if (sysno == MIN_SYSCALL) {
+class GreyListedPolicy : public SandboxBPFDSLPolicy {
+ public:
+  explicit GreyListedPolicy(int* aux) : aux_(aux) {
+    // Set the global environment for unsafe traps once.
     EnableUnsafeTraps();
   }
+  virtual ~GreyListedPolicy() {}
 
-  // Some system calls must always be allowed, if our policy wants to make
-  // use of UnsafeTrap()
-  if (SandboxBPF::IsRequiredForUnsafeTrap(sysno)) {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  } else if (sysno == __NR_getpid) {
-    // Disallow getpid()
-    return ErrorCode(EPERM);
-  } else if (SandboxBPF::IsValidSyscallNumber(sysno)) {
-    // Allow (and count) all other system calls.
-    return sandbox->UnsafeTrap(CountSyscalls, aux);
-  } else {
-    return ErrorCode(ENOSYS);
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    // Some system calls must always be allowed, if our policy wants to make
+    // use of UnsafeTrap()
+    if (SandboxBPF::IsRequiredForUnsafeTrap(sysno)) {
+      return Allow();
+    } else if (sysno == __NR_getpid) {
+      // Disallow getpid()
+      return Error(EPERM);
+    } else {
+      // Allow (and count) all other system calls.
+      return UnsafeTrap(CountSyscalls, aux_);
+    }
   }
-}
+
+ private:
+  int* aux_;
+
+  DISALLOW_COPY_AND_ASSIGN(GreyListedPolicy);
+};
 
 BPF_TEST(SandboxBPF, GreyListedPolicy, GreyListedPolicy, int /* (*BPF_AUX) */) {
   BPF_ASSERT(syscall(__NR_getpid) == -1);
@@ -784,30 +804,36 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
   }
 }
 
-ErrorCode DenyOpenPolicy(SandboxBPF* sandbox,
-                         int sysno,
-                         InitializedOpenBroker* iob) {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
-  }
+class DenyOpenPolicy : public SandboxBPFDSLPolicy {
+ public:
+  explicit DenyOpenPolicy(InitializedOpenBroker* iob) : iob_(iob) {}
+  virtual ~DenyOpenPolicy() {}
 
-  switch (sysno) {
-    case __NR_faccessat:
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+
+    switch (sysno) {
+      case __NR_faccessat:
 #if defined(__NR_access)
-    case __NR_access:
+      case __NR_access:
 #endif
 #if defined(__NR_open)
-    case __NR_open:
+      case __NR_open:
 #endif
-    case __NR_openat:
-      // We get a InitializedOpenBroker class, but our trap handler wants
-      // the BrokerProcess object.
-      return ErrorCode(
-          sandbox->Trap(BrokerOpenTrapHandler, iob->broker_process()));
-    default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      case __NR_openat:
+        // We get a InitializedOpenBroker class, but our trap handler wants
+        // the BrokerProcess object.
+        return Trap(BrokerOpenTrapHandler, iob_->broker_process());
+      default:
+        return Allow();
+    }
   }
-}
+
+ private:
+  InitializedOpenBroker* iob_;
+
+  DISALLOW_COPY_AND_ASSIGN(DenyOpenPolicy);
+};
 
 // We use a InitializedOpenBroker class, so that we can run unsandboxed
 // code in its constructor, which is the only way to do so in a BPF_TEST.
@@ -956,20 +982,18 @@ class EqualityStressTest {
     }
   }
 
-  ErrorCode Policy(SandboxBPF* sandbox, int sysno) {
-    if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-      // FIXME: we should really not have to do that in a trivial policy
-      return ErrorCode(ENOSYS);
-    } else if (sysno < 0 || sysno >= (int)arg_values_.size() ||
-               IsReservedSyscall(sysno)) {
+  ResultExpr Policy(int sysno) {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    if (sysno < 0 || sysno >= (int)arg_values_.size() ||
+        IsReservedSyscall(sysno)) {
       // We only return ErrorCode values for the system calls that
       // are part of our test data. Every other system call remains
       // allowed.
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     } else {
       // ToErrorCode() turns an ArgValue object into an ErrorCode that is
       // suitable for use by a sandbox policy.
-      return ToErrorCode(sandbox, arg_values_[sysno]);
+      return ToErrorCode(arg_values_[sysno]);
     }
   }
 
@@ -1116,42 +1140,38 @@ class EqualityStressTest {
     }
   }
 
-  ErrorCode ToErrorCode(SandboxBPF* sandbox, ArgValue* arg_value) {
-    // Compute the ErrorCode that should be returned, if none of our
+  ResultExpr ToErrorCode(ArgValue* arg_value) {
+    // Compute the ResultExpr that should be returned, if none of our
     // tests succeed (i.e. the system call parameter doesn't match any
     // of the values in arg_value->tests[].k_value).
-    ErrorCode err;
+    ResultExpr err;
     if (arg_value->err) {
       // If this was a leaf node, return the errno value that we expect to
       // return from the BPF filter program.
-      err = ErrorCode(arg_value->err);
+      err = Error(arg_value->err);
     } else {
       // If this wasn't a leaf node yet, recursively descend into the rest
       // of the tree. This will end up adding a few more SandboxBPF::Cond()
       // tests to our ErrorCode.
-      err = ToErrorCode(sandbox, arg_value->arg_value);
+      err = ToErrorCode(arg_value->arg_value);
     }
 
     // Now, iterate over all the test cases that we want to compare against.
     // This builds a chain of SandboxBPF::Cond() tests
     // (aka "if ... elif ... elif ... elif ... fi")
     for (int n = arg_value->size; n-- > 0;) {
-      ErrorCode matched;
+      ResultExpr matched;
       // Again, we distinguish between leaf nodes and subtrees.
       if (arg_value->tests[n].err) {
-        matched = ErrorCode(arg_value->tests[n].err);
+        matched = Error(arg_value->tests[n].err);
       } else {
-        matched = ToErrorCode(sandbox, arg_value->tests[n].arg_value);
+        matched = ToErrorCode(arg_value->tests[n].arg_value);
       }
       // For now, all of our tests are limited to 32bit.
       // We have separate tests that check the behavior of 32bit vs. 64bit
       // conditional expressions.
-      err = sandbox->Cond(arg_value->argno,
-                          ErrorCode::TP_32BIT,
-                          ErrorCode::OP_EQUAL,
-                          arg_value->tests[n].k_value,
-                          matched,
-                          err);
+      const Arg<uint32_t> arg(arg_value->argno);
+      err = If(arg == arg_value->tests[n].k_value, matched).Else(err);
     }
     return err;
   }
@@ -1221,12 +1241,20 @@ class EqualityStressTest {
   static const int kMaxArgs = 6;
 };
 
-ErrorCode EqualityStressTestPolicy(SandboxBPF* sandbox,
-                                   int sysno,
-                                   EqualityStressTest* aux) {
-  DCHECK(aux);
-  return aux->Policy(sandbox, sysno);
-}
+class EqualityStressTestPolicy : public SandboxBPFDSLPolicy {
+ public:
+  explicit EqualityStressTestPolicy(EqualityStressTest* aux) : aux_(aux) {}
+  virtual ~EqualityStressTestPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    return aux_->Policy(sysno);
+  }
+
+ private:
+  EqualityStressTest* aux_;
+
+  DISALLOW_COPY_AND_ASSIGN(EqualityStressTestPolicy);
+};
 
 BPF_TEST(SandboxBPF,
          EqualityTests,

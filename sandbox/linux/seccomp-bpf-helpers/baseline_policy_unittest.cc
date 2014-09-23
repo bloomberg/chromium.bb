@@ -5,6 +5,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <linux/futex.h>
 #include <sched.h>
 #include <signal.h>

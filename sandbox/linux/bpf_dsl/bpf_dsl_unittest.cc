@@ -5,6 +5,7 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
