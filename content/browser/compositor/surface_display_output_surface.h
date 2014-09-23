@@ -32,6 +32,8 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
 
   void set_display(cc::Display* display) { display_ = display; }
   cc::SurfaceFactory* factory() { return &factory_; }
+  void ReceivedVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
 
   // cc::OutputSurface implementation.
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;

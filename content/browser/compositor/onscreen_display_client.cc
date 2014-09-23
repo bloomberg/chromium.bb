@@ -8,6 +8,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/surface_display_output_surface.h"
 #include "content/common/host_shared_bitmap_manager.h"
 
 namespace content {
@@ -32,6 +33,11 @@ OnscreenDisplayClient::~OnscreenDisplayClient() {
 scoped_ptr<cc::OutputSurface> OnscreenDisplayClient::CreateOutputSurface() {
   DCHECK(output_surface_.get());
   return output_surface_.Pass();
+}
+
+void OnscreenDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
+                                                  base::TimeDelta interval) {
+  surface_display_output_surface_->ReceivedVSyncParameters(timebase, interval);
 }
 
 void OnscreenDisplayClient::DisplayDamaged() {

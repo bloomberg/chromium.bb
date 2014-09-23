@@ -33,6 +33,12 @@ SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
   }
 }
 
+void SurfaceDisplayOutputSurface::ReceivedVSyncParameters(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  CommitVSyncParameters(timebase, interval);
+}
+
 void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();

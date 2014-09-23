@@ -54,6 +54,8 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
   virtual void DisplayDamaged() OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE;
   virtual void DidSwapBuffersComplete() OVERRIDE;
+  virtual void CommitVSyncParameters(base::TimeTicks timebase,
+                                     base::TimeDelta interval) OVERRIDE;
 
   cc::SurfaceFactory* factory() { return &factory_; }
 

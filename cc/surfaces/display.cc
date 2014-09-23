@@ -140,6 +140,11 @@ void Display::DidSwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
 }
 
+void Display::CommitVSyncParameters(base::TimeTicks timebase,
+                                    base::TimeDelta interval) {
+  client_->CommitVSyncParameters(timebase, interval);
+}
+
 void Display::OnSurfaceDamaged(SurfaceId surface) {
   if (aggregator_ && aggregator_->previous_contained_surfaces().count(surface))
     client_->DisplayDamaged();

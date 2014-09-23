@@ -104,4 +104,8 @@ void SurfacesImpl::DidSwapBuffers() {
 void SurfacesImpl::DidSwapBuffersComplete() {
 }
 
+void SurfacesImpl::CommitVSyncParameters(base::TimeTicks timebase,
+                                         base::TimeDelta interval) {
+}
+
 }  // namespace mojo
