@@ -143,7 +143,6 @@ void LocalFrame::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_destructionObservers);
-#endif
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
     visitor->trace(m_pagePopupOwner);
@@ -153,8 +152,9 @@ void LocalFrame::trace(Visitor* visitor)
     visitor->trace(m_eventHandler);
     visitor->trace(m_console);
     visitor->trace(m_inputMethodController);
+    HeapSupplementable<LocalFrame>::trace(visitor);
+#endif
     Frame::trace(visitor);
-    WillBeHeapSupplementable<LocalFrame>::trace(visitor);
 }
 
 void LocalFrame::detach()

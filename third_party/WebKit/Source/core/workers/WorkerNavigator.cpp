@@ -46,7 +46,9 @@ String WorkerNavigator::userAgent() const
 
 void WorkerNavigator::trace(Visitor* visitor)
 {
-    WillBeHeapSupplementable<WorkerNavigator>::trace(visitor);
+#if ENABLE(OILPAN)
+    HeapSupplementable<WorkerNavigator>::trace(visitor);
+#endif
 }
 
 } // namespace blink

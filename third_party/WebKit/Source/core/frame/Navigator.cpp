@@ -153,9 +153,11 @@ Vector<String> Navigator::languages()
 
 void Navigator::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_plugins);
     visitor->trace(m_mimeTypes);
-    WillBeHeapSupplementable<Navigator>::trace(visitor);
+    HeapSupplementable<Navigator>::trace(visitor);
+#endif
     DOMWindowProperty::trace(visitor);
 }
 

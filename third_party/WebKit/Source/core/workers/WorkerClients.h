@@ -50,10 +50,12 @@ public:
 
     virtual ~WorkerClients() { }
 
+#if ENABLE(OILPAN)
     virtual void trace(Visitor* visitor) OVERRIDE
     {
-        WillBeHeapSupplementable<WorkerClients>::trace(visitor);
+        HeapSupplementable<WorkerClients>::trace(visitor);
     }
+#endif
 
 private:
     WorkerClients() { }

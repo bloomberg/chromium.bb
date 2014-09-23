@@ -103,9 +103,11 @@ bool SharedWorker::hasPendingActivity() const
 
 void SharedWorker::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_port);
+    HeapSupplementable<SharedWorker>::trace(visitor);
+#endif
     AbstractWorker::trace(visitor);
-    WillBeHeapSupplementable<SharedWorker>::trace(visitor);
 }
 
 } // namespace blink

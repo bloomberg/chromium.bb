@@ -1900,8 +1900,8 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_performance);
     visitor->trace(m_css);
     visitor->trace(m_eventQueue);
+    HeapSupplementable<LocalDOMWindow>::trace(visitor);
 #endif
-    WillBeHeapSupplementable<LocalDOMWindow>::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
     LifecycleContext<LocalDOMWindow>::trace(visitor);
     FrameDestructionObserver::trace(visitor);

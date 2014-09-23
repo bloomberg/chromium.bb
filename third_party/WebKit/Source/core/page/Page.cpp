@@ -616,8 +616,8 @@ void Page::trace(Visitor* visitor)
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
+    HeapSupplementable<Page>::trace(visitor);
 #endif
-    WillBeHeapSupplementable<Page>::trace(visitor);
     LifecycleContext<Page>::trace(visitor);
 }
 

@@ -326,6 +326,7 @@ ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
 
 void WorkerGlobalScope::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
@@ -333,7 +334,8 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     visitor->trace(m_messageStorage);
-    WillBeHeapSupplementable<WorkerGlobalScope>::trace(visitor);
+    HeapSupplementable<WorkerGlobalScope>::trace(visitor);
+#endif
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
 }

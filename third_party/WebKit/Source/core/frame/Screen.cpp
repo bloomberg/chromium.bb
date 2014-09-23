@@ -121,7 +121,9 @@ unsigned Screen::availWidth() const
 
 void Screen::trace(Visitor* visitor)
 {
-    WillBeHeapSupplementable<Screen>::trace(visitor);
+#if ENABLE(OILPAN)
+    HeapSupplementable<Screen>::trace(visitor);
+#endif
     DOMWindowProperty::trace(visitor);
 }
 

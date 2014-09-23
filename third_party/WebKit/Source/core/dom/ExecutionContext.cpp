@@ -268,8 +268,8 @@ void ExecutionContext::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingExceptions);
+    HeapSupplementable<ExecutionContext>::trace(visitor);
 #endif
-    WillBeHeapSupplementable<ExecutionContext>::trace(visitor);
     LifecycleContext<ExecutionContext>::trace(visitor);
 }
 

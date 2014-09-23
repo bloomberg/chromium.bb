@@ -3981,6 +3981,7 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
 
 void HTMLMediaElement::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_playedTimeRanges);
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_error);
@@ -3995,7 +3996,8 @@ void HTMLMediaElement::trace(Visitor* visitor)
 #if ENABLE(WEB_AUDIO)
     visitor->registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
 #endif
-    WillBeHeapSupplementable<HTMLMediaElement>::trace(visitor);
+    HeapSupplementable<HTMLMediaElement>::trace(visitor);
+#endif
     HTMLElement::trace(visitor);
 }
 

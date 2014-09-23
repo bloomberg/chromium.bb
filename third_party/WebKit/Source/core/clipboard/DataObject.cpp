@@ -259,8 +259,10 @@ void DataObject::internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem> item
 
 void DataObject::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_itemList);
-    WillBeHeapSupplementable<DataObject>::trace(visitor);
+    HeapSupplementable<DataObject>::trace(visitor);
+#endif
 }
 
 } // namespace blink

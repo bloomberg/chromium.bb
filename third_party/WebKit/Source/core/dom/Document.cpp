@@ -5837,8 +5837,8 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
-#endif
     DocumentSupplementable::trace(visitor);
+#endif
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);
