@@ -5,7 +5,6 @@
 #include "athena/main/url_search_provider.h"
 
 #include "athena/activity/public/activity_factory.h"
-#include "athena/activity/public/activity_manager.h"
 #include "athena/content/public/scheme_classifier_factory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -172,9 +171,8 @@ class UrlSearchResult : public app_list::SearchResult {
  private:
   // Overriddenn from app_list::SearchResult:
   virtual void Open(int event_flags) OVERRIDE {
-    ActivityManager::Get()->AddActivity(
-        ActivityFactory::Get()->CreateWebActivity(
-            browser_context_, base::string16(), match_.destination_url));
+    ActivityFactory::Get()->CreateWebActivity(
+        browser_context_, base::string16(), match_.destination_url);
   }
 
   void UpdateIcon() {

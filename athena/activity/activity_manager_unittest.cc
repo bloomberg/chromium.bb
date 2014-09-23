@@ -18,12 +18,10 @@ TEST_F(ActivityManagerTest, Basic) {
       static_cast<ActivityManagerImpl*>(ActivityManager::Get());
   Activity* activity1 = athena::ActivityFactory::Get()->CreateWebActivity(
       NULL, base::string16(), GURL());
-  activity_manager->AddActivity(activity1);
   EXPECT_EQ(1, activity_manager->num_activities());
 
   Activity* activity2 = athena::ActivityFactory::Get()->CreateWebActivity(
       NULL, base::string16(), GURL());
-  activity_manager->AddActivity(activity2);
   EXPECT_EQ(2, activity_manager->num_activities());
 
   Activity::Delete(activity1);

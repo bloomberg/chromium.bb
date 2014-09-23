@@ -285,6 +285,7 @@ class AthenaWebView : public views::WebView {
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE {
+    // TODO(oshima): Use factory.
     ActivityManager::Get()->AddActivity(
         new WebActivity(new AthenaWebView(new_contents)));
   }

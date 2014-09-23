@@ -5,7 +5,6 @@
 #include "athena/main/placeholder.h"
 
 #include "athena/activity/public/activity_factory.h"
-#include "athena/activity/public/activity_manager.h"
 #include "athena/resources/grit/athena_resources.h"
 #include "athena/system/public/system_ui.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -17,9 +16,8 @@ void CreateTestPages(content::BrowserContext* browser_context) {
       "http://blue.bikeshed.com", "https://www.google.com",
   };
   for (size_t i = 0; i < arraysize(kTestURLs); ++i) {
-    athena::ActivityManager::Get()->AddActivity(
-        athena::ActivityFactory::Get()->CreateWebActivity(
-            browser_context, base::string16(), GURL(kTestURLs[i])));
+    athena::ActivityFactory::Get()->CreateWebActivity(
+        browser_context, base::string16(), GURL(kTestURLs[i]));
   }
 }
 

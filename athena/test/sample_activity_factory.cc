@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "athena/activity/public/activity_manager.h"
 #include "athena/test/sample_activity.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,16 +32,20 @@ Activity* SampleActivityFactory::CreateWebActivity(
     content::BrowserContext* browser_context,
     const base::string16& title,
     const GURL& url) {
-  return new SampleActivity(
+  Activity* activity = new SampleActivity(
       kDefaultColor, kDefaultContentColor, base::UTF8ToUTF16(url.spec()));
+  ActivityManager::Get()->AddActivity(activity);
+  return activity;
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
     extensions::AppWindow* app_window,
     views::WebView* web_view) {
   DCHECK(!web_view);
-  return new SampleActivity(
+  Activity* activity = new SampleActivity(
       kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
+  ActivityManager::Get()->AddActivity(activity);
+  return activity;
 }
 
 }  // namespace test

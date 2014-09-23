@@ -5,7 +5,6 @@
 #include "athena/extensions/public/extensions_delegate.h"
 
 #include "athena/activity/public/activity_factory.h"
-#include "athena/activity/public/activity_manager.h"
 #include "athena/extensions/chrome/athena_chrome_app_window_client.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -97,9 +96,8 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
 
     DCHECK(!url_input.is_empty() || extension);
     GURL url = UrlForExtension(extension, url_input);
-    athena::ActivityManager::Get()->AddActivity(
-        athena::ActivityFactory::Get()->CreateWebActivity(
-            GetBrowserContext(), base::UTF8ToUTF16(extension->name()), url));
+    athena::ActivityFactory::Get()->CreateWebActivity(
+        GetBrowserContext(), base::UTF8ToUTF16(extension->name()), url);
   }
 
   // ExtensionService for the browser context this is created for.

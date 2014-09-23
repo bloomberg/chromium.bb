@@ -5,7 +5,6 @@
 #include "athena/home/public/home_card.h"
 
 #include "athena/activity/public/activity_factory.h"
-#include "athena/activity/public/activity_manager.h"
 #include "athena/home/home_card_constants.h"
 #include "athena/home/home_card_impl.h"
 #include "athena/test/athena_test_base.h"
@@ -107,9 +106,8 @@ TEST_F(HomeCardTest, AppSelection) {
   WindowManager::GetInstance()->ToggleOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
 
-  athena::ActivityManager::Get()->AddActivity(
-      athena::ActivityFactory::Get()->CreateWebActivity(
-          NULL, base::string16(), GURL("http://www.google.com/")));
+  athena::ActivityFactory::Get()->CreateWebActivity(
+      NULL, base::string16(), GURL("http://www.google.com/"));
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 }
 
