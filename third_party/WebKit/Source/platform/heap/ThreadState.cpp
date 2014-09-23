@@ -323,7 +323,7 @@ ThreadState::ThreadState()
 
     InitializeHeaps<NumberOfHeaps>::init(m_heaps, this);
 
-    CallbackStack::init(&m_weakCallbackStack);
+    m_weakCallbackStack = new CallbackStack();
 
     if (blink::Platform::current())
         m_sweeperThread = adoptPtr(blink::Platform::current()->createThread("Blink GC Sweeper"));
@@ -332,7 +332,8 @@ ThreadState::ThreadState()
 ThreadState::~ThreadState()
 {
     checkThread();
-    CallbackStack::shutdown(&m_weakCallbackStack);
+    delete m_weakCallbackStack;
+    m_weakCallbackStack = 0;
     for (int i = 0; i < NumberOfHeaps; i++)
         delete m_heaps[i];
     deleteAllValues(m_interruptors);
@@ -688,7 +689,7 @@ void ThreadState::snapshot()
 
 void ThreadState::pushWeakObjectPointerCallback(void* object, WeakPointerCallback callback)
 {
-    CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry(&m_weakCallbackStack);
+    CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
 
@@ -699,7 +700,7 @@ bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
     // registered as objects on orphaned pages. We cannot assert this here since
     // we might have an off-heap collection. We assert it in
     // Heap::pushWeakObjectPointerCallback.
-    if (CallbackStack::Item* item = m_weakCallbackStack->pop(&m_weakCallbackStack)) {
+    if (CallbackStack::Item* item = m_weakCallbackStack->pop()) {
         item->call(visitor);
         return true;
     }

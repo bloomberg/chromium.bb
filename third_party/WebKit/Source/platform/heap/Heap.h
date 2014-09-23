@@ -973,7 +973,7 @@ public:
 #endif
 
     // Push a trace callback on the marking stack.
-    static void pushTraceCallback(CallbackStack**, void* containerObject, TraceCallback);
+    static void pushTraceCallback(CallbackStack*, void* containerObject, TraceCallback);
 
     // Push a trace callback on the post-marking callback stack. These callbacks
     // are called after normal marking (including ephemeron iteration).
@@ -994,9 +994,9 @@ public:
     // is OK because cells are just cleared and no deallocation can happen.
     static void pushWeakCellPointerCallback(void** cell, WeakPointerCallback);
 
-    // Pop the top of the marking stack and call the callback with the visitor
+    // Pop the top of a marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
-    template<CallbackInvocationMode Mode> static bool popAndInvokeTraceCallback(CallbackStack**, Visitor*);
+    template<CallbackInvocationMode Mode> static bool popAndInvokeTraceCallback(CallbackStack*, Visitor*);
 
     // Remove an item from the post-marking callback stack and call
     // the callback with the visitor and the object pointer. Returns

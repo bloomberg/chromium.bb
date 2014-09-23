@@ -9,138 +9,256 @@
 
 namespace blink {
 
-void CallbackStack::init(CallbackStack** first)
-{
-    // The stacks are chained, so we start by setting this to null as terminator.
-    *first = 0;
-    *first = new CallbackStack(first);
-}
-
-void CallbackStack::shutdown(CallbackStack** first)
-{
-    CallbackStack* next;
-    for (CallbackStack* current = *first; current; current = next) {
-        next = current->m_next;
-        delete current;
+class CallbackStack::Block {
+public:
+    explicit Block(Block* next)
+        : m_limit(&(m_buffer[blockSize]))
+        , m_current(&(m_buffer[0]))
+        , m_next(next)
+    {
+        clearUnused();
     }
-    *first = 0;
+
+    ~Block()
+    {
+        clearUnused();
+    }
+
+    void clear()
+    {
+        m_current = &m_buffer[0];
+        m_next = 0;
+        clearUnused();
+    }
+
+    Block* next() const { return m_next; }
+    void setNext(Block* next) { m_next = next; }
+
+    bool isEmptyBlock() const
+    {
+        return m_current == &(m_buffer[0]);
+    }
+
+    size_t size() const
+    {
+        return blockSize - (m_limit - m_current);
+    }
+
+    Item* allocateEntry()
+    {
+        if (m_current < m_limit)
+            return m_current++;
+        return 0;
+    }
+
+    Item* pop()
+    {
+        if (isEmptyBlock())
+            return 0;
+        return --m_current;
+    }
+
+    void invokeEphemeronCallbacks(Visitor* visitor)
+    {
+        // This loop can tolerate entries being added by the callbacks after
+        // iteration starts.
+        for (unsigned i = 0; m_buffer + i < m_current; i++) {
+            Item& item = m_buffer[i];
+
+            // We don't need to check for orphaned pages when popping an ephemeron
+            // callback since the callback is only pushed after the object containing
+            // it has been traced. There are basically three cases to consider:
+            // 1. Member<EphemeronCollection>
+            // 2. EphemeronCollection is part of a containing object
+            // 3. EphemeronCollection is a value object in a collection
+            //
+            // Ad. 1. In this case we push the start of the ephemeron on the
+            // marking stack and do the orphaned page check when popping it off
+            // the marking stack.
+            // Ad. 2. The containing object cannot be on an orphaned page since
+            // in that case we wouldn't have traced its parts. This also means
+            // the ephemeron collection is not on the orphaned page.
+            // Ad. 3. Is the same as 2. The collection containing the ephemeron
+            // collection as a value object cannot be on an orphaned page since
+            // it would not have traced its values in that case.
+            item.call(visitor);
+        }
+    }
+
+#if ENABLE(ASSERT)
+    bool hasCallbackForObject(const void* object)
+    {
+        for (unsigned i = 0; m_buffer + i < m_current; i++) {
+            Item* item = &m_buffer[i];
+            if (item->object() == object)
+                return true;
+        }
+        return false;
+    }
+#endif
+
+private:
+    void clearUnused()
+    {
+#if ENABLE(ASSERT)
+        for (size_t i = 0; i < blockSize; i++)
+            m_buffer[i] = Item(0, 0);
+#endif
+    }
+
+    Item m_buffer[blockSize];
+    Item* m_limit;
+    Item* m_current;
+    Block* m_next;
+};
+
+CallbackStack::CallbackStack() : m_first(new Block(0)), m_last(m_first)
+{
 }
 
 CallbackStack::~CallbackStack()
 {
-#if ENABLE(ASSERT)
-    clearUnused();
-#endif
+    clear();
+    delete m_first;
+    m_first = 0;
+    m_last = 0;
 }
 
-void CallbackStack::clearUnused()
+void CallbackStack::clear()
 {
-    for (size_t i = 0; i < bufferSize; i++)
-        m_buffer[i] = Item(0, 0);
-}
-
-bool CallbackStack::isEmpty()
-{
-    return currentBlockIsEmpty() && !m_next;
-}
-
-CallbackStack* CallbackStack::takeCallbacks(CallbackStack** first)
-{
-    // If there is a full next block unlink and return it.
-    if (m_next) {
-        CallbackStack* result = m_next;
-        m_next = result->m_next;
-        result->m_next = 0;
-        return result;
+    Block* next;
+    for (Block* current = m_first->next(); current; current = next) {
+        next = current->next();
+        delete current;
     }
-    // Only the current block is in the stack. If the current block is
-    // empty return 0.
-    if (currentBlockIsEmpty())
-        return 0;
-    // The current block is not empty. Return this block and insert a
-    // new empty block as the marking stack.
-    *first = 0;
-    *first = new CallbackStack(first);
-    return this;
+    m_first->clear();
+    m_last = m_first;
 }
 
-CallbackStack::Item* CallbackStack::pop(CallbackStack** first)
+bool CallbackStack::isEmpty() const
 {
-    if (currentBlockIsEmpty()) {
-        if (!m_next) {
+    return hasJustOneBlock() && m_first->isEmptyBlock();
+}
+
+void CallbackStack::takeBlockFrom(CallbackStack* other)
+{
+    // We assume the stealing stack is empty.
+    ASSERT(isEmpty());
+
+    if (other->isEmpty())
+        return;
+
+    if (other->hasJustOneBlock()) {
+        swap(other);
+        return;
+    }
+
+    // Delete our block and steal the first one from other.
+    delete m_first;
+    m_first = other->m_first;
+    other->m_first = m_first->next();
+    m_first->setNext(0);
+    m_last = m_first;
+}
+
+CallbackStack::Item* CallbackStack::allocateEntry()
+{
+    if (Item* item = m_first->allocateEntry())
+        return item;
+    m_first = new Block(m_first);
+    return m_first->allocateEntry();
+}
+
+CallbackStack::Item* CallbackStack::pop()
+{
+    Item* item = m_first->pop();
+    while (!item) {
+        if (hasJustOneBlock()) {
 #if ENABLE(ASSERT)
-            clearUnused();
+            m_first->clear();
 #endif
             return 0;
         }
-        CallbackStack* nextStack = m_next;
-        *first = nextStack;
-        delete this;
-        return nextStack->pop(first);
+        Block* next = m_first->next();
+        delete m_first;
+        m_first = next;
+        item = m_first->pop();
     }
-    return --m_current;
+    return item;
 }
 
-void CallbackStack::invokeEphemeronCallbacks(CallbackStack** first, Visitor* visitor)
+void CallbackStack::invokeEphemeronCallbacks(Visitor* visitor)
 {
-    CallbackStack* stack = 0;
     // The first block is the only one where new ephemerons are added, so we
     // call the callbacks on that last, to catch any new ephemerons discovered
     // in the callbacks.
     // However, if enough ephemerons were added, we may have a new block that
     // has been prepended to the chain. This will be very rare, but we can
     // handle the situation by starting again and calling all the callbacks
-    // a second time.
-    while (stack != *first) {
-        stack = *first;
-        stack->invokeOldestCallbacks(visitor);
+    // on the prepended blocks.
+    Block* from = 0;
+    Block* upto = 0;
+    while (from != m_first) {
+        upto = from;
+        from = m_first;
+        invokeOldestCallbacks(from, upto, visitor);
     }
 }
 
-void CallbackStack::invokeOldestCallbacks(Visitor* visitor)
+void CallbackStack::invokeOldestCallbacks(Block* from, Block* upto, Visitor* visitor)
 {
-    // Recurse first (bufferSize at a time) so we get to the newly added entries
-    // last.
-    if (m_next)
-        m_next->invokeOldestCallbacks(visitor);
+    if (from == upto)
+        return;
+    ASSERT(from);
+    // Recurse first (blockSize at a time) so we get to the newly added entries last.
+    invokeOldestCallbacks(from->next(), upto, visitor);
+    from->invokeEphemeronCallbacks(visitor);
+}
 
-    // This loop can tolerate entries being added by the callbacks after
-    // iteration starts.
-    for (unsigned i = 0; m_buffer + i < m_current; i++) {
-        Item& item = m_buffer[i];
-
-        // We don't need to check for orphaned pages when popping an ephemeron
-        // callback since the callback is only pushed after the object containing
-        // it has been traced. There are basically three cases to consider:
-        // 1. Member<EphemeronCollection>
-        // 2. EphemeronCollection is part of a containing object
-        // 3. EphemeronCollection is a value object in a collection
-        //
-        // Ad. 1. In this case we push the start of the ephemeron on the
-        // marking stack and do the orphaned page check when popping it off
-        // the marking stack.
-        // Ad. 2. The containing object cannot be on an orphaned page since
-        // in that case we wouldn't have traced its parts. This also means
-        // the ephemeron collection is not on the orphaned page.
-        // Ad. 3. Is the same as 2. The collection containing the ephemeron
-        // collection as a value object cannot be on an orphaned page since
-        // it would not have traced its values in that case.
-        item.call(visitor);
+bool CallbackStack::sizeExceeds(size_t minSize) const
+{
+    Block* current = m_first;
+    for (size_t size = m_first->size(); size < minSize; size += current->size()) {
+        if (!current->next())
+            return false;
+        current = current->next();
     }
+    return true;
+}
+
+void CallbackStack::append(CallbackStack* other)
+{
+    ASSERT(!m_last->next());
+    ASSERT(!other->m_last->next());
+    m_last->setNext(other->m_first);
+    m_last = other->m_last;
+    // After append, we mark |other| as ill-formed by clearing its pointers.
+    other->m_first = 0;
+    other->m_last = 0;
+}
+
+bool CallbackStack::hasJustOneBlock() const
+{
+    return !m_first->next();
+}
+
+void CallbackStack::swap(CallbackStack* other)
+{
+    Block* tmp = m_first;
+    m_first = other->m_first;
+    other->m_first = tmp;
+    tmp = m_last;
+    m_last = other->m_last;
+    other->m_last = tmp;
 }
 
 #if ENABLE(ASSERT)
 bool CallbackStack::hasCallbackForObject(const void* object)
 {
-    for (unsigned i = 0; m_buffer + i < m_current; i++) {
-        Item* item = &m_buffer[i];
-        if (item->object() == object) {
+    for (Block* current = m_first; current; current = current->next()) {
+        if (current->hasCallbackForObject(object))
             return true;
-        }
     }
-    if (m_next)
-        return m_next->hasCallbackForObject(object);
-
     return false;
 }
 #endif

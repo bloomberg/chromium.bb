@@ -16,24 +16,6 @@ namespace blink {
 // multiple chained CallbackStack object instances.
 class CallbackStack {
 public:
-    CallbackStack(CallbackStack** first)
-        : m_limit(&(m_buffer[bufferSize]))
-        , m_current(&(m_buffer[0]))
-        , m_next(*first)
-    {
-#if ENABLE(ASSERT)
-        clearUnused();
-#endif
-        *first = this;
-    }
-
-    ~CallbackStack();
-    void clearUnused();
-
-    bool isEmpty();
-
-    CallbackStack* takeCallbacks(CallbackStack** first);
-
     class Item {
     public:
         Item() { }
@@ -51,50 +33,37 @@ public:
         VisitorCallback m_callback;
     };
 
-    static void init(CallbackStack** first);
-    static void shutdown(CallbackStack** first);
-    static void clear(CallbackStack** first)
-    {
-        if (!(*first)->isEmpty()) {
-            shutdown(first);
-            init(first);
-        }
-    }
+    CallbackStack();
+    ~CallbackStack();
 
-    Item* pop(CallbackStack** first);
-    static void invokeEphemeronCallbacks(CallbackStack** first, Visitor*);
+    void clear();
 
-    Item* allocateEntry(CallbackStack** first)
-    {
-        if (m_current < m_limit)
-            return m_current++;
-        return (new CallbackStack(first))->allocateEntry(first);
-    }
+    Item* allocateEntry();
+    Item* pop();
+
+    bool isEmpty() const;
+    bool sizeExceeds(size_t) const;
+
+    void append(CallbackStack*);
+    void takeBlockFrom(CallbackStack*);
+
+    void invokeEphemeronCallbacks(Visitor*);
 
 #if ENABLE(ASSERT)
     bool hasCallbackForObject(const void*);
 #endif
 
-    bool numberOfBlocksExceeds(int blocks)
-    {
-        CallbackStack* current = this;
-        for (int i = 0; i < blocks; ++i) {
-            if (!current->m_next)
-                return false;
-            current = current->m_next;
-        }
-        return true;
-    }
+    static const size_t blockSize = 200;
 
 private:
-    void invokeOldestCallbacks(Visitor*);
-    bool currentBlockIsEmpty() { return m_current == &(m_buffer[0]); }
+    class Block;
 
-    static const size_t bufferSize = 200;
-    Item m_buffer[bufferSize];
-    Item* m_limit;
-    Item* m_current;
-    CallbackStack* m_next;
+    void invokeOldestCallbacks(Block*, Block*, Visitor*);
+    bool hasJustOneBlock() const;
+    void swap(CallbackStack* other);
+
+    Block* m_first;
+    Block* m_last;
 };
 
 }

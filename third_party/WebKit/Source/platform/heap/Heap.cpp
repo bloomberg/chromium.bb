@@ -1848,7 +1848,7 @@ public:
     typedef HashMap<uintptr_t, std::pair<uintptr_t, String> > ObjectGraph;
 #endif
 
-    MarkingVisitor(CallbackStack** markingStack) : m_markingStack(markingStack)
+    MarkingVisitor(CallbackStack* markingStack) : m_markingStack(markingStack)
     {
     }
 
@@ -2055,18 +2055,18 @@ protected:
     }
 
 private:
-    CallbackStack** m_markingStack;
+    CallbackStack* m_markingStack;
 };
 
 void Heap::init()
 {
     ThreadState::init();
-    CallbackStack::init(&s_markingStack);
-    CallbackStack::init(&s_postMarkingCallbackStack);
-    CallbackStack::init(&s_weakCallbackStack);
-    CallbackStack::init(&s_ephemeronStack);
+    s_markingStack = new CallbackStack();
+    s_postMarkingCallbackStack = new CallbackStack();
+    s_weakCallbackStack = new CallbackStack();
+    s_ephemeronStack = new CallbackStack();
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
-    s_markingVisitor = new MarkingVisitor(&s_markingStack);
+    s_markingVisitor = new MarkingVisitor(s_markingStack);
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
     s_markingThreads = new Vector<OwnPtr<blink::WebThread> >();
@@ -2103,10 +2103,14 @@ void Heap::doShutdown()
     s_freePagePool = 0;
     delete s_orphanedPagePool;
     s_orphanedPagePool = 0;
-    CallbackStack::shutdown(&s_weakCallbackStack);
-    CallbackStack::shutdown(&s_postMarkingCallbackStack);
-    CallbackStack::shutdown(&s_markingStack);
-    CallbackStack::shutdown(&s_ephemeronStack);
+    delete s_weakCallbackStack;
+    s_weakCallbackStack = 0;
+    delete s_postMarkingCallbackStack;
+    s_postMarkingCallbackStack = 0;
+    delete s_markingStack;
+    s_markingStack = 0;
+    delete s_ephemeronStack;
+    s_ephemeronStack = 0;
     ThreadState::shutdown();
 }
 
@@ -2207,7 +2211,7 @@ String Heap::createBacktraceString()
 }
 #endif
 
-void Heap::pushTraceCallback(CallbackStack** stack, void* object, TraceCallback callback)
+void Heap::pushTraceCallback(CallbackStack* stack, void* object, TraceCallback callback)
 {
 #if ENABLE(ASSERT)
     {
@@ -2215,17 +2219,16 @@ void Heap::pushTraceCallback(CallbackStack** stack, void* object, TraceCallback 
         ASSERT(Heap::containedInHeapOrOrphanedPage(object));
     }
 #endif
-    CallbackStack::Item* slot = (*stack)->allocateEntry(stack);
+    CallbackStack::Item* slot = stack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
 
 template<CallbackInvocationMode Mode>
-bool Heap::popAndInvokeTraceCallback(CallbackStack** stack, Visitor* visitor)
+bool Heap::popAndInvokeTraceCallback(CallbackStack* stack, Visitor* visitor)
 {
-    CallbackStack::Item* item = (*stack)->pop(stack);
+    CallbackStack::Item* item = stack->pop();
     if (!item)
         return false;
-
     // If the object being traced is located on a page which is dead don't
     // trace it. This can happen when a conservative GC kept a dead object
     // alive which pointed to a (now gone) object on the cleaned up page.
@@ -2255,13 +2258,13 @@ void Heap::pushPostMarkingCallback(void* object, TraceCallback callback)
 {
     MutexLocker locker(markingMutex());
     ASSERT(!Heap::orphanedPagePool()->contains(object));
-    CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry(&s_postMarkingCallbackStack);
+    CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
 
 bool Heap::popAndInvokePostMarkingCallback(Visitor* visitor)
 {
-    if (CallbackStack::Item* item = s_postMarkingCallbackStack->pop(&s_postMarkingCallbackStack)) {
+    if (CallbackStack::Item* item = s_postMarkingCallbackStack->pop()) {
         item->call(visitor);
         return true;
     }
@@ -2272,7 +2275,7 @@ void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback
 {
     MutexLocker locker(markingMutex());
     ASSERT(!Heap::orphanedPagePool()->contains(cell));
-    CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry(&s_weakCallbackStack);
+    CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(cell, callback);
 }
 
@@ -2294,7 +2297,7 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
     // registered as objects on orphaned pages. We cannot assert this here since
     // we might have an off-heap collection. We assert it in
     // Heap::pushWeakObjectPointerCallback.
-    if (CallbackStack::Item* item = s_weakCallbackStack->pop(&s_weakCallbackStack)) {
+    if (CallbackStack::Item* item = s_weakCallbackStack->pop()) {
         item->call(visitor);
         return true;
     }
@@ -2308,7 +2311,7 @@ void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, E
         // Check that the ephemeron table being pushed onto the stack is not on an
         // orphaned page.
         ASSERT(!Heap::orphanedPagePool()->contains(table));
-        CallbackStack::Item* slot = s_ephemeronStack->allocateEntry(&s_ephemeronStack);
+        CallbackStack::Item* slot = s_ephemeronStack->allocateEntry();
         *slot = CallbackStack::Item(table, iterationCallback);
     }
 
@@ -2451,18 +2454,17 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 void Heap::processMarkingStackEntries(int* runningMarkingThreads)
 {
     TRACE_EVENT0("blink_gc", "Heap::processMarkingStackEntries");
-    CallbackStack* stack = 0;
+    CallbackStack stack;
     MarkingVisitor visitor(&stack);
     {
         MutexLocker locker(markingMutex());
-        stack = s_markingStack->takeCallbacks(&s_markingStack);
+        stack.takeBlockFrom(s_markingStack);
     }
-    while (stack) {
+    while (!stack.isEmpty()) {
         while (popAndInvokeTraceCallback<GlobalMarking>(&stack, &visitor)) { }
-        delete stack;
         {
             MutexLocker locker(markingMutex());
-            stack = s_markingStack->takeCallbacks(&s_markingStack);
+            stack.takeBlockFrom(s_markingStack);
         }
     }
     {
@@ -2489,23 +2491,23 @@ void Heap::processMarkingStackOnMultipleThreads()
 
 void Heap::processMarkingStackInParallel()
 {
-    static const int numberOfBlocksForParallelMarking = 2;
+    static const size_t sizeOfStackForParallelMarking = 2 * CallbackStack::blockSize;
     // Ephemeron fixed point loop run on the garbage collecting thread.
     do {
         // Iteratively mark all objects that are reachable from the objects
         // currently pushed onto the marking stack. Do so in parallel if there
         // are multiple blocks on the global marking stack.
-        if (s_markingStack->numberOfBlocksExceeds(numberOfBlocksForParallelMarking)) {
+        if (s_markingStack->sizeExceeds(sizeOfStackForParallelMarking)) {
             processMarkingStackOnMultipleThreads();
         } else {
             TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-            while (popAndInvokeTraceCallback<GlobalMarking>(&s_markingStack, s_markingVisitor)) { }
+            while (popAndInvokeTraceCallback<GlobalMarking>(s_markingStack, s_markingVisitor)) { }
         }
 
         // Mark any strong pointers that have now become reachable in ephemeron
         // maps.
         TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-        CallbackStack::invokeEphemeronCallbacks(&s_ephemeronStack, s_markingVisitor);
+        s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
@@ -2521,12 +2523,12 @@ void Heap::processMarkingStack()
         // don't continue tracing if the trace hits an object on another thread's
         // heap.
         TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-        while (popAndInvokeTraceCallback<Mode>(&s_markingStack, s_markingVisitor)) { }
+        while (popAndInvokeTraceCallback<Mode>(s_markingStack, s_markingVisitor)) { }
 
         // Mark any strong pointers that have now become reachable in ephemeron
         // maps.
         TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-        CallbackStack::invokeEphemeronCallbacks(&s_ephemeronStack, s_markingVisitor);
+        s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
@@ -2542,7 +2544,7 @@ void Heap::postMarkingProcessing()
     //    if they are only reachable from their front objects.
     while (popAndInvokePostMarkingCallback(s_markingVisitor)) { }
 
-    CallbackStack::clear(&s_ephemeronStack);
+    s_ephemeronStack->clear();
 
     // Post-marking callbacks should not trace any objects and
     // therefore the marking stack should be empty after the
