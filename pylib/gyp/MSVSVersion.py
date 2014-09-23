@@ -401,5 +401,9 @@ def SelectVisualStudioVersion(version='auto'):
   version = str(version)
   versions = _DetectVisualStudioVersions(version_map[version], 'e' in version)
   if not versions:
-    raise ValueError('Could not locate Visual Studio installation.')
+    if version == 'auto':
+      # Default to 2005 if we couldn't find anything
+      return _CreateVersion('2005', None)
+    else:
+      return _CreateVersion(version, None)
   return versions[0]
