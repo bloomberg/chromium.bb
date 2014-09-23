@@ -56,12 +56,16 @@ struct AudioInputRendererHost::AudioEntry {
 
   // Set to true after we called Close() for the controller.
   bool pending_close;
+
+  // If this entry's layout has a keyboard mic channel.
+  bool has_keyboard_mic_;
 };
 
 AudioInputRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
       shared_memory_segment_count(0),
-      pending_close(false) {
+      pending_close(false),
+      has_keyboard_mic_(false) {
 }
 
 AudioInputRendererHost::AudioEntry::~AudioEntry() {}
@@ -273,6 +277,32 @@ void AudioInputRendererHost::OnCreateStream(
     const AudioInputHostMsg_CreateStream_Config& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+#if defined(OS_CHROMEOS)
+  if (config.params.channel_layout() ==
+      media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
+    media_stream_manager_->audio_input_device_manager()
+        ->RegisterKeyboardMicStream(
+            base::Bind(&AudioInputRendererHost::DoCreateStream,
+                       this,
+                       stream_id,
+                       render_view_id,
+                       session_id,
+                       config));
+  } else {
+    DoCreateStream(stream_id, render_view_id, session_id, config);
+  }
+#else
+  DoCreateStream(stream_id, render_view_id, session_id, config);
+#endif
+}
+
+void AudioInputRendererHost::DoCreateStream(
+    int stream_id,
+    int render_view_id,
+    int session_id,
+    const AudioInputHostMsg_CreateStream_Config& config) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   std::ostringstream oss;
   oss << "[stream_id=" << stream_id << "] "
       << "AIRH::OnCreateStream(render_view_id=" << render_view_id
@@ -282,6 +312,7 @@ void AudioInputRendererHost::OnCreateStream(
   // media::AudioParameters is validated in the deserializer.
   if (LookupById(stream_id) != NULL) {
     SendErrorMessage(stream_id, STREAM_ALREADY_EXISTS);
+    MaybeUnregisterKeyboardMicStream(config);
     return;
   }
 
@@ -305,6 +336,7 @@ void AudioInputRendererHost::OnCreateStream(
       SendErrorMessage(stream_id, PERMISSION_DENIED);
       DLOG(WARNING) << "No permission has been granted to input stream with "
                     << "session_id=" << session_id;
+      MaybeUnregisterKeyboardMicStream(config);
       return;
     }
 
@@ -329,6 +361,7 @@ void AudioInputRendererHost::OnCreateStream(
       !entry->shared_memory.CreateAndMapAnonymous(size.ValueOrDie())) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id, SHARED_MEMORY_CREATE_FAILED);
+    MaybeUnregisterKeyboardMicStream(config);
     return;
   }
 
@@ -337,6 +370,7 @@ void AudioInputRendererHost::OnCreateStream(
 
   if (!writer->Init()) {
     SendErrorMessage(stream_id, SYNC_WRITER_INIT_FAILED);
+    MaybeUnregisterKeyboardMicStream(config);
     return;
   }
 
@@ -369,6 +403,7 @@ void AudioInputRendererHost::OnCreateStream(
 
   if (!entry->controller.get()) {
     SendErrorMessage(stream_id, STREAM_CREATE_ERROR);
+    MaybeUnregisterKeyboardMicStream(config);
     return;
   }
 
@@ -461,6 +496,13 @@ void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LogMessage(entry->stream_id, "DeleteEntry: stream is now closed", true);
 
+#if defined(OS_CHROMEOS)
+  if (entry->has_keyboard_mic_) {
+    media_stream_manager_->audio_input_device_manager()
+        ->UnregisterKeyboardMicStream();
+  }
+#endif
+
   // Delete the entry when this method goes out of scope.
   scoped_ptr<AudioEntry> entry_deleter(entry);
 
@@ -500,6 +542,17 @@ AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupByController(
       return i->second;
   }
   return NULL;
+}
+
+void AudioInputRendererHost::MaybeUnregisterKeyboardMicStream(
+    const AudioInputHostMsg_CreateStream_Config& config) {
+#if defined(OS_CHROMEOS)
+  if (config.params.channel_layout() ==
+      media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
+    media_stream_manager_->audio_input_device_manager()
+        ->UnregisterKeyboardMicStream();
+  }
+#endif
 }
 
 }  // namespace content

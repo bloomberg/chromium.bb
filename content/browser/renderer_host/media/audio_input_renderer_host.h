@@ -136,12 +136,20 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Audio related IPC message handlers.
 
+  // For ChromeOS: Checks if the stream should contain keyboard mic, if so
+  // registers to AudioInputDeviceManager. Then calls DoCreateStream.
+  // For non-ChromeOS: Just calls DoCreateStream.
+  void OnCreateStream(int stream_id,
+                      int render_view_id,
+                      int session_id,
+                      const AudioInputHostMsg_CreateStream_Config& config);
+
   // Creates an audio input stream with the specified format whose data is
   // consumed by an entity in the render view referenced by |render_view_id|.
   // |session_id| is used to find out which device to be used for the stream.
   // Upon success/failure, the peer is notified via the
   // NotifyStreamCreated message.
-  void OnCreateStream(int stream_id,
+  void DoCreateStream(int stream_id,
                       int render_view_id,
                       int session_id,
                       const AudioInputHostMsg_CreateStream_Config& config);
@@ -195,6 +203,11 @@ class CONTENT_EXPORT AudioInputRendererHost
   // This method is used to look up an AudioEntry after a controller
   // event is received.
   AudioEntry* LookupByController(media::AudioInputController* controller);
+
+  // If ChromeOS and |config|'s layout has keyboard mic, unregister in
+  // AudioInputDeviceManager.
+  void MaybeUnregisterKeyboardMicStream(
+      const AudioInputHostMsg_CreateStream_Config& config);
 
   // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;

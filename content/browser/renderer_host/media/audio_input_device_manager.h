@@ -56,6 +56,17 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void UseFakeDevice();
   bool ShouldUseFakeDevice() const;
 
+#if defined(OS_CHROMEOS)
+  // Registers and unregisters that a stream using keyboard mic has been opened
+  // or closed. Keeps count of how many such streams are open and activates and
+  // inactivates the keyboard mic accordingly. The (in)activation is done on the
+  // UI thread and for the register case a callback must therefor be provided
+  // which is called when activated.
+  // Called on the IO thread.
+  void RegisterKeyboardMicStream(const base::Closure& callback);
+  void UnregisterKeyboardMicStream();
+#endif
+
  private:
   // Used by the unittests to get a list of fake devices.
   friend class MediaStreamDispatcherHostTest;
@@ -87,11 +98,21 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // device is found, it will return devices_.end().
   StreamDeviceList::iterator GetDevice(int session_id);
 
+#if defined(OS_CHROMEOS)
+  // Calls Cras audio handler and sets keyboard mic active status.
+  void SetKeyboardMicStreamActiveOnUIThread(bool active);
+#endif
+
   // Only accessed on Browser::IO thread.
   MediaStreamProviderListener* listener_;
   int next_capture_session_id_;
   bool use_fake_device_;
   StreamDeviceList devices_;
+
+#if defined(OS_CHROMEOS)
+  // Keeps count of how many streams are using keyboard mic.
+  int keyboard_mic_streams_count_;
+#endif
 
   media::AudioManager* const audio_manager_;  // Weak.
 

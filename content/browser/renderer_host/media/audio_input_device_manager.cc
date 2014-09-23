@@ -14,6 +14,10 @@
 #include "media/base/channel_layout.h"
 #include "media/base/scoped_histogram_timer.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 namespace content {
 
 const int AudioInputDeviceManager::kFakeOpenSessionId = 1;
@@ -28,6 +32,9 @@ AudioInputDeviceManager::AudioInputDeviceManager(
     : listener_(NULL),
       next_capture_session_id_(kFirstSessionId),
       use_fake_device_(false),
+#if defined(OS_CHROMEOS)
+      keyboard_mic_streams_count_(0),
+#endif
       audio_manager_(audio_manager) {
 }
 
@@ -108,6 +115,43 @@ bool AudioInputDeviceManager::ShouldUseFakeDevice() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return use_fake_device_;
 }
+
+#if defined(OS_CHROMEOS)
+void AudioInputDeviceManager::RegisterKeyboardMicStream(
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ++keyboard_mic_streams_count_;
+  if (keyboard_mic_streams_count_ == 1) {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+            &AudioInputDeviceManager::SetKeyboardMicStreamActiveOnUIThread,
+            this,
+            true),
+        callback);
+  } else {
+    callback.Run();
+  }
+}
+
+void AudioInputDeviceManager::UnregisterKeyboardMicStream() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  --keyboard_mic_streams_count_;
+  DCHECK_GE(keyboard_mic_streams_count_, 0);
+  if (keyboard_mic_streams_count_ == 0) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+            &AudioInputDeviceManager::SetKeyboardMicStreamActiveOnUIThread,
+            this,
+            false));
+  }
+}
+#endif
 
 void AudioInputDeviceManager::EnumerateOnDeviceThread(
     MediaStreamType stream_type) {
@@ -249,5 +293,14 @@ void AudioInputDeviceManager::GetFakeDeviceNames(
   device_names->push_back(media::AudioDeviceName(kFakeDeviceName2,
                                                  kFakeDeviceId2));
 }
+
+#if defined(OS_CHROMEOS)
+void AudioInputDeviceManager::SetKeyboardMicStreamActiveOnUIThread(
+    bool active) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  chromeos::CrasAudioHandler::Get()->SetKeyboardMicActive(active);
+}
+#endif
+
 
 }  // namespace content
