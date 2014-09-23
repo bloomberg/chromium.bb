@@ -23,7 +23,7 @@
 # Last updated on May 5, 2014
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
   
-include braille-patternsin.cti
+include braille-patterns.cti
 
 letter \X0901 3 # davanagari chandra bindu 
 letter \X0902 56 # davanagari anuswar 
