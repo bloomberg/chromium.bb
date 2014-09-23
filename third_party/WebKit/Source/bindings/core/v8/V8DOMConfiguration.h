@@ -129,6 +129,7 @@ public:
     };
 
     static void installConstants(v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const ConstantConfiguration*, size_t constantCount, v8::Isolate*);
+    static void installConstant(v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const char* name, v8::AccessorGetterCallback, v8::Isolate*);
 
     // MethodConfiguration translates into calls to Set() for setting up an
     // object's callbacks. It sets the method on both the FunctionTemplate or

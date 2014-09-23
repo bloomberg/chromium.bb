@@ -70,6 +70,15 @@ void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototy
     }
 }
 
+// Constant installation
+//
+// installConstants() is be used for simple constants. It installs constants
+// using v8::Template::Set(), which results in a property that is much faster to
+// access from scripts.
+// installConstant() is used when some C++ code needs to be executed when the
+// constant is accessed, e.g. to handle deprecation or measuring usage. The
+// property appears the same to scripts, but is slower to access.
+
 void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const ConstantConfiguration* constants, size_t constantCount, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < constantCount; ++i) {
@@ -99,6 +108,13 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
             ASSERT_NOT_REACHED();
         }
     }
+}
+
+void V8DOMConfiguration::installConstant(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const char* name, v8::AccessorGetterCallback getter, v8::Isolate* isolate)
+{
+    v8::Handle<v8::String> constantName = v8AtomicString(isolate, name);
+    functionDescriptor->SetNativeDataProperty(constantName, getter, 0, v8::Handle<v8::Value>(), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+    prototype->SetNativeDataProperty(constantName, getter, 0, v8::Handle<v8::Value>(), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
 }
 
 void V8DOMConfiguration::installMethods(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate)

@@ -80,6 +80,22 @@ namespace TestObjectV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+static void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::Constant);
+    v8SetReturnValueInt(info, 1);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::Constant);
+    v8SetReturnValueInt(info, 1);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void stringifierAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
@@ -10432,7 +10448,6 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
         {"CONST_VALUE_23", 0, .123, 0, V8DOMConfiguration::ConstantTypeDouble},
         {"CONST_VALUE_24", 0, 5E+4, 0, V8DOMConfiguration::ConstantTypeDouble},
         {"CONST_VALUE_25", 0, 1, 0, V8DOMConfiguration::ConstantTypeFloat},
-        {"DEPRECATED_CONSTANT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
         {"CONST_JAVASCRIPT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
     };
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants), isolate);
@@ -10440,6 +10455,8 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort};
         V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
     }
+    V8DOMConfiguration::installConstant(functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback, isolate);
+    V8DOMConfiguration::installConstant(functionTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback, isolate);
     COMPILE_ASSERT(0 == TestObject::CONST_VALUE_0, TheValueOfTestObject_CONST_VALUE_0DoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::CONST_VALUE_1, TheValueOfTestObject_CONST_VALUE_1DoesntMatchWithImplementation);
     COMPILE_ASSERT(2 == TestObject::CONST_VALUE_2, TheValueOfTestObject_CONST_VALUE_2DoesntMatchWithImplementation);
@@ -10455,6 +10472,7 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
     COMPILE_ASSERT(-0x1A == TestObject::CONST_VALUE_16, TheValueOfTestObject_CONST_VALUE_16DoesntMatchWithImplementation);
     COMPILE_ASSERT(-0X1a == TestObject::CONST_VALUE_17, TheValueOfTestObject_CONST_VALUE_17DoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::DEPRECATED_CONSTANT, TheValueOfTestObject_DEPRECATED_CONSTANTDoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestObject::MEASURED_CONSTANT, TheValueOfTestObject_MEASURED_CONSTANTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::FEATURE_ENABLED_CONST, TheValueOfTestObject_FEATURE_ENABLED_CONSTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::CONST_IMPL, TheValueOfTestObject_CONST_IMPLDoesntMatchWithImplementation);
     static const V8DOMConfiguration::MethodConfiguration staticVoidMethodMethodConfiguration = {

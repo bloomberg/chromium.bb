@@ -62,6 +62,7 @@ interface TestObject {
 
     // Extended attributes
     [DeprecateAs=Constant] const short DEPRECATED_CONSTANT = 1;
+    [MeasureAs=Constant] const short MEASURED_CONSTANT = 1;
     [RuntimeEnabled=FeatureName] const short FEATURE_ENABLED_CONST = 1;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 

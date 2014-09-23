@@ -248,13 +248,29 @@ def interface_context(interface):
 
     constants = [constant_context(constant) for constant in interface.constants]
 
+    special_getter_constants = []
+    runtime_enabled_constants = []
+    constant_configuration_constants = []
+
+    for constant in constants:
+        if constant['measure_as'] or constant['deprecate_as']:
+            special_getter_constants.append(constant)
+            continue
+        if constant['runtime_enabled_function']:
+            runtime_enabled_constants.append(constant)
+            continue
+        constant_configuration_constants.append(constant)
+
     # Constants
     context.update({
+        'constant_configuration_constants': constant_configuration_constants,
         'constants': constants,
         'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
         'has_constant_configuration': any(
             not constant['runtime_enabled_function']
             for constant in constants),
+        'runtime_enabled_constants': runtime_enabled_constants,
+        'special_getter_constants': special_getter_constants,
     })
 
     # Attributes
@@ -366,22 +382,17 @@ def interface_context(interface):
 
 # [DeprecateAs], [Reflect], [RuntimeEnabled]
 def constant_context(constant):
-    # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
-    # in C++.
-    if constant.idl_type.name == 'String':
-        value = '"%s"' % constant.value
-    else:
-        value = constant.value
-
     extended_attributes = constant.extended_attributes
     return {
         'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
+        'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
         'idl_type': constant.idl_type.name,
+        'measure_as': v8_utilities.measure_as(constant),  # [MeasureAs]
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', constant.name),
         'runtime_enabled_function': runtime_enabled_function_name(constant),
-        'value': value,
+        'value': constant.value,
     }
 
 

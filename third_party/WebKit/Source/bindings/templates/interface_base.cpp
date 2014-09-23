@@ -37,6 +37,12 @@ namespace {{cpp_class}}V8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+{# Constants #}
+{% from 'constants.cpp' import constant_getter_callback
+       with context %}
+{% for constant in special_getter_constants %}
+{{constant_getter_callback(constant)}}
+{% endfor %}
 {# Attributes #}
 {% from 'attributes.cpp' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,

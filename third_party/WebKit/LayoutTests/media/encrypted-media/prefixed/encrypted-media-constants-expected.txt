@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.
 Test MediaKeyError constants and additional MediaError constant.
 
 EXPECTED (MediaKeyError.MEDIA_KEYERR_UNKNOWN == '1') OK
