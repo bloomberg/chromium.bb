@@ -52,23 +52,6 @@ COMPILE_ASSERT(IsFloatingPoint<double>::value, WTF_IsFloatingPoint_double_true);
 COMPILE_ASSERT(IsFloatingPoint<long double>::value, WTF_IsFloatingPoint_long_double_true);
 COMPILE_ASSERT(!IsFloatingPoint<int>::value, WTF_IsFloatingPoint_int_false);
 
-COMPILE_ASSERT(IsPointer<void*>::value, WTF_IsPointer_void_star_true);
-COMPILE_ASSERT(IsPointer<char*>::value, WTF_IsPointer_char_star_true);
-COMPILE_ASSERT(IsPointer<const char*>::value, WTF_IsPointer_const_char_star_true);
-COMPILE_ASSERT(!IsPointer<char>::value, WTF_IsPointer_char_false);
-COMPILE_ASSERT(!IsPointer<int>::value, WTF_IsPointer_int_false);
-COMPILE_ASSERT(!IsPointer<long>::value, WTF_IsPointer_long_false);
-
-enum TestEnum { TestEnumValue };
-COMPILE_ASSERT(IsEnum<TestEnum>::value, WTF_IsEnum_enum_true);
-COMPILE_ASSERT(!IsEnum<int>::value, WTF_IsEnum_int_false);
-COMPILE_ASSERT(!IsEnum<TestEnum*>::value, WTF_IsEnum_enum_star_false);
-
-COMPILE_ASSERT(IsScalar<TestEnum>::value, WTF_IsScalar_enum_true);
-COMPILE_ASSERT(IsScalar<int>::value, WTF_IsScalar_int_true);
-COMPILE_ASSERT(IsScalar<TestEnum*>::value, WTF_IsScalar_enum_star_true);
-COMPILE_ASSERT(IsScalar<double>::value, WTF_IsScalar_double_true);
-
 COMPILE_ASSERT(IsPod<bool>::value, WTF_IsPod_bool_true);
 COMPILE_ASSERT(IsPod<char>::value, WTF_IsPod_char_true);
 COMPILE_ASSERT(IsPod<signed char>::value, WTF_IsPod_signed_char_true);
@@ -90,73 +73,7 @@ COMPILE_ASSERT(IsPod<volatile char*>::value, WTF_IsPod_volatile_char_pointer_tru
 COMPILE_ASSERT(IsPod<double>::value, WTF_IsPod_double_true);
 COMPILE_ASSERT(IsPod<long double>::value, WTF_IsPod_long_double_true);
 COMPILE_ASSERT(IsPod<float>::value, WTF_IsPod_float_true);
-struct VirtualClass {
-    virtual void A() { }
-};
-COMPILE_ASSERT(!IsTriviallyMoveAssignable<VirtualClass>::value, WTF_IsTriviallyMoveAssignable_VirtualClass_false);
-COMPILE_ASSERT(!IsScalar<VirtualClass>::value, WTF_IsScalar_class_false);
-COMPILE_ASSERT(IsScalar<VirtualClass*>::value, WTF_IsScalar_class_ptr_true);
-
-struct DestructorClass {
-    ~DestructorClass() { }
-};
-COMPILE_ASSERT(IsTriviallyMoveAssignable<DestructorClass>::value, WTF_IsTriviallyMoveAssignable_DestructorClass_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<DestructorClass>::value, WTF_IsTriviallyCopyAssignable_DestructorClass_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<DestructorClass>::value, WTF_IsTriviallyDefaultConstructable_DestructorClass_true);
-
-struct MixedPrivate {
-    int M2() { return m2; }
-    int m1;
-private:
-    int m2;
-};
-COMPILE_ASSERT(IsTriviallyMoveAssignable<MixedPrivate>::value, WTF_IsTriviallyMoveAssignable_MixedPrivate_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<MixedPrivate>::value, WTF_IsTriviallyCopyAssignable_MixedPrivate_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<MixedPrivate>::value, WTF_IsTriviallyDefaultConstructable_MixedPrivate_true);
-struct JustPrivate {
-    int M2() { return m2; }
-private:
-    int m2;
-};
-COMPILE_ASSERT(IsTriviallyMoveAssignable<JustPrivate>::value, WTF_IsTriviallyMoveAssignable_JustPrivate_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<JustPrivate>::value, WTF_IsTriviallyCopyAssignable_JustPrivate_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<JustPrivate>::value, WTF_IsTriviallyDefaultConstructable_JustPrivate_true);
-struct JustPublic {
-    int m2;
-};
-COMPILE_ASSERT(IsTriviallyMoveAssignable<JustPublic>::value, WTF_IsTriviallyMoveAssignable_JustPublic_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<JustPublic>::value, WTF_IsTriviallyCopyAssignable_JustPublic_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<JustPublic>::value, WTF_IsTriviallyDefaultConstructable_JustPublic_true);
-struct NestedInherited : public JustPublic, JustPrivate {
-    float m3;
-};
-COMPILE_ASSERT(IsTriviallyMoveAssignable<NestedInherited>::value, WTF_IsTriviallyMoveAssignable_NestedInherited_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<NestedInherited>::value, WTF_IsTriviallyCopyAssignable_NestedInherited_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<NestedInherited>::value, WTF_IsTriviallyDefaultConstructable_NestedInherited_true);
-struct NestedOwned {
-    JustPublic m1;
-    JustPrivate m2;
-    float m3;
-};
-
-COMPILE_ASSERT(IsTriviallyMoveAssignable<NestedOwned>::value, WTF_IsTriviallyMoveAssignable_NestedOwned_true);
-COMPILE_ASSERT(IsTriviallyCopyAssignable<NestedOwned>::value, WTF_IsTriviallyCopyAssignable_NestedOwned_true);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<NestedOwned>::value, WTF_IsTriviallyDefaultConstructable_NestedOwned_true);
-
-class NonCopyableClass {
-#if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
-    NonCopyableClass(const NonCopyableClass&) = delete;
-    NonCopyableClass& operator=(const NonCopyableClass&) = delete;
-#else
-    NonCopyableClass(const NonCopyableClass&);
-    NonCopyableClass& operator=(const NonCopyableClass&);
-#endif // COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
-};
-#if 0 // Compilers don't get this "right" yet if using = delete.
-COMPILE_ASSERT(!IsTriviallyMoveAssignable<NonCopyableClass>::value, WTF_IsTriviallyMoveAssignable_NonCopyableClass_false);
-COMPILE_ASSERT(!IsTriviallyCopyAssignable<NonCopyableClass>::value, WTF_IsTriviallyCopyAssignable_NonCopyableClass_false);
-COMPILE_ASSERT(IsTriviallyDefaultConstructible<NonCopyableClass>::value, WTF_IsTriviallyDefaultConstructable_NonCopyableClass_true);
-#endif // 0
+COMPILE_ASSERT(!IsPod<IsPod<bool> >::value, WTF_IsPod_struct_false);
 
 enum IsConvertibleToIntegerCheck { };
 COMPILE_ASSERT(IsConvertibleToInteger<IsConvertibleToIntegerCheck>::value, WTF_IsConvertibleToInteger_enum_true);

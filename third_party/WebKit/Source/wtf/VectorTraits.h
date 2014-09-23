@@ -35,12 +35,12 @@ namespace WTF {
     template<typename T>
     struct VectorTraitsBase
     {
-        static const bool needsDestruction = !IsTriviallyDestructible<T>::value;
-        static const bool canInitializeWithMemset = IsTriviallyDefaultConstructible<T>::value;
-        static const bool canMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
-        static const bool canCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
-        static const bool canFillWithMemset = IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
-        static const bool canCompareWithMemcmp = IsScalar<T>::value; // Types without padding.
+        static const bool needsDestruction = !IsPod<T>::value;
+        static const bool canInitializeWithMemset = IsPod<T>::value;
+        static const bool canMoveWithMemcpy = IsPod<T>::value;
+        static const bool canCopyWithMemcpy = IsPod<T>::value;
+        static const bool canFillWithMemset = IsPod<T>::value && (sizeof(T) == sizeof(char));
+        static const bool canCompareWithMemcmp = IsPod<T>::value;
         template<typename U = void>
         struct NeedsTracingLazily {
             static const bool value = NeedsTracing<T>::value;
@@ -69,18 +69,7 @@ namespace WTF {
     struct VectorTraits<RefPtr<P> > : SimpleClassVectorTraits<RefPtr<P> > { };
 
     template<typename P>
-    struct VectorTraits<OwnPtr<P> > : SimpleClassVectorTraits<OwnPtr<P> > {
-        // OwnPtr -> PassOwnPtr has a very particular structure that
-        // tricks the normal type traits into thinking that the class
-        // is "trivially copyable".
-        static const bool canCopyWithMemcpy = false;
-    };
-    COMPILE_ASSERT(VectorTraits<RefPtr<int> >::canInitializeWithMemset, inefficientRefPtrVector);
-    COMPILE_ASSERT(VectorTraits<RefPtr<int> >::canMoveWithMemcpy, inefficientRefPtrVector);
-    COMPILE_ASSERT(VectorTraits<RefPtr<int> >::canCompareWithMemcmp, inefficientRefPtrVector);
-    COMPILE_ASSERT(VectorTraits<OwnPtr<int> >::canInitializeWithMemset, inefficientOwnPtrVector);
-    COMPILE_ASSERT(VectorTraits<OwnPtr<int> >::canMoveWithMemcpy, inefficientOwnPtrVector);
-    COMPILE_ASSERT(VectorTraits<OwnPtr<int> >::canCompareWithMemcmp, inefficientOwnPtrVector);
+    struct VectorTraits<OwnPtr<P> > : SimpleClassVectorTraits<OwnPtr<P> > { };
 
     template<typename First, typename Second>
     struct VectorTraits<pair<First, Second> >
@@ -105,14 +94,12 @@ namespace WTF {
 
 #define WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-COMPILE_ASSERT(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyCopyAssignable<ClassName>::value, macro_not_needed); \
     template<> \
     struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> { }; \
 }
 
 #define WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-COMPILE_ASSERT(!WTF::IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyCopyAssignable<ClassName>::value, macro_not_needed); \
     template<> \
     struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
     { \
@@ -123,7 +110,6 @@ COMPILE_ASSERT(!WTF::IsTriviallyDefaultConstructible<ClassName>::value || !IsTri
 
 #define WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-COMPILE_ASSERT(!WTF::IsTriviallyDefaultConstructible<ClassName>::value, macro_not_needed); \
     template<> \
     struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
     { \
