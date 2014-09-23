@@ -651,71 +651,78 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     bool animate,
     ui::ImplicitAnimationObserver* observer) {
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
-
-  ui::ScopedLayerAnimationSettings shelf_animation_setter(
-      GetLayer(shelf_)->GetAnimator());
-  ui::ScopedLayerAnimationSettings status_animation_setter(
-      GetLayer(shelf_->status_area_widget())->GetAnimator());
-  if (animate) {
-    int duration = duration_override_in_ms_ ? duration_override_in_ms_ :
-                                              kCrossFadeDurationMS;
-    shelf_animation_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(duration));
-    shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-    shelf_animation_setter.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    status_animation_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(duration));
-    status_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-    status_animation_setter.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  } else {
-    StopAnimating();
-    shelf_animation_setter.SetTransitionDuration(base::TimeDelta());
-    status_animation_setter.SetTransitionDuration(base::TimeDelta());
-  }
-  if (observer)
-    status_animation_setter.AddObserver(observer);
-
-  GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
-  shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
-       shelf_->GetNativeView()->parent(),
-       target_bounds.shelf_bounds_in_root));
-
-  GetLayer(shelf_->status_area_widget())->SetOpacity(
-      target_bounds.status_opacity);
-
-  // Having a window which is visible but does not have an opacity is an illegal
-  // state. We therefore show / hide the shelf here if required.
-  if (!target_bounds.status_opacity)
-    shelf_->status_area_widget()->Hide();
-  else if (target_bounds.status_opacity)
-    shelf_->status_area_widget()->Show();
-
-  // TODO(harrym): Once status area widget is a child view of shelf
-  // this can be simplified.
-  gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
-  status_bounds.set_x(status_bounds.x() +
-                      target_bounds.shelf_bounds_in_root.x());
-  status_bounds.set_y(status_bounds.y() +
-                      target_bounds.shelf_bounds_in_root.y());
-  shelf_->status_area_widget()->SetBounds(
-      ScreenUtil::ConvertRectToScreen(
-          shelf_->status_area_widget()->GetNativeView()->parent(),
-          status_bounds));
-  SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
-  if (!state_.is_screen_locked) {
-    gfx::Insets insets;
-    // If user session is blocked (login to new user session or add user to
-    // the existing session - multi-profile) then give 100% of work area only if
-    // keyboard is not shown.
-    if (!session_state_delegate->IsUserSessionBlocked() ||
-        !keyboard_bounds_.IsEmpty()) {
-      insets = target_bounds.work_area_insets;
+  {
+    ui::ScopedLayerAnimationSettings shelf_animation_setter(
+        GetLayer(shelf_)->GetAnimator());
+    ui::ScopedLayerAnimationSettings status_animation_setter(
+        GetLayer(shelf_->status_area_widget())->GetAnimator());
+    if (animate) {
+      int duration = duration_override_in_ms_ ? duration_override_in_ms_ :
+                                                kCrossFadeDurationMS;
+      shelf_animation_setter.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(duration));
+      shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+      shelf_animation_setter.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      status_animation_setter.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(duration));
+      status_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+      status_animation_setter.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    } else {
+      StopAnimating();
+      shelf_animation_setter.SetTransitionDuration(base::TimeDelta());
+      status_animation_setter.SetTransitionDuration(base::TimeDelta());
     }
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, insets);
+    if (observer)
+      status_animation_setter.AddObserver(observer);
+
+    GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
+    shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
+        shelf_->GetNativeView()->parent(),
+        target_bounds.shelf_bounds_in_root));
+
+    GetLayer(shelf_->status_area_widget())->SetOpacity(
+        target_bounds.status_opacity);
+
+    // Having a window which is visible but does not have an opacity is an
+    // illegal state. We therefore hide the shelf here if required.
+    if (!target_bounds.status_opacity)
+      shelf_->status_area_widget()->Hide();
+    // Setting visibility during an animation causes the visibility property to
+    // animate. Override the animation settings to immediately set the
+    // visibility property. Opacity will still animate.
+
+    // TODO(harrym): Once status area widget is a child view of shelf
+    // this can be simplified.
+    gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
+    status_bounds.set_x(status_bounds.x() +
+                        target_bounds.shelf_bounds_in_root.x());
+    status_bounds.set_y(status_bounds.y() +
+                        target_bounds.shelf_bounds_in_root.y());
+    shelf_->status_area_widget()->SetBounds(
+        ScreenUtil::ConvertRectToScreen(
+            shelf_->status_area_widget()->GetNativeView()->parent(),
+            status_bounds));
+    SessionStateDelegate* session_state_delegate =
+        Shell::GetInstance()->session_state_delegate();
+    if (!state_.is_screen_locked) {
+      gfx::Insets insets;
+      // If user session is blocked (login to new user session or add user to
+      // the existing session - multi-profile) then give 100% of work area only
+      // if keyboard is not shown.
+      if (!session_state_delegate->IsUserSessionBlocked() ||
+          !keyboard_bounds_.IsEmpty()) {
+        insets = target_bounds.work_area_insets;
+      }
+      Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, insets);
+    }
   }
+
+  // Setting visibility during an animation causes the visibility property to
+  // animate. Set the visibility property without an animation.
+  if (target_bounds.status_opacity)
+    shelf_->status_area_widget()->Show();
 }
 
 void ShelfLayoutManager::StopAnimating() {

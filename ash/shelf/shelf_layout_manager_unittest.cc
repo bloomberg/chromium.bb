@@ -1074,7 +1074,14 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
                 window).work_area().bottom(),
             widget->GetWorkAreaBoundsInScreen().bottom());
 
+  ui::ScopedAnimationDurationScaleMode animation_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  ShelfWidget* shelf_widget = GetShelfWidget();
+  EXPECT_TRUE(shelf_widget->status_area_widget()->IsVisible());
+  StepWidgetLayerAnimatorToEnd(shelf_widget);
+  StepWidgetLayerAnimatorToEnd(shelf_widget->status_area_widget());
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
                 window).work_area().bottom(),
