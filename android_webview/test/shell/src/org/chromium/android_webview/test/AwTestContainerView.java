@@ -52,6 +52,7 @@ public class AwTestContainerView extends FrameLayout {
         // and drawGL on the rendering thread. The variables following
         // are protected by it.
         private final Object mSyncLock = new Object();
+        private boolean mFunctorAttached = false;
         private boolean mNeedsProcessGL = false;
         private boolean mNeedsDrawGL = false;
         private boolean mWaitForCompletion = false;
@@ -135,9 +136,19 @@ public class AwTestContainerView extends FrameLayout {
             }
         }
 
+        public void detachGLFunctor() {
+            synchronized (mSyncLock) {
+                mFunctorAttached = false;
+                mNeedsProcessGL = false;
+                mNeedsDrawGL = false;
+                mWaitForCompletion = false;
+            }
+        }
+
         public void requestRender(Canvas canvas, boolean waitForCompletion) {
             synchronized (mSyncLock) {
                 super.requestRender();
+                mFunctorAttached = true;
                 mWaitForCompletion = waitForCompletion;
                 if (canvas == null) {
                     mNeedsProcessGL = true;
@@ -173,6 +184,11 @@ public class AwTestContainerView extends FrameLayout {
             final boolean waitForCompletion;
 
             synchronized (mSyncLock) {
+                if (!mFunctorAttached) {
+                    mSyncLock.notifyAll();
+                    return;
+                }
+
                 draw = mNeedsDrawGL;
                 process = mNeedsProcessGL;
                 waitForCompletion = mWaitForCompletion;
@@ -204,14 +220,25 @@ public class AwTestContainerView extends FrameLayout {
         }
     }
 
+    private static boolean sCreatedOnce = false;
+    private HardwareView createHardwareViewOnlyOnce(Context context) {
+        if (sCreatedOnce) return null;
+        sCreatedOnce = true;
+        return new HardwareView(context);
+    }
+
     public AwTestContainerView(Context context, boolean hardwareAccelerated) {
         super(context);
         if (hardwareAccelerated) {
-            mHardwareView = new HardwareView(context);
+            mHardwareView = createHardwareViewOnlyOnce(context);
+        }
+        if (mHardwareView != null) {
             addView(mHardwareView,
                     new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
+        } else {
+          setLayerType(LAYER_TYPE_SOFTWARE, null);
         }
         mNativeGLDelegate = new NativeGLDelegate();
         mInternalAccessDelegate = new InternalAccessAdapter();
@@ -396,7 +423,7 @@ public class AwTestContainerView extends FrameLayout {
 
         @Override
         public void detachGLFunctor() {
-            // Intentional no-op.
+            if (mHardwareView != null) mHardwareView.detachGLFunctor();
         }
     }
 
