@@ -475,8 +475,13 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       GetCreditCardSuggestions(
           field, type, &values, &labels, &icons, &unique_ids);
     } else {
-      GetProfileSuggestions(
-          *form_structure, field, type, &values, &labels, &icons, &unique_ids);
+      GetProfileSuggestions(*form_structure,
+                            field,
+                            *autofill_field,
+                            &values,
+                            &labels,
+                            &icons,
+                            &unique_ids);
     }
 
     DCHECK_EQ(values.size(), labels.size());
@@ -1080,7 +1085,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
 void AutofillManager::GetProfileSuggestions(
     const FormStructure& form,
     const FormFieldData& field,
-    const AutofillType& type,
+    const AutofillField& autofill_field,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,
@@ -1092,9 +1097,17 @@ void AutofillManager::GetProfileSuggestions(
   std::vector<GUIDPair> guid_pairs;
 
   personal_data_->GetProfileSuggestions(
-      type, field.value, field.is_autofilled, field_types,
+      autofill_field.Type(), field.value, field.is_autofilled, field_types,
       base::Callback<bool(const AutofillProfile&)>(),
       values, labels, icons, &guid_pairs);
+
+  // Adjust phone number to display in prefix/suffix case.
+  if (autofill_field.Type().GetStorableType() == PHONE_HOME_NUMBER) {
+    for (size_t i = 0; i < values->size(); ++i) {
+      (*values)[i] = AutofillField::GetPhoneNumberValue(
+          autofill_field, (*values)[i], field);
+    }
+  }
 
   for (size_t i = 0; i < guid_pairs.size(); ++i) {
     unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),

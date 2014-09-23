@@ -265,7 +265,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // is filled with the Profile label.
   void GetProfileSuggestions(const FormStructure& form,
                              const FormFieldData& field,
-                             const AutofillType& type,
+                             const AutofillField& autofill_field,
                              std::vector<base::string16>* values,
                              std::vector<base::string16>* labels,
                              std::vector<base::string16>* icons,

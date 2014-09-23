@@ -280,23 +280,8 @@ bool FillCreditCardTypeSelectControl(const base::string16& value,
 void FillPhoneNumberField(const AutofillField& field,
                           const base::string16& number,
                           FormFieldData* field_data) {
-  // Check to see if the size field matches the "prefix" or "suffix" sizes and
-  // fill accordingly.
-  base::string16 value = number;
-  if (number.length() ==
-          PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength) {
-    if (field.phone_part() == AutofillField::PHONE_PREFIX ||
-        field_data->max_length == PhoneNumber::kPrefixLength) {
-      value = number.substr(PhoneNumber::kPrefixOffset,
-                            PhoneNumber::kPrefixLength);
-    } else if (field.phone_part() == AutofillField::PHONE_SUFFIX ||
-               field_data->max_length == PhoneNumber::kSuffixLength) {
-      value = number.substr(PhoneNumber::kSuffixOffset,
-                            PhoneNumber::kSuffixLength);
-    }
-  }
-
-  field_data->value = value;
+  field_data->value =
+      AutofillField::GetPhoneNumberValue(field, number, *field_data);
 }
 
 // Set |field_data|'s value to |number|, or possibly an appropriate substring
@@ -513,6 +498,32 @@ bool AutofillField::FillFormField(const AutofillField& field,
 
   field_data->value = value;
   return true;
+}
+
+base::string16 AutofillField::GetPhoneNumberValue(
+    const AutofillField& field,
+    const base::string16& number,
+    const FormFieldData& field_data) {
+  // Check to see if the size field matches the "prefix" or "suffix" size.
+  // If so, return the appropriate substring.
+  if (number.length() !=
+          PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength) {
+    return number;
+  }
+
+  if (field.phone_part() == AutofillField::PHONE_PREFIX ||
+      field_data.max_length == PhoneNumber::kPrefixLength) {
+    return
+        number.substr(PhoneNumber::kPrefixOffset, PhoneNumber::kPrefixLength);
+  }
+
+  if (field.phone_part() == AutofillField::PHONE_SUFFIX ||
+      field_data.max_length == PhoneNumber::kSuffixLength) {
+    return
+        number.substr(PhoneNumber::kSuffixOffset, PhoneNumber::kSuffixLength);
+  }
+
+  return number;
 }
 
 }  // namespace autofill
