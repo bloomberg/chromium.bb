@@ -51,7 +51,7 @@ a {
 #description {
   font-size: 16px;
   line-height: 1.4em;
-  margin: 32px 16px 4px 16px;
+  margin: 24px 16px 4px 16px;
 }
 
 #heading {
@@ -59,4 +59,10 @@ a {
   letter-spacing: 1px;
   margin-top: 0;
   text-align: center;
+}
+
+#header-image {
+  display: block;
+  height: 100px;
+  margin: 0 auto 24px auto;
 }

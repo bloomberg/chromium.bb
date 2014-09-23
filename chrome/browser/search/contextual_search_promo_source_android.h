@@ -33,6 +33,10 @@ class ContextualSearchPromoSourceAndroid : public content::URLDataSource {
       int resource_id,
       const content::URLDataSource::GotDataCallback& callback);
 
+  // Sends the config JS resource.
+  void SendConfigResource(
+      const content::URLDataSource::GotDataCallback& callback);
+
   // Sends HTML with localized strings.
   void SendHtmlWithStrings(
     const content::URLDataSource::GotDataCallback& callback);
