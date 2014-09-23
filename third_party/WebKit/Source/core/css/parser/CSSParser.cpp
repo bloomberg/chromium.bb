@@ -76,11 +76,6 @@ bool CSSParser::parseSupportsCondition(const String& condition)
     return BisonCSSParser(CSSParserContext(HTMLStandardMode, 0)).parseSupportsCondition(condition);
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseAnimationTimingFunctionValue(const String& timingFunction)
-{
-    return BisonCSSParser::parseAnimationTimingFunctionValue(timingFunction);
-}
-
 bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
 {
     return BisonCSSParser::parseColor(color, string, strict);

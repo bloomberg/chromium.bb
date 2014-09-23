@@ -89,7 +89,6 @@ public:
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static StyleColor colorFromRGBColorString(const String&);
     static bool parseSystemColor(RGBA32& color, const String&);
-    static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     PassOwnPtr<Vector<double> > parseKeyframeKeyList(const String&);

@@ -32,11 +32,9 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "core/animation/AnimationHelpers.h"
+#include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -92,15 +90,15 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
 
         String timingFunctionString;
         if (DictionaryHelper::get(keyframeDictionaryVector[i], "easing", timingFunctionString)) {
-            if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = CSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
-                keyframe->setEasing(CSSToStyleMap::mapAnimationTimingFunction(timingFunctionValue.get(), true));
+            if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString))
+                keyframe->setEasing(timingFunction);
         }
 
         Vector<String> keyframeProperties;
         keyframeDictionaryVector[i].getOwnPropertyNames(keyframeProperties);
         for (size_t j = 0; j < keyframeProperties.size(); ++j) {
             String property = keyframeProperties[j];
-            CSSPropertyID id = camelCaseCSSPropertyNameToID(property);
+            CSSPropertyID id = AnimationInputHelpers::camelCaseCSSPropertyNameToID(property);
             if (id == CSSPropertyInvalid)
                 continue;
             String value;

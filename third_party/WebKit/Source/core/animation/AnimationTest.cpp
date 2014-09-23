@@ -8,7 +8,6 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/Nullable.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationHelpers.h"
 #include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/AnimationTimeline.h"

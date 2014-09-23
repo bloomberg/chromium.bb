@@ -34,8 +34,6 @@ public:
 
     static bool parseSupportsCondition(const String&);
 
-    static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
-
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&);
     static StyleColor colorFromRGBColorString(const String&);

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationHelpers_h
-#define AnimationHelpers_h
+#include "config.h"
+#include "core/animation/AnimationInputHelpers.h"
 
 #include "core/css/parser/CSSParser.h"
+#include "core/css/resolver/CSSToStyleMap.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-static inline CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyName)
+CSSPropertyID AnimationInputHelpers::camelCaseCSSPropertyNameToID(const String& propertyName)
 {
     if (propertyName.find('-') != kNotFound)
         return CSSPropertyInvalid;
@@ -28,6 +29,18 @@ static inline CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyN
     return id;
 }
 
-} // namespace blink
+PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const String& string)
+{
+    if (string.isEmpty())
+        return nullptr;
 
-#endif // AnimationHelpers_h
+    RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
+    if (!value || value->isInitialValue() || value->isInheritedValue())
+        return nullptr;
+    CSSValueList* valueList = toCSSValueList(value.get());
+    if (valueList->length() > 1)
+        return nullptr;
+    return CSSToStyleMap::mapAnimationTimingFunction(valueList->item(0), true);
+}
+
+} // namespace blink

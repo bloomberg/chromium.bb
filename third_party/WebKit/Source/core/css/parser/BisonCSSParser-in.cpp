@@ -877,24 +877,6 @@ static bool parseSimpleTransform(MutableStylePropertySet* properties, CSSPropert
     return true;
 }
 
-// FIXME: Push this logic up into CSSParser
-PassRefPtrWillBeRawPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionValue(const String& string)
-{
-    if (string.isEmpty())
-        return nullptr;
-    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
-    if (!parseValue(style.get(), CSSPropertyTransitionTimingFunction, string, false, HTMLStandardMode, 0))
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSValue> value = style->getPropertyCSSValue(CSSPropertyTransitionTimingFunction);
-    if (!value || value->isInitialValue() || value->isInheritedValue())
-        return nullptr;
-    CSSValueList* valueList = toCSSValueList(value.get());
-    if (valueList->length() > 1)
-        return nullptr;
-    return valueList->item(0);
-}
-
 bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
     ASSERT(!string.isEmpty());
