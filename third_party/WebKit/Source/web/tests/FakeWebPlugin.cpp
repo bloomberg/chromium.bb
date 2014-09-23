@@ -32,7 +32,6 @@
 #include "web/tests/FakeWebPlugin.h"
 
 #include "public/web/WebPluginParams.h"
-#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -58,4 +57,4 @@ void FakeWebPlugin::destroy()
     delete this;
 }
 
-} // namespace  WebKit
+} // namespace blink

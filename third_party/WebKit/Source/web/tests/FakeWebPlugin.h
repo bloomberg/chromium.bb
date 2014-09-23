@@ -40,7 +40,6 @@ class WebFrame;
 class WebInputEvent;
 class WebPluginContainer;
 class WebURL;
-class WebURLRequest;
 class WebURLResponse;
 
 class FakeWebPlugin : public WebPlugin {
