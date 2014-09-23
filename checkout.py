@@ -676,7 +676,7 @@ class GitCheckout(CheckoutBase):
           else:
             # No need to do anything special with p.is_new or if not
             # p.diff_hunks. git apply manages all that already.
-            cmd = ['apply', '--index', '-p%s' % p.patchlevel]
+            cmd = ['apply', '--index', '-3', '-p%s' % p.patchlevel]
             if verbose:
               cmd.append('--verbose')
             stdout.append(self._check_output_git(cmd, stdin=p.get(True)))

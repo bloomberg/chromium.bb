@@ -457,8 +457,8 @@ class GitCheckout(GitBaseTest):
   def testException(self):
     self._check_exception(
         self._get_co(None),
-        'While running git apply --index -p1;\n  fatal: corrupt patch at line '
-        '12\n')
+        'While running git apply --index -3 -p1;\n  fatal: corrupt patch at '
+        'line 12\n')
 
   def testProcess(self):
     self._test_process(self._get_co)
