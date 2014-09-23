@@ -122,7 +122,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
 
   // Determines whether |name| is one of the default assigned names.
-  bool IsDefaultProfileName(const base::string16& name);
+  bool IsDefaultProfileName(const base::string16& name) const;
 
   // Returns unique name that can be assigned to a newly created profile.
   base::string16 ChooseNameForNewProfile(size_t icon_index) const;

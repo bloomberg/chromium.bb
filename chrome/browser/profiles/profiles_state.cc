@@ -57,7 +57,7 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
   if (profile_path == ProfileManager::GetGuestProfilePath()) {
     display_name = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
   } else {
-    ProfileInfoCache& cache =
+    const ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t index = cache.GetIndexOfProfileWithPath(profile_path);
 
@@ -98,7 +98,7 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
 
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name) {
-  ProfileInfoCache& cache =
+  const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   if (profile_index == std::string::npos)
@@ -154,6 +154,31 @@ SigninErrorController* GetSigninErrorController(Profile* profile) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   return token_service ? token_service->signin_error_controller() : NULL;
+}
+
+Profile* SetActiveProfileToGuestIfLocked() {
+  Profile* active_profile = ProfileManager::GetLastUsedProfile();
+  DCHECK(active_profile);
+
+  if (active_profile->IsGuestSession())
+    return active_profile;
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(active_profile->GetPath());
+  if (!cache.ProfileIsSigninRequiredAtIndex(index))
+    return NULL;
+
+  // The guest profile must have been loaded already.
+  Profile* guest_profile = profile_manager->GetProfile(
+      ProfileManager::GetGuestProfilePath());
+  DCHECK(guest_profile);
+
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  local_state->SetString(prefs::kProfileLastUsed,
+                         guest_profile->GetPath().BaseName().MaybeAsASCII());
+  return guest_profile;
 }
 
 }  // namespace profiles

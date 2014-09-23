@@ -68,6 +68,11 @@ void UpdateGaiaProfilePhotoIfNeeded(Profile* profile);
 // NULL.
 SigninErrorController* GetSigninErrorController(Profile* profile);
 
+// If the current active profile (given by prefs::kProfileLastUsed) is locked,
+// changes the active profile to the Guest profile and returns it, otherwise
+// returns NULL. This assumes that the Guest profile has been loaded.
+Profile* SetActiveProfileToGuestIfLocked();
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_

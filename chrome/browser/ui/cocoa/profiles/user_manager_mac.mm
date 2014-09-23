@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 
+#include "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -146,6 +149,16 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
 }
 
 - (void)show {
+  // Because the User Manager isn't a BrowserWindowController, activating it
+  // will not trigger a -windowChangedToProfile and update the menu bar.
+  // This is only important if the active profile is Guest, which may have
+  // happened after locking a profile.
+  Profile* guestProfile = profiles::SetActiveProfileToGuestIfLocked();
+  if (guestProfile && guestProfile->IsGuestSession()) {
+    AppController* controller =
+        base::mac::ObjCCast<AppController>([NSApp delegate]);
+    [controller windowChangedToProfile:guestProfile];
+  }
   [[self window] makeKeyAndOrderFront:self];
 }
 

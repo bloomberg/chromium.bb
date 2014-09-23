@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -72,6 +73,10 @@ void UserManagerView::Show(const base::FilePath& profile_path_to_focus,
                            profiles::UserManagerTutorialMode tutorial_mode) {
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {
+    // If we are showing the User Manager after locking a profile, change the
+    // active profile to Guest.
+    profiles::SetActiveProfileToGuestIfLocked();
+
     // If there's a user manager window open already, just activate it.
     instance_->GetWidget()->Activate();
     return;
@@ -104,6 +109,10 @@ void UserManagerView::OnGuestProfileCreated(
     const base::FilePath& profile_path_to_focus,
     Profile* guest_profile,
     const std::string& url) {
+  // If we are showing the User Manager after locking a profile, change the
+  // active profile to Guest.
+  profiles::SetActiveProfileToGuestIfLocked();
+
   instance_ = instance.release();  // |instance_| takes over ownership.
   instance_->Init(profile_path_to_focus, guest_profile, GURL(url));
 }

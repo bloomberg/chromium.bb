@@ -735,7 +735,7 @@ void ProfileInfoCache::SetProfileIsUsingDefaultAvatarAtIndex(
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-bool ProfileInfoCache::IsDefaultProfileName(const base::string16& name) {
+bool ProfileInfoCache::IsDefaultProfileName(const base::string16& name) const {
   // Check if it's a "First user" old-style name.
   if (name == l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME) ||
       name == l10n_util::GetStringUTF16(IDS_LEGACY_DEFAULT_PROFILE_NAME))
