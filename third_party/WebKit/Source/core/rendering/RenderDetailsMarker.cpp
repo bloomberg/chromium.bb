@@ -24,8 +24,8 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
+#include "core/paint/DetailsMarkerPainter.h"
 #include "core/rendering/PaintInfo.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -34,39 +34,6 @@ using namespace HTMLNames;
 RenderDetailsMarker::RenderDetailsMarker(Element* element)
     : RenderBlockFlow(element)
 {
-}
-
-static Path createPath(const FloatPoint* path)
-{
-    Path result;
-    result.moveTo(FloatPoint(path[0].x(), path[0].y()));
-    for (int i = 1; i < 4; ++i)
-        result.addLineTo(FloatPoint(path[i].x(), path[i].y()));
-    return result;
-}
-
-static Path createDownArrowPath()
-{
-    FloatPoint points[4] = { FloatPoint(0.0f, 0.07f), FloatPoint(0.5f, 0.93f), FloatPoint(1.0f, 0.07f), FloatPoint(0.0f, 0.07f) };
-    return createPath(points);
-}
-
-static Path createUpArrowPath()
-{
-    FloatPoint points[4] = { FloatPoint(0.0f, 0.93f), FloatPoint(0.5f, 0.07f), FloatPoint(1.0f, 0.93f), FloatPoint(0.0f, 0.93f) };
-    return createPath(points);
-}
-
-static Path createLeftArrowPath()
-{
-    FloatPoint points[4] = { FloatPoint(1.0f, 0.0f), FloatPoint(0.14f, 0.5f), FloatPoint(1.0f, 1.0f), FloatPoint(1.0f, 0.0f) };
-    return createPath(points);
-}
-
-static Path createRightArrowPath()
-{
-    FloatPoint points[4] = { FloatPoint(0.0f, 0.0f), FloatPoint(0.86f, 0.5f), FloatPoint(0.0f, 1.0f), FloatPoint(0.0f, 0.0f) };
-    return createPath(points);
 }
 
 RenderDetailsMarker::Orientation RenderDetailsMarker::orientation() const
@@ -92,48 +59,9 @@ RenderDetailsMarker::Orientation RenderDetailsMarker::orientation() const
     return Right;
 }
 
-Path RenderDetailsMarker::getCanonicalPath() const
-{
-    switch (orientation()) {
-    case Left: return createLeftArrowPath();
-    case Right: return createRightArrowPath();
-    case Up: return createUpArrowPath();
-    case Down: return createDownArrowPath();
-    }
-
-    return Path();
-}
-
-Path RenderDetailsMarker::getPath(const LayoutPoint& origin) const
-{
-    Path result = getCanonicalPath();
-    result.transform(AffineTransform().scale(contentWidth().toFloat(), contentHeight().toFloat()));
-    result.translate(FloatSize(origin.x().toFloat(), origin.y().toFloat()));
-    return result;
-}
-
 void RenderDetailsMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (paintInfo.phase != PaintPhaseForeground || style()->visibility() != VISIBLE) {
-        RenderBlock::paint(paintInfo, paintOffset);
-        return;
-    }
-
-    LayoutPoint boxOrigin(paintOffset + location());
-    LayoutRect overflowRect(visualOverflowRect());
-    overflowRect.moveBy(boxOrigin);
-
-    if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
-        return;
-
-    const Color color(resolveColor(CSSPropertyColor));
-    paintInfo.context->setStrokeColor(color);
-    paintInfo.context->setStrokeStyle(SolidStroke);
-    paintInfo.context->setStrokeThickness(1.0f);
-    paintInfo.context->setFillColor(color);
-
-    boxOrigin.move(borderLeft() + paddingLeft(), borderTop() + paddingTop());
-    paintInfo.context->fillPath(getPath(boxOrigin));
+    DetailsMarkerPainter(*this).paint(paintInfo, paintOffset);
 }
 
 bool RenderDetailsMarker::isOpen() const
