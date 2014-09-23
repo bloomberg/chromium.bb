@@ -203,6 +203,7 @@
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
         'media/media.gyp:media_base',
+        '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:component_metrics_proto',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
