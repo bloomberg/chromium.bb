@@ -39,6 +39,7 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryItem.h"
+#include "core/loader/MixedContentChecker.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
@@ -76,6 +77,7 @@ public:
 
     LocalFrame* frame() const { return m_frame; }
 
+    MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
     ProgressTracker& progress() const { return *m_progressTracker; }
 
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
@@ -222,6 +224,7 @@ private:
     // header dependencies unless performance testing proves otherwise.
     // Some of these could be lazily created for memory savings on devices.
     mutable FrameLoaderStateMachine m_stateMachine;
+    mutable MixedContentChecker m_mixedContentChecker;
 
     OwnPtr<ProgressTracker> m_progressTracker;
 

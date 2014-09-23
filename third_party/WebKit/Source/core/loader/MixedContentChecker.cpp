@@ -45,6 +45,19 @@
 
 namespace blink {
 
+namespace {
+} // namespace
+
+MixedContentChecker::MixedContentChecker(LocalFrame* frame)
+    : m_frame(frame)
+{
+}
+
+FrameLoaderClient* MixedContentChecker::client() const
+{
+    return m_frame->loader().client();
+}
+
 // static
 bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const KURL& url)
 {
@@ -191,17 +204,20 @@ const char* MixedContentChecker::typeNameFromContext(WebURLRequest::RequestConte
 // static
 void MixedContentChecker::logToConsole(LocalFrame* frame, const KURL& url, WebURLRequest::RequestContext requestContext, bool allowed)
 {
+    String message = String::format(
+        "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an insecure %s '%s'. %s",
+        frame->document()->url().elidedString().utf8().data(), typeNameFromContext(requestContext), url.elidedString().utf8().data(),
+        allowed ? "This content should also be served over HTTPS." : "This request has been blocked; the content must be served over HTTPS.");
+    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
+    frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
 }
 
-LocalFrame* MixedContentChecker::inWhichFrameIsThisContentMixed(LocalFrame* frame, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, const KURL& url)
+// static
+bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequest& resourceRequest, const KURL& url)
 {
     // No frame, no mixed content:
     if (!frame)
-        return 0;
-
-    // We only care about subresource loads; top-level navigations cannot be mixed content.
-    if (frameType == WebURLRequest::FrameTypeTopLevel)
-        return 0;
+        return false;
 
     // Check the top frame first.
     if (Frame* top = frame->tree().top()) {
@@ -209,48 +225,29 @@ LocalFrame* MixedContentChecker::inWhichFrameIsThisContentMixed(LocalFrame* fram
         // is in a different process from the current frame. Until that is done, we bail out
         // early and allow the load.
         if (!top->isLocalFrame())
-            return 0;
+            return false;
 
         LocalFrame* localTop = toLocalFrame(top);
-        if (frame != localTop && inWhichFrameIsThisContentMixed(localTop, requestContext, frameType, url))
-            return localTop;
+        if (frame != localTop && shouldBlockFetch(localTop, resourceRequest, url))
+            return true;
     }
 
-    // Just count these for the moment, don't block them.
-    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, frame->document()->securityOrigin()->toString())))
-        UseCounter::count(frame->document(), contextTypeFromContext(requestContext) == ContextTypeBlockable ? UseCounter::MixedContentPrivateIPInPublicWebsiteActive : UseCounter::MixedContentPrivateIPInPublicWebsitePassive);
+    // We only care about subresource loads; top-level navigations cannot be mixed content.
+    if (resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel)
+        return false;
 
     // No mixed content, no problem.
     if (!isMixedContent(frame->document()->securityOrigin(), url))
-        return 0;
-
-    return frame;
-}
-
-// static
-bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, const KURL& url)
-{
-    LocalFrame* effectiveFrame = inWhichFrameIsThisContentMixed(frame, requestContext, frameType, url);
-    if (!effectiveFrame)
         return false;
 
-    Settings* settings = effectiveFrame->settings();
-    FrameLoaderClient* client = effectiveFrame->loader().client();
-    SecurityOrigin* securityOrigin = effectiveFrame->document()->securityOrigin();
+    Settings* settings = frame->settings();
+    FrameLoaderClient* client = frame->loader().client();
+    SecurityOrigin* securityOrigin = frame->document()->securityOrigin();
     bool allowed = false;
 
-    ContextType contextType = contextTypeFromContext(requestContext);
+    ContextType contextType = contextTypeFromContext(resourceRequest.requestContext());
     if (contextType == ContextTypeBlockableUnlessLax)
         contextType = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? ContextTypeOptionallyBlockable : ContextTypeBlockable;
-
-    if (frameType == WebURLRequest::FrameTypeNested) {
-        // For subframes, if we're dealing with a CORS-enabled scheme, then block mixed content. Otherwise,
-        // treat frames as passive content.
-        //
-        // FIXME: Remove this temporary hack once we have a reasonable API for launching external applications
-        // via URLs. http://crbug.com/318788 and https://crbug.com/393481
-        contextType = SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()) ? ContextTypeBlockable : ContextTypeOptionallyBlockable;
-    }
 
     switch (contextType) {
     case ContextTypeOptionallyBlockable:
@@ -274,75 +271,125 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         return true;
     };
 
-    String message = String::format(
-        "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an insecure %s '%s'. %s",
-        frame->document()->url().elidedString().utf8().data(), typeNameFromContext(requestContext), url.elidedString().utf8().data(),
-        allowed ? "This content should also be served over HTTPS." : "This request has been blocked; the content must be served over HTTPS.");
-    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
-    frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
-
+    logToConsole(frame, url, resourceRequest.requestContext(), allowed);
     return !allowed;
 }
 
-// static
-bool MixedContentChecker::shouldBlockWebSocket(LocalFrame* frame, const KURL& url)
+bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
-    // FIXME: Should we have a RequestContext for WebSockets? Probably not, but this feels hacky otherwise.
-    LocalFrame* effectiveFrame = inWhichFrameIsThisContentMixed(frame, WebURLRequest::RequestContextXMLHttpRequest, WebURLRequest::FrameTypeNone, url);
-    if (!effectiveFrame)
+    // Check the top frame if it differs from MixedContentChecker's m_frame.
+    if (!m_frame->tree().top()->isLocalFrame()) {
+        // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
+        // is in a different process from the current frame. Until that is done, we always allow
+        // loads in remote frames.
+        return false;
+    }
+    Frame* top = m_frame->tree().top();
+    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
         return false;
 
-    Settings* settings = effectiveFrame->settings();
-    FrameLoaderClient* client = effectiveFrame->loader().client();
-    SecurityOrigin* securityOrigin = effectiveFrame->document()->securityOrigin();
-    bool allowed = false;
+    // Just count these for the moment, don't block them.
+    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, securityOrigin->toString())))
+        UseCounter::count(m_frame->document(), UseCounter::MixedContentPrivateIPInPublicWebsitePassive);
 
-    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled()) {
-        allowed = client->allowDisplayingInsecureContent(settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket()), securityOrigin, url);
-        if (allowed)
-            client->didDisplayInsecureContent();
-    } else {
-        allowed = client->allowRunningInsecureContent(settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket()), securityOrigin, url);
-        if (allowed)
-            client->didRunInsecureContent(securityOrigin, url);
-    }
+    // Then check the current frame:
+    if (!isMixedContent(securityOrigin, url))
+        return true;
 
-    String message = String::format(
-        "Mixed Content: The page at '%s' was loaded over HTTPS, but requested the WebSocket endpoint '%s'. %s",
-        effectiveFrame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data(),
-        allowed ? "This endpoint should also be secure ('wss:')." : "This request has been blocked; the endpoint must be secure ('wss:').");
-    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
-    effectiveFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
+    Settings* settings = m_frame->settings();
+    bool allowed = client()->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
+    logWarning(allowed, url, type);
 
-    return !allowed;
+    if (allowed)
+        client()->didDisplayInsecureContent();
+
+    return allowed;
 }
 
-// static
-bool MixedContentChecker::checkFormAction(LocalFrame* frame, const KURL& url)
+bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
+{
+    // Check the top frame if it differs from MixedContentChecker's m_frame.
+    if (!m_frame->tree().top()->isLocalFrame()) {
+        // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
+        // is in a different process from the current frame. Until that is done, we always allow
+        // loads in remote frames.
+        return true;
+    }
+    Frame* top = m_frame->tree().top();
+    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
+        return false;
+
+    // Just count these for the moment, don't block them.
+    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, securityOrigin->toString())))
+        UseCounter::count(m_frame->document(), UseCounter::MixedContentPrivateIPInPublicWebsiteActive);
+
+    // Then check the current frame:
+    if (!isMixedContent(securityOrigin, url))
+        return true;
+
+    Settings* settings = m_frame->settings();
+    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || ((type == WebSocket) && settings->allowConnectingInsecureWebSocket()));
+    bool allowed = client()->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
+    logWarning(allowed, url, type);
+
+    if (allowed)
+        client()->didRunInsecureContent(securityOrigin, url);
+
+    return allowed;
+}
+
+bool MixedContentChecker::canFrameInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
+{
+    // If we're dealing with a CORS-enabled scheme, then block mixed frames as active content. Otherwise,
+    // treat frames as passive content.
+    //
+    // FIXME: Remove this temporary hack once we have a reasonable API for launching external applications
+    // via URLs. http://crbug.com/318788 and https://crbug.com/393481
+    if (SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()))
+        return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::Execution);
+    return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Display);
+}
+
+bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
+{
+    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
+        return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
+    return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
+}
+
+bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const
 {
     // For whatever reason, some folks handle forms via JavaScript, and submit to `javascript:void(0)`
     // rather than calling `preventDefault()`. We special-case `javascript:` URLs here, as they don't
     // introduce MixedContent for form submissions.
     if (url.protocolIs("javascript"))
-        return false;
+        return true;
 
     // If lax mixed content checking is enabled (noooo!), skip this check entirely.
     if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
-        return false;
+        return true;
+    return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Submission);
+}
 
-    LocalFrame* effectiveFrame = inWhichFrameIsThisContentMixed(frame, WebURLRequest::RequestContextForm, WebURLRequest::FrameTypeNone, url);
-    if (!effectiveFrame)
-        return false;
-
-    // No "allowed" check here; we're not yet exposing anything which would block form submission.
-    FrameLoaderClient* client = effectiveFrame->loader().client();
-    client->didDisplayInsecureContent();
-
-    String message = String::format(
-        "Mixed Content: The page at '%s' was loaded over HTTPS, but contains a form whose 'action' attribute is '%s'. This form should not submit data to insecure endpoints.",
-        effectiveFrame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data());
-    effectiveFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, WarningMessageLevel, message));
-    return true;
+void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const
+{
+    StringBuilder message;
+    message.append((allowed ? "" : "[blocked] "));
+    message.append("The page at '" + m_frame->document()->url().elidedString() + "' was loaded over HTTPS, but ");
+    switch (type) {
+    case Display:
+        message.append("displayed insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n");
+        break;
+    case Execution:
+    case WebSocket:
+        message.append("ran insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n");
+        break;
+    case Submission:
+        message.append("is submitting data to an insecure location at '" + target.elidedString() + "': this content should also be submitted over HTTPS.\n");
+        break;
+    }
+    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
+    m_frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message.toString()));
 }
 
 void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const AtomicString& resourceIPAddress)

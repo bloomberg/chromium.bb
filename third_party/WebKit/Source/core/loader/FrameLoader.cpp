@@ -68,7 +68,6 @@
 #include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/MixedContentChecker.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -113,6 +112,7 @@ static bool needsHistoryItemRestore(FrameLoadType type)
 
 FrameLoader::FrameLoader(LocalFrame* frame)
     : m_frame(frame)
+    , m_mixedContentChecker(frame)
     , m_progressTracker(ProgressTracker::create(frame))
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
