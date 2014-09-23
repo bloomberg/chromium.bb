@@ -57,7 +57,9 @@ public:
 int runHelper(TestSuite* testSuite)
 {
     BlinkTestEnvironmentScope blinkTestEnvironment;
-    return testSuite->Run();
+    int result = testSuite->Run();
+    blink::Heap::collectAllGarbage();
+    return result;
 }
 
 int main(int argc, char** argv)
