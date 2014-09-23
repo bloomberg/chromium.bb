@@ -2,6 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+@font-face {
+  font-family: 'Roboto2';
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto2-Regular');
+}
+
 html {
   height: 100%;
   width: 100%;
@@ -10,10 +16,10 @@ html {
 body {
   -webkit-align-items: center;
   -webkit-flex-direction: column;
-  background-color: #f4f4f4;
+  background-color: #fafafa;
   box-sizing: border-box;
   display: -webkit-flex;
-  font-family: Droid Sans;
+  font-family: 'Roboto2', sans-serif;
   height: 100%;
   margin: 0 auto;
   max-width: 600px;
@@ -40,26 +46,19 @@ a {
 
 #take-a-tour {
   -webkit-flex: none;
-  background: linear-gradient(to bottom, #f5f5f5, #f1f1f1);
-  border: 1px solid #ccc;
+  background-color: rgb(66, 133, 244);
   border-radius: 2px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08),
-      inset 0 0 2px rgba(255, 255, 255, 0.6);
-  color: rgb(73, 73, 74);
+  color: white;
   display: block;
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: medium;
   margin: 20px auto 0;
-  max-width: 400px;
-  padding: 11px 0;
+  max-width: 320px;
+  padding: 15px 0;
   text-align: center;
   text-decoration: none;
+  text-transform: uppercase;
   width: 100%;
-}
-
-#take-a-tour:active {
-  border: 1px solid #a1a1a1;
-  box-shadow: inset 0 5px 15px rgba(100, 100, 100, 0.20);
 }
 
 .footer {
