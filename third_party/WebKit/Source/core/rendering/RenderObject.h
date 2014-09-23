@@ -775,6 +775,9 @@ public:
     FloatQuad localToContainerQuad(const FloatQuad&, const RenderLayerModelObject* paintInvalidatinoContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0) const;
     FloatPoint localToContainerPoint(const FloatPoint&, const RenderLayerModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0, const PaintInvalidationState* = 0) const;
 
+    // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
+    FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, RenderLayer** backingLayer = nullptr);
+
     // Return the offset from the container() renderer (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
     virtual LayoutSize offsetFromContainer(const RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
@@ -782,9 +785,6 @@ public:
     LayoutSize offsetFromAncestorContainer(const RenderObject*) const;
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
-
-    // Computes the position of the given render object in the space of |paintInvalidationContainer|.
-    LayoutPoint positionFromPaintInvalidationContainer(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
 
     IntRect absoluteBoundingBoxRect() const;
     // FIXME: This function should go away eventually

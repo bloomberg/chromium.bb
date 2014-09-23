@@ -59,6 +59,17 @@ void WebRuntimeFeatures::enableApplicationCache(bool enable)
     RuntimeEnabledFeatures::setApplicationCacheEnabled(enable);
 }
 
+
+void WebRuntimeFeatures::enableCompositedSelectionUpdate(bool enable)
+{
+    RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isCompositedSelectionUpdateEnabled()
+{
+    return RuntimeEnabledFeatures::compositedSelectionUpdateEnabled();
+}
+
 void WebRuntimeFeatures::enableDatabase(bool enable)
 {
     RuntimeEnabledFeatures::setDatabaseEnabled(enable);

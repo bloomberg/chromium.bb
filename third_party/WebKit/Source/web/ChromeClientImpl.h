@@ -145,6 +145,7 @@ public:
     virtual void exitFullScreenForElement(Element*) OVERRIDE;
 
     virtual void clearCompositedSelectionBounds() OVERRIDE;
+    virtual void updateCompositedSelectionBounds(const blink::CompositedSelectionBound& anchor, const blink::CompositedSelectionBound& focus) OVERRIDE;
 
     // ChromeClient methods:
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) OVERRIDE;

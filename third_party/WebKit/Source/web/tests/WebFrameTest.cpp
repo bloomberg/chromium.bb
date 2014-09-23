@@ -34,6 +34,7 @@
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
+#include "bindings/core/v8/V8Node.h"
 #include "core/UserAgentStyleSheets.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/css/StyleSheetContents.h"
@@ -4051,7 +4052,7 @@ public:
     }
 
     const WebSelectionBound* start() const { return m_start.get(); }
-    const WebSelectionBound* end() const { return m_start.get(); }
+    const WebSelectionBound* end() const { return m_end.get(); }
 
 private:
     bool m_selectionCleared;
@@ -4070,9 +4071,86 @@ private:
     CompositedSelectionBoundsTestLayerTreeView m_testLayerTreeView;
 };
 
+class CompositedSelectionBoundsTest : public WebFrameTest {
+protected:
+    CompositedSelectionBoundsTest()
+        : m_fakeSelectionLayerTreeView(m_fakeSelectionWebViewClient.selectionLayerTreeView())
+    {
+        blink::RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
+        registerMockedHttpURLLoad("Ahem.ttf");
+
+        m_webViewHelper.initialize(true, 0, &m_fakeSelectionWebViewClient);
+        m_webViewHelper.webView()->settings()->setDefaultFontSize(12);
+        m_webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
+        m_webViewHelper.webView()->resize(WebSize(640, 480));
+    }
+
+    void runTest(const char* testFile)
+    {
+        registerMockedHttpURLLoad(testFile);
+        FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), m_baseURL + testFile);
+        m_webViewHelper.webView()->layout();
+
+        const WebSelectionBound* selectStart = m_fakeSelectionLayerTreeView.start();
+        const WebSelectionBound* selectEnd = m_fakeSelectionLayerTreeView.end();
+
+        v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+        v8::Handle<v8::Value> result = m_webViewHelper.webView()->mainFrame()->executeScriptAndReturnValueForTests(WebScriptSource("expectedResult"));
+        if (result.IsEmpty() || (*result)->IsUndefined()) {
+            EXPECT_FALSE(selectStart);
+            EXPECT_FALSE(selectEnd);
+            return;
+        }
+
+        ASSERT_TRUE(selectStart);
+        ASSERT_TRUE(selectEnd);
+
+        ASSERT_TRUE((*result)->IsArray());
+        v8::Array& expectedResult = *v8::Array::Cast(*result);
+        ASSERT_EQ(10u, expectedResult.Length());
+
+        blink::Node* layerOwnerNodeForStart = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
+        ASSERT_TRUE(layerOwnerNodeForStart);
+        EXPECT_EQ(layerOwnerNodeForStart->renderer()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectStart->layerId);
+        EXPECT_EQ(expectedResult.Get(1)->Int32Value(), selectStart->edgeTopInLayer.x);
+        EXPECT_EQ(expectedResult.Get(2)->Int32Value(), selectStart->edgeTopInLayer.y);
+        EXPECT_EQ(expectedResult.Get(3)->Int32Value(), selectStart->edgeBottomInLayer.x);
+        EXPECT_EQ(expectedResult.Get(4)->Int32Value(), selectStart->edgeBottomInLayer.y);
+
+        blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(5));
+        ASSERT_TRUE(layerOwnerNodeForEnd);
+        EXPECT_EQ(layerOwnerNodeForEnd->renderer()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectEnd->layerId);
+        EXPECT_EQ(expectedResult.Get(6)->Int32Value(), selectEnd->edgeTopInLayer.x);
+        EXPECT_EQ(expectedResult.Get(7)->Int32Value(), selectEnd->edgeTopInLayer.y);
+        EXPECT_EQ(expectedResult.Get(8)->Int32Value(), selectEnd->edgeBottomInLayer.x);
+        EXPECT_EQ(expectedResult.Get(9)->Int32Value(), selectEnd->edgeBottomInLayer.y);
+    }
+
+    void runTestWithMultipleFiles(const char* testFile, ...)
+    {
+        va_list auxFiles;
+        va_start(auxFiles, testFile);
+        while (const char* auxFile = va_arg(auxFiles, const char*))
+            registerMockedHttpURLLoad(auxFile);
+        va_end(auxFiles);
+
+        runTest(testFile);
+    }
+
+    CompositedSelectionBoundsTestWebViewClient m_fakeSelectionWebViewClient;
+    CompositedSelectionBoundsTestLayerTreeView& m_fakeSelectionLayerTreeView;
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
+};
+
+TEST_F(CompositedSelectionBoundsTest, None) { runTest("composited_selection_bounds_none.html"); }
+TEST_F(CompositedSelectionBoundsTest, Basic) { runTest("composited_selection_bounds_basic.html"); }
+TEST_F(CompositedSelectionBoundsTest, Transformed) { runTest("composited_selection_bounds_transformed.html"); }
+TEST_F(CompositedSelectionBoundsTest, SplitLayer) { runTest("composited_selection_bounds_split_layer.html"); }
+TEST_F(CompositedSelectionBoundsTest, Iframe) { runTestWithMultipleFiles("composited_selection_bounds_iframe.html", "composited_selection_bounds_basic.html", nullptr); }
+
 TEST_F(WebFrameTest, CompositedSelectionBoundsCleared)
 {
-    RuntimeEnabledFeatures::setCompositedSelectionUpdatesEnabled(true);
+    RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
 
     registerMockedHttpURLLoad("select_range_basic.html");
     registerMockedHttpURLLoad("select_range_scroll.html");

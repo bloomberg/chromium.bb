@@ -52,6 +52,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/PageVisibilityState.h"
+#include "core/rendering/compositing/CompositedSelectionBound.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
@@ -99,6 +100,7 @@
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarBehavior.h"
+#include "public/platform/WebSelectionBound.h"
 #include "public/platform/WebStorageQuotaError.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLRequest.h"
@@ -613,6 +615,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionAuto, TouchActionAuto);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPanX, TouchActionPanX);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPanY, TouchActionPanY);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::Caret, CompositedSelectionBound::Caret);
+COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionLeft, CompositedSelectionBound::SelectionLeft);
+COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionRight, CompositedSelectionBound::SelectionRight);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsOff, V8CacheOptionsOff);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);

@@ -521,17 +521,32 @@ void RenderLayer::updatePagination()
 
 LayoutPoint RenderLayer::positionFromPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
-    if (!paintInvalidationContainer || !paintInvalidationContainer->layer()->groupedMapping())
-        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
+    FloatPoint point = renderObject->localToContainerPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
 
-    RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
-    LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
+    // FIXME: Eventually we are going to unify coordinates in GraphicsLayer space.
+    if (paintInvalidationContainer && paintInvalidationContainer->layer()->groupedMapping())
+        mapPointToPaintBackingCoordinates(paintInvalidationContainer, point);
+
+    return LayoutPoint(point);
+}
+
+void RenderLayer::mapPointToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, FloatPoint& point)
+{
+    RenderLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
+    if (!paintInvalidationLayer->groupedMapping()) {
+        point.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
+        return;
+    }
+
+    RenderLayerModelObject* transformedAncestor = paintInvalidationLayer->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
-        return point;
+        return;
 
-    point = LayoutPoint(paintInvalidationContainer->localToContainerPoint(point, transformedAncestor));
-    point.moveBy(-paintInvalidationContainer->layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
-    return point;
+    // |paintInvalidationContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
+    // transformed ancestor.
+    point = paintInvalidationContainer->localToContainerPoint(point, transformedAncestor);
+
+    point.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
 void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)

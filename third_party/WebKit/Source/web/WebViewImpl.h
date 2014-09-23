@@ -80,6 +80,8 @@ class WebPagePopupImpl;
 class WebPlugin;
 class WebSettingsImpl;
 
+struct WebSelectionBound;
+
 class WebViewImpl FINAL : public WebView
     , public RefCounted<WebViewImpl>
     , public WebGestureCurveTarget
@@ -456,6 +458,7 @@ public:
     void exitFullScreenForElement(Element*);
 
     void clearCompositedSelectionBounds();
+    void updateCompositedSelectionBounds(const WebSelectionBound& anchor, const WebSelectionBound& focus);
 
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();

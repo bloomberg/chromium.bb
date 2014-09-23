@@ -1899,6 +1899,12 @@ void WebViewImpl::clearCompositedSelectionBounds()
         m_layerTreeView->clearSelection();
 }
 
+void WebViewImpl::updateCompositedSelectionBounds(const WebSelectionBound& anchor, const WebSelectionBound& focus)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->registerSelection(anchor, focus);
+}
+
 bool WebViewImpl::hasHorizontalScrollbar()
 {
     return mainFrameImpl()->frameView()->horizontalScrollbar();

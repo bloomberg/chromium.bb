@@ -46,6 +46,9 @@ public:
 
     BLINK_EXPORT static void enableDatabase(bool);
 
+    BLINK_EXPORT static void enableCompositedSelectionUpdate(bool);
+    BLINK_EXPORT static bool isCompositedSelectionUpdateEnabled();
+
     BLINK_EXPORT static void enableDisplayList2dCanvas(bool);
 
     BLINK_EXPORT static void enableEncryptedMedia(bool);

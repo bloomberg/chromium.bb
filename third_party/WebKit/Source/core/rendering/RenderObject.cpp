@@ -1009,16 +1009,6 @@ void RenderObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const Layou
     }
 }
 
-LayoutPoint RenderObject::positionFromPaintInvalidationContainer(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
-    ASSERT(containerForPaintInvalidation() == paintInvalidationContainer);
-
-    if (paintInvalidationContainer == this)
-        return LayoutPoint();
-
-    return LayoutPoint(localToContainerPoint(LayoutPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState));
-}
-
 IntRect RenderObject::absoluteBoundingBoxRect() const
 {
     Vector<FloatQuad> quads;
@@ -2106,6 +2096,25 @@ FloatPoint RenderObject::localToContainerPoint(const FloatPoint& localPoint, con
 
     return transformState.lastPlanarPoint();
 }
+
+FloatPoint RenderObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, RenderLayer** backingLayer)
+{
+    const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
+    ASSERT(paintInvalidationContainer);
+    RenderLayer* layer = paintInvalidationContainer->layer();
+    ASSERT(layer);
+
+    if (backingLayer)
+        *backingLayer = layer;
+    FloatPoint containerPoint = localToContainerPoint(localPoint, paintInvalidationContainer, TraverseDocumentBoundaries);
+
+    if (layer->compositingState() == NotComposited) // This can happen for RenderFlowThread.
+        return containerPoint;
+
+    RenderLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, containerPoint);
+    return containerPoint;
+}
+
 
 LayoutSize RenderObject::offsetFromContainer(const RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {

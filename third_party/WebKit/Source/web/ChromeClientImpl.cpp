@@ -57,6 +57,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/rendering/compositing/CompositedSelectionBound.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
 #include "platform/NotImplemented.h"
@@ -70,6 +71,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/WebSelectionBound.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebAutofillClient.h"
@@ -115,6 +117,18 @@ static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 {
     // These enums have the same values; enforced in AssertMatchingEnums.cpp.
     return static_cast<WebAXEvent>(notification);
+}
+
+static WebSelectionBound toWebSelectionBound(const CompositedSelectionBound& bound)
+{
+    ASSERT(bound.layer);
+
+    // These enums have the same values; enforced in AssertMatchingEnums.cpp.
+    WebSelectionBound result(static_cast<WebSelectionBound::Type>(bound.type));
+    result.layerId = bound.layer->platformLayer()->id();
+    result.edgeTopInLayer = roundedIntPoint(bound.edgeTopInLayer);
+    result.edgeBottomInLayer = roundedIntPoint(bound.edgeBottomInLayer);
+    return result;
 }
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
@@ -700,6 +714,11 @@ void ChromeClientImpl::exitFullScreenForElement(Element* element)
 void ChromeClientImpl::clearCompositedSelectionBounds()
 {
     m_webView->clearCompositedSelectionBounds();
+}
+
+void ChromeClientImpl::updateCompositedSelectionBounds(const CompositedSelectionBound& anchor, const CompositedSelectionBound& focus)
+{
+    m_webView->updateCompositedSelectionBounds(toWebSelectionBound(anchor), toWebSelectionBound(focus));
 }
 
 bool ChromeClientImpl::hasOpenedPopup() const

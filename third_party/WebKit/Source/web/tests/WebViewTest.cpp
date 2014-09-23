@@ -1651,7 +1651,7 @@ TEST_F(WebViewTest, SmartClipData)
     webView->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(500, 500));
     webView->layout();
-    WebRect cropRect(300, 125, 100, 50);
+    WebRect cropRect(300, 125, 152, 50);
     webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
     EXPECT_STREQ(kExpectedClipText, clipText.utf8().c_str());
     EXPECT_STREQ(kExpectedClipHtml, clipHtml.utf8().c_str());

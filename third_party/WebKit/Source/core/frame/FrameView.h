@@ -53,6 +53,7 @@ class RenderObject;
 class RenderScrollbarPart;
 class RenderView;
 class RenderWidget;
+struct CompositedSelectionBound;
 
 typedef unsigned long long DOMTimeStamp;
 
@@ -393,6 +394,8 @@ private:
     void didScrollTimerFired(Timer<FrameView>*);
 
     void updateLayersAndCompositingAfterScrollIfNeeded();
+
+    static bool computeCompositedSelectionBounds(LocalFrame&, CompositedSelectionBound& start, CompositedSelectionBound& end);
     void updateCompositedSelectionBoundsIfNeeded();
 
     bool hasCustomScrollbars() const;

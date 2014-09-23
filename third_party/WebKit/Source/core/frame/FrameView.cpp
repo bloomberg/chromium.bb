@@ -34,6 +34,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/RenderedPosition.h"
 #include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
@@ -66,6 +67,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/rendering/compositing/CompositedSelectionBound.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
@@ -1507,21 +1509,49 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     }
 }
 
+bool FrameView::computeCompositedSelectionBounds(LocalFrame& frame, CompositedSelectionBound& start, CompositedSelectionBound& end)
+{
+    const VisibleSelection &selection = frame.selection().selection();
+    if (!selection.isCaretOrRange())
+        return false;
+
+    VisiblePosition visibleStart(selection.visibleStart());
+    VisiblePosition visibleEnd(selection.visibleEnd());
+
+    RenderedPosition renderedStart(visibleStart);
+    RenderedPosition renderedEnd(visibleEnd);
+
+    renderedStart.positionInGraphicsLayerBacking(start);
+    renderedEnd.positionInGraphicsLayerBacking(end);
+
+    if (selection.isCaret()) {
+        start.type = end.type = CompositedSelectionBound::Caret;
+        return true;
+    }
+
+    TextDirection startDir = visibleStart.deepEquivalent().primaryDirection();
+    TextDirection endDir = visibleEnd.deepEquivalent().primaryDirection();
+    start.type = startDir == RTL ? CompositedSelectionBound::SelectionRight : CompositedSelectionBound::SelectionLeft;
+    end.type = endDir == RTL ? CompositedSelectionBound::SelectionLeft : CompositedSelectionBound::SelectionRight;
+    return true;
+}
+
 void FrameView::updateCompositedSelectionBoundsIfNeeded()
 {
-    if (!RuntimeEnabledFeatures::compositedSelectionUpdatesEnabled())
+    if (!RuntimeEnabledFeatures::compositedSelectionUpdateEnabled())
         return;
 
     Page* page = frame().page();
     ASSERT(page);
 
+    CompositedSelectionBound start, end;
     LocalFrame* frame = toLocalFrame(page->focusController().focusedOrMainFrame());
-    if (!frame || !frame->selection().isCaretOrRange()) {
+    if (!frame || !computeCompositedSelectionBounds(*frame, start, end)) {
         page->chrome().client().clearCompositedSelectionBounds();
         return;
     }
 
-    // TODO(jdduke): Compute and route selection bounds through ChromeClient.
+    page->chrome().client().updateCompositedSelectionBounds(start, end);
 }
 
 bool FrameView::isRubberBandInProgress() const

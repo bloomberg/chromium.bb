@@ -65,6 +65,7 @@ class PagePopupClient;
 class PagePopupDriver;
 class PopupMenuClient;
 
+struct CompositedSelectionBound;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct GraphicsDeviceAdapter;
@@ -185,6 +186,7 @@ public:
     virtual void exitFullScreenForElement(Element*) { }
 
     virtual void clearCompositedSelectionBounds() { }
+    virtual void updateCompositedSelectionBounds(const CompositedSelectionBound& anchor, const CompositedSelectionBound& focus) { }
 
     virtual void needTouchEvents(bool) = 0;
 

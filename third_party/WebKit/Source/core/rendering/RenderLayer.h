@@ -322,6 +322,7 @@ public:
     // This will allow us to clean up this static method messiness.
     static LayoutPoint positionFromPaintInvalidationBacking(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
 
+    static void mapPointToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, FloatPoint&);
     static void mapRectToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&);
 
     // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.

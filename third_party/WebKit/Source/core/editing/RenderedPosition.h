@@ -36,10 +36,12 @@
 
 namespace blink {
 
+class GraphicsLayer;
 class LayoutUnit;
 class Position;
 class RenderObject;
 class VisiblePosition;
+struct CompositedSelectionBound;
 
 class RenderedPosition {
 public:
@@ -68,6 +70,7 @@ public:
     Position positionAtRightBoundaryOfBiDiRun() const;
 
     IntRect absoluteRect(LayoutUnit* extraWidthToEndOfLine = 0) const;
+    void positionInGraphicsLayerBacking(CompositedSelectionBound&) const;
 
 private:
     bool operator==(const RenderedPosition&) const { return false; }
