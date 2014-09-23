@@ -41,7 +41,7 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
         ::OpenProcess(PROCESS_QUERY_INFORMATION,
                       FALSE,
                       proc_entry.th32ParentProcessID));
-    if (!process)
+    if (!process.IsValid())
       continue;
 
     int num_gdi_handles = ::GetGuiResources(process.Get(), GR_GDIOBJECTS);

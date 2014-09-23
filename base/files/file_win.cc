@@ -107,7 +107,7 @@ bool File::IsValid() const {
 }
 
 PlatformFile File::GetPlatformFile() const {
-  return file_;
+  return file_.Get();
 }
 
 PlatformFile File::TakePlatformFile() {
@@ -128,7 +128,7 @@ int64 File::Seek(Whence whence, int64 offset) {
   LARGE_INTEGER distance, res;
   distance.QuadPart = offset;
   DWORD move_method = static_cast<DWORD>(whence);
-  if (!SetFilePointerEx(file_, distance, &res, move_method))
+  if (!SetFilePointerEx(file_.Get(), distance, &res, move_method))
     return -1;
   return res.QuadPart;
 }
@@ -148,7 +148,7 @@ int File::Read(int64 offset, char* data, int size) {
   overlapped.OffsetHigh = offset_li.HighPart;
 
   DWORD bytes_read;
-  if (::ReadFile(file_, data, size, &bytes_read, &overlapped))
+  if (::ReadFile(file_.Get(), data, size, &bytes_read, &overlapped))
     return bytes_read;
   if (ERROR_HANDLE_EOF == GetLastError())
     return 0;
@@ -164,7 +164,7 @@ int File::ReadAtCurrentPos(char* data, int size) {
     return -1;
 
   DWORD bytes_read;
-  if (::ReadFile(file_, data, size, &bytes_read, NULL))
+  if (::ReadFile(file_.Get(), data, size, &bytes_read, NULL))
     return bytes_read;
   if (ERROR_HANDLE_EOF == GetLastError())
     return 0;
@@ -193,7 +193,7 @@ int File::Write(int64 offset, const char* data, int size) {
   overlapped.OffsetHigh = offset_li.HighPart;
 
   DWORD bytes_written;
-  if (::WriteFile(file_, data, size, &bytes_written, &overlapped))
+  if (::WriteFile(file_.Get(), data, size, &bytes_written, &overlapped))
     return bytes_written;
 
   return -1;
@@ -207,7 +207,7 @@ int File::WriteAtCurrentPos(const char* data, int size) {
     return -1;
 
   DWORD bytes_written;
-  if (::WriteFile(file_, data, size, &bytes_written, NULL))
+  if (::WriteFile(file_.Get(), data, size, &bytes_written, NULL))
     return bytes_written;
 
   return -1;
@@ -235,14 +235,14 @@ bool File::SetLength(int64 length) {
   LARGE_INTEGER file_pointer;
   LARGE_INTEGER zero;
   zero.QuadPart = 0;
-  if (!::SetFilePointerEx(file_, zero, &file_pointer, FILE_CURRENT))
+  if (!::SetFilePointerEx(file_.Get(), zero, &file_pointer, FILE_CURRENT))
     return false;
 
   LARGE_INTEGER length_li;
   length_li.QuadPart = length;
   // If length > file size, SetFilePointerEx() should extend the file
   // with zeroes on all Windows standard file systems (NTFS, FATxx).
-  if (!::SetFilePointerEx(file_, length_li, NULL, FILE_BEGIN))
+  if (!::SetFilePointerEx(file_.Get(), length_li, NULL, FILE_BEGIN))
     return false;
 
   // Set the new file length and move the file pointer to its old position.
@@ -251,14 +251,15 @@ bool File::SetLength(int64 length) {
   // TODO(rvargas): Emulating ftruncate details seem suspicious and it is not
   // promised by the interface (nor was promised by PlatformFile). See if this
   // implementation detail can be removed.
-  return ((::SetEndOfFile(file_) != FALSE) &&
-          (::SetFilePointerEx(file_, file_pointer, NULL, FILE_BEGIN) != FALSE));
+  return ((::SetEndOfFile(file_.Get()) != FALSE) &&
+          (::SetFilePointerEx(file_.Get(), file_pointer, NULL, FILE_BEGIN) !=
+           FALSE));
 }
 
 bool File::Flush() {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-  return ::FlushFileBuffers(file_) != FALSE;
+  return ::FlushFileBuffers(file_.Get()) != FALSE;
 }
 
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
@@ -267,7 +268,7 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
 
   FILETIME last_access_filetime = last_access_time.ToFileTime();
   FILETIME last_modified_filetime = last_modified_time.ToFileTime();
-  return (::SetFileTime(file_, NULL, &last_access_filetime,
+  return (::SetFileTime(file_.Get(), NULL, &last_access_filetime,
                         &last_modified_filetime) != FALSE);
 }
 
@@ -276,7 +277,7 @@ bool File::GetInfo(Info* info) {
   DCHECK(IsValid());
 
   BY_HANDLE_FILE_INFORMATION file_info;
-  if (!GetFileInformationByHandle(file_, &file_info))
+  if (!GetFileInformationByHandle(file_.Get(), &file_info))
     return false;
 
   LARGE_INTEGER size;
@@ -294,7 +295,7 @@ bool File::GetInfo(Info* info) {
 
 File::Error base::File::Lock() {
   DCHECK(IsValid());
-  BOOL result = LockFile(file_, 0, 0, MAXDWORD, MAXDWORD);
+  BOOL result = LockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
     return OSErrorToFileError(GetLastError());
   return FILE_OK;
@@ -302,7 +303,7 @@ File::Error base::File::Lock() {
 
 File::Error File::Unlock() {
   DCHECK(IsValid());
-  BOOL result = UnlockFile(file_, 0, 0, MAXDWORD, MAXDWORD);
+  BOOL result = UnlockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
     return OSErrorToFileError(GetLastError());
   return FILE_OK;

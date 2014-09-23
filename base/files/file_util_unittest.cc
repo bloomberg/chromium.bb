@@ -139,12 +139,12 @@ class ReparsePoint {
                    OPEN_EXISTING,
                    FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
                    NULL));
-    created_ = dir_.IsValid() && SetReparsePoint(dir_, target);
+    created_ = dir_.IsValid() && SetReparsePoint(dir_.Get(), target);
   }
 
   ~ReparsePoint() {
     if (created_)
-      DeleteReparsePoint(dir_);
+      DeleteReparsePoint(dir_.Get());
   }
 
   bool IsValid() { return created_; }

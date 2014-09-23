@@ -421,7 +421,7 @@ void MessagePumpForIO::ScheduleWork() {
     return;  // Someone else continued the pumping.
 
   // Make sure the MessagePump does some work for us.
-  BOOL ret = PostQueuedCompletionStatus(port_, 0,
+  BOOL ret = PostQueuedCompletionStatus(port_.Get(), 0,
                                         reinterpret_cast<ULONG_PTR>(this),
                                         reinterpret_cast<OVERLAPPED*>(this));
   if (ret)
@@ -443,7 +443,7 @@ void MessagePumpForIO::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
 void MessagePumpForIO::RegisterIOHandler(HANDLE file_handle,
                                          IOHandler* handler) {
   ULONG_PTR key = HandlerToKey(handler, true);
-  HANDLE port = CreateIoCompletionPort(file_handle, port_, key, 1);
+  HANDLE port = CreateIoCompletionPort(file_handle, port_.Get(), key, 1);
   DPCHECK(port);
 }
 
@@ -455,7 +455,7 @@ bool MessagePumpForIO::RegisterJobObject(HANDLE job_handle,
   ULONG_PTR key = HandlerToKey(handler, false);
   JOBOBJECT_ASSOCIATE_COMPLETION_PORT info;
   info.CompletionKey = reinterpret_cast<void*>(key);
-  info.CompletionPort = port_;
+  info.CompletionPort = port_.Get();
   return SetInformationJobObject(job_handle,
                                  JobObjectAssociateCompletionPortInformation,
                                  &info,

@@ -85,7 +85,7 @@ bool CreatePairImpl(HANDLE* socket_a, HANDLE* socket_b, bool overlapped) {
     return false;
   }
 
-  if (!ConnectNamedPipe(handle_a, NULL)) {
+  if (!ConnectNamedPipe(handle_a.Get(), NULL)) {
     DWORD error = GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
       DPLOG(ERROR) << "ConnectNamedPipe failed";

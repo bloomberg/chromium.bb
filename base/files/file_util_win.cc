@@ -504,7 +504,7 @@ bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
                    OPEN_EXISTING,
                    FILE_ATTRIBUTE_NORMAL,
                    NULL));
-  if (!file_handle)
+  if (!file_handle.IsValid())
     return false;
 
   // Create a file mapping object.  Can't easily use MemoryMappedFile, because
@@ -517,7 +517,7 @@ bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
                           0,
                           1,  // Just one byte.  No need to look at the data.
                           NULL));
-  if (!file_map_handle)
+  if (!file_map_handle.IsValid())
     return false;
 
   // Use a view of the file to get the path to the file.
@@ -602,11 +602,11 @@ int ReadFile(const FilePath& filename, char* data, int max_size) {
                                           OPEN_EXISTING,
                                           FILE_FLAG_SEQUENTIAL_SCAN,
                                           NULL));
-  if (!file)
+  if (!file.IsValid())
     return -1;
 
   DWORD read;
-  if (::ReadFile(file, data, max_size, &read, NULL))
+  if (::ReadFile(file.Get(), data, max_size, &read, NULL))
     return read;
 
   return -1;
@@ -621,14 +621,14 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
                                           CREATE_ALWAYS,
                                           0,
                                           NULL));
-  if (!file) {
+  if (!file.IsValid()) {
     DPLOG(WARNING) << "CreateFile failed for path "
                    << UTF16ToUTF8(filename.value());
     return -1;
   }
 
   DWORD written;
-  BOOL result = ::WriteFile(file, data, size, &written, NULL);
+  BOOL result = ::WriteFile(file.Get(), data, size, &written, NULL);
   if (result && static_cast<int>(written) == size)
     return written;
 
@@ -653,14 +653,14 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
                                           OPEN_EXISTING,
                                           0,
                                           NULL));
-  if (!file) {
+  if (!file.IsValid()) {
     DPLOG(WARNING) << "CreateFile failed for path "
                    << UTF16ToUTF8(filename.value());
     return -1;
   }
 
   DWORD written;
-  BOOL result = ::WriteFile(file, data, size, &written, NULL);
+  BOOL result = ::WriteFile(file.Get(), data, size, &written, NULL);
   if (result && static_cast<int>(written) == size)
     return written;
 
