@@ -56,10 +56,9 @@ protected:
     virtual ~FrameDestructionObserver();
 #endif
 
-    RawPtrWillBeWeakMember<LocalFrame> m_frame;
-
-private:
     void observeFrame(LocalFrame*);
+
+    RawPtrWillBeWeakMember<LocalFrame> m_frame;
 };
 
 }

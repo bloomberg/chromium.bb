@@ -45,11 +45,8 @@ FrameDestructionObserver::~FrameDestructionObserver()
 
 void FrameDestructionObserver::observeFrame(LocalFrame* frame)
 {
-    ASSERT(!m_frame || !frame);
-#if !ENABLE(OILPAN)
     if (m_frame)
         m_frame->removeDestructionObserver(this);
-#endif
 
     m_frame = frame;
 

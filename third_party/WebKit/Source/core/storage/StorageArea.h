@@ -26,6 +26,7 @@
 #ifndef StorageArea_h
 #define StorageArea_h
 
+#include "core/frame/FrameDestructionObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -47,7 +48,8 @@ enum StorageType {
     SessionStorage
 };
 
-class StorageArea FINAL : public NoBaseWillBeGarbageCollectedFinalized<StorageArea> {
+class StorageArea FINAL : public NoBaseWillBeGarbageCollectedFinalized<StorageArea>, public FrameDestructionObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
 public:
     static PassOwnPtrWillBeRawPtr<StorageArea> create(PassOwnPtr<WebStorageArea>, StorageType);
 
@@ -80,7 +82,6 @@ private:
 
     OwnPtr<WebStorageArea> m_storageArea;
     StorageType m_storageType;
-    RawPtrWillBeMember<LocalFrame> m_canAccessStorageCachedFrame;
     bool m_canAccessStorageCachedResult;
 };
 
