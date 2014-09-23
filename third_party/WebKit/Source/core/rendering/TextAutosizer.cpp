@@ -305,7 +305,7 @@ void TextAutosizer::record(const RenderBlock* block)
 
 void TextAutosizer::destroy(const RenderBlock* block)
 {
-    if (!m_pageInfo.m_settingEnabled)
+    if (!m_pageInfo.m_settingEnabled && !m_fingerprintMapper.hasFingerprints())
         return;
 
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));

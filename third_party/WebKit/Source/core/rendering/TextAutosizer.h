@@ -217,6 +217,7 @@ private:
         bool remove(const RenderObject*);
         Fingerprint get(const RenderObject*);
         BlockSet* getTentativeClusterRoots(Fingerprint);
+        bool hasFingerprints() const { return !m_fingerprints.isEmpty(); }
     private:
         typedef HashMap<const RenderObject*, Fingerprint> FingerprintMap;
         typedef HashMap<Fingerprint, OwnPtr<BlockSet> > ReverseFingerprintMap;
