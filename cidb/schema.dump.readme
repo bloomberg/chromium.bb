@@ -8,4 +8,5 @@ run:
 
 mysqldump -u `cat user.txt` -h  `cat host.txt` --password=`cat password.txt` \
   --ssl-ca=server-ca.pem --ssl-cert=client-cert.pem --ssl-key=client-key.pem \
-  --no-data --single-transaction cidb > ~/chromiumos/chromite/cidb/schema.dump
+  --no-data --single-transaction cidb | grep -v '^--' \
+  > ~/chromiumos/chromite/cidb/schema.dump
