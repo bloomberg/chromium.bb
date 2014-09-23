@@ -4,6 +4,8 @@
 
 package org.chromium.content_public.browser;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * The NavigationController Java wrapper to allow communicating with the native
  * NavigationController object.
@@ -90,6 +92,7 @@ public interface NavigationController {
      * Clears NavigationController's page history in both backwards and
      * forwards directions.
      */
+    @VisibleForTesting
     public void clearHistory();
 
     /**
