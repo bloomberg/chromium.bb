@@ -10,13 +10,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/limits.h"
 #include "media/base/scoped_histogram_timer.h"
 #include "media/base/user_input_monitor.h"
 
 using base::TimeDelta;
 
 namespace {
+
 const int kMaxInputChannels = 3;
 
 // TODO(henrika): remove usage of timers and add support for proper
@@ -50,6 +50,21 @@ const int kPowerMonitorLogIntervalSeconds = 15;
 // A warning will be logged when the microphone audio volume is below this
 // threshold.
 const int kLowLevelMicrophoneLevelPercent = 10;
+
+// Logs if the user has enabled the microphone mute or not. This is normally
+// done by marking a checkbox in an audio-settings UI which is unique for each
+// platform. Elements in this enum should not be added, deleted or rearranged.
+enum MicrophoneMuteResult {
+  MICROPHONE_IS_MUTED = 0,
+  MICROPHONE_IS_NOT_MUTED = 1,
+  MICROPHONE_MUTE_MAX = MICROPHONE_IS_NOT_MUTED
+};
+
+void LogMicrophoneMuteResult(MicrophoneMuteResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Media.MicrophoneMuted",
+                            result,
+                            MICROPHONE_MUTE_MAX + 1);
+}
 #endif
 }
 
@@ -577,6 +592,20 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
   if (microphone_volume_percent < kLowLevelMicrophoneLevelPercent)
     log_string += " <=> low microphone level!";
   handler_->OnLog(this, log_string);
+
+  // Try to detect if the user has enabled hardware mute by pressing the mute
+  // button in audio settings for the selected microphone. The idea here is to
+  // detect when all input samples are zeros but the actual volume slider is
+  // larger than zero. It should correspond to a hardware mute state.
+  if (level_dbfs == -std::numeric_limits<float>::infinity() &&
+      microphone_volume_percent > 0) {
+    LogMicrophoneMuteResult(MICROPHONE_IS_MUTED);
+    log_string = base::StringPrintf(
+        "AIC::OnData: microphone is muted!");
+    handler_->OnLog(this, log_string);
+  } else {
+    LogMicrophoneMuteResult(MICROPHONE_IS_NOT_MUTED);
+  }
 #endif
 }
 
