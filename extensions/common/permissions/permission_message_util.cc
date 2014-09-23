@@ -13,6 +13,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
+#include "base/strings/string_split.h"
 
 using extensions::PermissionMessage;
 using extensions::PermissionSet;
@@ -92,7 +93,7 @@ std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,
   // Use a vector to preserve order (also faster than a map on small sets).
   // Each item is a host split into two parts: host without RCDs and
   // current best RCD.
-  typedef std::vector<std::pair<std::string, std::string> > HostVector;
+  typedef base::StringPairs HostVector;
   HostVector hosts_best_rcd;
   for (URLPatternSet::const_iterator i = host_patterns.begin();
        i != host_patterns.end();
