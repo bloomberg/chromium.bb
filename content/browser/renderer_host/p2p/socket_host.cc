@@ -19,12 +19,14 @@
 namespace {
 
 const uint32 kStunMagicCookie = 0x2112A442;
-const int kMinRtpHdrLen = 12;
-const int kRtpExtnHdrLen = 4;
-const int kDtlsRecordHeaderLen = 13;
-const int kTurnChannelHdrLen = 4;
-const int kAbsSendTimeExtnLen = 3;
-const int kOneByteHdrLen = 1;
+const size_t kMinRtpHeaderLength = 12;
+const size_t kMinRtcpHeaderLength = 8;
+const size_t kRtpExtensionHeaderLength = 4;
+const size_t kDtlsRecordHeaderLength = 13;
+const size_t kTurnChannelHeaderLength = 4;
+const size_t kAbsSendTimeExtensionLength = 3;
+const size_t kOneByteHeaderLength = 1;
+const size_t kMaxRtpPacketLength = 2048;
 
 // Fake auth tag written by the render process if external authentication is
 // enabled. HMAC in packet will be compared against this value before updating
@@ -33,37 +35,50 @@ static const unsigned char kFakeAuthTag[10] = {
     0xba, 0xdd, 0xba, 0xdd, 0xba, 0xdd, 0xba, 0xdd, 0xba, 0xdd
 };
 
-bool IsTurnChannelData(const char* data) {
-  return ((*data & 0xC0) == 0x40);
+bool IsTurnChannelData(const char* data, size_t length) {
+  return length >= kTurnChannelHeaderLength && ((*data & 0xC0) == 0x40);
 }
 
-bool IsDtlsPacket(const char* data, int len) {
+bool IsDtlsPacket(const char* data, size_t length) {
   const uint8* u = reinterpret_cast<const uint8*>(data);
-  return (len >= kDtlsRecordHeaderLen && (u[0] > 19 && u[0] < 64));
+  return (length >= kDtlsRecordHeaderLength && (u[0] > 19 && u[0] < 64));
 }
 
-bool IsRtcpPacket(const char* data) {
+bool IsRtcpPacket(const char* data, size_t length) {
+  if (length < kMinRtcpHeaderLength) {
+    return false;
+  }
+
   int type = (static_cast<uint8>(data[1]) & 0x7F);
   return (type >= 64 && type < 96);
 }
 
-bool IsTurnSendIndicationPacket(const char* data) {
+bool IsTurnSendIndicationPacket(const char* data, size_t length) {
+  if (length < content::P2PSocketHost::kStunHeaderSize) {
+    return false;
+  }
+
   uint16 type = rtc::GetBE16(data);
   return (type == cricket::TURN_SEND_INDICATION);
 }
 
-bool IsRtpPacket(const char* data, int len) {
-  return ((*data & 0xC0) == 0x80);
+bool IsRtpPacket(const char* data, size_t length) {
+  return (length >= kMinRtpHeaderLength) && ((*data & 0xC0) == 0x80);
 }
 
 // Verifies rtp header and message length.
-bool ValidateRtpHeader(const char* rtp, int length, size_t* header_length) {
-  if (header_length)
+bool ValidateRtpHeader(const char* rtp, size_t length, size_t* header_length) {
+  if (header_length) {
     *header_length = 0;
+  }
 
-  int cc_count = rtp[0] & 0x0F;
-  int rtp_hdr_len_without_extn = kMinRtpHdrLen + 4 * cc_count;
-  if (rtp_hdr_len_without_extn > length) {
+  if (length < kMinRtpHeaderLength) {
+    return false;
+  }
+
+  size_t cc_count = rtp[0] & 0x0F;
+  size_t header_length_without_extension = kMinRtpHeaderLength + 4 * cc_count;
+  if (header_length_without_extension > length) {
     return false;
   }
 
@@ -71,29 +86,40 @@ bool ValidateRtpHeader(const char* rtp, int length, size_t* header_length) {
   // length is verified above.
   if (!(rtp[0] & 0x10)) {
     if (header_length)
-      *header_length = rtp_hdr_len_without_extn;
+      *header_length = header_length_without_extension;
 
     return true;
   }
 
-  rtp += rtp_hdr_len_without_extn;
+  rtp += header_length_without_extension;
 
-  // Getting extension profile length.
-  // Length is in 32 bit words.
-  uint16 extn_length = rtc::GetBE16(rtp + 2) * 4;
-
-  // Verify input length against total header size.
-  if (rtp_hdr_len_without_extn + kRtpExtnHdrLen + extn_length > length) {
+  if (header_length_without_extension + kRtpExtensionHeaderLength > length) {
     return false;
   }
 
-  if (header_length)
-    *header_length = rtp_hdr_len_without_extn + kRtpExtnHdrLen + extn_length;
+  // Getting extension profile length.
+  // Length is in 32 bit words.
+  uint16 extension_length_in_32bits = rtc::GetBE16(rtp + 2);
+  size_t extension_length = extension_length_in_32bits * 4;
+
+  size_t rtp_header_length = extension_length +
+                             header_length_without_extension +
+                             kRtpExtensionHeaderLength;
+
+  // Verify input length against total header size.
+  if (rtp_header_length > length) {
+    return false;
+  }
+
+  if (header_length) {
+    *header_length = rtp_header_length;
+  }
   return true;
 }
 
-void UpdateAbsSendTimeExtnValue(char* extn_data, int len,
-                                uint32 abs_send_time) {
+void UpdateAbsSendTimeExtensionValue(char* extension_data,
+                                     size_t length,
+                                     uint32 abs_send_time) {
   // Absolute send time in RTP streams.
   //
   // The absolute send time is signaled to the receiver in-band using the
@@ -109,7 +135,11 @@ void UpdateAbsSendTimeExtnValue(char* extn_data, int len,
   //   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //   |  ID   | len=2 |              absolute send time               |
   //   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  DCHECK_EQ(len, kAbsSendTimeExtnLen);
+  if (length != kAbsSendTimeExtensionLength) {
+    NOTREACHED();
+    return;
+  }
+
   // Now() has resolution ~1-15ms, using HighResNow(). But it is warned not to
   // use it unless necessary, as it is expensive than Now().
   uint32 now_second = abs_send_time;
@@ -121,24 +151,29 @@ void UpdateAbsSendTimeExtnValue(char* extn_data, int len,
         ((now_us << 18) / base::Time::kMicrosecondsPerSecond) & 0x00FFFFFF;
   }
   // TODO(mallinath) - Add SetBE24 to byteorder.h in libjingle.
-  extn_data[0] = static_cast<uint8>(now_second >> 16);
-  extn_data[1] = static_cast<uint8>(now_second >> 8);
-  extn_data[2] = static_cast<uint8>(now_second);
+  extension_data[0] = static_cast<uint8>(now_second >> 16);
+  extension_data[1] = static_cast<uint8>(now_second >> 8);
+  extension_data[2] = static_cast<uint8>(now_second);
 }
 
-// Assumes |len| is actual packet length + tag length. Updates HMAC at end of
+// Assumes |length| is actual packet length + tag length. Updates HMAC at end of
 // the RTP packet.
-void UpdateRtpAuthTag(char* rtp, int len,
+void UpdateRtpAuthTag(char* rtp,
+                      size_t length,
                       const rtc::PacketOptions& options) {
   // If there is no key, return.
-  if (options.packet_time_params.srtp_auth_key.empty())
+  if (options.packet_time_params.srtp_auth_key.empty()) {
     return;
+  }
 
   size_t tag_length = options.packet_time_params.srtp_auth_tag_len;
-  char* auth_tag = rtp + (len - tag_length);
 
-  // We should have a fake HMAC value @ auth_tag.
-  DCHECK_EQ(0, memcmp(auth_tag, kFakeAuthTag, tag_length));
+  // ROC (rollover counter) is at the beginning of the auth tag.
+  const size_t kRocLength = 4;
+  if (tag_length < kRocLength || tag_length > length) {
+    NOTREACHED();
+    return;
+  }
 
   crypto::HMAC hmac(crypto::HMAC::SHA1);
   if (!hmac.Init(reinterpret_cast<const unsigned char*>(
@@ -148,15 +183,20 @@ void UpdateRtpAuthTag(char* rtp, int len,
     return;
   }
 
-  if (hmac.DigestLength() < tag_length) {
+  if (tag_length > hmac.DigestLength()) {
     NOTREACHED();
     return;
   }
 
+  char* auth_tag = rtp + (length - tag_length);
+
+  // We should have a fake HMAC value @ auth_tag.
+  DCHECK_EQ(0, memcmp(auth_tag, kFakeAuthTag, tag_length));
+
   // Copy ROC after end of rtp packet.
-  memcpy(auth_tag, &options.packet_time_params.srtp_packet_index, 4);
+  memcpy(auth_tag, &options.packet_time_params.srtp_packet_index, kRocLength);
   // Authentication of a RTP packet will have RTP packet + ROC size.
-  int auth_required_length = len - tag_length + 4;
+  int auth_required_length = length - tag_length + kRocLength;
 
   unsigned char output[64];
   if (!hmac.Sign(base::StringPiece(rtp, auth_required_length),
@@ -175,7 +215,8 @@ namespace content {
 
 namespace packet_processing_helpers {
 
-bool ApplyPacketOptions(char* data, int length,
+bool ApplyPacketOptions(char* data,
+                        size_t length,
                         const rtc::PacketOptions& options,
                         uint32 abs_send_time) {
   DCHECK(data != NULL);
@@ -188,13 +229,13 @@ bool ApplyPacketOptions(char* data, int length,
   }
 
   DCHECK(!IsDtlsPacket(data, length));
-  DCHECK(!IsRtcpPacket(data));
+  DCHECK(!IsRtcpPacket(data, length));
 
   // If there is a srtp auth key present then packet must be a RTP packet.
   // RTP packet may have been wrapped in a TURN Channel Data or
   // TURN send indication.
-  int rtp_start_pos;
-  int rtp_length;
+  size_t rtp_start_pos;
+  size_t rtp_length;
   if (!GetRtpPacketStartPositionAndLength(
       data, length, &rtp_start_pos, &rtp_length)) {
     // This method should never return false.
@@ -208,9 +249,11 @@ bool ApplyPacketOptions(char* data, int length,
   // then we should parse the rtp packet to update the timestamp. Otherwise
   // just calculate HMAC and update packet with it.
   if (options.packet_time_params.rtp_sendtime_extension_id != -1) {
-    UpdateRtpAbsSendTimeExtn(
-        start, rtp_length,
-        options.packet_time_params.rtp_sendtime_extension_id, abs_send_time);
+    UpdateRtpAbsSendTimeExtension(
+        start,
+        rtp_length,
+        options.packet_time_params.rtp_sendtime_extension_id,
+        abs_send_time);
   }
 
   UpdateRtpAuthTag(start, rtp_length, options);
@@ -218,12 +261,16 @@ bool ApplyPacketOptions(char* data, int length,
 }
 
 bool GetRtpPacketStartPositionAndLength(const char* packet,
-                                        int length,
-                                        int* rtp_start_pos,
-                                        int* rtp_packet_length) {
-  int rtp_begin;
-  int rtp_length = 0;
-  if (IsTurnChannelData(packet)) {
+                                        size_t length,
+                                        size_t* rtp_start_pos,
+                                        size_t* rtp_packet_length) {
+  if (length < kMinRtpHeaderLength || length > kMaxRtpPacketLength) {
+    return false;
+  }
+
+  size_t rtp_begin;
+  size_t rtp_length = 0;
+  if (IsTurnChannelData(packet, length)) {
     // Turn Channel Message header format.
     //   0                   1                   2                   3
     //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -234,32 +281,23 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
     // /                       Application Data                        /
     // /                                                               /
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    if (length < kTurnChannelHdrLen) {
-      return false;
-    }
-
-    rtp_begin = kTurnChannelHdrLen;
+    rtp_begin = kTurnChannelHeaderLength;
     rtp_length = rtc::GetBE16(&packet[2]);
-    if (length < rtp_length + kTurnChannelHdrLen) {
+    if (length < rtp_length + kTurnChannelHeaderLength) {
       return false;
     }
-  } else if (IsTurnSendIndicationPacket(packet)) {
-    if (length <= P2PSocketHost::kStunHeaderSize) {
-      // Message must be greater than 20 bytes, if it's carrying any payload.
-      return false;
-    }
+  } else if (IsTurnSendIndicationPacket(packet, length)) {
     // Validate STUN message length.
-    int stun_msg_len = rtc::GetBE16(&packet[2]);
-    if (stun_msg_len + P2PSocketHost::kStunHeaderSize != length) {
+    const size_t stun_message_length = rtc::GetBE16(&packet[2]);
+    if (stun_message_length + P2PSocketHost::kStunHeaderSize != length) {
       return false;
     }
 
     // First skip mandatory stun header which is of 20 bytes.
     rtp_begin = P2PSocketHost::kStunHeaderSize;
     // Loop through STUN attributes until we find STUN DATA attribute.
-    const char* start = packet + rtp_begin;
     bool data_attr_present = false;
-    while ((packet + rtp_begin) - start < stun_msg_len) {
+    while (rtp_begin < length) {
       // Keep reading STUN attributes until we hit DATA attribute.
       // Attribute will be a TLV structure.
       // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -274,17 +312,26 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
       // padding so that its value contains a multiple of 4 bytes.  The
       // padding bits are ignored, and may be any value.
       uint16 attr_type, attr_length;
+      const int kAttrHeaderLength = sizeof(attr_type) + sizeof(attr_length);
+
+      if (length < rtp_begin + kAttrHeaderLength) {
+        return false;
+      }
+
       // Getting attribute type and length.
       attr_type = rtc::GetBE16(&packet[rtp_begin]);
       attr_length = rtc::GetBE16(
           &packet[rtp_begin + sizeof(attr_type)]);
+
+      rtp_begin += kAttrHeaderLength;  // Skip STUN_DATA_ATTR header.
+
       // Checking for bogus attribute length.
-      if (length < attr_length + rtp_begin) {
+      if (length < rtp_begin + attr_length) {
         return false;
       }
 
       if (attr_type != cricket::STUN_ATTR_DATA) {
-        rtp_begin += sizeof(attr_type) + sizeof(attr_length) + attr_length;
+        rtp_begin += attr_length;
         if ((attr_length % 4) != 0) {
           rtp_begin += (4 - (attr_length % 4));
         }
@@ -292,12 +339,8 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
       }
 
       data_attr_present = true;
-      rtp_begin += 4;  // Skip STUN_DATA_ATTR header.
       rtp_length = attr_length;
-      // One final check of length before exiting.
-      if (length < rtp_length + rtp_begin) {
-        return false;
-      }
+
       // We found STUN_DATA_ATTR. We can skip parsing rest of the packet.
       break;
     }
@@ -315,8 +358,7 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
   }
 
   // Making sure we have a valid RTP packet at the end.
-  if ((rtp_length >= kMinRtpHdrLen) &&
-      IsRtpPacket(packet + rtp_begin, rtp_length) &&
+  if (IsRtpPacket(packet + rtp_begin, rtp_length) &&
       ValidateRtpHeader(packet + rtp_begin, rtp_length, NULL)) {
     *rtp_start_pos = rtp_begin;
     *rtp_packet_length = rtp_length;
@@ -327,8 +369,10 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
 
 // ValidateRtpHeader must be called before this method to make sure, we have
 // a sane rtp packet.
-bool UpdateRtpAbsSendTimeExtn(char* rtp, int length,
-                              int extension_id, uint32 abs_send_time) {
+bool UpdateRtpAbsSendTimeExtension(char* rtp,
+                                   size_t length,
+                                   int extension_id,
+                                   uint32 abs_send_time) {
   //  0                   1                   2                   3
   //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
   // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -347,17 +391,18 @@ bool UpdateRtpAbsSendTimeExtn(char* rtp, int length,
     return true;
   }
 
-  int cc_count = rtp[0] & 0x0F;
-  int rtp_hdr_len_without_extn = kMinRtpHdrLen + 4 * cc_count;
+  size_t cc_count = rtp[0] & 0x0F;
+  size_t header_length_without_extension = kMinRtpHeaderLength + 4 * cc_count;
 
-  rtp += rtp_hdr_len_without_extn;
+  rtp += header_length_without_extension;
 
   // Getting extension profile ID and length.
   uint16 profile_id = rtc::GetBE16(rtp);
   // Length is in 32 bit words.
-  uint16 extn_length = rtc::GetBE16(rtp + 2) * 4;
+  uint16 extension_length_in_32bits = rtc::GetBE16(rtp + 2);
+  size_t extension_length = extension_length_in_32bits * 4;
 
-  rtp += kRtpExtnHdrLen;  // Moving past extn header.
+  rtp += kRtpExtensionHeaderLength;  // Moving past extension header.
 
   bool found = false;
   // WebRTC is using one byte header extension.
@@ -366,7 +411,7 @@ bool UpdateRtpAbsSendTimeExtn(char* rtp, int length,
     //  0
     //  0 1 2 3 4 5 6 7
     // +-+-+-+-+-+-+-+-+
-    // |  ID   |  len  |
+    // |  ID   |length |
     // +-+-+-+-+-+-+-+-+
 
     //  0                   1                   2                   3
@@ -380,20 +425,26 @@ bool UpdateRtpAbsSendTimeExtn(char* rtp, int length,
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     // |                          data                                 |
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    char* extn_start = rtp;
-    while (rtp - extn_start < extn_length) {
+    const char* extension_start = rtp;
+    const char* extension_end = extension_start + extension_length;
+
+    while (rtp < extension_end) {
       const int id = (*rtp & 0xF0) >> 4;
-      const int len = (*rtp & 0x0F) + 1;
+      const size_t length = (*rtp & 0x0F) + 1;
+      if (rtp + kOneByteHeaderLength + length > extension_end) {
+        return false;
+      }
       // The 4-bit length is the number minus one of data bytes of this header
       // extension element following the one-byte header.
       if (id == extension_id) {
-        UpdateAbsSendTimeExtnValue(rtp + kOneByteHdrLen, len, abs_send_time);
+        UpdateAbsSendTimeExtensionValue(
+            rtp + kOneByteHeaderLength, length, abs_send_time);
         found = true;
         break;
       }
-      rtp += kOneByteHdrLen + len;
+      rtp += kOneByteHeaderLength + length;
       // Counting padding bytes.
-      while ((*rtp == 0) && (rtp - extn_start < extn_length)) {
+      while ((rtp < extension_end) && (*rtp == 0)) {
         ++rtp;
       }
     }
@@ -419,16 +470,19 @@ P2PSocketHost::~P2PSocketHost() { }
 bool P2PSocketHost::GetStunPacketType(
     const char* data, int data_size, StunMessageType* type) {
 
-  if (data_size < kStunHeaderSize)
+  if (data_size < kStunHeaderSize) {
     return false;
+  }
 
   uint32 cookie = base::NetToHost32(*reinterpret_cast<const uint32*>(data + 4));
-  if (cookie != kStunMagicCookie)
+  if (cookie != kStunMagicCookie) {
     return false;
+  }
 
   uint16 length = base::NetToHost16(*reinterpret_cast<const uint16*>(data + 2));
-  if (length != data_size - kStunHeaderSize)
+  if (length != data_size - kStunHeaderSize) {
     return false;
+  }
 
   int message_type = base::NetToHost16(*reinterpret_cast<const uint16*>(data));
 
@@ -502,11 +556,13 @@ void P2PSocketHost::StartRtpDump(
   DCHECK(!packet_callback.is_null());
   DCHECK(incoming || outgoing);
 
-  if (incoming)
+  if (incoming) {
     dump_incoming_rtp_packet_ = true;
+  }
 
-  if (outgoing)
+  if (outgoing) {
     dump_outgoing_rtp_packet_ = true;
+  }
 
   packet_dump_callback_ = packet_callback;
 }
@@ -515,27 +571,32 @@ void P2PSocketHost::StopRtpDump(bool incoming, bool outgoing) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(incoming || outgoing);
 
-  if (incoming)
+  if (incoming) {
     dump_incoming_rtp_packet_ = false;
+  }
 
-  if (outgoing)
+  if (outgoing) {
     dump_outgoing_rtp_packet_ = false;
+  }
 
-  if (!dump_incoming_rtp_packet_ && !dump_outgoing_rtp_packet_)
+  if (!dump_incoming_rtp_packet_ && !dump_outgoing_rtp_packet_) {
     packet_dump_callback_.Reset();
+  }
 }
 
 void P2PSocketHost::DumpRtpPacket(const char* packet,
                                   size_t length,
                                   bool incoming) {
-  if (IsDtlsPacket(packet, length) || IsRtcpPacket(packet))
+  if (IsDtlsPacket(packet, length) || IsRtcpPacket(packet, length)) {
     return;
+  }
 
-  int rtp_packet_pos = 0;
-  int rtp_packet_length = length;
+  size_t rtp_packet_pos = 0;
+  size_t rtp_packet_length = length;
   if (!packet_processing_helpers::GetRtpPacketStartPositionAndLength(
-          packet, length, &rtp_packet_pos, &rtp_packet_length))
+          packet, length, &rtp_packet_pos, &rtp_packet_length)) {
     return;
+  }
 
   packet += rtp_packet_pos;
 

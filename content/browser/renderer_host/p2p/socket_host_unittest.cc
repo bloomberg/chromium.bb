@@ -152,145 +152,151 @@ namespace content {
 
 // This test verifies parsing of all invalid raw packets.
 TEST(P2PSocketHostTest, TestInvalidRawRtpMessages) {
-  int start_pos = INT_MAX, rtp_length = INT_MAX;
+  size_t start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kRtpMsgWithInvalidLength),
       sizeof(kRtpMsgWithInvalidLength),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kRtpMsgWithInvalidExtnLength),
       sizeof(kRtpMsgWithInvalidExtnLength),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 }
 
 // Verify invalid TURN send indication messages. Messages are proper STUN
 // messages with incorrect values in attributes.
 TEST(P2PSocketHostTest, TestInvalidTurnSendIndicationMessages) {
   // Initializing out params to very large value.
-  int start_pos = INT_MAX, rtp_length = INT_MAX;
+  size_t start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnSendIndicationMsgWithNoAttributes),
       sizeof(kTurnSendIndicationMsgWithNoAttributes),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnSendIndicationMsgWithInvalidLength),
       sizeof(kTurnSendIndicationMsgWithInvalidLength),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnSendIndicatinMsgWithNoDataAttribute),
       sizeof(kTurnSendIndicatinMsgWithNoDataAttribute),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 }
 
 // This test verifies incorrectly formed TURN channel messages.
 TEST(P2PSocketHostTest, TestInvalidTurnChannelMessages) {
-  int start_pos = INT_MAX, rtp_length = INT_MAX;
+  size_t start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnChannelMsgNoRtpPacket),
       sizeof(kTurnChannelMsgNoRtpPacket),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 
   EXPECT_FALSE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnChannelMsgWithZeroLength),
       sizeof(kTurnChannelMsgWithZeroLength),
       &start_pos, &rtp_length));
-  EXPECT_EQ(INT_MAX, start_pos);
-  EXPECT_EQ(INT_MAX, rtp_length);
+  EXPECT_EQ(SIZE_MAX, start_pos);
+  EXPECT_EQ(SIZE_MAX, rtp_length);
 }
 
 // This test verifies parsing of a valid RTP packet which has 2byte header
 // extension instead of a 1 byte header extension.
 TEST(P2PSocketHostTest, TestValid2ByteExtnHdrRtpMessage) {
-  int start_pos = INT_MAX, rtp_length = INT_MAX;
+  size_t start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_TRUE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kRtpMsgWith2ByteExtnHeader),
       sizeof(kRtpMsgWith2ByteExtnHeader),
       &start_pos, &rtp_length));
-  EXPECT_EQ(20, rtp_length);
-  EXPECT_EQ(0, start_pos);
+  EXPECT_EQ(20U, rtp_length);
+  EXPECT_EQ(0U, start_pos);
 }
 
 // This test verifies parsing of a valid RTP packet which has 1 byte header
 // AbsSendTime extension in it.
 TEST(P2PSocketHostTest, TestValidRtpPacketWithAbsSendTimeExtension) {
-  int start_pos = INT_MAX, rtp_length = INT_MAX;
+  size_t start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_TRUE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kRtpMsgWithAbsSendTimeExtension),
       sizeof(kRtpMsgWithAbsSendTimeExtension),
       &start_pos, &rtp_length));
-  EXPECT_EQ(24, rtp_length);
-  EXPECT_EQ(0, start_pos);
+  EXPECT_EQ(24U, rtp_length);
+  EXPECT_EQ(0U, start_pos);
 }
 
 // This test verifies parsing of a valid TURN Send Indication messages.
 TEST(P2PSocketHostTest, TestValidTurnSendIndicationMessages) {
-  int start_pos = INT_MAX, rtp_length = INT_MAX;
+  size_t start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_TRUE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnSendIndicationMsgWithoutRtpExtension),
       sizeof(kTurnSendIndicationMsgWithoutRtpExtension),
       &start_pos, &rtp_length));
-  EXPECT_EQ(12, rtp_length);
-  EXPECT_EQ(32, start_pos);
+  EXPECT_EQ(12U, rtp_length);
+  EXPECT_EQ(32U, start_pos);
 
-  start_pos = INT_MAX, rtp_length = INT_MAX;
+  start_pos = SIZE_MAX, rtp_length = SIZE_MAX;
   EXPECT_TRUE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnSendIndicationMsgWithAbsSendTimeExtension),
       sizeof(kTurnSendIndicationMsgWithAbsSendTimeExtension),
       &start_pos, &rtp_length));
-  EXPECT_EQ(24, rtp_length);
-  EXPECT_EQ(32, start_pos);
+  EXPECT_EQ(24U, rtp_length);
+  EXPECT_EQ(32U, start_pos);
 }
 
 // This test verifies parsing of valid TURN Channel Messages.
 TEST(P2PSocketHostTest, TestValidTurnChannelMessages) {
-  int start_pos = -1, rtp_length = -1;
+  size_t start_pos = 0, rtp_length = 0;
   EXPECT_TRUE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnChannelMsgWithRtpPacket),
       sizeof(kTurnChannelMsgWithRtpPacket), &start_pos, &rtp_length));
-  EXPECT_EQ(12, rtp_length);
-  EXPECT_EQ(4, start_pos);
+  EXPECT_EQ(12U, rtp_length);
+  EXPECT_EQ(4U, start_pos);
 
-  start_pos = -1, rtp_length = -1;
+  start_pos = 0, rtp_length = 0;
   EXPECT_TRUE(packet_processing_helpers::GetRtpPacketStartPositionAndLength(
       reinterpret_cast<char*>(kTurnChannelMsgWithAbsSendTimeExtension),
       sizeof(kTurnChannelMsgWithAbsSendTimeExtension),
       &start_pos, &rtp_length));
-  EXPECT_EQ(20, rtp_length);
-  EXPECT_EQ(4, start_pos);
+  EXPECT_EQ(20U, rtp_length);
+  EXPECT_EQ(4U, start_pos);
 }
 
 // Verify handling of a 2 byte extension header RTP messsage. Currently we don't
 // handle this kind of message.
 TEST(P2PSocketHostTest, TestUpdateAbsSendTimeExtensionIn2ByteHeaderExtn) {
-  EXPECT_FALSE(packet_processing_helpers::UpdateRtpAbsSendTimeExtn(
-    reinterpret_cast<char*>(kRtpMsgWith2ByteExtnHeader),
-    sizeof(kRtpMsgWith2ByteExtnHeader), 3, 0));
+  EXPECT_FALSE(packet_processing_helpers::UpdateRtpAbsSendTimeExtension(
+      reinterpret_cast<char*>(kRtpMsgWith2ByteExtnHeader),
+      sizeof(kRtpMsgWith2ByteExtnHeader),
+      3,
+      0));
 }
 
 // Verify finding an extension ID in the TURN send indication message.
 TEST(P2PSocketHostTest, TestUpdateAbsSendTimeExtensionInTurnSendIndication) {
-  EXPECT_TRUE(packet_processing_helpers::UpdateRtpAbsSendTimeExtn(
+  EXPECT_TRUE(packet_processing_helpers::UpdateRtpAbsSendTimeExtension(
       reinterpret_cast<char*>(kTurnSendIndicationMsgWithoutRtpExtension),
-      sizeof(kTurnSendIndicationMsgWithoutRtpExtension), 3, 0));
+      sizeof(kTurnSendIndicationMsgWithoutRtpExtension),
+      3,
+      0));
 
-  EXPECT_TRUE(packet_processing_helpers::UpdateRtpAbsSendTimeExtn(
+  EXPECT_TRUE(packet_processing_helpers::UpdateRtpAbsSendTimeExtension(
       reinterpret_cast<char*>(kTurnSendIndicationMsgWithAbsSendTimeExtension),
-      sizeof(kTurnSendIndicationMsgWithAbsSendTimeExtension), 3, 0));
+      sizeof(kTurnSendIndicationMsgWithAbsSendTimeExtension),
+      3,
+      0));
 }
 
 // Test without any packet options variables set. This method should return
@@ -341,9 +347,11 @@ TEST(P2PSocketHostTest, TestApplyPacketOptionsWithAuthParams) {
 
 // Verify finding an extension ID in a raw rtp message.
 TEST(P2PSocketHostTest, TestUpdateAbsSendTimeExtensionInRtpPacket) {
-  EXPECT_TRUE(packet_processing_helpers::UpdateRtpAbsSendTimeExtn(
+  EXPECT_TRUE(packet_processing_helpers::UpdateRtpAbsSendTimeExtension(
       reinterpret_cast<char*>(kRtpMsgWithAbsSendTimeExtension),
-      sizeof(kRtpMsgWithAbsSendTimeExtension), 3, 0));
+      sizeof(kRtpMsgWithAbsSendTimeExtension),
+      3,
+      0));
 }
 
 // Verify we update both AbsSendTime extension header and HMAC.
