@@ -391,6 +391,13 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       scoped_ptr<cc::CompositorFrame> compositor_frame =
           make_scoped_ptr(new cc::CompositorFrame());
       compositor_frame->delegated_frame_data = frame_data.Pass();
+
+      compositor_frame->metadata.latency_info.swap(skipped_latency_info_list_);
+      compositor_frame->metadata.latency_info.insert(
+          compositor_frame->metadata.latency_info.end(),
+          latency_info.begin(),
+          latency_info.end());
+
       base::Closure ack_callback;
       if (compositor) {
         ack_callback = base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
