@@ -566,7 +566,7 @@ void TextAutosizer::setAllTextNeedsLayout()
     }
 }
 
-TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const RenderObject* renderer, BlockFlags mask)
+TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const RenderObject* renderer, BlockFlags mask) const
 {
     if (!renderer->isRenderBlock())
         return 0;
@@ -789,7 +789,7 @@ float TextAutosizer::superclusterMultiplier(Cluster* cluster)
     return supercluster->m_multiplier;
 }
 
-const RenderBlock* TextAutosizer::clusterWidthProvider(const RenderBlock* root)
+const RenderBlock* TextAutosizer::clusterWidthProvider(const RenderBlock* root) const
 {
     if (root->isTable() || root->isTableCell())
         return root;
@@ -797,7 +797,7 @@ const RenderBlock* TextAutosizer::clusterWidthProvider(const RenderBlock* root)
     return deepestBlockContainingAllText(root);
 }
 
-const RenderBlock* TextAutosizer::maxClusterWidthProvider(const Supercluster* supercluster, const RenderBlock* currentRoot)
+const RenderBlock* TextAutosizer::maxClusterWidthProvider(const Supercluster* supercluster, const RenderBlock* currentRoot) const
 {
     const RenderBlock* result = clusterWidthProvider(currentRoot);
     float maxWidth = widthFromBlock(result);
@@ -817,7 +817,7 @@ const RenderBlock* TextAutosizer::maxClusterWidthProvider(const Supercluster* su
     return result;
 }
 
-float TextAutosizer::widthFromBlock(const RenderBlock* block)
+float TextAutosizer::widthFromBlock(const RenderBlock* block) const
 {
     RELEASE_ASSERT(block);
     RELEASE_ASSERT(block->style());
@@ -873,7 +873,7 @@ const RenderBlock* TextAutosizer::deepestBlockContainingAllText(Cluster* cluster
 }
 
 // FIXME: Refactor this to look more like TextAutosizer::deepestCommonAncestor.
-const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBlock* root)
+const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBlock* root) const
 {
     size_t firstDepth = 0;
     const RenderObject* firstTextLeaf = findTextLeaf(root, firstDepth, First);
@@ -917,7 +917,7 @@ const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBloc
     return containingBlock;
 }
 
-const RenderObject* TextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast)
+const RenderObject* TextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast) const
 {
     // List items are treated as text due to the marker.
     // The actual renderer for the marker (RenderListMarker) may not be in the tree yet since it is added during layout.

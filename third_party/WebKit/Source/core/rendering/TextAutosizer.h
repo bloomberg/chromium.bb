@@ -270,23 +270,23 @@ private:
     float superclusterMultiplier(Cluster*);
     // A cluster's width provider is typically the deepest block containing all text.
     // There are exceptions, such as tables and table cells which use the table itself for width.
-    const RenderBlock* clusterWidthProvider(const RenderBlock*);
-    const RenderBlock* maxClusterWidthProvider(const Supercluster*, const RenderBlock* currentRoot);
+    const RenderBlock* clusterWidthProvider(const RenderBlock*) const;
+    const RenderBlock* maxClusterWidthProvider(const Supercluster*, const RenderBlock* currentRoot) const;
     // Typically this returns a block's computed width. In the case of tables layout, this
     // width is not yet known so the fixed width is used if it's available, or the containing
     // block's width otherwise.
-    float widthFromBlock(const RenderBlock*);
+    float widthFromBlock(const RenderBlock*) const;
     float multiplierFromBlock(const RenderBlock*);
     void applyMultiplier(RenderObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
     Cluster* currentCluster() const;
     const RenderBlock* deepestBlockContainingAllText(Cluster*);
-    const RenderBlock* deepestBlockContainingAllText(const RenderBlock*);
+    const RenderBlock* deepestBlockContainingAllText(const RenderBlock*) const;
     // Returns the first text leaf that is in the current cluster. We attempt to not include text
     // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
     // The TraversalDirection controls whether we return the first or the last text leaf.
-    const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
-    BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX);
+    const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch) const;
+    BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX) const;
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
     void writeClusterDebugInfo(Cluster*);
 #endif
