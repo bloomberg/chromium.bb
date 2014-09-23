@@ -55,7 +55,7 @@ function scrollTest() {
     eventSender.gestureTapDown(scrollbarX, scrollbarY, touchWidth, touchHeight);
     eventSender.gestureShowPress(scrollbarX, scrollbarY, touchWidth, touchHeight);
     eventSender.gestureScrollBegin(scrollbarX - 20, scrollbarY, touchWidth, touchHeight);
-    eventSender.gestureTapCancel(scrollbarX, scrollbarY, touchWidth, touchHeight);
+    eventSender.gestureTapCancel(scrollbarX, scrollbarY);
     shouldBe('window.scrollY', '800');
     eventSender.gestureScrollUpdate(0, 20);
     // We don't know exactly how far draging the thumb will scroll.  If we end

@@ -25,13 +25,13 @@ function runTest() {
         eventSender.gestureShowPress(x, y);
 
         // Send GestureTapCancel, this should cause the highlight to animate away.
-        eventSender.gestureTapCancel();
+        // FIXME: remove params from all gestureTapCancel calls in LayoutTests
+        eventSender.gestureTapCancel(x, y);
         window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");
     }
 }
-</script>
 </script>
 </body>
 </html>
