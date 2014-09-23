@@ -170,7 +170,7 @@ int UDPSocketLibevent::RecvFrom(IOBuffer* buf,
                                 const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_);
-  DCHECK(read_callback_.is_null());
+  CHECK(read_callback_.is_null());
   DCHECK(!recv_from_address_);
   DCHECK(!callback.is_null());  // Synchronous operation not supported
   DCHECK_GT(buf_len, 0);
@@ -214,7 +214,7 @@ int UDPSocketLibevent::SendToOrWrite(IOBuffer* buf,
                                      const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_);
-  DCHECK(write_callback_.is_null());
+  CHECK(write_callback_.is_null());
   DCHECK(!callback.is_null());  // Synchronous operation not supported
   DCHECK_GT(buf_len, 0);
 
