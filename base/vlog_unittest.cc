@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

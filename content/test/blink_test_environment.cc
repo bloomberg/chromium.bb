@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/test_content_client_initializer.h"
