@@ -65,6 +65,12 @@ bool MaybeBypassProxyAndPrepareToRetry(
   if (data_reduction_proxy_type_info.proxy_servers.first.is_empty())
     return false;
 
+  // At this point, the response is expected to have the data reduction proxy
+  // via header, so detect and report cases where the via header is missing.
+  DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
+      !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
+      original_response_headers);
+
   DataReductionProxyTamperDetection::DetectAndReport(
       original_response_headers,
       data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure());

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 
@@ -30,14 +31,6 @@ const char kProxy[] = "proxy";
 }  // namespace
 
 namespace data_reduction_proxy {
-
-// Transform "normal"-looking headers (\n-separated) to the appropriate
-// input format for ParseRawHeaders (\0-separated).
-void HeadersToRaw(std::string* headers) {
-  std::replace(headers->begin(), headers->end(), '\n', '\0');
-  if (!headers->empty())
-    *headers += '\0';
-}
 
 ProbeURLFetchResult FetchResult(bool enabled, bool success) {
   if (enabled) {

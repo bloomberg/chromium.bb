@@ -3582,6 +3582,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.MissingViaHeader.Bytes" units="bytes">
+  <owner>bengr@chromium.org</owner>
+  <owner>sclittle@chromium.org</owner>
+  <summary>
+    Counts the response bytes of responses that Chrome expected to come through
+    a data reduction proxy and have the data reduction proxy via header, but
+    where the data reduction proxy via header was missing. Note that this does
+    not include responses that were bypassed.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.MissingViaHeader.ResponseCode">
+  <owner>bengr@chromium.org</owner>
+  <owner>sclittle@chromium.org</owner>
+  <summary>
+    Counts the different HTTP response codes of responses that Chrome expected
+    to come through a data reduction proxy and have the data reduction proxy via
+    header, but where the data reduction proxy via header was missing.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.NetworkChangeEvents"
     enum="DataReductionProxyNetworkChangeEvent">
   <owner>bengr@chromium.org</owner>
@@ -53109,6 +53130,20 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Bypass due to invalid proxy certificate"/>
   <suffix name="NetworkErrorOther" label="Bypass due to any network error"/>
   <affected-histogram name="DataReductionProxy.BypassedBytes"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxyMissingViaHeaderBytes"
+    separator=".">
+  <suffix name="4xx" label="Response with 4xx response code"/>
+  <suffix name="Other" label="Other response"/>
+  <affected-histogram name="DataReductionProxy.MissingViaHeader.Bytes"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxyMissingViaHeaderResponseCode"
+    separator=".">
+  <suffix name="Primary" label="Primary data reduction proxy"/>
+  <suffix name="Fallback" label="Fallback data reduction proxy"/>
+  <affected-histogram name="DataReductionProxy.MissingViaHeader.ResponseCode"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DefaultAppsExperiment">

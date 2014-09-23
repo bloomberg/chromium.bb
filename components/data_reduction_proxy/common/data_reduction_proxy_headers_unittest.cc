@@ -6,21 +6,10 @@
 
 #include <vector>
 
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-// Transform "normal"-looking headers (\n-separated) to the appropriate
-// input format for ParseRawHeaders (\0-separated).
-void HeadersToRaw(std::string* headers) {
-  std::replace(headers->begin(), headers->end(), '\n', '\0');
-  if (!headers->empty())
-    *headers += '\0';
-}
-
-}  // namespace
 
 namespace data_reduction_proxy {
 
