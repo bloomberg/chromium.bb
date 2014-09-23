@@ -1042,6 +1042,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [super windowWillClose:notification];
 }
 
+- (void)moveDown:(id)sender {
+  [[self window] selectNextKeyView:self];
+}
+
+- (void)moveUp:(id)sender {
+  [[self window] selectPreviousKeyView:self];
+}
+
 - (void)cleanUpEmbeddedViewContents {
   webContents_.reset();
 }
