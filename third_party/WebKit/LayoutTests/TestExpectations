@@ -578,8 +578,6 @@ crbug.com/234871 [ Win ] fast/scroll-behavior/listbox-scrollTop.html [ Failure P
 
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass Missing ]
 
-crbug.com/311429 [ Mac ] fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]
-crbug.com/311429 [ Mac ] virtual/deferred/fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]
 crbug.com/316151 [ Win ] virtual/deferred/fast/images/2-comp.html [ Pass Timeout ]
 
 crbug.com/317742 [ Win7 ] fast/css-grid-layout/grid-item-z-index-stacking-context.html [ Timeout Pass ]
