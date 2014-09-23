@@ -1,75 +1,71 @@
 <!DOCTYPE html>
-<html i18n-values="dir:textdirection">
+<html i18n-values="dir:textdirection;.style.fontSize:fontsize">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
                                  maximum-scale=1.0, user-scalable=no">
   <title i18n-content="title"></title>
+  <link rel="stylesheet" href="../../browser/resources/security_warnings/interstitial_v2.css">
   <link rel="stylesheet" href="neterror.css">
   <script src="neterror.js"></script>
+  <script src="offline.js"></script>
 </head>
-<body id="t">
-  <div id="main-frame-error">
-    <div id="box">
-      <div id="content-top">
-        <h1>
-          <div>
-            <img class="icon"
-                jseval="updateIconClass(this.classList, iconClass)">
-          </div>
-          <span i18n-content="heading"></span>
-        </h1>
-        <div id="buttons">
-          <div id="control-buttons">
-            <button id="reload-button"
-                class="blue-button text-button"
-                onclick="trackClick(this.trackingId);
-                         reloadButtonClick(this.url);" 
-                jsselect="reloadButton"
-                jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
-                jscontent="msg"></button>
-            <button id="stale-load-button"
-                class="blue-button text-button"
-                onclick="loadStaleButtonClick()" 
-                jsselect="staleLoadButton"
-                jscontent="msg" jsvalues="title:title"></button>
-          </div>
-          <button id="details-button" class="text-button"
-             onclick="detailsButtonClick(); toggleHelpBox()"
-             jsdisplay="details" jscontent="details"
-             jsvalues=".detailsText:details; .hideDetailsText:hideDetails;">
-          </a>
+<body id="t" i18n-values=".style.fontFamily:fontfamily">
+  <div id="main-frame-error" class="interstitial-wrapper">
+    <img class="icon"
+        jseval="updateIconClass(this.classList, iconClass)">
+    <div id="main-message">
+      <h1 i18n-content="heading"></h1>
+      <p i18n-values=".innerHTML:primaryParagraph"></p>
+      <div id="buttons" class="nav-wrapper">
+        <div id="control-buttons">
+          <button id="reload-button"
+              class="blue-button text-button"
+              onclick="trackClick(this.trackingId);
+                       reloadButtonClick(this.url);" 
+              jsselect="reloadButton"
+              jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
+              jscontent="msg"></button>
+          <button id="stale-load-button"
+              class="blue-button text-button"
+              onclick="loadStaleButtonClick()" 
+              jsselect="staleLoadButton"
+              jscontent="msg" jsvalues="title:title"></button>
         </div>
+        <button id="details-button" class="text-button small-link"
+           onclick="detailsButtonClick(); toggleHelpBox()"
+           jsdisplay="details" jscontent="details"
+           jsvalues=".detailsText:details; .hideDetailsText:hideDetails;">
       </div>
-       <!-- Outer and inner divs are needed both for margins and sizing. -->
-      <div id="help-box-outer" class="hidden">
-        <div id="help-box-inner">
-          <div jsselect="summary">
-            <span jsvalues=".innerHTML:msg"></span>
-          </div>
-          <div class="suggestions" jsselect="suggestions">
-            <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
-            <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
-          </div>
-          <button class="text-button" id="diagnose-button"
-              onclick="diagnoseErrors()" jscontent="diagnose"
-              jsdisplay="diagnose"></button>
-          <div id="diagnose-frame" class="hidden"></div>
-          <form class="suggestions" jsdisplay="searchUrl"
-              jsvalues=".url:searchUrl; .trackingId:searchTrackingId"
-              onsubmit="trackClick(this.trackingId); return search(this.url);">
-            <div class="suggestion-header" jscontent="searchHeader"></div>
-            <div id="search-container">
-              <input type="text" name="q" id="search-box"
-                  jsvalues=".value:searchTerms" />
-              <button type="submit" id="search-button" class="blue-button"
-                  jsvalues="aria-label:searchHeader">
-                <img id="search-image">
-              </button>
-            </div>
-          </form>
-          <div class="error-code" jscontent="errorCode"></div>
+    </div>
+     <!-- Outer and inner divs are needed both for margins and sizing. -->
+    <div id="help-box-outer" class="hidden">
+      <div id="details">
+        <div jsselect="summary">
+          <span jsvalues=".innerHTML:msg"></span>
         </div>
+        <div class="suggestions" jsselect="suggestions">
+          <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
+          <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
+        </div>
+        <button class="text-button" id="diagnose-button"
+            onclick="diagnoseErrors()" jscontent="diagnose"
+            jsdisplay="diagnose"></button>
+        <div id="diagnose-frame" class="hidden"></div>
+        <form class="suggestions" jsdisplay="searchUrl"
+            jsvalues=".url:searchUrl; .trackingId:searchTrackingId"
+            onsubmit="trackClick(this.trackingId); return search(this.url);">
+          <div class="suggestion-header" jscontent="searchHeader"></div>
+          <div id="search-container">
+            <input type="text" name="q" id="search-box"
+                jsvalues=".value:searchTerms" />
+            <button type="submit" id="search-button" class="blue-button"
+                jsvalues="aria-label:searchHeader">
+              <img id="search-image">
+            </button>
+          </div>
+        </form>
+        <div class="error-code" jscontent="errorCode"></div>
       </div>
     </div>
   </div>
@@ -79,6 +75,32 @@
     <img class="icon" jseval="updateIconClass(this.classList, iconClass)"
         jsvalues=".title:errorDetails">
     <div id="sub-frame-error-details" jsvalues=".innerHTML:errorDetails"></div>
+  </div>
+
+  <div id="offline-resources">
+    <div id="offline-resources-1x">
+      <img id="1x-obstacle-large" src="default_100_percent/offline/100-obstacle-large-sprite.png">
+      <img id="1x-obstacle-small" src="default_100_percent/offline/100-obstacle-small-sprite.png">
+      <img id="1x-cloud" src="default_100_percent/offline/100-cloud.png">
+      <img id="1x-text" src="default_100_percent/offline/100-text-sprite.png">
+      <img id="1x-horizon" src="default_100_percent/offline/100-horizon.png">
+      <img id="1x-trex" src="default_100_percent/offline/100-offline-trex.png">
+      <img id="1x-restart" src="default_100_percent/offline/100-restart.png">
+    </div>
+    <div id="offline-resources-2x">
+      <img id="2x-obstacle-large" src="default_200_percent/offline/200-obstacle-large-sprite.png">
+      <img id="2x-obstacle-small" src="default_200_percent/offline/200-obstacle-small-sprite.png">
+      <img id="2x-cloud" src="default_200_percent/offline/200-cloud.png">
+      <img id="2x-text" src="default_200_percent/offline/200-text-sprite.png">
+      <img id="2x-horizon" src="default_200_percent/offline/200-horizon.png">
+      <img id="2x-trex" src="default_200_percent/offline/200-offline-trex.png">
+      <img id="2x-restart" src="default_200_percent/offline/200-restart.png">
+    </div>
+    <template id="audio-resources">
+      <audio id="offline-sound-press" src="sounds/button-press.mp3"></audio>
+      <audio id="offline-sound-hit" src="sounds/hit.mp3"></audio>
+      <audio id="offline-sound-reached" src="sounds/score-reached.mp3"></audio>
+    </template>
   </div>
 </body>
 </html>

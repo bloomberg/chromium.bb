@@ -8810,20 +8810,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
           can't connect to it.
         </message>
-
-        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
-          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-          can't display the webpage because your computer isn't connected to the Internet.
-        </message>
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
-          <ph name="ERROR_DESCRIPTION_TEXT">
-            $1<ex>Google Chrome can't display the webpage because your computer isn't connected to the Internet.</ex>
-          </ph>
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           You can try to diagnose the problem by taking the following steps:
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="LINE_BREAK">&lt;br /&gt;<ex>&lt;br /&gt;</ex></ph>
           <ph name="PLATFORM_TEXT">
-            $2<ex>Goto the wrench menu and choose Fix It.</ex>
+            $1<ex>Goto the wrench menu and choose Fix It.</ex>
           </ph>
         </message>
       </if>

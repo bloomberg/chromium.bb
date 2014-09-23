@@ -510,6 +510,7 @@ void LocalizedError::GetStrings(int error_code,
                                 base::DictionaryValue* error_strings) {
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
+  webui::SetFontAndTextDirection(error_strings);
 
   // Grab the strings and settings that depend on the error type.  Init
   // options with default values.
@@ -556,8 +557,16 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->SetString("iconClass", icon_class);
 
   base::DictionaryValue* summary = new base::DictionaryValue;
-  summary->SetString("msg",
-      l10n_util::GetStringUTF16(options.summary_resource_id));
+
+  // For offline show a summary message underneath the heading.
+  if (error_code == net::ERR_INTERNET_DISCONNECTED) {
+    error_strings->SetString("primaryParagraph",
+        l10n_util::GetStringUTF16(options.summary_resource_id));
+  } else {
+    // Set summary message in the details.
+    summary->SetString("msg",
+        l10n_util::GetStringUTF16(options.summary_resource_id));
+  }
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", net::IDNToUnicode(failed_url.host(),
                                                    accept_languages));
@@ -611,12 +620,10 @@ void LocalizedError::GetStrings(int error_code,
           IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA;
     }
 #endif  // defined(OS_WIN)
-    // Lead with the general error description, and suffix with the platform
-    // dependent portion of the summary section.
+    // Platform dependent portion of the summary section.
     summary->SetString("msg",
         l10n_util::GetStringFUTF16(
             IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE,
-            l10n_util::GetStringUTF16(options.summary_resource_id),
             l10n_util::GetStringUTF16(platform_string_id)));
   }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)

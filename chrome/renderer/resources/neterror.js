@@ -126,5 +126,18 @@ function setButtonLayout() {
       staleLoadButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
+
+  // Hide the details button if there are no details to show.
+  if (templateData && templateData.summary && !templateData.summary.msg) {
+    document.getElementById('details-button').hidden = true;
+    document.getElementById('help-box-outer').style.display = 'block';
+  }
 }
-document.addEventListener('DOMContentLoaded', setButtonLayout);
+
+document.addEventListener('DOMContentLoaded', function() {
+  setButtonLayout();
+  if (document.querySelector('.icon-offline')) {
+    document.body.classList.add('offline');
+    new Runner('.interstitial-wrapper');
+  }
+});
