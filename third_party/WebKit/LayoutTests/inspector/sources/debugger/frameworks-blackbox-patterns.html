@@ -10,6 +10,8 @@ function test()
         "https://www.example.com/jquery.js?version=1.7", "/jquery\\.js\\b",
         "http://www.google.com/jsapi", "/jsapi$",
         "https://www.google.com/jsapi/", "/jsapi/$",
+        "http://www.google.com", "www\\.google\\.com$",
+        "http://www.google.com/", "www\\.google\\.com\\b",
         "data:text/html,foo", "",
         "about:blank", "",
         "chrome-extension://extensionName/main.js", "^chrome-extension://extensionName\\b.*/main\\.js$",
