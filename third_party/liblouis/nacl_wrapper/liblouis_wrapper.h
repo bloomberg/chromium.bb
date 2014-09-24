@@ -40,13 +40,13 @@ class LibLouisWrapper {
 
   // Loads, checks, and compiles the requested table.
   // Returns true on success.
-  bool CheckTable(const std::string& table_name);
+  bool CheckTable(const std::string& table_names);
 
   // Translates the given text and cursor position into braille.
   bool Translate(const TranslationParams& params, TranslationResult* out);
 
   // Translates the given braille cells into text.
-  bool BackTranslate(const std::string& table_name,
+  bool BackTranslate(const std::string& table_names,
       const std::vector<unsigned char>& cells, std::string* out);
 
  private:

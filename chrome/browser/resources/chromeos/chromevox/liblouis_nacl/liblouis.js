@@ -132,27 +132,28 @@ cvox.LibLouis.prototype.isAttached = function() {
 
 /**
  * Returns a translator for the desired table, asynchronously.
- * @param {string} tableName Braille table name for liblouis.
+ * @param {string} tableNames Comma separated list of braille table names for
+ *     liblouis.
  * @param {function(cvox.LibLouis.Translator)} callback
  *     Callback which will receive the translator, or {@code null} on failure.
  */
 cvox.LibLouis.prototype.getTranslator =
-    function(tableName, callback) {
+    function(tableNames, callback) {
   switch (this.instanceState_) {
     case cvox.LibLouis.InstanceState.NOT_LOADED:
     case cvox.LibLouis.InstanceState.LOADING:
       this.pendingTranslators_.push(
-          { tableName: tableName, callback: callback });
+          { tableNames: tableNames, callback: callback });
       return;
     case cvox.LibLouis.InstanceState.ERROR:
       callback(null /* translator */);
       return;
     case cvox.LibLouis.InstanceState.LOADED:
-      this.rpc_('CheckTable', { 'table_name': tableName },
+      this.rpc_('CheckTable', { 'table_names': tableNames },
           goog.bind(function(reply) {
         if (reply['success']) {
           var translator = new cvox.LibLouis.Translator(
-              this, tableName);
+              this, tableNames);
           callback(translator);
         } else {
           callback(null /* translator */);
@@ -198,7 +199,7 @@ cvox.LibLouis.prototype.onInstanceLoad_ = function(e) {
   window.console.info('loaded liblouis Native Client instance');
   this.instanceState_ = cvox.LibLouis.InstanceState.LOADED;
   this.pendingTranslators_.forEach(goog.bind(function(record) {
-    this.getTranslator(record.tableName, record.callback);
+    this.getTranslator(record.tableNames, record.callback);
   }, this));
   this.pendingTranslators_.length = 0;
 };
@@ -213,7 +214,7 @@ cvox.LibLouis.prototype.onInstanceError_ = function(e) {
   window.console.error('failed to load liblouis Native Client instance');
   this.instanceState_ = cvox.LibLouis.InstanceState.ERROR;
   this.pendingTranslators_.forEach(goog.bind(function(record) {
-    this.getTranslator(record.tableName, record.callback);
+    this.getTranslator(record.tableNames, record.callback);
   }, this));
   this.pendingTranslators_.length = 0;
 };
@@ -250,9 +251,10 @@ cvox.LibLouis.prototype.onInstanceMessage_ = function(e) {
  * Braille translator which uses a Native Client instance of liblouis.
  * @constructor
  * @param {!cvox.LibLouis} instance The instance wrapper.
- * @param {string} tableName The table name to be passed to liblouis.
+ * @param {string} tableNames Comma separated list of Table names to be passed
+ *     to liblouis.
  */
-cvox.LibLouis.Translator = function(instance, tableName) {
+cvox.LibLouis.Translator = function(instance, tableNames) {
   /**
    * The instance wrapper.
    * @private {!cvox.LibLouis}
@@ -263,7 +265,7 @@ cvox.LibLouis.Translator = function(instance, tableName) {
    * The table name.
    * @private {string}
    */
-  this.tableName_ = tableName;
+  this.tableNames_ = tableNames;
 };
 
 
@@ -277,7 +279,7 @@ cvox.LibLouis.Translator = function(instance, tableName) {
  *     {@code null}.
  */
 cvox.LibLouis.Translator.prototype.translate = function(text, callback) {
-  var message = { 'table_name': this.tableName_, 'text': text };
+  var message = { 'table_names': this.tableNames_, 'text': text };
   this.instance_.rpc_('Translate', message, function(reply) {
     var cells = null;
     var textToBraille = null;
@@ -314,7 +316,7 @@ cvox.LibLouis.Translator.prototype.backTranslate =
     return;
   }
   var message = {
-    'table_name': this.tableName_,
+    'table_names': this.tableNames_,
     'cells': cvox.LibLouis.Translator.encodeHexString_(cells)
   };
   this.instance_.rpc_('BackTranslate', message, function(reply) {

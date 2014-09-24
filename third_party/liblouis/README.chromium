@@ -19,5 +19,7 @@ Local Modifications:
 
 * Add manually created liblouis.h with compiler warning fix.
 * Add minimal config.h.
-* Add tables.json a list of tables with metadata.
+* Add tables.json, a list of tables with metadata.
+* Add cvox-common.cti with common definitions for all tables mentioned in
+  tables.json.
 * Add a wrapper to expose the library in native client.

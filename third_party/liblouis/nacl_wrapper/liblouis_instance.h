@@ -60,7 +60,7 @@ class LibLouisInstance : public pp::Instance {
       const std::string& message_id);
 
   // Called to check a table on a background thread.
-  void CheckTableInBackground(int32_t result, const std::string& table_name,
+  void CheckTableInBackground(int32_t result, const std::string& table_names,
       const std::string& message_id);
 
   // Parses and executes a translation command.
@@ -77,7 +77,7 @@ class LibLouisInstance : public pp::Instance {
 
   // Called to back-translate text on a background thread.
   void BackTranslateInBackground(int32_t result,
-      const std::string& table_name, const std::vector<unsigned char>& cells,
+      const std::string& table_names, const std::vector<unsigned char>& cells,
       const std::string& message_id);
 
   LibLouisWrapper liblouis_;

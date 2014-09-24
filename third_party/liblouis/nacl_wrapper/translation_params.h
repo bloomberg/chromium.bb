@@ -22,7 +22,7 @@ namespace liblouis_nacl {
 // Struct containing the parameters of translation.
 struct TranslationParams {
  public:
-  std::string table_name;
+  std::string table_names;
   std::string text;
   int cursor_position;
 };

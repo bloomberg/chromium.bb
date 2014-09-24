@@ -7,7 +7,7 @@
     'braille_test_data_dir': '<(PRODUCT_DIR)/chromevox_test_data/braille',
     'braille_chromevox_dir': '<(PRODUCT_DIR)/resources/chromeos/chromevox/chromevox/background/braille',
     'table_files': [
-      '>!@pymod_do_main(liblouis_list_tables -D overrides/tables -D src/tables tables.json)',
+      '>!@pymod_do_main(liblouis_list_tables -D . -D src/tables -e cvox-common.cti tables.json)',
     ],
   },
   # x86 targets build both 32 and 64 bit binaries by default.  We only need

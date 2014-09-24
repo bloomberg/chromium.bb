@@ -104,7 +104,7 @@ static const char kCommandKey[] = "command";
 static const char kMessageIdKey[] = "message_id";
 static const char kInReplyToKey[] = "in_reply_to";
 static const char kErrorKey[] = "error";
-static const char kTableNameKey[] = "table_name";
+static const char kTableNamesKey[] = "table_names";
 static const char kSuccessKey[] = "success";
 static const char kTextKey[] = "text";
 static const char kCellsKey[] = "cells";
@@ -208,23 +208,23 @@ void LibLouisInstance::PostError(const std::string& error_message,
 
 void LibLouisInstance::HandleCheckTable(const Json::Value& message,
     const std::string& message_id) {
-  Json::Value table_name = message[kTableNameKey];
-  if (!table_name.isString()) {
-    PostError("expected table_name to be a string", message_id);
+  Json::Value table_names = message[kTableNamesKey];
+  if (!table_names.isString()) {
+    PostError("expected table_names to be a string", message_id);
     return;
   }
   PostWorkToBackground(cc_factory_.NewCallback(
       &LibLouisInstance::CheckTableInBackground,
-      table_name.asString(), message_id));
+      table_names.asString(), message_id));
 }
 
 void LibLouisInstance::CheckTableInBackground(int32_t result,
-    const std::string& table_name, const std::string& message_id) {
+    const std::string& table_names, const std::string& message_id) {
   if (result != PP_OK) {
     PostError("failed to transfer call to background thread", message_id);
     return;
   }
-  bool success = liblouis_.CheckTable(table_name);
+  bool success = liblouis_.CheckTable(table_names);
   Json::Value reply(Json::objectValue);
   reply[kSuccessKey] = success;
   PostReply(reply, message_id);
@@ -232,11 +232,11 @@ void LibLouisInstance::CheckTableInBackground(int32_t result,
 
 void LibLouisInstance::HandleTranslate(const Json::Value& message,
     const std::string& message_id) {
-  Json::Value table_name = message[kTableNameKey];
+  Json::Value table_names = message[kTableNamesKey];
   Json::Value text = message[kTextKey];
   Json::Value cursor_position = message[kCursorPositionKey];
-  if (!table_name.isString()) {
-    PostError("expected table_name to be a string", message_id);
+  if (!table_names.isString()) {
+    PostError("expected table_names to be a string", message_id);
     return;
   } else if (!text.isString()) {
     PostError("expected text to be a string", message_id);
@@ -246,7 +246,7 @@ void LibLouisInstance::HandleTranslate(const Json::Value& message,
     return;
   }
   TranslationParams params;
-  params.table_name = table_name.asString();
+  params.table_names = table_names.asString();
   params.text = text.asString();
   params.cursor_position = cursor_position.isIntegral() ?
       cursor_position.asInt() : -1;
@@ -284,10 +284,10 @@ void LibLouisInstance::TranslateInBackground(int32_t result,
 
 void LibLouisInstance::HandleBackTranslate(const Json::Value& message,
     const std::string& message_id) {
-  Json::Value table_name = message[kTableNameKey];
+  Json::Value table_names = message[kTableNamesKey];
   Json::Value cells = message[kCellsKey];
-  if (!table_name.isString()) {
-    PostError("expected table_name to be a string", message_id);
+  if (!table_names.isString()) {
+    PostError("expected table_names to be a string", message_id);
     return;
   } else if (!cells.isString()) {
     PostError("expected cells to be a string", message_id);
@@ -300,18 +300,18 @@ void LibLouisInstance::HandleBackTranslate(const Json::Value& message,
   }
   PostWorkToBackground(cc_factory_.NewCallback(
       &LibLouisInstance::BackTranslateInBackground,
-      table_name.asString(), cells_vector, message_id));
+      table_names.asString(), cells_vector, message_id));
 }
 
 void LibLouisInstance::BackTranslateInBackground(int32_t result,
-    const std::string& table_name, const std::vector<unsigned char>& cells,
+    const std::string& table_names, const std::vector<unsigned char>& cells,
     const std::string& message_id) {
   if (result != PP_OK) {
     PostError("failed to transfer call to background thread", message_id);
     return;
   }
   std::string text;
-  bool success = liblouis_.BackTranslate(table_name, cells, &text);
+  bool success = liblouis_.BackTranslate(table_names, cells, &text);
   Json::Value reply(Json::objectValue);
   reply[kSuccessKey] = success;
   if (success) {

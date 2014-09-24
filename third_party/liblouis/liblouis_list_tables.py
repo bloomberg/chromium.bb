@@ -66,7 +66,9 @@ def DoMain(argv):
   parser.prog = 'liblouis_list_tables'
   parser.set_usage('usage: %prog [options] listfile')
   parser.add_option('-D', '--directory', dest='directories',
-                    action='append', help='Where to search for table files')
+                     action='append', help='Where to search for table files')
+  parser.add_option('-e', '--extra_file', dest='extra_files', action='append',
+                    default=[], help='Extra liblouis table file to process')
   (options, args) = parser.parse_args(argv)
 
   if len(args) != 1:
@@ -77,7 +79,10 @@ def DoMain(argv):
   tables = LoadTablesFile(args[0])
   output_set = set()
   for table in tables:
-    ProcessFile(output_set, table['fileName'], options.directories)
+    for name in table['fileNames'].split(','):
+      ProcessFile(output_set, name, options.directories)
+  for name in options.extra_files:
+    ProcessFile(output_set, name, options.directories)
   return '\n'.join(output_set)
 
 

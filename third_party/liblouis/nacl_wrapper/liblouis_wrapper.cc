@@ -109,8 +109,8 @@ const char* LibLouisWrapper::tables_dir() const {
   return "/liblouis/tables";
 }
 
-bool LibLouisWrapper::CheckTable(const std::string& table_name) {
-  return lou_getTable(table_name.c_str()) != NULL;
+bool LibLouisWrapper::CheckTable(const std::string& table_names) {
+  return lou_getTable(table_names.c_str()) != NULL;
 }
 
 bool LibLouisWrapper::Translate(const TranslationParams& params,
@@ -152,7 +152,7 @@ bool LibLouisWrapper::Translate(const TranslationParams& params,
     outlen = outalloc;
     outbuf.resize(outalloc);
     braille_to_text.resize(outalloc);
-    int result = lou_translate(params.table_name.c_str(),
+    int result = lou_translate(params.table_names.c_str(),
                                &inbuf[0], &inlen, &outbuf[0], &outlen,
                                NULL /* typeform */, NULL /* spacing */,
                                &text_to_braille[0], &braille_to_text[0],
@@ -188,7 +188,7 @@ bool LibLouisWrapper::Translate(const TranslationParams& params,
   return true;
 }
 
-bool LibLouisWrapper::BackTranslate(const std::string& table_name,
+bool LibLouisWrapper::BackTranslate(const std::string& table_names,
     const std::vector<unsigned char>& cells, std::string* out) {
   std::vector<widechar> inbuf;
   inbuf.reserve(cells.size());
@@ -215,7 +215,7 @@ bool LibLouisWrapper::BackTranslate(const std::string& table_name,
     outbuf.resize(outalloc);
 
     int result = lou_backTranslateString(
-        table_name.c_str(), &inbuf[0], &inlen, &outbuf[0], &outlen,
+        table_names.c_str(), &inbuf[0], &inlen, &outbuf[0], &outlen,
       NULL /* typeform */, NULL /* spacing */, dotsIO /* mode */);
     if (result == 0) {
       // TODO(jbroman): log this

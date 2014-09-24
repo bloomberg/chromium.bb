@@ -66,12 +66,12 @@ function expectSuccessReply(callback) {
 loadLibrary(function() {
   chrome.test.runTests([
   function testGetTranslator() {
-    rpc('CheckTable', { 'table_name': TABLE_NAME},
+    rpc('CheckTable', { 'table_names': TABLE_NAME},
        pass(expectSuccessReply()));
   },
 
   function testTranslateString() {
-    rpc('Translate', { 'table_name': TABLE_NAME, 'text': TEXT},
+    rpc('Translate', { 'table_names': TABLE_NAME, 'text': TEXT},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq(CELLS, reply['cells']);
         })));
@@ -82,14 +82,14 @@ loadLibrary(function() {
   // letter 'T' should be translated to 3 cells in US English grade 2
   // braille (dots 56, 6, 2345).
   function testTranslateGrade2SingleCapital() {
-    rpc('Translate', { 'table_name': CONTRACTED_TABLE_NAME, 'text': 'T'},
+    rpc('Translate', { 'table_names': CONTRACTED_TABLE_NAME, 'text': 'T'},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq('30201e', reply['cells']);
         })));
   },
 
   function testBackTranslateString() {
-    rpc('BackTranslate', { 'table_name': TABLE_NAME, 'cells': CELLS},
+    rpc('BackTranslate', { 'table_names': TABLE_NAME, 'cells': CELLS},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq(TEXT, reply['text']);
         })));
@@ -98,7 +98,7 @@ loadLibrary(function() {
   // Backtranslate a one-letter contraction that expands to a much larger
   // string (k->knowledge).
   function testBackTranslateContracted() {
-    rpc('BackTranslate', { 'table_name': CONTRACTED_TABLE_NAME,
+    rpc('BackTranslate', { 'table_names': CONTRACTED_TABLE_NAME,
                            'cells': '05'},  // dots 1 and 3
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq('knowledge', reply['text']);

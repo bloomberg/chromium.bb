@@ -43,7 +43,7 @@ TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
     var checkNextTable = function() {
       var table = all_tables[i++];
       if (table) {
-        this.instance.getTranslator(table.fileName, function(translator) {
+        this.instance.getTranslator(table.fileNames, function(translator) {
           assertNotEquals(null, translator,
                              'Table ' + table + ' should be valid');
           checkNextTable();

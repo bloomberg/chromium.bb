@@ -16,7 +16,7 @@ goog.provide('cvox.BrailleTable');
  *   id:string,
  *   grade:(string|undefined),
  *   variant:(string|undefined),
- *   fileName:string
+ *   fileNames:string
  * }}
  */
 cvox.BrailleTable.Table;
@@ -29,10 +29,24 @@ cvox.BrailleTable.TABLE_PATH = 'chromevox/background/braille/tables.json';
 
 
 /**
+ * @const {string}
+ * @private
+ */
+cvox.BrailleTable.COMMON_DEFS_FILENAME_ = 'cvox-common.cti';
+
+
+/**
  * Retrieves a list of all available braille tables.
  * @param {function(!Array.<cvox.BrailleTable.Table>)} callback
  */
 cvox.BrailleTable.getAll = function(callback) {
+  function appendCommonFilename(tables) {
+    // Append the common definitions to all table filenames.
+    tables.forEach(function(table) {
+      table.fileNames += (',' + cvox.BrailleTable.COMMON_DEFS_FILENAME_);
+    });
+    return tables;
+  }
   var url = chrome.extension.getURL(cvox.BrailleTable.TABLE_PATH);
   if (!url) {
     throw 'Invalid path: ' + cvox.BrailleTable.TABLE_PATH;
@@ -43,8 +57,10 @@ cvox.BrailleTable.getAll = function(callback) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       if (xhr.status == 200) {
-        callback(/** @type {!Array.<cvox.BrailleTable.Table>} */ (
-            JSON.parse(xhr.responseText)));
+        callback(
+            appendCommonFilename(
+                /** @type {!Array.<cvox.BrailleTable.Table>} */ (
+                    JSON.parse(xhr.responseText))));
       }
     }
   };
