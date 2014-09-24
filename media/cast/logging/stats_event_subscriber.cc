@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "media/cast/logging/stats_event_subscriber.h"
 
 #include "base/format_macros.h"
@@ -65,27 +67,30 @@ StatsEventSubscriber::SimpleHistogram::GetHistogram() const {
 
   scoped_ptr<base::DictionaryValue> bucket(new base::DictionaryValue);
 
-  bucket->SetString("bucket", base::StringPrintf("< %" PRId64, min_));
-  bucket->SetInteger("count", buckets_.front());
-  histo->Append(bucket.release());
-
-  for (size_t i = 1; i < buckets_.size() - 1; i++) {
-    bucket.reset(new base::DictionaryValue);
-
-    int64 lower = min_ + (i - 1) * width_;
-    int64 upper = lower + width_ - 1;
-    bucket->SetString(
-        "bucket", base::StringPrintf("%" PRId64 " - %" PRId64, lower, upper));
-    bucket->SetInteger("count", buckets_[i]);
+  if (buckets_.front()) {
+    bucket->SetInteger(base::StringPrintf("<%" PRId64, min_),
+                       buckets_.front());
     histo->Append(bucket.release());
   }
 
-  bucket.reset(new base::DictionaryValue);
+  for (size_t i = 1; i < buckets_.size() - 1; i++) {
+    if (!buckets_[i])
+      continue;
+    bucket.reset(new base::DictionaryValue);
+    int64 lower = min_ + (i - 1) * width_;
+    int64 upper = lower + width_ - 1;
+    bucket->SetInteger(
+        base::StringPrintf("%" PRId64 "-%" PRId64, lower, upper),
+        buckets_[i]);
+    histo->Append(bucket.release());
+  }
 
-  bucket->SetString("bucket", base::StringPrintf(">= %" PRId64, max_));
-  bucket->SetInteger("count", buckets_.back());
-  histo->Append(bucket.release());
-
+  if (buckets_.back()) {
+    bucket.reset(new base::DictionaryValue);
+    bucket->SetInteger(base::StringPrintf(">=%" PRId64, max_),
+                       buckets_.back());
+    histo->Append(bucket.release());
+  }
   return histo.Pass();
 }
 
@@ -217,7 +222,9 @@ scoped_ptr<base::DictionaryValue> StatsEventSubscriber::GetStats() const {
   scoped_ptr<base::DictionaryValue> stats(new base::DictionaryValue);
   for (StatsMap::const_iterator it = stats_map.begin(); it != stats_map.end();
        ++it) {
-    stats->SetDouble(CastStatToString(it->first), it->second);
+    // Round to 3 digits after the decimal point.
+    stats->SetDouble(CastStatToString(it->first),
+                     round(it->second * 1000.0) / 1000.0);
   }
   for (HistogramMap::const_iterator it = histograms_.begin();
        it != histograms_.end();
