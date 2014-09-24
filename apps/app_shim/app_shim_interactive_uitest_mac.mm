@@ -226,8 +226,7 @@ namespace apps {
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
-// Launch is flaky http://crbug.com/415422.
-#define MAYBE_Launch DISABLED_Launch
+#define MAYBE_Launch Launch
 #define MAYBE_RebuildShim RebuildShim
 #endif
 
@@ -258,31 +257,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
   ASSERT_TRUE(base::PathExists(shim_path));
   NSString* bundle_id = GetBundleID(shim_path);
 
-  // Case 1: Launch the shim, it should start the app.
-  {
-    ExtensionTestMessageListener launched_listener("Launched", false);
-    CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
-    shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
-    ProcessSerialNumber shim_psn;
-    ASSERT_TRUE(base::mac::OpenApplicationWithPath(
-        shim_path, shim_cmdline, kLSLaunchDefaults, &shim_psn));
-    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-
-    ASSERT_TRUE(GetFirstAppWindow());
-    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
-
-    // If the window is closed, the shim should quit.
-    pid_t shim_pid;
-    EXPECT_EQ(noErr, GetProcessPID(&shim_psn, &shim_pid));
-    GetFirstAppWindow()->GetBaseWindow()->Close();
-    ASSERT_TRUE(
-        base::WaitForSingleProcess(shim_pid, TestTimeouts::action_timeout()));
-
-    EXPECT_FALSE(GetFirstAppWindow());
-    EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
-  }
-
-  // Case 2: Launch the app, it should start the shim.
+  // Case 1: Launch the app, it should start the shim.
   {
     base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer;
     ns_observer.reset([[WindowedNSNotificationObserver alloc]
@@ -311,6 +286,30 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     [base::mac::ObjCCastStrict<NSRunningApplication>(
         [running_shim objectAtIndex:0]) terminate];
     [ns_observer wait];
+
+    EXPECT_FALSE(GetFirstAppWindow());
+    EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  }
+
+  // Case 2: Launch the shim, it should start the app.
+  {
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
+    shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
+    ProcessSerialNumber shim_psn;
+    ASSERT_TRUE(base::mac::OpenApplicationWithPath(
+        shim_path, shim_cmdline, kLSLaunchDefaults, &shim_psn));
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    ASSERT_TRUE(GetFirstAppWindow());
+    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+
+    // If the window is closed, the shim should quit.
+    pid_t shim_pid;
+    EXPECT_EQ(noErr, GetProcessPID(&shim_psn, &shim_pid));
+    GetFirstAppWindow()->GetBaseWindow()->Close();
+    ASSERT_TRUE(
+        base::WaitForSingleProcess(shim_pid, TestTimeouts::action_timeout()));
 
     EXPECT_FALSE(GetFirstAppWindow());
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
