@@ -293,35 +293,6 @@ void NavigatorImpl::DidFailLoadWithError(
   }
 }
 
-void NavigatorImpl::DidRedirectProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    int32 page_id,
-    const GURL& source_url,
-    const GURL& target_url) {
-  // TODO(creis): Remove this method and have the pre-rendering code listen to
-  // WebContentsObserver::DidGetRedirectForResourceRequest instead.
-  // See http://crbug.com/78512.
-  GURL validated_source_url(source_url);
-  GURL validated_target_url(target_url);
-  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
-  render_process_host->FilterURL(false, &validated_source_url);
-  render_process_host->FilterURL(false, &validated_target_url);
-  NavigationEntry* entry;
-  if (page_id == -1) {
-    entry = controller_->GetPendingEntry();
-  } else {
-    entry = controller_->GetEntryWithPageID(
-        render_frame_host->GetSiteInstance(), page_id);
-  }
-  if (!entry || entry->GetURL() != validated_source_url)
-    return;
-
-  if (delegate_) {
-    delegate_->DidRedirectProvisionalLoad(
-        render_frame_host, validated_target_url);
-  }
-}
-
 bool NavigatorImpl::NavigateToEntry(
     RenderFrameHostImpl* render_frame_host,
     const NavigationEntryImpl& entry,

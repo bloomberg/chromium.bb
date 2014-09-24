@@ -342,9 +342,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const GURL& url,
       int error_code,
       const base::string16& error_description);
-  void OnDidRedirectProvisionalLoad(int32 page_id,
-                                    const GURL& source_url,
-                                    const GURL& target_url);
   void OnDidCommitProvisionalLoad(const IPC::Message& msg);
   void OnBeforeUnloadACK(
       bool proceed,

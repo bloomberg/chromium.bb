@@ -46,11 +46,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const GURL& url,
       int error_code,
       const base::string16& error_description) OVERRIDE;
-  virtual void DidRedirectProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      int32 page_id,
-      const GURL& source_url,
-      const GURL& target_url) OVERRIDE;
   virtual void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params&

@@ -1037,13 +1037,8 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   // The visible entry should be the last committed URL, not the pending one.
   EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
 
-  // Now the navigation redirects.
+  // Now the navigation redirects. (There is no corresponding message here.)
   const GURL kRedirectURL("http://foo/see");
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
-                                              -1,  // pending page_id
-                                              kNewURL,  // old url
-                                              kRedirectURL));  // new url
 
   // We don't want to change the NavigationEntry's url, in case it cancels.
   // Prevents regression of http://crbug.com/77786.

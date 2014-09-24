@@ -505,9 +505,6 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& url,
       int error_code,
       const base::string16& error_description) OVERRIDE;
-  virtual void DidRedirectProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& validated_target_url) OVERRIDE;
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,

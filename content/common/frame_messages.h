@@ -517,12 +517,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidStartProvisionalLoadForFrame,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
                     FrameHostMsg_DidFailProvisionalLoadWithError_Params)
 
-// Sent when a provisional load on the main frame redirects.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidRedirectProvisionalLoad,
-                    int /* page_id */,
-                    GURL /* source_url*/,
-                    GURL /* target_url */)
-
 // Notifies the browser that a frame in the view has changed. This message
 // has a lot of parameters and is packed/unpacked by functions defined in
 // render_messages.h.

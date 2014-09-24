@@ -2494,14 +2494,6 @@ void WebContentsImpl::DidStartProvisionalLoad(
       observers_,
       DidStartProvisionalLoadForFrame(
           render_frame_host, validated_url, is_error_page, is_iframe_srcdoc));
-
-  if (!render_frame_host->GetParent()) {
-    FOR_EACH_OBSERVER(
-        WebContentsObserver,
-        observers_,
-        ProvisionalChangeToMainFrameUrl(validated_url,
-                                        render_frame_host));
-  }
 }
 
 void WebContentsImpl::DidStartNavigationTransition(
@@ -2583,17 +2575,6 @@ bool WebContentsImpl::ShouldPreserveAbortedURLs() {
   if (!delegate_)
     return false;
   return delegate_->ShouldPreserveAbortedURLs(this);
-}
-
-void WebContentsImpl::DidRedirectProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& validated_target_url) {
-  // Notify observers about the provisional change in the main frame URL.
-  FOR_EACH_OBSERVER(
-      WebContentsObserver,
-      observers_,
-      ProvisionalChangeToMainFrameUrl(validated_target_url,
-                                      render_frame_host));
 }
 
 void WebContentsImpl::DidCommitProvisionalLoad(

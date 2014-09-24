@@ -347,8 +347,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
                         OnDidFailProvisionalLoadWithError)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidRedirectProvisionalLoad,
-                        OnDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailLoadWithError,
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
@@ -644,14 +642,6 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
 
   frame_tree_node_->navigator()->DidFailLoadWithError(
       this, validated_url, error_code, error_description);
-}
-
-void RenderFrameHostImpl::OnDidRedirectProvisionalLoad(
-    int32 page_id,
-    const GURL& source_url,
-    const GURL& target_url) {
-  frame_tree_node_->navigator()->DidRedirectProvisionalLoad(
-      this, page_id, source_url, target_url);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this

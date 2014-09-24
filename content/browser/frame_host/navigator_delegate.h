@@ -49,11 +49,6 @@ class CONTENT_EXPORT NavigatorDelegate {
       int error_code,
       const base::string16& error_description) {}
 
-  // A redirect was processed in |render_frame_host| during a provisional load.
-  virtual void DidRedirectProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& validated_target_url) {}
-
   // A navigation was committed in |render_frame_host|.
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
