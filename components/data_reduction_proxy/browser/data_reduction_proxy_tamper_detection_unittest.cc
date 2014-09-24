@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +24,12 @@
 #endif
 
 namespace {
+
+void HeadersToRaw(std::string* headers) {
+  std::replace(headers->begin(), headers->end(), '\n', '\0');
+  if (!headers->empty())
+    *headers += '\0';
+}
 
 // Calcuates MD5 hash value for a string and then base64 encode it. Testcases
 // contain expected fingerprint in plain text, which needs to be encoded before

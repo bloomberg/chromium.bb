@@ -89,8 +89,6 @@
         'data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h',
         'data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.h',
-        'data_reduction_proxy/common/data_reduction_proxy_headers_test_utils.cc',
-        'data_reduction_proxy/common/data_reduction_proxy_headers_test_utils.h',
       ],
     },
     {

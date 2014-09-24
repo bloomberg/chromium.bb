@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -38,6 +37,18 @@ using net::StaticSocketDataProvider;
 using net::TestDelegate;
 using net::URLRequest;
 using net::TestURLRequestContext;
+
+
+namespace {
+// Transform "normal"-looking headers (\n-separated) to the appropriate
+// input format for ParseRawHeaders (\0-separated).
+void HeadersToRaw(std::string* headers) {
+  std::replace(headers->begin(), headers->end(), '\n', '\0');
+  if (!headers->empty())
+    *headers += '\0';
+}
+
+} // namespace
 
 
 namespace data_reduction_proxy {
