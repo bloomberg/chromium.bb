@@ -225,6 +225,8 @@ TEST(queue)
 				 dummy_interfaces[i]->version,
 				 NULL, dummy_bind);
 
+	test_set_timeout(2);
+
 	client_create(d, client_test_proxy_destroy);
 	display_run(d);
 
