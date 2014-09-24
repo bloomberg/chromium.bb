@@ -344,7 +344,8 @@ TEST_F(AppActivityTest, DISABLED_TestUnloadProxyLocation) {
 
 // Test that an unload with multiple activities of the same app will only unload
 // when all activities were marked for unloading.
-TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
+// Flaky: http://crbug.com/417189.
+TEST_F(AppActivityTest, DISABLED_TestMultipleActivityUnloadLock) {
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
 
   TestAppActivity* app_activity1 = CreateAppActivity(kDummyApp1);
