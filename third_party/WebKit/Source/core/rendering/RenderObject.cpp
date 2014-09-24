@@ -1185,6 +1185,10 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
 
     RELEASE_ASSERT(isRooted());
 
+    // FIXME: Unify "devtools.timeline.invalidationTracking" and "blink.invalidation". crbug.com/413527.
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+        "PaintInvalidationTracking",
+        "data", InspectorPaintInvalidationTrackingEvent::data(this, paintInvalidationContainer));
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintUsingContainer()",
         "object", this->debugName().ascii(),
         "info", jsonObjectForPaintInvalidationInfo(r, invalidationReasonToString(invalidationReason)));

@@ -41,6 +41,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject*);
 };
 
+class InspectorPaintInvalidationTrackingEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject* renderer, const RenderObject* paintContainer);
+};
+
 class InspectorSendRequestEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);

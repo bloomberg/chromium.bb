@@ -88,14 +88,16 @@ static void createQuad(TracedValue* value, const char* name, const FloatQuad& qu
     value->endArray();
 }
 
-static void setGeneratingNodeId(TracedValue* value, const char* fieldName, const RenderObject* renderer)
+static void setGeneratingNodeInfo(TracedValue* value, const RenderObject* renderer, const char* idFieldName, const char* nameFieldName = 0)
 {
     Node* node = 0;
     for (; renderer && !node; renderer = renderer->parent())
         node = renderer->generatingNode();
     if (!node)
         return;
-    value->setInteger(fieldName, InspectorNodeIds::idForNode(node));
+    value->setInteger(idFieldName, InspectorNodeIds::idForNode(node));
+    if (nameFieldName)
+        value->setString(nameFieldName, node->debugName());
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(RenderObject* rootForThisLayout)
@@ -106,7 +108,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(R
     RefPtr<TracedValue> value = TracedValue::create();
     if (quads.size() >= 1) {
         createQuad(value.get(), "root", quads[0]);
-        setGeneratingNodeId(value.get(), "rootNode", rootForThisLayout);
+        setGeneratingNodeInfo(value.get(), rootForThisLayout, "rootNode");
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -118,13 +120,19 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrac
     ASSERT(renderer);
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(renderer->frame()));
-    value->setString("rendererId", toHexString(renderer));
-    if (Node* generatingNode = renderer->generatingNode()) {
-        value->setString("nodeName", generatingNode->debugName());
-        value->setInteger("nodeId", InspectorNodeIds::idForNode(generatingNode));
-    }
+    setGeneratingNodeInfo(value.get(), renderer, "nodeId", "nodeName");
     RefPtrWillBeRawPtr<ScriptCallStack> callstack = createScriptCallStack(maxInvalidationTrackingCallstackSize, true);
     value->setString("callstack", callstack ? callstack->buildInspectorArray()->toJSONString() : "[]");
+    return value;
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintInvalidationTrackingEvent::data(const RenderObject* renderer, const RenderObject* paintContainer)
+{
+    ASSERT(renderer);
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(renderer->frame()));
+    setGeneratingNodeInfo(value.get(), paintContainer, "paintId");
+    setGeneratingNodeInfo(value.get(), renderer, "nodeId", "nodeName");
     return value;
 }
 
@@ -288,7 +296,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrack
 
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(paintInvalidationContainer->frame()));
-    setGeneratingNodeId(value.get(), "paintId", paintInvalidationContainer);
+    setGeneratingNodeInfo(value.get(), paintInvalidationContainer, "paintId");
     value->setString("reason", reason);
     return value;
 }
@@ -300,7 +308,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(Rende
     FloatQuad quad;
     localToPageQuad(*renderer, clipRect, &quad);
     createQuad(value.get(), "clip", quad);
-    setGeneratingNodeId(value.get(), "nodeId", renderer);
+    setGeneratingNodeInfo(value.get(), renderer, "nodeId");
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     value->setInteger("layerId", graphicsLayerId);
     return value;
@@ -319,7 +327,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(renderer->frame()));
-    setGeneratingNodeId(value.get(), "nodeId", renderer);
+    setGeneratingNodeInfo(value.get(), renderer, "nodeId");
     return value;
 }
 
@@ -346,7 +354,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::dat
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderImage& renderImage)
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    setGeneratingNodeId(value.get(), "nodeId", &renderImage);
+    setGeneratingNodeInfo(value.get(), &renderImage, "nodeId");
     if (const ImageResource* resource = renderImage.cachedImage())
         value->setString("url", resource->url().string());
     return value;
