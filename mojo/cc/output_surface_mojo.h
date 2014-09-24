@@ -31,6 +31,7 @@ class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
 
   // cc::OutputSurface implementation.
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
 
  protected:
   virtual ~OutputSurfaceMojo();

@@ -20,7 +20,6 @@ OutputSurfaceMojo::OutputSurfaceMojo(
       output_surface_mojo_client_(client),
       surface_(surface.Pass()),
       id_allocator_(id_namespace) {
-  surface_.set_client(this);
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -29,6 +28,11 @@ OutputSurfaceMojo::~OutputSurfaceMojo() {
 }
 
 void OutputSurfaceMojo::ReturnResources(Array<ReturnedResourcePtr> resources) {
+}
+
+bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
+  surface_.set_client(this);
+  return cc::OutputSurface::BindToClient(client);
 }
 
 void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
