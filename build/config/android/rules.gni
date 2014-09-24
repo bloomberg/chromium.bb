@@ -29,6 +29,8 @@ assert(is_android)
 #     jni_package = "foo"
 #   }
 template("generate_jni") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.sources))
   assert(defined(invoker.jni_package))
   jni_package = invoker.jni_package
@@ -105,6 +107,8 @@ template("generate_jni") {
 #     jni_package = "foo"
 #   }
 template("generate_jar_jni") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.classes))
   assert(defined(invoker.jni_package))
 
@@ -204,6 +208,8 @@ template("generate_jar_jni") {
 #     include_path = "android/java/templates"
 #   }
 template("java_cpp_template") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.sources))
   package_name = invoker.package_name + ""
 
@@ -289,6 +295,8 @@ template("java_cpp_template") {
 #     ]
 #   }
 template("java_cpp_enum") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.sources))
   assert(defined(invoker.outputs))
 
@@ -356,6 +364,8 @@ template("java_cpp_enum") {
 #     custom_package = "org.chromium.foo"
 #   }
 template("android_resources") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.resource_dirs))
   assert(defined(invoker.android_manifest) || defined(invoker.custom_package))
 
@@ -413,6 +423,8 @@ template("android_resources") {
 #    grd_file = "foo_strings.grd"
 #  }
 template("java_strings_grd") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   base_path = "$target_gen_dir/$target_name"
   resources_zip = base_path + ".resources.zip"
   build_config = base_path + ".build_config"
@@ -499,6 +511,8 @@ template("java_strings_grd") {
 #     ]
 #   }
 template("android_library") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir))
   _base_path = "$target_gen_dir/$target_name"
   _build_config = _base_path + ".build_config"
@@ -577,6 +591,8 @@ template("android_library") {
 #     ]
 #   }
 template("android_java_prebuilt") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.jar_path))
   _base_path = "${target_gen_dir}/$target_name"
   _jar_path = _base_path + ".jar"
@@ -669,6 +685,8 @@ template("android_java_prebuilt") {
 #     ]
 #   }
 template("android_apk") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
   gen_dir = "$target_gen_dir/$target_name"
   base_path = "$gen_dir/$target_name"
@@ -720,9 +738,6 @@ template("android_apk") {
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
-    }
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
     }
 
     native_libs = _native_libs
@@ -866,7 +881,8 @@ template("android_apk") {
   group(target_name) {
     deps = final_deps
     if (defined(invoker.datadeps)) {
-      datadeps = invoker.datadeps
+      # TODO(cjhopman): Fix this when group datadeps works.
+      deps += invoker.datadeps
     }
   }
 }
@@ -895,6 +911,8 @@ template("android_apk") {
 #     unittests_dep = ":foo_unittests"
 #   }
 template("unittest_apk") {
+  testonly = true
+
   assert(defined(invoker.unittests_dep), "Need unittests_dep for $target_name")
 
   test_suite_name = get_label_info(invoker.unittests_dep, "name")
@@ -920,7 +938,6 @@ template("unittest_apk") {
     datadeps = [
       "//tools/android/md5sum",
     ]
-    testonly = true
   }
 }
 
@@ -944,6 +961,8 @@ template("unittest_apk") {
 #     ]
 #   }
 template("android_aidl") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
   aidl_path = "${android_sdk_build_tools}/aidl"
   framework_aidl = "$android_sdk/framework.aidl"
@@ -1015,6 +1034,8 @@ template("android_aidl") {
 #     binary = "$root_build_dir/exe.stripped/foo"
 #   }
 template("create_native_executable_dist") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   dist_dir = invoker.dist_dir
   binary = invoker.binary
   final_deps = []

@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/renderer/renderer.gni")
+import("//media/media_options.gni")
 
 source_set("renderer") {
   # Only the public target should depend on this. All other targets (even
@@ -185,5 +186,14 @@ source_set("renderer") {
 
   if (printing_mode == 1) {
     deps += [ "//printing" ]
+  }
+
+  if (enable_browser_cdms) {
+    sources += [
+      "media/crypto/proxy_media_keys.cc",
+      "media/crypto/proxy_media_keys.h",
+      "media/crypto/renderer_cdm_manager.cc",
+      "media/crypto/renderer_cdm_manager.h",
+    ]
   }
 }

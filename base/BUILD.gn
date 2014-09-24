@@ -895,13 +895,18 @@ component("base") {
   } else {
     # Non-Linux.
     sources -= [
-      "linux_util.cc",
-      "linux_util.h",
       "nix/mime_util_xdg.cc",
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",
       "nix/xdg_util.h",
     ]
+
+    if (!is_android) {
+      sources -= [
+        "linux_util.cc",
+        "linux_util.h",
+      ]
+    }
   }
 
   if (!use_glib) {

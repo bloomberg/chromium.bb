@@ -213,6 +213,7 @@ group("jni") {
 }
 
 android_library("content_javatests") {
+  testonly = true
   deps = [
     "//base:base_java",
     "//base:base_java_test_support",

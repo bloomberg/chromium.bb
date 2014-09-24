@@ -431,13 +431,9 @@ repack("pak") {
     "//ui/strings",
   ]
 
-  if (is_android) {
-    output = "$root_out_dir/content_shell/assets/content_shell.pak"
-  } else {
-    sources += [ "$root_gen_dir/webkit/devtools_resources.pak" ]
-    deps += [ "//content/browser/devtools:resources" ]
-    output = "$root_out_dir/content_shell.pak"
-  }
+  sources += [ "$root_gen_dir/webkit/devtools_resources.pak" ]
+  deps += [ "//content/browser/devtools:resources" ]
+  output = "$root_out_dir/content_shell.pak"
 }
 
 # TODO(GYP): Figure out what this should be on android

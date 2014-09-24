@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//third_party/icu/config.gni")
 
 generate_jni("content_shell_jni_headers") {
   jni_package = "content/shell"
@@ -16,17 +17,18 @@ generate_jni("content_shell_jni_headers") {
 }
 
 shared_library("libcontent_shell_content_view") {
-  # TODO(GYP,cjhopman): enable these when content_shell builds
+  testonly = true
   deps = [
     ":content_shell_jni_headers",
-#"//content/shell:content_shell",
-#"//content/shell:content_shell_pak",
+    "//content/shell:content_shell_lib",
+    "//content/shell:pak",
+    "//components/crash/browser",
     "//skia",
     "//media/base/android",
   ]
   sources = [
-#"shell_library_loader.cc",
-#"shell_library_loader.h",
+    "shell_library_loader.cc",
+    "shell_library_loader.h",
   ]
   if (is_android_webview_build) {
     ldflags = [
@@ -36,11 +38,13 @@ shared_library("libcontent_shell_content_view") {
 }
 
 android_resources("content_shell_java_resources") {
+  testonly = true
   resource_dirs = [ "java/res" ]
   custom_package = "org.chromium.content_shell"
 }
 
 android_library("content_shell_java") {
+  testonly = true
   deps = [
     "//base:base_java",
     "//content/public/android:content_java",
@@ -53,6 +57,7 @@ android_library("content_shell_java") {
 }
 
 android_resources("content_shell_apk_resources") {
+  testonly = true
   resource_dirs = [ "shell_apk/res" ]
   deps = [
     ":content_shell_java_resources"
@@ -61,6 +66,7 @@ android_resources("content_shell_apk_resources") {
 }
 
 android_library("content_shell_apk_java") {
+  testonly = true
   deps = [
     ":content_shell_apk_resources",
     ":content_shell_java",
@@ -73,7 +79,23 @@ android_library("content_shell_apk_java") {
   DEPRECATED_java_in_dir = "shell_apk/src"
 }
 
+content_shell_assets_dir = "$root_build_dir/content_shell/assets"
+copy_ex("copy_content_shell_assets") {
+  clear_dir = true
+  dest = content_shell_assets_dir
+  sources = [
+    "$root_out_dir/content_shell.pak"
+  ]
+
+  if (icu_use_data_file) {
+    sources += [
+      "$root_build_dir/icudtl.dat"
+    ]
+  }
+}
+
 android_apk("content_shell_apk") {
+  testonly = true
   datadeps = [
     # "//tools/android/forwarder",
   ]
@@ -82,9 +104,9 @@ android_apk("content_shell_apk") {
     ":content_shell_java",
     ":content_shell_apk_java",
     ":libcontent_shell_content_view",
+    ":copy_content_shell_assets",
     "//base:base_java",
     "//content/public/android:content_java",
-    "//content/public/android:content_java_resources",
     "//media/base/android:media_java",
     "//net/android:net_java",
     #"//third_party/mesa:osmesa_in_lib_dir",
@@ -95,15 +117,10 @@ android_apk("content_shell_apk") {
   native_libs = [
     "$root_build_dir/lib.stripped/libcontent_shell_content_view.so"
   ]
-  asset_location = "$root_build_dir/content_shell/assets"
+  asset_location = content_shell_assets_dir
 
   # TODO(GYP)
-  #'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
   #'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
-
-  if (false && icu_use_data_file_flag) {
-    # TODO(GYP)
-  }
 
   if (is_android_webview_build) {
     # TODO(GYP)
@@ -111,6 +128,7 @@ android_apk("content_shell_apk") {
 }
 
 android_library("content_shell_test_java") {
+  testonly = true
   deps = [
     ":content_shell_java",
     ":content_shell_apk_java",
@@ -124,10 +142,14 @@ android_library("content_shell_test_java") {
 }
 
 android_apk("content_shell_test_apk") {
+  testonly = true
   deps = [
     "//content/public/android:content_javatests",
     "//base:base_javatests",
     "//net/android:net_javatests",
+  ]
+  datadeps = [
+    ":content_shell_apk",
   ]
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"

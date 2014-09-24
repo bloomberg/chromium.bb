@@ -15,6 +15,8 @@ android_sdk_jar = "$android_sdk/android.jar"
 rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
 
 template("android_lint") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   jar_path = invoker.jar_path
   android_manifest = invoker.android_manifest
   java_files = invoker.java_files
@@ -63,6 +65,8 @@ template("android_lint") {
 # See build/android/gyp/write_build_config.py and
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.type))
   assert(defined(invoker.build_config))
 
@@ -79,9 +83,6 @@ template("write_build_config") {
     deps = []
     if (defined(invoker.deps)) {
       deps += invoker.deps
-    }
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
     }
 
     outputs = [
@@ -154,6 +155,8 @@ template("write_build_config") {
 # Creates a zip archive of the inputs.
 # If base_dir is provided, the archive paths will be relative to it.
 template("zip") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.inputs))
   assert(defined(invoker.output))
 
@@ -181,6 +184,8 @@ template("zip") {
 }
 
 template("dex") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.sources))
   assert(defined(invoker.output))
   action(target_name) {
@@ -221,6 +226,8 @@ template("dex") {
 # Packages resources, assets, dex, and native libraries into an apk. Signs and
 # zipaligns the apk.
 template("create_apk") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   _android_manifest = invoker.android_manifest
   _base_path = invoker.base_path
   _final_apk_path = invoker.apk_path
@@ -357,6 +364,8 @@ template("create_apk") {
 }
 
 template("java_prebuilt") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   _input_jar_path = invoker.input_jar_path
   _output_jar_path = invoker.output_jar_path
   _jar_toc_path = _output_jar_path + ".TOC"
@@ -438,6 +447,8 @@ template("java_prebuilt") {
 #   jar_path: Use this to explicitly set the output jar path. Defaults to
 #     "${target_gen_dir}/${target_name}.jar.
 template("java_library") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.java_files))
   assert(defined(invoker.build_config))
   assert(defined(invoker.jar_path))
@@ -529,6 +540,8 @@ template("java_library") {
 # Runs Android lint against the compiled java files.
 # Dexes the output jar for inclusion in an APK.
 template("android_java_library") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir))
   assert(defined(invoker.build_config))
   assert(defined(invoker.jar_path))
@@ -611,6 +624,8 @@ template("android_java_library") {
 
 # Runs process_resources.py
 template("process_resources") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   zip_path = invoker.zip_path
   srcjar_path = invoker.srcjar_path
   build_config = invoker.build_config
@@ -689,12 +704,18 @@ template("process_resources") {
 }
 
 template("copy_ex") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
   action(target_name) {
     script = "//build/android/gyp/copy_ex.py"
     depfile = "$target_gen_dir/$target_name.d"
     outputs = [
       depfile,
     ]
+    sources = []
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
+    }
 
     inputs = []
     if (defined(invoker.inputs)) {
@@ -708,6 +729,9 @@ template("copy_ex") {
     if (defined(invoker.args)) {
       args += invoker.args
     }
+    rebased_sources = rebase_path(sources, root_build_dir)
+    args += [ "--files=$rebased_sources" ]
+
     if (defined(invoker.clear_dir) && invoker.clear_dir) {
       args += ["--clear"]
     }
