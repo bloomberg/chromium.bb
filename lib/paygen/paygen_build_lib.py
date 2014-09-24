@@ -773,21 +773,23 @@ class _PaygenBuild(object):
              _FilterForMp(_FilterForBasic(images)),
              _FilterForMp(previous_images))))
 
-    # Full test payloads.
-    payload_sublists_skip.append(
-        (self._skip_full_payloads or self._skip_test_payloads,
-         self._DiscoverRequiredFullPayloads(_FilterForTest(images))))
+    # Only discover test payloads if Autotest is not disabled.
+    if self._control_dir:
+      # Full test payloads.
+      payload_sublists_skip.append(
+          (self._skip_full_payloads or self._skip_test_payloads,
+           self._DiscoverRequiredFullPayloads(_FilterForTest(images))))
 
-    # Delta for current -> NPO (test payloads).
-    payload_sublists_skip.append(
-        (self._skip_delta_payloads or self._skip_test_payloads,
-         self._DiscoverRequiredTestNpoDeltas(_FilterForTest(images))))
+      # Delta for current -> NPO (test payloads).
+      payload_sublists_skip.append(
+          (self._skip_delta_payloads or self._skip_test_payloads,
+           self._DiscoverRequiredTestNpoDeltas(_FilterForTest(images))))
 
-    # Deltas for previous -> current (test payloads).
-    payload_sublists_skip.append(
-        (self._skip_delta_payloads or self._skip_test_payloads,
-         self._DiscoverRequiredFromPreviousDeltas(
-             _FilterForTest(images), _FilterForTest(previous_images))))
+      # Deltas for previous -> current (test payloads).
+      payload_sublists_skip.append(
+          (self._skip_delta_payloads or self._skip_test_payloads,
+           self._DiscoverRequiredFromPreviousDeltas(
+               _FilterForTest(images), _FilterForTest(previous_images))))
 
     # Organize everything into a single list of (payload, skip) pairs; also, be
     # sure to fill in a URL for each payload.
@@ -1150,8 +1152,7 @@ class _PaygenBuild(object):
 
         # Test payloads.
         if not self._control_dir:
-          logging.info('Payload autotesting skipped')
-          can_finish = False
+          logging.info('Payload autotesting disabled.')
         elif not can_finish:
           logging.warning('Not all payloads were generated/uploaded, '
                           'skipping payload autotesting.')
@@ -1239,7 +1240,7 @@ def ValidateBoardConfig(board):
 def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
                    skip_full_payloads=False, skip_delta_payloads=False,
                    skip_test_payloads=False, skip_nontest_payloads=False,
-                   skip_autotest=False, output_dir=None, run_parallel=False,
+                   disable_tests=False, output_dir=None, run_parallel=False,
                    run_on_builder=False):
   """Helper method than generates payloads for a given build.
 
@@ -1252,7 +1253,7 @@ def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
     skip_delta_payloads: Do not generate delta payloads.
     skip_test_payloads: Do not generate test payloads.
     skip_nontest_payloads: Do not generate non-test payloads.
-    skip_autotest: Do not generate test artifacts or run tests.
+    disable_tests: Do not attempt generating test artifacts or running tests.
     output_dir: Directory for payload files, or None for GS default locations.
     run_parallel: Generate payloads in parallel processes.
     run_on_builder: Running in a cbuildbot environment on a builder.
@@ -1261,7 +1262,7 @@ def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
 
   control_dir = None
   try:
-    if not skip_autotest:
+    if not disable_tests:
       control_dir = _FindControlFileDir(work_dir)
 
     _PaygenBuild(build, work_dir, dry_run=dry_run,

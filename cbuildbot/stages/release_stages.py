@@ -334,7 +334,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                     channel_notifier)
 
   def _RunPaygenInProcess(self, channel, board, version, debug,
-                          skip_test_payloads, skip_delta_payloads):
+                          disable_tests, skip_delta_payloads):
     """Helper for PaygenStage that invokes payload generation.
 
     This method is intended to be safe to invoke inside a process.
@@ -344,7 +344,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
       version: Version of payloads to generate.
       debug: Flag telling if this is a real run, or a test run.
-      skip_test_payloads: Skip generating test payloads, and auto tests.
+      disable_tests: Do not generate test artifacts are run payload tests.
       skip_delta_payloads: Skip generating delta payloads.
     """
     # Convert to release tools naming for channels.
@@ -366,8 +366,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                         run_parallel=True,
                                         run_on_builder=True,
                                         skip_delta_payloads=skip_delta_payloads,
-                                        skip_test_payloads=skip_test_payloads,
-                                        skip_autotest=skip_test_payloads)
+                                        disable_tests=disable_tests)
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked,
               paygen_build_lib.BuildSkip) as e:

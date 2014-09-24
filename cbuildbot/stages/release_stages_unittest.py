@@ -425,8 +425,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
                                          run_parallel=True,
                                          run_on_builder=True,
                                          skip_delta_payloads=False,
-                                         skip_test_payloads=False,
-                                         skip_autotest=False)
+                                         disable_tests=False)
 
   def testRunPaygenInProcessComplex(self):
     """Test that _RunPaygenInProcess with arguments that are more unusual."""
@@ -447,8 +446,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
           run_parallel=True,
           run_on_builder=True,
           skip_delta_payloads=True,
-          skip_test_payloads=True,
-          skip_autotest=True)
+          disable_tests=True)
 
 if __name__ == '__main__':
   cros_test_lib.main()
