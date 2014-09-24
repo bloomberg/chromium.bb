@@ -128,6 +128,12 @@ struct WrapperTypeInfo {
         refObjectFunction(internalPointer);
     }
 
+    void derefObject(ScriptWrappableBase* internalPointer) const
+    {
+        ASSERT(derefObjectFunction);
+        derefObjectFunction(internalPointer);
+    }
+
     WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer) const
     {
         ASSERT(createPersistentHandleFunction);
@@ -241,12 +247,10 @@ inline void releaseObject(v8::Handle<v8::Object> wrapper)
         // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
         WrapperPersistentNode::destroy(handle);
 #else
-        ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toScriptWrappableBase(wrapper));
+        typeInfo->derefObject(toScriptWrappableBase(wrapper));
 #endif
     } else {
-        ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toScriptWrappableBase(wrapper));
+        typeInfo->derefObject(toScriptWrappableBase(wrapper));
     }
 }
 
