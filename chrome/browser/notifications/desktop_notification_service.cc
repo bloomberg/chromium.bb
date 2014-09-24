@@ -104,7 +104,9 @@ std::string DesktopNotificationService::AddIconNotification(
 DesktopNotificationService::DesktopNotificationService(Profile* profile)
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
       profile_(profile),
+#if defined(ENABLE_EXTENSIONS)
       extension_registry_observer_(this),
+#endif
       weak_factory_(this) {
   OnStringListPrefChanged(
       prefs::kMessageCenterDisabledExtensionIds, &disabled_extension_ids_);
@@ -127,8 +129,10 @@ DesktopNotificationService::DesktopNotificationService(Profile* profile)
           base::Unretained(this),
           base::Unretained(prefs::kMessageCenterDisabledSystemComponentIds),
           base::Unretained(&disabled_system_component_ids_)));
+#if defined(ENABLE_EXTENSIONS)
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
+#endif
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
@@ -296,11 +300,11 @@ void DesktopNotificationService::OnStringListPrefChanged(
   }
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void DesktopNotificationService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
-#if defined(ENABLE_EXTENSIONS)
   NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
   if (IsNotifierEnabled(notifier_id))
     return;
@@ -310,8 +314,8 @@ void DesktopNotificationService::OnExtensionUninstalled(
     return;
 
   SetNotifierEnabled(notifier_id, true);
-#endif
 }
+#endif
 
 void DesktopNotificationService::OnNotificationPermissionRequested(
     const NotificationPermissionCallback& callback, bool allowed) {

@@ -1877,6 +1877,7 @@ ChromeContentBrowserClient::CheckDesktopNotificationPermission(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+#if defined(ENABLE_EXTENSIONS)
   InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
 
   // We want to see if there is an extension that hasn't been manually disabled
@@ -1894,6 +1895,7 @@ ChromeContentBrowserClient::CheckDesktopNotificationPermission(
     if (!extension_info_map->AreNotificationsDisabled((*iter)->id()))
       return blink::WebNotificationPermissionAllowed;
   }
+#endif
 
   // No enabled extensions exist, so check the normal host content settings.
   HostContentSettingsMap* host_content_settings_map =
