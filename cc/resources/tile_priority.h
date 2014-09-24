@@ -110,7 +110,7 @@ struct CC_EXPORT TilePriority {
 std::string TilePriorityBinToString(TilePriority::PriorityBin bin);
 
 enum TileMemoryLimitPolicy {
-  // Nothing.
+  // Nothing. This mode is used when visible is set to false.
   ALLOW_NOTHING = 0,
 
   // You might be made visible, but you're not being interacted with.
@@ -121,7 +121,6 @@ enum TileMemoryLimitPolicy {
 
   // You're the only thing in town. Go crazy.
   ALLOW_ANYTHING = 3,  // Venti.
-
   NUM_TILE_MEMORY_LIMIT_POLICIES = 4,
 
   // NOTE: Be sure to update TreePriorityAsValue and kBinPolicyMap when adding

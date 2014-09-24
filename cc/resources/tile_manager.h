@@ -163,6 +163,15 @@ class CC_EXPORT TileManager : public RasterizerClient,
     CleanUpReleasedTiles();
   }
 
+  std::vector<Tile*> AllTilesForTesting() const {
+    std::vector<Tile*> tiles;
+    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end();
+         ++it) {
+      tiles.push_back(it->second);
+    }
+    return tiles;
+  }
+
  protected:
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,

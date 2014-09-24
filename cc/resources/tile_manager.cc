@@ -511,8 +511,12 @@ void TileManager::DidFinishRunningTasks(TaskSet task_set) {
     // We don't reserve memory for required-for-activation tiles during
     // accelerated gestures, so we just postpone activation when we don't
     // have these tiles, and activate after the accelerated gesture.
+    // Likewise if we don't allow any tiles (as is the case when we're
+    // invisible), if we have tiles that aren't ready, then we shouldn't
+    // activate as activation can cause checkerboards.
     bool allow_rasterize_on_demand =
-        global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY;
+        global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
+        global_state_.memory_limit_policy != ALLOW_NOTHING;
 
     // Use on-demand raster for any required-for-activation tiles that have not
     // been been assigned memory after reaching a steady memory state. This
