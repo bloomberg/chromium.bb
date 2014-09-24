@@ -95,6 +95,9 @@ const char kSettingMediaSizeWidthMicrons[] = "width_microns";
 // Key that specifies the requested media platform specific vendor id.
 const char kSettingMediaSizeVendorId[] = "vendor_id";
 
+// Key that specifies whether the requested media is a default one.
+const char kSettingMediaSizeIsDefault[] = "is_default";
+
 // Key that specifies the bottom margin of the page.
 const char kSettingMarginBottom[] = "marginBottom";
 

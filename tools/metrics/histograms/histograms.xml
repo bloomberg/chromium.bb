@@ -49004,11 +49004,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="REGISTER_PROMO_SELECTED"/>
   <int value="9" label="ACCOUNT_CHANGED"/>
   <int value="10" label="ADD_ACCOUNT_SELECTED"/>
+  <int value="11" label="INVITATION_AVAILABLE"/>
+  <int value="12" label="INVITATION_ACCEPTED"/>
+  <int value="13" label="INVITATION_REJECTED"/>
 </enum>
 
 <enum name="PrintPreviewPrintSettingsUiBuckets" type="int">
   <int value="0" label="ADVANCED_SETTINGS_DIALOG_SHOWN"/>
   <int value="1" label="ADVANCED_SETTINGS_DIALOG_CANCELED"/>
+  <int value="2" label="MORE_SETTINGS_CLICKED"/>
+  <int value="3" label="LESS_SETTINGS_CLICKED"/>
+  <int value="4" label="PRINT_WITH_SETTINGS_EXPANDED"/>
+  <int value="5" label="PRINT_WITH_SETTINGS_COLLAPSED"/>
 </enum>
 
 <enum name="PrintPreviewUserActionType" type="int">
@@ -49037,6 +49044,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="CSS_BACKGROUND"/>
   <int value="10" label="SELECTION_ONLY"/>
   <int value="11" label="EXTERNAL_PDF_PREVIEW"/>
+  <int value="12" label="PAGE_RANGE"/>
+  <int value="13" label="DEFAULT_MEDIA"/>
+  <int value="14" label="NON_DEFAULT_MEDIA"/>
+  <int value="15" label="COPIES"/>
+  <int value="16" label="NON_DEFAULT_MARGINS"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent" type="int">

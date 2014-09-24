@@ -555,6 +555,14 @@ cr.define('print_preview', function() {
         this.nativeLayer_.startShowCloudPrintDialog(
             this.printTicketStore_.pageRange.getPageNumberSet().size);
       } else {
+        if (getIsVisible(this.moreSettings_.getElement())) {
+          new print_preview.PrintSettingsUiMetricsContext().record(
+              this.moreSettings_.isExpanded ?
+                  print_preview.Metrics.PrintSettingsUiBucket.
+                      PRINT_WITH_SETTINGS_EXPANDED :
+                  print_preview.Metrics.PrintSettingsUiBucket.
+                      PRINT_WITH_SETTINGS_COLLAPSED);
+        }
         this.nativeLayer_.startPrint(
             this.destinationStore_.selectedDestination,
             this.printTicketStore_,

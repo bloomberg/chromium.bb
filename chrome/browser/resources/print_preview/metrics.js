@@ -43,8 +43,14 @@ cr.define('print_preview', function() {
     ACCOUNT_CHANGED: 9,
     // User tried to log into another account.
     ADD_ACCOUNT_SELECTED: 10,
+    // Printer sharing invitation was shown to the user.
+    INVITATION_AVAILABLE: 11,
+    // User accepted printer sharing invitation.
+    INVITATION_ACCEPTED: 12,
+    // User rejected printer sharing invitation.
+    INVITATION_REJECTED: 13,
     // Max value.
-    DESTINATION_SEARCH_MAX_BUCKET: 11
+    DESTINATION_SEARCH_MAX_BUCKET: 14
   };
 
   /**
@@ -75,8 +81,16 @@ cr.define('print_preview', function() {
     ADVANCED_SETTINGS_DIALOG_SHOWN: 0,
     // Advanced settings dialog is closed without saving a selection.
     ADVANCED_SETTINGS_DIALOG_CANCELED: 1,
+    // 'More/less settings' expanded.
+    MORE_SETTINGS_CLICKED: 2,
+    // 'More/less settings' collapsed.
+    LESS_SETTINGS_CLICKED: 3,
+    // User printed with extra settings expanded.
+    PRINT_WITH_SETTINGS_EXPANDED: 4,
+    // User printed with extra settings collapsed.
+    PRINT_WITH_SETTINGS_COLLAPSED: 5,
     // Max value.
-    PRINT_SETTINGS_UI_MAX_BUCKET: 2
+    PRINT_SETTINGS_UI_MAX_BUCKET: 6
   };
 
   /**

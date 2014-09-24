@@ -458,6 +458,10 @@ cr.define('print_preview', function() {
       var invitations = this.userInfo_.activeUser ?
           this.invitationStore_.invitations(this.userInfo_.activeUser) : [];
       if (invitations.length > 0) {
+        if (this.invitation_ != invitations[0]) {
+          this.metrics_.record(print_preview.Metrics.DestinationSearchBucket.
+              INVITATION_AVAILABLE);
+        }
         this.invitation_ = invitations[0];
         this.showInvitation_(this.invitation_);
       } else {
@@ -660,6 +664,9 @@ cr.define('print_preview', function() {
      * @private
      */
     onInvitationProcessButtonClick_: function(accept) {
+      this.metrics_.record(accept ?
+          print_preview.Metrics.DestinationSearchBucket.INVITATION_ACCEPTED :
+          print_preview.Metrics.DestinationSearchBucket.INVITATION_REJECTED);
       this.invitationStore_.processInvitation(this.invitation_, accept);
       this.updateInvitations_();
     },

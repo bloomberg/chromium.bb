@@ -38,6 +38,7 @@ PRINTING_EXPORT extern const char kSettingMediaSize[];
 PRINTING_EXPORT extern const char kSettingMediaSizeHeightMicrons[];
 PRINTING_EXPORT extern const char kSettingMediaSizeWidthMicrons[];
 PRINTING_EXPORT extern const char kSettingMediaSizeVendorId[];
+PRINTING_EXPORT extern const char kSettingMediaSizeIsDefault[];
 PRINTING_EXPORT extern const char kSettingMarginBottom[];
 PRINTING_EXPORT extern const char kSettingMarginLeft[];
 PRINTING_EXPORT extern const char kSettingMarginRight[];

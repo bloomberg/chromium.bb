@@ -31,6 +31,12 @@ cr.define('print_preview', function() {
 
     /** @private {boolean} */
     this.firstDestinationReady_ = false;
+
+    /**
+     * Used to record usage statistics.
+     * @private {!print_preview.PrintSettingsUiMetricsContext}
+     */
+    this.metrics_ = new print_preview.PrintSettingsUiMetricsContext();
   };
 
   /**
@@ -44,6 +50,11 @@ cr.define('print_preview', function() {
 
   MoreSettings.prototype = {
     __proto__: print_preview.Component.prototype,
+
+    /** @return {boolean} Returns {@code true} if settings are expanded. */
+    get isExpanded() {
+      return this.settingsToShow_ == MoreSettings.SettingsToShow.ALL;
+    },
 
     /** @override */
     enterDocument: function() {
@@ -80,6 +91,9 @@ cr.define('print_preview', function() {
               MoreSettings.SettingsToShow.ALL :
               MoreSettings.SettingsToShow.MOST_POPULAR;
       this.updateState_(false);
+      this.metrics_.record(this.isExpanded ?
+          print_preview.Metrics.PrintSettingsUiBucket.MORE_SETTINGS_CLICKED :
+          print_preview.Metrics.PrintSettingsUiBucket.LESS_SETTINGS_CLICKED);
     },
 
     /**

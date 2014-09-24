@@ -121,6 +121,11 @@ enum PrintSettingsBuckets {
   CSS_BACKGROUND,
   SELECTION_ONLY,
   EXTERNAL_PDF_PREVIEW,
+  PAGE_RANGE,
+  DEFAULT_MEDIA,
+  NON_DEFAULT_MEDIA,
+  COPIES,
+  NON_DEFAULT_MARGINS,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -196,9 +201,32 @@ base::DictionaryValue* GetSettingsDictionary(const base::ListValue* args) {
 void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   ReportPrintSettingHistogram(TOTAL);
 
+  const base::ListValue* page_range_array = NULL;
+  if (settings.GetList(printing::kSettingPageRange, &page_range_array) &&
+      !page_range_array->empty()) {
+    ReportPrintSettingHistogram(PAGE_RANGE);
+  }
+
+  const base::DictionaryValue* media_size_value = NULL;
+  if (settings.GetDictionary(printing::kSettingMediaSize, &media_size_value) &&
+      !media_size_value->empty()) {
+    bool is_default = false;
+    if (media_size_value->GetBoolean(printing::kSettingMediaSizeIsDefault,
+                                     &is_default) &&
+        is_default) {
+      ReportPrintSettingHistogram(DEFAULT_MEDIA);
+    } else {
+      ReportPrintSettingHistogram(NON_DEFAULT_MEDIA);
+    }
+  }
+
   bool landscape = false;
   if (settings.GetBoolean(printing::kSettingLandscape, &landscape))
     ReportPrintSettingHistogram(landscape ? LANDSCAPE : PORTRAIT);
+
+  int copies = 1;
+  if (settings.GetInteger(printing::kSettingCopies, &copies) && copies > 1)
+    ReportPrintSettingHistogram(COPIES);
 
   bool collate = false;
   if (settings.GetBoolean(printing::kSettingCollate, &collate) && collate)
@@ -212,6 +240,12 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   if (settings.GetInteger(printing::kSettingColor, &color_mode)) {
     ReportPrintSettingHistogram(
         printing::IsColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
+  }
+
+  int margins_type = 0;
+  if (settings.GetInteger(printing::kSettingMarginsType, &margins_type) &&
+      margins_type != 0) {
+    ReportPrintSettingHistogram(NON_DEFAULT_MARGINS);
   }
 
   bool headers = false;
@@ -758,6 +792,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   if (!settings.get())
     return;
 
+  ReportPrintSettingsStats(*settings);
+
   // Never try to add headers/footers here. It's already in the generated PDF.
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 
@@ -836,7 +872,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
       UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
       ReportUserActionHistogram(PRINT_TO_PRINTER);
     }
-    ReportPrintSettingsStats(*settings);
 
     // This tries to activate the initiator as well, so do not clear the
     // association with the initiator yet.
