@@ -6,11 +6,18 @@
     },
     {
       "test": "base_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"],
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
     },
     {
       "test": "browser_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_asan"]
+      "exclude_builders": ["tryserver.chromium.linux:linux_asan"],
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 10
+      }
     },
     {
       "test": "cacheinvalidation_unittests",
@@ -68,7 +75,11 @@
     },
     {
       "test": "interactive_ui_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_asan"]
+      "exclude_builders": ["tryserver.chromium.linux:linux_asan"],
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 3
+      }
     },
     {
       "test": "ipc_tests",
@@ -84,7 +95,10 @@
     },
     {
       "test": "net_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"],
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
     },
     {
       "test": "ppapi_unittests",
@@ -117,7 +131,11 @@
     },
     {
       "test": "unit_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"],
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 2
+      }
     },
     {
       "test": "url_unittests",
