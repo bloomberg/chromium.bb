@@ -1541,7 +1541,10 @@ bool XMLHttpRequest::hasPendingActivity() const
     // Neither this object nor the JavaScript wrapper should be deleted while
     // a request is in progress because we need to keep the listeners alive,
     // and they are referenced by the JavaScript wrapper.
-    return m_loader;
+    // |m_loader| is non-null while request is active and ThreadableLoaderClient
+    // callbacks may be called, and |m_responseDocumentParser| is non-null while
+    // DocumentParserClient callbacks may be called.
+    return m_loader || m_responseDocumentParser;
 }
 
 void XMLHttpRequest::contextDestroyed()
