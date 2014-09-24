@@ -14,6 +14,9 @@ namespace {
 
 base::StaticAtomicSequenceNumber g_next_buffer_id;
 
+void Noop() {
+}
+
 void GpuMemoryBufferCreated(
     const gfx::Size& size,
     unsigned internalformat,
@@ -21,14 +24,8 @@ void GpuMemoryBufferCreated(
     const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK_EQ(gfx::OZONE_NATIVE_BUFFER, handle.type);
 
-  scoped_ptr<GpuMemoryBufferImplOzoneNativeBuffer> buffer(
-      new GpuMemoryBufferImplOzoneNativeBuffer(size, internalformat));
-  if (!buffer->InitializeFromHandle(handle)) {
-    callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
-    return;
-  }
-
-  callback.Run(buffer.PassAs<GpuMemoryBufferImpl>());
+  callback.Run(GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
+      handle, size, internalformat, base::Bind(&Noop)));
 }
 
 void GpuMemoryBufferCreatedForChildProcess(
@@ -43,8 +40,10 @@ void GpuMemoryBufferCreatedForChildProcess(
 
 GpuMemoryBufferImplOzoneNativeBuffer::GpuMemoryBufferImplOzoneNativeBuffer(
     const gfx::Size& size,
-    unsigned internalformat)
-    : GpuMemoryBufferImpl(size, internalformat) {
+    unsigned internalformat,
+    const DestructionCallback& callback,
+    const gfx::GpuMemoryBufferId& id)
+    : GpuMemoryBufferImpl(size, internalformat, callback), id_(id) {
 }
 
 GpuMemoryBufferImplOzoneNativeBuffer::~GpuMemoryBufferImplOzoneNativeBuffer() {
@@ -70,8 +69,7 @@ void GpuMemoryBufferImplOzoneNativeBuffer::Create(
 }
 
 // static
-void
-GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildProcess(
+void GpuMemoryBufferImplOzoneNativeBuffer::AllocateForChildProcess(
     const gfx::Size& size,
     unsigned internalformat,
     unsigned usage,
@@ -87,6 +85,20 @@ GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildProcess(
       internalformat,
       usage,
       base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
+}
+
+// static
+scoped_ptr<GpuMemoryBufferImpl>
+GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    unsigned internalformat,
+    const DestructionCallback& callback) {
+  DCHECK(IsFormatSupported(internalformat));
+
+  return make_scoped_ptr<GpuMemoryBufferImpl>(
+      new GpuMemoryBufferImplOzoneNativeBuffer(
+          size, internalformat, callback, handle.global_id));
 }
 
 // static
@@ -115,12 +127,6 @@ bool GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
     unsigned internalformat,
     unsigned usage) {
   return IsFormatSupported(internalformat) && IsUsageSupported(usage);
-}
-
-bool GpuMemoryBufferImplOzoneNativeBuffer::InitializeFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle) {
-  id_ = handle.global_id;
-  return true;
 }
 
 void* GpuMemoryBufferImplOzoneNativeBuffer::Map() {

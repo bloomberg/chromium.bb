@@ -34,7 +34,7 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     const AllocationCallback& callback) {
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
-    GpuMemoryBufferImplSharedMemory::AllocateSharedMemoryForChildProcess(
+    GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
         size, internalformat, child_process, callback);
     return;
   }
@@ -53,16 +53,12 @@ void GpuMemoryBufferImpl::DeletedByChildProcess(
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat) {
+    unsigned internalformat,
+    const DestructionCallback& callback) {
   switch (handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER: {
-      scoped_ptr<GpuMemoryBufferImplSharedMemory> buffer(
-          new GpuMemoryBufferImplSharedMemory(size, internalformat));
-      if (!buffer->InitializeFromHandle(handle))
-        return scoped_ptr<GpuMemoryBufferImpl>();
-
-      return buffer.PassAs<GpuMemoryBufferImpl>();
-    }
+    case gfx::SHARED_MEMORY_BUFFER:
+      return GpuMemoryBufferImplSharedMemory::CreateFromHandle(
+          handle, size, internalformat, callback);
     default:
       return scoped_ptr<GpuMemoryBufferImpl>();
   }

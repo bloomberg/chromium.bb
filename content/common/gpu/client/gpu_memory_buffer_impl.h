@@ -19,6 +19,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       CreationCallback;
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       AllocationCallback;
+  typedef base::Closure DestructionCallback;
 
   virtual ~GpuMemoryBufferImpl();
 
@@ -46,11 +47,14 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                                     base::ProcessHandle child_process);
 
   // Creates an instance from the given |handle|. |size| and |internalformat|
-  // should match what was used to allocate the |handle|.
+  // should match what was used to allocate the |handle|. |callback| is
+  // called when instance is deleted, which is not necessarily on the same
+  // thread as this function was called on and instance was created on.
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      unsigned internalformat);
+      unsigned internalformat,
+      const DestructionCallback& callback);
 
   // Returns true if |internalformat| is a format recognized by this base class.
   static bool IsFormatValid(unsigned internalformat);
@@ -66,10 +70,13 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   virtual bool IsMapped() const OVERRIDE;
 
  protected:
-  GpuMemoryBufferImpl(const gfx::Size& size, unsigned internalformat);
+  GpuMemoryBufferImpl(const gfx::Size& size,
+                      unsigned internalformat,
+                      const DestructionCallback& callback);
 
   const gfx::Size size_;
   const unsigned internalformat_;
+  const DestructionCallback callback_;
   bool mapped_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);

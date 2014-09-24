@@ -14,16 +14,16 @@ namespace content {
 // Implementation of GPU memory buffer based on SurfaceTextures.
 class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
  public:
-  GpuMemoryBufferImplSurfaceTexture(const gfx::Size& size,
-                                    unsigned internalformat);
-  virtual ~GpuMemoryBufferImplSurfaceTexture();
+  static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      const gfx::Size& size,
+      unsigned internalformat,
+      const DestructionCallback& callback);
 
   static bool IsFormatSupported(unsigned internalformat);
   static bool IsUsageSupported(unsigned usage);
   static bool IsConfigurationSupported(unsigned internalformat, unsigned usage);
   static int WindowFormat(unsigned internalformat);
-
-  bool InitializeFromHandle(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() OVERRIDE;
@@ -32,6 +32,14 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
   virtual uint32 GetStride() const OVERRIDE;
 
  private:
+  GpuMemoryBufferImplSurfaceTexture(
+      const gfx::Size& size,
+      unsigned internalformat,
+      const DestructionCallback& callback,
+      const gfx::SurfaceTextureId& surface_texture_id,
+      ANativeWindow* native_window);
+  virtual ~GpuMemoryBufferImplSurfaceTexture();
+
   gfx::SurfaceTextureId surface_texture_id_;
   ANativeWindow* native_window_;
   size_t stride_;

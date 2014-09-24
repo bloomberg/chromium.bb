@@ -12,31 +12,27 @@ namespace content {
 // Implementation of GPU memory buffer based on shared memory.
 class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
-  GpuMemoryBufferImplSharedMemory(const gfx::Size& size,
-                                  unsigned internalformat);
-  virtual ~GpuMemoryBufferImplSharedMemory();
-
   static void Create(const gfx::Size& size,
                      unsigned internalformat,
                      unsigned usage,
                      const CreationCallback& callback);
 
-  // Allocates a shared memory backed GPU memory buffer with |size| and
-  // |internalformat| for use by |child_process|.
-  static void AllocateSharedMemoryForChildProcess(
+  static void AllocateForChildProcess(const gfx::Size& size,
+                                      unsigned internalformat,
+                                      base::ProcessHandle child_process,
+                                      const AllocationCallback& callback);
+
+  static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       unsigned internalformat,
-      base::ProcessHandle child_process,
-      const AllocationCallback& callback);
+      const DestructionCallback& callback);
 
   static bool IsLayoutSupported(const gfx::Size& size, unsigned internalformat);
   static bool IsUsageSupported(unsigned usage);
   static bool IsConfigurationSupported(const gfx::Size& size,
                                        unsigned internalformat,
                                        unsigned usage);
-
-  bool Initialize();
-  bool InitializeFromHandle(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() OVERRIDE;
@@ -45,6 +41,12 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
 
  private:
+  GpuMemoryBufferImplSharedMemory(const gfx::Size& size,
+                                  unsigned internalformat,
+                                  const DestructionCallback& callback,
+                                  scoped_ptr<base::SharedMemory> shared_memory);
+  virtual ~GpuMemoryBufferImplSharedMemory();
+
   scoped_ptr<base::SharedMemory> shared_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplSharedMemory);

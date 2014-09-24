@@ -413,16 +413,6 @@ BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(size_t width,
   return request.result.Pass();
 }
 
-void BrowserGpuChannelHostFactory::DeleteGpuMemoryBuffer(
-    scoped_ptr<gfx::GpuMemoryBuffer> buffer) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  GetIOLoopProxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserGpuChannelHostFactory::DeleteGpuMemoryBufferOnIO,
-                 base::Passed(&buffer)));
-}
-
 // static
 void BrowserGpuChannelHostFactory::AddFilterOnIO(
     int host_id,
@@ -474,11 +464,6 @@ void BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferOnIO(
       request->client_id,
       base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
                  base::Unretained(request)));
-}
-
-// static
-void BrowserGpuChannelHostFactory::DeleteGpuMemoryBufferOnIO(
-    scoped_ptr<gfx::GpuMemoryBuffer> buffer) {
 }
 
 // static

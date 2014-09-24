@@ -76,8 +76,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
       size_t height,
       unsigned internalformat,
       unsigned usage) = 0;
-  virtual void DeleteGpuMemoryBuffer(
-      scoped_ptr<gfx::GpuMemoryBuffer> buffer) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.

@@ -38,8 +38,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       size_t height,
       unsigned internalformat,
       unsigned usage) OVERRIDE;
-  virtual void DeleteGpuMemoryBuffer(
-      scoped_ptr<gfx::GpuMemoryBuffer> buffer) OVERRIDE;
 
   // Specify a task runner and callback to be used for a set of messages. The
   // callback will be set up on the current GpuProcessHost, identified by
@@ -79,8 +77,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
                             scoped_refptr<IPC::MessageFilter> filter);
   static void AllocateGpuMemoryBufferOnIO(
       AllocateGpuMemoryBufferRequest* request);
-  static void DeleteGpuMemoryBufferOnIO(
-      scoped_ptr<gfx::GpuMemoryBuffer> buffer);
   static void OnGpuMemoryBufferCreated(AllocateGpuMemoryBufferRequest* request,
                                        scoped_ptr<GpuMemoryBufferImpl> buffer);
 

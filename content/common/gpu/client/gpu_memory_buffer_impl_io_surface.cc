@@ -4,17 +4,38 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 
-#include "base/logging.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     const gfx::Size& size,
-    unsigned internalformat)
-    : GpuMemoryBufferImpl(size, internalformat) {}
+    unsigned internalformat,
+    const DestructionCallback& callback,
+    IOSurfaceRef io_surface)
+    : GpuMemoryBufferImpl(size, internalformat, callback),
+      io_surface_(io_surface) {
+}
 
-GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {}
+GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
+}
+
+// static
+scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    unsigned internalformat,
+    const DestructionCallback& callback) {
+  DCHECK(IsFormatSupported(internalformat));
+
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      IOSurfaceLookup(handle.io_surface_id));
+  if (!io_surface)
+    return scoped_ptr<GpuMemoryBufferImpl>();
+
+  return make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplIOSurface(
+      size, internalformat, callback, io_surface.get()));
+}
 
 // static
 bool GpuMemoryBufferImplIOSurface::IsFormatSupported(unsigned internalformat) {
@@ -52,18 +73,6 @@ uint32 GpuMemoryBufferImplIOSurface::PixelFormat(unsigned internalformat) {
       NOTREACHED();
       return 0;
   }
-}
-
-bool GpuMemoryBufferImplIOSurface::InitializeFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK(IsFormatSupported(internalformat_));
-  io_surface_.reset(IOSurfaceLookup(handle.io_surface_id));
-  if (!io_surface_) {
-    VLOG(1) << "IOSurface lookup failed";
-    return false;
-  }
-
-  return true;
 }
 
 void* GpuMemoryBufferImplIOSurface::Map() {

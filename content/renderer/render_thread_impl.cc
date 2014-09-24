@@ -318,6 +318,13 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
   return attributes;
 }
 
+void DeletedGpuMemoryBuffer(ThreadSafeSender* sender,
+                            gfx::GpuMemoryBufferType type,
+                            const gfx::GpuMemoryBufferId& id) {
+  TRACE_EVENT0("renderer", "RenderThreadImpl::DeletedGpuMemoryBuffer");
+  sender->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(type, id));
+}
+
 }  // namespace
 
 // For measuring memory usage after each task. Behind a command line flag.
@@ -1277,6 +1284,8 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
     size_t height,
     unsigned internalformat,
     unsigned usage) {
+  TRACE_EVENT0("renderer", "RenderThreadImpl::AllocateGpuMemoryBuffer");
+
   DCHECK(allocate_gpu_memory_buffer_thread_checker_.CalledOnValidThread());
 
   if (!GpuMemoryBufferImpl::IsFormatValid(internalformat))
@@ -1296,20 +1305,21 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
   if (!success)
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
-  return GpuMemoryBufferImpl::CreateFromHandle(
-             handle, gfx::Size(width, height), internalformat)
-      .PassAs<gfx::GpuMemoryBuffer>();
-}
+  scoped_ptr<GpuMemoryBufferImpl> buffer(GpuMemoryBufferImpl::CreateFromHandle(
+      handle,
+      gfx::Size(width, height),
+      internalformat,
+      base::Bind(&DeletedGpuMemoryBuffer,
+                 make_scoped_refptr(thread_safe_sender()),
+                 handle.type,
+                 handle.global_id)));
+  if (!buffer) {
+    thread_safe_sender()->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
+        handle.type, handle.global_id));
+    return scoped_ptr<gfx::GpuMemoryBuffer>();
+  }
 
-void RenderThreadImpl::DeleteGpuMemoryBuffer(
-    scoped_ptr<gfx::GpuMemoryBuffer> buffer) {
-  gfx::GpuMemoryBufferHandle handle(buffer->GetHandle());
-
-  IPC::Message* message = new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
-      handle.type, handle.global_id);
-
-  // Allow calling this from the compositor thread.
-  thread_safe_sender()->Send(message);
+  return buffer.PassAs<gfx::GpuMemoryBuffer>();
 }
 
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
