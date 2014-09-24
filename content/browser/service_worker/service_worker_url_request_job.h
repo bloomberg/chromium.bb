@@ -126,7 +126,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // Populates |http_response_headers_|.
   void CreateResponseHeader(int status_code,
                             const std::string& status_text,
-                            const std::map<std::string, std::string>& headers);
+                            const ServiceWorkerHeaderMap& headers);
 
   // Creates |http_response_info_| using |http_response_headers_| and calls
   // NotifyHeadersComplete.

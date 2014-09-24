@@ -364,9 +364,9 @@ struct ParamTraits<std::set<P> > {
   }
 };
 
-template <class K, class V>
-struct ParamTraits<std::map<K, V> > {
-  typedef std::map<K, V> param_type;
+template <class K, class V, class C, class A>
+struct ParamTraits<std::map<K, V, C, A> > {
+  typedef std::map<K, V, C, A> param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.size()));
     typename param_type::const_iterator iter;

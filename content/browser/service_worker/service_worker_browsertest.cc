@@ -544,7 +544,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ServiceWorkerFetchRequest request(
         embedded_test_server()->GetURL("/service_worker/empty.html"),
         "GET",
-        std::map<std::string, std::string>(),
+        ServiceWorkerHeaderMap(),
         GURL(""),
         false);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -701,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
   EXPECT_EQ(301, response.status_code);
   EXPECT_EQ("Moved Permanently", response.status_text);
-  std::map<std::string, std::string> expected_headers;
+  ServiceWorkerHeaderMap expected_headers;
   expected_headers["content-language"] = "fi";
   expected_headers["content-type"] = "text/html; charset=UTF-8";
   EXPECT_EQ(expected_headers, response.headers);

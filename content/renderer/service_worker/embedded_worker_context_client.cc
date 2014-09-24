@@ -279,7 +279,7 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
     int request_id,
     const blink::WebServiceWorkerResponse& web_response) {
   DCHECK(script_context_);
-  std::map<std::string, std::string> headers;
+  ServiceWorkerHeaderMap headers;
   const blink::WebVector<blink::WebString>& header_keys =
       web_response.getHeaderKeys();
   for (size_t i = 0; i < header_keys.size(); ++i) {

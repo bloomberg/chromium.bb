@@ -13,7 +13,7 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const GURL& url,
     const std::string& method,
-    const std::map<std::string, std::string>& headers,
+    const ServiceWorkerHeaderMap& headers,
     const GURL& referrer,
     bool is_reload)
     : url(url),
@@ -32,7 +32,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     const GURL& url,
     int status_code,
     const std::string& status_text,
-    const std::map<std::string, std::string>& headers,
+    const ServiceWorkerHeaderMap& headers,
     const std::string& blob_uuid)
     : url(url),
       status_code(status_code),

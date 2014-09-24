@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/strings/string_util.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 #include "url/gurl.h"
@@ -42,19 +43,28 @@ enum ServiceWorkerFetchEventResult {
   SERVICE_WORKER_FETCH_EVENT_LAST = SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE
 };
 
+struct ServiceWorkerCaseInsensitiveCompare {
+  bool operator()(const std::string& lhs, const std::string& rhs) const {
+    return base::strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
+  }
+};
+
+typedef std::map<std::string, std::string, ServiceWorkerCaseInsensitiveCompare>
+    ServiceWorkerHeaderMap;
+
 // To dispatch fetch request from browser to child process.
 struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest();
   ServiceWorkerFetchRequest(const GURL& url,
                             const std::string& method,
-                            const std::map<std::string, std::string>& headers,
+                            const ServiceWorkerHeaderMap& headers,
                             const GURL& referrer,
                             bool is_reload);
   ~ServiceWorkerFetchRequest();
 
   GURL url;
   std::string method;
-  std::map<std::string, std::string> headers;
+  ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
   uint64 blob_size;
   GURL referrer;
@@ -67,14 +77,14 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerResponse(const GURL& url,
                         int status_code,
                         const std::string& status_text,
-                        const std::map<std::string, std::string>& headers,
+                        const ServiceWorkerHeaderMap& headers,
                         const std::string& blob_uuid);
   ~ServiceWorkerResponse();
 
   GURL url;
   int status_code;
   std::string status_text;
-  std::map<std::string, std::string> headers;
+  ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
 };
 

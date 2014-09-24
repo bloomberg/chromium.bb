@@ -89,7 +89,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   }
 
   void CreateRequests(ChromeBlobStorageContext* blob_storage_context) {
-    std::map<std::string, std::string> headers;
+    ServiceWorkerHeaderMap headers;
     headers.insert(std::make_pair("a", "a"));
     headers.insert(std::make_pair("b", "b"));
     body_request_ = ServiceWorkerFetchRequest(
@@ -397,6 +397,29 @@ TEST_P(ServiceWorkerCacheTestP, QuickStressBody) {
   }
 }
 #endif  // OS_WIN
+
+TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerResponseHeaders) {
+  // ServiceWorkerCache depends on ServiceWorkerResponse having caseless
+  // headers so that it can quickly lookup vary headers.
+  ServiceWorkerResponse response(
+      GURL("http://www.example.com"), 200, "OK", ServiceWorkerHeaderMap(), "");
+  response.headers["content-type"] = "foo";
+  response.headers["Content-Type"] = "bar";
+  EXPECT_EQ("bar", response.headers["content-type"]);
+}
+
+TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerFetchRequestHeaders) {
+  // ServiceWorkerCache depends on ServiceWorkerFetchRequest having caseless
+  // headers so that it can quickly lookup vary headers.
+  ServiceWorkerFetchRequest request(GURL("http://www.example.com"),
+                                         "GET",
+                                         ServiceWorkerHeaderMap(),
+                                         GURL(""),
+                                         false);
+  request.headers["content-type"] = "foo";
+  request.headers["Content-Type"] = "bar";
+  EXPECT_EQ("bar", request.headers["content-type"]);
+}
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,
                         ServiceWorkerCacheTestP,

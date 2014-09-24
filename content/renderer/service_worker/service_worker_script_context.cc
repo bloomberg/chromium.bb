@@ -149,8 +149,7 @@ void ServiceWorkerScriptContext::OnFetchEvent(
                "ServiceWorkerScriptContext::OnFetchEvent");
   webRequest.setURL(blink::WebURL(request.url));
   webRequest.setMethod(blink::WebString::fromUTF8(request.method));
-  for (std::map<std::string, std::string>::const_iterator it =
-           request.headers.begin();
+  for (ServiceWorkerHeaderMap::const_iterator it = request.headers.begin();
        it != request.headers.end();
        ++it) {
     webRequest.setHeader(blink::WebString::fromUTF8(it->first),

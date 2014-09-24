@@ -248,8 +248,7 @@ void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   headers.set_status_code(response->status_code);
   headers.set_status_text(response->status_text);
-  for (std::map<std::string, std::string>::const_iterator it =
-           request->headers.begin();
+  for (ServiceWorkerHeaderMap::const_iterator it = request->headers.begin();
        it != request->headers.end();
        ++it) {
     ServiceWorkerRequestResponseHeaders::HeaderMap* header_map =
@@ -258,8 +257,7 @@ void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
     header_map->set_value(it->second);
   }
 
-  for (std::map<std::string, std::string>::const_iterator it =
-           response->headers.begin();
+  for (ServiceWorkerHeaderMap::const_iterator it = response->headers.begin();
        it != response->headers.end();
        ++it) {
     ServiceWorkerRequestResponseHeaders::HeaderMap* header_map =
@@ -390,7 +388,7 @@ void MatchDidReadHeaderData(
       new ServiceWorkerResponse(request->url,
                                 headers->status_code(),
                                 headers->status_text(),
-                                std::map<std::string, std::string>(),
+                                ServiceWorkerHeaderMap(),
                                 ""));
 
   for (int i = 0; i < headers->response_headers_size(); ++i) {
@@ -904,11 +902,11 @@ void ServiceWorkerCache::KeysDidReadHeaders(
     keys_context->out_keys->push_back(
         ServiceWorkerFetchRequest(GURL(entry->GetKey()),
                                   headers->method(),
-                                  std::map<std::string, std::string>(),
+                                  ServiceWorkerHeaderMap(),
                                   GURL(),
                                   false));
 
-    std::map<std::string, std::string>& req_headers =
+    ServiceWorkerHeaderMap& req_headers =
         keys_context->out_keys->back().headers;
 
     for (int i = 0; i < headers->request_headers_size(); ++i) {

@@ -416,14 +416,14 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 void ServiceWorkerURLRequestJob::CreateResponseHeader(
     int status_code,
     const std::string& status_text,
-    const std::map<std::string, std::string>& headers) {
+    const ServiceWorkerHeaderMap& headers) {
   // TODO(kinuko): If the response has an identifier to on-disk cache entry,
   // pull response header from the disk.
   std::string status_line(
       base::StringPrintf("HTTP/1.1 %d %s", status_code, status_text.c_str()));
   status_line.push_back('\0');
   http_response_headers_ = new net::HttpResponseHeaders(status_line);
-  for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+  for (ServiceWorkerHeaderMap::const_iterator it = headers.begin();
        it != headers.end();
        ++it) {
     std::string header;
@@ -444,9 +444,8 @@ void ServiceWorkerURLRequestJob::CommitResponseHeader() {
 void ServiceWorkerURLRequestJob::DeliverErrorResponse() {
   // TODO(falken): Print an error to the console of the ServiceWorker and of
   // the requesting page.
-  CreateResponseHeader(500,
-                       "Service Worker Response Error",
-                       std::map<std::string, std::string>());
+  CreateResponseHeader(
+      500, "Service Worker Response Error", ServiceWorkerHeaderMap());
   CommitResponseHeader();
 }
 
