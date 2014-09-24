@@ -322,16 +322,15 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
   latest_afdo_url = LATEST_CHROME_AFDO_URL % afdo_release_spec
 
   # Check if latest-chrome-<arch>-<release>.afdo exists.
-  latest_detail = None
-  if gs_context.Exists(latest_afdo_url):
-    latest_detail = gs_context.LSWithDetails(latest_afdo_url)
-  if not latest_detail:
+  try:
+    latest_detail = gs_context.List(latest_afdo_url, details=True)
+  except gs.GSNoSuchKey:
     cros_build_lib.Info('Could not find latest AFDO info file %s' %
                         latest_afdo_url)
     return None
 
   # Verify the AFDO profile file is not too stale.
-  mod_date = latest_detail[0][2]
+  mod_date = latest_detail[0].creation_time
   curr_date = datetime.datetime.now()
   allowed_stale_days = datetime.timedelta(days=AFDO_ALLOWED_STALE)
   if (curr_date - mod_date) > allowed_stale_days:

@@ -832,7 +832,7 @@ def GetMetadataURLsSince(target, start_date):
   Returns:
     Metadata urls for runs found.
   """
-  urls = []
+  ret = []
   milestone = GetLatestMilestone()
   gs_ctx = gs.GSContext()
   while True:
@@ -841,9 +841,9 @@ def GetMetadataURLsSince(target, start_date):
                         target, milestone, base_url)
 
     try:
-      # Get GS URLs as tuples (url, size, modified datetime).  We want the
-      # datetimes to quickly know when we are done collecting URLs.
-      url_details = gs_ctx.LSWithDetails(base_url)
+      # Get GS URLs.  We want the datetimes to quickly know when we are done
+      # collecting URLs.
+      urls = gs_ctx.List(base_url, details=True)
     except gs.GSNoSuchKey:
       # We ran out of metadata to collect.  Stop searching back in time.
       cros_build_lib.Info('No %s builds found for $%d.  I will not continue'
@@ -851,22 +851,19 @@ def GetMetadataURLsSince(target, start_date):
       break
 
     # Sort by timestamp.
-    url_details = sorted(url_details, key=lambda x: x[2], reverse=True)
+    urls = sorted(urls, key=lambda x: x.creation_time, reverse=True)
 
     # See if we have gone far enough back by checking datetime of oldest URL
     # in the current batch.
-    if url_details[-1][2].date() < start_date:
+    if urls[-1].creation_time < start_date:
       # We want a subset of these URLs, then we are done.
-      urls.extend([url for (url, _size, dt) in url_details
-                   if dt.date() >= start_date])
+      ret.extend([x.url for x in urls if x.creation_time >= start_date])
       break
 
     else:
       # Accept all these URLs, then continue on to the next milestone.
-      urls.extend([url for (url, _size, _dt) in url_details])
+      ret.extend([x.url for x in urls])
       milestone -= 1
       cros_build_lib.Info('Continuing on to R%d.', milestone)
 
-  return urls
-
-
+  return ret

@@ -662,22 +662,6 @@ class GSContext(object):
           return e.args[0].result
         raise
 
-  # TODO: Convert all callers to List().
-  def LSWithDetails(self, path, **kwargs):
-    """Does a detailed directory listing of the given gs path.
-
-    Args:
-      path: The path to get a listing of.
-
-    Returns:
-      List of tuples, where each tuple is (gs path, file size in bytes integer,
-        file modified time as datetime.datetime object).
-    """
-    ret = []
-    for obj in self.List(path, details=True, **kwargs):
-      ret.append((obj.url, obj.content_length, obj.creation_time))
-    return ret
-
   # TODO: Merge LS() and List()?
   def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path.

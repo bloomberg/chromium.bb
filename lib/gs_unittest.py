@@ -167,7 +167,7 @@ class VersionTest(AbstractGSContextTest):
 
 
 class LSTest(AbstractGSContextTest):
-  """Tests LS/LSWithDetails/List functionality."""
+  """Tests LS/List functionality."""
 
   LS_PATH = 'gs://test/path/to/list'
   LS_OUTPUT_LINES = [
@@ -190,11 +190,6 @@ class LSTest(AbstractGSContextTest):
       'TOTAL: 3 objects, XXXXX bytes (X.XX GB)',
   ]
   DETAILED_LS_OUTPUT = '\n'.join(DETAILED_LS_OUTPUT_LINES)
-  DETAILED_LS_RESULT = [
-      ('%s/foo' % LS_PATH, SIZE1, DT1),
-      ('%s/bar bell' % LS_PATH, SIZE2, DT2),
-      ('%s/nada/' % LS_PATH, None, None),
-  ]
 
   LIST_RESULT = [
       gs.GSListResult(
@@ -225,14 +220,6 @@ class LSTest(AbstractGSContextTest):
       ctx = self.ctx
     return self._LS(ctx, self.LS_PATH, **kwargs)
 
-  def _LSWithDetails(self, ctx, path, **kwargs):
-    return ctx.LSWithDetails(path, **kwargs)
-
-  def LSWithDetails(self, ctx=None, **kwargs):
-    if ctx is None:
-      ctx = self.ctx
-    return self._LSWithDetails(ctx, self.LS_PATH, **kwargs)
-
   def _List(self, ctx, path, **kwargs):
     return ctx.List(path, **kwargs)
 
@@ -248,14 +235,6 @@ class LSTest(AbstractGSContextTest):
     self.gs_mock.assertCommandContains(['ls', '--', self.LS_PATH])
 
     self.assertEqual(self.LS_OUTPUT_LINES, result)
-
-  def testBasicLSWithDetails(self):
-    """Simple LSWithDetails test."""
-    self.gs_mock.SetDefaultCmdResult(output=self.DETAILED_LS_OUTPUT)
-    result = self.LSWithDetails()
-    self.gs_mock.assertCommandContains(['ls', '-l', '--', self.LS_PATH])
-
-    self.assertEqual(self.DETAILED_LS_RESULT, result)
 
   def testBasicList(self):
     """Simple List test."""
