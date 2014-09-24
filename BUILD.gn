@@ -390,8 +390,8 @@ if (is_win) {
   }
 
   group("ffmpeg") {
-    direct_dependent_configs = [ ":ffmpeg_win_dependent_config" ]
-    deps = [
+    public_configs = [ ":ffmpeg_win_dependent_config" ]
+    public_deps = [
       ":ffmpeg_generate_stubs",
       ":ffmpegsumo",
     ]
@@ -418,7 +418,7 @@ if (is_win) {
       ".",
     ]
 
-    direct_dependent_configs = [ ":ffmpeg_posix_dependent_config" ]
+    public_configs = [ ":ffmpeg_posix_dependent_config" ]
     deps = [ ":ffmpeg_generate_stubs", ":ffmpegsumo" ]
   }
 }
