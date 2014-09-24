@@ -222,25 +222,13 @@ void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
 ServiceWorkerCacheListener::CacheID
 ServiceWorkerCacheListener::StoreCacheReference(
     const scoped_refptr<ServiceWorkerCache>& cache) {
-  CacheToIDMap::iterator it = cache_to_id_map_.find(cache.get());
-  if (it == cache_to_id_map_.end()) {
-    CacheID cache_id = next_cache_id_++;
-    cache_to_id_map_.insert(std::make_pair(cache.get(), cache_id));
-    id_to_cache_map_.insert(std::make_pair(cache_id, cache));
-    return cache_id;
-  }
-
-  return it->second;
+  int cache_id = next_cache_id_++;
+  id_to_cache_map_[cache_id] = cache;
+  return cache_id;
 }
 
 void ServiceWorkerCacheListener::DropCacheReference(CacheID cache_id) {
-  IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
-  if (it != id_to_cache_map_.end())
-    return;
-
-  size_t deleted = cache_to_id_map_.erase(it->second.get());
-  DCHECK(deleted == 1u);
-  id_to_cache_map_.erase(it);
+  id_to_cache_map_.erase(cache_id);
 }
 
 }  // namespace content

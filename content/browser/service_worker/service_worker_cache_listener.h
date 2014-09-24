@@ -40,7 +40,6 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
 
  private:
   typedef int32_t CacheID;  // TODO(jkarlin): Bump to 64 bit.
-  typedef std::map<ServiceWorkerCache*, CacheID> CacheToIDMap;
   typedef std::map<CacheID, scoped_refptr<ServiceWorkerCache> > IDToCacheMap;
 
   void Send(const IPC::Message& message);
@@ -79,7 +78,6 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   IDToCacheMap id_to_cache_map_;
-  CacheToIDMap cache_to_id_map_;
   CacheID next_cache_id_;
 
   base::WeakPtrFactory<ServiceWorkerCacheListener> weak_factory_;
