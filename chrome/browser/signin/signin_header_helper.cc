@@ -77,11 +77,13 @@ MirrorResponseHeaderDictionary ParseMirrorResponseHeader(
        i != fields.end(); ++i) {
     std::string field(*i);
     std::vector<std::string> tokens;
-    if (Tokenize(field, "=", &tokens) != 2) {
+    size_t delim = field.find_first_of('=');
+    if (delim == std::string::npos) {
       DLOG(WARNING) << "Unexpected GAIA header field '" << field << "'.";
       continue;
     }
-    dictionary[tokens[0]] = tokens[1];
+    dictionary[field.substr(0, delim)] = net::UnescapeURLComponent(
+        field.substr(delim + 1), net::UnescapeRule::URL_SPECIAL_CHARS);
   }
   return dictionary;
 }
@@ -140,7 +142,7 @@ void ProcessMirrorHeaderUIThread(
         chrome::NewIncognitoWindow(browser);
         return;
       case signin::GAIA_SERVICE_TYPE_ADDSESSION:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN;
+        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT;
         break;
       case signin::GAIA_SERVICE_TYPE_REAUTH:
         bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH;
@@ -153,9 +155,12 @@ void ProcessMirrorHeaderUIThread(
   }
 #else  // defined(OS_ANDROID)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
+    GURL url(manage_accounts_params.continue_url.empty() ?
+        chrome::kChromeUINativeNewTabURL :
+        manage_accounts_params.continue_url);
     web_contents->OpenURL(content::OpenURLParams(
-        GURL(chrome::kChromeUINativeNewTabURL), content::Referrer(),
-        OFF_THE_RECORD, ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+        url, content::Referrer(), OFF_THE_RECORD,
+        ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
     AccountManagementScreenHelper::OpenAccountManagementScreen(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()),
