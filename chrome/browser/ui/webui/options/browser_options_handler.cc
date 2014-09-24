@@ -701,7 +701,7 @@ void BrowserOptionsHandler::RegisterMessages() {
       "defaultZoomFactorAction",
       base::Bind(&BrowserOptionsHandler::HandleDefaultZoomFactor,
                  base::Unretained(this)));
-#if !defined(USE_NSS) && !defined(USE_OPENSSL)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback(
       "showManageSSLCertificates",
       base::Bind(&BrowserOptionsHandler::ShowManageSSLCertificates,
@@ -1582,7 +1582,7 @@ void BrowserOptionsHandler::ShowNetworkProxySettings(
 }
 #endif
 
-#if !defined(USE_NSS) && !defined(USE_OPENSSL)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 void BrowserOptionsHandler::ShowManageSSLCertificates(
     const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
