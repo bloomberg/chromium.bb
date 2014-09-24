@@ -426,7 +426,7 @@ protected:
         }
         while (tester->m_threadsToFinish) {
             ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
-            yield();
+            Platform::current()->yieldCurrentThread();
         }
         delete tester;
     }
@@ -485,7 +485,7 @@ protected:
                         globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
                     }
                     ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
-                    yield();
+                    Platform::current()->yieldCurrentThread();
                 }
 
                 if (gcCount < gcPerThread) {
@@ -499,7 +499,7 @@ protected:
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
             ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
-            yield();
+            Platform::current()->yieldCurrentThread();
         }
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
@@ -529,7 +529,7 @@ private:
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
                     weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
                     ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
-                    yield();
+                    Platform::current()->yieldCurrentThread();
                 }
 
                 if (gcCount < gcPerThread) {
@@ -543,7 +543,7 @@ private:
                 EXPECT_TRUE(weakMap2.isEmpty());
             }
             ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
-            yield();
+            Platform::current()->yieldCurrentThread();
         }
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
@@ -3958,7 +3958,7 @@ public:
 
         // Wait for the sleeper to run.
         while (!s_sleeperRunning) {
-            yield();
+            Platform::current()->yieldCurrentThread();
         }
 
         {
@@ -3974,7 +3974,7 @@ public:
             // We enter the safepoint here since the sleeper thread will detach
             // causing it to GC.
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
-            yield();
+            Platform::current()->yieldCurrentThread();
         }
 
         {
@@ -3992,7 +3992,7 @@ private:
 
         // Simulate a long running op that is not entering a safepoint.
         while (!s_sleeperDone) {
-            yield();
+            Platform::current()->yieldCurrentThread();
         }
 
         ThreadState::detach();
