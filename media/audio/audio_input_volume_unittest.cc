@@ -97,8 +97,9 @@ class AudioInputVolumeTest : public ::testing::Test {
 #endif
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Currently failing on linux ARM bot: http://crbug/238490
+// Also flaky on x86_64: http://crbug/236936
 #define MAYBE_InputVolumeTest DISABLED_InputVolumeTest
 #else
 #define MAYBE_InputVolumeTest InputVolumeTest
