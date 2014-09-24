@@ -212,25 +212,24 @@ Date    : %(cl_date)s"""
 REPRO_STEPS_LOCAL = """
 ==== INSTRUCTIONS TO REPRODUCE ====
 To run locally:
-$%(command)s"""
+ - Use the test command given under 'BISECT JOB RESULTS' above.
+ - Consider using a profiler. Pass --profiler=list to list available profilers.
+"""
 
 REPRO_STEPS_TRYJOB = """
 To reproduce on a performance try bot:
-1. Create new git branch or check out existing branch.
-2. Edit tools/run-perf-test.cfg (instructions in file) or \
-third_party/WebKit/Tools/run-perf-test.cfg.
-  a) Take care to strip any src/ directories from the head of \
-relative path names.
-  b) On desktop, only --browser=release is supported, on android \
---browser=android-chromium-testshell.
-  c) Test command to use: %(command)s
-3. Upload your patch. --bypass-hooks is necessary to upload the changes you \
-committed locally to run-perf-test.cfg.
-   Note: *DO NOT* commit run-perf-test.cfg changes to the project repository.
-   $ git cl upload --bypass-hooks
-4. Send your try job to the try server. \
-[Please make sure to use appropriate bot to reproduce]
-   $ git cl try -m tryserver.chromium.perf -b <bot>
+ 1. Edit run-perf-test.cfg
+ 2. Upload your patch with: $ git cl upload --bypass-hooks
+ 3. Send to the try server: $ git cl try -m tryserver.chromium.perf -b <bot>
+
+Notes:
+ a) Follow the in-file instructions in run-perf-test.cfg.
+ b) run-perf-test.cfg is under tools/ or under third_party/WebKit/Tools.
+ c) Do your edits preferably under a new git branch.
+ d) --browser=release and --browser=android-chromium-testshell are supported
+    depending on the platform (desktop|android).
+ e) Strip any src/ directories from the head of relative path names.
+ f) Make sure to use the appropriate bot on step 3.
 
 For more details please visit
 https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots"""
@@ -250,16 +249,16 @@ Visit http://www.chromium.org/developers/core-principles for Chrome's policy
 on perf regressions.
 Contact chrome-perf-dashboard-team with any questions or suggestions about
 bisecting.
-.                   .------.
-.     .---.         \       \==)
+.                   .-----.
+.     .---.         \      \==)
 .     |PERF\         \       \\
 .     |     ---------'-------'-----------.
-.     . 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 `-.
-.     \______________.-------._______________)
+.     .     0 0 0 0 0 0 0 0 0 0 0 0 0 0 |_`-.
+.      \_____________.-------._______________)
 .                   /       /
-.                  /       /
-.                 /       /==)
-.                ._______."""
+.                  /      /
+.                 /     /==)
+.                ._____."""
 
 
 def _AddAdditionalDepotInfo(depot_info):
@@ -2210,7 +2209,7 @@ class BisectPerformanceMetrics(object):
 
     if self.source_control.IsGit() and self.opts.target_platform == 'chromium':
       changes_to_deps = self.source_control.QueryFileRevisionHistory(
-          FILE_DEPS, good_revision, bad_revision)
+          bisect_utils.FILE_DEPS, good_revision, bad_revision)
 
       if changes_to_deps:
         # DEPS file was changed, search from the oldest change to DEPS file to
@@ -2754,14 +2753,14 @@ class BisectPerformanceMetrics(object):
     if bisect_utils.IsTelemetryCommand(self.opts.command):
       command += ('\nAlso consider passing --profiler=list to see available '
                   'profilers.')
-    print REPRO_STEPS_LOCAL % {'command': command}
+    print REPRO_STEPS_LOCAL
     if bisect_utils.IsTelemetryCommand(self.opts.command):
       telemetry_command = re.sub(r'--browser=[^\s]+',
                                  '--browser=<bot-name>',
                                  command)
       print REPRO_STEPS_TRYJOB_TELEMETRY % {'command': telemetry_command}
     else:
-      print REPRO_STEPS_TRYJOB % {'command': command}
+      print REPRO_STEPS_TRYJOB
 
   def _PrintOtherRegressions(self, other_regressions, revision_data):
     """Prints a section of the results about other potential regressions."""
