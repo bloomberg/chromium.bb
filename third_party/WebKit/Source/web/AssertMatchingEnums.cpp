@@ -192,6 +192,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleContentInfo, ContentInfoRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDefinition, DefinitionRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionListDetail, DescriptionListDetailRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionListTerm, DescriptionListTermRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDetails, DetailsRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDialog, DialogRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDirectory, DirectoryRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDisclosureTriangle, DisclosureTriangleRole);

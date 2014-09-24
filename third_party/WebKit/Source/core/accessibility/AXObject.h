@@ -80,6 +80,7 @@ enum AccessibilityRole {
     DefinitionRole,
     DescriptionListDetailRole,
     DescriptionListTermRole,
+    DetailsRole,
     DialogRole,
     DirectoryRole,
     DisclosureTriangleRole,

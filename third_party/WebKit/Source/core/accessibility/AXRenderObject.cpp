@@ -278,6 +278,8 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return ListMarkerRole;
     if (isHTMLButtonElement(node))
         return buttonRoleType();
+    if (isHTMLDetailsElement(node))
+        return DetailsRole;
     if (isHTMLLegendElement(node))
         return LegendRole;
     if (m_renderer->isText())
@@ -681,6 +683,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return false;
 
     if (roleValue() == FigureRole)
+        return false;
+
+    if (roleValue() == DetailsRole)
         return false;
 
     // if this element has aria attributes on it, it should not be ignored.
