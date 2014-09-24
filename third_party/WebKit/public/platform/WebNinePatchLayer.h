@@ -43,7 +43,9 @@ public:
     virtual ~WebNinePatchLayer() { }
 
     virtual WebLayer* layer() = 0;
-    virtual void setBitmap(SkBitmap, const WebRect& aperture) = 0;
+    virtual void setBitmap(const SkBitmap&) = 0;
+    virtual void setAperture(const WebRect&) = 0;
+    virtual void setBorder(const WebRect&) = 0;
 };
 
 } // namespace blink

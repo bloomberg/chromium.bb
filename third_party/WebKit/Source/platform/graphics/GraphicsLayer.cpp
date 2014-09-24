@@ -952,7 +952,15 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
     RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : nullptr;
     if (nativeImage) {
         m_ninePatchLayer = adoptPtr(Platform::current()->compositorSupport()->createNinePatchLayer());
-        m_ninePatchLayer->setBitmap(nativeImage->bitmap(), aperture);
+        const SkBitmap& bitmap = nativeImage->bitmap();
+        int borderWidth = bitmap.width() - aperture.width();
+        int borderHeight = bitmap.height() - aperture.height();
+        WebRect border(aperture.x(), aperture.y(), borderWidth, borderHeight);
+
+        m_ninePatchLayer->setBitmap(bitmap);
+        m_ninePatchLayer->setAperture(aperture);
+        m_ninePatchLayer->setBorder(border);
+
         m_ninePatchLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
         registerContentsLayer(m_ninePatchLayer->layer());
     }
