@@ -342,6 +342,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   // Overridden from WidgetDelegateView
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual bool CanMaximize() const OVERRIDE { return true; }
+  virtual bool CanMinimize() const OVERRIDE { return true; }
   virtual base::string16 GetWindowTitle() const OVERRIDE {
     return title_;
   }

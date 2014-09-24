@@ -81,6 +81,10 @@ bool PanelWindow::CanMaximize() const {
   return false;
 }
 
+bool PanelWindow::CanMinimize() const {
+  return false;
+}
+
 views::NonClientFrameView* PanelWindow::CreateNonClientFrameView(
     views::Widget* widget) {
   return new PanelFrameView(widget, PanelFrameView::FRAME_NONE);

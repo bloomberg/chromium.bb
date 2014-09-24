@@ -52,6 +52,7 @@ class ResizableWidgetDelegate : public views::WidgetDelegateView {
  private:
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual bool CanMaximize() const OVERRIDE { return true; }
+  virtual bool CanMinimize() const OVERRIDE { return true; }
   virtual void DeleteDelegate() OVERRIDE { delete this; }
 
   DISALLOW_COPY_AND_ASSIGN(ResizableWidgetDelegate);

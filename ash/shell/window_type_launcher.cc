@@ -299,6 +299,10 @@ bool WindowTypeLauncher::CanMaximize() const {
   return true;
 }
 
+bool WindowTypeLauncher::CanMinimize() const {
+  return true;
+}
+
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == create_button_) {

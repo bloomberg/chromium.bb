@@ -44,6 +44,7 @@ class ToplevelWindow : public views::WidgetDelegateView {
   virtual View* GetContentsView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
+  virtual bool CanMinimize() const OVERRIDE;
 
   const CreateParams params_;
 

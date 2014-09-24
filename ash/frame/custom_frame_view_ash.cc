@@ -202,10 +202,8 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
       avatar_icon_(NULL),
       caption_button_container_(NULL),
       fullscreen_visible_fraction_(0) {
-  // Unfortunately, there is no views::WidgetDelegate::CanMinimize(). Assume
-  // that the window frame can be minimized if it can be maximized.
   FrameCaptionButtonContainerView::MinimizeAllowed minimize_allowed =
-      frame_->widget_delegate()->CanMaximize() ?
+      frame_->widget_delegate()->CanMinimize() ?
           FrameCaptionButtonContainerView::MINIMIZE_ALLOWED :
           FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED;
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_,

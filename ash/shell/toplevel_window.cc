@@ -108,5 +108,9 @@ bool ToplevelWindow::CanMaximize() const {
   return params_.can_maximize;
 }
 
+bool ToplevelWindow::CanMinimize() const {
+  return params_.can_maximize;
+}
+
 }  // namespace shell
 }  // namespace ash

@@ -42,6 +42,7 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   virtual bool CanResize() const = 0;
   virtual bool CanMaximize() const = 0;
+  virtual bool CanMinimize() const = 0;
   virtual bool CanActivate() const = 0;
 
   virtual bool WidgetSizeIsClientSize() const = 0;

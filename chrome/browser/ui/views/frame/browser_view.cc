@@ -1500,6 +1500,10 @@ bool BrowserView::CanMaximize() const {
   return true;
 }
 
+bool BrowserView::CanMinimize() const {
+  return true;
+}
+
 bool BrowserView::CanActivate() const {
   if (!AppModalDialogQueue::GetInstance()->active_dialog() ||
       !AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog())

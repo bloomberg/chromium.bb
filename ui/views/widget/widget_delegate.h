@@ -52,13 +52,13 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual BubbleDelegateView* AsBubbleDelegate();
   virtual DialogDelegate* AsDialogDelegate();
 
-  // Returns true if the window can ever be resized.
+  // Returns true if the window can be resized.
   virtual bool CanResize() const;
 
-  // Returns true if the window can ever be maximized.
+  // Returns true if the window can be maximized.
   virtual bool CanMaximize() const;
 
-  // Returns true if the window can ever be minimized.
+  // Returns true if the window can be minimized.
   virtual bool CanMinimize() const;
 
   // Returns true if the window can be activated.

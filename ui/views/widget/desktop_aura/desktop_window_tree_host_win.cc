@@ -607,6 +607,10 @@ bool DesktopWindowTreeHostWin::CanMaximize() const {
   return GetWidget()->widget_delegate()->CanMaximize();
 }
 
+bool DesktopWindowTreeHostWin::CanMinimize() const {
+  return GetWidget()->widget_delegate()->CanMinimize();
+}
+
 bool DesktopWindowTreeHostWin::CanActivate() const {
   if (IsModalWindowActive())
     return true;

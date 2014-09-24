@@ -218,6 +218,11 @@ bool NativeAppWindowViews::CanMaximize() const {
          !app_window_->window_type_is_panel() && !WidgetHasHitTestMask();
 }
 
+bool NativeAppWindowViews::CanMinimize() const {
+  // TODO(jackhou): Change this to always be true.
+  return CanMaximize();
+}
+
 base::string16 NativeAppWindowViews::GetWindowTitle() const {
   return app_window_->GetTitle();
 }

@@ -393,6 +393,7 @@ class BrowserView : public BrowserWindow,
   // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
+  virtual bool CanMinimize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual base::string16 GetAccessibleWindowTitle() const OVERRIDE;

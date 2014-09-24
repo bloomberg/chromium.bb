@@ -36,6 +36,9 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual bool CanMaximize() const OVERRIDE {
     return true;
   }
+  virtual bool CanMinimize() const OVERRIDE {
+    return true;
+  }
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE {
     return new ash::CustomFrameViewAsh(widget);

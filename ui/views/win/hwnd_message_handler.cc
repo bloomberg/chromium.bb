@@ -1476,9 +1476,7 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
   EnableMenuItemByCommand(menu, SC_SIZE, delegate_->CanResize() && is_restored);
   EnableMenuItemByCommand(menu, SC_MAXIMIZE, delegate_->CanMaximize() &&
                           !is_fullscreen && !is_maximized);
-  // TODO: unfortunately, WidgetDelegate does not declare CanMinimize() and some
-  // code depends on this check, see http://crbug.com/341010.
-  EnableMenuItemByCommand(menu, SC_MINIMIZE, delegate_->CanMaximize() &&
+  EnableMenuItemByCommand(menu, SC_MINIMIZE, delegate_->CanMinimize() &&
                           !is_minimized);
 
   if (is_maximized && delegate_->CanResize())

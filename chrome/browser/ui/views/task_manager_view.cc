@@ -172,6 +172,7 @@ class TaskManagerView : public views::ButtonListener,
   // views::DialogDelegateView:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
+  virtual bool CanMinimize() const OVERRIDE;
   virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual std::string GetWindowName() const OVERRIDE;
@@ -527,6 +528,10 @@ bool TaskManagerView::CanResize() const {
 }
 
 bool TaskManagerView::CanMaximize() const {
+  return true;
+}
+
+bool TaskManagerView::CanMinimize() const {
   return true;
 }
 

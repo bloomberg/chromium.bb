@@ -40,6 +40,9 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual bool CanMaximize() const OVERRIDE {
     return true;
   }
+  virtual bool CanMinimize() const OVERRIDE {
+    return true;
+  }
 
   ash::FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;

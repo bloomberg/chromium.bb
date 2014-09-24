@@ -68,6 +68,10 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
     return true;
   }
 
+  virtual bool CanMinimize() const OVERRIDE {
+    return true;
+  }
+
   void set_minimum_size(const gfx::Size& min_size) {
     minimum_size_ = min_size;
   }

@@ -786,6 +786,10 @@ bool PanelView::CanMaximize() const {
   return false;
 }
 
+bool PanelView::CanMinimize() const {
+  return false;
+}
+
 base::string16 PanelView::GetWindowTitle() const {
   return panel_->GetWindowTitle();
 }

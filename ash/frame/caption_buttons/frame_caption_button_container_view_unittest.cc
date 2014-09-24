@@ -28,6 +28,10 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
     return can_maximize_;
   }
 
+  virtual bool CanMinimize() const OVERRIDE {
+    return can_maximize_;
+  }
+
  private:
   bool can_maximize_;
 

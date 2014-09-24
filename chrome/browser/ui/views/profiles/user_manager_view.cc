@@ -195,6 +195,10 @@ bool UserManagerView::CanMaximize() const {
   return true;
 }
 
+bool UserManagerView::CanMinimize() const {
+  return true;
+}
+
 base::string16 UserManagerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }

@@ -212,6 +212,9 @@ class PropertyTestWidgetDelegate : public views::WidgetDelegate {
   virtual bool CanMaximize() const OVERRIDE {
     return true;
   }
+  virtual bool CanMinimize() const OVERRIDE {
+    return true;
+  }
   virtual bool CanResize() const OVERRIDE {
     return true;
   }

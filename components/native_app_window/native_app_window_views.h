@@ -100,6 +100,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
+  virtual bool CanMinimize() const OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual bool ShouldShowWindowIcon() const OVERRIDE;

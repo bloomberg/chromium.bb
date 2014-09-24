@@ -137,6 +137,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   virtual bool IsInactiveRenderingDisabled() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
+  virtual bool CanMinimize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual bool WidgetSizeIsClientSize() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
