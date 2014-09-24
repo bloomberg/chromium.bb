@@ -13,7 +13,6 @@
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/common/media_galleries/picasa_types.h"
-#include "extensions/common/update_manifest.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -22,19 +21,6 @@
 #endif
 
 #define IPC_MESSAGE_START ChromeUtilityExtensionsMsgStart
-
-IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
-  IPC_STRUCT_TRAITS_MEMBER(extension_id)
-  IPC_STRUCT_TRAITS_MEMBER(version)
-  IPC_STRUCT_TRAITS_MEMBER(browser_min_version)
-  IPC_STRUCT_TRAITS_MEMBER(package_hash)
-  IPC_STRUCT_TRAITS_MEMBER(crx_url)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Results)
-  IPC_STRUCT_TRAITS_MEMBER(list)
-  IPC_STRUCT_TRAITS_MEMBER(daystart_elapsed_seconds)
-IPC_STRUCT_TRAITS_END()
 
 #if defined(OS_MACOSX)
 IPC_STRUCT_TRAITS_BEGIN(iphoto::parser::Photo)
@@ -102,10 +88,6 @@ IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_UnzipToDir,
                      base::FilePath /* zip_file */,
                      base::FilePath /* dir */)
-
-// Tell the utility process to parse the given xml document.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseUpdateManifest,
-                     std::string /* xml document contents */)
 
 // Tell the utility process to decode the given image data, which is base64
 // encoded.
@@ -212,16 +194,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Succeeded,
 // an error string to be reported to the user.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Failed,
                      std::string /* error */)
-
-// Reply when the utility process has succeeded in parsing an update manifest
-// xml document.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded,
-                     UpdateManifest::Results /* updates */)
-
-// Reply when an error occurred parsing the update manifest. |error_message|
-// is a description of what went wrong suitable for logging.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseUpdateManifest_Failed,
-                     std::string /* error_message, if any */)
 
 // Reply when the utility process successfully parsed a JSON string.
 //

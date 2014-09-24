@@ -788,8 +788,6 @@
       'browser/extensions/updater/extension_updater.h',
       'browser/extensions/updater/request_queue.h',
       'browser/extensions/updater/request_queue_impl.h',
-      'browser/extensions/updater/safe_manifest_parser.cc',
-      'browser/extensions/updater/safe_manifest_parser.h',
       'browser/extensions/user_script_listener.cc',
       'browser/extensions/user_script_listener.h',
       'browser/extensions/user_script_loader.cc',

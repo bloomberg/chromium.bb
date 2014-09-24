@@ -17,6 +17,7 @@
 #include "content/public/utility/utility_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_utility_messages.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/update_manifest.h"
 #include "media/base/media.h"
@@ -58,9 +59,11 @@ const char kExtensionHandlerUnzipError[] =
 
 }  // namespace
 
-ExtensionsHandler::ExtensionsHandler() {}
+ExtensionsHandler::ExtensionsHandler() {
+}
 
-ExtensionsHandler::~ExtensionsHandler() {}
+ExtensionsHandler::~ExtensionsHandler() {
+}
 
 // static
 void ExtensionsHandler::PreSandboxStartup() {
@@ -86,8 +89,6 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionsHandler, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnzipToDir, OnUnzipToDir)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseUpdateManifest,
-                        OnParseUpdateManifest)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
@@ -114,6 +115,9 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetWiFiCredentials,
                         OnGetWiFiCredentials)
 #endif  // defined(OS_WIN)
+
+    IPC_MESSAGE_HANDLER(ExtensionUtilityMsg_ParseUpdateManifest,
+                        OnParseUpdateManifest)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -159,10 +163,10 @@ void ExtensionsHandler::OnUnzipToDir(const base::FilePath& zip_path,
 void ExtensionsHandler::OnParseUpdateManifest(const std::string& xml) {
   UpdateManifest manifest;
   if (!manifest.Parse(xml)) {
-    Send(new ChromeUtilityHostMsg_ParseUpdateManifest_Failed(
+    Send(new ExtensionUtilityHostMsg_ParseUpdateManifest_Failed(
         manifest.errors()));
   } else {
-    Send(new ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded(
+    Send(new ExtensionUtilityHostMsg_ParseUpdateManifest_Succeeded(
         manifest.results()));
   }
   ReleaseProcessIfNeeded();
@@ -263,9 +267,7 @@ void ExtensionsHandler::OnParsePicasaPMPDatabase(
   picasa::PicasaAlbumTableReader reader(files.Pass());
   bool parse_success = reader.Init();
   Send(new ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished(
-      parse_success,
-      reader.albums(),
-      reader.folders()));
+      parse_success, reader.albums(), reader.folders()));
   ReleaseProcessIfNeeded();
 }
 

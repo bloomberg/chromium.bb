@@ -110,6 +110,7 @@ enum IPCMessageStart {
   PDFMsgStart,
   WebCacheMsgStart,
   ManifestManagerMsgStart,
+  ExtensionUtilityMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

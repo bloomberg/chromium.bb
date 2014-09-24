@@ -22,7 +22,7 @@ class MediaMetadataParser;
 
 namespace extensions {
 
-// Dispatches IPCs for printing.
+// Dispatches IPCs for Chrome extensions utility messages.
 class ExtensionsHandler : public UtilityMessageHandler {
  public:
   ExtensionsHandler();
