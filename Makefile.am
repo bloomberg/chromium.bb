@@ -393,6 +393,7 @@ demo_clients +=					\
 	weston-simple-shm			\
 	weston-simple-damage			\
 	weston-simple-touch			\
+	weston-presentation-shm			\
 	weston-multi-resource
 
 weston_simple_shm_SOURCES = clients/simple-shm.c
@@ -418,6 +419,13 @@ weston_simple_damage_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 weston_simple_touch_SOURCES = clients/simple-touch.c
 weston_simple_touch_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
+
+weston_presentation_shm_SOURCES = clients/presentation-shm.c
+nodist_weston_presentation_shm_SOURCES =		\
+	protocol/presentation_timing-protocol.c		\
+	protocol/presentation_timing-client-protocol.h
+weston_presentation_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
+weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm
 
 weston_multi_resource_SOURCES = clients/multi-resource.c
 weston_multi_resource_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)

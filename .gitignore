@@ -45,6 +45,7 @@ weston-gears
 weston-image
 weston-nested
 weston-nested-client
+weston-presentation-shm
 weston-resizor
 weston-scaler
 weston-simple-egl
