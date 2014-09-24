@@ -922,6 +922,9 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 {
     MainThreadScrollingReasons reasons = static_cast<MainThreadScrollingReasons>(0);
 
+    if (!m_page->settings().threadedScrollingEnabled())
+        reasons |= ThreadedScrollingDisabled;
+
     if (!m_page->mainFrame()->isLocalFrame())
         return reasons;
     FrameView* frameView = m_page->deprecatedLocalMainFrame()->view();
@@ -946,6 +949,8 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
         stringBuilder.appendLiteral("Has viewport constrained objects without supporting fixed layers, ");
     if (reasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
         stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
+    if (reasons & ScrollingCoordinator::ThreadedScrollingDisabled)
+        stringBuilder.appendLiteral("Threaded scrolling is disabled, ");
 
     if (stringBuilder.length())
         stringBuilder.resize(stringBuilder.length() - 2);

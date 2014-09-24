@@ -154,6 +154,7 @@ public:
     virtual void setTextAreasAreResizable(bool) OVERRIDE;
     virtual void setTextAutosizingEnabled(bool) OVERRIDE;
     virtual void setAccessibilityFontScaleFactor(float) OVERRIDE;
+    virtual void setThreadedScrollingEnabled(bool) OVERRIDE;
     virtual void setTouchDragDropEnabled(bool) OVERRIDE;
     virtual void setTouchEditingEnabled(bool) OVERRIDE;
     virtual void setUnifiedTextCheckerEnabled(bool) OVERRIDE;

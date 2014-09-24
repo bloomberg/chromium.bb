@@ -401,6 +401,11 @@ void WebSettingsImpl::setAllowFileAccessFromFileURLs(bool allow)
     m_settings->setAllowFileAccessFromFileURLs(allow);
 }
 
+void WebSettingsImpl::setThreadedScrollingEnabled(bool enabled)
+{
+    m_settings->setThreadedScrollingEnabled(enabled);
+}
+
 void WebSettingsImpl::setTouchDragDropEnabled(bool enabled)
 {
     m_settings->setTouchDragDropEnabled(enabled);

@@ -118,6 +118,11 @@ mediaPlaybackRequiresUserGesture initial=false
 
 scrollAnimatorEnabled initial=true
 
+# Used to disable threaded, compositor scrolling for testing purposes.
+# crbug.com/410974 tracks removal once alternative solutions for selective
+# main thread scrolling are supported.
+threadedScrollingEnabled initial=true, invalidate=Style
+
 # Used in layout tests for gesture tap highlights. Makes the highlights square
 # (rather than rounded) to make it possible to reftest the results.
 mockGestureTapHighlightsEnabled initial=false
