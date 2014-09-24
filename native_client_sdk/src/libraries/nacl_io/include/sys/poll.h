@@ -6,10 +6,7 @@
 #define LIBRARIES_NACL_IO_INCLUDE_SYS_POLL_H_
 
 #include <stdint.h>
-
-#include "sdk_util/macros.h"
-
-EXTERN_C_BEGIN
+#include <sys/cdefs.h>
 
 /* This header adds definitions of flags and structures for use with poll on
  * toolchains with 'C' libraries which do not normally supply poll. */
@@ -31,8 +28,10 @@ struct pollfd {
   uint16_t revents;
 };
 
+__BEGIN_DECLS
+
 int poll(struct pollfd* __fds, nfds_t __nfds, int __timeout);
 
-EXTERN_C_END
+__END_DECLS
 
 #endif  /* LIBRARIES_NACL_IO_INCLUDE_SYS_POLL_H_ */
