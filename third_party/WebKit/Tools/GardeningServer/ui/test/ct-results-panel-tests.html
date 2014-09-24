@@ -93,9 +93,8 @@ var kExampleFailures = [
 
 describe('ct-results-panel', function() {
   var panel;
-  var failures;
 
-  beforeEach(function(done) {
+  function createPanel() {
     panel = document.createElement('ct-results-panel');
     // FIXME: The results-panel needs to be appended to the DOM so that the flakiness
     // dashboard's iframe has a window when we grab location off of it, but that
@@ -103,34 +102,54 @@ describe('ct-results-panel', function() {
     // This results in some console spam from the 404'ed request.
     panel.hidden = true;
     document.body.appendChild(panel);
+  }
 
-    if (failures)
-      panel.failures = failures;
+  function assignFailures(failures) {
+    // FIXME: This should be a proper CTFailureGroup
+    panel.group = {
+      data: {
+        failures: failures
+      }
+    };
+  }
 
-    setTimeout(done);
-  });
+  function assignUrl(url) {
+    // FIXME: This should be a proper CTFailureGroup
+    panel.group = {
+      data: {
+        url: url
+      }
+    };
+  }
 
   afterEach(function() {
-    document.body.removeChild(panel);
+    panel.remove();
+    panel = undefined;
   });
 
-  describe('empty', function() {
-    before(function() {
-      failures = undefined;
-    });
-
-    it('should show no results', function() {
+  it('should show no results', function(done) {
+    createPanel();
+    setTimeout(function() {
       var message = panel.shadowRoot.querySelector('.message');
-      assert.equal(message.textContent, 'No results to display.');
+      assert.equal(message.textContent, 'Loading...');
+
+      panel.group = 'this is an invalid group';
+
+      setTimeout(function() {
+        var message = panel.shadowRoot.querySelector('.message');
+        assert.equal(message.textContent, 'No results to display.');
+        done();
+      });
     });
   });
 
-  describe('failing tests', function() {
-    before(function() {
-      failures = kExampleFailures;
-    });
+  it('should show tests and results for selected test', function(done) {
+    createPanel();
+    assignFailures(kExampleFailures);
 
-    it('should show tests and results for selected test', function(done) {
+    setTimeout(function() {
+      assert.notOk(panel.shadowRoot.querySelector('.message'));
+
       var items = panel.shadowRoot.querySelectorAll('core-menu > div');
       assert.lengthOf(items, 3);
       assert.equal(items[0].textContent, 'plugins/gesture-events-scrolled.html');
@@ -153,33 +172,56 @@ describe('ct-results-panel', function() {
     });
   });
 
-  describe('whole step failed', function() {
-    before(function() {
-      var failure = {
-        testName: null,
-        step: 'foo-step',
-        resultNodesByBuilder: {
-          'WebKit Win7 (dbg)': {
-            actual: 'UNKNOWN',
-          },
+  it('should show step failure', function(done) {
+    createPanel();
+    var failure = {
+      testName: null,
+      step: 'foo-step',
+      resultNodesByBuilder: {
+        'WebKit Win7 (dbg)': {
+          actual: 'UNKNOWN',
         },
-        oldestFailingRevision: 123,
-        newestPassingRevision: 124,
-      };
-      failures = [failure];
-    });
+      },
+      oldestFailingRevision: 123,
+      newestPassingRevision: 124,
+    };
+    assignFailures([failure]);
 
-    it('should show step failure', function() {
+    setTimeout(function() {
+      assert.notOk(panel.shadowRoot.querySelector('.message'));
+
       var items = panel.shadowRoot.querySelectorAll('core-menu > div');
       assert.lengthOf(items, 0);
 
       var results = panel.shadowRoot.querySelectorAll('ct-results-by-builder');
       assert.lengthOf(results, 1);
-      assert.equal(results[0].failure, failures[0]);
+      assert.equal(results[0].failure, failure);
 
       assert.lengthOf(panel.shadowRoot.querySelectorAll('ct-embedded-flakiness-dashboard'), 0);
+      done();
     });
   });
+
+  it('should show url failure', function(done) {
+    createPanel();
+    var url = 'http://url.com';
+    assignUrl(url);
+
+    setTimeout(function() {
+      assert.notOk(panel.shadowRoot.querySelector('.message'));
+
+      var items = panel.shadowRoot.querySelectorAll('core-menu > div');
+      assert.lengthOf(items, 0);
+
+      var results = panel.shadowRoot.querySelectorAll('ct-popout-iframe');
+      assert.lengthOf(results, 1);
+      assert.equal(results[0].src, url);
+
+      assert.lengthOf(panel.shadowRoot.querySelectorAll('ct-embedded-flakiness-dashboard'), 0);
+      done();
+    });
+  });
+
 });
 
 })();

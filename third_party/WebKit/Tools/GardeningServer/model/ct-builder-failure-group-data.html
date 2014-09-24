@@ -20,11 +20,6 @@ CTBuilderFailureGroupData.prototype.getAnnotations = function() {
   return [];
 };
 
-// FIXME: This function should be replaced and callers should just pass the original object.
-CTBuilderFailureGroupData.prototype.dataToExamine = function() {
-  return {url: this.url};
-};
-
 CTBuilderFailureGroupData.prototype.failureKeys = function() {
   return [this.failure.key];
 };

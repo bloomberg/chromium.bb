@@ -21,10 +21,6 @@ CTStepFailureGroupData.prototype.getAnnotations = function() {
   }).flatten();
 };
 
-CTStepFailureGroupData.prototype.dataToExamine = function() {
-  return this.failures;
-};
-
 CTStepFailureGroupData.prototype.failureKeys = function() {
   return this.failures.map(function(failure) {
     return failure.keys();

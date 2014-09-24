@@ -10,7 +10,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-popout-iframe.html">
 <link rel="import" href="ct-commit-list.html">
 
-<polymer-element name="ct-results-panel" attributes="failures commitList">
+<polymer-element name="ct-results-panel" attributes="group">
   <template>
     <style>
       :host {
@@ -53,36 +53,44 @@ found in the LICENSE file.
         padding-top: 6px;
       }
     </style>
-    <template if="{{ !failures.length && !failures.url }}">
-      <div class="message">No results to display.</div>
+
+    <template if="{{ !group.data.url && !group.data.failures.length }}">
+      <div class="message">{{ loading ? 'Loading...' : 'No results to display.' }}</div>
     </template>
-    <template if="{{ failures.url }}">
-      <ct-popout-iframe src="{{ failures.url }}"></ct-popout-iframe>
+
+    <template if="{{ group.data.url }}">
+      <ct-popout-iframe src="{{ group.data.url }}"></ct-popout-iframe>
     </template>
-    <template if="{{ failures.length }}">
-      <core-menu selected="{{ selected }}">
-        <template repeat="{{ failure in failures }}">
-          <template if="{{ failure.testName }}">
-            <div>{{ failure.testName }}</div>
+
+    <template if="{{ group.data.failures }}">
+      <template if="{{ group.data.failures.length }}">
+        <core-menu selected="{{ selected }}">
+          <template repeat="{{ failure in group.data.failures }}">
+            <template if="{{ failure.testName }}">
+              <div>{{ failure.testName }}</div>
+            </template>
           </template>
-        </template>
-      </core-menu>
+        </core-menu>
+      </template>
       <div class="results">
-        <template if="{{ failures[selected].testName }}">
-          <ct-embedded-flakiness-dashboard test="{{ failures[selected] }}"></ct-embedded-flakiness-dashboard>
+        <template if="{{ group.data.failures[selected].testName }}">
+          <ct-embedded-flakiness-dashboard test="{{ group.data.failures[selected] }}"></ct-embedded-flakiness-dashboard>
         </template>
-        <ct-results-by-builder failure="{{ failures[selected] }}"></ct-results-by-builder>
-        <ct-commit-list commitList="{{ commitList }}" detailed="true"></ct-commit-list>
+        <ct-results-by-builder failure="{{ group.data.failures[selected] }}"></ct-results-by-builder>
+        <ct-commit-list commitList="{{ group.data.commitList }}" detailed="true"></ct-commit-list>
       </div>
     </template>
+
   </template>
   <script>
     Polymer({
-      failures: [],
+      group: null,
       selected: 0,
-      tree: '',
+      loading: true,
 
-      failuresChanged: function() {
+      groupChanged: function() {
+        if (this.group)
+          this.loading = false;
         this.selected = 0;
       },
     });

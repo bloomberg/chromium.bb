@@ -79,37 +79,23 @@ found in the LICENSE file.
 
     <core-animated-pages selected="{{ selected }}" transitions="slide-from-right">
       <ct-unexpected-failures id="unexpected" tree="{{ tree }}" commitLog="{{ commitLog }}" failures="{{ failures }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
-      <ct-results-panel failures="{{ currentFailures }}" commitList="{{ currentCommitList }}"></ct-results-panel>
+      <ct-results-panel group="{{ examinedFailureGroup }}"></ct-results-panel>
     </core-animated-pages>
   </template>
   <script>
     var kUpdateFrequency = 1000 * 30;
 
     Polymer({
-      tree: "",
+      tree: '',
       treeList: null,
       selected: 0,
-      currentFailures: [],
+      examinedFailureGroup: null,
+      _pendingFailureGroupKey: '',
 
       updateFromHistoryState: function(state) {
+        this._pendingFailureGroupKey = state.examinedFailureGroupKey;
         if ('selected' in state)
           this.selected = state.selected;
-        if ('currentFailures' in state) {
-          this.currentFailures = [];
-          state.currentFailures.forEach(function(failure) {
-            this.currentFailures.push(
-              new CTStepFailure(failure.step, failure.testName, failure.resultNodesByBuilder));
-          }, this);
-        }
-        if ('currentCommitList' in state) {
-          var serializedRevisions = []
-          for (tree in state.currentCommitList.revisions) {
-            state.currentCommitList.revisions[tree].forEach(function(revision) {
-              serializedRevisions.push(tree + ":" + revision)
-            })
-          }
-          this.currentCommitList = new CTCommitList(this.commitLog, serializedRevisions)
-        }
       },
 
       onPopState: function(e) {
@@ -124,16 +110,13 @@ found in the LICENSE file.
       },
 
       onExamine: function(event) {
-        var dataToExamine = event.detail.dataToExamine();
         window.history.pushState({
-          currentFailures: dataToExamine.failures,
-          currentCommitList: dataToExamine.commitList,
+          examinedFailureGroupKey: event.detail.key,
           selected: 1,
         });
 
 
-        this.currentFailures = dataToExamine.failures;
-        this.currentCommitList = dataToExamine.commitList;
+        this.examinedFailureGroup = event.detail;
         this.selected = 1;
       },
 
@@ -167,11 +150,24 @@ found in the LICENSE file.
       },
 
       update: function() {
-        // FIXME: These shouldn't update if there's already an update in
-        // progress.
-        this.commitLog.update();
-        this.failures.update();
+        if (this._promise)
+          return;
+        this._promise = Promise.all(
+          [this.commitLog.update(),
+           this.failures.update()]).then(this._updateCompleted.bind(this));
+      },
+
+      _updateCompleted: function() {
+        this._promise = null;
         this.$.unexpected.update();
+        if (!this.failures.failures)
+          return;
+        if (!this._pendingFailureGroupKey)
+          return;
+        this.examinedFailureGroup = this.failures.failures[this.tree].find(function(group) {
+          return group.key == this._pendingFailureGroupKey;
+        }.bind(this));
+        this._pendingFailureGroupKey = '';
       },
 
     });

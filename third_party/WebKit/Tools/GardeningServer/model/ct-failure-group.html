@@ -15,10 +15,6 @@ function CTFailureGroup(key, data, category) {
   this._computeProperties();
 }
 
-CTFailureGroup.prototype.dataToExamine = function() {
-  return this.data.dataToExamine();
-}
-
 CTFailureGroup.prototype.snoozeUntil = function(time) {
   return this._annotate({
     snoozeTime: time,
