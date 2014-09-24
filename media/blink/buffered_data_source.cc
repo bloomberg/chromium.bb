@@ -90,8 +90,7 @@ BufferedDataSource::BufferedDataSource(
       total_bytes_(kPositionNotSpecified),
       streaming_(false),
       frame_(frame),
-      intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
-      intermediate_read_buffer_size_(kInitialReadBufferSize),
+      intermediate_read_buffer_(kInitialReadBufferSize),
       render_task_runner_(task_runner),
       stop_signal_received_(false),
       media_has_played_(false),
@@ -314,14 +313,14 @@ void BufferedDataSource::ReadInternal() {
 
   // First we prepare the intermediate read buffer for BufferedResourceLoader
   // to write to.
-  if (size > intermediate_read_buffer_size_) {
-    intermediate_read_buffer_.reset(new uint8[size]);
-  }
+  if (static_cast<int>(intermediate_read_buffer_.size()) < size)
+    intermediate_read_buffer_.resize(size);
 
   // Perform the actual read with BufferedResourceLoader.
+  DCHECK(!intermediate_read_buffer_.empty());
   loader_->Read(position,
                 size,
-                intermediate_read_buffer_.get(),
+                &intermediate_read_buffer_[0],
                 base::Bind(&BufferedDataSource::ReadCallback,
                            weak_factory_.GetWeakPtr()));
 }
@@ -448,7 +447,8 @@ void BufferedDataSource::ReadCallback(
   }
 
   if (bytes_read > 0) {
-    memcpy(read_op_->data(), intermediate_read_buffer_.get(), bytes_read);
+    DCHECK(!intermediate_read_buffer_.empty());
+    memcpy(read_op_->data(), &intermediate_read_buffer_[0], bytes_read);
   } else if (bytes_read == 0 && total_bytes_ == kPositionNotSpecified) {
     // We've reached the end of the file and we didn't know the total size
     // before. Update the total size so Read()s past the end of the file will

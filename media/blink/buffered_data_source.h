@@ -6,6 +6,7 @@
 #define MEDIA_BLINK_BUFFERED_DATA_SOURCE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -196,8 +197,7 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
   // because we want buffer to be passed into BufferedResourceLoader to be
   // always non-null. And by initializing this member with a default size we can
   // avoid creating zero-sized buffered if the first read has zero size.
-  scoped_ptr<uint8[]> intermediate_read_buffer_;
-  int intermediate_read_buffer_size_;
+  std::vector<uint8> intermediate_read_buffer_;
 
   // The task runner of the render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
