@@ -1446,6 +1446,11 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
 
+    // We need to check for |m_error| again, because |changeState| may trigger
+    // readystatechange, and user javascript can cause |abort()|.
+    if (m_error)
+        return;
+
     if (!len)
         return;
 
@@ -1475,9 +1480,6 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
         }
         m_responseStream->enqueue(ArrayBuffer::create(data, len));
     }
-
-    if (m_error)
-        return;
 
     trackProgress(len);
 }
