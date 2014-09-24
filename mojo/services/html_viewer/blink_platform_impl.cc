@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/html_viewer/webclipboard_impl.h"
@@ -219,6 +220,10 @@ blink::WebThread* BlinkPlatformImpl::currentThread() {
   thread = new WebThreadImplForMessageLoop(message_loop.get());
   current_thread_slot_.Set(thread);
   return thread;
+}
+
+void BlinkPlatformImpl::yieldCurrentThread() {
+  base::PlatformThread::YieldCurrentThread();
 }
 
 blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent() {

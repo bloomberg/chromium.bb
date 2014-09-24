@@ -86,6 +86,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual bool isReservedIPAddress(const blink::WebURL&) const OVERRIDE;
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
+  virtual void yieldCurrentThread();
   virtual blink::WebWaitableEvent* createWaitableEvent();
   virtual blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events);

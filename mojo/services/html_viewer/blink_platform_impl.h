@@ -51,6 +51,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
+  virtual void yieldCurrentThread();
   virtual blink::WebWaitableEvent* createWaitableEvent();
   virtual blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events);

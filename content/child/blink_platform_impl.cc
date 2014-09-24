@@ -25,6 +25,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "blink/public/resources/grit/blink_resources.h"
 #include "content/app/resources/grit/content_resources.h"
@@ -492,6 +493,10 @@ blink::WebThread* BlinkPlatformImpl::currentThread() {
   thread = new WebThreadImplForMessageLoop(message_loop.get());
   current_thread_slot_.Set(thread);
   return thread;
+}
+
+void BlinkPlatformImpl::yieldCurrentThread() {
+  base::PlatformThread::YieldCurrentThread();
 }
 
 blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent() {
