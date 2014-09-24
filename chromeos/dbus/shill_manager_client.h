@@ -14,10 +14,12 @@
 #include "chromeos/dbus/shill_client_helper.h"
 
 namespace dbus {
-
 class ObjectPath;
+}
 
-}  // namespace dbus
+namespace net {
+class IPEndPoint;
+}
 
 namespace chromeos {
 
@@ -193,34 +195,52 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
                           const ObjectPathCallback& callback,
                           const ErrorCallback& error_callback) = 0;
 
-  // Verify that the given data corresponds to a trusted device, and return true
-  // to the callback if it is.
+  // Verifies that the given data corresponds to a trusted device, and returns
+  // true to the callback if it is.
   virtual void VerifyDestination(const VerificationProperties& properties,
                                  const BooleanCallback& callback,
                                  const ErrorCallback& error_callback) = 0;
 
-  // Verify that the given data corresponds to a trusted device, and if it is,
-  // return the encrypted credentials for connecting to the network represented
+  // Verifies that the given data corresponds to a trusted device, and if it is,
+  // returns the encrypted credentials for connecting to the network represented
   // by the given |service_path|, encrypted using the |public_key| for the
-  // trusted device. If the device is not trusted, return the empty string.
+  // trusted device. If the device is not trusted, returns the empty string.
   virtual void VerifyAndEncryptCredentials(
       const VerificationProperties& properties,
       const std::string& service_path,
       const StringCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // Verify that the given data corresponds to a trusted device, and return the
-  // |data| encrypted using the |public_key| for the trusted device. If the
-  // device is not trusted, return the empty string.
+  // Verifies that the given data corresponds to a trusted device, and returns
+  // the |data| encrypted using the |public_key| for the trusted device. If the
+  // device is not trusted, returns the empty string.
   virtual void VerifyAndEncryptData(const VerificationProperties& properties,
                                     const std::string& data,
                                     const StringCallback& callback,
                                     const ErrorCallback& error_callback) = 0;
 
-  // For each technology present, connect to the "best" service available.
+  // For each technology present, connects to the "best" service available.
   // Called once the user is logged in and certificates are loaded.
   virtual void ConnectToBestServices(const base::Closure& callback,
                                      const ErrorCallback& error_callback) = 0;
+
+  // Requests that shill program the NIC so that packets incoming on
+  // |ip_connection| wake up the CPU.
+  virtual void AddWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Removes a request to wake up on packets coming on |ip_connection|.
+  virtual void RemoveWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Clears all requests to wake up on packets.
+  virtual void RemoveAllWakeOnPacketConnections(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns NULL.
   virtual TestInterface* GetTestInterface() = 0;

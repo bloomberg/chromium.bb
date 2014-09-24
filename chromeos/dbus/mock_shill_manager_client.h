@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
+#include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -64,6 +65,17 @@ class MockShillManagerClient : public ShillManagerClient {
                     const StringCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD2(ConnectToBestServices,
+               void(const base::Closure& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(AddWakeOnPacketConnection,
+               void(const net::IPEndPoint& ip_connection,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(RemoveWakeOnPacketConnection,
+               void(const net::IPEndPoint& ip_connection,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD2(RemoveAllWakeOnPacketConnections,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD0(GetTestInterface, TestInterface*());

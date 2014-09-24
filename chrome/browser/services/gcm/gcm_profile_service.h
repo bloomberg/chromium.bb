@@ -86,6 +86,9 @@ class GCMProfileService : public KeyedService {
   class IdentityObserver;
   scoped_ptr<IdentityObserver> identity_observer_;
 #endif
+#if defined(OS_CHROMEOS)
+  scoped_ptr<GCMConnectionObserver> chromeos_connection_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GCMProfileService);
 };

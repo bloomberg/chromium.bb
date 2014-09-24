@@ -56,6 +56,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 namespace extensions {
@@ -220,6 +221,10 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     // This is needed to create extension service under CrOS.
 #if defined(OS_CHROMEOS)
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+    // Creating a DBus thread manager setter has the side effect of
+    // creating a DBusThreadManager, which is needed for testing.
+    // We don't actually need the setter so we ignore the return value.
+    chromeos::DBusThreadManager::GetSetterForTesting();
 #endif
 
     // Create a new profile.

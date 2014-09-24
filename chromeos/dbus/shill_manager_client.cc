@@ -14,6 +14,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
+#include "net/base/ip_endpoint.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -208,6 +209,51 @@ class ShillManagerClientImpl : public ShillManagerClient {
     helper_->CallVoidMethodWithErrorCallback(&method_call,
                                             callback,
                                             error_callback);
+  }
+
+  virtual void AddWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    if (ip_endpoint.address().empty()) {
+      LOG(ERROR) << "AddWakeOnPacketConnection: null address";
+      return;
+    }
+    dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
+                                 shill::kAddWakeOnPacketConnectionFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(net::IPAddressToString(ip_endpoint.address()));
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
+                                             callback,
+                                             error_callback);
+  }
+
+  virtual void RemoveWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    if (ip_endpoint.address().empty()) {
+      LOG(ERROR) << "RemoveWakeOnPacketConnection: null address";
+      return;
+    }
+    dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
+                                 shill::kRemoveWakeOnPacketConnectionFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(net::IPAddressToString(ip_endpoint.address()));
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
+                                             callback,
+                                             error_callback);
+  }
+
+  virtual void RemoveAllWakeOnPacketConnections(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        shill::kFlimflamManagerInterface,
+        shill::kRemoveAllWakeOnPacketConnectionsFunction);
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
+                                             callback,
+                                             error_callback);
   }
 
   virtual TestInterface* GetTestInterface() OVERRIDE {
