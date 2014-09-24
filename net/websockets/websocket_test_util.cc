@@ -48,7 +48,7 @@ std::string WebSocketStandardRequest(const std::string& path,
       "Origin: %s\r\n"
       "Sec-WebSocket-Version: 13\r\n"
       "User-Agent:\r\n"
-      "Accept-Encoding: gzip,deflate\r\n"
+      "Accept-Encoding: gzip, deflate\r\n"
       "Accept-Language: en-us,fr\r\n"
       "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
       "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n"

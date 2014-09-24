@@ -136,7 +136,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
                            "Host: www.google.com\r\n"
                            "Proxy-Connection: keep-alive\r\n%s"
                            "User-Agent:\r\n"
-                           "Accept-Encoding: gzip,deflate\r\n\r\n",
+                           "Accept-Encoding: gzip, deflate\r\n\r\n",
                            method, trailer.c_str());
     MockWrite data_writes[] = {
       MockWrite(request1.c_str()),
@@ -156,7 +156,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
                              "Host: www.google.com\r\n"
                              "Connection: keep-alive\r\n%s"
                              "User-Agent:\r\n"
-                             "Accept-Encoding: gzip,deflate\r\n\r\n",
+                             "Accept-Encoding: gzip, deflate\r\n\r\n",
                              method, trailer.c_str());
       MockWrite data_writes2[] = {
           MockWrite(request2.c_str()),
@@ -737,7 +737,7 @@ TEST_F(DataReductionProxyProtocolTest,
               "Host: www.google.com\r\n"
               "Connection: keep-alive\r\n"
               "User-Agent:\r\n"
-              "Accept-Encoding: gzip,deflate\r\n\r\n"),
+              "Accept-Encoding: gzip, deflate\r\n\r\n"),
   };
   StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
                                  data_writes, arraysize(data_writes));

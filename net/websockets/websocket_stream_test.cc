@@ -333,7 +333,7 @@ class WebSocketStreamCreateBasicAuthTest : public WebSocketStreamCreateTest {
         "Origin: http://localhost\r\n"
         "Sec-WebSocket-Version: 13\r\n"
         "User-Agent:\r\n"
-        "Accept-Encoding: gzip,deflate\r\n"
+        "Accept-Encoding: gzip, deflate\r\n"
         "Accept-Language: en-us,fr\r\n"
         "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
         "Sec-WebSocket-Extensions: permessage-deflate; "
@@ -390,7 +390,7 @@ const char WebSocketStreamCreateDigestAuthTest::kAuthorizedRequest[] =
     "Origin: http://localhost\r\n"
     "Sec-WebSocket-Version: 13\r\n"
     "User-Agent:\r\n"
-    "Accept-Encoding: gzip,deflate\r\n"
+    "Accept-Encoding: gzip, deflate\r\n"
     "Accept-Language: en-us,fr\r\n"
     "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
     "Sec-WebSocket-Extensions: permessage-deflate; "
@@ -476,7 +476,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
   EXPECT_EQ(HeaderKeyValuePair("Sec-WebSocket-Version", "13"),
             request_headers[6]);
   EXPECT_EQ(HeaderKeyValuePair("User-Agent", ""), request_headers[7]);
-  EXPECT_EQ(HeaderKeyValuePair("Accept-Encoding", "gzip,deflate"),
+  EXPECT_EQ(HeaderKeyValuePair("Accept-Encoding", "gzip, deflate"),
             request_headers[8]);
   EXPECT_EQ(HeaderKeyValuePair("Accept-Language", "en-us,fr"),
             request_headers[9]);

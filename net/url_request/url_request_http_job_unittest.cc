@@ -75,7 +75,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
     // This check isn't wrapped with EXPECT* macros because different
     // results from this function may be expected in different tests.
     std::vector<std::string> tokens;
-    size_t num_tokens = Tokenize(encoding_headers, ",", &tokens);
+    size_t num_tokens = Tokenize(encoding_headers, ", ", &tokens);
     for (size_t i = 0; i < num_tokens; i++) {
       if (!base::strncasecmp(tokens[i].data(), "sdch", tokens[i].length()))
         return true;

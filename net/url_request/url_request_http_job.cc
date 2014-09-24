@@ -521,11 +521,11 @@ void URLRequestHttpJob::AddExtraHeaders() {
     if (!advertise_sdch) {
       // Tell the server what compression formats we support (other than SDCH).
       request_info_.extra_headers.SetHeader(
-          HttpRequestHeaders::kAcceptEncoding, "gzip,deflate");
+          HttpRequestHeaders::kAcceptEncoding, "gzip, deflate");
     } else {
       // Include SDCH in acceptable list.
       request_info_.extra_headers.SetHeader(
-          HttpRequestHeaders::kAcceptEncoding, "gzip,deflate,sdch");
+          HttpRequestHeaders::kAcceptEncoding, "gzip, deflate, sdch");
       if (!avail_dictionaries.empty()) {
         request_info_.extra_headers.SetHeader(
             kAvailDictionaryHeader,

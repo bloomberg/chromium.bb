@@ -660,7 +660,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
               "Host: ftp.example.com\r\n"
               "Connection: keep-alive\r\n"
               "User-Agent:\r\n"
-              "Accept-Encoding: gzip,deflate\r\n"
+              "Accept-Encoding: gzip, deflate\r\n"
               "Accept-Language: en-us,fr\r\n\r\n"),
   };
   MockRead reads1[] = {

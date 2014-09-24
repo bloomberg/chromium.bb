@@ -2439,11 +2439,11 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock("http://www.google.com/"));
   (*headers)["user-agent"] = "";
-  (*headers)["accept-encoding"] = "gzip,deflate";
+  (*headers)["accept-encoding"] = "gzip, deflate";
   scoped_ptr<SpdyHeaderBlock> headers2(
       spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
   (*headers2)["user-agent"] = "";
-  (*headers2)["accept-encoding"] = "gzip,deflate";
+  (*headers2)["accept-encoding"] = "gzip, deflate";
 
   // Setup writes/reads to www.google.com
   scoped_ptr<SpdyFrame> req(
@@ -2518,7 +2518,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock("http://www.google.com/"));
   (*headers)["user-agent"] = "";
-  (*headers)["accept-encoding"] = "gzip,deflate";
+  (*headers)["accept-encoding"] = "gzip, deflate";
 
   // Setup writes/reads to www.google.com
   scoped_ptr<SpdyFrame> req(
@@ -2551,7 +2551,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
   scoped_ptr<SpdyHeaderBlock> headers2(
       spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
   (*headers2)["user-agent"] = "";
-  (*headers2)["accept-encoding"] = "gzip,deflate";
+  (*headers2)["accept-encoding"] = "gzip, deflate";
   scoped_ptr<SpdyFrame> req2(
       spdy_util_.ConstructSpdySyn(1, *headers2, LOWEST, false, true));
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));

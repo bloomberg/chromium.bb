@@ -119,7 +119,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     headers.SetHeader("Origin", origin);
     headers.SetHeader("Sec-WebSocket-Version", "13");
     headers.SetHeader("User-Agent", "");
-    headers.SetHeader("Accept-Encoding", "gzip,deflate");
+    headers.SetHeader("Accept-Encoding", "gzip, deflate");
     headers.SetHeader("Accept-Language", "en-us,fr");
 
     HttpResponseInfo response;
