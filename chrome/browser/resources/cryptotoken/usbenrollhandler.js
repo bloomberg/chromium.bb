@@ -98,7 +98,8 @@ UsbEnrollHandler.prototype.signerFoundGnubby_ =
     // caller, as the gnubby is already enrolled. Map ok to WRONG_DATA, so the
     // caller knows what to do.
     this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS);
-  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS) {
+  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS ||
+      signResult.code == DeviceStatusCodes.WRONG_LENGTH_STATUS) {
     var gnubby = signResult['gnubby'];
     // A valid helper request contains at least one enroll challenge, so use
     // the app id hash from the first challenge.
@@ -206,10 +207,13 @@ UsbEnrollHandler.prototype.tryEnroll_ = function(gnubby, version) {
     this.removeWrongVersionGnubby_(gnubby);
     return;
   }
-  var challengeChallenge = B64_decode(challenge['challenge']);
-  var appIdHash = B64_decode(challenge['appIdHash']);
-  gnubby.enroll(challengeChallenge, appIdHash,
-      this.enrollCallback_.bind(this, gnubby, version));
+  var challengeValue = B64_decode(challenge['challengeHash']);
+  var appIdHash = challenge['appIdHash'];
+  var individualAttest =
+      DEVICE_FACTORY_REGISTRY.getIndividualAttestation().
+          requestIndividualAttestation(appIdHash);
+  gnubby.enroll(challengeValue, B64_decode(appIdHash),
+      this.enrollCallback_.bind(this, gnubby, version), individualAttest);
 };
 
 /**

@@ -83,13 +83,14 @@ function handleU2fEnrollRequest(sender, request, sendResponse) {
   closeable =
       validateAndBeginEnrollRequest(
           sender, request, 'registerRequests', 'signRequests',
-          sendErrorResponse, sendSuccessResponse);
+          sendErrorResponse, sendSuccessResponse, 'registeredKeys');
   return closeable;
 }
 
 /**
  * Validates an enroll request using the given parameters, and, if valid, begins
- * handling the enroll request.
+ * handling the enroll request. (The enroll request may be modified as a result
+ * of handling it.)
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's enroll request.
  * @param {string} enrollChallengesName The name of the enroll challenges value
@@ -99,11 +100,14 @@ function handleU2fEnrollRequest(sender, request, sendResponse) {
  * @param {function(ErrorCodes)} errorCb Error callback.
  * @param {function(string, string, (string|undefined))} successCb Success
  *     callback.
+ * @param {string=} opt_registeredKeysName The name of the registered keys
+ *     value in the request.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
 function validateAndBeginEnrollRequest(sender, request,
-    enrollChallengesName, signChallengesName, errorCb, successCb) {
+    enrollChallengesName, signChallengesName, errorCb, successCb,
+    opt_registeredKeysName) {
   var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
   if (!origin) {
     errorCb(ErrorCodes.BAD_REQUEST);
@@ -111,20 +115,31 @@ function validateAndBeginEnrollRequest(sender, request,
   }
 
   if (!isValidEnrollRequest(request, enrollChallengesName,
-      signChallengesName)) {
+      signChallengesName, opt_registeredKeysName)) {
     errorCb(ErrorCodes.BAD_REQUEST);
     return null;
   }
 
   var enrollChallenges = request[enrollChallengesName];
-  var signChallenges = request[signChallengesName];
+  var signChallenges;
+  if (opt_registeredKeysName &&
+      request.hasOwnProperty(opt_registeredKeysName)) {
+    // Convert registered keys to sign challenges by adding a challenge value.
+    signChallenges = request[opt_registeredKeysName];
+    for (var i = 0; i < signChallenges.length; i++) {
+      // The actual value doesn't matter, as long as it's a string.
+      signChallenges[i]['challenge'] = '';
+    }
+  } else {
+    signChallenges = request[signChallengesName];
+  }
   var logMsgUrl = request['logMsgUrl'];
 
   var timer = createTimerForRequest(
       FACTORY_REGISTRY.getCountdownFactory(), request);
   var enroller = new Enroller(timer, origin, errorCb, successCb,
       sender.tlsChannelId, logMsgUrl);
-  enroller.doEnroll(enrollChallenges, signChallenges);
+  enroller.doEnroll(enrollChallenges, signChallenges, request['appId']);
   return /** @type {Closeable} */ (enroller);
 }
 
@@ -135,22 +150,32 @@ function validateAndBeginEnrollRequest(sender, request,
  *     in the request.
  * @param {string} signChallengesName The name of the sign challenges value in
  *     the request.
+ * @param {string=} opt_registeredKeysName The name of the registered keys
+ *     value in the request.
  * @return {boolean} Whether the request appears valid.
  */
 function isValidEnrollRequest(request, enrollChallengesName,
-    signChallengesName) {
+    signChallengesName, opt_registeredKeysName) {
   if (!request.hasOwnProperty(enrollChallengesName))
     return false;
   var enrollChallenges = request[enrollChallengesName];
   if (!enrollChallenges.length)
     return false;
-  if (!isValidEnrollChallengeArray(enrollChallenges))
+  var hasAppId = request.hasOwnProperty('appId');
+  if (!isValidEnrollChallengeArray(enrollChallenges, !hasAppId))
     return false;
   var signChallenges = request[signChallengesName];
   // A missing sign challenge array is ok, in the case the user is not already
   // enrolled.
-  if (signChallenges && !isValidSignChallengeArray(signChallenges))
+  if (signChallenges && !isValidSignChallengeArray(signChallenges, !hasAppId))
     return false;
+  if (opt_registeredKeysName) {
+    var registeredKeys = request[opt_registeredKeysName];
+    if (registeredKeys &&
+        !isValidRegisteredKeyArray(registeredKeys, !hasAppId)) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -166,10 +191,12 @@ var EnrollChallenge;
 /**
  * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges to
  *     validate.
+ * @param {boolean} appIdRequired Whether the appId property is required on
+ *     each challenge.
  * @return {boolean} Whether the given array of challenges is a valid enroll
  *     challenges array.
  */
-function isValidEnrollChallengeArray(enrollChallenges) {
+function isValidEnrollChallengeArray(enrollChallenges, appIdRequired) {
   var seenVersions = {};
   for (var i = 0; i < enrollChallenges.length; i++) {
     var enrollChallenge = enrollChallenges[i];
@@ -186,7 +213,7 @@ function isValidEnrollChallengeArray(enrollChallenges) {
       return false;
     }
     seenVersions[version] = version;
-    if (!enrollChallenge['appId']) {
+    if (appIdRequired && !enrollChallenge['appId']) {
       return false;
     }
     if (!enrollChallenge['challenge']) {
@@ -300,10 +327,13 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
  * @param {Array.<EnrollChallenge>} enrollChallenges A set of enroll challenges.
  * @param {Array.<SignChallenge>} signChallenges A set of sign challenges for
  *     existing enrollments for this user and appId.
+ * @param {string=} opt_appId The app id for the entire request.
  */
-Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges) {
-  var encodedEnrollChallenges = this.encodeEnrollChallenges_(enrollChallenges);
-  var encodedSignChallenges = encodeSignChallenges(signChallenges);
+Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
+    opt_appId) {
+  var encodedEnrollChallenges =
+      this.encodeEnrollChallenges_(enrollChallenges, opt_appId);
+  var encodedSignChallenges = encodeSignChallenges(signChallenges, opt_appId);
   var request = {
     type: 'enroll_helper_request',
     enrollChallenges: encodedEnrollChallenges,
@@ -317,8 +347,19 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges) {
 
   // Begin fetching/checking the app ids.
   var enrollAppIds = [];
+  if (opt_appId) {
+    enrollAppIds.push(opt_appId);
+  }
   for (var i = 0; i < enrollChallenges.length; i++) {
-    enrollAppIds.push(enrollChallenges[i]['appId']);
+    if (enrollChallenges[i].hasOwnProperty('appId')) {
+      enrollAppIds.push(enrollChallenges[i]['appId']);
+    }
+  }
+  // Sanity check
+  if (!enrollAppIds.length) {
+    console.warn(UTIL_fmt('empty enroll app ids?'));
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    return;
   }
   var self = this;
   this.checkAppIds_(enrollAppIds, signChallenges, function(result) {
@@ -341,10 +382,11 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges) {
 /**
  * Encodes the enroll challenge as an enroll helper challenge.
  * @param {EnrollChallenge} enrollChallenge The enroll challenge to encode.
+ * @param {string=} opt_appId The app id for the entire request.
  * @return {EnrollHelperChallenge} The encoded challenge.
  * @private
  */
-Enroller.encodeEnrollChallenge_ = function(enrollChallenge) {
+Enroller.encodeEnrollChallenge_ = function(enrollChallenge, opt_appId) {
   var encodedChallenge = {};
   var version;
   if (enrollChallenge['version']) {
@@ -354,19 +396,30 @@ Enroller.encodeEnrollChallenge_ = function(enrollChallenge) {
     version = 'U2F_V1';
   }
   encodedChallenge['version'] = version;
-  encodedChallenge['challenge'] = enrollChallenge['challenge'];
-  encodedChallenge['appIdHash'] =
-      B64_encode(sha256HashOfString(enrollChallenge['appId']));
+  encodedChallenge['challengeHash'] = enrollChallenge['challenge'];
+  var appId;
+  if (enrollChallenge['appId']) {
+    appId = enrollChallenge['appId'];
+  } else {
+    appId = opt_appId;
+  }
+  if (!appId) {
+    // Sanity check. (Other code should fail if it's not set.)
+    console.warn(UTIL_fmt('No appId?'));
+  }
+  encodedChallenge['appIdHash'] = B64_encode(sha256HashOfString(appId));
   return /** @type {EnrollHelperChallenge} */ (encodedChallenge);
 };
 
 /**
  * Encodes the given enroll challenges using this enroller's state.
  * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges.
+ * @param {string=} opt_appId The app id for the entire request.
  * @return {!Array.<EnrollHelperChallenge>} The encoded enroll challenges.
  * @private
  */
-Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges) {
+Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
+    opt_appId) {
   var challenges = [];
   for (var i = 0; i < enrollChallenges.length; i++) {
     var enrollChallenge = enrollChallenges[i];
@@ -393,9 +446,10 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges) {
       this.browserData_[version] =
           B64_encode(UTIL_StringToBytes(browserData));
       challenges.push(Enroller.encodeEnrollChallenge_(
-          /** @type {EnrollChallenge} */ (modifiedChallenge)));
+          /** @type {EnrollChallenge} */ (modifiedChallenge), opt_appId));
     } else {
-      challenges.push(Enroller.encodeEnrollChallenge_(enrollChallenge));
+      challenges.push(
+          Enroller.encodeEnrollChallenge_(enrollChallenge, opt_appId));
     }
   }
   return challenges;

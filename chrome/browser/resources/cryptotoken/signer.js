@@ -144,9 +144,20 @@ function validateAndEnqueueSignRequest(sender, request,
   }
 
   var signChallenges = request[signChallengesName];
-  // A valid sign data has at least one challenge, so get the first appId from
-  // the first challenge.
-  var firstAppId = signChallenges[0]['appId'];
+  var appId;
+  if (request['appId']) {
+    appId = request['appId'];
+  } else {
+    // A valid sign data has at least one challenge, so get the appId from
+    // the first challenge.
+    appId = signChallenges[0]['appId'];
+  }
+  // Sanity check
+  if (!appId) {
+    console.warn(UTIL_fmt('empty sign appId?'));
+    errorCb(ErrorCodes.BAD_REQUEST);
+    return null;
+  }
   var timer = createTimerForRequest(
       FACTORY_REGISTRY.getCountdownFactory(), request);
   var logMsgUrl = request['logMsgUrl'];
@@ -154,9 +165,9 @@ function validateAndEnqueueSignRequest(sender, request,
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
   var queuedSignRequest = new QueuedSignRequest(signChallenges,
-      timer, nonNullOrigin, errorCb, successCb, sender.tlsChannelId,
+      timer, nonNullOrigin, errorCb, successCb, appId, sender.tlsChannelId,
       logMsgUrl);
-  var requestToken = signRequestQueue.queueRequest(firstAppId, nonNullOrigin,
+  var requestToken = signRequestQueue.queueRequest(appId, nonNullOrigin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
   queuedSignRequest.setToken(requestToken);
   return queuedSignRequest;
@@ -177,7 +188,8 @@ function isValidSignRequest(request, signChallengesName) {
   // be fulfilled. Fail.
   if (!signChallenges.length)
     return false;
-  return isValidSignChallengeArray(signChallenges);
+  var hasAppId = request.hasOwnProperty('appId');
+  return isValidSignChallengeArray(signChallenges, !hasAppId);
 }
 
 /**
@@ -187,13 +199,14 @@ function isValidSignRequest(request, signChallengesName) {
  * @param {string} origin Signature origin
  * @param {function(ErrorCodes)} errorCb Error callback
  * @param {function(SignChallenge, string, string)} successCb Success callback
+ * @param {string|undefined} opt_appId The app id for the entire request.
  * @param {string|undefined} opt_tlsChannelId TLS Channel Id
  * @param {string|undefined} opt_logMsgUrl Url to post log messages to
  * @constructor
  * @implements {Closeable}
  */
 function QueuedSignRequest(signChallenges, timer, origin, errorCb,
-    successCb, opt_tlsChannelId, opt_logMsgUrl) {
+    successCb, opt_appId, opt_tlsChannelId, opt_logMsgUrl) {
   /** @private {!Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {Countdown} */
@@ -204,6 +217,8 @@ function QueuedSignRequest(signChallenges, timer, origin, errorCb,
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
+  /** @private {string|undefined} */
+  this.appId_ = opt_appId;
   /** @private {string|undefined} */
   this.tlsChannelId_ = opt_tlsChannelId;
   /** @private {string|undefined} */
@@ -244,7 +259,7 @@ QueuedSignRequest.prototype.begin = function(token) {
   this.signer_ = new Signer(this.timer_, this.origin_,
       this.signerFailed_.bind(this), this.signerSucceeded_.bind(this),
       this.tlsChannelId_, this.logMsgUrl_);
-  if (!this.signer_.setChallenges(this.signChallenges_)) {
+  if (!this.signer_.setChallenges(this.signChallenges_, this.appId_)) {
     token.complete();
     this.errorCb_(ErrorCodes.BAD_REQUEST);
   }
@@ -320,13 +335,16 @@ function Signer(timer, origin, errorCb, successCb,
 /**
  * Sets the challenges to be signed.
  * @param {Array.<SignChallenge>} signChallenges The challenges to set.
+ * @param {string=} opt_appId The app id for the entire request.
  * @return {boolean} Whether the challenges could be set.
  */
-Signer.prototype.setChallenges = function(signChallenges) {
+Signer.prototype.setChallenges = function(signChallenges, opt_appId) {
   if (this.challengesSet_ || this.done_)
     return false;
   /** @private {Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
+  /** @private {string|undefined} */
+  this.appId_ = opt_appId;
   /** @private {boolean} */
   this.challengesSet_ = true;
 
@@ -340,6 +358,9 @@ Signer.prototype.setChallenges = function(signChallenges) {
  */
 Signer.prototype.checkAppIds_ = function() {
   var appIds = getDistinctAppIds(this.signChallenges_);
+  if (this.appId_) {
+    appIds = UTIL_unionArrays([this.appId_], appIds);
+  }
   if (!appIds || !appIds.length) {
     this.notifyError_(ErrorCodes.BAD_REQUEST);
     return;
@@ -405,7 +426,7 @@ Signer.prototype.doSign_ = function() {
   }
 
   var encodedChallenges = encodeSignChallenges(this.signChallenges_,
-      this.getChallengeHash_.bind(this));
+      this.appId_, this.getChallengeHash_.bind(this));
 
   var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
   var request = makeSignHelperRequest(encodedChallenges, timeoutSeconds,

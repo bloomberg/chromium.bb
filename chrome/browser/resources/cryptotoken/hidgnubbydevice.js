@@ -71,6 +71,12 @@ HidGnubbyDevice.prototype.destroy = function() {
   this.dev = null;
 
   chrome.hid.disconnect(dev.connectionId, function() {
+    if (chrome.runtime.lastError) {
+      console.warn(UTIL_fmt('Device ' + dev.connectionId +
+          ' couldn\'t be disconnected:'));
+      console.warn(chrome.runtime.lastError);
+      return;
+    }
     console.log(UTIL_fmt('Device ' + dev.connectionId + ' closed'));
   });
 };
@@ -213,8 +219,9 @@ HidGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
     if (this.lockCID != cid) {
       // Some other channel has active lock.
 
-      if (cmd != GnubbyDevice.CMD_SYNC) {
-        // Anything but SYNC gets an immediate busy.
+      if (cmd != GnubbyDevice.CMD_SYNC &&
+          cmd != GnubbyDevice.CMD_INIT) {
+        // Anything but SYNC|INIT gets an immediate busy.
         var busy = new Uint8Array(
             [(cid >> 24) & 255,
              (cid >> 16) & 255,
@@ -229,8 +236,9 @@ HidGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
         return false;
       }
 
-      // SYNC gets to go to the device to flush OS tx/rx queues.
-      // The usb firmware always responds to SYNC, regardless of lock status.
+      // SYNC|INIT gets to go to the device to flush OS tx/rx queues.
+      // The usb firmware is to alway respond to SYNC/INIT,
+      // regardless of lock status.
     }
   }
   return true;
@@ -411,12 +419,18 @@ HidGnubbyDevice.enumerate = function(cb) {
     }
   }
 
-  GnubbyDevice.getPermittedUsbDevices(function(devs) {
-    permittedDevs = devs;
-    for (var i = 0; i < devs.length; i++) {
-      chrome.hid.getDevices(devs[i], enumerated);
-    }
-  });
+  try {
+    chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]}, cb);
+  } catch (e) {
+    console.log(e);
+    console.log(UTIL_fmt('falling back to vid/pid enumeration'));
+    GnubbyDevice.getPermittedUsbDevices(function(devs) {
+      permittedDevs = devs;
+      for (var i = 0; i < devs.length; i++) {
+        chrome.hid.getDevices(devs[i], enumerated);
+      }
+    });
+  }
 };
 
 /**
