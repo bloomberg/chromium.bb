@@ -129,8 +129,7 @@ const char* kAtomsToCache[] = {
 DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
-    : close_widget_factory_(this),
-      xdisplay_(gfx::GetXDisplay()),
+    : xdisplay_(gfx::GetXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -147,7 +146,8 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       window_parent_(NULL),
       window_shape_(NULL),
       custom_window_shape_(false),
-      urgency_hint_set_(false) {
+      urgency_hint_set_(false),
+      close_widget_factory_(this) {
 }
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {

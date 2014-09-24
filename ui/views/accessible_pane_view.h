@@ -101,8 +101,6 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   // is known where to return to.
   bool allow_deactivate_on_esc_;
 
-  base::WeakPtrFactory<AccessiblePaneView> method_factory_;
-
   // Save the focus manager rather than calling GetFocusManager(),
   // so that we can remove focus listeners in the destructor.
   FocusManager* focus_manager_;
@@ -123,6 +121,8 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   int last_focused_view_storage_id_;
 
   friend class AccessiblePaneViewFocusSearch;
+
+  base::WeakPtrFactory<AccessiblePaneView> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessiblePaneView);
 };

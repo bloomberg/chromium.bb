@@ -4,7 +4,6 @@
 
 #include "ui/aura/client/screen_position_client.h"
 
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ScreenPositionClient*)

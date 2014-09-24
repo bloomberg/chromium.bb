@@ -43,13 +43,13 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
 AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
       allow_deactivate_on_esc_(false),
-      method_factory_(this),
       focus_manager_(NULL),
       home_key_(ui::VKEY_HOME, ui::EF_NONE),
       end_key_(ui::VKEY_END, ui::EF_NONE),
       escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
       left_key_(ui::VKEY_LEFT, ui::EF_NONE),
-      right_key_(ui::VKEY_RIGHT, ui::EF_NONE) {
+      right_key_(ui::VKEY_RIGHT, ui::EF_NONE),
+      method_factory_(this) {
   focus_search_.reset(new AccessiblePaneViewFocusSearch(this));
   last_focused_view_storage_id_ = ViewStorage::GetInstance()->CreateStorageID();
 }

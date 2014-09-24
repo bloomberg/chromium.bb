@@ -239,8 +239,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   void DelayedResize(const gfx::Size& size);
 
-  base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
-
   // X11 things
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
@@ -338,6 +336,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool urgency_hint_set_;
 
   base::CancelableCallback<void()> delayed_resize_task_;
+
+  base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };

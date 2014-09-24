@@ -255,10 +255,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   scoped_ptr<DesktopCaptureClient> capture_client_;
 
-  // The following factory is used for calls to close the NativeWidgetAura
-  // instance.
-  base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
-
   // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;
 
@@ -314,6 +310,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // See class documentation for Widget in widget.h for a note about type.
   Widget::InitParams::Type widget_type_;
+
+  // The following factory is used for calls to close the NativeWidgetAura
+  // instance.
+  base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

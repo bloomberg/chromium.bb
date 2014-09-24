@@ -166,12 +166,12 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   ObserverList<KeyboardControllerObserver> observer_list_;
 
-  base::WeakPtrFactory<KeyboardController> weak_factory_;
-
   // The currently used keyboard position.
   gfx::Rect current_keyboard_bounds_;
 
   static KeyboardController* instance_;
+
+  base::WeakPtrFactory<KeyboardController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardController);
 };

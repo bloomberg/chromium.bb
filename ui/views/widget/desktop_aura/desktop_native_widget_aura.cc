@@ -253,14 +253,14 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
     : desktop_window_tree_host_(NULL),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      close_widget_factory_(this),
       content_window_container_(NULL),
       content_window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false),
       cursor_(gfx::kNullCursor),
-      widget_type_(Widget::InitParams::TYPE_WINDOW) {
+      widget_type_(Widget::InitParams::TYPE_WINDOW),
+      close_widget_factory_(this) {
   aura::client::SetFocusChangeObserver(content_window_, this);
   aura::client::SetActivationChangeObserver(content_window_, this);
 }
