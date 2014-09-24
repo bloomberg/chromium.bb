@@ -257,7 +257,6 @@ TEST_F(LoginDatabaseTest, Logins) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
-  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -307,15 +306,12 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
-  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
-
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_BASIC);
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_DIGEST);
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_OTHER);
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
-  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -365,7 +361,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
 // instead of GetUniqueStatement, since REGEXP is in use. See
 // http://crbug.com/248608.
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
-  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -459,7 +454,6 @@ PasswordForm GetFormWithNewSignonRealm(PasswordForm form,
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
-  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.

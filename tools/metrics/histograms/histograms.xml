@@ -48177,7 +48177,7 @@ To add a new entry, add it with any value and run test to compute valid value.
     The value indicates whether an entry returned by password autofill contains
     a value that was found by matching against the public suffix list.
   </summary>
-  <int value="0" label="Matching disabled"/>
+  <int value="0" label="Matching not used"/>
   <int value="1" label="No match"/>
   <int value="2" label="Match"/>
 </enum>

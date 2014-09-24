@@ -147,8 +147,6 @@ class LoginDatabase {
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
 
-  PSLMatchingHelper psl_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };
 

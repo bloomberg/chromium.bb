@@ -533,9 +533,6 @@ class NativeBackendGnomeTest : public testing::Test {
   // m.facebook.com password should not get updated. Depending on the argument,
   // the credential update is done via UpdateLogin or AddLogin.
   void CheckPSLUpdate(UpdateType update_type) {
-    password_manager::PSLMatchingHelper helper;
-    ASSERT_TRUE(helper.IsMatchingEnabled());
-
     NativeBackendGnome backend(321);
     backend.Init();
 
@@ -800,8 +797,6 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
 TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
   PasswordForm result;
   const GURL kMobileURL("http://m.facebook.com/");
-  password_manager::PSLMatchingHelper helper;
-  ASSERT_TRUE(helper.IsMatchingEnabled());
   EXPECT_TRUE(CheckCredentialAvailability(
       form_facebook_, kMobileURL, PasswordForm::SCHEME_HTML, &result));
   EXPECT_EQ(kMobileURL, result.origin);
@@ -811,8 +806,6 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
 // Save a password for www.facebook.com and see it not suggested for
 // m-facebook.com.
 TEST_F(NativeBackendGnomeTest, PSLMatchingNegativeDomainMismatch) {
-  password_manager::PSLMatchingHelper helper;
-  ASSERT_TRUE(helper.IsMatchingEnabled());
   EXPECT_FALSE(CheckCredentialAvailability(
       form_facebook_, GURL("http://m-facebook.com/"),
       PasswordForm::SCHEME_HTML, NULL));
@@ -820,8 +813,6 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingNegativeDomainMismatch) {
 
 // Test PSL matching is off for domains excluded from it.
 TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
-  password_manager::PSLMatchingHelper helper;
-  ASSERT_TRUE(helper.IsMatchingEnabled());
   EXPECT_FALSE(CheckCredentialAvailability(
       form_google_, GURL("http://one.google.com/"),
       PasswordForm::SCHEME_HTML, NULL));
@@ -829,9 +820,6 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
 
 // Make sure PSL matches aren't available for non-HTML forms.
 TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledForNonHTMLForms) {
-  password_manager::PSLMatchingHelper helper;
-  ASSERT_TRUE(helper.IsMatchingEnabled());
-
   CheckMatchingWithScheme(PasswordForm::SCHEME_BASIC);
   CheckMatchingWithScheme(PasswordForm::SCHEME_DIGEST);
   CheckMatchingWithScheme(PasswordForm::SCHEME_OTHER);

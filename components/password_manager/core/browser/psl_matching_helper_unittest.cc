@@ -48,8 +48,7 @@ TEST(PSLMatchingUtilsTest, IsPublicSuffixDomainMatch) {
     autofill::PasswordForm form2;
     form2.signon_realm = pairs[i].url2;
     EXPECT_EQ(pairs[i].should_match,
-              PSLMatchingHelper::IsPublicSuffixDomainMatch(form1.signon_realm,
-                                                           form2.signon_realm))
+              IsPublicSuffixDomainMatch(form1.signon_realm, form2.signon_realm))
         << "First URL = " << pairs[i].url1
         << ", second URL = " << pairs[i].url2;
   }
