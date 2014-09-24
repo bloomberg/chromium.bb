@@ -19,12 +19,12 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTextPathElement.h"
 
 #include "core/XLinkNames.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
+#include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
 

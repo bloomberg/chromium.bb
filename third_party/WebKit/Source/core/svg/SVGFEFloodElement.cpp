@@ -19,10 +19,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGFEFloodElement.h"
 
 #include "core/SVGNames.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 

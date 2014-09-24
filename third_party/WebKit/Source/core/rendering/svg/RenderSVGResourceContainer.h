@@ -22,6 +22,7 @@
 
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
 

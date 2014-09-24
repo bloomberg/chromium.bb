@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGFEDropShadowElement.h"
 
 #include "core/SVGNames.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/svg/SVGParserUtilities.h"

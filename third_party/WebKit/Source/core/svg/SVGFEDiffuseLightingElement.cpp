@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"

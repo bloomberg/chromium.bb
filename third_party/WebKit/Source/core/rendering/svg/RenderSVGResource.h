@@ -20,9 +20,6 @@
 #ifndef RenderSVGResource_h
 #define RenderSVGResource_h
 
-#include "core/rendering/svg/RenderSVGShape.h"
-#include "core/svg/SVGDocumentExtensions.h"
-
 namespace blink {
 
 enum RenderSVGResourceType {

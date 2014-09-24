@@ -37,6 +37,7 @@
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "platform/FloatConversion.h"
 
 static int kMaxImageBufferSize = 4096;
 

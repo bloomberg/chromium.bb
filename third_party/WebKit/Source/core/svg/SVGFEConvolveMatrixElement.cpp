@@ -18,16 +18,17 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGFEConvolveMatrixElement.h"
 
 #include "core/SVGNames.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "core/dom/Document.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
 
