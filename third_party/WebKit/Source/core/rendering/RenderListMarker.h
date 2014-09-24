@@ -47,6 +47,14 @@ public:
 
     void updateMarginsAndContent();
 
+    IntRect getRelativeMarkerRect();
+    LayoutRect localSelectionRect();
+    virtual bool isImage() const OVERRIDE;
+    const StyleImage* image() { return m_image.get(); }
+    const RenderListItem* listItem() { return m_listItem.get(); }
+
+    static UChar listMarkerSuffix(EListStyleType, int value);
+
 private:
     RenderListMarker(RenderListItem*);
 
@@ -66,7 +74,6 @@ private:
     virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
 
-    virtual bool isImage() const OVERRIDE;
     bool isText() const { return !isImage(); }
 
     virtual void setSelectionState(SelectionState) OVERRIDE;
@@ -78,9 +85,6 @@ private:
 
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
-
-    IntRect getRelativeMarkerRect();
-    LayoutRect localSelectionRect();
 
     String m_text;
     RefPtr<StyleImage> m_image;
