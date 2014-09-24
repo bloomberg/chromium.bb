@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
+#include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
 
-#include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 
 namespace test {
 

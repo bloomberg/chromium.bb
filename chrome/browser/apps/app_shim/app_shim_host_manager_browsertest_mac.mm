@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 
 #include <unistd.h>
 
-#include "apps/app_shim/app_shim_messages.h"
-#include "apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_channel_proxy.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_
-#define APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_
+#ifndef CHROME_BROWSER_APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_
+#define CHROME_BROWSER_APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -54,4 +54,4 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
 
 }  // namespace apps
 
-#endif  // APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_
+#endif  // CHROME_BROWSER_APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_

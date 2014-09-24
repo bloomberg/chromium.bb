@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 
 #include "apps/app_lifetime_monitor_factory.h"
-#include "apps/app_shim/app_shim_host_manager_mac.h"
-#include "apps/app_shim/app_shim_messages.h"
 #include "apps/launcher.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/mac/app_shim_messages.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

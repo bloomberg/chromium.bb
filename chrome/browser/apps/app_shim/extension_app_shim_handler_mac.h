@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
-#define APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
+#ifndef CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
+#define CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
-#include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -156,4 +156,4 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
 }  // namespace apps
 
-#endif  // APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
+#endif  // CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_

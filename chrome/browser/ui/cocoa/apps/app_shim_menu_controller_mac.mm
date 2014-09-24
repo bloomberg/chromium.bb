@@ -4,11 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
 
-#include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/app_window/app_window.h"

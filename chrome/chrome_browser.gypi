@@ -3002,6 +3002,7 @@
         ['OS=="mac"', {
           'dependencies': [
             'app_shim',
+            'browser_app_shim',
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
         }],

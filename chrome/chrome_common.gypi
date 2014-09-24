@@ -6,8 +6,6 @@
   'variables': {
     # File lists shared with GN build.
     'chrome_common_sources': [
-      '../apps/app_shim/app_shim_launch.h',
-      '../apps/app_shim/app_shim_messages.h',
       'common/all_messages.h',
       'common/attrition_experiments.h',
       'common/auto_start_linux.cc',
@@ -90,6 +88,8 @@
       'common/logging_chrome.h',
       'common/mac/app_mode_common.h',
       'common/mac/app_mode_common.mm',
+      'common/mac/app_shim_launch.h',
+      'common/mac/app_shim_messages.h',
       'common/mac/cfbundle_blocker.h',
       'common/mac/cfbundle_blocker.mm',
       'common/mac/launchd.h',

@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "apps/app_shim/app_shim_launch.h"
 #include "base/files/file_path.h"
+#include "chrome/common/mac/app_shim_launch.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"

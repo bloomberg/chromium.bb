@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 
 #include <map>
 

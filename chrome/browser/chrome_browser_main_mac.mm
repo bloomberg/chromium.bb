@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 #include <sys/sysctl.h>
 
-#include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
@@ -16,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/mac/install_from_dmg.h"

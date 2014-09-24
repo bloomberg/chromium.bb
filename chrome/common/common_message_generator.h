@@ -4,12 +4,12 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "apps/app_shim/app_shim_messages.h"
 #include "chrome/common/benchmarking_messages.h"
 #include "chrome/common/cast_messages.h"
 #include "chrome/common/chrome_utility_messages.h"
 // TODO(thestig) move this inside defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/common/prefetch_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"

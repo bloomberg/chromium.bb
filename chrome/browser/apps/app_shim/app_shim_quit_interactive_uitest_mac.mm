@@ -7,10 +7,10 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "apps/app_shim/app_shim_host_manager_mac.h"
-#include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "apps/switches.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"

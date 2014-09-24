@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_
-#define APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_
+#ifndef CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_
+#define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_
 
 #include <string>
 #include <vector>
 
-#include "apps/app_shim/app_shim_launch.h"
 #include "base/files/file_path.h"
+#include "chrome/common/mac/app_shim_launch.h"
 
 namespace apps {
 
@@ -93,4 +93,4 @@ class AppShimHandler {
 
 }  // namespace apps
 
-#endif  // APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_
+#endif  // CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_

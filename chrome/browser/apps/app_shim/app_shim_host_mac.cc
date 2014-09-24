@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/app_shim_host_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 
-#include "apps/app_shim/app_shim_handler_mac.h"
-#include "apps/app_shim/app_shim_messages.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/common/mac/app_shim_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 

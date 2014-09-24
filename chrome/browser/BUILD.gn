@@ -230,6 +230,7 @@ static_library("browser") {
                            ".", "//chrome")
     deps += [
       #"app_shim"  TODO(GYP)
+      #"browser_app_shim"  TODO(GYP)
     ]
   }
   if (!toolkit_views) {

@@ -45,8 +45,6 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
-        '../apps/app_shim/app_shim_interactive_uitest_mac.mm',
-        '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
         '../chrome/browser/ui/webui/options/language_options_interactive_uitest.cc',
         '../extensions/browser/app_window/app_window_interactive_uitest.cc',
         '../ui/base/clipboard/clipboard_unittest.cc',
@@ -58,6 +56,8 @@
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',
         'browser/apps/app_pointer_lock_interactive_uitest.cc',
+        'browser/apps/app_shim/app_shim_interactive_uitest_mac.mm',
+        'browser/apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
         'browser/apps/app_window_interactive_uitest.cc',
         'browser/apps/web_view_interactive_browsertest.cc',
         'browser/autofill/autofill_interactive_uitest.cc',
@@ -865,9 +865,6 @@
       ],
       'sources': [
         '../apps/app_restore_service_browsertest.cc',
-        '../apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
-        '../apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
-        '../apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
         '../apps/load_and_launch_browsertest.cc',
         # TODO(blundell): Bring up a components_browsertests target and move
         # this test to be in that target. crbug.com/283846
@@ -903,9 +900,12 @@
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',
         'browser/apps/app_crash_browsertest.cc',
+        'browser/apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
+        'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
+        'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
+        'browser/apps/app_url_redirector_browsertest.cc',
         'browser/apps/app_view_browsertest.cc',
         'browser/apps/app_window_browsertest.cc',
-        'browser/apps/app_url_redirector_browsertest.cc',
         'browser/apps/custom_launcher_page_browsertest_views.cc',
         'browser/apps/drive/drive_app_converter_browsertest.cc',
         'browser/apps/drive/drive_app_provider_browsertest.cc',

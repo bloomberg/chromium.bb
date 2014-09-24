@@ -1,5 +1,4 @@
 include_rules = [
-  "+apps/app_shim",  # For app shim messages.
   "+breakpad",  # For Breakpad constants.
   "+chrome/grit",  # For generated headers
   "+chromeos",  # For chromeos_switches.h

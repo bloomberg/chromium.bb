@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 
-#include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"

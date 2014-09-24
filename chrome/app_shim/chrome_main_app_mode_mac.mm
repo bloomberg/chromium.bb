@@ -10,7 +10,6 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "apps/app_shim/app_shim_messages.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -33,7 +32,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
-#include "grit/generated_resources.h"
+#include "chrome/common/mac/app_shim_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/unix_domain_socket_acceptor.h"
+#include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"

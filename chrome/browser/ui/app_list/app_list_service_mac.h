@@ -7,9 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
 class AppListControllerDelegateImpl;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_shim/app_shim_host_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 
 #include <vector>
 
-#include "apps/app_shim/app_shim_messages.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/common/mac/app_shim_messages.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

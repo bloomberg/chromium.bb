@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
-#define APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
+#ifndef CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
+#define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 
-#include "apps/app_shim/extension_app_shim_handler_mac.h"
-#include "apps/app_shim/unix_domain_socket_acceptor.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace base {
@@ -70,4 +70,4 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   DISALLOW_COPY_AND_ASSIGN(AppShimHostManager);
 };
 
-#endif  // APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
+#endif  // CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_

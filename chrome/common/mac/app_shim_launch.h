@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_SHIM_APP_SHIM_LAUNCH_H_
-#define APPS_APP_SHIM_APP_SHIM_LAUNCH_H_
+#ifndef CHROME_COMMON_MAC_APP_SHIM_LAUNCH_H_
+#define CHROME_COMMON_MAC_APP_SHIM_LAUNCH_H_
 
 namespace apps {
 
@@ -54,4 +54,4 @@ enum AppShimAttentionType {
 
 }  // namespace apps
 
-#endif  // APPS_APP_SHIM_APP_SHIM_LAUNCH_H_
+#endif  // CHROME_COMMON_MAC_APP_SHIM_LAUNCH_H_
