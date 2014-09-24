@@ -5,6 +5,7 @@
 #include "tools/gn/tokenizer.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "tools/gn/input_file.h"
 
 namespace {
@@ -107,9 +108,9 @@ std::vector<Token> Tokenizer::Run() {
     base::StringPiece token_value(&input_.data()[token_begin],
                                   token_end - token_begin);
 
-    if (type == Token::UNCLASSIFIED_OPERATOR)
+    if (type == Token::UNCLASSIFIED_OPERATOR) {
       type = GetSpecificOperatorType(token_value);
-    if (type == Token::IDENTIFIER) {
+    } else if (type == Token::IDENTIFIER) {
       if (token_value == "if")
         type = Token::IF;
       else if (token_value == "else")
@@ -118,14 +119,14 @@ std::vector<Token> Tokenizer::Run() {
         type = Token::TRUE_TOKEN;
       else if (token_value == "false")
         type = Token::FALSE_TOKEN;
+    } else if (type == Token::UNCLASSIFIED_COMMENT) {
+      if (AtStartOfLine(token_begin))
+        type = Token::LINE_COMMENT;
+      else
+        type = Token::SUFFIX_COMMENT;
     }
 
-    // TODO(brettw) This just strips comments from the token stream. This
-    // is probably wrong, they should be removed at a later stage so we can
-    // do things like rewrite the file. But this makes the parser simpler and
-    // is OK for now.
-    if (type != Token::COMMENT)
-      tokens_.push_back(Token(location, type, token_value));
+    tokens_.push_back(Token(location, type, token_value));
   }
   if (err_->has_error())
     tokens_.clear();
@@ -199,7 +200,7 @@ Token::Type Tokenizer::ClassifyCurrent() const {
     return Token::COMMA;
 
   if (next_char == '#')
-    return Token::COMMENT;
+    return Token::UNCLASSIFIED_COMMENT;
 
   // For the case of '-' differentiate between a negative number and anything
   // else.
@@ -285,7 +286,7 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
       Advance();  // All are one char.
       break;
 
-    case Token::COMMENT:
+    case Token::UNCLASSIFIED_COMMENT:
       // Eat to EOL.
       while (!at_end() && !IsCurrentNewline())
         Advance();
@@ -300,11 +301,23 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
   }
 }
 
+bool Tokenizer::AtStartOfLine(size_t location) const {
+  while (location > 0) {
+    --location;
+    char c = input_[location];
+    if (c == '\n')
+      return true;
+    if (c != ' ')
+      return false;
+  }
+  return true;
+}
+
 bool Tokenizer::IsCurrentWhitespace() const {
   DCHECK(!at_end());
   char c = input_[cur_];
-  // Note that tab (0x09) is illegal.
-  return c == 0x0A || c == 0x0B || c == 0x0C || c == 0x0D || c == 0x20;
+  // Note that tab (0x09), vertical tab (0x0B), and formfeed (0x0C) are illegal.
+  return c == 0x0A || c == 0x0D || c == 0x20;
 }
 
 bool Tokenizer::IsCurrentStringTerminator(char quote_char) const {
@@ -339,7 +352,8 @@ void Tokenizer::Advance() {
 }
 
 Location Tokenizer::GetCurrentLocation() const {
-  return Location(input_file_, line_number_, char_in_line_);
+  return Location(
+      input_file_, line_number_, char_in_line_, static_cast<int>(cur_));
 }
 
 Err Tokenizer::GetErrorForInvalidToken(const Location& location) const {

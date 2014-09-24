@@ -21,11 +21,13 @@ Err ErrInsideStringToken(const Token& token, size_t offset, size_t size,
   int int_offset = static_cast<int>(offset);
   Location begin_loc(token.location().file(),
                      token.location().line_number(),
-                     token.location().char_offset() + int_offset + 1);
-  Location end_loc(token.location().file(),
-                   token.location().line_number(),
-                   token.location().char_offset() + int_offset + 1 +
-                   static_cast<int>(size));
+                     token.location().char_offset() + int_offset + 1,
+                     token.location().byte() + int_offset + 1);
+  Location end_loc(
+      token.location().file(),
+      token.location().line_number(),
+      token.location().char_offset() + int_offset + 1 + static_cast<int>(size),
+      token.location().byte() + int_offset + 1 + static_cast<int>(size));
   return Err(LocationRange(begin_loc, end_loc), msg, help);
 }
 

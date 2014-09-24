@@ -52,6 +52,11 @@ class Tokenizer {
   Token::Type ClassifyCurrent() const;
   void AdvanceToEndOfToken(const Location& location, Token::Type type);
 
+  // Whether from this location back to the beginning of the line is only
+  // whitespace. |location| should be the first character of the token to be
+  // checked.
+  bool AtStartOfLine(size_t location) const;
+
   bool IsCurrentWhitespace() const;
   bool IsCurrentNewline() const;
   bool IsCurrentStringTerminator(char quote_char) const;

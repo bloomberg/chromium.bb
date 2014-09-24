@@ -14,8 +14,8 @@ TEST(ParseTree, Accessor) {
   // Make a pretend parse node with proper tracking that we can blame for the
   // given value.
   InputFile input_file(SourceFile("//foo"));
-  Token base_token(Location(&input_file, 1, 1), Token::IDENTIFIER, "a");
-  Token member_token(Location(&input_file, 1, 1), Token::IDENTIFIER, "b");
+  Token base_token(Location(&input_file, 1, 1, 1), Token::IDENTIFIER, "a");
+  Token member_token(Location(&input_file, 1, 1, 1), Token::IDENTIFIER, "b");
 
   AccessorNode accessor;
   accessor.set_base(base_token);

@@ -491,6 +491,104 @@ TEST(Parser, LongExpression) {
   DoParserPrintTest(input, expected);
 }
 
+TEST(Parser, CommentsStandalone) {
+  const char* input =
+    "# Toplevel comment.\n"
+    "\n"
+    "executable(\"wee\") {}\n";
+  const char* expected =
+    "BLOCK\n"
+    " +BEFORE_COMMENT(\"# Toplevel comment.\")\n"
+    " FUNCTION(executable)\n"
+    "  LIST\n"
+    "   LITERAL(\"wee\")\n"
+    "  BLOCK\n";
+  DoParserPrintTest(input, expected);
+}
+
+TEST(Parser, CommentsStandaloneEof) {
+  const char* input =
+    "executable(\"wee\") {}\n"
+    "# EOF comment.\n";
+  const char* expected =
+    "BLOCK\n"
+    " +AFTER_COMMENT(\"# EOF comment.\")\n"
+    " FUNCTION(executable)\n"
+    "  LIST\n"
+    "   LITERAL(\"wee\")\n"
+    "  BLOCK\n";
+  DoParserPrintTest(input, expected);
+}
+
+TEST(Parser, CommentsLineAttached) {
+  const char* input =
+    "executable(\"wee\") {\n"
+    "  # Some sources.\n"
+    "  sources = [\n"
+    "    \"stuff.cc\",\n"
+    "    \"things.cc\",\n"
+    "    # This file is special or something.\n"
+    "    \"another.cc\",\n"
+    "  ]\n"
+    "}\n";
+  const char* expected =
+    "BLOCK\n"
+    " FUNCTION(executable)\n"
+    "  LIST\n"
+    "   LITERAL(\"wee\")\n"
+    "  BLOCK\n"
+    "   BINARY(=)\n"
+    "    +BEFORE_COMMENT(\"# Some sources.\")\n"
+    "    IDENTIFIER(sources)\n"
+    "    LIST\n"
+    "     LITERAL(\"stuff.cc\")\n"
+    "     LITERAL(\"things.cc\")\n"
+    "     LITERAL(\"another.cc\")\n"
+    "      +BEFORE_COMMENT(\"# This file is special or something.\")\n";
+  DoParserPrintTest(input, expected);
+}
+
+TEST(Parser, CommentsSuffix) {
+  const char* input =
+    "executable(\"wee\") { # This is some stuff.\n"
+    "sources = [ \"a.cc\" # And another comment here.\n"
+    "] }";
+  const char* expected =
+    "BLOCK\n"
+    " FUNCTION(executable)\n"
+    "  LIST\n"
+    "   LITERAL(\"wee\")\n"
+    "    +SUFFIX_COMMENT(\"# This is some stuff.\")\n"
+    "  BLOCK\n"
+    "   BINARY(=)\n"
+    "    IDENTIFIER(sources)\n"
+    "    LIST\n"
+    "     LITERAL(\"a.cc\")\n"
+    "      +SUFFIX_COMMENT(\"# And another comment here.\")\n";
+  DoParserPrintTest(input, expected);
+}
+
+TEST(Parser, CommentsSuffixDifferentLine) {
+  const char* input =
+    "executable(\"wee\") {\n"
+    "  sources = [ \"a\",\n"
+    "      \"b\" ] # Comment\n"
+    "}\n";
+  const char* expected =
+    "BLOCK\n"
+    " FUNCTION(executable)\n"
+    "  LIST\n"
+    "   LITERAL(\"wee\")\n"
+    "  BLOCK\n"
+    "   BINARY(=)\n"
+    "    IDENTIFIER(sources)\n"
+    "    LIST\n"
+    "     LITERAL(\"a\")\n"
+    "     LITERAL(\"b\")\n"
+    "      +SUFFIX_COMMENT(\"# Comment\")\n";
+  DoParserPrintTest(input, expected);
+}
+
 TEST(Parser, HangingIf) {
   DoParserErrorTest("if", 1, 1);
 }

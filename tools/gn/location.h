@@ -13,11 +13,12 @@ class InputFile;
 class Location {
  public:
   Location();
-  Location(const InputFile* file, int line_number, int char_offset);
+  Location(const InputFile* file, int line_number, int char_offset, int byte);
 
   const InputFile* file() const { return file_; }
   int line_number() const { return line_number_; }
   int char_offset() const { return char_offset_; }
+  int byte() const { return byte_; }
 
   bool operator==(const Location& other) const;
   bool operator!=(const Location& other) const;
@@ -30,8 +31,9 @@ class Location {
 
  private:
   const InputFile* file_;  // Null when unset.
-  int line_number_;  // -1 when unset.
-  int char_offset_;  // -1 when unset.
+  int line_number_;        // -1 when unset. 1-based.
+  int char_offset_;        // -1 when unset. 1-based.
+  int byte_;               // Index into the buffer, 0-based.
 };
 
 // Represents a range in a source file. Used for error reporting.

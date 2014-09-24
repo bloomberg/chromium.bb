@@ -45,9 +45,12 @@ class Token {
     ELSE,
     IDENTIFIER, // foo
     COMMA,  // ,
-    COMMENT,    // #...\n
+    UNCLASSIFIED_COMMENT,  // #...\n, of unknown style (will be converted
+                           // to one below)
+    LINE_COMMENT,      // #...\n on a line alone.
+    SUFFIX_COMMENT,    // #...\n on a line following other code.
 
-    UNCLASSIFIED_OPERATOR,  // TODO(scottmg): This shouldn't be necessary.
+    UNCLASSIFIED_OPERATOR,
 
     NUM_TYPES
   };
@@ -59,10 +62,12 @@ class Token {
   const base::StringPiece& value() const { return value_; }
   const Location& location() const { return location_; }
   LocationRange range() const {
-    return LocationRange(location_,
-                         Location(location_.file(), location_.line_number(),
-                                  location_.char_offset() +
-                                      static_cast<int>(value_.size())));
+    return LocationRange(
+        location_,
+        Location(location_.file(),
+                 location_.line_number(),
+                 location_.char_offset() + static_cast<int>(value_.size()),
+                 location_.byte() + static_cast<int>(value_.size())));
   }
 
   // Helper functions for comparing this token to something.

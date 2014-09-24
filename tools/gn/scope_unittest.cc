@@ -30,7 +30,7 @@ TEST(Scope, NonRecursiveMergeTo) {
   // Make a pretend parse node with proper tracking that we can blame for the
   // given value.
   InputFile input_file(SourceFile("//foo"));
-  Token assignment_token(Location(&input_file, 1, 1), Token::STRING,
+  Token assignment_token(Location(&input_file, 1, 1, 1), Token::STRING,
       "\"hello\"");
   LiteralNode assignment;
   assignment.set_value(assignment_token);
@@ -201,7 +201,7 @@ TEST(Scope, MakeClosure) {
   // Make a pretend parse node with proper tracking that we can blame for the
   // given value.
   InputFile input_file(SourceFile("//foo"));
-  Token assignment_token(Location(&input_file, 1, 1), Token::STRING,
+  Token assignment_token(Location(&input_file, 1, 1, 1), Token::STRING,
       "\"hello\"");
   LiteralNode assignment;
   assignment.set_value(assignment_token);
@@ -236,7 +236,7 @@ TEST(Scope, GetMutableValue) {
   // Make a pretend parse node with proper tracking that we can blame for the
   // given value.
   InputFile input_file(SourceFile("//foo"));
-  Token assignment_token(Location(&input_file, 1, 1), Token::STRING,
+  Token assignment_token(Location(&input_file, 1, 1, 1), Token::STRING,
       "\"hello\"");
   LiteralNode assignment;
   assignment.set_value(assignment_token);

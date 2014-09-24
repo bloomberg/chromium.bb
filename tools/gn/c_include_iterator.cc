@@ -133,9 +133,14 @@ bool CIncludeIterator::GetNextIncludeString(base::StringPiece* out,
       // Only count user includes for now.
       *out = include_contents;
       *location = LocationRange(
-          Location(input_file_, cur_line_number, begin_char),
-          Location(input_file_, cur_line_number,
-                   begin_char + static_cast<int>(include_contents.size())));
+          Location(input_file_,
+                   cur_line_number,
+                   begin_char,
+                   -1 /* TODO(scottmg): Is this important? */),
+          Location(input_file_,
+                   cur_line_number,
+                   begin_char + static_cast<int>(include_contents.size()),
+                   -1 /* TODO(scottmg): Is this important? */));
 
       lines_since_last_include_ = 0;
       return true;

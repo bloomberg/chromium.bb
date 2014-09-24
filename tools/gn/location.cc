@@ -14,10 +14,14 @@ Location::Location()
       char_offset_(-1) {
 }
 
-Location::Location(const InputFile* file, int line_number, int char_offset)
+Location::Location(const InputFile* file,
+                   int line_number,
+                   int char_offset,
+                   int byte)
     : file_(file),
       line_number_(line_number),
-      char_offset_(char_offset) {
+      char_offset_(char_offset),
+      byte_(byte) {
 }
 
 bool Location::operator==(const Location& other) const {

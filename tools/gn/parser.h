@@ -73,6 +73,14 @@ class Parser {
   scoped_ptr<BlockNode> ParseBlock();
   scoped_ptr<ParseNode> ParseCondition();
 
+  // Generates a pre- and post-order traversal of the tree.
+  void TraverseOrder(const ParseNode* root,
+                     std::vector<const ParseNode*>* pre,
+                     std::vector<const ParseNode*>* post);
+
+  // Attach comments to nearby syntax.
+  void AssignComments(ParseNode* file);
+
   bool IsAssignment(const ParseNode* node) const;
   bool IsStatementBreak(Token::Type token_type) const;
 
@@ -90,7 +98,9 @@ class Parser {
   bool at_end() const { return cur_ >= tokens_.size(); }
   bool has_error() const { return err_->has_error(); }
 
-  const std::vector<Token>& tokens_;
+  std::vector<Token> tokens_;
+  std::vector<Token> line_comment_tokens_;
+  std::vector<Token> suffix_comment_tokens_;
 
   static ParserHelper expressions_[Token::NUM_TYPES];
 

@@ -25,6 +25,40 @@ class LiteralNode;
 class Scope;
 class UnaryOpNode;
 
+class Comments {
+ public:
+  Comments();
+  virtual ~Comments();
+
+  const std::vector<Token>& before() const { return before_; }
+  void append_before(Token c) {
+    before_.push_back(c);
+  }
+
+  const std::vector<Token>& suffix() const { return suffix_; }
+  void append_suffix(Token c) {
+    suffix_.push_back(c);
+  }
+
+  const std::vector<Token>& after() const { return after_; }
+  void append_after(Token c) {
+    after_.push_back(c);
+  }
+
+ private:
+  // Whole line comments before the expression.
+  std::vector<Token> before_;
+
+  // End-of-line comments after this expression.
+  std::vector<Token> suffix_;
+
+  // For top-level expressions only, after_ lists whole-line comments
+  // following the expression.
+  std::vector<Token> after_;
+
+  DISALLOW_COPY_AND_ASSIGN(Comments);
+};
+
 // ParseNode -------------------------------------------------------------------
 
 // A node in the AST.
@@ -57,7 +91,13 @@ class ParseNode {
   // by the given number of spaces.
   virtual void Print(std::ostream& out, int indent) const = 0;
 
+  const Comments* comments() const { return comments_.get(); }
+  Comments* comments_mutable();
+  void PrintComments(std::ostream& out, int indent) const;
+
  private:
+  scoped_ptr<Comments> comments_;
+
   DISALLOW_COPY_AND_ASSIGN(ParseNode);
 };
 
