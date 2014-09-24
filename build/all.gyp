@@ -800,6 +800,7 @@
             '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components_tests.gyp:components_unittests_apk',
+            '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
             '../content/content_shell_and_tests.gyp:content_gl_tests_apk',
             '../content/content_shell_and_tests.gyp:content_unittests_apk',
