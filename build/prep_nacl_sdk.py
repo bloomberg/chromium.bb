@@ -66,19 +66,19 @@ HEADER_MAP = {
       'arm-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
   },
   'pnacl': {
-      'usr/include/pthread.h': 'src/untrusted/pthread/pthread.h',
-      'usr/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
-      'usr/include/nacl/dynamic_annotations.h':
+      'le32-nacl/include/pthread.h': 'src/untrusted/pthread/pthread.h',
+      'le32-nacl/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
+      'le32-nacl/include/nacl/dynamic_annotations.h':
           'src/untrusted/valgrind/dynamic_annotations.h',
-      'usr/include/nacl/nacl_dyncode.h':
+      'le32-nacl/include/nacl/nacl_dyncode.h':
           'src/untrusted/nacl/nacl_dyncode.h',
-      'usr/include/nacl/nacl_random.h':
+      'le32-nacl/include/nacl/nacl_random.h':
           'src/untrusted/nacl/nacl_random.h',
-      'usr/include/nacl/nacl_startup.h':
+      'le32-nacl/include/nacl/nacl_startup.h':
           'src/untrusted/nacl/nacl_startup.h',
-      'usr/include/nacl/nacl_thread.h':
+      'le32-nacl/include/nacl/nacl_thread.h':
           'src/untrusted/nacl/nacl_thread.h',
-      'usr/include/irt.h': 'src/untrusted/irt/irt.h',
+      'le32-nacl/include/irt.h': 'src/untrusted/irt/irt.h',
   }
 }
 
