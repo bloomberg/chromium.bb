@@ -166,10 +166,10 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema14(self):
-    """Run the CQ test with schema version 14."""
-    # Run the CQ test at schema version 14
-    self._PrepareFreshDatabase(14)
+  def testCQWithSchema16(self):
+    """Run the CQ test with schema version 16."""
+    # Run the CQ test at schema version 16
+    self._PrepareFreshDatabase(16)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -356,7 +356,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(11)
+    self._PrepareFreshDatabase(16)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 

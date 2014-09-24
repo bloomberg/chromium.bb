@@ -19,8 +19,11 @@ CREATE TABLE `boardPerBuildTable` (
   `board` varchar(80) NOT NULL,
   `main_firmware_version` varchar(80) DEFAULT NULL,
   `ec_firmware_version` varchar(80) DEFAULT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `final` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`build_id`,`board`),
   KEY `build_id` (`build_id`),
+  KEY `last_updated_index` (`last_updated`),
   CONSTRAINT `boardPerBuildTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -87,8 +90,12 @@ DROP TABLE IF EXISTS `childConfigPerBuildTable`;
 CREATE TABLE `childConfigPerBuildTable` (
   `build_id` int(11) NOT NULL,
   `child_config` varchar(80) NOT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `status` enum('fail','pass','inflight','missing','aborted') NOT NULL DEFAULT 'inflight',
+  `final` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`build_id`,`child_config`),
   KEY `build_id` (`build_id`),
+  KEY `last_updated_index` (`last_updated`),
   CONSTRAINT `childConfigPerBuildTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
