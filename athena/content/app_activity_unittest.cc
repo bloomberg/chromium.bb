@@ -310,8 +310,10 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
 
 // Test that when unloading an app while multiple apps / activities are present,
 // the proxy gets created in the correct location.
-// Flaky: http://crbug.com/416843.
-TEST_F(AppActivityTest, DISABLED_TestUnloadProxyLocation) {
+TEST_F(AppActivityTest, TestUnloadProxyLocation) {
+  // Disable the resource manager since some build bots run this test for an
+  // extended amount of time which allows the MemoryPressureNotifier to fire.
+  DisableResourceManager();
   // Set up some activities for some applications.
   TestAppActivity* app_activity1a = CreateAppActivity(kDummyApp1);
   TestAppActivity* app_activity2a = CreateAppActivity(kDummyApp2);
@@ -344,8 +346,11 @@ TEST_F(AppActivityTest, DISABLED_TestUnloadProxyLocation) {
 
 // Test that an unload with multiple activities of the same app will only unload
 // when all activities were marked for unloading.
-// Flaky: http://crbug.com/417189.
-TEST_F(AppActivityTest, DISABLED_TestMultipleActivityUnloadLock) {
+TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
+  // Disable the resource manager since some build bots run this test for an
+  // extended amount of time which allows the MemoryPressureNotifier to fire.
+  DisableResourceManager();
+
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
 
   TestAppActivity* app_activity1 = CreateAppActivity(kDummyApp1);
