@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class DatabaseBackend;
+class Database;
 class SQLErrorData;
 class SQLResultSet;
 class SQLStatement;
@@ -49,13 +49,13 @@ public:
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
     void trace(Visitor*);
 
-    bool execute(DatabaseBackend*);
+    bool execute(Database*);
     bool lastExecutionFailedDueToQuota() const;
 
     bool hasStatementCallback() const { return m_hasCallback; }
     bool hasStatementErrorCallback() const { return m_hasErrorCallback; }
 
-    void setVersionMismatchedError(DatabaseBackend*);
+    void setVersionMismatchedError(Database*);
 
     SQLStatement* frontend();
     SQLErrorData* sqlError() const;
@@ -65,7 +65,7 @@ private:
     SQLStatementBackend(PassOwnPtrWillBeRawPtr<SQLStatement>, const String& statement,
         const Vector<SQLValue>& arguments, int permissions);
 
-    void setFailureDueToQuota(DatabaseBackend*);
+    void setFailureDueToQuota(Database*);
     void clearFailureDueToQuota();
 
     OwnPtrWillBeMember<SQLStatement> m_frontend;

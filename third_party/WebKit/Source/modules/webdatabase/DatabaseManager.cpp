@@ -32,13 +32,13 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "platform/Logging.h"
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseTracker.h"
+#include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
@@ -158,7 +158,7 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
         context->securityOrigin()->toString().ascii().data());
 }
 
-PassRefPtrWillBeRawPtr<DatabaseBackend> DatabaseManager::openDatabaseBackend(ExecutionContext* context,
+PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabaseInternal(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
@@ -166,7 +166,7 @@ PassRefPtrWillBeRawPtr<DatabaseBackend> DatabaseManager::openDatabaseBackend(Exe
 
     DatabaseContext* backendContext = databaseContextFor(context)->backend();
     if (DatabaseTracker::tracker().canEstablishDatabase(backendContext, name, displayName, estimatedSize, error)) {
-        RefPtrWillBeRawPtr<DatabaseBackend> backend = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
+        RefPtrWillBeRawPtr<Database> backend = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
         if (backend->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
             return backend.release();
     }
@@ -195,17 +195,15 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    RefPtrWillBeRawPtr<DatabaseBackend> backend = openDatabaseBackend(context, name,
+    RefPtrWillBeRawPtr<Database> database = openDatabaseInternal(context, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
-    if (!backend)
+    if (!database)
         return nullptr;
-
-    RefPtrWillBeRawPtr<Database> database = backend.get();
 
     databaseContextFor(context)->setHasOpenDatabases();
     DatabaseClient::from(context)->didOpenDatabase(database, context->securityOrigin()->host(), name, expectedVersion);
 
-    if (backend->isNew() && creationCallback.get()) {
+    if (database->isNew() && creationCallback.get()) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
         database->executionContext()->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
     }

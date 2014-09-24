@@ -28,12 +28,12 @@
 #include "config.h"
 #include "modules/webdatabase/SQLStatementBackend.h"
 
-#include "platform/Logging.h"
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
-#include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatement.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
+#include "platform/Logging.h"
 #include "wtf/text/CString.h"
 
 
@@ -111,7 +111,7 @@ SQLResultSet* SQLStatementBackend::sqlResultSet() const
     return m_resultSet->isValid() ? m_resultSet.get() : 0;
 }
 
-bool SQLStatementBackend::execute(DatabaseBackend* db)
+bool SQLStatementBackend::execute(Database* db)
 {
     ASSERT(!m_resultSet->isValid());
 
@@ -212,14 +212,14 @@ bool SQLStatementBackend::execute(DatabaseBackend* db)
     return true;
 }
 
-void SQLStatementBackend::setVersionMismatchedError(DatabaseBackend* database)
+void SQLStatementBackend::setVersionMismatchedError(Database* database)
 {
     ASSERT(!m_error && !m_resultSet->isValid());
     database->reportExecuteStatementResult(7, SQLError::VERSION_ERR, 0);
     m_error = SQLErrorData::create(SQLError::VERSION_ERR, "current version of the database and `oldVersion` argument do not match");
 }
 
-void SQLStatementBackend::setFailureDueToQuota(DatabaseBackend* database)
+void SQLStatementBackend::setFailureDueToQuota(Database* database)
 {
     ASSERT(!m_error && !m_resultSet->isValid());
     database->reportExecuteStatementResult(8, SQLError::QUOTA_ERR, 0);

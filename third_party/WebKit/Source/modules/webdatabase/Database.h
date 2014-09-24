@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseBackend_h
-#define DatabaseBackend_h
+#ifndef Database_h
+#define Database_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
@@ -49,11 +49,10 @@ class SQLTransactionCoordinator;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-// FIXME: This class should be renamed to Database.
-class DatabaseBackend FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseBackend>, public ScriptWrappable {
+class Database FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<Database>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~DatabaseBackend();
+    virtual ~Database();
     void trace(Visitor*);
 
     bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
@@ -113,15 +112,13 @@ public:
     DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
     ExecutionContext* executionContext() const;
 
-protected:
-    DatabaseBackend(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
-
 private:
     class DatabaseOpenTask;
     class DatabaseCloseTask;
     class DatabaseTransactionTask;
     class DatabaseTableNamesTask;
 
+    Database(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     void scheduleTransaction();
@@ -186,4 +183,4 @@ private:
 
 } // namespace blink
 
-#endif // DatabaseBackend_h
+#endif // Database_h

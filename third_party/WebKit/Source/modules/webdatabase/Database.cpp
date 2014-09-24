@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
@@ -168,7 +168,7 @@ static inline void updateGuidVersionMap(DatabaseGuid guid, String newVersion)
     guidToVersionMap().set(guid, newVersion.isEmpty() ? String() : newVersion.isolatedCopy());
 }
 
-typedef HashMap<DatabaseGuid, HashSet<DatabaseBackend*>*> GuidDatabaseMap;
+typedef HashMap<DatabaseGuid, HashSet<Database*>*> GuidDatabaseMap;
 static GuidDatabaseMap& guidToDatabaseMap()
 {
     // Ensure the the mutex is locked.
@@ -196,7 +196,7 @@ static DatabaseGuid guidForOriginAndName(const String& origin, const String& nam
     return guid;
 }
 
-DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
+Database::Database(DatabaseContext* databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : m_databaseContext(databaseContext)
     , m_name(name.isolatedCopy())
     , m_expectedVersion(expectedVersion.isolatedCopy())
@@ -218,9 +218,9 @@ DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String&
     {
         SafePointAwareMutexLocker locker(guidMutex());
         m_guid = guidForOriginAndName(securityOrigin()->toString(), name);
-        HashSet<DatabaseBackend*>* hashSet = guidToDatabaseMap().get(m_guid);
+        HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
         if (!hashSet) {
-            hashSet = new HashSet<DatabaseBackend*>;
+            hashSet = new HashSet<Database*>;
             guidToDatabaseMap().set(m_guid, hashSet);
         }
 
@@ -234,21 +234,21 @@ DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String&
     ASSERT(m_databaseContext->isContextThread());
 }
 
-DatabaseBackend::~DatabaseBackend()
+Database::~Database()
 {
     // SQLite is "multi-thread safe", but each database handle can only be used
     // on a single thread at a time.
     //
-    // For DatabaseBackend, we open the SQLite database on the DatabaseThread,
-    // and hence we should also close it on that same thread. This means that
-    // the SQLite database need to be closed by another mechanism (see
+    // For Database, we open the SQLite database on the DatabaseThread, and
+    // hence we should also close it on that same thread. This means that the
+    // SQLite database need to be closed by another mechanism (see
     // DatabaseContext::stopDatabases()). By the time we get here, the SQLite
     // database should have already been closed.
 
     ASSERT(!m_opened);
 }
 
-void DatabaseBackend::trace(Visitor* visitor)
+void Database::trace(Visitor* visitor)
 {
     visitor->trace(m_databaseContext);
     visitor->trace(m_sqliteDatabase);
@@ -256,7 +256,7 @@ void DatabaseBackend::trace(Visitor* visitor)
     visitor->trace(m_transactionQueue);
 }
 
-bool DatabaseBackend::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
+bool Database::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     TaskSynchronizer synchronizer;
     if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
@@ -271,7 +271,7 @@ bool DatabaseBackend::openAndVerifyVersion(bool setVersionInNewDatabase, Databas
     return success;
 }
 
-void DatabaseBackend::close()
+void Database::close()
 {
     ASSERT(databaseContext()->databaseThread());
     ASSERT(databaseContext()->databaseThread()->isDatabaseThread());
@@ -296,7 +296,7 @@ void DatabaseBackend::close()
     databaseContext()->databaseThread()->recordDatabaseClosed(this);
 }
 
-PassRefPtrWillBeRawPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction> transaction,
+PassRefPtrWillBeRawPtr<SQLTransactionBackend> Database::runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction> transaction,
     bool readOnly, const ChangeVersionData* data)
 {
     MutexLocker locker(m_transactionInProgressMutex);
@@ -315,14 +315,14 @@ PassRefPtrWillBeRawPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(Pa
     return transactionBackend;
 }
 
-void DatabaseBackend::inProgressTransactionCompleted()
+void Database::inProgressTransactionCompleted()
 {
     MutexLocker locker(m_transactionInProgressMutex);
     m_transactionInProgress = false;
     scheduleTransaction();
 }
 
-void DatabaseBackend::scheduleTransaction()
+void Database::scheduleTransaction()
 {
     ASSERT(!m_transactionInProgressMutex.tryLock()); // Locked by caller.
     RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = nullptr;
@@ -335,11 +335,12 @@ void DatabaseBackend::scheduleTransaction()
         WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
         m_transactionInProgress = true;
         databaseContext()->databaseThread()->scheduleTask(task.release());
-    } else
+    } else {
         m_transactionInProgress = false;
+    }
 }
 
-void DatabaseBackend::scheduleTransactionStep(SQLTransactionBackend* transaction)
+void Database::scheduleTransactionStep(SQLTransactionBackend* transaction)
 {
     if (!databaseContext()->databaseThread())
         return;
@@ -349,23 +350,23 @@ void DatabaseBackend::scheduleTransactionStep(SQLTransactionBackend* transaction
     databaseContext()->databaseThread()->scheduleTask(task.release());
 }
 
-SQLTransactionClient* DatabaseBackend::transactionClient() const
+SQLTransactionClient* Database::transactionClient() const
 {
     return databaseContext()->databaseThread()->transactionClient();
 }
 
-SQLTransactionCoordinator* DatabaseBackend::transactionCoordinator() const
+SQLTransactionCoordinator* Database::transactionCoordinator() const
 {
     return databaseContext()->databaseThread()->transactionCoordinator();
 }
 
 // static
-const char* DatabaseBackend::databaseInfoTableName()
+const char* Database::databaseInfoTableName()
 {
     return infoTableName;
 }
 
-void DatabaseBackend::closeDatabase()
+void Database::closeDatabase()
 {
     if (!m_opened)
         return;
@@ -377,7 +378,7 @@ void DatabaseBackend::closeDatabase()
     {
         SafePointAwareMutexLocker locker(guidMutex());
 
-        HashSet<DatabaseBackend*>* hashSet = guidToDatabaseMap().get(m_guid);
+        HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
         ASSERT(hashSet);
         ASSERT(hashSet->contains(this));
         hashSet->remove(this);
@@ -389,7 +390,7 @@ void DatabaseBackend::closeDatabase()
     }
 }
 
-String DatabaseBackend::version() const
+String Database::version() const
 {
     // Note: In multi-process browsers the cached value may be accurate, but we
     // cannot read the actual version from the database without potentially
@@ -400,7 +401,7 @@ String DatabaseBackend::version() const
 
 class DoneCreatingDatabaseOnExitCaller {
 public:
-    DoneCreatingDatabaseOnExitCaller(DatabaseBackend* database)
+    DoneCreatingDatabaseOnExitCaller(Database* database)
         : m_database(database)
         , m_openSucceeded(false)
     {
@@ -414,11 +415,11 @@ public:
     void setOpenSucceeded() { m_openSucceeded = true; }
 
 private:
-    DatabaseBackend* m_database;
+    Database* m_database;
     bool m_openSucceeded;
 };
 
-bool DatabaseBackend::performOpenAndVerify(bool shouldSetVersionInNewDatabase, DatabaseError& error, String& errorMessage)
+bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     DoneCreatingDatabaseOnExitCaller onExitCaller(this);
     ASSERT(errorMessage.isEmpty());
@@ -553,30 +554,30 @@ bool DatabaseBackend::performOpenAndVerify(bool shouldSetVersionInNewDatabase, D
     return true;
 }
 
-String DatabaseBackend::stringIdentifier() const
+String Database::stringIdentifier() const
 {
     // Return a deep copy for ref counting thread safety
     return m_name.isolatedCopy();
 }
 
-String DatabaseBackend::displayName() const
+String Database::displayName() const
 {
     // Return a deep copy for ref counting thread safety
     return m_displayName.isolatedCopy();
 }
 
-unsigned long DatabaseBackend::estimatedSize() const
+unsigned long Database::estimatedSize() const
 {
     return m_estimatedSize;
 }
 
-String DatabaseBackend::fileName() const
+String Database::fileName() const
 {
     // Return a deep copy for ref counting thread safety
     return m_filename.isolatedCopy();
 }
 
-bool DatabaseBackend::getVersionFromDatabase(String& version, bool shouldCacheVersion)
+bool Database::getVersionFromDatabase(String& version, bool shouldCacheVersion)
 {
     String query(String("SELECT value FROM ") + infoTableName +  " WHERE key = '" + versionKey + "';");
 
@@ -595,7 +596,7 @@ bool DatabaseBackend::getVersionFromDatabase(String& version, bool shouldCacheVe
     return result;
 }
 
-bool DatabaseBackend::setVersionInDatabase(const String& version, bool shouldCacheVersion)
+bool Database::setVersionInDatabase(const String& version, bool shouldCacheVersion)
 {
     // The INSERT will replace an existing entry for the database with the new
     // version number, due to the UNIQUE ON CONFLICT REPLACE clause in the
@@ -617,25 +618,25 @@ bool DatabaseBackend::setVersionInDatabase(const String& version, bool shouldCac
     return result;
 }
 
-void DatabaseBackend::setExpectedVersion(const String& version)
+void Database::setExpectedVersion(const String& version)
 {
     m_expectedVersion = version.isolatedCopy();
 }
 
-String DatabaseBackend::getCachedVersion() const
+String Database::getCachedVersion() const
 {
     SafePointAwareMutexLocker locker(guidMutex());
     return guidToVersionMap().get(m_guid).isolatedCopy();
 }
 
-void DatabaseBackend::setCachedVersion(const String& actualVersion)
+void Database::setCachedVersion(const String& actualVersion)
 {
     // Update the in memory database version map.
     SafePointAwareMutexLocker locker(guidMutex());
     updateGuidVersionMap(m_guid, actualVersion);
 }
 
-bool DatabaseBackend::getActualVersionForTransaction(String& actualVersion)
+bool Database::getActualVersionForTransaction(String& actualVersion)
 {
     ASSERT(m_sqliteDatabase.transactionInProgress());
     // Note: In multi-process browsers the cached value may be inaccurate. So we
@@ -643,60 +644,60 @@ bool DatabaseBackend::getActualVersionForTransaction(String& actualVersion)
     return getVersionFromDatabase(actualVersion, true);
 }
 
-void DatabaseBackend::disableAuthorizer()
+void Database::disableAuthorizer()
 {
     ASSERT(m_databaseAuthorizer);
     m_databaseAuthorizer->disable();
 }
 
-void DatabaseBackend::enableAuthorizer()
+void Database::enableAuthorizer()
 {
     ASSERT(m_databaseAuthorizer);
     m_databaseAuthorizer->enable();
 }
 
-void DatabaseBackend::setAuthorizerPermissions(int permissions)
+void Database::setAuthorizerPermissions(int permissions)
 {
     ASSERT(m_databaseAuthorizer);
     m_databaseAuthorizer->setPermissions(permissions);
 }
 
-bool DatabaseBackend::lastActionChangedDatabase()
+bool Database::lastActionChangedDatabase()
 {
     ASSERT(m_databaseAuthorizer);
     return m_databaseAuthorizer->lastActionChangedDatabase();
 }
 
-bool DatabaseBackend::lastActionWasInsert()
+bool Database::lastActionWasInsert()
 {
     ASSERT(m_databaseAuthorizer);
     return m_databaseAuthorizer->lastActionWasInsert();
 }
 
-void DatabaseBackend::resetDeletes()
+void Database::resetDeletes()
 {
     ASSERT(m_databaseAuthorizer);
     m_databaseAuthorizer->resetDeletes();
 }
 
-bool DatabaseBackend::hadDeletes()
+bool Database::hadDeletes()
 {
     ASSERT(m_databaseAuthorizer);
     return m_databaseAuthorizer->hadDeletes();
 }
 
-void DatabaseBackend::resetAuthorizer()
+void Database::resetAuthorizer()
 {
     if (m_databaseAuthorizer)
         m_databaseAuthorizer->reset();
 }
 
-unsigned long long DatabaseBackend::maximumSize() const
+unsigned long long Database::maximumSize() const
 {
     return DatabaseTracker::tracker().getMaxSizeForDatabase(this);
 }
 
-void DatabaseBackend::incrementalVacuumIfNeeded()
+void Database::incrementalVacuumIfNeeded()
 {
     int64_t freeSpaceSize = m_sqliteDatabase.freeSpaceSize();
     int64_t totalSize = m_sqliteDatabase.totalSize();
@@ -710,7 +711,7 @@ void DatabaseBackend::incrementalVacuumIfNeeded()
 
 // These are used to generate histograms of errors seen with websql.
 // See about:histograms in chromium.
-void DatabaseBackend::reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+void Database::reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportOpenDatabaseResult(
@@ -720,7 +721,7 @@ void DatabaseBackend::reportOpenDatabaseResult(int errorSite, int webSqlErrorCod
     }
 }
 
-void DatabaseBackend::reportChangeVersionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+void Database::reportChangeVersionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportChangeVersionResult(
@@ -730,7 +731,7 @@ void DatabaseBackend::reportChangeVersionResult(int errorSite, int webSqlErrorCo
     }
 }
 
-void DatabaseBackend::reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+void Database::reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportStartTransactionResult(
@@ -740,7 +741,7 @@ void DatabaseBackend::reportStartTransactionResult(int errorSite, int webSqlErro
     }
 }
 
-void DatabaseBackend::reportCommitTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+void Database::reportCommitTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportCommitTransactionResult(
@@ -750,7 +751,7 @@ void DatabaseBackend::reportCommitTransactionResult(int errorSite, int webSqlErr
     }
 }
 
-void DatabaseBackend::reportExecuteStatementResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+void Database::reportExecuteStatementResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportExecuteStatementResult(
@@ -760,7 +761,7 @@ void DatabaseBackend::reportExecuteStatementResult(int errorSite, int webSqlErro
     }
 }
 
-void DatabaseBackend::reportVacuumDatabaseResult(int sqliteErrorCode)
+void Database::reportVacuumDatabaseResult(int sqliteErrorCode)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportVacuumDatabaseResult(
@@ -769,17 +770,17 @@ void DatabaseBackend::reportVacuumDatabaseResult(int sqliteErrorCode)
     }
 }
 
-void DatabaseBackend::logErrorMessage(const String& message)
+void Database::logErrorMessage(const String& message)
 {
     executionContext()->addConsoleMessage(ConsoleMessage::create(StorageMessageSource, ErrorMessageLevel, message));
 }
 
-ExecutionContext* DatabaseBackend::executionContext() const
+ExecutionContext* Database::executionContext() const
 {
     return databaseContext()->executionContext();
 }
 
-void DatabaseBackend::closeImmediately()
+void Database::closeImmediately()
 {
     ASSERT(executionContext()->isContextThread());
     DatabaseThread* databaseThread = databaseContext()->databaseThread();
@@ -789,7 +790,7 @@ void DatabaseBackend::closeImmediately()
     }
 }
 
-void DatabaseBackend::changeVersion(
+void Database::changeVersion(
     const String& oldVersion,
     const String& newVersion,
     PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
@@ -800,7 +801,7 @@ void DatabaseBackend::changeVersion(
     runTransaction(callback, errorCallback, successCallback, false, &data);
 }
 
-void DatabaseBackend::transaction(
+void Database::transaction(
     PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
     PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
     PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
@@ -808,7 +809,7 @@ void DatabaseBackend::transaction(
     runTransaction(callback, errorCallback, successCallback, false);
 }
 
-void DatabaseBackend::readTransaction(
+void Database::readTransaction(
     PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
     PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
     PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
@@ -822,7 +823,7 @@ static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtrWillBeRawP
     callback->handleEvent(error.get());
 }
 
-void DatabaseBackend::runTransaction(
+void Database::runTransaction(
     PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
     PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
     PassOwnPtrWillBeRawPtr<VoidCallback> successCallback,
@@ -831,7 +832,7 @@ void DatabaseBackend::runTransaction(
 {
     // FIXME: Rather than passing errorCallback to SQLTransaction and then
     // sometimes firing it ourselves, this code should probably be pushed down
-    // into DatabaseBackend so that we only create the SQLTransaction if we're
+    // into Database so that we only create the SQLTransaction if we're
     // actually going to run it.
 #if ENABLE(ASSERT)
     SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
@@ -871,12 +872,12 @@ private:
     RefPtrWillBeCrossThreadPersistent<SQLTransaction> m_transaction;
 };
 
-void DatabaseBackend::scheduleTransactionCallback(SQLTransaction* transaction)
+void Database::scheduleTransactionCallback(SQLTransaction* transaction)
 {
     executionContext()->postTask(DeliverPendingCallbackTask::create(transaction));
 }
 
-Vector<String> DatabaseBackend::performGetTableNames()
+Vector<String> Database::performGetTableNames()
 {
     disableAuthorizer();
 
@@ -905,7 +906,7 @@ Vector<String> DatabaseBackend::performGetTableNames()
     return tableNames;
 }
 
-Vector<String> DatabaseBackend::tableNames()
+Vector<String> Database::tableNames()
 {
     // FIXME: Not using isolatedCopy on these strings looks ok since threads
     // take strict turns in dealing with them. However, if the code changes,
@@ -922,7 +923,7 @@ Vector<String> DatabaseBackend::tableNames()
     return result;
 }
 
-SecurityOrigin* DatabaseBackend::securityOrigin() const
+SecurityOrigin* Database::securityOrigin() const
 {
     if (executionContext()->isContextThread())
         return m_contextThreadSecurityOrigin.get();

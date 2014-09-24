@@ -30,7 +30,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseThread.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebDatabase.h"
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -90,7 +90,7 @@ void WebDatabase::closeDatabaseImmediately(const WebString& originIdentifier, co
     DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, databaseName);
 }
 
-WebDatabase::WebDatabase(const DatabaseBackend* database)
+WebDatabase::WebDatabase(const Database* database)
     : m_database(database)
 {
 }

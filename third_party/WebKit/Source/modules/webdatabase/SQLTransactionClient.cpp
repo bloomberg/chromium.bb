@@ -33,7 +33,7 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -43,7 +43,7 @@
 
 namespace blink {
 
-static void databaseModified(DatabaseBackend* database)
+static void databaseModified(Database* database)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->databaseModified(
@@ -52,18 +52,18 @@ static void databaseModified(DatabaseBackend* database)
     }
 }
 
-void SQLTransactionClient::didCommitWriteTransaction(DatabaseBackend* database)
+void SQLTransactionClient::didCommitWriteTransaction(Database* database)
 {
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(createCrossThreadTask(&databaseModified, PassRefPtrWillBeRawPtr<DatabaseBackend>(database)));
+        executionContext->postTask(createCrossThreadTask(&databaseModified, PassRefPtrWillBeRawPtr<Database>(database)));
         return;
     }
 
     databaseModified(database);
 }
 
-bool SQLTransactionClient::didExceedQuota(DatabaseBackend* database)
+bool SQLTransactionClient::didExceedQuota(Database* database)
 {
     // Chromium does not allow users to manually change the quota for an origin (for now, at least).
     // Don't do anything.

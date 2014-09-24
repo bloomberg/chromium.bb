@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/webdatabase/InspectorDatabaseResource.h"
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 
 namespace blink {
 

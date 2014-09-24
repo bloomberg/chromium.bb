@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseThread.h"
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
@@ -113,10 +113,10 @@ void DatabaseThread::cleanupDatabaseThread()
     // inconsistent or locked state.
     if (m_openDatabaseSet.size() > 0) {
         // As the call to close will modify the original set, we must take a copy to iterate over.
-        WillBeHeapHashSet<RefPtrWillBeMember<DatabaseBackend> > openSetCopy;
+        WillBeHeapHashSet<RefPtrWillBeMember<Database> > openSetCopy;
         openSetCopy.swap(m_openDatabaseSet);
-        WillBeHeapHashSet<RefPtrWillBeMember<DatabaseBackend> >::iterator end = openSetCopy.end();
-        for (WillBeHeapHashSet<RefPtrWillBeMember<DatabaseBackend> >::iterator it = openSetCopy.begin(); it != end; ++it)
+        WillBeHeapHashSet<RefPtrWillBeMember<Database> >::iterator end = openSetCopy.end();
+        for (WillBeHeapHashSet<RefPtrWillBeMember<Database> >::iterator it = openSetCopy.begin(); it != end; ++it)
             (*it)->close();
     }
 
@@ -130,7 +130,7 @@ void DatabaseThread::cleanupDatabaseThreadCompleted()
         m_cleanupSync->taskCompleted();
 }
 
-void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
+void DatabaseThread::recordDatabaseOpen(Database* database)
 {
     ASSERT(isDatabaseThread());
     ASSERT(database);
@@ -138,7 +138,7 @@ void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
     m_openDatabaseSet.add(database);
 }
 
-void DatabaseThread::recordDatabaseClosed(DatabaseBackend* database)
+void DatabaseThread::recordDatabaseClosed(Database* database)
 {
     ASSERT(isDatabaseThread());
     ASSERT(database);
@@ -146,7 +146,7 @@ void DatabaseThread::recordDatabaseClosed(DatabaseBackend* database)
     m_openDatabaseSet.remove(database);
 }
 
-bool DatabaseThread::isDatabaseOpen(DatabaseBackend* database)
+bool DatabaseThread::isDatabaseOpen(Database* database)
 {
     ASSERT(isDatabaseThread());
     ASSERT(database);

@@ -28,7 +28,7 @@
 #include "config.h"
 #include "modules/webdatabase/SQLStatement.h"
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementBackend.h"

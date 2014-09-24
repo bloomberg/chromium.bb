@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class DatabaseBackend;
+class Database;
 class DatabaseTask;
 class Document;
 class MessageLoopInterruptor;
@@ -63,9 +63,9 @@ public:
 
     void scheduleTask(PassOwnPtr<DatabaseTask>);
 
-    void recordDatabaseOpen(DatabaseBackend*);
-    void recordDatabaseClosed(DatabaseBackend*);
-    bool isDatabaseOpen(DatabaseBackend*);
+    void recordDatabaseOpen(Database*);
+    void recordDatabaseClosed(Database*);
+    bool isDatabaseOpen(Database*);
 
     bool isDatabaseThread() { return m_thread && m_thread->isCurrentThread(); }
 
@@ -84,7 +84,7 @@ private:
     // This set keeps track of the open databases that have been used on this thread.
     // This must be updated in the database thread though it is constructed and
     // destructed in the context thread.
-    WillBeHeapHashSet<RefPtrWillBeMember<DatabaseBackend> > m_openDatabaseSet;
+    WillBeHeapHashSet<RefPtrWillBeMember<Database> > m_openDatabaseSet;
 
     OwnPtr<SQLTransactionClient> m_transactionClient;
     OwnPtrWillBeMember<SQLTransactionCoordinator> m_transactionCoordinator;

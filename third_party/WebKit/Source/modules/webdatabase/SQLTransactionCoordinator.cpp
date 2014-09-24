@@ -32,14 +32,14 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 
 namespace blink {
 
 static String getDatabaseIdentifier(SQLTransactionBackend* transaction)
 {
-    DatabaseBackend* database = transaction->database();
+    Database* database = transaction->database();
     ASSERT(database);
     return database->stringIdentifier();
 }

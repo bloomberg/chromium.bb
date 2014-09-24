@@ -35,7 +35,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/InspectorDatabaseResource.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLResultSet.h"

@@ -29,7 +29,7 @@
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
@@ -53,20 +53,20 @@ public:
 
     virtual void run() OVERRIDE FINAL;
 
-    DatabaseBackend* database() const { return m_database.get(); }
+    Database* database() const { return m_database.get(); }
 #if ENABLE(ASSERT)
     bool hasSynchronizer() const { return m_synchronizer; }
     bool hasCheckedForTermination() const { return m_synchronizer->hasCheckedForTermination(); }
 #endif
 
 protected:
-    DatabaseTask(DatabaseBackend*, TaskSynchronizer*);
+    DatabaseTask(Database*, TaskSynchronizer*);
 
 private:
     virtual void doPerformTask() = 0;
     virtual void taskCancelled() { }
 
-    RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
+    RefPtrWillBeCrossThreadPersistent<Database> m_database;
     TaskSynchronizer* m_synchronizer;
 
 #if !LOG_DISABLED
@@ -75,15 +75,15 @@ private:
 #endif
 };
 
-class DatabaseBackend::DatabaseOpenTask FINAL : public DatabaseTask {
+class Database::DatabaseOpenTask FINAL : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseOpenTask> create(DatabaseBackend* db, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
+    static PassOwnPtr<DatabaseOpenTask> create(Database* db, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
     {
         return adoptPtr(new DatabaseOpenTask(db, setVersionInNewDatabase, synchronizer, error, errorMessage, success));
     }
 
 private:
-    DatabaseOpenTask(DatabaseBackend*, bool setVersionInNewDatabase, TaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
+    DatabaseOpenTask(Database*, bool setVersionInNewDatabase, TaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
 
     virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
@@ -96,15 +96,15 @@ private:
     bool& m_success;
 };
 
-class DatabaseBackend::DatabaseCloseTask FINAL : public DatabaseTask {
+class Database::DatabaseCloseTask FINAL : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseCloseTask> create(DatabaseBackend* db, TaskSynchronizer* synchronizer)
+    static PassOwnPtr<DatabaseCloseTask> create(Database* db, TaskSynchronizer* synchronizer)
     {
         return adoptPtr(new DatabaseCloseTask(db, synchronizer));
     }
 
 private:
-    DatabaseCloseTask(DatabaseBackend*, TaskSynchronizer*);
+    DatabaseCloseTask(Database*, TaskSynchronizer*);
 
     virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
@@ -112,7 +112,7 @@ private:
 #endif
 };
 
-class DatabaseBackend::DatabaseTransactionTask FINAL : public DatabaseTask {
+class Database::DatabaseTransactionTask FINAL : public DatabaseTask {
 public:
     virtual ~DatabaseTransactionTask();
 
@@ -136,15 +136,15 @@ private:
     RefPtrWillBeCrossThreadPersistent<SQLTransactionBackend> m_transaction;
 };
 
-class DatabaseBackend::DatabaseTableNamesTask FINAL : public DatabaseTask {
+class Database::DatabaseTableNamesTask FINAL : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseTableNamesTask> create(DatabaseBackend* db, TaskSynchronizer* synchronizer, Vector<String>& names)
+    static PassOwnPtr<DatabaseTableNamesTask> create(Database* db, TaskSynchronizer* synchronizer, Vector<String>& names)
     {
         return adoptPtr(new DatabaseTableNamesTask(db, synchronizer, names));
     }
 
 private:
-    DatabaseTableNamesTask(DatabaseBackend*, TaskSynchronizer*, Vector<String>& names);
+    DatabaseTableNamesTask(Database*, TaskSynchronizer*, Vector<String>& names);
 
     virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED

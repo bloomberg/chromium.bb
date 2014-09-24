@@ -28,7 +28,7 @@
 #include "config.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
 
-#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLError.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -45,7 +45,7 @@ bool ChangeVersionWrapper::performPreflight(SQLTransactionBackend* transaction)
 {
     ASSERT(transaction && transaction->database());
 
-    DatabaseBackend* database = transaction->database();
+    Database* database = transaction->database();
 
     String actualVersion;
     if (!database->getVersionFromDatabase(actualVersion)) {
@@ -69,7 +69,7 @@ bool ChangeVersionWrapper::performPostflight(SQLTransactionBackend* transaction)
 {
     ASSERT(transaction && transaction->database());
 
-    DatabaseBackend* database = transaction->database();
+    Database* database = transaction->database();
 
     if (!database->setVersionInDatabase(m_newVersion)) {
         int sqliteError = database->sqliteDatabase().lastError();

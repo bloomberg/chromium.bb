@@ -37,7 +37,6 @@
 namespace blink {
 
 class Database;
-class DatabaseBackend;
 class DatabaseCallback;
 class DatabaseContext;
 class ExceptionState;
@@ -79,7 +78,7 @@ private:
     // it already exist previously. Otherwise, it returns 0.
     DatabaseContext* existingDatabaseContextFor(ExecutionContext*);
 
-    PassRefPtrWillBeRawPtr<DatabaseBackend> openDatabaseBackend(ExecutionContext*,
+    PassRefPtrWillBeRawPtr<Database> openDatabaseInternal(ExecutionContext*,
         const String& name, const String& expectedVersion, const String& displayName,
         unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 

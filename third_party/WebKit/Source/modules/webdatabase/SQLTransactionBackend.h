@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class DatabaseBackend;
+class Database;
 class SQLErrorData;
 class SQLiteTransaction;
 class SQLStatementBackend;
@@ -58,7 +58,7 @@ public:
 
 class SQLTransactionBackend FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLTransactionBackend>, public SQLTransactionStateMachine<SQLTransactionBackend> {
 public:
-    static PassRefPtrWillBeRawPtr<SQLTransactionBackend> create(DatabaseBackend*,
+    static PassRefPtrWillBeRawPtr<SQLTransactionBackend> create(Database*,
         PassRefPtrWillBeRawPtr<SQLTransaction>, PassRefPtrWillBeRawPtr<SQLTransactionWrapper>, bool readOnly);
 
     virtual ~SQLTransactionBackend();
@@ -67,7 +67,7 @@ public:
     void lockAcquired();
     void performNextStep();
 
-    DatabaseBackend* database() { return m_database.get(); }
+    Database* database() { return m_database.get(); }
     bool isReadOnly() { return m_readOnly; }
     void notifyDatabaseThreadIsShuttingDown();
 
@@ -80,7 +80,7 @@ public:
         const Vector<SQLValue>& arguments, int permissions);
 
 private:
-    SQLTransactionBackend(DatabaseBackend*, PassRefPtrWillBeRawPtr<SQLTransaction>,
+    SQLTransactionBackend(Database*, PassRefPtrWillBeRawPtr<SQLTransaction>,
         PassRefPtrWillBeRawPtr<SQLTransactionWrapper>, bool readOnly);
 
     void doCleanup();
@@ -111,7 +111,7 @@ private:
     RefPtrWillBeMember<SQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
     RefPtrWillBeMember<SQLStatementBackend> m_currentStatementBackend;
 
-    RefPtrWillBeMember<DatabaseBackend> m_database;
+    RefPtrWillBeMember<Database> m_database;
     RefPtrWillBeMember<SQLTransactionWrapper> m_wrapper;
     OwnPtr<SQLErrorData> m_transactionError;
 
