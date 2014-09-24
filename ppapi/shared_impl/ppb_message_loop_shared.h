@@ -50,6 +50,11 @@ class PPAPI_SHARED_EXPORT MessageLoopShared
 
   virtual base::MessageLoopProxy* GetMessageLoopProxy() = 0;
 
+  // Returns whether this MessageLoop is currently handling a blocking message
+  // from JavaScript. This is used to make it illegal to use blocking callbacks
+  // while the thread is handling a blocking message.
+  virtual bool CurrentlyHandlingBlockingMessage() = 0;
+
   DISALLOW_COPY_AND_ASSIGN(MessageLoopShared);
 };
 

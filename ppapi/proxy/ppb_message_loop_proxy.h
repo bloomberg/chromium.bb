@@ -48,6 +48,10 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
     return loop_proxy_;
   }
 
+  void set_currently_handling_blocking_message(bool handling_blocking_message) {
+    currently_handling_blocking_message_ = handling_blocking_message;
+  }
+
  private:
   struct TaskInfo {
     tracked_objects::Location from_here;
@@ -58,6 +62,8 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   // Returns true if the object is associated with the current thread.
   bool IsCurrent() const;
 
+  // MessageLoopShared implementation.
+  //
   // Handles posting to the message loop if there is one, or the pending queue
   // if there isn't.
   // NOTE: The given closure will be run *WITHOUT* acquiring the Proxy lock.
@@ -66,8 +72,8 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   virtual void PostClosure(const tracked_objects::Location& from_here,
                            const base::Closure& closure,
                            int64 delay_ms) OVERRIDE;
-
   virtual base::MessageLoopProxy* GetMessageLoopProxy() OVERRIDE;
+  virtual bool CurrentlyHandlingBlockingMessage() OVERRIDE;
 
   // TLS destructor function.
   static void ReleaseMessageLoop(void* value);
@@ -91,6 +97,8 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   bool should_destroy_;
 
   bool is_main_thread_loop_;
+
+  bool currently_handling_blocking_message_;
 
   // Since we allow tasks to be posted before the message loop is actually
   // created (when it's associated with a thread), we keep tasks posted here

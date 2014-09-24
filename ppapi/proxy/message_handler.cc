@@ -39,8 +39,12 @@ void HandleBlockingMessageWrapper(HandleBlockingMessageFunc function,
   if (!dispatcher)
     return;
   PP_Var result = PP_MakeUndefined();
+  MessageLoopResource::GetCurrent()->
+      set_currently_handling_blocking_message(true);
   CallWhileUnlocked(
       function, instance, user_data, &message_data.get(), &result);
+  MessageLoopResource::GetCurrent()->
+      set_currently_handling_blocking_message(false);
   PpapiMsg_PPPMessageHandler_HandleBlockingMessage::WriteReplyParams(
       reply_msg.get(),
       SerializedVarReturnValue::Convert(dispatcher, result),
@@ -64,10 +68,14 @@ void HandleBlockingMessageWrapper_0_1(HandleBlockingMessageFunc_0_1 function,
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
+  MessageLoopResource::GetCurrent()->
+      set_currently_handling_blocking_message(true);
   PP_Var return_value = CallWhileUnlocked(function,
                                           instance,
                                           user_data,
                                           message_data.get());
+  MessageLoopResource::GetCurrent()->
+      set_currently_handling_blocking_message(false);
   PpapiMsg_PPPMessageHandler_HandleBlockingMessage::WriteReplyParams(
       reply_msg.get(),
       SerializedVarReturnValue::Convert(dispatcher, return_value),

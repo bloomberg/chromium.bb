@@ -23,6 +23,12 @@ bool IsMainThread() {
       PpapiGlobals::Get()->GetMainThreadMessageLoop()->BelongsToCurrentThread();
 }
 
+bool CurrentThreadHandlingBlockingMessage() {
+  ppapi::MessageLoopShared* current =
+      PpapiGlobals::Get()->GetCurrentMessageLoop();
+  return current && current->CurrentlyHandlingBlockingMessage();
+}
+
 }  // namespace
 
 namespace thunk {
@@ -138,6 +144,18 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
       if (report_error) {
         std::string message(
             "Blocking callbacks are not allowed on the main thread.");
+        PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
+                                                    std::string(), message);
+      }
+    } else if (callback_->is_blocking() &&
+               CurrentThreadHandlingBlockingMessage()) {
+      // Blocking callbacks are not allowed while handling a blocking message.
+      callback_->MarkAsCompleted();
+      callback_ = NULL;
+      retval_ = PP_ERROR_WOULD_BLOCK_THREAD;
+      if (report_error) {
+        std::string message("Blocking callbacks are not allowed while handling "
+                            "a blocking message from JavaScript.");
         PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
                                                     std::string(), message);
       }

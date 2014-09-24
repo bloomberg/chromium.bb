@@ -31,7 +31,8 @@ MessageLoopResource::MessageLoopResource(PP_Instance instance)
       nested_invocations_(0),
       destroyed_(false),
       should_destroy_(false),
-      is_main_thread_loop_(false) {
+      is_main_thread_loop_(false),
+      currently_handling_blocking_message_(false) {
 }
 
 MessageLoopResource::MessageLoopResource(ForMainThread for_main_thread)
@@ -39,7 +40,8 @@ MessageLoopResource::MessageLoopResource(ForMainThread for_main_thread)
       nested_invocations_(0),
       destroyed_(false),
       should_destroy_(false),
-      is_main_thread_loop_(true) {
+      is_main_thread_loop_(true),
+      currently_handling_blocking_message_(false) {
   // We attach the main thread immediately. We can't use AttachToCurrentThread,
   // because the MessageLoop already exists.
 
@@ -191,6 +193,10 @@ void MessageLoopResource::PostClosure(
 
 base::MessageLoopProxy* MessageLoopResource::GetMessageLoopProxy() {
   return loop_proxy_.get();
+}
+
+bool MessageLoopResource::CurrentlyHandlingBlockingMessage() {
+  return currently_handling_blocking_message_;
 }
 
 // static

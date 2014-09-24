@@ -13,12 +13,15 @@
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppp_message_handler.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/message_handler.h"
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/cpp/network_list.h"
+#include "ppapi/cpp/network_monitor.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_array_buffer.h"
@@ -121,6 +124,17 @@ class EchoingMessageHandler : public pp::MessageHandler {
       AddError("HandleBlockingMessage was called on the wrong thread!");
     if (instance.pp_instance() != testing_instance_->pp_instance())
       AddError("HandleBlockingMessage was passed the wrong instance!");
+
+    // Attempt a blocking operation; make sure it's disallowed.
+    pp::NetworkMonitor monitor(instance);
+    PP_Resource out_param = 0;
+    pp::CompletionCallbackWithOutput<pp::NetworkList> blocking_callback(
+        &out_param);
+    int32_t error = monitor.UpdateNetworkList(blocking_callback);
+    if (error != PP_ERROR_WOULD_BLOCK_THREAD) {
+      AddError("HandleBlockingMessage was allowed to do a blocking call!");
+      pp::Module::Get()->core()->ReleaseResource(out_param);
+    }
 
     return var;
   }
