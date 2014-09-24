@@ -235,9 +235,9 @@ class AthenaWebView : public views::WebView {
       case NEW_BACKGROUND_TAB:
       case NEW_POPUP:
       case NEW_WINDOW: {
-        ActivityManager::Get()->AddActivity(
-            ActivityFactory::Get()->CreateWebActivity(
-                browser_context(), base::string16(), params.url));
+        Activity* activity = ActivityFactory::Get()->CreateWebActivity(
+            browser_context(), base::string16(), params.url);
+        Activity::Show(activity);
         break;
       }
       default:

@@ -4,6 +4,7 @@
 
 #include "athena/main/placeholder.h"
 
+#include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/resources/grit/athena_resources.h"
 #include "athena/system/public/system_ui.h"
@@ -15,9 +16,11 @@ void CreateTestPages(content::BrowserContext* browser_context) {
       "http://cyan.bikeshed.com", "https://news.google.com",
       "http://blue.bikeshed.com", "https://www.google.com",
   };
+  athena::ActivityFactory* factory = athena::ActivityFactory::Get();
   for (size_t i = 0; i < arraysize(kTestURLs); ++i) {
-    athena::ActivityFactory::Get()->CreateWebActivity(
+    athena::Activity* activity = factory->CreateWebActivity(
         browser_context, base::string16(), GURL(kTestURLs[i]));
+    athena::Activity::Show(activity);
   }
 }
 

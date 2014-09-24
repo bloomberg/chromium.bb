@@ -22,6 +22,7 @@
 #include "ui/aura/window.h"
 
 namespace athena {
+namespace {
 
 class ResourceManagerImpl : public ResourceManager,
                             public WindowManagerObserver,
@@ -458,6 +459,8 @@ bool ResourceManagerImpl::AllowedToUnloadActivity() {
   return current_memory_pressure_ != MEMORY_PRESSURE_LOW &&
          base::Time::Now() >= next_resource_management_time_;
 }
+
+}  // namespace
 
 // static
 void ResourceManager::Create() {

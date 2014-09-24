@@ -4,6 +4,7 @@
 
 #include "athena/extensions/athena_app_delegate_base.h"
 
+#include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/env/public/athena_env.h"
 #include "content/public/browser/web_contents.h"
@@ -22,7 +23,7 @@ content::WebContents* OpenURLInActivity(content::BrowserContext* context,
   // Force all links to open in a new activity.
   Activity* activity = ActivityFactory::Get()->CreateWebActivity(
       context, base::string16(), params.url);
-  DCHECK(activity);
+  Activity::Show(activity);
   // TODO(oshima): Get the web cotnents from activity.
   return NULL;
 }

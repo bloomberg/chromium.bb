@@ -5,8 +5,17 @@
 #include "athena/activity/public/activity.h"
 
 #include "athena/activity/public/activity_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace athena {
+
+// static
+void Activity::Show(Activity* activity) {
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(activity->GetWindow());
+  DCHECK(widget);
+  widget->Show();
+}
 
 // static
 void Activity::Delete(Activity* activity) {

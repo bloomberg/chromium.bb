@@ -20,6 +20,11 @@ TEST_F(ActivityManagerTest, Basic) {
       NULL, base::string16(), GURL());
   EXPECT_EQ(1, activity_manager->num_activities());
 
+  // Activity is not visible when created.
+  EXPECT_FALSE(activity1->GetWindow()->TargetVisibility());
+  Activity::Show(activity1);
+  EXPECT_TRUE(activity1->GetWindow()->TargetVisibility());
+
   Activity* activity2 = athena::ActivityFactory::Get()->CreateWebActivity(
       NULL, base::string16(), GURL());
   EXPECT_EQ(2, activity_manager->num_activities());

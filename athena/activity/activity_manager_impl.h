@@ -8,12 +8,14 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace athena {
 
 class ActivityManagerObserver;
 
-class ActivityManagerImpl : public ActivityManager {
+class ActivityManagerImpl : public ActivityManager,
+                            public views::WidgetObserver {
  public:
   ActivityManagerImpl();
   virtual ~ActivityManagerImpl();
@@ -26,6 +28,9 @@ class ActivityManagerImpl : public ActivityManager {
   virtual void UpdateActivity(Activity* activity) OVERRIDE;
   virtual void AddObserver(ActivityManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ActivityManagerObserver* observer) OVERRIDE;
+
+  // views::WidgetObserver
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
  private:
   std::vector<Activity*> activities_;

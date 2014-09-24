@@ -62,7 +62,10 @@ class ATHENA_EXPORT Activity {
     ACTIVITY_MEDIA_STATE_AUDIO_PLAYING  // Audible audio is playing in activity.
   };
 
-  // Delete an activity.
+  // Shows and activates an activity.
+  static void Show(Activity* activity);
+
+  // Deletes an activity.
   static void Delete(Activity* activity);
 
   // The Activity retains ownership of the returned view-model.
@@ -82,6 +85,8 @@ class ATHENA_EXPORT Activity {
 
   // Returns the window for the activity. This can be used to determine the
   // stacking order of this activity against others.
+  // TODO(oshima): Consider returning base::Window window instead,
+  // which has Show/ShowInactive and other control methods.
   virtual aura::Window* GetWindow() = 0;
 
  protected:
