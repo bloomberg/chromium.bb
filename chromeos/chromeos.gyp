@@ -475,8 +475,6 @@
         'network/fake_network_device_handler.h',
         'network/mock_managed_network_configuration_handler.cc',
         'network/mock_managed_network_configuration_handler.h',
-        'network/onc/mock_certificate_importer.cc',
-        'network/onc/mock_certificate_importer.h',
         'network/onc/onc_test_utils.cc',
         'network/onc/onc_test_utils.h',
         'system/mock_statistics_provider.cc',
