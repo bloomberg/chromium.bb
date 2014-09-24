@@ -42,7 +42,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/testing/URLTestHelpers.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
