@@ -41,12 +41,6 @@ EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
              ->crypto_delegate();
 }
 
-EasyUnlockScreenlockStateHandler* GetScreenlockStateHandler(
-    content::BrowserContext* context) {
-  return EasyUnlockService::Get(Profile::FromBrowserContext(context))
-      ->GetScreenlockStateHandler();
-}
-
 EasyUnlockScreenlockStateHandler::State ToScreenlockStateHandlerState(
     easy_unlock_private::State state) {
   switch (state) {
@@ -426,13 +420,10 @@ bool EasyUnlockPrivateUpdateScreenlockStateFunction::RunSync() {
       easy_unlock_private::UpdateScreenlockState::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  EasyUnlockScreenlockStateHandler* screenlock_state_handler =
-      GetScreenlockStateHandler(browser_context());
-  if (screenlock_state_handler) {
-    screenlock_state_handler->ChangeState(
-        ToScreenlockStateHandlerState(params->state));
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (EasyUnlockService::Get(profile)->UpdateScreenlockState(
+          ToScreenlockStateHandlerState(params->state)))
     return true;
-  }
 
   SetError("Not allowed");
   return false;
@@ -563,9 +554,13 @@ EasyUnlockPrivateTrySignInSecretFunction::
     ~EasyUnlockPrivateTrySignInSecretFunction() {
 }
 
-bool EasyUnlockPrivateTrySignInSecretFunction::RunAsync() {
-  SetError("Not implemented");
-  SendResponse(false);
+bool EasyUnlockPrivateTrySignInSecretFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::TrySignInSecret::Params> params(
+      easy_unlock_private::TrySignInSecret::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  EasyUnlockService::Get(profile)->FinalizeSignin(params->sign_in_secret);
   return true;
 }
 
@@ -586,7 +581,8 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
             new easy_unlock_private::UserInfo()));
     users[0]->user_id = user_id;
     users[0]->logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
-    users[0]->data_ready = service->GetRemoteDevices() != NULL;
+    users[0]->data_ready = users[0]->logged_in ||
+                           service->GetRemoteDevices() != NULL;
   }
   results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
   return true;

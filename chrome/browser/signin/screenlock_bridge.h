@@ -21,6 +21,8 @@ class Profile;
 // ScreenlockBridge brings together the screenLockPrivate API and underlying
 // support. On ChromeOS, it delegates calls to the ScreenLocker. On other
 // platforms, it delegates calls to UserManagerUI (and friends).
+// TODO(tbarzic): Rename ScreenlockBridge to SignInScreenBridge, as this is not
+// used solely for the lock screen anymore.
 class ScreenlockBridge {
  public:
   class Observer {
@@ -132,6 +134,11 @@ class ScreenlockBridge {
 
     // Unlock from easy unlock app for a user.
     virtual void Unlock(const std::string& user_email) = 0;
+
+    // Attempts to login the user using an easy unlock key.
+    virtual void AttemptEasySignin(const std::string& user_email,
+                                   const std::string& secret,
+                                   const std::string& key_label) = 0;
 
    protected:
     virtual ~LockHandler() {}

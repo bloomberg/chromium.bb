@@ -43,9 +43,9 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -1010,6 +1010,25 @@ void SigninScreenHandler::Unlock(const std::string& user_email) {
   ScreenLocker::Hide();
 }
 
+void SigninScreenHandler::AttemptEasySignin(const std::string& user_email,
+                                            const std::string& secret,
+                                            const std::string& key_label) {
+  DCHECK(!ScreenLocker::default_screen_locker());
+  if (!delegate_)
+    return;
+
+  UserContext user_context(user_email);
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
+  user_context.SetKey(Key(secret));
+  user_context.GetKey()->SetLabel(key_label);
+
+  // TODO(tbarzic): Handle empty secret. The delegate will end up ignoring login
+  // attempt if the key is not set, and the UI will remain disabled.
+  DCHECK(!secret.empty());
+
+  delegate_->Login(user_context, SigninSpecifics());
+}
+
 void SigninScreenHandler::OnMaximizeModeStarted() {
   CallJS("login.AccountPickerScreen.setTouchViewState", true);
 }
@@ -1082,7 +1101,11 @@ void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
 }
 
 void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
-  DCHECK(ScreenLocker::default_screen_locker());
+  if (!ScreenLocker::default_screen_locker()) {
+    OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
+    if (oobe_ui->display_type() != OobeUI::kLoginDisplay)
+      return;
+  }
 
   const user_manager::User* unlock_user = NULL;
   const user_manager::UserList& users = delegate_->GetUsers();
@@ -1097,11 +1120,16 @@ void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
   if (!unlock_user)
     return;
 
-  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(unlock_user);
-  extensions::ScreenlockPrivateEventRouter* router =
-      extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
-          profile);
-  router->OnAuthAttempted(GetAuthType(username), "");
+  ProfileHelper* profile_helper = ProfileHelper::Get();
+  Profile* profile = profile_helper->GetProfileByUser(unlock_user);
+
+  // The user profile should exists if and only if this is lock screen.
+  DCHECK_NE(!profile, !ScreenLocker::default_screen_locker());
+
+  if (!profile)
+    profile = profile_helper->GetSigninProfile();
+
+  EasyUnlockService::Get(profile)->AttemptAuth(username);
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser() {
@@ -1247,8 +1275,8 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   if (ScreenLocker::default_screen_locker()) {
     ScreenLocker::default_screen_locker()->delegate()->OnLockWebUIReady();
-    ScreenlockBridge::Get()->SetLockHandler(this);
   }
+  ScreenlockBridge::Get()->SetLockHandler(this);
 
   if (delegate_)
     delegate_->OnSigninScreenReady();

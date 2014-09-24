@@ -299,7 +299,7 @@ class EasyUnlockPrivateGetSignInChallengeFunction :
 };
 
 class EasyUnlockPrivateTrySignInSecretFunction :
-    public AsyncExtensionFunction {
+    public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.trySignInSecret",
                              EASYUNLOCKPRIVATE_TRYSIGNINSECRET)
@@ -308,8 +308,8 @@ class EasyUnlockPrivateTrySignInSecretFunction :
  private:
   virtual ~EasyUnlockPrivateTrySignInSecretFunction();
 
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateTrySignInSecretFunction);
 };

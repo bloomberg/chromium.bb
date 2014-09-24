@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_CREATE_KEYS_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_CREATE_KEYS_OPERATION_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -28,6 +30,8 @@ class EasyUnlockCreateKeysOperation {
 
   void Start();
 
+  const UserContext& user_context() const { return user_context_; }
+
  private:
   class ChallengeCreator;
 
@@ -36,6 +40,7 @@ class EasyUnlockCreateKeysOperation {
   void OnGetSystemSalt(size_t index,
                        const std::string& system_salt);
   void OnKeyCreated(size_t index,
+                    const Key& user_key,
                     bool success,
                     cryptohome::MountError return_code);
 

@@ -337,6 +337,9 @@ class SigninScreenHandler
   virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
       const std::string& username) const OVERRIDE;
   virtual void Unlock(const std::string& user_email) OVERRIDE;
+  virtual void AttemptEasySignin(const std::string& user_email,
+                                 const std::string& secret,
+                                 const std::string& key_label) OVERRIDE;
 
   // TouchViewControllerDelegate::Observer implementation:
   virtual void OnMaximizeModeStarted() OVERRIDE;

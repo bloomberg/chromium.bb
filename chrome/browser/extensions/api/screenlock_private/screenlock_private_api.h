@@ -38,12 +38,12 @@ class ScreenlockPrivateSetLockedFunction : public ChromeAsyncExtensionFunction {
 };
 
 class ScreenlockPrivateAcceptAuthAttemptFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.acceptAuthAttempt",
                              SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT)
   ScreenlockPrivateAcceptAuthAttemptFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   virtual ~ScreenlockPrivateAcceptAuthAttemptFunction();
@@ -56,7 +56,7 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
   virtual ~ScreenlockPrivateEventRouter();
 
-  void OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type,
+  bool OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type,
                        const std::string& value);
 
   // BrowserContextKeyedAPI

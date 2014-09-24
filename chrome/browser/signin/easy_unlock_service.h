@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -22,7 +23,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class EasyUnlockScreenlockStateHandler;
+class EasyUnlockAuthAttempt;
 class EasyUnlockServiceObserver;
 class Profile;
 
@@ -73,19 +74,38 @@ class EasyUnlockService : public KeyedService {
   // Returns the current turn off flow status.
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const = 0;
 
-  // Gets the challenge bytes for the currently associated user.
+  // Gets the challenge bytes for the user currently associated with the
+  // service.
   virtual std::string GetChallenge() const = 0;
 
-  // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
-  // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance
-  // is created. Do not cache the returned value, as it may go away if Easy
-  // Unlock gets disabled.
-  EasyUnlockScreenlockStateHandler* GetScreenlockStateHandler();
+  // Retrieved wrapped secret that should be used to unlock cryptohome for the
+  // user currently associated with the service. If the service does not support
+  // signin (i.e. service for a regular profile) or there is no secret available
+  // for the user, returns an empty string.
+  virtual std::string GetWrappedSecret() const = 0;
 
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
   // permitted either the flag is enabled or its field trial is enabled.
   bool IsAllowed();
+
+  // Updates the user pod on the signin/lock screen for the user associated with
+  // the service to reflect the provided screenlock state.
+  bool UpdateScreenlockState(EasyUnlockScreenlockStateHandler::State state);
+
+  // Starts an auth attempt for the user associated with the service. The
+  // attempt type (unlock vs. signin) will depend on the service type.
+  void AttemptAuth(const std::string& user_id);
+
+  // Finalizes the previously started auth attempt for easy unlock. If called on
+  // signin profile service, it will cancel the current auth attempt if one
+  // exists.
+  void FinalizeUnlock(bool success);
+
+  // Finalizes previously started auth attempt for easy signin. If called on
+  // regular profile service, it will cancel the current auth attempt if one
+  // exists.
+  void FinalizeSignin(const std::string& secret);
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
@@ -133,8 +153,8 @@ class EasyUnlockService : public KeyedService {
   // Notifies observers that the turn off flow status changed.
   void NotifyTurnOffOperationStatusChanged();
 
-  // Resets |screenlock_state_handler_|.
-  void ResetScreenlockStateHandler();
+  // Resets the screenlock state set by this service.
+  void ResetScreenlockState();
 
  private:
   // A class to detect whether a bluetooth adapter is present.
@@ -143,6 +163,12 @@ class EasyUnlockService : public KeyedService {
   // Initializes the service after ExtensionService is ready.
   void Initialize();
 
+  // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
+  // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance
+  // is created. Do not cache the returned value, as it may go away if Easy
+  // Unlock gets disabled.
+  EasyUnlockScreenlockStateHandler* GetScreenlockStateHandler();
+
   // Callback when Bluetooth adapter present state changes.
   void OnBluetoothAdapterPresentChanged();
 
@@ -150,6 +176,10 @@ class EasyUnlockService : public KeyedService {
 
   // Created lazily in |GetScreenlockStateHandler|.
   scoped_ptr<EasyUnlockScreenlockStateHandler> screenlock_state_handler_;
+
+  // The handler for the current auth attempt. Set iff an auth attempt is in
+  // progress.
+  scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
 
   scoped_ptr<BluetoothDetector> bluetooth_detector_;
 

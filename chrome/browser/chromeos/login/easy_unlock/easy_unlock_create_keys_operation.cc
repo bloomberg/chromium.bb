@@ -354,9 +354,8 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
       kEasyUnlockKeyMetaNamePubKey, device->public_key));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNameChallenge, device->challenge));
-  // TODO(xiyuan): Store wrapped secret when all pieces are in place.
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
-      kEasyUnlockKeyMetaNameWrappedSecret, challenge_creator_->user_key()));
+      kEasyUnlockKeyMetaNameWrappedSecret, device->wrapped_secret));
 
   // Add cryptohome key.
   std::string canonicalized =
@@ -371,11 +370,13 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
       true,  // clobber
       base::Bind(&EasyUnlockCreateKeysOperation::OnKeyCreated,
                  weak_ptr_factory_.GetWeakPtr(),
-                 index));
+                 index,
+                 user_key));
 }
 
 void EasyUnlockCreateKeysOperation::OnKeyCreated(
     size_t index,
+    const Key& user_key,
     bool success,
     cryptohome::MountError return_code) {
   DCHECK_EQ(key_creation_index_, index);
@@ -384,6 +385,14 @@ void EasyUnlockCreateKeysOperation::OnKeyCreated(
     LOG(ERROR) << "Easy unlock failed to create key, code=" << return_code;
     callback_.Run(false);
     return;
+  }
+
+  // If the key associated with the current context changed (i.e. in the case
+  // the current signin flow was Easy signin), update the user context.
+  if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_UNLOCK &&
+      user_context_.GetKey()->GetLabel() ==
+          EasyUnlockKeyManager::GetKeyLabel(key_creation_index_)) {
+    user_context_.SetKey(user_key);
   }
 
   ++key_creation_index_;

@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "extensions/browser/event_router.h"
 
@@ -15,8 +16,6 @@ namespace screenlock = extensions::api::screenlock_private;
 namespace extensions {
 
 namespace {
-
-const char kNotLockedError[] = "Screen is not currently locked.";
 
 screenlock::AuthType FromLockHandlerAuthType(
     ScreenlockBridge::LockHandler::AuthType auth_type) {
@@ -76,23 +75,13 @@ ScreenlockPrivateAcceptAuthAttemptFunction::
 ScreenlockPrivateAcceptAuthAttemptFunction::
     ~ScreenlockPrivateAcceptAuthAttemptFunction() {}
 
-bool ScreenlockPrivateAcceptAuthAttemptFunction::RunAsync() {
+bool ScreenlockPrivateAcceptAuthAttemptFunction::RunSync() {
   scoped_ptr<screenlock::AcceptAuthAttempt::Params> params(
       screenlock::AcceptAuthAttempt::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ScreenlockBridge::LockHandler* locker =
-      ScreenlockBridge::Get()->lock_handler();
-  if (locker) {
-    if (params->accept) {
-      locker->Unlock(ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()));
-    } else {
-      locker->EnableInput();
-    }
-  } else {
-    SetError(kNotLockedError);
-  }
-  SendResponse(error_.empty());
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  EasyUnlockService::Get(profile)->FinalizeUnlock(params->accept);
   return true;
 }
 
@@ -142,16 +131,22 @@ void ScreenlockPrivateEventRouter::Shutdown() {
   ScreenlockBridge::Get()->RemoveObserver(this);
 }
 
-void ScreenlockPrivateEventRouter::OnAuthAttempted(
+bool ScreenlockPrivateEventRouter::OnAuthAttempted(
     ScreenlockBridge::LockHandler::AuthType auth_type,
     const std::string& value) {
+  extensions::EventRouter* router =
+      extensions::EventRouter::Get(browser_context_);
+  if (!router->HasEventListener(screenlock::OnAuthAttempted::kEventName))
+    return false;
+
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->AppendString(screenlock::ToString(FromLockHandlerAuthType(auth_type)));
   args->AppendString(value);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       screenlock::OnAuthAttempted::kEventName, args.Pass()));
-  extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  router->BroadcastEvent(event.Pass());
+  return true;
 }
 
 }  // namespace extensions

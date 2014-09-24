@@ -56,8 +56,7 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
       devices,
       base::Bind(&EasyUnlockKeyManager::OnKeysCreated,
                  weak_ptr_factory_.GetWeakPtr(),
-                 user_context,
-                 devices,
+                 devices.size(),
                  callback)));
   create_keys_op_->Start();
 }
@@ -185,8 +184,7 @@ int EasyUnlockKeyManager::GetNextOperationId() {
 }
 
 void EasyUnlockKeyManager::OnKeysCreated(
-    const UserContext& user_context,
-    const EasyUnlockDeviceKeyDataList& devices,
+    size_t remove_start_index,
     const RefreshKeysCallback& callback,
     bool create_success) {
   scoped_ptr<EasyUnlockCreateKeysOperation> op = create_keys_op_.Pass();
@@ -194,7 +192,7 @@ void EasyUnlockKeyManager::OnKeysCreated(
     callback.Run(create_success);
 
   // Remove extra existing keys.
-  RemoveKeys(user_context, devices.size(), RemoveKeysCallback());
+  RemoveKeys(op->user_context(), remove_start_index, RemoveKeysCallback());
 }
 
 void EasyUnlockKeyManager::OnKeysRemoved(const RemoveKeysCallback& callback,

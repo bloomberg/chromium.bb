@@ -60,6 +60,9 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
       const std::string& user_email) const OVERRIDE;
   virtual void Unlock(const std::string& user_email) OVERRIDE;
+  virtual void AttemptEasySignin(const std::string& user_email,
+                                 const std::string& secret,
+                                 const std::string& key_label) OVERRIDE;
 
  private:
   // An observer for any changes to Profiles in the ProfileInfoCache so that

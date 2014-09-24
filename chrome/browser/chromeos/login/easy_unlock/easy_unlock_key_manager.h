@@ -89,8 +89,7 @@ class EasyUnlockKeyManager {
   int GetNextOperationId();
 
   // Callback invoked after create keys op.
-  void OnKeysCreated(const UserContext& user_context,
-                     const EasyUnlockDeviceKeyDataList& devices,
+  void OnKeysCreated(size_t remove_start_index,
                      const RefreshKeysCallback& callback,
                      bool create_success);
 

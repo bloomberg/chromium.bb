@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
+#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
@@ -203,6 +203,44 @@ EasyUnlockScreenlockStateHandler*
   return screenlock_state_handler_.get();
 }
 
+bool EasyUnlockService::UpdateScreenlockState(
+    EasyUnlockScreenlockStateHandler::State state) {
+  EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
+  if (!handler)
+    return false;
+
+  handler->ChangeState(state);
+
+  if (state != EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED)
+    auth_attempt_.reset();
+  return true;
+}
+
+void EasyUnlockService::AttemptAuth(const std::string& user_id) {
+  auth_attempt_.reset(new EasyUnlockAuthAttempt(
+      profile_,
+      GetUserEmail(),
+      GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
+                                : EasyUnlockAuthAttempt::TYPE_SIGNIN));
+  if (!auth_attempt_->Start(user_id))
+    auth_attempt_.reset();
+}
+
+void EasyUnlockService::FinalizeUnlock(bool success) {
+  if (auth_attempt_)
+    auth_attempt_->FinalizeUnlock(GetUserEmail(), success);
+  auth_attempt_.reset();
+}
+
+void EasyUnlockService::FinalizeSignin(const std::string& key) {
+  if (!auth_attempt_)
+    return;
+  std::string wrapped_secret = GetWrappedSecret();
+  if (!wrapped_secret.empty())
+    auth_attempt_->FinalizeSignin(GetUserEmail(), wrapped_secret, key);
+  auth_attempt_.reset();
+}
+
 void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -220,7 +258,7 @@ void  EasyUnlockService::Shutdown() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  ResetScreenlockStateHandler();
+  ResetScreenlockState();
   bluetooth_detector_.reset();
 #if defined(OS_CHROMEOS)
   power_monitor_.reset();
@@ -261,7 +299,7 @@ void EasyUnlockService::LoadApp() {
 
 void EasyUnlockService::DisableAppIfLoaded() {
   // Make sure lock screen state set by the extension gets reset.
-  ResetScreenlockStateHandler();
+  ResetScreenlockState();
 
   extensions::ComponentLoader* loader = GetComponentLoader(profile_);
   if (!loader->Exists(extension_misc::kEasyUnlockAppId))
@@ -279,7 +317,7 @@ void EasyUnlockService::UnloadApp() {
 
 void EasyUnlockService::ReloadApp() {
   // Make sure lock screen state set by the extension gets reset.
-  ResetScreenlockStateHandler();
+  ResetScreenlockState();
 
   if (!GetComponentLoader(profile_)->Exists(extension_misc::kEasyUnlockAppId))
     return;
@@ -315,7 +353,7 @@ void EasyUnlockService::NotifyUserUpdated() {
   extensions::api::easy_unlock_private::UserInfo info;
   info.user_id = user_id;
   info.logged_in = GetType() == TYPE_REGULAR;
-  info.data_ready = GetRemoteDevices() != NULL;
+  info.data_ready = info.logged_in || GetRemoteDevices() != NULL;
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(info.ToValue().release());
@@ -333,8 +371,9 @@ void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {
       EasyUnlockServiceObserver, observers_, OnTurnOffOperationStatusChanged());
 }
 
-void EasyUnlockService::ResetScreenlockStateHandler() {
+void EasyUnlockService::ResetScreenlockState() {
   screenlock_state_handler_.reset();
+  auth_attempt_.reset();
 }
 
 void EasyUnlockService::Initialize() {

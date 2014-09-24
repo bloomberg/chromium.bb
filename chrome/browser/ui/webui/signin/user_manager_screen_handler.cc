@@ -286,6 +286,13 @@ void UserManagerScreenHandler::Unlock(const std::string& user_email) {
   ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
 }
 
+void UserManagerScreenHandler::AttemptEasySignin(
+    const std::string& user_email,
+    const std::string& secret,
+    const std::string& key_label) {
+  NOTREACHED();
+}
+
 void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   // If the URL has a hash parameter, store it for later.
   args->GetString(0, &url_hash_);

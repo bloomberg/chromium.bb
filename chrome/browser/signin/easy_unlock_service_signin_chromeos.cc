@@ -161,6 +161,15 @@ std::string EasyUnlockServiceSignin::GetChallenge() const {
   return data->devices[device_index].challenge;
 }
 
+std::string EasyUnlockServiceSignin::GetWrappedSecret() const {
+  const UserData* data = FindLoadedDataForCurrentUser();
+  // TODO(xiyuan): Use correct remote device instead of hard coded first one.
+  uint32 device_index = 0;
+  if (!data || data->devices.size() <= device_index)
+    return std::string();
+  return data->devices[device_index].wrapped_secret;
+}
+
 void EasyUnlockServiceSignin::InitializeInternal() {
   if (chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
@@ -208,7 +217,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
   bool should_update_app_state = user_id_.empty() != user_id.empty();
   user_id_ = user_id;
 
-  ResetScreenlockStateHandler();
+  ResetScreenlockState();
 
   if (should_update_app_state) {
     UpdateAppState();

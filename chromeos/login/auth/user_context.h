@@ -26,7 +26,9 @@ class CHROMEOS_EXPORT UserContext {
     // Online authentication against GAIA. GAIA redirected to a SAML IdP.
     AUTH_FLOW_GAIA_WITH_SAML,
     // Offline authentication against a cached key.
-    AUTH_FLOW_OFFLINE
+    AUTH_FLOW_OFFLINE,
+    // Offline authentication using and Easy unlock device (e.g. a phone).
+    AUTH_FLOW_EASY_UNLOCK
   };
 
   UserContext();

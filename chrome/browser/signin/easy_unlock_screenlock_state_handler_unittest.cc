@@ -93,6 +93,12 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
+  virtual void AttemptEasySignin(const std::string& user_email,
+                                 const std::string& secret,
+                                 const std::string& key_label) OVERRIDE {
+    ASSERT_FALSE(true) << "Should not be reached.";
+  }
+
   // Utility methods used by tests:
 
   // Gets last set auth value.
