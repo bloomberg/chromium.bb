@@ -17,7 +17,6 @@ found in the LICENSE file.
 <script>
 function CTFailures(commitLog) {
   this.commitLog = commitLog;
-  this.builderLatestInfo = null;
   // Maps a tree id to an array of CTFailureGroups within that tree.
   this.failures = null;
   this.lastUpdateDate = null;
@@ -94,11 +93,6 @@ CTFailures.prototype.update = function() {
     var sheriff_data = data_array[1];
     var trooper_data = data_array[2];
 
-    this.builderLatestInfo = {};
-
-    Object.keys(sheriff_data.latest_builder_info, function (master, data) {
-      this.builderLatestInfo[master] = data
-    }.bind(this));
     var newFailures = {};
     this.lastUpdateDate = new Date(sheriff_data.date * 1000);
     this._mungeAlerts(sheriff_data.alerts);
@@ -112,14 +106,17 @@ CTFailures.prototype.update = function() {
     sheriff_data.range_groups.forEach(function(rangeGroup) {
       this._processFailuresForRangeGroup(newFailures, rangeGroup, alertsByKey, annotations);
     }.bind(this));
+
     // Sort failure groups so that newer failures are shown at the top
     // of the UI.
-
     Object.keys(newFailures, function (tree, failuresByTree) {
       failuresByTree.sort(this._failureByTreeListComparator.bind(this, tree));
     }.bind(this));
 
-    this._checkBuildersForFailures(newFailures);
+    sheriff_data.stale_builder_alerts.forEach(function(alert) {
+      this._processBuilderFailure(newFailures, alert);
+    }.bind(this));
+
     this.failures = updateUtil.updateLeft(this.failures, newFailures);
     this._processTrooperFailures(trooper_data);
   }.bind(this));
@@ -208,31 +205,15 @@ CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, range
   }.bind(this));
 };
 
-CTFailures.prototype._checkBuildersForFailures = function(newFailures) {
-  var timeThreshold = {
-    "idle": null, // FIXME: We should alert if a bot is idle with jobs queued
-    "building": 3 * 60 * 60,
-    "offline": 0.5 * 60 * 60
-  };
-  Object.keys(this.builderLatestInfo, function(master, builders) {
-    // FIXME: Don't special case blink and chromium.webkit
-    if (master == "chromium.webkit") {
-      var tree = "blink";
-      Object.keys(builders, function(builder, builderInfo) {
-        var timeSinceLastUpdate = (this.lastUpdateDate.valueOf() / 1000)  - builderInfo.lastUpdateTime;
-        // FIXME: This alert logic should live on the buildbot.
-        if (timeSinceLastUpdate > timeThreshold[builderInfo.state] && builderInfo.state != "idle") {
-          var alert = (timeSinceLastUpdate / (60 * 60)).toFixed(2) + " hours ";
-          var masterUrl = "http://build.chromium.org/p/" + master;
-          if (!newFailures[tree])
-            newFailures[tree] = [];
-          var failure = new CTBuilderFailure(masterUrl, builder, builderInfo.state, alert);
-          var data = new CTBuilderFailureGroupData(failure, builder, "http://build.chromium.org/p/" + master + "/builders/" + builder);
-          newFailures[tree].push(new CTFailureGroup(failure.key, data, 'builders'));
-        }
-      }.bind(this));
-    }
-  }.bind(this));
+CTFailures.prototype._processBuilderFailure = function(newFailures, alert) {
+  var timeSinceLastUpdate = (this.lastUpdateDate.valueOf() / 1000) - alert.last_update_time;
+  var failure = new CTBuilderFailure(alert.tree, alert.master_url, alert.builder_name, alert.state,
+      timeSinceLastUpdate, alert.pending_builds);
+  var data = new CTBuilderFailureGroupData(failure, alert.builder_name,
+      alert.master_url + + "/builders/" + alert.builder_name);
+  if (!newFailures[alert.tree])
+    newFailures[alert.tree] = [];
+  newFailures[alert.tree].push(new CTFailureGroup(failure.key, data, 'builders'));
 };
 
 })();

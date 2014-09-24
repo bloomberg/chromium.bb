@@ -203,33 +203,33 @@ describe('ct-failures', function() {
     it('should update everything', function(done) {
       var simulator = new NetworkSimulator(assert, done);
       var netData = {
-        alerts: {
-          latest_builder_info: {
-            'chromium.webkit': {
-              'Linux Tests': {
-                state: "building",
-                lastUpdateTime: 1409697816.726562,
-                revisions: {
-                  v8: 50,
-                  chromium: 293001,
-                  nacl: 50,
-                  blink: 181262
-                },
-              },
+        'sheriff-o-matic.appspot.com/alerts': {
+          stale_builder_alerts: [
+            {
+              'master_url': 'http://build.chromium.org/p/chromium.webkit',
+              'builder_name': 'Linux Tests',
+              'state': 'building',
+              'last_update_time': 1409697347.089103,
+              'pending_builds': 4,
+              'tree': 'blink',
             },
-            'chromium.linux': {
-              "Linux Tests (dbg)(1)": {
-                state: "building",
-                lastUpdateTime: 1409696812.7248161,
-                revisions: {
-                  v8: 50,
-                  chromium: 292984,
-                  nacl: 50,
-                  blink: 181241
-                }
-              },
+            {
+              'master_url': 'http://build.chromium.org/p/chromium.linux',
+              'builder_name': 'Linux Tests (dbg)',
+              'state': 'offline',
+              'last_update_time': 1409697347.089103,
+              'pending_builds': 2,
+              'tree': 'blink',
+            },
+            {
+              'master_url': 'http://build.chromium.org/p/chromium.win',
+              'builder_name': 'Win Tests (dbg)',
+              'state': 'idle',
+              'last_update_time': 1409697347.089103,
+              'pending_builds': 5,
+              'tree': 'blink',
             }
-          },
+          ],
           range_groups: [
             {
               sort_key: 'linux: Linux Tests (dbg)(1)',
@@ -286,6 +286,10 @@ describe('ct-failures', function() {
               would_close_tree: true
             },
           ],
+          date: 1409697816.726562,
+        },
+        'trooper-o-matic.appspot.com/alerts': {
+
         }
       }
       simulator.json = function(url) {
@@ -320,6 +324,9 @@ describe('ct-failures', function() {
           assert.propertyVal(dbgBuilder, 'earliestFailingBuild', 2486);
           assert.propertyVal(dbgBuilder, 'masterUrl', 'https://build.chromium.org/p/chromium.linux');
           assert.propertyVal(dbgBuilder, 'failingBuildCount', 4);
+          assert.property(analyzer.failures, 'blink');
+          assert.lengthOf(analyzer.failures.blink, 3);
+          assert.equal(analyzer.failures.blink[0].data.failure.hoursSinceLastUpdate, 0.13);
 
           var commitList = group.data.commitList;
           assert.equal(commitList.constructor, CTCommitList);
@@ -332,7 +339,7 @@ describe('ct-failures', function() {
           repositoryCommitList.expanded = true;
 
           // Update |netData| to make sure it's propagated into the updated values.
-          netData.alerts.alerts[0].last_failing_build = 2490;
+          netData['sheriff-o-matic.appspot.com/alerts'].alerts[0].last_failing_build = 2490;
 
           return analyzer.update().then(function() {
             assert.strictEqual(analyzer.failures.chromium[0], group)
@@ -395,57 +402,6 @@ describe('ct-failures', function() {
       analyzer._processFailuresForRangeGroup(newFailures, range_groups, alertsByKey, annotations)
       assert.ok('test-tree' in newFailures)
       assert.notOk('chromium' in newFailures)
-    });
-  });
-
-  describe('checkBuildersForFailures', function() {
-    it('should generate alerts for hung bots', function() {
-      var analyzer = new CTFailures(new CTCommitList(undefined, []));
-      analyzer.builderLatestInfo =
-        {
-          'chromium.webkit': {
-            'Linux Tests': {
-              state: "building",
-              lastUpdateTime: 5000,
-              revisions: {
-                v8: 50,
-                chromium: 293001,
-                nacl: 50,
-                blink: 181262
-              },
-            },
-            'Win Tests': {
-              state: "building",
-              lastUpdateTime: 1,
-              revisions: {
-                v8: 50,
-                chromium: 293001,
-                nacl: 50,
-                blink: 181262
-              },
-            },
-            'Win ASAN': {
-              state: "offline",
-              lastUpdateTime: 5000,
-              revisions: {
-                v8: 50,
-                chromium: 293001,
-                nacl: 50,
-                blink: 181262
-              },
-            },
-          },
-        }
-      analyzer.lastUpdateDate = (3.5 * 60 * 60 * 1000) + 1;
-      var newFailures = {};
-      analyzer._checkBuildersForFailures(newFailures);
-      assert.ok('blink' in newFailures);
-      var blinkFailures = newFailures['blink'];
-      assert.lengthOf(blinkFailures, 2);
-      assert.equal(blinkFailures[0].key,
-          "http://build.chromium.org/p/chromium.webkit::Win Tests::building");
-      assert.equal(blinkFailures[1].key,
-          "http://build.chromium.org/p/chromium.webkit::Win ASAN::offline");
     });
   });
 

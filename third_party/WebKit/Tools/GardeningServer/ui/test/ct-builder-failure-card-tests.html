@@ -1,0 +1,54 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-builder-failure-card.html">
+
+<link rel="import" href="../../model/ct-failure-group.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-builder-failure-card', function() {
+  var group;
+  var card;
+  var failure;
+
+  beforeEach(function(done) {
+    card = document.createElement('ct-builder-failure-card');
+    group = new CTFailureGroup('', new CTBuilderFailureGroupData(
+        new CTBuilderFailure('blink', 'https://build.chromium.org/p/chromium.webkit',
+            'Linux (dbg)', 'building', 7200, 5), "Linux (dbg)", "http://foo.bar"));
+    card.group = group.data;
+    card.commitLog = new CTCommitLogMock();
+    setTimeout(done);
+  });
+
+  describe('failure card UI', function() {
+
+    it('should rename building to running.', function(done) {
+      var text = card.shadowRoot.querySelectorAll('div')[0].textContent;
+
+      assert(text.search('running') != -1);
+      assert(text.search('building') == -1);
+      done();
+    });
+
+    it('should display the correct values.', function(done) {
+      var text = card.shadowRoot.textContent;
+
+      assert(text.search('2.00 hours') != -1);
+      assert(text.search('5 pending builds') != -1);
+      done();
+    });
+
+  });
+
+});
+
+})()
+</script>
