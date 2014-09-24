@@ -138,7 +138,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS) || defined(USE_AURA)
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& rect_pixels,
       const SkBitmap& zoomed_bitmap) OVERRIDE {}

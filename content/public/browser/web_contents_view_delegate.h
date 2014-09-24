@@ -55,7 +55,7 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual void TakeFocus(bool reverse);
   virtual void SizeChanged(const gfx::Size& size);
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(USE_AURA)
   // Shows a popup window containing the |zoomed_bitmap| of web content with
   // more than one link, allowing the user to more easily select which link
   // they were trying to touch. |target_rect| is the rectangle in DIPs in the

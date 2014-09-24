@@ -335,7 +335,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                   size_t start_offset,
                                                   size_t end_offset) {};
 
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS) || defined(USE_AURA)
   virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                        const SkBitmap& zoomed_bitmap) = 0;
 #endif

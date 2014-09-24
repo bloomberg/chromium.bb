@@ -187,7 +187,7 @@ void RenderWidgetHostViewChildFrame::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
 }
 
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS) || defined(USE_AURA)
 void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
