@@ -26,6 +26,7 @@
             'chromevox_resources',
             'chromevox_manifest',
             'chromevox_guest_manifest',
+            'chromevox2',
           ],
         },
         {
@@ -139,6 +140,70 @@
               'includes': [ '../../../../../build/grit_action.gypi' ],
             },
           ],
+        },
+        {
+          'target_name': 'chromevox2',
+          'type': 'none',
+          'dependencies': [
+            'chromevox2_copied_scripts',
+            'chromevox2_deps',
+            'chromevox2_manifest',
+            'chromevox2_guest_manifest',
+            'chromevox2_resources',
+          ],
+        },
+        {
+          'target_name': 'chromevox2_copied_scripts',
+          'type': 'none',
+          'variables': {
+            'dest_dir': '<(chromevox_dest_dir)',
+          },
+          'sources': [
+            'cvox2/background/loader.js',
+          ],
+          'includes': [ 'copy_js.gypi', ],
+        },
+        {
+          'target_name': 'chromevox2_deps',
+          'type': 'none',
+          'variables': {
+            'deps_js_output_file': '<(chromevox_dest_dir)/deps.js',
+          },
+          'sources': [
+            'cvox2/background/loader.js',
+          ],
+          'includes': ['generate_deps.gypi'],
+        },
+        {
+          'target_name': 'chromevox2_resources',
+          'type': 'none',
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/cvox2/background',
+              'files': [
+                'cvox2/background/background.html',
+              ],
+            },
+          ],
+        },
+        {
+          'target_name': 'chromevox2_manifest',
+          'type': 'none',
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest_next.json',
+'use_chromevox_next': 1,
+          },
+          'includes': [ 'generate_manifest.gypi', ],
+        },
+        {
+          'target_name': 'chromevox2_guest_manifest',
+          'type': 'none',
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest_next_guest.json',
+            'is_guest_manifest': 1,
+            'use_chromevox_next': 1,
+          },
+          'includes': [ 'generate_manifest.gypi', ],
         },
       ],
       'conditions': [

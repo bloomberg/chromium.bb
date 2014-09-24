@@ -142,6 +142,7 @@
         'common/spannable_test.unitjs',
         'chromevox/injected/event_watcher_test.unitjs',
         'chromevox/injected/live_regions_test.unitjs',
+        'cvox2/background/background.extjs',
         'host/chrome/braille_display_manager_test.unitjs',
         'host/chrome/braille_input_handler_test.unitjs',
         'host/chrome/braille_integration_test.unitjs',
@@ -158,11 +159,6 @@
         'walkers/structural_line_walker_test.unitjs',
         'walkers/table_walker_test.unitjs',
         'walkers/word_walker_test.unitjs',
-      ],
-      'conditions': [
-        ['use_chromevox_next==1', {
-          'sources': ['../chromevox2/cvox2/background/background.extjs'],
-        }],
       ],
     },  # target chromevox_tests
     {

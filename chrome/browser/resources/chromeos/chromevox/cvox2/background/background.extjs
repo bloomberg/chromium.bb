@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../../../chromevox/testing/chromevox_e2e_test_base.js']);
+GEN_INCLUDE(['../../testing/chromevox_e2e_test_base.js']);
 
 /**
  * Test fixture for cvox2.Background.
@@ -14,6 +14,24 @@ function BackgroundTest() {}
 
 BackgroundTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
+
+  // This method is called without a |this| instance bound.
+  /** @override */
+  testGenCppIncludes: function() {
+    ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
+    GEN('#include "base/command_line.h"');
+    GEN('#include "chromeos/chromeos_switches.h"');
+  },
+
+  // This method is called without a |this| instance bound.
+  /** @override */
+  testGenPreamble: function() {
+    GEN_BLOCK(function() {/*!
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      command_line->AppendSwitch(chromeos::switches::kEnableChromeVoxNext);
+    */});
+    ChromeVoxE2ETest.prototype.testGenPreamble.call(this);
+  },
 
   /** @override */
   setUp: function() {

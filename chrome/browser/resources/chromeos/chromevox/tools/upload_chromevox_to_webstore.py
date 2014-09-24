@@ -23,8 +23,14 @@ import sys
 import tempfile
 from zipfile import ZipFile
 
-# A list of files to exclude from the webstore build.
-EXCLUDE_FILES = ['manifest_guest.json']
+# A list of files (or directories) to exclude from the webstore build.
+EXCLUDE_PATHS = [
+    'cvox2/background/',
+    'deps.js',
+    'manifest_guest.json',
+    'manifest_next.json',
+    'manifest_next_guest.json'
+    ]
 
 
 def CreateOptionParser():
@@ -91,9 +97,11 @@ def main():
   with ZipFile(output_path, 'w') as zip:
     for root, dirs, files in os.walk(extension_path):
       rel_path = os.path.join(os.path.relpath(root, extension_path), '')
+      if rel_path in EXCLUDE_PATHS:
+        continue
 
       for extension_file in files:
-        if extension_file in EXCLUDE_FILES:
+        if extension_file in EXCLUDE_PATHS:
           continue
         if extension_file == 'manifest.json':
           new_file = tempfile.NamedTemporaryFile(mode='w+a', bufsize=0)

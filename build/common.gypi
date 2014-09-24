@@ -1501,10 +1501,6 @@
     # chrome/third_party/chromevox.  This is still experimental.
     'use_migrated_chromevox%': 1,
 
-    # Chrome OS: whether to also build the upcoming version of
-    # ChromeVox, which can then be enabled via a command-line switch.
-    'use_chromevox_next%': 0,
-
     'conditions': [
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {

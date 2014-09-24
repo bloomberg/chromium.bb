@@ -69,8 +69,7 @@ const char kDisableNetworkPortalNotification[] =
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[] = "enable-carrier-switching";
 
-// Enables the next generation version of ChromeVox. Only valid with
-// use_chromevox_next=1 within your GYP_DEFINES.
+// Enables the next generation version of ChromeVox.
 const char kEnableChromeVoxNext[] = "enable-chromevox-next";
 
 // Enables consumer management, which allows user to enroll, remotely lock and

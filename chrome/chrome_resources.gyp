@@ -111,17 +111,8 @@
           ],
         }],
         ['chromeos==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
-          'conditions': [
-            # TODO(dtseng): Remove use_chromevox_next once ChromeVox Next is ready for testing.
-            ['use_chromevox_next==1', {
-              'dependencies': [
-                'browser/resources/chromeos/chromevox2/chromevox.gyp:chromevox2',
-              ],
-            }, { # else use_chromevox_next == 0
-              'dependencies': [
-                'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',
-              ],
-            }],
+          'dependencies': [
+            'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',
           ],
         }],
         ['enable_extensions==1', {

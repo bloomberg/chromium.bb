@@ -340,14 +340,24 @@ void ComponentLoader::AddChromeVoxExtension(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::FilePath resources_path;
   PathService::Get(chrome::DIR_RESOURCES, &resources_path);
+
   base::FilePath chromevox_path =
       resources_path.Append(extension_misc::kChromeVoxExtensionPath);
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const char* manifest_filename =
-      command_line->HasSwitch(chromeos::switches::kGuestSession) ?
-      extension_misc::kChromeVoxGuestManifestFilename :
-          extension_misc::kChromeVoxManifestFilename;
+  bool is_chromevox_next =
+      command_line->HasSwitch(chromeos::switches::kEnableChromeVoxNext);
+  bool is_guest = command_line->HasSwitch(chromeos::switches::kGuestSession);
+  const char* manifest_filename;
+  if (is_chromevox_next) {
+    manifest_filename =
+        is_guest ? extension_misc::kChromeVoxNextGuestManifestFilename
+                 : extension_misc::kChromeVoxNextManifestFilename;
+  } else {
+    manifest_filename =
+        is_guest ? extension_misc::kChromeVoxGuestManifestFilename
+                 : extension_misc::kChromeVoxManifestFilename;
+  }
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
