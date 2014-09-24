@@ -45,6 +45,16 @@ button:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, .50);
 }
 
+.debugging-content {
+  line-height: 1em;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.debugging-title {
+  font-weight: bold;
+}
+
 #details {
   color: #696969;
   margin: 45px 0 50px;
@@ -58,6 +68,10 @@ button:hover {
   color: black;
   opacity: .35;
   text-transform: uppercase;
+}
+
+#error-debugging-info {
+  font-size: 0.8em;
 }
 
 h1 {

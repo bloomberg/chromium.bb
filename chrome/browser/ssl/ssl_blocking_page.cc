@@ -13,6 +13,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -510,6 +511,20 @@ std::string SSLBlockingPage::GetHTMLContents() {
     load_time_data.SetString(
         "finalParagraph", l10n_util::GetStringFUTF16(help_string, url));
   }
+
+  // Set debugging information at the bottom of the warning.
+  load_time_data.SetString(
+      "subject", ssl_info_.cert->subject().GetDisplayName());
+  load_time_data.SetString(
+      "issuer", ssl_info_.cert->issuer().GetDisplayName());
+  load_time_data.SetString(
+      "expirationDate",
+      base::TimeFormatShortDate(ssl_info_.cert->valid_expiry()));
+  load_time_data.SetString(
+      "currentDate", base::TimeFormatShortDate(now));
+  std::vector<std::string> encoded_chain;
+  ssl_info_.cert->GetPEMEncodedChain(&encoded_chain);
+  load_time_data.SetString("pem", JoinString(encoded_chain, std::string()));
 
   base::StringPiece html(
      ResourceBundle::GetSharedInstance().GetRawDataResource(

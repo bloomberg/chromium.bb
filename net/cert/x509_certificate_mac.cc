@@ -274,7 +274,7 @@ void X509Certificate::GetSubjectAltName(
 bool X509Certificate::GetDEREncoded(X509Certificate::OSCertHandle cert_handle,
                                     std::string* encoded) {
   CSSM_DATA der_data;
-  if (SecCertificateGetData(cert_handle, &der_data) != noErr)
+  if (!cert_handle || SecCertificateGetData(cert_handle, &der_data) != noErr)
     return false;
   encoded->assign(reinterpret_cast<char*>(der_data.Data),
                   der_data.Length);

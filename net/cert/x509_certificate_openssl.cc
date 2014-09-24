@@ -309,7 +309,7 @@ X509_STORE* X509Certificate::cert_store() {
 bool X509Certificate::GetDEREncoded(X509Certificate::OSCertHandle cert_handle,
                                     std::string* encoded) {
   base::StringPiece der;
-  if (!x509_util::GetDER(cert_handle, &der))
+  if (!cert_handle || !x509_util::GetDER(cert_handle, &der))
     return false;
   encoded->assign(der.data(), der.length());
   return true;

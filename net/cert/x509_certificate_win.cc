@@ -235,8 +235,10 @@ PCCERT_CONTEXT X509Certificate::CreateOSCertChainForCert() const {
 // static
 bool X509Certificate::GetDEREncoded(X509Certificate::OSCertHandle cert_handle,
                                     std::string* encoded) {
-  if (!cert_handle->pbCertEncoded || !cert_handle->cbCertEncoded)
+  if (!cert_handle || !cert_handle->pbCertEncoded ||
+      !cert_handle->cbCertEncoded) {
     return false;
+  }
   encoded->assign(reinterpret_cast<char*>(cert_handle->pbCertEncoded),
                   cert_handle->cbCertEncoded);
   return true;

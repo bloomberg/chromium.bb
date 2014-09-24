@@ -8,7 +8,7 @@
 var expandedDetails = false;
 var keyPressState = 0;
 
-/*
+/**
  * A convenience method for sending commands to the parent page.
  * @param {string} cmd  The command to send.
  */
@@ -17,7 +17,7 @@ function sendCommand(cmd) {
   window.domAutomationController.send(cmd);
 }
 
-/*
+/**
  * This allows errors to be skippped by typing "danger" into the page.
  * @param {string} e The key that was just pressed.
  */
@@ -32,6 +32,35 @@ function handleKeypress(e) {
   } else {
     keyPressState = 0;
   }
+}
+
+/**
+ * This appends a piece of debugging information to the end of the warning.
+ * When complete, the caller must also make the debugging div
+ * (error-debugging-info) visible.
+ * @param {string} title  The name of this debugging field.
+ * @param {string} value  The value of the debugging field.
+ */
+function appendDebuggingField(title, value) {
+  // The values input here are not trusted. Never use innerHTML on these
+  // values!
+  var spanTitle = document.createElement('span');
+  spanTitle.classList.add('debugging-title');
+  spanTitle.innerText = title + ': ';
+
+  var spanValue = document.createElement('span');
+  spanValue.classList.add('debugging-value');
+  spanValue.innerText = value;
+
+  var pElem = document.createElement('p');
+  pElem.classList.add('debugging-content');
+  pElem.appendChild(spanTitle);
+  pElem.appendChild(spanValue);
+  $('error-debugging-info').appendChild(pElem);
+}
+
+function toggleDebuggingInfo() {
+  $('error-debugging-info').classList.toggle('hidden');
 }
 
 function setupEvents() {
@@ -97,6 +126,7 @@ function setupEvents() {
 
   preventDefaultOnPoundLinkClicks();
   setupCheckbox();
+  setupSSLDebuggingInfo();
   document.addEventListener('keypress', handleKeypress);
 }
 
