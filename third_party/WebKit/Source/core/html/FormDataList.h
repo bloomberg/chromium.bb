@@ -30,7 +30,8 @@
 
 namespace blink {
 
-class FormDataList {
+class FormDataList : public RefCountedWillBeGarbageCollected<FormDataList> {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(FormDataList);
 public:
     class Item {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -51,7 +52,10 @@ public:
         String m_filename;
     };
 
-    FormDataList(const WTF::TextEncoding&);
+    static PassRefPtrWillBeRawPtr<FormDataList> create(const WTF::TextEncoding& encoding)
+    {
+        return adoptRefWillBeNoop(new FormDataList(encoding));
+    }
 
     void appendData(const String& key, const String& value)
     {
@@ -80,7 +84,10 @@ public:
     PassRefPtr<FormData> createFormData(FormData::EncodingType = FormData::FormURLEncoded);
     PassRefPtr<FormData> createMultiPartFormData();
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
+
+protected:
+    explicit FormDataList(const WTF::TextEncoding&);
 
 private:
     void appendKeyValuePairItemsTo(FormData*, const WTF::TextEncoding&, bool isMultiPartForm, FormData::EncodingType = FormData::FormURLEncoded);

@@ -210,11 +210,11 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
         if (control->isDisabledFormControl() || control->name().isNull())
             continue;
 
-        FormDataList dataList(*encoding);
-        if (!control->appendFormData(dataList, false))
+        RefPtrWillBeRawPtr<FormDataList> dataList = FormDataList::create(*encoding);
+        if (!control->appendFormData(*dataList, false))
             continue;
 
-        const WillBeHeapVector<FormDataList::Item>& items = dataList.items();
+        const WillBeHeapVector<FormDataList::Item>& items = dataList->items();
 
         for (WillBeHeapVector<FormDataList::Item>::const_iterator j(items.begin()); j != items.end(); ++j) {
             if (!encodedString->isEmpty())

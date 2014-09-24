@@ -27,6 +27,8 @@
 
 namespace blink {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FormDataList);
+
 FormDataList::FormDataList(const WTF::TextEncoding& c)
     : m_encoding(c)
 {
