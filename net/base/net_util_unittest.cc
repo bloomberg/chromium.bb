@@ -246,9 +246,20 @@ TEST(NetUtilTest, ParseHostAndPort) {
     {
       "[1080:0:0:0:8:800:200C:4171]:11",
       true,
-      "[1080:0:0:0:8:800:200C:4171]",
-      11,
+      "1080:0:0:0:8:800:200C:4171",
+      11
     },
+    {
+      "[1080:0:0:0:8:800:200C:4171]",
+      true,
+      "1080:0:0:0:8:800:200C:4171",
+      -1
+    },
+
+    // Because no validation is done on the host, the following are accepted,
+    // even though they are invalid names.
+    {"]", true, "]", -1},
+    {"::1", true, ":", 1},
     // Invalid inputs:
     {"foo:bar", false, "", -1},
     {"foo:", false, "", -1},
@@ -262,6 +273,8 @@ TEST(NetUtilTest, ParseHostAndPort) {
     {":password@host:80", false, "", -1},
     {":password@host", false, "", -1},
     {"@host", false, "", -1},
+    {"[", false, "", -1},
+    {"[]", false, "", -1},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {

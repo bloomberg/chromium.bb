@@ -64,14 +64,6 @@ ProxyServer::Scheme GetSchemeFromURIInternal(std::string::const_iterator begin,
   return ProxyServer::SCHEME_INVALID;
 }
 
-std::string HostNoBrackets(const std::string& host) {
-  // Remove brackets from an RFC 2732-style IPv6 literal address.
-  const std::string::size_type len = host.size();
-  if (len >= 2 && host[0] == '[' && host[len - 1] == ']')
-    return host.substr(1, len - 2);
-  return host;
-}
-
 }  // namespace
 
 ProxyServer::ProxyServer(Scheme scheme, const HostPortPair& host_port_pair)
@@ -246,7 +238,7 @@ ProxyServer ProxyServer::FromSchemeHostAndPort(
     if (port == -1)
       port = GetDefaultPortForScheme(scheme);
 
-    host_port_pair = HostPortPair(HostNoBrackets(host), port);
+    host_port_pair = HostPortPair(host, port);
   }
 
   return ProxyServer(scheme, host_port_pair);

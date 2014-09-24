@@ -81,8 +81,12 @@ NET_EXPORT_PRIVATE extern size_t GetCountOfExplicitlyAllowedPorts();
 // Saves the result into |*host| and |*port|. If the input did not have
 // the optional port, sets |*port| to -1.
 // Returns true if the parsing was successful, false otherwise.
-// The returned host is NOT canonicalized, and may be invalid. If <host> is
-// an IPv6 literal address, the returned host includes the square brackets.
+// The returned host is NOT canonicalized, and may be invalid.
+//
+// IPv6 literals must be specified in a bracketed form, for instance:
+//   [::1]:90 and [::1]
+//
+// The resultant |*host| in both cases will be "::1" (not bracketed).
 NET_EXPORT bool ParseHostAndPort(
     std::string::const_iterator host_and_port_begin,
     std::string::const_iterator host_and_port_end,

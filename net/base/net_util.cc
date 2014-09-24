@@ -376,6 +376,23 @@ bool ParseHostAndPort(std::string::const_iterator host_and_port_begin,
   if (port_component.len == 0)
     return false;  // Reject inputs like "foo:"
 
+  unsigned char tmp_ipv6_addr[16];
+
+  // If the hostname starts with a bracket, it is either an IPv6 literal or
+  // invalid. If it is an IPv6 literal then strip the brackets.
+  if (hostname_component.len > 0 &&
+      auth_begin[hostname_component.begin] == '[') {
+    if (auth_begin[hostname_component.end() - 1] == ']' &&
+        url::IPv6AddressToNumber(
+            auth_begin, hostname_component, tmp_ipv6_addr)) {
+      // Strip the brackets.
+      hostname_component.begin++;
+      hostname_component.len -= 2;
+    } else {
+      return false;
+    }
+  }
+
   // Pass results back to caller.
   host->assign(auth_begin + hostname_component.begin, hostname_component.len);
   *port = parsed_port_number;
