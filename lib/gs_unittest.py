@@ -167,10 +167,14 @@ class VersionTest(AbstractGSContextTest):
 
 
 class LSTest(AbstractGSContextTest):
-  """Tests GSContext.LS() and GSContext.LSWithDetails() functionality."""
+  """Tests LS/LSWithDetails/List functionality."""
 
   LS_PATH = 'gs://test/path/to/list'
-  LS_OUTPUT_LINES = ['%s/foo' % LS_PATH, '%s/bar' % LS_PATH]
+  LS_OUTPUT_LINES = [
+      '%s/foo' % LS_PATH,
+      '%s/bar bell' % LS_PATH,
+      '%s/nada/' % LS_PATH,
+  ]
   LS_OUTPUT = '\n'.join(LS_OUTPUT_LINES)
 
   SIZE1 = 12345
@@ -192,6 +196,27 @@ class LSTest(AbstractGSContextTest):
       ('%s/nada/' % LS_PATH, None, None),
   ]
 
+  LIST_RESULT = [
+      gs.GSListResult(
+          content_length=SIZE1,
+          creation_time=DT1,
+          url='%s/foo' % LS_PATH,
+          generation=None,
+          metageneration=None),
+      gs.GSListResult(
+          content_length=SIZE2,
+          creation_time=DT2,
+          url='%s/bar bell' % LS_PATH,
+          generation=None,
+          metageneration=None),
+      gs.GSListResult(
+          content_length=None,
+          creation_time=None,
+          url='%s/nada/' % LS_PATH,
+          generation=None,
+          metageneration=None),
+  ]
+
   def _LS(self, ctx, path, **kwargs):
     return ctx.LS(path, **kwargs)
 
@@ -208,6 +233,14 @@ class LSTest(AbstractGSContextTest):
       ctx = self.ctx
     return self._LSWithDetails(ctx, self.LS_PATH, **kwargs)
 
+  def _List(self, ctx, path, **kwargs):
+    return ctx.List(path, **kwargs)
+
+  def List(self, ctx=None, **kwargs):
+    if ctx is None:
+      ctx = self.ctx
+    return self._List(ctx, self.LS_PATH, **kwargs)
+
   def testBasicLS(self):
     """Simple LS test."""
     self.gs_mock.SetDefaultCmdResult(output=self.LS_OUTPUT)
@@ -223,6 +256,71 @@ class LSTest(AbstractGSContextTest):
     self.gs_mock.assertCommandContains(['ls', '-l', '--', self.LS_PATH])
 
     self.assertEqual(self.DETAILED_LS_RESULT, result)
+
+  def testBasicList(self):
+    """Simple List test."""
+    self.gs_mock.SetDefaultCmdResult(output=self.DETAILED_LS_OUTPUT)
+    result = self.List(details=True)
+    self.gs_mock.assertCommandContains(['ls', '-l', '--', self.LS_PATH])
+
+    self.assertEqual(self.LIST_RESULT, result)
+
+
+class UnmockedLSTest(cros_test_lib.TempDirTestCase):
+  """Tests LS/List functionality w/out mocks."""
+
+  def testLocalPaths(self):
+    """Tests listing local paths."""
+    ctx = gs.GSContext()
+
+    # The tempdir should exist, but be empty, by default.
+    self.assertEqual([], ctx.LS(self.tempdir))
+
+    # Create a few random files.
+    files = ['a', 'b', 'c!@', 'd e f', 'k\tj']
+    for f in files:
+      osutils.Touch(os.path.join(self.tempdir, f))
+
+    # See what the code finds -- order is not guaranteed.
+    found = ctx.LS(self.tempdir)
+    files.sort()
+    found.sort()
+    self.assertEqual(files, found)
+
+  @cros_test_lib.NetworkTest()
+  def testRemotePath(self):
+    """Tests listing remote paths."""
+    ctx = gs.GSContext()
+
+    with gs.TemporaryURL('chromite.ls') as tempuri:
+      # The path shouldn't exist by default.
+      with self.assertRaises(gs.GSNoSuchKey):
+        ctx.LS(tempuri)
+
+      # Create some files with known sizes.
+      files = ['a', 'b', 'c!@', 'd e f', 'k\tj']
+      uris = []
+      for f in files:
+        filename = os.path.join(self.tempdir, f)
+        osutils.WriteFile(filename, f * 10)
+        uri = os.path.join(tempuri, f)
+        uris.append(uri)
+        ctx.Copy(filename, uri)
+
+      # Check the plain listing -- order is not guaranteed.
+      found = ctx.LS(tempuri)
+      uris.sort()
+      found.sort()
+      self.assertEqual(uris, found)
+
+      # Check the detailed listing.
+      found = ctx.List(tempuri, details=True)
+      self.assertEqual(files, sorted([os.path.basename(x.url) for x in found]))
+
+      # Make sure sizes line up.
+      for f in found:
+        l = len(os.path.basename(f.url)) * 10
+        self.assertEqual(f.content_length, l)
 
 
 class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):

@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import contextlib
 import datetime
 import getpass
@@ -33,8 +34,22 @@ DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 # Regexp for parsing each line of output from "gsutil ls -l".
 # This regexp is prepared for the generation and meta_generation values,
 # too, even though they are not expected until we use "-a".
+#
+# A detailed listing looks like:
+#    99908  2014-03-01T05:50:08Z  gs://bucket/foo/abc#1234  metageneration=1
+#                                 gs://bucket/foo/adir/
+#    99908  2014-03-04T01:16:55Z  gs://bucket/foo/def#5678  metageneration=1
+# TOTAL: 2 objects, 199816 bytes (495.36 KB)
 LS_LA_RE = re.compile(
-    r'^\s*(\d*?)\s+(\S*?)\s+([^#$]+).*?(#(\d+)\s+meta_?generation=(\d+))?\s*$')
+    r'^\s*(?P<content_length>\d*?)\s+'
+    r'(?P<creation_time>\S*?)\s+'
+    r'(?P<url>[^#$]+).*?'
+    r'('
+     r'#(?P<generation>\d+)\s+'
+     r'meta_?generation=(?P<metageneration>\d+)'
+    r')?\s*$')
+LS_RE = re.compile(r'^\s*(?P<content_length>)(?P<creation_time>)(?P<url>.*)'
+                   r'(?P<generation>)(?P<metageneration>)\s*$')
 
 
 def CanonicalizeURL(url, strict=False):
@@ -90,6 +105,12 @@ class GSContextPreconditionFailed(GSContextException):
 
 class GSNoSuchKey(GSContextException):
   """Thrown when google storage returns code=NoSuchKey."""
+
+
+# Detailed results of GSContext.List.
+GSListResult = collections.namedtuple(
+    'GSListResult',
+    ('url', 'creation_time', 'content_length', 'generation', 'metageneration'))
 
 
 class GSCounter(object):
@@ -641,7 +662,7 @@ class GSContext(object):
           return e.args[0].result
         raise
 
-  # TODO(mtennant): Merge with LS() after it supports returning details.
+  # TODO: Convert all callers to List().
   def LSWithDetails(self, path, **kwargs):
     """Does a detailed directory listing of the given gs path.
 
@@ -652,32 +673,12 @@ class GSContext(object):
       List of tuples, where each tuple is (gs path, file size in bytes integer,
         file modified time as datetime.datetime object).
     """
-    kwargs['redirect_stdout'] = True
-    result = self.DoCommand(['ls', '-l', '--', path], **kwargs)
+    ret = []
+    for obj in self.List(path, details=True, **kwargs):
+      ret.append((obj.url, obj.content_length, obj.creation_time))
+    return ret
 
-    lines = result.output.splitlines()
-
-    # Output like the followig is expected:
-    #    99908  2014-03-01T05:50:08Z  gs://somebucket/foo/abc
-    #    99908  2014-03-04T01:16:55Z  gs://somebucket/foo/def
-    # TOTAL: 2 objects, 199816 bytes (495.36 KB)
-
-    # The last line is expected to be a summary line.  Ignore it.
-    url_tuples = []
-    for line in lines[:-1]:
-      match = LS_LA_RE.search(line)
-      size, timestamp, url = (match.group(1), match.group(2), match.group(3))
-      if timestamp:
-        timestamp = datetime.datetime.strptime(timestamp, DATETIME_FORMAT)
-      else:
-        timestamp = None
-      size = int(size) if size else None
-      url_tuples.append((url, size, timestamp))
-
-    return url_tuples
-
-  # TODO(mtennant): Enhance to add details to returned results, such as
-  # size, modified time, generation.
+  # TODO: Merge LS() and List()?
   def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path.
 
@@ -689,18 +690,68 @@ class GSContext(object):
       A list of paths that matched |path|.  Might be more than one if a
       directory or path include wildcards/etc...
     """
-    kwargs['redirect_stdout'] = True
     if not path.startswith(BASE_GS_URL):
       # gsutil doesn't support listing a local path, so just run 'ls'.
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
       result = cros_build_lib.RunCommand(['ls', path], **kwargs)
+      return result.output.splitlines()
     else:
-      result = self.DoCommand(['ls', '--', path], **kwargs)
+      return [x.url for x in self.List(path, **kwargs)]
 
-    # TODO: Process resulting lines when given -l/-a.
-    # See http://crbug.com/342918 for more details.
-    return result.output.splitlines()
+  def List(self, path, details=False, **kwargs):
+    """Does a directory listing of the given gs path.
+
+    Args:
+      path: The path to get a listing of.
+      details: Whether to include size/timestamp info.
+      kwargs: See options that DoCommand takes.
+
+    Returns:
+      A list of GSListResult objects that matched |path|.  Might be more
+      than one if a directory or path include wildcards/etc...
+    """
+    ret = []
+
+    cmd = ['ls']
+    if details:
+      cmd += ['-l']
+    cmd += ['--', path]
+
+    # We always request the extended details as the overhead compared to a plain
+    # listing is negligible.
+    kwargs['redirect_stdout'] = True
+    lines = self.DoCommand(cmd, **kwargs).output.splitlines()
+
+    if details:
+      # The last line is expected to be a summary line.  Ignore it.
+      lines = lines[:-1]
+      ls_re = LS_LA_RE
+    else:
+      ls_re = LS_RE
+
+    # Handle optional fields.
+    intify = lambda x: int(x) if x else None
+
+    # Parse out each result and build up the results list.
+    for line in lines:
+      match = ls_re.search(line)
+      if not match:
+        raise GSContextException('unable to parse line: %s' % line)
+      if match.group('creation_time'):
+        timestamp = datetime.datetime.strptime(match.group('creation_time'),
+                                               DATETIME_FORMAT)
+      else:
+        timestamp = None
+
+      ret.append(GSListResult(
+          content_length=intify(match.group('content_length')),
+          creation_time=timestamp,
+          url=match.group('url'),
+          generation=intify(match.group('generation')),
+          metageneration=intify(match.group('metageneration'))))
+
+    return ret
 
   def DU(self, path, **kwargs):
     """Returns size of an object."""
