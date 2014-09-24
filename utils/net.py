@@ -536,42 +536,21 @@ class HttpService(object):
         request.get_full_url(), max_attempts, last_error.format(verbose=True))
     return None
 
-  def json_request(
-      self,
-      urlpath,
-      method=None,
-      data=None,
-      max_attempts=URL_OPEN_MAX_ATTEMPTS,
-      timeout=URL_OPEN_TIMEOUT,
-      headers=None):
+  def json_request(self, urlpath, data=None, **kwargs):
     """Sends JSON request to the server and parses JSON response it get back.
 
     Arguments:
-      method: HTTP method to use ('GET', 'POST', ...).
       urlpath: relative request path (e.g. '/auth/v1/...').
       data: object to serialize to JSON and sent in the request.
-      max_attempts: how many times to retry 50x errors.
-      timeout: how long to wait for a response (including all retries).
-      headers: dict with additional request headers.
 
-    If |method| is given it can be 'GET', 'POST' or 'PUT' and it will be used
-    when performing the request. By default it's GET if |data| is None and POST
-    if |data| is not None.
+    See self.request() for more details.
 
     Returns:
       Deserialized JSON response on success, None on error or timeout.
     """
+    content_type = JSON_CONTENT_TYPE if data is not None else None
     response = self.request(
-        urlpath,
-        content_type=JSON_CONTENT_TYPE if data is not None else None,
-        data=data,
-        headers=headers,
-        max_attempts=max_attempts,
-        retry_404=False,
-        retry_50x=True,
-        stream=False,
-        method=method,
-        timeout=timeout)
+        urlpath, content_type=content_type, data=data, stream=False, **kwargs)
     if not response:
       return None
     try:
