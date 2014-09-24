@@ -66,22 +66,20 @@ C++ Templates Angle Brackets Pitfall</a></td>
 </tr>
 
 <tr>
+<td>Final Specifier</td>
+<td><code>final</code></td>
+<td> Indicates that a class or function is final and cannot be overridden</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/final">final Language Reference</a></td>
+<td>Recommended for new code. Existing uses of the <code>FINAL</code> macro will be <a href="https://crbug.com/417463">replaced throughout the codebase</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/VTNZzizN0zo">Discussion</a></td>
+</tr>
+
+<tr>
 <td>Local Types as Template Arguments</td>
 <td></td>
 <td>Allows local and unnamed types as template arguments</td>
 <td><a href="http://stackoverflow.com/questions/742607/using-local-classes-with-stl-algorithms">
 Local types, types without linkage and unnamed types as template arguments</a></td>
 <td>Usage should be rare. Approved without discussion.</td>
-</tr>
-
-<tr>
-<td>Standard Integers</td>
-<td>Typedefs within <code>&lt;stdint.h&gt;</code>
-and <code>&lt;inttypes&gt;</code></td>
-<td>Provides fixed-size integers independent of platforms</td>
-<td><a href="http://www.cplusplus.com/reference/cstdint/">
-&lt;stdint.h&gt; (cstdint)</a></td>
-<td>Already in common use in the codebase. Approved without discussion.</td>
 </tr>
 
 <tr>
@@ -94,6 +92,24 @@ and <code>&lt;inttypes&gt;</code></td>
 <a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#0_and_nullptr/NULL">Google Style Guide</a>.
 Note: <code>std::nullptr_t</code> is a library feature and not available.
 </td>
+</tr>
+
+<tr>
+<td>Override Specifier</td>
+<td><code>override</code></td>
+<td>Indicates that a class or function overrides a base implementation</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/override">override Language Reference</a></td>
+<td>Recommended for new code. Existing uses of the <code>OVERRIDE</code> macro will be <a href="https://crbug.com/417463">replaced throughout the codebase</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/VTNZzizN0zo">Discussion</a></td>
+</tr>
+
+<tr>
+<td>Standard Integers</td>
+<td>Typedefs within <code>&lt;stdint.h&gt;</code>
+and <code>&lt;inttypes&gt;</code></td>
+<td>Provides fixed-size integers independent of platforms</td>
+<td><a href="http://www.cplusplus.com/reference/cstdint/">
+&lt;stdint.h&gt; (cstdint)</a></td>
+<td>Already in common use in the codebase. Approved without discussion.</td>
 </tr>
 
 </tbody>
@@ -267,14 +283,6 @@ explicit specifier</a></td>
 </tr>
 
 <tr>
-<td>Final Declarations</td>
-<td><code>final</code></td>
-<td>Indicates that a class or function is final and cannot be overridden</td>
-<td>TODO: documentation link</td>
-<td><code>FINAL</code> is already widely used in the codebase.</td>
-</tr>
-
-<tr>
 <td>Function Local Variable</td>
 <td><code>__func__</code></td>
 <td>Provides a local variable of the name of the enclosing
@@ -340,14 +348,6 @@ class C {<br />
 <td><a href="http://en.cppreference.com/w/cpp/language/data_members">
 Non-static data members</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Overrides</td>
-<td><code>override</code></td>
-<td>Indicates that a class or function overrides a base implementation</td>
-<td>TODO: documentation link</td>
-<td><code>OVERRIDE</code> is already widely used in the codebase.</td>
 </tr>
 
 <tr>
