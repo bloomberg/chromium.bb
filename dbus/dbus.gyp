@@ -41,6 +41,7 @@
         'object_proxy.h',
         'property.cc',
         'property.h',
+        'scoped_dbus_error.cc',
         'scoped_dbus_error.h',
         'string_util.cc',
         'string_util.h',
