@@ -32,12 +32,16 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   static void PreSandboxStartup();
 
   // Shared with extensions::ExtensionsHandler.
-  static void DecodeImage(const std::vector<unsigned char>& encoded_data);
+  static SkBitmap DecodeImage(const std::vector<unsigned char>& encoded_data,
+                              bool shrink_to_fit);
+  static void DecodeImageAndSend(const std::vector<unsigned char>& encoded_data,
+                                 bool shrink_to_fit);
 
  private:
   // IPC message handlers.
   void OnUnpackWebResource(const std::string& resource_data);
-  void OnDecodeImage(const std::vector<unsigned char>& encoded_data);
+  void OnDecodeImage(const std::vector<unsigned char>& encoded_data,
+                     bool shrink_to_fit);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
 

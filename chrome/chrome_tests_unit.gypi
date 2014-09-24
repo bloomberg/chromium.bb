@@ -1382,6 +1382,7 @@
       'test/data/unit/framework_unittest.gtestjs',
       'test/logging/win/mof_data_parser_unittest.cc',
       'tools/convert_dict/convert_dict_unittest.cc',
+      'utility/chrome_content_utility_client_unittest.cc',
       'utility/cloud_print/pwg_encoder_unittest.cc',
       'utility/extensions/unpacker_unittest.cc',
       'utility/image_writer/image_writer_unittest.cc',
