@@ -33,6 +33,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 using ::testing::_;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
@@ -244,9 +248,16 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     content_client_.reset(new TestContentClient());
     SetContentClient(content_client_.get());
     old_browser_client_ = SetBrowserClientForTesting(host_.get());
+
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::InitializeForTesting();
+#endif
   }
 
   virtual ~MediaStreamDispatcherHostTest() {
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::Shutdown();
+#endif
   }
 
   virtual void SetUp() OVERRIDE {

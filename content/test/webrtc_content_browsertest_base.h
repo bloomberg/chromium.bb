@@ -15,6 +15,7 @@ class WebRtcContentBrowserTest: public ContentBrowserTest {
  public:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  protected:
   // Executes |javascript|. The script is required to use

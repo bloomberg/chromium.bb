@@ -29,6 +29,7 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
       AudioDeviceNames* device_names) OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
+  virtual void SetHasKeyboardMic() OVERRIDE;
 
   // AudioManagerBase implementation.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -57,6 +58,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   // Called by MakeLinearInputStream and MakeLowLatencyInputStream.
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
+
+  bool has_keyboard_mic_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerCras);
 };

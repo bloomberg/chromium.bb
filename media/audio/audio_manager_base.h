@@ -115,6 +115,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) OVERRIDE;
 
+  virtual void SetHasKeyboardMic() OVERRIDE;
+
   // Get number of input or output streams.
   int input_stream_count() const { return num_input_streams_; }
   int output_stream_count() const { return num_output_streams_; }

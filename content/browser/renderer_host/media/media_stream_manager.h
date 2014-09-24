@@ -363,6 +363,15 @@ class CONTENT_EXPORT MediaStreamManager
                                StreamDeviceInfoArray devices,
                                gfx::NativeViewId window_id);
 
+#if defined(OS_CHROMEOS)
+  // Checks if the system has a keyboard mic, and if so, inform the audio
+  // manager via SetKeyboardMicOnDeviceThread().
+  void CheckKeyboardMicOnUIThread();
+
+  // Tells the audio mananger that the system supports a keyboard mic.
+  void SetKeyboardMicOnDeviceThread();
+#endif
+
   // Task runner shared by VideoCaptureManager and AudioInputDeviceManager and
   // used for enumerating audio output devices.
   // Note: Enumeration tasks may take seconds to complete so must never be run
@@ -375,6 +384,14 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Indicator of device monitoring state.
   bool monitoring_started_;
+
+#if defined(OS_CHROMEOS)
+  // Flag that's set when we have checked if the system has a keyboard mic. We
+  // only need to check it once, and not when constructing since that will
+  // affect startup time.
+  // Must be accessed on the IO thread;
+  bool has_checked_keyboard_mic_;
+#endif
 
   // Stores most recently enumerated device lists. The cache is cleared when
   // monitoring is stopped or there is no request for that type of device.

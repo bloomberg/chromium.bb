@@ -70,6 +70,8 @@ class MockAudioManager : public media::AudioManager {
   virtual scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) OVERRIDE;
 
+  virtual void SetHasKeyboardMic() OVERRIDE;
+
  protected:
   virtual ~MockAudioManager();
 

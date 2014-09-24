@@ -45,6 +45,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 namespace content {
 
 // Forward declaration of DeviceMonitorMac and its only useable method.
@@ -358,12 +362,18 @@ MediaStreamManager::EnumerationCache::~EnumerationCache() {
 MediaStreamManager::MediaStreamManager()
     : audio_manager_(NULL),
       monitoring_started_(false),
+#if defined(OS_CHROMEOS)
+      has_checked_keyboard_mic_(false),
+#endif
       io_loop_(NULL),
       use_fake_ui_(false) {}
 
 MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
     : audio_manager_(audio_manager),
       monitoring_started_(false),
+#if defined(OS_CHROMEOS)
+      has_checked_keyboard_mic_(false),
+#endif
       io_loop_(NULL),
       use_fake_ui_(false) {
   DCHECK(audio_manager_);
@@ -1071,6 +1081,16 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request) {
 
   // Start monitoring the devices when doing the first enumeration.
   StartMonitoring();
+
+#if defined(OS_CHROMEOS)
+  if (!has_checked_keyboard_mic_) {
+    has_checked_keyboard_mic_ = true;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MediaStreamManager::CheckKeyboardMicOnUIThread,
+                   base::Unretained(this)));
+  }
+#endif
 
   // Start enumeration for devices of all requested device types.
   const MediaStreamType streams[] = { request->audio_type(),
@@ -2076,5 +2096,26 @@ void MediaStreamManager::OnMediaStreamUIWindowId(MediaStreamType video_type,
     }
   }
 }
+
+#if defined(OS_CHROMEOS)
+void MediaStreamManager::CheckKeyboardMicOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // We will post this on the device thread before the media media access
+  // request is posted on the UI thread, so setting the keyboard mic info will
+  // be done before any stream is created.
+  if (chromeos::CrasAudioHandler::Get()->HasKeyboardMic()) {
+    device_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&MediaStreamManager::SetKeyboardMicOnDeviceThread,
+                   base::Unretained(this)));
+  }
+}
+
+void MediaStreamManager::SetKeyboardMicOnDeviceThread() {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+  audio_manager_->SetHasKeyboardMic();
+}
+#endif
 
 }  // namespace content

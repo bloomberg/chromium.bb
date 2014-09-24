@@ -53,7 +53,8 @@ bool AudioManagerCras::HasAudioInputDevices() {
 }
 
 AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(audio_log_factory) {
+    : AudioManagerBase(audio_log_factory),
+      has_keyboard_mic_(false) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 
@@ -77,15 +78,25 @@ void AudioManagerCras::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerCras::GetInputStreamParameters(
     const std::string& device_id) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+
   int user_buffer_size = GetUserBufferSize();
   int buffer_size = user_buffer_size ?
       user_buffer_size : kDefaultInputBufferSize;
+  AudioParameters::PlatformEffectsMask effects =
+      has_keyboard_mic_ ? AudioParameters::KEYBOARD_MIC
+                        : AudioParameters::NO_EFFECTS;
 
   // TODO(hshi): Fine-tune audio parameters based on |device_id|. The optimal
   // parameters for the loopback stream may differ from the default.
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      kDefaultSampleRate, 16, buffer_size);
+      kDefaultSampleRate, 16, buffer_size, effects);
+}
+
+void AudioManagerCras::SetHasKeyboardMic() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  has_keyboard_mic_ = true;
 }
 
 AudioOutputStream* AudioManagerCras::MakeLinearOutputStream(

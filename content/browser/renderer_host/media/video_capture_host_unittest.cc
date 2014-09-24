@@ -34,6 +34,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::AnyNumber;
@@ -285,6 +289,11 @@ class VideoCaptureHostTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     SetBrowserClientForTesting(&browser_client_);
+
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::InitializeForTesting();
+#endif
+
     // Create our own MediaStreamManager.
     audio_manager_.reset(media::AudioManager::CreateForTesting());
 #ifndef TEST_REAL_CAPTURE_DEVICE
@@ -315,6 +324,10 @@ class VideoCaptureHostTest : public testing::Test {
     // Release the reference to the mock object. The object will be destructed
     // on the current message loop.
     host_ = NULL;
+
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::Shutdown();
+#endif
   }
 
   void OpenSession() {

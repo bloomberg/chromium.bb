@@ -177,6 +177,11 @@ class MEDIA_EXPORT AudioManager {
   virtual scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) = 0;
 
+  // Informs the audio manager that the system has support for a keyboard mic.
+  // This information will be passed on in the return value of
+  // GetInputStreamParameters as an effect. Only supported on ChromeOS.
+  virtual void SetHasKeyboardMic() = 0;
+
  protected:
   AudioManager();
 

@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/blink",
+  "+chromeos/audio", # For WebRTC tests.
   # Testing utilities can access anything in content/
   "+content",
   "+media/audio", # For AudioParameters in WebRTC tests.

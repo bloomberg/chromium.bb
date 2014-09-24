@@ -13,6 +13,10 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 namespace content {
 
 void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
@@ -31,7 +35,17 @@ void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 
 void WebRtcContentBrowserTest::SetUp() {
   EnablePixelOutput();
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::InitializeForTesting();
+#endif
   ContentBrowserTest::SetUp();
+}
+
+void WebRtcContentBrowserTest::TearDown() {
+  ContentBrowserTest::TearDown();
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::Shutdown();
+#endif
 }
 
 // Executes |javascript|. The script is required to use

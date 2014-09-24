@@ -17,6 +17,10 @@
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ppapi/shared_impl/test_harness_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 namespace content {
 
 PPAPITestMessageHandler::PPAPITestMessageHandler() {
@@ -127,6 +131,20 @@ std::string PPAPITest::BuildQuery(const std::string& base,
 
 OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
   in_process_ = false;
+}
+
+void OutOfProcessPPAPITest::SetUp() {
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::InitializeForTesting();
+#endif
+  ContentBrowserTest::SetUp();
+}
+
+void OutOfProcessPPAPITest::TearDown() {
+  ContentBrowserTest::TearDown();
+#if defined(OS_CHROMEOS)
+    chromeos::CrasAudioHandler::Shutdown();
+#endif
 }
 
 }  // namespace content

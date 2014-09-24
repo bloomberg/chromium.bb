@@ -84,6 +84,9 @@ class PPAPITest : public PPAPITestBase {
 class OutOfProcessPPAPITest : public PPAPITest {
  public:
   OutOfProcessPPAPITest();
+
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 };
 
 }  // namespace

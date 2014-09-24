@@ -400,4 +400,8 @@ scoped_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
   return audio_log_factory_->CreateAudioLog(component);
 }
 
+void AudioManagerBase::SetHasKeyboardMic() {
+  NOTREACHED();
+}
+
 }  // namespace media
