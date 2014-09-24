@@ -231,12 +231,19 @@ cr.define('print_preview', function() {
             loadTimeData.getStringF('destinationCount', destinations.length);
         setIsVisible(this.getChildElement('.destination-list > footer'), true);
       }
-      for (var i = 0; i < numItems; i++) {
-        var destListItem = new print_preview.DestinationListItem(
-            this.eventTarget_, destinations[i], this.query_);
-        this.addChild(destListItem);
-        destListItem.render(this.getChildElement('.destination-list > ul'));
-      }
+      for (var i = 0; i < numItems; i++)
+        this.renderListItemInternal(destinations[i]);
+    },
+
+    /**
+     * @param {!print_preview.Destination} destination Destination to render.
+     * @protected
+     */
+    renderListItemInternal: function(destination) {
+      var listItem = new print_preview.DestinationListItem(
+          this.eventTarget_, destination, this.query_);
+      this.addChild(listItem);
+      listItem.render(this.getChildElement('.destination-list > ul'));
     },
 
     /**

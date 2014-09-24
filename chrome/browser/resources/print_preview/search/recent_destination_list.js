@@ -35,12 +35,8 @@ cr.define('print_preview', function() {
                    destinations.length == 0);
       setIsVisible(this.getChildElement('.destination-list > footer'), false);
       var numItems = Math.min(destinations.length, this.shortListSize_);
-      for (var i = 0; i < numItems; i++) {
-        var destListItem = new print_preview.DestinationListItem(
-            this.eventTarget_, destinations[i]);
-        this.addChild(destListItem);
-        destListItem.render(this.getChildElement('.destination-list > ul'));
-      }
+      for (var i = 0; i < numItems; i++)
+        this.renderListItemInternal(destinations[i]);
     }
   };
 
