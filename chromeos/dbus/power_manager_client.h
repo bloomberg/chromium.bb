@@ -128,6 +128,9 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // will be called asynchronously.
   virtual void RequestStatusUpdate() = 0;
 
+  // Requests suspend of the system.
+  virtual void RequestSuspend() = 0;
+
   // Requests restart of the system.
   virtual void RequestRestart() = 0;
 

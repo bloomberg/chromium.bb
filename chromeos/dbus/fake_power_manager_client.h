@@ -47,6 +47,7 @@ class FakePowerManagerClient : public PowerManagerClient {
   virtual void DecreaseKeyboardBrightness() OVERRIDE;
   virtual void IncreaseKeyboardBrightness() OVERRIDE;
   virtual void RequestStatusUpdate() OVERRIDE;
+  virtual void RequestSuspend() OVERRIDE;
   virtual void RequestRestart() OVERRIDE;
   virtual void RequestShutdown() OVERRIDE;
   virtual void NotifyUserActivity(

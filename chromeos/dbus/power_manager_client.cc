@@ -148,9 +148,13 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  virtual void RequestSuspend() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kRequestSuspendMethod);
+  }
+
   virtual void RequestRestart() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kRequestRestartMethod);
-  };
+  }
 
   virtual void RequestShutdown() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kRequestShutdownMethod);
@@ -805,6 +809,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  virtual void RequestSuspend() OVERRIDE {}
   virtual void RequestRestart() OVERRIDE {}
   virtual void RequestShutdown() OVERRIDE {}
 

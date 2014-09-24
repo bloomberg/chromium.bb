@@ -5,24 +5,35 @@
 #ifndef ATHENA_SYSTEM_POWER_BUTTON_CONTROLLER_H_
 #define ATHENA_SYSTEM_POWER_BUTTON_CONTROLLER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "ui/compositor/layer_animation_observer.h"
-#include "ui/gfx/animation/tween.h"
+
+namespace aura {
+class Window;
+}
+
+namespace views {
+class Widget;
+}
 
 namespace athena {
 
 // Shuts down in response to the power button being pressed.
-class PowerButtonController : public chromeos::PowerManagerClient::Observer,
-                              public ui::ImplicitAnimationObserver {
+class PowerButtonController : public chromeos::PowerManagerClient::Observer {
  public:
-  PowerButtonController();
+  explicit PowerButtonController(aura::Window* dialog_container);
   virtual ~PowerButtonController();
 
  private:
   enum State {
-    // The screen is animating prior to shutdown. Shutdown can be canceled.
-    STATE_PRE_SHUTDOWN_ANIMATION,
+    // Releasing the power button sends a suspend request.
+    STATE_SUSPEND_ON_RELEASE,
+
+    // A warning that the device is about to be shutdown is visible. Releasing
+    // the power button does not send a suspend or a shutdown request.
+    STATE_SHUTDOWN_WARNING_VISIBLE,
 
     // A D-Bus shutdown request has been sent. Shutdown cannot be canceled.
     STATE_SHUTDOWN_REQUESTED,
@@ -30,10 +41,11 @@ class PowerButtonController : public chromeos::PowerManagerClient::Observer,
     STATE_OTHER
   };
 
-  // Animates the screen's grayscale and brightness to |target|.
-  void StartGrayscaleAndBrightnessAnimation(float target,
-                                            int duration_ms,
-                                            gfx::Tween::Type tween_type);
+  // Shows the shutdown warning dialog.
+  void ShowShutdownWarningDialog();
+
+  // Requests shutdown.
+  void Shutdown();
 
   // chromeos::PowerManagerClient::Observer:
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE;
@@ -41,8 +53,11 @@ class PowerButtonController : public chromeos::PowerManagerClient::Observer,
       bool down,
       const base::TimeTicks& timestamp) OVERRIDE;
 
-  // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // |shutdown_warning_message_|'s parent container.
+  aura::Window* warning_message_container_;
+
+  // Shows a warning that the device is about to be shutdown.
+  scoped_ptr<views::Widget> shutdown_warning_message_;
 
   // Whether the screen brightness was reduced to 0%.
   bool brightness_is_zero_;
@@ -51,6 +66,8 @@ class PowerButtonController : public chromeos::PowerManagerClient::Observer,
   base::TimeTicks zero_brightness_end_time_;
 
   State state_;
+
+  base::OneShotTimer<PowerButtonController> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

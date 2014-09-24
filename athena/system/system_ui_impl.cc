@@ -76,7 +76,6 @@ class SystemUIImpl : public SystemUI {
  public:
   SystemUIImpl(scoped_refptr<base::TaskRunner> blocking_task_runner)
       : orientation_controller_(new OrientationController()),
-        power_button_controller_(new PowerButtonController),
         background_container_(NULL),
         system_modal_container_(NULL) {
     orientation_controller_->InitWith(blocking_task_runner);
@@ -89,7 +88,8 @@ class SystemUIImpl : public SystemUI {
   }
 
   void Init() {
-    background_container_ = ScreenManager::Get()->CreateContainer(
+    ScreenManager* screen_manager = ScreenManager::Get();
+    background_container_ = screen_manager->CreateContainer(
         ScreenManager::ContainerParams("AthenaBackground", CP_BACKGROUND));
     background_container_->SetLayoutManager(
         new FillLayoutManager(background_container_));
@@ -97,8 +97,17 @@ class SystemUIImpl : public SystemUI {
         "AthenaSystemModalContainer", CP_SYSTEM_MODAL);
     system_modal_params.can_activate_children = true;
     system_modal_container_ =
-        ScreenManager::Get()->CreateContainer(system_modal_params);
+        screen_manager->CreateContainer(system_modal_params);
+    login_screen_system_modal_container_ = screen_manager->CreateContainer(
+        ScreenManager::ContainerParams("AthenaLoginScreenSystemModalContainer",
+                                       CP_LOGIN_SCREEN_SYSTEM_MODAL));
 
+    // Use |login_screen_system_modal_container_| for the power button's dialog
+    // because it needs to show over the login screen.
+    // TODO(pkotwicz): Pick the most appropriate container based on whether the
+    // user has logged in.
+    power_button_controller_.reset(
+        new PowerButtonController(login_screen_system_modal_container_));
     background_controller_.reset(
         new BackgroundController(background_container_));
   }
@@ -119,8 +128,12 @@ class SystemUIImpl : public SystemUI {
   // The parent container for the background.
   aura::Window* background_container_;
 
-  // The parent container used by the "select network" dialog.
+  // The parent container used by system modal dialogs.
   aura::Window* system_modal_container_;
+
+  // The parent container used by system modal dialogs when the login screen is
+  // visible.
+  aura::Window* login_screen_system_modal_container_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemUIImpl);
 };

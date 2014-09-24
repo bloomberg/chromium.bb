@@ -61,6 +61,9 @@ void FakePowerManagerClient::IncreaseKeyboardBrightness() {
 void FakePowerManagerClient::RequestStatusUpdate() {
 }
 
+void FakePowerManagerClient::RequestSuspend() {
+}
+
 void FakePowerManagerClient::RequestRestart() {
   ++num_request_restart_calls_;
 }

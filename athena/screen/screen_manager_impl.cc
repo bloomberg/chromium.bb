@@ -206,7 +206,6 @@ class ScreenManagerImpl : public ScreenManager {
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
   virtual void SetRotation(gfx::Display::Rotation rotation) OVERRIDE;
   virtual void SetRotationLocked(bool rotation_locked) OVERRIDE;
-  virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
   // Not owned.
   aura::Window* root_window_;
@@ -360,10 +359,6 @@ void ScreenManagerImpl::SetRotationLocked(bool rotation_locked) {
   rotation_locked_ = rotation_locked;
   if (!rotation_locked_)
     SetRotation(last_requested_rotation_);
-}
-
-ui::LayerAnimator* ScreenManagerImpl::GetScreenAnimator() {
-  return root_window_->layer()->GetAnimator();
 }
 
 }  // namespace
