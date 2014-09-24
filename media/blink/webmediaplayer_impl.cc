@@ -679,13 +679,6 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
   encrypted_media_support_->SetContentDecryptionModule(cdm, result);
 }
 
-void WebMediaPlayerImpl::setContentDecryptionModuleSync(
-    blink::WebContentDecryptionModule* cdm) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  encrypted_media_support_->SetContentDecryptionModuleSync(cdm);
-}
-
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
                                           PipelineStatus status) {
   DVLOG(1) << __FUNCTION__ << "(" << time_changed << ", " << status << ")";

@@ -296,6 +296,14 @@ EncryptedMediaPlayerSupportImpl::CancelKeyRequestInternal(
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
+void EncryptedMediaPlayerSupportImpl::SetInitialContentDecryptionModule(
+    blink::WebContentDecryptionModule* initial_cdm) {
+  // Used when loading media and no pipeline/decoder attached yet.
+  DCHECK(decryptor_ready_cb_.is_null());
+
+  web_cdm_ = ToWebContentDecryptionModuleImpl(initial_cdm);
+}
+
 void EncryptedMediaPlayerSupportImpl::SetContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm) {
   // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
@@ -333,14 +341,6 @@ void EncryptedMediaPlayerSupportImpl::SetContentDecryptionModule(
     // is connected, setting the CDM will happen in SetDecryptorReadyCB().
     ContentDecryptionModuleAttached(result, true);
   }
-}
-
-void EncryptedMediaPlayerSupportImpl::SetContentDecryptionModuleSync(
-    blink::WebContentDecryptionModule* cdm) {
-  // Used when loading media and no pipeline/decoder attached yet.
-  DCHECK(decryptor_ready_cb_.is_null());
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
 }
 
 void EncryptedMediaPlayerSupportImpl::ContentDecryptionModuleAttached(

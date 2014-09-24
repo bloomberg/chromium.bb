@@ -42,12 +42,11 @@ class MEDIA_EXPORT WebMediaPlayerParams {
       const AudioHardwareConfig& audio_hardware_config,
       const scoped_refptr<MediaLog>& media_log,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          media_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          compositor_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const EncryptedMediaPlayerSupportCreateCB&
-          encrypted_media_player_support_cb);
+          encrypted_media_player_support_cb,
+      blink::WebContentDecryptionModule* initial_cdm);
 
   ~WebMediaPlayerParams();
 
@@ -94,6 +93,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   EncryptedMediaPlayerSupportCreateCB encrypted_media_player_support_cb_;
+  blink::WebContentDecryptionModule* initial_cdm_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

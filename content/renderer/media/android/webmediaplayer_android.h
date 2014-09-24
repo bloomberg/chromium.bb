@@ -87,6 +87,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
       base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* player_manager,
       RendererCdmManager* cdm_manager,
+      blink::WebContentDecryptionModule* initial_cdm,
       scoped_refptr<StreamTextureFactory> factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       media::MediaLog* media_log);
@@ -247,8 +248,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result);
-  virtual void setContentDecryptionModuleSync(
-      blink::WebContentDecryptionModule* cdm);
 
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,

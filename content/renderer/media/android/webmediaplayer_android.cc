@@ -115,6 +115,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* player_manager,
     RendererCdmManager* cdm_manager,
+    blink::WebContentDecryptionModule* initial_cdm,
     scoped_refptr<StreamTextureFactory> factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::MediaLog* media_log)
@@ -173,6 +174,13 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 #endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
   interpolator_.SetUpperBound(base::TimeDelta());
+
+  // Set the initial CDM, if specified.
+  if (initial_cdm) {
+    web_cdm_ = ToWebContentDecryptionModuleImpl(initial_cdm);
+    if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+      player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
+  }
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
@@ -1670,21 +1678,6 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
     ContentDecryptionModuleAttached(result, true);
   }
 
-  if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
-    player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
-}
-
-void WebMediaPlayerAndroid::setContentDecryptionModuleSync(
-    blink::WebContentDecryptionModule* cdm) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
-  if (!cdm)
-    return;
-
-  DCHECK(decryptor_ready_cb_.is_null());
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
   if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
     player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
 }

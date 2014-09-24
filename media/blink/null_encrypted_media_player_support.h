@@ -42,13 +42,13 @@ class MEDIA_EXPORT NullEncryptedMediaPlayerSupport
 
 
   // Unprefixed API methods.
+  virtual void SetInitialContentDecryptionModule(
+      blink::WebContentDecryptionModule* initial_cdm) OVERRIDE;
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm) OVERRIDE;
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) OVERRIDE;
-  virtual void SetContentDecryptionModuleSync(
-      blink::WebContentDecryptionModule* cdm) OVERRIDE;
 
 
   // Callback factory and notification methods used by WebMediaPlayerImpl.

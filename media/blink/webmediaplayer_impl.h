@@ -155,14 +155,12 @@ class MEDIA_EXPORT WebMediaPlayerImpl
       const blink::WebString& session_id);
 
   // TODO(jrummell): Remove this method once Blink updated to use the other
-  // two methods.
+  // method.
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm);
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result);
-  virtual void setContentDecryptionModuleSync(
-      blink::WebContentDecryptionModule* cdm);
 
   void OnPipelineSeeked(bool time_changed, PipelineStatus status);
   void OnPipelineEnded();

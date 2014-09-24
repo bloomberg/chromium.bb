@@ -46,13 +46,13 @@ class MEDIA_EXPORT EncryptedMediaPlayerSupport {
 
 
   // Unprefixed API methods.
+  virtual void SetInitialContentDecryptionModule(
+      blink::WebContentDecryptionModule* initial_cdm) = 0;
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm) = 0;
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) = 0;
-  virtual void SetContentDecryptionModuleSync(
-      blink::WebContentDecryptionModule* cdm) = 0;
 
 
   // Callback factory and notification methods used by WebMediaPlayerImpl.

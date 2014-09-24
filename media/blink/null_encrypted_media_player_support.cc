@@ -48,6 +48,10 @@ NullEncryptedMediaPlayerSupport::CancelKeyRequest(
   return blink::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 }
 
+void NullEncryptedMediaPlayerSupport::SetInitialContentDecryptionModule(
+    blink::WebContentDecryptionModule* initial_cdm) {
+}
+
 void NullEncryptedMediaPlayerSupport::SetContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm) {
 }
@@ -59,10 +63,6 @@ void NullEncryptedMediaPlayerSupport::SetContentDecryptionModule(
       blink::WebContentDecryptionModuleExceptionNotSupportedError,
       0,
       "Null MediaKeys object is not supported.");
-}
-
-void NullEncryptedMediaPlayerSupport::SetContentDecryptionModuleSync(
-    blink::WebContentDecryptionModule* cdm) {
 }
 
 Demuxer::NeedKeyCB NullEncryptedMediaPlayerSupport::CreateNeedKeyCB() {

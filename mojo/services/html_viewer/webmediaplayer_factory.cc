@@ -56,7 +56,8 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
       scoped_refptr<media::GpuVideoAcceleratorFactories>(),
       GetMediaThreadTaskRunner(),
       compositor_task_runner_,
-      base::Bind(&media::NullEncryptedMediaPlayerSupport::Create));
+      base::Bind(&media::NullEncryptedMediaPlayerSupport::Create),
+      NULL);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
   return new media::WebMediaPlayerImpl(frame, client, delegate, params);

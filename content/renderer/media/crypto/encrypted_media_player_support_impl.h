@@ -48,13 +48,14 @@ class EncryptedMediaPlayerSupportImpl
       const blink::WebString& key_system,
       const blink::WebString& session_id) OVERRIDE;
 
+  virtual void SetInitialContentDecryptionModule(
+      blink::WebContentDecryptionModule* initial_cdm) OVERRIDE;
+
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm) OVERRIDE;
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) OVERRIDE;
-  virtual void SetContentDecryptionModuleSync(
-      blink::WebContentDecryptionModule* cdm) OVERRIDE;
 
   virtual media::SetDecryptorReadyCB CreateSetDecryptorReadyCB() OVERRIDE;
   virtual media::Demuxer::NeedKeyCB CreateNeedKeyCB() OVERRIDE;
