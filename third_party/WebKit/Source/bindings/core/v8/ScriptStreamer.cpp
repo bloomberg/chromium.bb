@@ -270,10 +270,6 @@ bool ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, S
     v8::ScriptCompiler::ScriptStreamingTask* scriptStreamingTask = v8::ScriptCompiler::StartStreamingScript(scriptState->isolate(), &(streamer->m_source), compileOption);
     if (scriptStreamingTask) {
         streamer->m_task = scriptStreamingTask;
-        // ScriptStreamer needs to stay alive as long as the background task is
-        // running. This is taken care of with a manual ref() & deref() pair;
-        // the corresponding deref() is in streamingComplete.
-        streamer->ref();
         script.setStreamer(streamer.release());
         return true;
     }
@@ -349,6 +345,11 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             suppressStreaming();
             return;
         }
+        ASSERT(m_task);
+        // ScriptStreamer needs to stay alive as long as the background task is
+        // running. This is taken care of with a manual ref() & deref() pair;
+        // the corresponding deref() is in streamingComplete.
+        ref();
         ScriptStreamingTask* task = new ScriptStreamingTask(m_task, this);
         ScriptStreamerThread::shared()->postTask(task);
         m_task = 0;
