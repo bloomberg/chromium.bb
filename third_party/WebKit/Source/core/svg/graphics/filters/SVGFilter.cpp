@@ -25,8 +25,8 @@
 
 namespace blink {
 
-SVGFilter::SVGFilter(const AffineTransform& absoluteTransform, const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
-    : Filter(absoluteTransform)
+SVGFilter::SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
+    : Filter(AffineTransform())
     , m_absoluteSourceDrawingRegion(absoluteSourceDrawingRegion)
     , m_targetBoundingBox(targetBoundingBox)
     , m_effectBBoxMode(effectBBoxMode)
@@ -57,9 +57,9 @@ FloatPoint3D SVGFilter::resolve3dPoint(const FloatPoint3D& point) const
         point.z() * sqrtf(m_targetBoundingBox.size().diagonalLengthSquared() / 2));
 }
 
-PassRefPtr<SVGFilter> SVGFilter::create(const AffineTransform& absoluteTransform, const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
+PassRefPtr<SVGFilter> SVGFilter::create(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
 {
-    return adoptRef(new SVGFilter(absoluteTransform, absoluteSourceDrawingRegion, targetBoundingBox, filterRegion, effectBBoxMode));
+    return adoptRef(new SVGFilter(absoluteSourceDrawingRegion, targetBoundingBox, filterRegion, effectBBoxMode));
 }
 
 } // namespace blink

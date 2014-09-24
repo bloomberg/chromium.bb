@@ -34,22 +34,17 @@ namespace blink {
 struct FilterData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum FilterDataState { PaintingSource, Applying, Built, CycleDetected, MarkedForRemoval };
+    enum FilterDataState { PaintingSource, Applying, Built, CycleDetected };
 
     FilterData()
-        : savedContext(0)
-        , state(PaintingSource)
+        : state(PaintingSource)
     {
     }
 
     RefPtr<SVGFilter> filter;
     RefPtr<SVGFilterBuilder> builder;
-    OwnPtr<ImageBuffer> sourceGraphicBuffer;
-    GraphicsContext* savedContext;
-    AffineTransform shearFreeAbsoluteTransform;
     FloatRect boundaries;
     FloatRect drawingRegion;
-    FloatSize scale;
     FilterDataState state;
 };
 
@@ -86,8 +81,6 @@ public:
 
     FloatRect drawingRegion(RenderObject*) const;
 private:
-    void adjustScaleForMaximumImageSize(const FloatSize&, FloatSize&);
-
     typedef HashMap<RenderObject*, OwnPtr<FilterData> > FilterMap;
     FilterMap m_filter;
 };

@@ -34,7 +34,7 @@ namespace blink {
 
 class SVGFilter FINAL : public Filter {
 public:
-    static PassRefPtr<SVGFilter> create(const AffineTransform&, const IntRect&, const FloatRect&, const FloatRect&, bool);
+    static PassRefPtr<SVGFilter> create(const IntRect&, const FloatRect&, const FloatRect&, bool);
 
     virtual float applyHorizontalScale(float value) const OVERRIDE;
     virtual float applyVerticalScale(float value) const OVERRIDE;
@@ -44,7 +44,7 @@ public:
     FloatRect targetBoundingBox() const { return m_targetBoundingBox; }
 
 private:
-    SVGFilter(const AffineTransform& absoluteTransform, const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode);
+    SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode);
 
     IntRect m_absoluteSourceDrawingRegion;
     FloatRect m_targetBoundingBox;

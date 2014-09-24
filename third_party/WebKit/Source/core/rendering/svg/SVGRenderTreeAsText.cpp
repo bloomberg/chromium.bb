@@ -513,7 +513,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         // Creating a placeholder filter which is passed to the builder.
         FloatRect dummyRect;
         IntRect dummyIntRect;
-        RefPtr<SVGFilter> dummyFilter = SVGFilter::create(AffineTransform(), dummyIntRect, dummyRect, dummyRect, true);
+        RefPtr<SVGFilter> dummyFilter = SVGFilter::create(dummyIntRect, dummyRect, dummyRect, true);
         if (RefPtr<SVGFilterBuilder> builder = filter->buildPrimitives(dummyFilter.get())) {
             if (FilterEffect* lastEffect = builder->lastEffect())
                 lastEffect->externalRepresentation(ts, indent + 1);

@@ -69,12 +69,7 @@ void RenderSVGResourceFilter::removeClientFromCache(RenderObject* client, bool m
 {
     ASSERT(client);
 
-    if (FilterData* filterData = m_filter.get(client)) {
-        if (filterData->savedContext)
-            filterData->state = FilterData::MarkedForRemoval;
-        else
-            m_filter.remove(client);
-    }
+    m_filter.remove(client);
 
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -104,43 +99,6 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
         builder->add(AtomicString(effectElement->result()->currentValue()->value()), effect);
     }
     return builder.release();
-}
-
-void RenderSVGResourceFilter::adjustScaleForMaximumImageSize(const FloatSize& size, FloatSize& filterScale)
-{
-    FloatSize scaledSize(size);
-    scaledSize.scale(filterScale.width(), filterScale.height());
-    float scaledArea = scaledSize.width() * scaledSize.height();
-
-    if (scaledArea <= FilterEffect::maxFilterArea())
-        return;
-
-    // If area of scaled size is bigger than the upper limit, adjust the scale
-    // to fit.
-    filterScale.scale(sqrt(FilterEffect::maxFilterArea() / scaledArea));
-}
-
-static bool createImageBuffer(const Filter* filter, OwnPtr<ImageBuffer>& imageBuffer)
-{
-    IntRect paintRect = filter->sourceImageRect();
-    // Don't create empty ImageBuffers.
-    if (paintRect.isEmpty())
-        return false;
-
-    OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(paintRect.size()));
-    if (!surface->isValid())
-        return false;
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(surface.release());
-    if (!image)
-        return false;
-
-    GraphicsContext* imageContext = image->context();
-    ASSERT(imageContext);
-
-    imageContext->translate(-paintRect.x(), -paintRect.y());
-    imageContext->concatCTM(filter->absoluteTransform());
-    imageBuffer = image.release();
-    return true;
 }
 
 static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
@@ -233,7 +191,6 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     clearInvalidationMask();
 
-    bool deferredFiltersEnabled = object->document().settings()->deferredFiltersEnabled();
     if (m_filter.contains(object)) {
         FilterData* filterData = m_filter.get(object);
         if (filterData->state == FilterData::PaintingSource || filterData->state == FilterData::Applying)
@@ -249,44 +206,13 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     if (filterData->boundaries.isEmpty())
         return false;
 
-    // Determine absolute transformation matrix for filter.
-    AffineTransform absoluteTransform;
-    SVGRenderingContext::calculateDeviceSpaceTransformation(object, absoluteTransform);
-    if (!absoluteTransform.isInvertible())
-        return false;
-
-    // Filters cannot handle a full transformation, only scales in each direction.
-    FloatSize filterScale;
-
-    // Calculate the scale factor for the filter.
-    // Also see http://www.w3.org/TR/SVG/filters.html#FilterEffectsRegion
-    if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
-        //  If resolution is specified, scale to match it.
-        filterScale = FloatSize(
-            filterElement->filterResX()->currentValue()->value() / filterData->boundaries.width(),
-            filterElement->filterResY()->currentValue()->value() / filterData->boundaries.height());
-    } else {
-        // Otherwise, use the scale of the absolute transform.
-        filterScale = FloatSize(absoluteTransform.xScale(), absoluteTransform.yScale());
-    }
-    // The size of the scaled filter boundaries shouldn't be bigger than kMaxFilterSize.
-    // Intermediate filters are limited by the filter boundaries so they can't be bigger than this.
-    adjustScaleForMaximumImageSize(filterData->boundaries.size(), filterScale);
-
     filterData->drawingRegion = object->strokeBoundingBox();
     filterData->drawingRegion.intersect(filterData->boundaries);
-    FloatRect absoluteDrawingRegion = filterData->drawingRegion;
-    if (!deferredFiltersEnabled)
-        absoluteDrawingRegion.scale(filterScale.width(), filterScale.height());
-
-    IntRect intDrawingRegion = enclosingIntRect(absoluteDrawingRegion);
+    IntRect intDrawingRegion = enclosingIntRect(filterData->drawingRegion);
 
     // Create the SVGFilter object.
     bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    filterData->shearFreeAbsoluteTransform = AffineTransform();
-    if (!deferredFiltersEnabled)
-        filterData->shearFreeAbsoluteTransform.scale(filterScale.width(), filterScale.height());
-    filterData->filter = SVGFilter::create(filterData->shearFreeAbsoluteTransform, intDrawingRegion, targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
+    filterData->filter = SVGFilter::create(intDrawingRegion, targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
 
     // Create all relevant filter primitives.
     filterData->builder = buildPrimitives(filterData->filter.get());
@@ -299,41 +225,9 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
-    if (deferredFiltersEnabled) {
-        FilterData* data = filterData.get();
-        m_filter.set(object, filterData.release());
-        beginDeferredFilter(context, data);
-        return true;
-    }
-
-    // If the drawingRegion is empty, we have something like <g filter=".."/>.
-    // Even if the target objectBoundingBox() is empty, we still have to draw the last effect result image in postApplyResource.
-    if (filterData->drawingRegion.isEmpty()) {
-        ASSERT(!m_filter.contains(object));
-        filterData->savedContext = context;
-        m_filter.set(object, filterData.release());
-        return false;
-    }
-
-    OwnPtr<ImageBuffer> sourceGraphic;
-    if (!createImageBuffer(filterData->filter.get(), sourceGraphic)) {
-        ASSERT(!m_filter.contains(object));
-        filterData->savedContext = context;
-        m_filter.set(object, filterData.release());
-        return false;
-    }
-
-    GraphicsContext* sourceGraphicContext = sourceGraphic->context();
-    ASSERT(sourceGraphicContext);
-
-    filterData->sourceGraphicBuffer = sourceGraphic.release();
-    filterData->savedContext = context;
-
-    context = sourceGraphicContext;
-
-    ASSERT(!m_filter.contains(object));
+    FilterData* data = filterData.get();
     m_filter.set(object, filterData.release());
-
+    beginDeferredFilter(context, data);
     return true;
 }
 
@@ -346,13 +240,7 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     if (!filterData)
         return;
 
-    bool deferredFiltersEnabled = object->document().settings()->deferredFiltersEnabled();
-
     switch (filterData->state) {
-    case FilterData::MarkedForRemoval:
-        m_filter.remove(object);
-        return;
-
     case FilterData::CycleDetected:
     case FilterData::Applying:
         // We have a cycle if we are already applying the data.
@@ -363,52 +251,14 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
         return;
 
     case FilterData::PaintingSource:
-        if (deferredFiltersEnabled) {
-            endDeferredFilter(context, filterData);
-        } else {
-            if (!filterData->savedContext) {
-                removeClientFromCache(object);
-                return;
-            }
-
-            context = filterData->savedContext;
-            filterData->savedContext = 0;
-        }
+        endDeferredFilter(context, filterData);
         break;
 
     case FilterData::Built: { } // Empty
     }
 
-    if (deferredFiltersEnabled) {
-        drawDeferredFilter(context, filterData, toSVGFilterElement(element()));
-        filterData->state = FilterData::Built;
-        return;
-    }
-
-    FilterEffect* lastEffect = filterData->builder->lastEffect();
-
-    if (lastEffect && !filterData->boundaries.isEmpty() && !lastEffect->filterPrimitiveSubregion().isEmpty()) {
-        // This is the real filtering of the object. It just needs to be called on the
-        // initial filtering process. We just take the stored filter result on a
-        // second drawing.
-        if (filterData->state != FilterData::Built)
-            filterData->filter->setSourceImage(filterData->sourceGraphicBuffer.release());
-
-        // Always true if filterData is just built (filterData->state == FilterData::Built).
-        if (!lastEffect->hasResult()) {
-            filterData->state = FilterData::Applying;
-            lastEffect->apply();
-            lastEffect->correctFilterResultIfNeeded();
-            lastEffect->transformResultColorSpace(ColorSpaceDeviceRGB);
-        }
-        filterData->state = FilterData::Built;
-
-        ImageBuffer* resultImage = lastEffect->asImageBuffer();
-        if (resultImage) {
-            context->drawImageBuffer(resultImage, filterData->filter->mapAbsoluteRectToLocalRect(lastEffect->absolutePaintRect()));
-        }
-    }
-    filterData->sourceGraphicBuffer.clear();
+    drawDeferredFilter(context, filterData, toSVGFilterElement(element()));
+    filterData->state = FilterData::Built;
 }
 
 FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* object)
