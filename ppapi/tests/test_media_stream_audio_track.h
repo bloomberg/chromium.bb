@@ -32,6 +32,7 @@ class TestMediaStreamAudioTrack : public TestCase {
   std::string TestGetBuffer();
   std::string TestConfigure();
   std::string TestConfigureClose();
+  std::string TestVerifyWaveform();
 
   pp::MediaStreamAudioTrack audio_track_;
 

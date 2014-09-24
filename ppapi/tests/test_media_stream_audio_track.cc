@@ -6,6 +6,13 @@
 
 #include "ppapi/tests/test_media_stream_audio_track.h"
 
+// For MSVC.
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <stdint.h>
+
+#include <algorithm>
+
 #include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/cpp/audio_buffer.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -39,6 +46,31 @@ const char kJSCode[] =
     "    navigator.getUserMedia || navigator.webkitGetUserMedia;"
     "navigator.getUserMedia(constraints,"
     "    gotStream, function() {});";
+
+const char kSineJSCode[] =
+    // Create oscillators for the left and right channels. Use a sine wave,
+    // which is the easiest to calculate expected values. The oscillator output
+    // is low-pass filtered (as per spec) making comparison hard.
+    "var context = new AudioContext();"
+    "var l_osc = context.createOscillator();"
+    "l_osc.type = \"sine\";"
+    "l_osc.frequency.value = 25;"
+    "var r_osc = context.createOscillator();"
+    "r_osc.type = \"sine\";"
+    "r_osc.frequency.value = 100;"
+    // Combine the left and right channels.
+    "var merger = context.createChannelMerger(2);"
+    "merger.channelInterpretation = \"discrete\";"
+    "l_osc.connect(merger, 0, 0);"
+    "r_osc.connect(merger, 0, 1);"
+    "var dest_stream = context.createMediaStreamDestination();"
+    "merger.connect(dest_stream);"
+    // Dump the generated waveform to a MediaStream output.
+    "l_osc.start();"
+    "r_osc.start();"
+    "var track = dest_stream.stream.getAudioTracks()[0];"
+    "var plugin = document.getElementById('plugin');"
+    "plugin.postMessage(track);";
 
 // Helper to check if the |sample_rate| is listed in PP_AudioBuffer_SampleRate
 // enum.
@@ -77,6 +109,7 @@ void TestMediaStreamAudioTrack::RunTests(const std::string& filter) {
   RUN_TEST(GetBuffer, filter);
   RUN_TEST(Configure, filter);
   RUN_TEST(ConfigureClose, filter);
+  RUN_TEST(VerifyWaveform, filter);
 }
 
 void TestMediaStreamAudioTrack::HandleMessage(const pp::Var& message) {
@@ -174,8 +207,6 @@ std::string TestMediaStreamAudioTrack::CheckGetBuffer(
     ASSERT_GE(buffer.GetTimestamp(), timestamp);
     timestamp = buffer.GetTimestamp();
 
-    // TODO(amistry): Figure out how to inject a predictable audio pattern, such
-    // as a sawtooth, and check the buffer data to make sure it's correct.
     ASSERT_TRUE(buffer.GetDataBuffer() != NULL);
     if (expected_duration > 0) {
       uint32_t buffer_size = buffer.GetDataBufferSize();
@@ -332,6 +363,111 @@ std::string TestMediaStreamAudioTrack::TestConfigureClose() {
   // Unfortunately, we can't control whether the configure succeeds or is
   // aborted.
   ASSERT_TRUE(result == PP_OK || result == PP_ERROR_ABORTED);
+
+  PASS();
+}
+
+uint32_t CalculateWaveStartingTime(int16_t sample, int16_t next_sample,
+                                   uint32_t period) {
+  int16_t slope = next_sample - sample;
+  double angle = asin(sample / (double)INT16_MAX);
+  if (slope < 0) {
+    angle = M_PI - angle;
+  }
+  if (angle < 0) {
+    angle += 2 * M_PI;
+  }
+  return round(angle * period / (2 * M_PI));
+}
+
+std::string TestMediaStreamAudioTrack::TestVerifyWaveform() {
+  // Create a track.
+  instance_->EvalScript(kSineJSCode);
+  event_.Wait();
+  event_.Reset();
+
+  ASSERT_FALSE(audio_track_.is_null());
+  ASSERT_FALSE(audio_track_.HasEnded());
+  ASSERT_FALSE(audio_track_.GetId().empty());
+
+  // Use a weird buffer length and number of buffers.
+  const int32_t kBufferSize = 13;
+  const int32_t kNumBuffers = 3;
+
+  const uint32_t kChannels = 2;
+  const uint32_t kFreqLeft = 25;
+  const uint32_t kFreqRight = 100;
+
+  int32_t attrib_list[] = {
+    PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION, kBufferSize,
+    PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS, kNumBuffers,
+    PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE,
+  };
+  ASSERT_SUBTEST_SUCCESS(CheckConfigure(attrib_list, PP_OK));
+
+  // Get kNumBuffers buffers and verify they conform to the expected waveform.
+  PP_TimeDelta timestamp = 0.0;
+  int sample_time = 0;
+  uint32_t left_start = 0;
+  uint32_t right_start = 0;
+  for (int j = 0; j < kNumBuffers; ++j) {
+    TestCompletionCallbackWithOutput<pp::AudioBuffer> cc_get_buffer(
+        instance_->pp_instance(), false);
+    cc_get_buffer.WaitForResult(
+        audio_track_.GetBuffer(cc_get_buffer.GetCallback()));
+    ASSERT_EQ(PP_OK, cc_get_buffer.result());
+    pp::AudioBuffer buffer = cc_get_buffer.output();
+    ASSERT_FALSE(buffer.is_null());
+    ASSERT_TRUE(IsSampleRateValid(buffer.GetSampleRate()));
+    ASSERT_EQ(buffer.GetSampleSize(), PP_AUDIOBUFFER_SAMPLESIZE_16_BITS);
+    ASSERT_EQ(buffer.GetNumberOfChannels(), kChannels);
+    ASSERT_GE(buffer.GetTimestamp(), timestamp);
+    timestamp = buffer.GetTimestamp();
+
+    uint32_t buffer_size = buffer.GetDataBufferSize();
+    uint32_t sample_rate = buffer.GetSampleRate();
+    uint32_t num_samples = buffer.GetNumberOfSamples();
+    uint32_t bytes_per_frame = kChannels * 2;
+    ASSERT_EQ(num_samples, (kChannels * kBufferSize * sample_rate) / 1000);
+    ASSERT_EQ(buffer_size % bytes_per_frame, 0U);
+    ASSERT_EQ(buffer_size, num_samples * 2);
+
+    // Period of sine wave, in samples.
+    uint32_t left_period = sample_rate / kFreqLeft;
+    uint32_t right_period = sample_rate / kFreqRight;
+
+    int16_t* data_buffer = static_cast<int16_t*>(buffer.GetDataBuffer());
+    ASSERT_TRUE(data_buffer != NULL);
+
+    if (j == 0) {
+      // The generated wave doesn't necessarily start at 0, so compensate for
+      // this.
+      left_start = CalculateWaveStartingTime(data_buffer[0], data_buffer[2],
+                                             left_period);
+      right_start = CalculateWaveStartingTime(data_buffer[1], data_buffer[3],
+                                              right_period);
+    }
+
+    for (uint32_t sample = 0; sample < num_samples;
+         sample += 2, sample_time++) {
+      int16_t left = data_buffer[sample];
+      int16_t right = data_buffer[sample + 1];
+      double angle = (2.0 * M_PI * ((sample_time + left_start) % left_period)) /
+          left_period;
+      int16_t expected = INT16_MAX * sin(angle);
+      // Account for off-by-one errors due to rounding.
+      ASSERT_GE(left, std::max<int16_t>(expected, INT16_MIN + 1) - 1);
+      ASSERT_LE(left, std::min<int16_t>(expected, INT16_MAX - 1) + 1);
+
+      angle = (2 * M_PI * ((sample_time + right_start) % right_period)) /
+          right_period;
+      expected = INT16_MAX * sin(angle);
+      ASSERT_GE(right, std::max<int16_t>(expected, INT16_MIN + 1) - 1);
+      ASSERT_LE(right, std::min<int16_t>(expected, INT16_MAX - 1) + 1);
+    }
+
+    audio_track_.RecycleBuffer(buffer);
+  }
 
   PASS();
 }
