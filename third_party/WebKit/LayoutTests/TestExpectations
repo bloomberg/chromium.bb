@@ -1310,3 +1310,5 @@ crbug.com/415089 http/tests/serviceworker/fetch-access-control.html  [ Pass Time
 
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
 crbug.com/416637 [ Debug ] virtual/threaded/animations/webkit-perspective.html [ Crash ]
+
+crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
