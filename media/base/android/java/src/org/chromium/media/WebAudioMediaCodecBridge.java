@@ -31,6 +31,7 @@ class WebAudioMediaCodecBridge {
         return outputFile.getAbsolutePath();
     }
 
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private static boolean decodeAudioFile(Context ctx,
                                            long nativeMediaCodecBridge,
