@@ -1167,6 +1167,7 @@
         'browser/extensions/api/sockets_udp/sockets_udp_apitest.cc',
         'browser/extensions/api/storage/settings_apitest.cc',
         'browser/extensions/api/streams_private/streams_private_apitest.cc',
+        'browser/extensions/api/sync_file_system/sync_file_system_browsertest.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
         'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
         'browser/extensions/api/system_cpu/system_cpu_apitest.cc',

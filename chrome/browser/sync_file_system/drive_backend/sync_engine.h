@@ -45,6 +45,7 @@ class URLRequestContextGetter;
 namespace sync_file_system {
 
 class RemoteChangeProcessor;
+class SyncFileSystemTest;
 
 namespace drive_backend {
 
@@ -159,6 +160,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   friend class DriveBackendSyncTest;
   friend class SyncEngineTest;
+  friend class sync_file_system::SyncFileSystemTest;
 
   SyncEngine(const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
              const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
@@ -169,7 +171,7 @@ class SyncEngine : public RemoteFileSyncService,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager,
              OAuth2TokenService* token_service,
-             const scoped_refptr<net::URLRequestContextGetter>& request_context,
+             net::URLRequestContextGetter* request_context,
              scoped_ptr<DriveServiceFactory> drive_service_factory,
              leveldb::Env* env_override);
 

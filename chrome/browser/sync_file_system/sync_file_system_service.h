@@ -88,6 +88,7 @@ class SyncFileSystemService
  private:
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
+  friend class SyncFileSystemTest;
   friend struct base::DefaultDeleter<SyncFileSystemService>;
   friend class LocalSyncRunner;
   friend class RemoteSyncRunner;

@@ -713,7 +713,6 @@ void SyncEngine::OnNetworkChanged(
                    base::Unretained(sync_worker_.get()),
                    "Disconnected"));
   }
-
 }
 
 void SyncEngine::GoogleSigninFailed(const GoogleServiceAuthError& error) {
@@ -745,7 +744,7 @@ SyncEngine::SyncEngine(
     ExtensionServiceInterface* extension_service,
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    net::URLRequestContextGetter* request_context,
     scoped_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)
     : ui_task_runner_(ui_task_runner),
