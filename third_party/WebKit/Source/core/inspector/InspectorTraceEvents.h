@@ -119,7 +119,7 @@ public:
 };
 #define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
     TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeine.invalidationTracking"), \
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
         "LayerInvalidationTracking", \
         "data", \
         InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)))
