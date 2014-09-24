@@ -27,10 +27,13 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <limits.h>
+
 #include "test-runner.h"
 
 static int num_alloc;
@@ -133,6 +136,45 @@ run_test(const struct test *t)
 	exit(EXIT_SUCCESS);
 }
 
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
+static void
+set_xdg_runtime_dir(void)
+{
+	char xdg_runtime_dir[PATH_MAX];
+	const char *xrd_env;
+
+	xrd_env = getenv("XDG_RUNTIME_DIR");
+	/* if XDG_RUNTIME_DIR is not set in environ, fallback to /tmp */
+	assert((snprintf(xdg_runtime_dir, PATH_MAX, "%s/wayland-tests",
+			 xrd_env ? xrd_env : "/tmp") < PATH_MAX)
+		&& "test error: XDG_RUNTIME_DIR too long");
+
+	if (mkdir(xdg_runtime_dir, 0700) == -1)
+		if (errno != EEXIST) {
+			perror("Creating XDG_RUNTIME_DIR");
+			abort();
+		}
+
+	if (setenv("XDG_RUNTIME_DIR", xdg_runtime_dir, 1) == -1) {
+		perror("Setting XDG_RUNTIME_DIR");
+		abort();
+	}
+}
+
+static void
+rmdir_xdg_runtime_dir(void)
+{
+	const char *xrd_env = getenv("XDG_RUNTIME_DIR");
+	assert(xrd_env && "No XDG_RUNTIME_DIR set");
+
+	/* rmdir may fail if some test didn't do clean up */
+	if (rmdir(xrd_env) == -1)
+		perror("Cleaning XDG_RUNTIME_DIR");
+}
+
 int main(int argc, char *argv[])
 {
 	const struct test *t;
@@ -158,8 +200,15 @@ int main(int argc, char *argv[])
 			usage(argv[0], EXIT_FAILURE);
 		}
 
+		set_xdg_runtime_dir();
+		/* run_test calls exit() */
+		assert(atexit(rmdir_xdg_runtime_dir) == 0);
+
 		run_test(t);
 	}
+
+	/* set our own XDG_RUNTIME_DIR */
+	set_xdg_runtime_dir();
 
 	pass = 0;
 	for (t = &__start_test_section; t < &__stop_test_section; t++) {
@@ -202,6 +251,9 @@ int main(int argc, char *argv[])
 	total = &__stop_test_section - &__start_test_section;
 	fprintf(stderr, "%d tests, %d pass, %d fail\n",
 		total, pass, total - pass);
+
+	/* cleaning */
+	rmdir_xdg_runtime_dir();
 
 	return pass == total ? EXIT_SUCCESS : EXIT_FAILURE;
 }
