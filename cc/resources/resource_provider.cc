@@ -1876,9 +1876,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
-
-  if (resource->type != GLTexture)
-    return;
+  DCHECK_EQ(GLTexture, resource->type);
 
   if (resource->image_id)
     return;
@@ -1898,6 +1896,7 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
+  DCHECK_EQ(GLTexture, resource->type);
 
   if (!resource->image_id)
     return;
@@ -1916,36 +1915,31 @@ uint8_t* ResourceProvider::MapImage(ResourceId id, int* stride) {
   DCHECK(ReadLockFenceHasPassed(resource));
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
+  DCHECK(resource->image_id);
+
   LockForWrite(id);
 
-  if (resource->type == GLTexture) {
-    DCHECK(resource->image_id);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    // MapImageCHROMIUM should be called prior to GetImageParameterivCHROMIUM.
-    uint8_t* pixels =
-        static_cast<uint8_t*>(gl->MapImageCHROMIUM(resource->image_id));
-    gl->GetImageParameterivCHROMIUM(
-        resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, stride);
-    return pixels;
-  }
-  DCHECK_EQ(Bitmap, resource->type);
-  *stride = 0;
-  return resource->pixels;
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+  // MapImageCHROMIUM should be called prior to GetImageParameterivCHROMIUM.
+  uint8_t* pixels =
+      static_cast<uint8_t*>(gl->MapImageCHROMIUM(resource->image_id));
+  gl->GetImageParameterivCHROMIUM(
+      resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, stride);
+  return pixels;
 }
 
 void ResourceProvider::UnmapImage(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
+  DCHECK(resource->image_id);
   DCHECK(resource->locked_for_write);
 
-  if (resource->image_id) {
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->UnmapImageCHROMIUM(resource->image_id);
-    resource->dirty_image = true;
-  }
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+  gl->UnmapImageCHROMIUM(resource->image_id);
+  resource->dirty_image = true;
 
   UnlockForWrite(id);
 }
@@ -1954,9 +1948,7 @@ void ResourceProvider::AcquireSkSurface(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
-
-  if (resource->type != GLTexture)
-    return;
+  DCHECK_EQ(GLTexture, resource->type);
 
   if (resource->sk_surface)
     return;
@@ -1988,6 +1980,7 @@ void ResourceProvider::ReleaseSkSurface(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
+  DCHECK_EQ(GLTexture, resource->type);
 
   resource->sk_surface.clear();
 }
@@ -1996,6 +1989,7 @@ SkSurface* ResourceProvider::LockForWriteToSkSurface(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
+  DCHECK_EQ(GLTexture, resource->type);
 
   LockForWrite(id);
   return resource->sk_surface.get();
@@ -2012,6 +2006,7 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   DCHECK(!source_resource->lock_for_read_count);
   DCHECK(source_resource->origin == Resource::Internal);
   DCHECK_EQ(source_resource->exported_count, 0);
+  DCHECK_EQ(GLTexture, source_resource->type);
   DCHECK(source_resource->allocated);
   LazyCreate(source_resource);
 
@@ -2020,45 +2015,37 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   DCHECK(!dest_resource->lock_for_read_count);
   DCHECK(dest_resource->origin == Resource::Internal);
   DCHECK_EQ(dest_resource->exported_count, 0);
+  DCHECK_EQ(GLTexture, dest_resource->type);
   LazyCreate(dest_resource);
 
   DCHECK_EQ(source_resource->type, dest_resource->type);
   DCHECK_EQ(source_resource->format, dest_resource->format);
   DCHECK(source_resource->size == dest_resource->size);
 
-  if (source_resource->type == GLTexture) {
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    if (source_resource->image_id && source_resource->dirty_image) {
-      gl->BindTexture(source_resource->target, source_resource->gl_id);
-      BindImageForSampling(source_resource);
-    }
-    DCHECK(use_sync_query_) << "CHROMIUM_sync_query extension missing";
-    if (!source_resource->gl_read_lock_query_id)
-      gl->GenQueriesEXT(1, &source_resource->gl_read_lock_query_id);
-    gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM,
-                      source_resource->gl_read_lock_query_id);
-    DCHECK(!dest_resource->image_id);
-    dest_resource->allocated = true;
-    gl->CopyTextureCHROMIUM(dest_resource->target,
-                            source_resource->gl_id,
-                            dest_resource->gl_id,
-                            0,
-                            GLInternalFormat(dest_resource->format),
-                            GLDataType(dest_resource->format));
-    // End query and create a read lock fence that will prevent access to
-    // source resource until CopyTextureCHROMIUM command has completed.
-    gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
-    source_resource->read_lock_fence = make_scoped_refptr(
-        new QueryFence(gl, source_resource->gl_read_lock_query_id));
-  } else {
-    DCHECK_EQ(Bitmap, source_resource->type);
-    DCHECK_EQ(RGBA_8888, source_resource->format);
-    LazyAllocate(dest_resource);
-
-    size_t bytes = SharedBitmap::CheckedSizeInBytes(source_resource->size);
-    memcpy(dest_resource->pixels, source_resource->pixels, bytes);
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+  if (source_resource->image_id && source_resource->dirty_image) {
+    gl->BindTexture(source_resource->target, source_resource->gl_id);
+    BindImageForSampling(source_resource);
   }
+  DCHECK(use_sync_query_) << "CHROMIUM_sync_query extension missing";
+  if (!source_resource->gl_read_lock_query_id)
+    gl->GenQueriesEXT(1, &source_resource->gl_read_lock_query_id);
+  gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM,
+                    source_resource->gl_read_lock_query_id);
+  DCHECK(!dest_resource->image_id);
+  dest_resource->allocated = true;
+  gl->CopyTextureCHROMIUM(dest_resource->target,
+                          source_resource->gl_id,
+                          dest_resource->gl_id,
+                          0,
+                          GLInternalFormat(dest_resource->format),
+                          GLDataType(dest_resource->format));
+  // End query and create a read lock fence that will prevent access to
+  // source resource until CopyTextureCHROMIUM command has completed.
+  gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+  source_resource->read_lock_fence = make_scoped_refptr(
+      new QueryFence(gl, source_resource->gl_read_lock_query_id));
 }
 
 void ResourceProvider::WaitSyncPointIfNeeded(ResourceId id) {

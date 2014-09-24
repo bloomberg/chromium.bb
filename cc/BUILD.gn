@@ -318,6 +318,8 @@ component("cc") {
     "quads/yuv_video_draw_quad.h",
     "resources/bitmap_content_layer_updater.cc",
     "resources/bitmap_content_layer_updater.h",
+    "resources/bitmap_raster_worker_pool.cc",
+    "resources/bitmap_raster_worker_pool.h",
     "resources/bitmap_skpicture_content_layer_updater.cc",
     "resources/bitmap_skpicture_content_layer_updater.h",
     "resources/content_layer_updater.cc",

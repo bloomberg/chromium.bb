@@ -980,19 +980,10 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
-  ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  child_resource_provider_->AcquireImage(id3);
-  uint8_t data3[4] = { 6, 7, 8, 9 };
-  int stride;
-  void* data = child_resource_provider_->MapImage(id3, &stride);
-  memcpy(data, data3, sizeof(data3));
-  child_resource_provider_->UnmapImage(id3);
-
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   shared_memory->CreateAndMapAnonymous(1);
   base::SharedMemory* shared_memory_ptr = shared_memory.get();
-  ResourceProvider::ResourceId id4 =
+  ResourceProvider::ResourceId id3 =
       child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(shared_memory_ptr, gfx::Size(1, 1)),
           SingleReleaseCallbackImpl::Create(base::Bind(
@@ -1007,39 +998,33 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
-    resource_ids_to_transfer.push_back(id4);
     TransferableResourceArray list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
-    ASSERT_EQ(4u, list.size());
+    ASSERT_EQ(3u, list.size());
     EXPECT_EQ(0u, list[0].mailbox_holder.sync_point);
     EXPECT_EQ(0u, list[1].mailbox_holder.sync_point);
     EXPECT_EQ(0u, list[2].mailbox_holder.sync_point);
-    EXPECT_EQ(0u, list[3].mailbox_holder.sync_point);
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
-    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id4));
     resource_provider_->ReceiveFromChild(child_id, list);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_transfer);
   }
 
-  EXPECT_EQ(4u, resource_provider_->num_resources());
+  EXPECT_EQ(3u, resource_provider_->num_resources());
   ResourceProvider::ResourceIdMap resource_map =
       resource_provider_->GetChildToParentMap(child_id);
   ResourceProvider::ResourceId mapped_id1 = resource_map[id1];
   ResourceProvider::ResourceId mapped_id2 = resource_map[id2];
   ResourceProvider::ResourceId mapped_id3 = resource_map[id3];
-  ResourceProvider::ResourceId mapped_id4 = resource_map[id4];
   EXPECT_NE(0u, mapped_id1);
   EXPECT_NE(0u, mapped_id2);
   EXPECT_NE(0u, mapped_id3);
-  EXPECT_NE(0u, mapped_id4);
   EXPECT_FALSE(resource_provider_->InUseByConsumer(id1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(id2));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(id3));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(id4));
 
   uint8_t result[4] = { 0 };
   GetResourcePixels(
@@ -1050,24 +1035,18 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
       resource_provider_.get(), context(), mapped_id2, size, format, result);
   EXPECT_EQ(0, memcmp(data2, result, pixel_size));
 
-  GetResourcePixels(
-      resource_provider_.get(), context(), mapped_id3, size, format, result);
-  EXPECT_EQ(0, memcmp(data3, result, pixel_size));
-
   {
     // Check that transfering again the same resource from the child to the
     // parent works.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
-    resource_ids_to_transfer.push_back(id3);
     TransferableResourceArray list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
-    EXPECT_EQ(3u, list.size());
+    EXPECT_EQ(2u, list.size());
     EXPECT_EQ(id1, list[0].id);
     EXPECT_EQ(id2, list[1].id);
-    EXPECT_EQ(id3, list[2].id);
     ReturnedResourceArray returned;
     TransferableResource::ReturnResources(list, &returned);
     child_resource_provider_->ReceiveReturnsFromParent(returned);
@@ -1075,7 +1054,6 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     // be in-use.
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
-    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
   }
   {
     EXPECT_EQ(0u, returned_to_child.size());
@@ -1085,31 +1063,27 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     ResourceProvider::ResourceIdArray no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
-    ASSERT_EQ(4u, returned_to_child.size());
+    ASSERT_EQ(3u, returned_to_child.size());
     EXPECT_EQ(0u, returned_to_child[0].sync_point);
     EXPECT_EQ(0u, returned_to_child[1].sync_point);
     EXPECT_EQ(0u, returned_to_child[2].sync_point);
-    EXPECT_EQ(0u, returned_to_child[3].sync_point);
     std::set<ResourceProvider::ResourceId> expected_ids;
     expected_ids.insert(id1);
     expected_ids.insert(id2);
     expected_ids.insert(id3);
-    expected_ids.insert(id4);
     std::set<ResourceProvider::ResourceId> returned_ids;
-    for (unsigned i = 0; i < 4; i++)
+    for (unsigned i = 0; i < 3; i++)
       returned_ids.insert(returned_to_child[i].id);
     EXPECT_EQ(expected_ids, returned_ids);
     EXPECT_FALSE(returned_to_child[0].lost);
     EXPECT_FALSE(returned_to_child[1].lost);
     EXPECT_FALSE(returned_to_child[2].lost);
-    EXPECT_FALSE(returned_to_child[3].lost);
     child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
     returned_to_child.clear();
   }
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id2));
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id3));
-  EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id4));
 
   {
     ResourceProvider::ScopedReadLockSoftware lock(
@@ -1128,32 +1102,21 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     EXPECT_EQ(0, memcmp(data2, sk_bitmap->getPixels(), pixel_size));
   }
   {
-    ResourceProvider::ScopedReadLockSoftware lock(
-        child_resource_provider_.get(), id3);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(0, memcmp(data3, sk_bitmap->getPixels(), pixel_size));
-  }
-  {
     // Transfer resources to the parent again.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
-    resource_ids_to_transfer.push_back(id4);
     TransferableResourceArray list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
-    ASSERT_EQ(4u, list.size());
+    ASSERT_EQ(3u, list.size());
     EXPECT_EQ(id1, list[0].id);
     EXPECT_EQ(id2, list[1].id);
     EXPECT_EQ(id3, list[2].id);
-    EXPECT_EQ(id4, list[3].id);
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
-    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id4));
     resource_provider_->ReceiveFromChild(child_id, list);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_transfer);
@@ -1161,28 +1124,25 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
 
   EXPECT_EQ(0u, returned_to_child.size());
 
-  EXPECT_EQ(4u, resource_provider_->num_resources());
+  EXPECT_EQ(3u, resource_provider_->num_resources());
   resource_provider_->DestroyChild(child_id);
   EXPECT_EQ(0u, resource_provider_->num_resources());
 
-  ASSERT_EQ(4u, returned_to_child.size());
+  ASSERT_EQ(3u, returned_to_child.size());
   EXPECT_EQ(0u, returned_to_child[0].sync_point);
   EXPECT_EQ(0u, returned_to_child[1].sync_point);
   EXPECT_EQ(0u, returned_to_child[2].sync_point);
-  EXPECT_EQ(0u, returned_to_child[3].sync_point);
   std::set<ResourceProvider::ResourceId> expected_ids;
   expected_ids.insert(id1);
   expected_ids.insert(id2);
   expected_ids.insert(id3);
-  expected_ids.insert(id4);
   std::set<ResourceProvider::ResourceId> returned_ids;
-  for (unsigned i = 0; i < 4; i++)
+  for (unsigned i = 0; i < 3; i++)
     returned_ids.insert(returned_to_child[i].id);
   EXPECT_EQ(expected_ids, returned_ids);
   EXPECT_FALSE(returned_to_child[0].lost);
   EXPECT_FALSE(returned_to_child[1].lost);
   EXPECT_FALSE(returned_to_child[2].lost);
-  EXPECT_FALSE(returned_to_child[3].lost);
 }
 
 TEST_P(ResourceProviderTest, TransferGLToSoftware) {
@@ -3429,51 +3389,6 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
       .RetiresOnSaturation();
 }
 
-TEST_P(ResourceProviderTest, Image_Bitmap) {
-  if (GetParam() != ResourceProvider::Bitmap)
-    return;
-  FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateSoftware(make_scoped_ptr(
-          new SoftwareOutputDevice)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-
-  gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
-  ResourceProvider::ResourceId id = 0;
-  const uint32_t kBadBeef = 0xbadbeef;
-
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(),
-                               shared_bitmap_manager_.get(),
-                               NULL,
-                               0,
-                               false,
-                               1,
-                               false));
-
-  id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  resource_provider->AcquireImage(id);
-
-  int stride;
-  void* data = resource_provider->MapImage(id, &stride);
-  ASSERT_TRUE(!!data);
-  memcpy(data, &kBadBeef, sizeof(kBadBeef));
-  resource_provider->UnmapImage(id);
-
-  {
-    ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(), id);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(*sk_bitmap->getAddr32(0, 0), kBadBeef);
-  }
-
-  resource_provider->ReleaseImage(id);
-  resource_provider->DeleteResource(id);
-}
-
 TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   if (GetParam() != ResourceProvider::GLTexture)
     return;
@@ -3563,57 +3478,6 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   EXPECT_CALL(*context, RetireTextureId(kDestTextureId))
       .Times(1)
       .RetiresOnSaturation();
-  resource_provider->DeleteResource(source_id);
-  resource_provider->DeleteResource(dest_id);
-}
-
-TEST_P(ResourceProviderTest, CopyResource_Bitmap) {
-  if (GetParam() != ResourceProvider::Bitmap)
-    return;
-  FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::CreateSoftware(
-      make_scoped_ptr(new SoftwareOutputDevice)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-
-  gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
-  ResourceProvider::ResourceId source_id = 0;
-  ResourceProvider::ResourceId dest_id = 0;
-  const uint32_t kBadBeef = 0xbadbeef;
-
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(),
-                               shared_bitmap_manager_.get(),
-                               NULL,
-                               0,
-                               false,
-                               1,
-                               false));
-
-  source_id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  resource_provider->AcquireImage(source_id);
-
-  int stride;
-  void* data = resource_provider->MapImage(source_id, &stride);
-  ASSERT_TRUE(!!data);
-  memcpy(data, &kBadBeef, sizeof(kBadBeef));
-  resource_provider->UnmapImage(source_id);
-
-  dest_id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-
-  resource_provider->CopyResource(source_id, dest_id);
-
-  {
-    ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(),
-                                                  dest_id);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(*sk_bitmap->getAddr32(0, 0), kBadBeef);
-  }
-
   resource_provider->DeleteResource(source_id);
   resource_provider->DeleteResource(dest_id);
 }

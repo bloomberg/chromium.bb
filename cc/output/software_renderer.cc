@@ -88,7 +88,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   capabilities_.allow_partial_texture_updates = true;
   capabilities_.using_partial_swap = true;
 
-  capabilities_.using_map_image = true;
   capabilities_.using_shared_memory_resources = true;
 
   capabilities_.allow_rasterize_on_demand = true;

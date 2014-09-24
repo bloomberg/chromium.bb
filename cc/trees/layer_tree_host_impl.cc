@@ -46,6 +46,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/bitmap_raster_worker_pool.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/gpu_raster_worker_pool.h"
 #include "cc/resources/memory_history.h"
@@ -74,9 +75,10 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
+namespace cc {
 namespace {
 
-void DidVisibilityChange(cc::LayerTreeHostImpl* id, bool visible) {
+void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   if (visible) {
     TRACE_EVENT_ASYNC_BEGIN1("webkit",
                              "LayerTreeHostImpl::SetVisible",
@@ -89,13 +91,9 @@ void DidVisibilityChange(cc::LayerTreeHostImpl* id, bool visible) {
   TRACE_EVENT_ASYNC_END0("webkit", "LayerTreeHostImpl::SetVisible", id);
 }
 
-size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider,
-                                      double refresh_rate) {
-  // Software compositing should not use this value in production. Just use a
-  // default value when testing uploads with the software compositor.
-  if (!context_provider)
-    return std::numeric_limits<size_t>::max();
-
+size_t GetMaxTransferBufferUsageBytes(
+    const ContextProvider::Capabilities& context_capabilities,
+    double refresh_rate) {
   // We want to make sure the default transfer buffer size is equal to the
   // amount of data that can be uploaded by the compositor to avoid stalling
   // the pipeline.
@@ -112,18 +110,15 @@ size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider,
       ms_per_frame * kMaxBytesUploadedPerMs;
 
   // The context may request a lower limit based on the device capabilities.
-  return std::min(
-      context_provider->ContextCapabilities().max_transfer_buffer_usage_bytes,
-      max_transfer_buffer_usage_bytes);
+  return std::min(context_capabilities.max_transfer_buffer_usage_bytes,
+                  max_transfer_buffer_usage_bytes);
 }
 
-unsigned GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
-  if (!context_provider)
-    return GL_TEXTURE_2D;
-
-  if (context_provider->ContextCapabilities().gpu.egl_image_external)
+unsigned GetMapImageTextureTarget(
+    const ContextProvider::Capabilities& context_capabilities) {
+  if (context_capabilities.gpu.egl_image_external)
     return GL_TEXTURE_EXTERNAL_OES;
-  if (context_provider->ContextCapabilities().gpu.texture_rectangle)
+  if (context_capabilities.gpu.texture_rectangle)
     return GL_TEXTURE_RECTANGLE_ARB;
 
   return GL_TEXTURE_2D;
@@ -135,8 +130,6 @@ size_t GetMaxStagingResourceCount() {
 }
 
 }  // namespace
-
-namespace cc {
 
 class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
  public:
@@ -1966,7 +1959,17 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(proxy_->ImplThreadTaskRunner());
 
   ContextProvider* context_provider = output_surface_->context_provider();
-  if (use_gpu_rasterization_ && context_provider) {
+  if (!context_provider) {
+    resource_pool_ =
+        ResourcePool::Create(resource_provider_.get(),
+                             GL_TEXTURE_2D,
+                             resource_provider_->best_texture_format());
+
+    raster_worker_pool_ =
+        BitmapRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                       RasterWorkerPool::GetTaskGraphRunner(),
+                                       resource_provider_.get());
+  } else if (use_gpu_rasterization_) {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
                              GL_TEXTURE_2D,
@@ -1976,12 +1979,22 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         GpuRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
                                     context_provider,
                                     resource_provider_.get());
-  } else if (UseOneCopyRasterizer() && context_provider) {
+  } else if (UseZeroCopyRasterizer()) {
+    resource_pool_ = ResourcePool::Create(
+        resource_provider_.get(),
+        GetMapImageTextureTarget(context_provider->ContextCapabilities()),
+        resource_provider_->best_texture_format());
+
+    raster_worker_pool_ =
+        ZeroCopyRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                         RasterWorkerPool::GetTaskGraphRunner(),
+                                         resource_provider_.get());
+  } else if (UseOneCopyRasterizer()) {
     // We need to create a staging resource pool when using copy rasterizer.
-    staging_resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(),
-                             GetMapImageTextureTarget(context_provider),
-                             resource_provider_->best_texture_format());
+    staging_resource_pool_ = ResourcePool::Create(
+        resource_provider_.get(),
+        GetMapImageTextureTarget(context_provider->ContextCapabilities()),
+        resource_provider_->best_texture_format());
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
                              GL_TEXTURE_2D,
@@ -1993,7 +2006,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                                         context_provider,
                                         resource_provider_.get(),
                                         staging_resource_pool_.get());
-  } else if (!UseZeroCopyRasterizer() && context_provider) {
+  } else {
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(),
         GL_TEXTURE_2D,
@@ -2004,18 +2017,8 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         RasterWorkerPool::GetTaskGraphRunner(),
         context_provider,
         resource_provider_.get(),
-        GetMaxTransferBufferUsageBytes(context_provider,
+        GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
                                        settings_.refresh_rate));
-  } else {
-    resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(),
-                             GetMapImageTextureTarget(context_provider),
-                             resource_provider_->best_texture_format());
-
-    raster_worker_pool_ =
-        ZeroCopyRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
-                                         RasterWorkerPool::GetTaskGraphRunner(),
-                                         resource_provider_.get());
   }
 
   tile_manager_ =
@@ -2043,11 +2046,7 @@ bool LayerTreeHostImpl::UsePendingTreeForSync() const {
 }
 
 bool LayerTreeHostImpl::UseZeroCopyRasterizer() const {
-  // Note: we use zero-copy by default when the renderer is using
-  // shared memory resources.
-  return (settings_.use_zero_copy ||
-          GetRendererCapabilities().using_shared_memory_resources) &&
-         GetRendererCapabilities().using_map_image;
+  return settings_.use_zero_copy && GetRendererCapabilities().using_map_image;
 }
 
 bool LayerTreeHostImpl::UseOneCopyRasterizer() const {
