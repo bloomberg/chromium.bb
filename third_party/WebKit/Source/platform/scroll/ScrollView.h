@@ -55,6 +55,9 @@ public:
 
     virtual void notifyPageThatContentAreaWillPaint() const;
 
+    // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
+    virtual void scrollTo(const IntSize& newOffset);
+
     // The window that hosts the ScrollView. The ScrollView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
     virtual HostWindow* hostWindow() const = 0;
@@ -255,9 +258,6 @@ public:
 
 protected:
     ScrollView();
-
-    // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
-    virtual void scrollTo(const IntSize& newOffset);
 
     virtual void contentRectangleForPaintInvalidation(const IntRect&);
     virtual void paintContents(GraphicsContext*, const IntRect& damageRect) = 0;
