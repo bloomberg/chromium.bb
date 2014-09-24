@@ -842,6 +842,7 @@ weston_tests =					\
 	event.weston				\
 	button.weston				\
 	text.weston				\
+	presentation.weston			\
 	subsurface.weston
 
 
@@ -943,6 +944,13 @@ text_weston_LDADD = libtest-client.la
 subsurface_weston_SOURCES = tests/subsurface-test.c
 subsurface_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 subsurface_weston_LDADD = libtest-client.la
+
+presentation_weston_SOURCES = tests/presentation-test.c
+nodist_presentation_weston_SOURCES =		\
+	protocol/presentation_timing-protocol.c	\
+	protocol/presentation_timing-client-protocol.h
+presentation_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+presentation_weston_LDADD = libtest-client.la
 
 if ENABLE_EGL
 weston_tests += buffer-count.weston
