@@ -158,50 +158,14 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestClient) {
   return 0;
 }
 
-// Close given handle before use to simulate an error.
-class ErraticChannelMojo : public IPC::ChannelMojo {
- public:
-  ErraticChannelMojo(IPC::ChannelMojoHost* host,
-                     const IPC::ChannelHandle& channel_handle,
-                     IPC::Channel::Mode mode,
-                     IPC::Listener* listener,
-                     scoped_refptr<base::TaskRunner> runner)
-      : ChannelMojo(host, channel_handle, mode, listener) {}
-
-  virtual void OnConnected(mojo::ScopedMessagePipeHandle pipe) {
-    MojoClose(pipe.get().value());
-    OnConnected(pipe.Pass());
-  }
-};
-
-// Exists to create ErraticChannelMojo.
-class ErraticChannelFactory : public IPC::ChannelFactory {
- public:
-  explicit ErraticChannelFactory(IPC::ChannelMojoHost* host,
-                                 const IPC::ChannelHandle& handle,
-                                 base::TaskRunner* runner)
-      : host_(host), handle_(handle), runner_(runner) {}
-
-  virtual std::string GetName() const OVERRIDE {
-    return "";
-  }
-
-  virtual scoped_ptr<IPC::Channel> BuildChannel(
-      IPC::Listener* listener) OVERRIDE {
-    return scoped_ptr<IPC::Channel>(new ErraticChannelMojo(
-        host_, handle_, IPC::Channel::MODE_SERVER, listener, runner_));
-  }
-
- private:
-  IPC::ChannelMojoHost* host_;
-  IPC::ChannelHandle handle_;
-  scoped_refptr<base::TaskRunner> runner_;
-};
-
 class ListenerExpectingErrors : public IPC::Listener {
  public:
   ListenerExpectingErrors()
       : has_error_(false) {
+  }
+
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+    base::MessageLoop::current()->Quit();
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
@@ -226,8 +190,7 @@ class IPCChannelMojoErrorTest : public IPCTestBase {
       const IPC::ChannelHandle& handle,
       base::TaskRunner* runner) OVERRIDE {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return scoped_ptr<IPC::ChannelFactory>(
-        new ErraticChannelFactory(host_.get(), handle, runner));
+    return IPC::ChannelMojo::CreateServerFactory(host_.get(), handle);
   }
 
   virtual bool DidStartClient() OVERRIDE {
@@ -266,8 +229,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoErraticTestClient) {
   return 0;
 }
 
-// https://crbug.com/417439
-TEST_F(IPCChannelMojoErrorTest, DISABLED_SendFailWithPendingMessages) {
+TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
   Init("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
@@ -275,10 +237,13 @@ TEST_F(IPCChannelMojoErrorTest, DISABLED_SendFailWithPendingMessages) {
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
 
+  // This matches a value in mojo/system/constants.h
+  const int kMaxMessageNumBytes = 4 * 1024 * 1024;
+  std::string overly_large_data(kMaxMessageNumBytes, '*');
   // This messages are queued as pending.
-  for (size_t i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 10; ++i) {
     IPC::TestChannelListener::SendOneMessage(
-        sender(), "hello from parent");
+        sender(), overly_large_data.c_str());
   }
 
   ASSERT_TRUE(StartClient());
