@@ -20,13 +20,99 @@
 #include "ui/base/ime/input_method_initializer.h"
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "net/cert/sha256_legacy_support_win.h"
+#include "sandbox/win/src/sidestep/preamble_patcher.h"
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
 bool g_exited_main_message_loop = false;
 
 namespace content {
+
+#if defined(OS_WIN)
+namespace {
+
+// Pointer to the original CryptVerifyCertificateSignatureEx function.
+net::sha256_interception::CryptVerifyCertificateSignatureExFunc
+    g_real_crypt_verify_signature_stub = NULL;
+
+// Stub function that is called whenever the Crypt32 function
+// CryptVerifyCertificateSignatureEx is called. It just defers to net to perform
+// the actual verification.
+BOOL WINAPI CryptVerifyCertificateSignatureExStub(
+    HCRYPTPROV_LEGACY provider,
+    DWORD encoding_type,
+    DWORD subject_type,
+    void* subject_data,
+    DWORD issuer_type,
+    void* issuer_data,
+    DWORD flags,
+    void* extra) {
+  return net::sha256_interception::CryptVerifyCertificateSignatureExHook(
+      g_real_crypt_verify_signature_stub, provider, encoding_type, subject_type,
+      subject_data, issuer_type, issuer_data, flags, extra);
+}
+
+// If necessary, install an interception
+void InstallSha256LegacyHooks() {
+#if defined(_WIN64)
+  // Interception on x64 is not supported.
+  return;
+#else
+  if (base::win::MaybeHasSHA256Support())
+    return;
+
+  net::sha256_interception::CryptVerifyCertificateSignatureExFunc
+      cert_verify_signature_ptr = reinterpret_cast<
+          net::sha256_interception::CryptVerifyCertificateSignatureExFunc>(
+              ::GetProcAddress(::GetModuleHandle(L"crypt32.dll"),
+                               "CryptVerifyCertificateSignatureEx"));
+  CHECK(cert_verify_signature_ptr);
+
+  DWORD old_protect = 0;
+  if (!::VirtualProtect(cert_verify_signature_ptr, 5, PAGE_EXECUTE_READWRITE,
+                        &old_protect)) {
+    return;
+  }
+
+  g_real_crypt_verify_signature_stub =
+      reinterpret_cast<
+          net::sha256_interception::CryptVerifyCertificateSignatureExFunc>(
+              VirtualAllocEx(::GetCurrentProcess(), NULL,
+                             sidestep::kMaxPreambleStubSize, MEM_COMMIT,
+                             PAGE_EXECUTE_READWRITE));
+  if (g_real_crypt_verify_signature_stub == NULL) {
+    CHECK(::VirtualProtect(cert_verify_signature_ptr, 5, old_protect,
+                           &old_protect));
+    return;
+  }
+
+  sidestep::SideStepError patch_result =
+      sidestep::PreamblePatcher::Patch(
+          cert_verify_signature_ptr, CryptVerifyCertificateSignatureExStub,
+          g_real_crypt_verify_signature_stub, sidestep::kMaxPreambleStubSize);
+  if (patch_result != sidestep::SIDESTEP_SUCCESS) {
+    CHECK(::VirtualFreeEx(::GetCurrentProcess(),
+                          g_real_crypt_verify_signature_stub, 0,
+                          MEM_RELEASE));
+    CHECK(::VirtualProtect(cert_verify_signature_ptr, 5, old_protect,
+                           &old_protect));
+    return;
+  }
+
+  DWORD dummy = 0;
+  CHECK(::VirtualProtect(cert_verify_signature_ptr, 5, old_protect, &dummy));
+  CHECK(::VirtualProtect(g_real_crypt_verify_signature_stub,
+                         sidestep::kMaxPreambleStubSize, old_protect,
+                         &old_protect));
+#endif  // _WIN64
+}
+
+}  // namespace
+
+#endif  // OS_WIN
 
 class BrowserMainRunnerImpl : public BrowserMainRunner {
  public:
@@ -64,6 +150,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
         // Win32 API here directly.
         ImmDisableTextFrameService(static_cast<DWORD>(-1));
       }
+      InstallSha256LegacyHooks();
 #endif  // OS_WIN
 
       base::StatisticsRecorder::Initialize();
