@@ -64,6 +64,9 @@ class ExtensionManagement : public KeyedService {
   // by an ID, a group of extensions with specific |update_url| or all
   // extensions at once.
   struct IndividualSettings {
+    IndividualSettings();
+    ~IndividualSettings();
+
     void Reset();
 
     // Extension installation mode. Setting this to INSTALLATION_FORCED or
@@ -72,6 +75,8 @@ class ExtensionManagement : public KeyedService {
     // be specified, containing the update URL for this extension.
     // Note that |update_url| will be ignored for INSTALLATION_ALLOWED and
     // INSTALLATION_BLOCKED installation mode.
+    // These settings will override the default settings, and unspecified
+    // settings will take value from default settings.
     InstallationMode installation_mode;
     std::string update_url;
   };

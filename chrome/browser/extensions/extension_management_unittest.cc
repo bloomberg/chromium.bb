@@ -423,6 +423,8 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
     PrefUpdater updater(pref_service_.get());
     updater.SetBlacklistedByDefault(false);  // Allowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, false);
+    updater.ClearPerExtensionSettings(kTargetExtension2);
+    updater.ClearPerExtensionSettings(kOtherExtension);
   }
   EXPECT_FALSE(extension_management_->BlacklistedByDefault());
   EXPECT_EQ(extension_management_->ReadById(kTargetExtension).installation_mode,
@@ -459,6 +461,8 @@ TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
     PrefUpdater updater(pref_service_.get());
     updater.SetBlacklistedByDefault(true);  // Disallowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, true);
+    updater.ClearPerExtensionSettings(kTargetExtension2);
+    updater.ClearPerExtensionSettings(kOtherExtension);
   }
   EXPECT_TRUE(extension_management_->BlacklistedByDefault());
   EXPECT_EQ(extension_management_->ReadById(kTargetExtension).installation_mode,
@@ -500,6 +504,7 @@ TEST_F(ExtensionManagementServiceTest, NewInstallForcelist) {
     PrefUpdater updater(pref_service_.get());
     updater.SetIndividualExtensionAutoInstalled(
         kTargetExtension, kExampleUpdateUrl, true);
+    updater.ClearPerExtensionSettings(kOtherExtension);
   }
   EXPECT_EQ(extension_management_->ReadById(kTargetExtension).installation_mode,
             ExtensionManagement::INSTALLATION_FORCED);

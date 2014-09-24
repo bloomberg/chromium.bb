@@ -27,6 +27,18 @@ ExtensionManagementPrefUpdaterBase::ExtensionManagementPrefUpdaterBase() {
 ExtensionManagementPrefUpdaterBase::~ExtensionManagementPrefUpdaterBase() {
 }
 
+void ExtensionManagementPrefUpdaterBase::UnsetPerExtensionSettings(
+    const ExtensionId& id) {
+  DCHECK(crx_file::id_util::IdIsValid(id));
+  pref_->RemoveWithoutPathExpansion(id, NULL);
+}
+
+void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
+    const ExtensionId& id) {
+  DCHECK(crx_file::id_util::IdIsValid(id));
+  pref_->SetWithoutPathExpansion(id, new base::DictionaryValue());
+}
+
 void ExtensionManagementPrefUpdaterBase::SetBlacklistedByDefault(bool value) {
   pref_->SetString(make_path(schema::kWildcard, schema::kInstallationMode),
                    value ? schema::kBlocked : schema::kAllowed);

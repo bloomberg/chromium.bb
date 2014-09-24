@@ -22,6 +22,10 @@ class ExtensionManagementPrefUpdaterBase {
   ExtensionManagementPrefUpdaterBase();
   virtual ~ExtensionManagementPrefUpdaterBase();
 
+  // Helper functions for per extension settings.
+  void UnsetPerExtensionSettings(const ExtensionId& id);
+  void ClearPerExtensionSettings(const ExtensionId& id);
+
   // Helper functions for 'installation_mode' manipulation.
   void SetBlacklistedByDefault(bool value);
   void ClearInstallationModesForIndividualExtensions();

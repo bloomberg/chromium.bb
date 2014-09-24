@@ -45,8 +45,6 @@ bool ParseIndividualSettings(
     const base::DictionaryValue* dict,
     Scope scope,
     ExtensionManagement::IndividualSettings* settings) {
-  settings->Reset();
-
   std::string installation_mode;
   if (dict->GetStringWithoutPathExpansion(schema_constants::kInstallationMode,
                                           &installation_mode)) {
@@ -90,6 +88,13 @@ bool ParseIndividualSettings(
 }
 
 }  // namespace
+
+ExtensionManagement::IndividualSettings::IndividualSettings() {
+  Reset();
+}
+
+ExtensionManagement::IndividualSettings::~IndividualSettings() {
+}
 
 void ExtensionManagement::IndividualSettings::Reset() {
   installation_mode = ExtensionManagement::INSTALLATION_ALLOWED;
@@ -334,20 +339,18 @@ void ExtensionManagement::Refresh() {
         LOG(WARNING) << kMalformedPreferenceWarning;
         continue;
       }
-      if (StartsWithASCII(
-              iter.key(), schema_constants::kUpdateUrlPrefix, true))
+      if (StartsWithASCII(iter.key(), schema_constants::kUpdateUrlPrefix, true))
         continue;
       const std::string& extension_id = iter.key();
       if (!crx_file::id_util::IdIsValid(extension_id)) {
         LOG(WARNING) << kMalformedPreferenceWarning;
         continue;
       }
-      IndividualSettings by_id;
-      if (ParseIndividualSettings(subdict, SCOPE_INDIVIDUAL, &by_id)) {
-        *AccessById(extension_id) = by_id;
-      } else {
+      IndividualSettings* by_id = AccessById(extension_id);
+      if (!ParseIndividualSettings(subdict, SCOPE_INDIVIDUAL, by_id)) {
+        settings_by_id_.erase(settings_by_id_.find(extension_id));
         LOG(WARNING) << "Malformed Extension Management settings for "
-                     << iter.key() << ".";
+                     << extension_id << ".";
       }
     }
   }
