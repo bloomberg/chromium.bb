@@ -130,9 +130,17 @@ void ContextualSearchPromoSourceAndroid::SendConfigResource(
 void ContextualSearchPromoSourceAndroid::SendHtmlWithStrings(
     const content::URLDataSource::GotDataCallback& callback) {
   base::DictionaryValue strings_data;
+  // The three following statements are part of the description paragraph.
   strings_data.SetString(
-      "description",
-      l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION));
+      "description-1",
+      l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION_1));
+  strings_data.SetString(
+      "feature-name",
+      l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_FEATURE_NAME));
+  strings_data.SetString(
+      "description-2",
+      l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION_2));
+
   strings_data.SetString(
       "heading", l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_HEADER));
   strings_data.SetString(

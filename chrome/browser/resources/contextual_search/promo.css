@@ -17,6 +17,7 @@ body {
 
 a {
   color: #414141;
+  text-decoration: none;
 }
 
 .colored {
@@ -32,7 +33,6 @@ a {
 }
 
 .label a {
-  text-decoration: none;
   text-transform: uppercase;
 }
 
