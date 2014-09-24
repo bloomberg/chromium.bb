@@ -184,7 +184,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   // Set accessibility description.
   NSCell* cell = [self cell];
   [cell accessibilitySetOverrideValue:gDescription
-                         forAttribute:NSAccessibilityDescriptionAttribute];
+                         forAttribute:NSAccessibilityTitleAttribute];
 
   // Add a tooltip. Using 'owner:self' means that
   // -view:stringForToolTip:point:userData: will be called to provide the
