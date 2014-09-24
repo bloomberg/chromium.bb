@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -167,9 +168,9 @@ static bool GetProcessMemoryInfoUsingPS(
     in >> proc_info.vsize;
     proc_info.rss *= 1024;                // Convert from kilobytes to bytes.
     proc_info.vsize *= 1024;
-    in.ignore(1, ' ');                    // Eat the space.
-    std::getline(in, proc_info.command);  // Get the rest of the line.
-    if (!in.good()) {
+
+    // If the fail or bad bits were set, then there was an error reading input.
+    if (in.fail()) {
       LOG(ERROR) << "Error parsing output from " << kProgram.value() << ".";
       return false;
     }
@@ -181,6 +182,9 @@ static bool GetProcessMemoryInfoUsingPS(
 
     // Record the process information.
     proc_info_entries[proc_info.pid] = proc_info;
+
+    // Ignore the rest of the line.
+    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
 
   return true;
@@ -308,6 +312,13 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
       proc_info.command = exectuable_name;
     }
   }
+
+  // In OSX 10.9+, top no longer returns any useful information. 'rshrd' is no
+  // longer supported, and 'rprvt' and 'vsize' return N/A. 'rsize' still works,
+  // but the information is also available from ps.
+  // http://crbug.com/383553
+  if (base::mac::IsOSMavericksOrLater())
+    return GetProcessMemoryInfoUsingPS(pid_list, proc_info_entries_);
 
   // Get memory information using top.
   bool memory_info_success = GetProcessMemoryInfoUsingTop(proc_info_entries_);

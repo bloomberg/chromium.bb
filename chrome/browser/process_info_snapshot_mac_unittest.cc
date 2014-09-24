@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -77,12 +78,19 @@ TEST_F(ProcessInfoSnapshotMacTest, FindPidSelfTest) {
   EXPECT_EQ(ppid, proc_info.ppid);
   EXPECT_EQ(uid, proc_info.uid);
   EXPECT_EQ(euid, proc_info.euid);
-  EXPECT_GE(proc_info.rss, 100u);     // Sanity check: we're running, so we
-                                      // should occupy at least 100 kilobytes.
-  EXPECT_GE(proc_info.vsize, 1024u);  // Sanity check: our |vsize| is presumably
-                                      // at least a megabyte.
-  EXPECT_GE(proc_info.rshrd, 1024u);  // Shared memory should also > 1 MB.
-  EXPECT_GE(proc_info.rprvt, 1024u);  // Same with private memory.
+  // Sanity check: we're running, so we should occupy at least 100 kilobytes.
+  EXPECT_GE(proc_info.rss, 100u);
+  // Sanity check: our |vsize| is presumably at least a megabyte.
+  EXPECT_GE(proc_info.vsize, 1024u);
+
+  // Collection of some memory statistics is broken in OSX 10.9+.
+  // http://crbug.com/383553
+  if (!base::mac::IsOSMavericksOrLater()) {
+    // Shared memory should also > 1 MB.
+    EXPECT_GE(proc_info.rshrd, 1024u);
+    // Same with private memory.
+    EXPECT_GE(proc_info.rprvt, 1024u);
+  }
 
   // Find our parent.
   ASSERT_TRUE(snapshot.GetProcInfo(ppid, &proc_info));
