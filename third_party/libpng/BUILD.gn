@@ -74,7 +74,7 @@ if (is_win) {
     public_deps = [ ":libpng_sources" ]
   }
 } else {
-  static_library("libpng") {
+  group("libpng") {
     public_deps = [ ":libpng_sources" ]
   }
 }
