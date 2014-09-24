@@ -357,6 +357,28 @@ TEST_F(V8ValueTraitsTest, toImplArray)
         EXPECT_EQ(65535U, toUInt32(scriptValueVector[1].v8Value()));
         EXPECT_EQ(0.125, toFloat(scriptValueVector[2].v8Value()));
     }
+    {
+        v8::Handle<v8::Array> v8StringArray1 = v8::Array::New(m_scope.isolate(), 2);
+        v8StringArray1->Set(toV8Value(0), toV8Value("foo"));
+        v8StringArray1->Set(toV8Value(1), toV8Value("bar"));
+        v8::Handle<v8::Array> v8StringArray2 = v8::Array::New(m_scope.isolate(), 3);
+        v8StringArray2->Set(toV8Value(0), toV8Value("x"));
+        v8StringArray2->Set(toV8Value(1), toV8Value("y"));
+        v8StringArray2->Set(toV8Value(2), toV8Value("z"));
+        v8::Handle<v8::Array> v8StringArrayArray = v8::Array::New(m_scope.isolate(), 2);
+        v8StringArrayArray->Set(toV8Value(0), v8StringArray1);
+        v8StringArrayArray->Set(toV8Value(1), v8StringArray2);
+
+        Vector<Vector<String> > stringVectorVector = toImplArray<Vector<String> >(v8StringArrayArray, 0, m_scope.isolate());
+        EXPECT_EQ(2U, stringVectorVector.size());
+        EXPECT_EQ(2U, stringVectorVector[0].size());
+        EXPECT_EQ("foo", stringVectorVector[0][0]);
+        EXPECT_EQ("bar", stringVectorVector[0][1]);
+        EXPECT_EQ(3U, stringVectorVector[1].size());
+        EXPECT_EQ("x", stringVectorVector[1][0]);
+        EXPECT_EQ("y", stringVectorVector[1][1]);
+        EXPECT_EQ("z", stringVectorVector[1][2]);
+    }
 }
 
 } // namespace

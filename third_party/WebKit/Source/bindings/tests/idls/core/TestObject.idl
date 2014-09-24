@@ -343,6 +343,7 @@ interface TestObject {
     void voidMethodSequenceLongArg(sequence<long> longSequenceArg);
     void voidMethodSequenceStringArg(sequence<DOMString> stringSequenceArg);
     void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> testInterfaceEmptySequenceArg);
+    void voidMethodSequenceSequenceDOMStringArg(sequence<sequence<DOMString>> stringSequenceSequenceArg);
     // Nullable types
     long? nullableLongMethod();
     DOMString? nullableStringMethod();

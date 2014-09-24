@@ -570,63 +570,6 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>,
 
 template<class T> struct NativeValueTraits;
 
-template<>
-struct NativeValueTraits<String> {
-    static inline String nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        TOSTRING_DEFAULT(V8StringResource<>, stringValue, value, String());
-        return stringValue;
-    }
-};
-
-template<>
-struct NativeValueTraits<int> {
-    static inline int nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        return toInt32(value);
-    }
-};
-
-template<>
-struct NativeValueTraits<unsigned> {
-    static inline unsigned nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        return toUInt32(value);
-    }
-};
-
-template<>
-struct NativeValueTraits<float> {
-    static inline float nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        return static_cast<float>(value->NumberValue());
-    }
-};
-
-template<>
-struct NativeValueTraits<double> {
-    static inline double nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        return static_cast<double>(value->NumberValue());
-    }
-};
-
-template<>
-struct NativeValueTraits<v8::Handle<v8::Value> > {
-    static inline v8::Handle<v8::Value> nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        return value;
-    }
-};
-
-template<>
-struct NativeValueTraits<ScriptValue> {
-    static inline ScriptValue nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-    {
-        return ScriptValue(ScriptState::current(isolate), value);
-    }
-};
-
 v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
 
 // Converts a JavaScript value to an array as per the Web IDL specification:
@@ -853,6 +796,71 @@ inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t&
     length = sequenceLength;
     return v8Value;
 }
+
+template<>
+struct NativeValueTraits<String> {
+    static inline String nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        TOSTRING_DEFAULT(V8StringResource<>, stringValue, value, String());
+        return stringValue;
+    }
+};
+
+template<>
+struct NativeValueTraits<int> {
+    static inline int nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return toInt32(value);
+    }
+};
+
+template<>
+struct NativeValueTraits<unsigned> {
+    static inline unsigned nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return toUInt32(value);
+    }
+};
+
+template<>
+struct NativeValueTraits<float> {
+    static inline float nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return static_cast<float>(value->NumberValue());
+    }
+};
+
+template<>
+struct NativeValueTraits<double> {
+    static inline double nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return static_cast<double>(value->NumberValue());
+    }
+};
+
+template<>
+struct NativeValueTraits<v8::Handle<v8::Value> > {
+    static inline v8::Handle<v8::Value> nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return value;
+    }
+};
+
+template<>
+struct NativeValueTraits<ScriptValue> {
+    static inline ScriptValue nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return ScriptValue(ScriptState::current(isolate), value);
+    }
+};
+
+template <typename T>
+struct NativeValueTraits<Vector<T> > {
+    static inline Vector<T> nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return toImplArray<T>(value, 0, isolate);
+    }
+};
 
 v8::Isolate* toIsolate(ExecutionContext*);
 v8::Isolate* toIsolate(LocalFrame*);

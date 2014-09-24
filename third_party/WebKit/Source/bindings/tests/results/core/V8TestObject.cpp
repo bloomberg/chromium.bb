@@ -6253,6 +6253,29 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethodCallback(const v8::Func
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodSequenceSequenceDOMStringArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    Vector<Vector<String> > stringSequenceSequenceArg;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_INTERNAL(stringSequenceSequenceArg, toImplArray<Vector<String>>(info[0], 1, info.GetIsolate()));
+    }
+    impl->voidMethodSequenceSequenceDOMStringArg(stringSequenceSequenceArg);
+}
+
+static void voidMethodSequenceSequenceDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodSequenceSequenceDOMStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void nullableLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10226,6 +10249,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodSequenceLongArg", TestObjectV8Internal::voidMethodSequenceLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodSequenceStringArg", TestObjectV8Internal::voidMethodSequenceStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodSequenceTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodSequenceTestInterfaceEmptyArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodSequenceSequenceDOMStringArg", TestObjectV8Internal::voidMethodSequenceSequenceDOMStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"nullableLongMethod", TestObjectV8Internal::nullableLongMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nullableStringMethod", TestObjectV8Internal::nullableStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nullableTestInterfaceMethod", TestObjectV8Internal::nullableTestInterfaceMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
