@@ -13,6 +13,7 @@ import logging
 import sys
 import textwrap
 
+from fnmatch import fnmatch
 from pprint import pformat
 
 import git_common as git
@@ -41,15 +42,23 @@ def fetch_remotes(branch_tree):
   fetch_tags = False
   remotes = set()
   tag_set = git.tags()
+  fetchspec_map = {}
+  all_fetchspec_configs = git.run(
+      'config', '--get-regexp', r'remote\..*\.fetch').strip()
+  for fetchspec_config in all_fetchspec_configs.splitlines():
+    key, _, fetchspec = fetchspec_config.partition(' ')
+    dest_spec = fetchspec.partition(':')[2]
+    remote_name = key.split('.')[1]
+    fetchspec_map[dest_spec] = remote_name
   for parent in branch_tree.itervalues():
     if parent in tag_set:
       fetch_tags = True
     else:
       full_ref = git.run('rev-parse', '--symbolic-full-name', parent)
-      if full_ref.startswith('refs/remotes'):
-        parts = full_ref.split('/')
-        remote_name = parts[2]
-        remotes.add(remote_name)
+      for dest_spec, remote_name in fetchspec_map.iteritems():
+        if fnmatch(full_ref, dest_spec):
+          remotes.add(remote_name)
+          break
 
   fetch_args = []
   if fetch_tags:
