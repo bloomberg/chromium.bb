@@ -56,7 +56,6 @@ public:
     Database* database() const { return m_database.get(); }
 #if ENABLE(ASSERT)
     bool hasSynchronizer() const { return m_synchronizer; }
-    bool hasCheckedForTermination() const { return m_synchronizer->hasCheckedForTermination(); }
 #endif
 
 protected:

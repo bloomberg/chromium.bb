@@ -91,13 +91,8 @@ void DatabaseThread::requestTermination(TaskSynchronizer *cleanupSync)
     m_thread->postTask(new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThread, this)));
 }
 
-bool DatabaseThread::terminationRequested(TaskSynchronizer* taskSynchronizer) const
+bool DatabaseThread::terminationRequested() const
 {
-#if ENABLE(ASSERT)
-    if (taskSynchronizer)
-        taskSynchronizer->setHasCheckedForTermination();
-#endif
-
     MutexLocker lock(m_terminationRequestedMutex);
     return m_terminationRequested;
 }
@@ -157,7 +152,7 @@ bool DatabaseThread::isDatabaseOpen(Database* database)
 void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
 {
     ASSERT(m_thread);
-    ASSERT(!task->hasSynchronizer() || task->hasCheckedForTermination());
+    ASSERT(!terminationRequested());
     // WebThread takes ownership of the task.
     m_thread->postTask(task.leakPtr());
 }
