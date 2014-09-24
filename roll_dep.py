@@ -107,6 +107,7 @@ def convert_svn_revision(dep_path, revision):
   """Find the git revision corresponding to an svn revision."""
   err_msg = 'Unknown error'
   revision = int(revision)
+  latest_svn_rev = None
   with open(os.devnull, 'w') as devnull:
     for ref in ('HEAD', 'origin/master'):
       try:
@@ -126,6 +127,8 @@ def convert_svn_revision(dep_path, revision):
             print >> sys.stderr, (
                 'WARNING: Could not parse svn revision out of "%s"' % line)
             continue
+          if not latest_svn_rev or int(svn_rev) > int(latest_svn_rev):
+            latest_svn_rev = svn_rev
           if svn_rev == revision:
             return git_rev
           if svn_rev > revision:
@@ -137,7 +140,8 @@ def convert_svn_revision(dep_path, revision):
           else:
             err_msg = (
                 'latest available revision is %d; you may need to '
-                '"git fetch origin" to get the latest commits.' % svn_rev)
+                '"git fetch origin" to get the latest commits.' %
+                latest_svn_rev)
       finally:
         log_p.terminate()
         grep_p.terminate()
