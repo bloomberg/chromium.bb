@@ -71,7 +71,7 @@
                 assert_unreached('Registration of non-existent script should fail.');
             }),
             t.step_func(function(reason) {
-                assert_equals(reason.name, 'AbortError',
+                assert_equals(reason.name, 'NetworkError',
                              'Registration of non-existent script should fail.');
                 t.done();
             })
@@ -89,8 +89,27 @@
                 assert_unreached('Registration of plain text script should fail.');
             }),
             t.step_func(function(reason) {
-                assert_equals(reason.name, 'AbortError',
+                assert_equals(reason.name, 'SecurityError',
                              'Registration of plain text script should fail.');
+                t.done();
+            })
+        );
+    });
+}());
+
+(function() {
+    var t = async_test('Registering redirected script');
+    t.step(function() {
+        navigator.serviceWorker.register(
+            'resources/redirect.php?Redirect=' +
+            encodeURIComponent('/resources/registration-worker.js')
+        ).then(
+            t.step_func(function(registration) {
+                assert_unreached('Registration of redirected script should fail.');
+            }),
+            t.step_func(function(reason) {
+                assert_equals(reason.name, 'SecurityError',
+                              'Registration of redirected script should fail.');
                 t.done();
             })
         );

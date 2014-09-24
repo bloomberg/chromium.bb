@@ -1234,9 +1234,6 @@ crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure
 crbug.com/405847 [ Win ] http/tests/serviceworker/extendable-event-waituntil.html [ Pass Failure ]
 crbug.com/409755 http/tests/serviceworker/request.html [ Crash Pass Timeout ]
 
-# Temporarily skipped until Chromium side change lands.
-crbug.com/408421 http/tests/serviceworker/registration.html [ Skip ]
-
 crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
 crbug.com/397321 svg/custom/pattern-3-step-cycle.html [ Crash Pass ]
 crbug.com/397321 svg/filters/filter-refresh.svg [ Crash Pass ]
