@@ -155,7 +155,6 @@ private:
 
     NSPopUpButtonCell* popupButton() const;
     NSSearchFieldCell* search() const;
-    NSMenu* searchMenuTemplate() const;
     NSTextFieldCell* textField() const;
 
     NSLevelIndicatorStyle levelIndicatorStyleFor(ControlPart) const;
