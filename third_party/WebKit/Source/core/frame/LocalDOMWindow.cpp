@@ -68,6 +68,7 @@
 #include "core/frame/Location.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/Screen.h"
+#include "core/frame/ScrollOptions.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -1333,15 +1334,14 @@ double LocalDOMWindow::devicePixelRatio() const
     return m_frame->devicePixelRatio();
 }
 
-static bool scrollBehaviorFromScrollOptions(const Dictionary& scrollOptions, ScrollBehavior& scrollBehavior, ExceptionState& exceptionState)
+static bool scrollBehaviorFromScrollOptions(const ScrollOptions& scrollOptions, ScrollBehavior& scrollBehavior, ExceptionState& exceptionState)
 {
-    String scrollBehaviorString;
-    if (!DictionaryHelper::get(scrollOptions, "behavior", scrollBehaviorString)) {
+    if (!scrollOptions.hasBehavior()) {
         scrollBehavior = ScrollBehaviorAuto;
         return true;
     }
 
-    if (ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior))
+    if (ScrollableArea::scrollBehaviorFromString(scrollOptions.behavior(), scrollBehavior))
         return true;
 
     exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
@@ -1363,7 +1363,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     view->scrollBy(scaledOffset, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollBy(double x, double y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
+void LocalDOMWindow::scrollBy(double x, double y, const ScrollOptions& scrollOptions, ExceptionState &exceptionState) const
 {
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
@@ -1386,7 +1386,7 @@ void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior)
     view->setScrollPosition(layoutPos, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollTo(double x, double y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
+void LocalDOMWindow::scrollTo(double x, double y, const ScrollOptions& scrollOptions, ExceptionState& exceptionState) const
 {
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))

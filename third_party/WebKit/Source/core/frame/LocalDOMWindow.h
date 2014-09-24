@@ -27,7 +27,6 @@
 #ifndef LocalDOMWindow_h
 #define LocalDOMWindow_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/FrameDestructionObserver.h"
@@ -68,6 +67,7 @@ class Performance;
 class PostMessageTimer;
 class RequestAnimationFrameCallback;
 class Screen;
+class ScrollOptions;
 class ScriptCallStack;
 class SecurityOrigin;
 class SerializedScriptValue;
@@ -223,11 +223,11 @@ public:
     void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
     void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
-    void scrollBy(double x, double y, const Dictionary& scrollOptions, ExceptionState&) const;
+    void scrollBy(double x, double y, const ScrollOptions&, ExceptionState&) const;
     void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
-    void scrollTo(double x, double y, const Dictionary& scrollOptions, ExceptionState&) const;
+    void scrollTo(double x, double y, const ScrollOptions&, ExceptionState&) const;
     void scroll(double x, double y) const { scrollTo(x, y); }
-    void scroll(double x, double y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
+    void scroll(double x, double y, const ScrollOptions& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
 
     void moveBy(float x, float y) const;
     void moveTo(float x, float y) const;
