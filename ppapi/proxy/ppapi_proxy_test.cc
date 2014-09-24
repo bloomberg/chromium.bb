@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ipc/message_filter.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -408,8 +407,16 @@ void PluginProxyMultiThreadTest::InternalSetUpTestOnSecondaryThread(
 
 // HostProxyTestHarness --------------------------------------------------------
 
+class HostProxyTestHarness::MockSyncMessageStatusReceiver
+    : public HostDispatcher::SyncMessageStatusReceiver {
+ public:
+  virtual void BeginBlockOnSyncMessage() OVERRIDE {}
+  virtual void EndBlockOnSyncMessage() OVERRIDE {}
+};
+
 HostProxyTestHarness::HostProxyTestHarness(GlobalsConfiguration globals_config)
-    : globals_config_(globals_config) {
+    : globals_config_(globals_config),
+      status_receiver_(new MockSyncMessageStatusReceiver) {
 }
 
 HostProxyTestHarness::~HostProxyTestHarness() {
@@ -430,6 +437,7 @@ void HostProxyTestHarness::SetUpHarness() {
   host_dispatcher_.reset(new HostDispatcher(
       pp_module(),
       &MockGetInterface,
+      status_receiver_.release(),
       PpapiPermissions::AllPermissions()));
   host_dispatcher_->InitWithTestSink(&sink());
   HostDispatcher::SetForInstance(pp_instance(), host_dispatcher_.get());
@@ -448,6 +456,7 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
   host_dispatcher_.reset(new HostDispatcher(
       pp_module(),
       &MockGetInterface,
+      status_receiver_.release(),
       PpapiPermissions::AllPermissions()));
   ppapi::Preferences preferences;
   host_dispatcher_->InitHostWithChannel(&delegate_mock_,

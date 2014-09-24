@@ -14,7 +14,6 @@
 #include "gin/handle.h"
 #include "gin/interceptor.h"
 #include "gin/wrappable.h"
-#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/shared_impl/resource.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "v8/include/v8.h"
@@ -47,10 +46,8 @@ class PluginObject;
 //   - The message target won't be limited to instance, and should support
 //     either plugin-provided or JS objects.
 // TODO(dmichael):  Add support for separate MessagePorts.
-class MessageChannel :
-    public gin::Wrappable<MessageChannel>,
-    public gin::NamedPropertyInterceptor,
-    public ppapi::proxy::HostDispatcher::SyncMessageStatusObserver {
+class MessageChannel : public gin::Wrappable<MessageChannel>,
+                       public gin::NamedPropertyInterceptor {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
@@ -105,10 +102,6 @@ class MessageChannel :
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) OVERRIDE;
 
-  // ppapi::proxy::HostDispatcher::SyncMessageStatusObserver
-  virtual void BeginBlockOnSyncMessage() OVERRIDE;
-  virtual void EndBlockOnSyncMessage() OVERRIDE;
-
   // Post a message to the plugin's HandleMessage function for this channel's
   // instance.
   void PostMessageToNative(gin::Arguments* args);
@@ -129,16 +122,8 @@ class MessageChannel :
                            const ppapi::ScopedPPVar& result_var,
                            bool success);
 
-  // Drain the queue of messages that are going to the plugin. All "completed"
-  // messages at the head of the queue will be sent; any messages awaiting
-  // conversion as well as messages after that in the queue will not be sent.
   void DrainCompletedPluginMessages();
-  // Drain the queue of messages that are going to JavaScript.
-  void DrainJSMessageQueue();
-  // PostTask to call DrainJSMessageQueue() soon. Use this when you want to
-  // send the messages, but can't immediately (e.g., because the instance is
-  // not ready or JavaScript is on the stack).
-  void DrainJSMessageQueueSoon();
+  void DrainEarlyMessageQueue();
 
   PepperPluginInstanceImpl* instance_;
 
@@ -149,21 +134,12 @@ class MessageChannel :
   // scripting.
   v8::Persistent<v8::Object> passthrough_object_;
 
-  enum MessageQueueState {
-    WAITING_TO_START,  // Waiting for Start() to be called. Queue messages.
-    QUEUE_MESSAGES,  // Queue messages temporarily.
-    SEND_DIRECTLY,   // Post messages directly.
+  std::deque<blink::WebSerializedScriptValue> early_message_queue_;
+  enum EarlyMessageQueueState {
+    QUEUE_MESSAGES,  // Queue JS messages.
+    SEND_DIRECTLY,   // Post JS messages directly.
   };
-
-  // This queue stores values being posted to JavaScript.
-  std::deque<blink::WebSerializedScriptValue> js_message_queue_;
-  MessageQueueState js_message_queue_state_;
-  // When the renderer is sending a blocking message to the plugin, we will
-  // queue Plugin->JS messages temporarily to avoid re-entering JavaScript. This
-  // counts how many blocking renderer->plugin messages are on the stack so that
-  // we only begin sending messages to JavaScript again when the depth reaches
-  // zero.
-  int blocking_message_depth_;
+  EarlyMessageQueueState early_message_queue_state_;
 
   // This queue stores vars that are being sent to the plugin. Because
   // conversion can happen asynchronously for object types, the queue stores
@@ -174,7 +150,6 @@ class MessageChannel :
   // calls to push_back or pop_front; hence why we're using list. (deque would
   // probably also work, but is less clearly specified).
   std::list<VarConversionResult> plugin_message_queue_;
-  MessageQueueState plugin_message_queue_state_;
 
   std::map<std::string, ppapi::ScopedPPVar> internal_named_properties_;
 
