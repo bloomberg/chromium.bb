@@ -1499,6 +1499,8 @@
             'paint/GridPainter.h',
             'paint/DetailsMarkerPainter.cpp',
             'paint/DetailsMarkerPainter.h',
+            'paint/HTMLCanvasPainter.cpp',
+            'paint/HTMLCanvasPainter.h',
             'paint/InlineFlowBoxPainter.cpp',
             'paint/InlineFlowBoxPainter.h',
             'paint/InlinePainter.cpp',
