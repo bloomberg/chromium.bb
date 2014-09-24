@@ -91,6 +91,9 @@ public:
     MOCK_CONST_METHOD0(playbackRate, double());
     MOCK_METHOD1(setPlaybackRate, void(double));
 
+    MOCK_CONST_METHOD0(fillMode, FillMode());
+    MOCK_METHOD1(setFillMode, void(FillMode));
+
     MOCK_METHOD0(delete_, void());
     ~WebCompositorAnimationMock() { delete_(); }
 };

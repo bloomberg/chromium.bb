@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/CompositorAnimations.h"
 
+#include "core/animation/AnimationNode.h"
 #include "core/animation/AnimationTranslationUtil.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/animatable/AnimatableDouble.h"
@@ -295,6 +296,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     out.scaledTimeOffset = -scaledStartDelay + timeOffset;
 
     out.playbackRate = timing.playbackRate * playerPlaybackRate;
+    out.fillMode = timing.fillMode == Timing::FillModeAuto ? Timing::FillModeNone : timing.fillMode;
 
     return true;
 }
@@ -476,6 +478,22 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
         }
         animation->setPlaybackRate(compositorTiming.playbackRate);
 
+        switch (compositorTiming.fillMode) {
+        case Timing::FillModeNone:
+            animation->setFillMode(blink::WebCompositorAnimation::FillModeNone);
+            break;
+        case Timing::FillModeForwards:
+            animation->setFillMode(blink::WebCompositorAnimation::FillModeForwards);
+            break;
+        case Timing::FillModeBackwards:
+            animation->setFillMode(blink::WebCompositorAnimation::FillModeBackwards);
+            break;
+        case Timing::FillModeBoth:
+            animation->setFillMode(blink::WebCompositorAnimation::FillModeBoth);
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
         animations.append(animation.release());
     }
     ASSERT(!animations.isEmpty());

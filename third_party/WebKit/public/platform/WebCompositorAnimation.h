@@ -5,7 +5,7 @@
 #ifndef WebCompositorAnimation_h
 #define WebCompositorAnimation_h
 
-#define WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS 1
+#define WEB_ANIMATION_SUPPORTS_FILL_MODE 1
 
 namespace blink {
 
@@ -24,6 +24,13 @@ public:
         DirectionReverse,
         DirectionAlternate,
         DirectionAlternateReverse
+    };
+
+    enum FillMode {
+        FillModeNone = 0,
+        FillModeForwards,
+        FillModeBackwards,
+        FillModeBoth
     };
 
     virtual ~WebCompositorAnimation() { }
@@ -50,6 +57,9 @@ public:
 
     virtual double playbackRate() const = 0;
     virtual void setPlaybackRate(double) = 0;
+
+    virtual FillMode fillMode() const = 0;
+    virtual void setFillMode(FillMode)  = 0;
 };
 
 } // namespace blink
