@@ -34,4 +34,10 @@ specific_include_rules = {
     "+chrome/test/base/testing_profile.h",
     "+chrome/utility/importer/bookmark_html_reader.h",
   ],
+  # Allow to include flags_storage into enhanced_bookmarks_features.cc because
+  # it has a function used by about_flags.cc and it needs flags_storage.
+  # This should be removed after enhanced bookmarks experiment is over.
+  'enhanced_bookmarks_features\.cc': [
+    "+chrome/browser/flags_storage.h",
+  ],
 }

@@ -2023,7 +2023,8 @@ void GetSanitizedEnabledFlags(
   *result = flags_storage->GetFlags();
 }
 
-bool SkipConditionalExperiment(const Experiment& experiment) {
+bool SkipConditionalExperiment(const Experiment& experiment,
+                               FlagsStorage* flags_storage) {
   if (experiment.internal_name ==
       std::string("enhanced-bookmarks-experiment")) {
 #if defined(OS_ANDROID)
@@ -2036,7 +2037,7 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
     if (command_line->HasSwitch(switches::kEnhancedBookmarksExperiment))
       return false;
 
-    return !IsEnhancedBookmarksExperimentEnabled();
+    return !IsEnhancedBookmarksExperimentEnabled(flags_storage);
 #endif
   }
 
@@ -2178,7 +2179,7 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
 
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
-    if (SkipConditionalExperiment(experiment))
+    if (SkipConditionalExperiment(experiment, flags_storage))
       continue;
 
     base::DictionaryValue* data = new base::DictionaryValue();
@@ -2374,6 +2375,14 @@ void FlagsState::ConvertFlagsToSwitches(FlagsStorage* flags_storage,
       NOTREACHED();
       continue;
     }
+
+#if defined(OS_CHROMEOS)
+    // On Chrome OS setting command line flag may make browser to restart on
+    // user login. As this flag eventually will be set to a significant number
+    // of users skip manual-enhanced-bookmarks to avoid restart.
+    if (experiment_name == "manual-enhanced-bookmarks")
+      continue;
+#endif
 
     const std::pair<std::string, std::string>&
         switch_and_value_pair = name_to_switch_it->second;

@@ -11,6 +11,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -190,12 +191,23 @@ void ForceFinchBookmarkExperimentIfNeeded(
   }
 }
 
-bool IsEnhancedBookmarksExperimentEnabled() {
+bool IsEnhancedBookmarksExperimentEnabled(
+    about_flags::FlagsStorage* flags_storage) {
+#if defined(OS_CHROMEOS)
+  // We are not setting command line flags on Chrome OS to avoid browser restart
+  // but still have flags in flags_storage. So check flags_storage instead.
+  const std::set<std::string> flags = flags_storage->GetFlags();
+  if (flags.find(switches::kManualEnhancedBookmarks) != flags.end())
+    return true;
+  if (flags.find(switches::kManualEnhancedBookmarksOptout) != flags.end())
+    return true;
+#else
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kManualEnhancedBookmarks) ||
       command_line->HasSwitch(switches::kManualEnhancedBookmarksOptout)) {
     return true;
   }
+#endif
 
   return IsEnhancedBookmarksExperimentEnabledFromFinch();
 }

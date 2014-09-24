@@ -9,6 +9,10 @@
 
 #include "extensions/common/extension.h"
 
+namespace about_flags {
+class FlagsStorage;
+}  // namespace about_flags
+
 class PrefService;
 class Profile;
 
@@ -54,7 +58,8 @@ void ForceFinchBookmarkExperimentIfNeeded(
 // Experiment could run by Chrome sync or by Finch.
 // Note that this doesn't necessarily mean that enhanced bookmarks
 // is enabled, e.g., user can opt out using a flag.
-bool IsEnhancedBookmarksExperimentEnabled();
+bool IsEnhancedBookmarksExperimentEnabled(
+    about_flags::FlagsStorage* flags_storage);
 
 #if defined(OS_ANDROID)
 // Returns true if enhanced bookmark salient image prefetching is enabled.
