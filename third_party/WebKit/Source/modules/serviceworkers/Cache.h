@@ -27,7 +27,7 @@ class Cache FINAL : public GarbageCollected<Cache>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:
-    static Cache* fromWebServiceWorkerCache(WebServiceWorkerCache*);
+    static Cache* create(WebServiceWorkerCache*);
 
     // From Cache.idl:
     ScriptPromise match(ScriptState*, Request*, const Dictionary& queryParams);

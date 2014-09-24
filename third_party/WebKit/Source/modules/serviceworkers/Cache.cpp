@@ -22,7 +22,7 @@ ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
 
 }
 
-Cache* Cache::fromWebServiceWorkerCache(WebServiceWorkerCache* webCache)
+Cache* Cache::create(WebServiceWorkerCache* webCache)
 {
     return new Cache(webCache);
 }

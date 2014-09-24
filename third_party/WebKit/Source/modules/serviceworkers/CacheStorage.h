@@ -9,10 +9,12 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
+class Cache;
 class WebServiceWorkerCacheStorage;
 
 class CacheStorage FINAL : public GarbageCollected<CacheStorage>, public ScriptWrappable {
@@ -27,12 +29,21 @@ public:
     ScriptPromise deleteFunction(ScriptState*, const String& cacheName);
     ScriptPromise keys(ScriptState*);
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
+    class Callbacks;
+    class WithCacheCallbacks;
+    class DeleteCallbacks;
+    class KeysCallbacks;
+
+    friend class WithCacheCallbacks;
+    friend class DeleteCallbacks;
+
     explicit CacheStorage(WebServiceWorkerCacheStorage*);
 
     WebServiceWorkerCacheStorage* m_webCacheStorage;
+    HeapHashMap<String, Member<Cache> > m_nameToCacheMap;
 };
 
 } // namespace blink
