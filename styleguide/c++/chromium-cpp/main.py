@@ -33,6 +33,7 @@ class GitilesMirrorHandler(webapp2.RequestHandler):
         if not contents or self.request.get('bust'):
             result = urlfetch.fetch(url)
             if result.status_code != 200:
+                self.response.set_status(result.status_code)
                 self.response.write('http error %d' % result.status_code)
                 return
             contents = base64.b64decode(result.content)
