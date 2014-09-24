@@ -158,6 +158,7 @@
             'network_time/network_time_tracker_unittest.cc',
             'omaha_query_params/omaha_query_params_unittest.cc',
             'omnibox/answers_cache_unittest.cc',
+            'omnibox/base_search_provider_unittest.cc',
             'omnibox/autocomplete_input_unittest.cc',
             'omnibox/autocomplete_match_unittest.cc',
             'omnibox/autocomplete_result_unittest.cc',
