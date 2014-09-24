@@ -1,0 +1,2 @@
+The devtools_bridge component contains code for tunneling DevTools connection
+over P2P data channel for remote debugging android devices.

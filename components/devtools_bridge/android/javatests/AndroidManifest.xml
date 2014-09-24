@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!-- Copyright 2014 The Chromium Authors. All rights reserved. Use of
+       this source code is governed by a BSD-style license that can be found
+       in the LICENSE file. -->
+  <!-- package name must be unique so suffix with "tests" so package loader
+       doesn't ignore this. -->
+  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="org.chromium.components.devtools_bridge.tests">
+    <application>
+        <uses-library android:name="android.test.runner" />
+        <service
+            android:name=".DebugService" >
+        </service>
+        <activity
+            android:name=".DebugActivity"
+            android:label="DevToolsBridge tests" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="20" />
+    <instrumentation android:name="android.test.InstrumentationTestRunner"
+        android:targetPackage="org.chromium.components.devtools_bridge.tests"
+        android:label="Tests for org.chromium.components.devtools_bridge"/>
+
+    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
+    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+
+    <!-- For manual testing with Chrome Shell -->
+    <uses-permission android:name="org.chromium.chrome.shell.permission.DEBUG" />
+
+    <!-- For manual testing with Clankium -->
+    <uses-permission android:name="com.google.android.apps.chrome.permission.DEBUG" />
+</manifest>

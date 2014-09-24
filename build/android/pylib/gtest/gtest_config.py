@@ -8,6 +8,7 @@
 EXPERIMENTAL_TEST_SUITES = [
     'content_gl_tests',
     'heap_profiler_unittests',
+    'devtools_bridge_tests',
 ]
 
 # Do not modify this list without approval of an android owner.
