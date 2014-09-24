@@ -112,6 +112,7 @@ public:
 
     void deviceOrPageScaleFactorChanged();
     bool deviceEmulationEnabled();
+    bool screencastEnabled();
 
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);

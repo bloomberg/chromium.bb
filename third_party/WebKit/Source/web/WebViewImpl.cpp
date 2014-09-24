@@ -747,7 +747,9 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
         // Don't trigger a disambiguation popup on sites designed for mobile devices.
         // Instead, assume that the page has been designed with big enough buttons and links.
-        if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds()) {
+        // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
+        // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
+        if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !page()->inspectorController().screencastEnabled()) {
             // FIXME: didTapMultipleTargets should just take a rect instead of
             // an event.
             WebGestureEvent scaledEvent = event;

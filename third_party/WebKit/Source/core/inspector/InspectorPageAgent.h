@@ -121,6 +121,8 @@ public:
     virtual void setScriptExecutionDisabled(ErrorString*, bool) OVERRIDE;
     virtual void setTouchEmulationEnabled(ErrorString*, bool) OVERRIDE;
     virtual void setEmulatedMedia(ErrorString*, const String&) OVERRIDE;
+    virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) OVERRIDE;
+    virtual void stopScreencast(ErrorString*) OVERRIDE;
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
 
     // InspectorInstrumentation API
@@ -166,6 +168,7 @@ public:
     const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
     void deviceOrPageScaleFactorChanged();
+    bool screencastEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
     void clearEditedResourcesContent();

@@ -423,9 +423,12 @@ void InspectorController::deviceOrPageScaleFactorChanged()
 
 bool InspectorController::deviceEmulationEnabled()
 {
-    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
-        return pageAgent->deviceMetricsOverrideEnabled();
-    return false;
+    return m_pageAgent->deviceMetricsOverrideEnabled();
+}
+
+bool InspectorController::screencastEnabled()
+{
+    return m_pageAgent->screencastEnabled();
 }
 
 void InspectorController::resume()

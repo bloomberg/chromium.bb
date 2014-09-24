@@ -106,6 +106,7 @@ static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static const char showSizeOnResize[] = "showSizeOnResize";
 static const char showGridOnResize[] = "showGridOnResize";
+static const char screencastEnabled[] = "screencastEnabled";
 }
 
 namespace {
@@ -522,6 +523,7 @@ void InspectorPageAgent::disable(ErrorString*)
         setContinuousPaintingEnabled(0, false);
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
+    stopScreencast(0);
 
     if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled)) {
         updateTouchEventEmulationInPage(false);
@@ -1124,6 +1126,11 @@ bool InspectorPageAgent::deviceMetricsOverrideEnabled()
     return m_enabled && m_deviceMetricsOverridden;
 }
 
+bool InspectorPageAgent::screencastEnabled()
+{
+    return m_enabled && m_state->getBoolean(PageAgentState::screencastEnabled);
+}
+
 // static
 DocumentLoader* InspectorPageAgent::assertDocumentLoader(ErrorString* errorString, LocalFrame* frame)
 {
@@ -1440,6 +1447,16 @@ bool InspectorPageAgent::compositingEnabled(ErrorString* errorString)
         return false;
     }
     return true;
+}
+
+void InspectorPageAgent::startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight)
+{
+    m_state->setBoolean(PageAgentState::screencastEnabled, true);
+}
+
+void InspectorPageAgent::stopScreencast(ErrorString*)
+{
+    m_state->setBoolean(PageAgentState::screencastEnabled, false);
 }
 
 void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid)
