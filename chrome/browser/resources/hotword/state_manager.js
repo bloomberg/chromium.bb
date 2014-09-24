@@ -43,8 +43,19 @@ cr.define('hotword', function() {
      */
     this.sessionStartedCb_ = null;
 
+    /**
+     * Hotword trigger audio notification... a.k.a The Chime (tm).
+     * @private {!Audio}
+     */
+    this.chime_ = document.createElement('audio');
+
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
+
+    // Setup the chime and insert into the page.
+    this.chime_.src = chrome.extension.getURL(
+        hotword.constants.SHARED_MODULE_ROOT + '/audio/chime.wav');
+    document.body.appendChild(this.chime_);
   }
 
   /**
@@ -226,6 +237,9 @@ cr.define('hotword', function() {
       assert(this.pluginManager_);
       // Detector implicitly stops when the hotword is detected.
       this.state_ = State_.STOPPED;
+
+      // Play the chime.
+      this.chime_.play();
 
       chrome.hotwordPrivate.notifyHotwordRecognition('search', function() {});
 
