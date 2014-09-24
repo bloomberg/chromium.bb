@@ -637,6 +637,12 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   skia::RefPtr<GrTexture> texture =
       skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
           backend_texture_description));
+  if (!texture) {
+    TRACE_EVENT_INSTANT0("cc",
+                         "ApplyImageFilter wrap background texture failed",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return skia::RefPtr<SkImage>();
+  }
 
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(source_texture_resource->size().width(),
@@ -660,7 +666,7 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
       use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
-  if (backing_store.get() == NULL) {
+  if (!backing_store) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyImageFilter scratch texture allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -741,6 +747,13 @@ static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
   skia::RefPtr<GrTexture> source_texture =
       skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
           backend_texture_description));
+  if (!source_texture) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "ApplyBlendModeWithBackdrop wrap source texture failed",
+        TRACE_EVENT_SCOPE_THREAD);
+    return skia::RefPtr<SkImage>();
+  }
 
   backend_texture_description.fWidth = background_size.width();
   backend_texture_description.fHeight = background_size.height();
@@ -748,6 +761,13 @@ static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
   skia::RefPtr<GrTexture> background_texture =
       skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
           backend_texture_description));
+  if (!background_texture) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "ApplyBlendModeWithBackdrop wrap background texture failed",
+        TRACE_EVENT_SCOPE_THREAD);
+    return skia::RefPtr<SkImage>();
+  }
 
   SkImageInfo source_info =
       SkImageInfo::MakeN32Premul(source_size.width(), source_size.height());
@@ -780,7 +800,7 @@ static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
       use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
-  if (backing_store.get() == NULL) {
+  if (!backing_store) {
     TRACE_EVENT_INSTANT0(
         "cc",
         "ApplyBlendModeWithBackdrop scratch texture allocation failed",
