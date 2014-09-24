@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS Service Worker: CacheStorage 
+FAIL CacheStorage.create not implemented
+FAIL CacheStorage.create with an empty name not implemented
+PASS CacheStorage.create with no arguments 
+FAIL CacheStorage.create with an existing cache name not implemented
+FAIL CacheStorage.has with existing cache not implemented
+PASS CacheStorage.has with nonexistent cache 
+FAIL CacheStorage.get with existing cache not implemented
+PASS CacheStorage.get with nonexistent cache 
+FAIL CacheStorage.delete with existing cache not implemented
+PASS CacheStorage.delete with nonexistent cache 
+Harness: the test ran to completion.
+

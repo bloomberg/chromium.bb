@@ -199,7 +199,7 @@ function wait_for_activated(test, registration) {
   };
 
   function service_worker_test(url, description) {
-    var scope = window.location.origin + '/service-worker-scope/' +
+    var scope = window.location.origin + '/service-worker-scope' +
       window.location.pathname;
 
     var test = async_test(description);

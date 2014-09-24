@@ -26,4 +26,14 @@ test(function() {
     verifyInterface('ServiceWorkerClient');
     // FIXME: Get an instance and test it, or ensure property exists on prototype.
 
-}, 'Interfaces and attributes in ServiceWorkerGlobalScope');
+    verifyInterface('CacheStorage',
+                    self.caches,
+                    {
+                      match: 'function',
+                      get: 'function',
+                      has: 'function',
+                      create: 'function',
+                      delete: 'function',
+                      keys: 'function'
+                    });
+  }, 'Interfaces and attributes in ServiceWorkerGlobalScope');
