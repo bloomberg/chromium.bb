@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -42,6 +43,8 @@ class UserAddingScreenImpl : public UserAddingScreen {
 
   ObserverList<Observer> observers_;
   LoginDisplayHost* display_host_;
+
+  UserAddingScreenInputMethodsController im_controller_;
 };
 
 void UserAddingScreenImpl::Start() {
@@ -98,7 +101,7 @@ UserAddingScreenImpl* UserAddingScreenImpl::GetInstance() {
 }
 
 UserAddingScreenImpl::UserAddingScreenImpl()
-  : display_host_(NULL) {
+    : display_host_(NULL), im_controller_(this) {
 }
 
 UserAddingScreenImpl::~UserAddingScreenImpl() {

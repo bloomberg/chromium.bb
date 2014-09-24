@@ -1049,15 +1049,6 @@ bool SigninScreenHandler::ShouldLoadGaia() const {
 void SigninScreenHandler::SetUserInputMethod(
     const std::string& username,
     input_method::InputMethodManager::State* ime_state) {
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user_manager->IsUserLoggedIn()) {
-    // We are on sign-in screen inside user session (adding new user to
-    // the session or on lock screen), don't switch input methods in this case.
-    // TODO(dpolukhin): adding user and sign-in should be consistent
-    // crbug.com/292774
-    return;
-  }
-
   bool succeed = false;
 
   const std::string input_method = GetUserLRUInputMethod(username);

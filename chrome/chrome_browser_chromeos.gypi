@@ -720,6 +720,8 @@
         'browser/chromeos/login/ui/simple_web_view_dialog.h',
         'browser/chromeos/login/ui/user_adding_screen.cc',
         'browser/chromeos/login/ui/user_adding_screen.h',
+        'browser/chromeos/login/ui/user_adding_screen_input_methods_controller.cc',
+        'browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h',
         'browser/chromeos/login/ui/webui_login_display.cc',
         'browser/chromeos/login/ui/webui_login_display.h',
         'browser/chromeos/login/ui/webui_login_view.cc',
