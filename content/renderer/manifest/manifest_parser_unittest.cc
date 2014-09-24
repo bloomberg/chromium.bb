@@ -492,4 +492,92 @@ TEST_F(ManifestParserTest, IconDensityParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, IconSizesParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"42x42\" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 1u);
+  }
+
+  // Trim whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"  42x42  \" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 1u);
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": {} } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": 42 } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
+  }
+
+  // Smoke test: value correctly parsed.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"42x42  48x48\" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes[0], gfx::Size(42, 42));
+    EXPECT_EQ(manifest.icons[0].sizes[1], gfx::Size(48, 48));
+  }
+
+  // <WIDTH>'x'<HEIGHT> and <WIDTH>'X'<HEIGHT> are equivalent.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"42X42  48X48\" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes[0], gfx::Size(42, 42));
+    EXPECT_EQ(manifest.icons[0].sizes[1], gfx::Size(48, 48));
+  }
+
+  // Twice the same value is parsed twice.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"42X42  42x42\" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes[0], gfx::Size(42, 42));
+    EXPECT_EQ(manifest.icons[0].sizes[1], gfx::Size(42, 42));
+  }
+
+  // Width or height can't start with 0.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"004X007  042x00\" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
+  }
+
+  // Width and height MUST contain digits.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"e4X1.0  55ax1e10\" } ] }");
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
+  }
+
+  // 'any' is correctly parsed and transformed to gfx::Size(0,0).
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"any AnY ANY aNy\" } ] }");
+    gfx::Size any = gfx::Size(0, 0);
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 4u);
+    EXPECT_EQ(manifest.icons[0].sizes[0], any);
+    EXPECT_EQ(manifest.icons[0].sizes[1], any);
+    EXPECT_EQ(manifest.icons[0].sizes[2], any);
+    EXPECT_EQ(manifest.icons[0].sizes[3], any);
+  }
+
+  // Some invalid width/height combinations.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"sizes\": \"x 40xx 1x2x3 x42 42xx42\" } ] }");
+    gfx::Size any = gfx::Size(0, 0);
+    EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
+  }
+}
+
 } // namespace content

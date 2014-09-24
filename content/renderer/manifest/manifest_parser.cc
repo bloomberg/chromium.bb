@@ -6,10 +6,13 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/nullable_string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/manifest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
@@ -165,6 +168,80 @@ double ParseIconDensity(const base::DictionaryValue& icon) {
   return density;
 }
 
+// Helper function that returns whether the given |str| is a valid width or
+// height value for an icon sizes per:
+// https://html.spec.whatwg.org/multipage/semantics.html#attr-link-sizes
+bool IsValidIconWidthOrHeight(const std::string& str) {
+  if (str.empty() || str[0] == '0')
+    return false;
+  for (size_t i = 0; i < str.size(); ++i)
+    if (!IsAsciiDigit(str[i]))
+      return false;
+  return true;
+}
+
+// Parses the 'sizes' attribute of an icon as described in the HTML spec:
+// https://html.spec.whatwg.org/multipage/semantics.html#attr-link-sizes
+// Return a vector of gfx::Size that contains the valid sizes found. "Any" is
+// represented by gfx::Size(0, 0).
+// TODO(mlamouri): this is implemented as a separate function because it should
+// be refactored with the other icon sizes parsing implementations, see
+// http://crbug.com/416477
+std::vector<gfx::Size> ParseIconSizesHTML(const base::string16& sizes_str16) {
+  if (!base::IsStringASCII(sizes_str16))
+    return std::vector<gfx::Size>();
+
+  std::vector<gfx::Size> sizes;
+  std::string sizes_str =
+      base::StringToLowerASCII(base::UTF16ToUTF8(sizes_str16));
+  std::vector<std::string> sizes_str_list;
+  base::SplitStringAlongWhitespace(sizes_str, &sizes_str_list);
+
+  for (size_t i = 0; i < sizes_str_list.size(); ++i) {
+    std::string& size_str = sizes_str_list[i];
+    if (size_str == "any") {
+      sizes.push_back(gfx::Size(0, 0));
+      continue;
+    }
+
+    // It is expected that [0] => width and [1] => height after the split.
+    std::vector<std::string> size_list;
+    base::SplitStringDontTrim(size_str, L'x', &size_list);
+    if (size_list.size() != 2)
+      continue;
+    if (!IsValidIconWidthOrHeight(size_list[0]) ||
+        !IsValidIconWidthOrHeight(size_list[1])) {
+      continue;
+    }
+
+    int width, height;
+    if (!base::StringToInt(size_list[0], &width) ||
+        !base::StringToInt(size_list[1], &height)) {
+      continue;
+    }
+
+    sizes.push_back(gfx::Size(width, height));
+  }
+
+  return sizes;
+}
+
+// Parses the 'sizes' field of an icon, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-icon
+// Returns a vector of gfx::Size with the successfully parsed sizes, if any. An
+// empty vector if the field was not present or empty. "Any" is represented by
+// gfx::Size(0, 0).
+std::vector<gfx::Size> ParseIconSizes(const base::DictionaryValue& icon) {
+  base::NullableString16 sizes_str = ParseString(icon, "sizes", NoTrim);
+
+  return sizes_str.is_null() ? std::vector<gfx::Size>()
+                             : ParseIconSizesHTML(sizes_str.string());
+}
+
+// Parses the 'icons' field of a Manifest, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-the-icons-member
+// Returns a vector of Manifest::Icon with the successfully parsed icons, if
+// any. An empty vector if the field was not present or empty.
 std::vector<Manifest::Icon> ParseIcons(const base::DictionaryValue& dictionary,
                                        const GURL& manifest_url) {
   std::vector<Manifest::Icon> icons;
@@ -190,7 +267,7 @@ std::vector<Manifest::Icon> ParseIcons(const base::DictionaryValue& dictionary,
       continue;
     icon.type = ParseIconType(*icon_dictionary);
     icon.density = ParseIconDensity(*icon_dictionary);
-    // TODO(mlamouri): icon.sizes
+    icon.sizes = ParseIconSizes(*icon_dictionary);
 
     icons.push_back(icon);
   }
