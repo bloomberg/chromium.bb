@@ -176,6 +176,7 @@ public class RouterImpl implements Router {
             if (responder == null) {
                 return false;
             }
+            mResponders.remove(requestId);
             return responder.accept(message);
         } else {
             if (mIncomingMessageReceiver != null) {
