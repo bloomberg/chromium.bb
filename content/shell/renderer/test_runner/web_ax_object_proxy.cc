@@ -148,6 +148,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Menu");
     case blink::WebAXRoleNavigation:
       return result.append("Navigation");
+    case blink::WebAXRoleNone:
+      return result.append("None");
     case blink::WebAXRoleNote:
       return result.append("Note");
     case blink::WebAXRoleOutline:

@@ -3773,6 +3773,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_LOG:
     case ui::AX_ROLE_MARQUEE:
     case ui::AX_ROLE_MATTE:
+    case ui::AX_ROLE_NONE:
     case ui::AX_ROLE_PRESENTATIONAL:
     case ui::AX_ROLE_RULER_MARKER:
     case ui::AX_ROLE_SHEET:

@@ -1,0 +1,2 @@
+android.webkit.WebView focusable focused scrollable name='With aria-role none'
+    android.view.View clickable name='With aria-role none'
