@@ -965,7 +965,7 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, cppValue, toNodeFilter(v8Value, info.Holder(), ScriptState::current(info.GetIsolate())));
+    RefPtrWillBeRawPtr<NodeFilter> cppValue = toNodeFilter(v8Value, info.Holder(), ScriptState::current(info.GetIsolate()));
     impl->setNodeFilterAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5731,8 +5731,6 @@ static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& in
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptValue anyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         anyArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodAnyArg(anyArg);
@@ -6697,9 +6695,7 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtrWillBeRawPtr<NodeFilter> nodeFilterArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(nodeFilterArg, toNodeFilter(info[0], info.Holder(), ScriptState::current(info.GetIsolate())));
+        nodeFilterArg = toNodeFilter(info[0], info.Holder(), ScriptState::current(info.GetIsolate()));
     }
     impl->voidMethodNodeFilterArg(nodeFilterArg.release());
 }

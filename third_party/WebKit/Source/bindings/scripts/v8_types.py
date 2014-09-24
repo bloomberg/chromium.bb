@@ -478,11 +478,19 @@ IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_excep
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
 
 
+TRIVIAL_CONVERSIONS = frozenset([
+    'any',
+    'boolean',
+    'Dictionary',
+    'NodeFilter',
+    'XPathNSResolver'
+])
+
+
 def v8_conversion_is_trivial(idl_type):
     # The conversion is a simple expression that returns the converted value and
     # cannot raise an exception.
-    return (idl_type.base_type == 'boolean' or
-            idl_type.base_type == 'Dictionary' or
+    return (idl_type.base_type in TRIVIAL_CONVERSIONS or
             idl_type.is_wrapper_type)
 
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
