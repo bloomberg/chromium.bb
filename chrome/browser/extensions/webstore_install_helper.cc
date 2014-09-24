@@ -114,8 +114,7 @@ void WebstoreInstallHelper::OnURLFetchComplete(
 void WebstoreInstallHelper::StartFetchedImageDecode() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CHECK(utility_host_.get());
-  utility_host_->Send(new ChromeUtilityMsg_DecodeImage(fetched_icon_data_,
-                                                       false));
+  utility_host_->Send(new ChromeUtilityMsg_DecodeImage(fetched_icon_data_));
 }
 
 

@@ -182,7 +182,7 @@ void ExtensionsHandler::OnDecodeImageBase64(
     decoded_vector[i] = static_cast<unsigned char>(decoded_string[i]);
   }
 
-  ChromeContentUtilityClient::DecodeImageAndSend(decoded_vector, false);
+  ChromeContentUtilityClient::DecodeImage(decoded_vector);
 }
 
 void ExtensionsHandler::OnParseJSON(const std::string& json) {
