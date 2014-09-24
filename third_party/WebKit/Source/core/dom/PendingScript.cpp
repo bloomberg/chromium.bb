@@ -39,7 +39,7 @@ PendingScript::~PendingScript()
 void PendingScript::watchForLoad(ScriptResourceClient* client)
 {
     ASSERT(!m_watchingForLoad);
-    ASSERT(!resource()->isLoaded());
+    ASSERT(!isReady());
     if (m_streamer) {
         m_streamer->addClient(client);
     } else {
@@ -71,17 +71,13 @@ PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
     setScriptResource(0);
     m_watchingForLoad = false;
     m_startingPosition = TextPosition::belowRangePosition();
+    m_streamer.release();
     return m_element.release();
 }
 
 void PendingScript::setScriptResource(ScriptResource* resource)
 {
     setResource(resource);
-    // This function is only called 1) during construction (we're not yet
-    // streaming) 2) after loading has completed (and streaming too, if we were
-    // streaming).
-    ASSERT(!isStreaming());
-    m_streamer.release();
 }
 
 void PendingScript::notifyFinished(Resource* resource)
@@ -114,9 +110,13 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
     return ScriptSourceCode(m_element->textContent(), documentURL, startingPosition());
 }
 
-bool PendingScript::isStreaming() const
+bool PendingScript::isReady() const
 {
-    return m_streamer && m_streamer->streamingInProgress();
+    if (resource() && !resource()->isLoaded())
+        return false;
+    if (m_streamer && !m_streamer->isFinished())
+        return false;
+    return true;
 }
 
 }

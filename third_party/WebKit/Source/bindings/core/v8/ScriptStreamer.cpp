@@ -219,6 +219,7 @@ bool ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, S
     if (!settings || !settings->v8ScriptStreamingEnabled())
         return false;
     ScriptResource* resource = script.resource();
+    ASSERT(!resource->isLoaded());
     if (!resource->url().protocolIsInHTTPFamily())
         return false;
     if (resource->resourceToRevalidate()) {
@@ -394,9 +395,8 @@ void ScriptStreamer::notifyFinishedToClient()
     // function calling notifyFinishedToClient was already scheduled in the task
     // queue and the upper layer decided that it's not interested in the script
     // and called removeClient.
-    if (m_loadingFinished && (m_parsingFinished || m_streamingSuppressed) && m_client) {
+    if (isFinished() && m_client)
         m_client->notifyFinished(m_resource);
-    }
 }
 
 } // namespace blink

@@ -118,7 +118,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
         ASSERT(resource);
         // Failed resources should never get this far.
         ASSERT(!resource->errorOccurred());
-        ASSERT(!streamer->streamingInProgress());
+        ASSERT(streamer->isFinished());
         ASSERT(!streamer->streamingSuppressed());
         script = v8::ScriptCompiler::Compile(isolate, streamer->source(), code, origin);
         // Whether to produce the cached data or not is decided when the

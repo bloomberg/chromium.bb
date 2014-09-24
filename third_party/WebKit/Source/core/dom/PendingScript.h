@@ -66,6 +66,7 @@ public:
         , m_watchingForLoad(other.m_watchingForLoad)
         , m_element(other.m_element)
         , m_startingPosition(other.m_startingPosition)
+        , m_streamer(other.m_streamer)
     {
         setScriptResource(other.resource());
     }
@@ -111,7 +112,7 @@ public:
         m_streamer = streamer;
     }
 
-    bool isStreaming() const;
+    bool isReady() const;
 
 private:
     bool m_watchingForLoad;

@@ -107,11 +107,7 @@ bool HTMLScriptRunner::isPendingScriptReady(const PendingScript& script)
     m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
     if (m_hasScriptsWaitingForResources)
         return false;
-    if (script.resource() && !script.resource()->isLoaded())
-        return false;
-    if (script.isStreaming())
-        return false;
-    return true;
+    return script.isReady();
 }
 
 void HTMLScriptRunner::executeParsingBlockingScript()
@@ -169,10 +165,6 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 
 void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
 {
-    // For a parser-blocking script, this function should be called only when
-    // the streaming is complete.
-    ASSERT(!(m_parserBlockingScript.resource() == cachedResource
-        && m_parserBlockingScript.isStreaming()));
     m_host->notifyScriptLoaded(cachedResource);
 }
 
@@ -215,7 +207,7 @@ void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* resource)
     ASSERT(!isExecutingScript());
     ASSERT(hasParserBlockingScript());
     ASSERT_UNUSED(resource, m_parserBlockingScript.resource() == resource);
-    ASSERT(m_parserBlockingScript.resource()->isLoaded());
+    ASSERT(m_parserBlockingScript.isReady());
     executeParsingBlockingScripts();
 }
 
@@ -236,7 +228,7 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
         ASSERT(!isExecutingScript());
         ASSERT(!hasParserBlockingScript());
         ASSERT(m_scriptsToExecuteAfterParsing.first().resource());
-        if (!m_scriptsToExecuteAfterParsing.first().resource()->isLoaded()) {
+        if (!m_scriptsToExecuteAfterParsing.first().isReady()) {
             m_scriptsToExecuteAfterParsing.first().watchForLoad(this);
             return false;
         }
@@ -266,7 +258,7 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
     // We only care about a load callback if resource is not already
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
-    if (!m_parserBlockingScript.resource()->isLoaded()) {
+    if (!m_parserBlockingScript.isReady()) {
         bool startedStreaming = false;
         if (m_document->frame())
             startedStreaming = ScriptStreamer::startStreaming(m_parserBlockingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
@@ -282,6 +274,9 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
         return;
 
     ASSERT(pendingScript.resource());
+    if (m_document->frame() && !pendingScript.isReady())
+        ScriptStreamer::startStreaming(pendingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
+
     m_scriptsToExecuteAfterParsing.append(pendingScript);
 }
 
@@ -330,8 +325,6 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
             return;
 
         if (scriptLoader->willExecuteWhenDocumentFinishedParsing()) {
-            // FIXME: in addition to parser blocking scripts, stream also
-            // scripts which are not parser blocking.
             requestDeferredScript(script);
         } else if (scriptLoader->readyToBeParserExecuted()) {
             if (m_scriptNestingLevel == 1) {

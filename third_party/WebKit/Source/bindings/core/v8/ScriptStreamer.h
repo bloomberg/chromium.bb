@@ -37,9 +37,9 @@ public:
     // streaming finishes.
     static bool startStreaming(PendingScript&, Settings*, ScriptState*);
 
-    bool streamingInProgress() const
+    bool isFinished() const
     {
-        return !m_loadingFinished || (!m_parsingFinished && !m_streamingSuppressed);
+        return m_loadingFinished && (m_parsingFinished || m_streamingSuppressed);
     }
 
     v8::ScriptCompiler::StreamedSource* source() { return &m_source; }
@@ -65,6 +65,7 @@ public:
     void addClient(ScriptResourceClient* client)
     {
         ASSERT(!m_client);
+        ASSERT(!isFinished());
         m_client = client;
     }
 
