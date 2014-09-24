@@ -5,4 +5,4 @@
 
 # This script does some preparations before build of instrumented libnspr4.
 
-mv mozilla/nsprpub/* .
+mv nspr/* .
