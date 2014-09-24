@@ -159,12 +159,6 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
 {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% endif %}{# argument.idl_type == 'EventListener' #}
-{% elif argument.idl_type == 'SerializedScriptValue' %}
-{{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, exceptionState, info.GetIsolate());
-if (exceptionState.hadException()) {
-    {{throw_from_exception_state(method)}};
-    return;
-}
 {% elif argument.is_variadic_wrapper_type %}
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate())) {

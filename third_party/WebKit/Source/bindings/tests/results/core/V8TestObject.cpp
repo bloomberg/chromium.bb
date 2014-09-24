@@ -993,8 +993,9 @@ static void serializedScriptValueAttributeAttributeGetterCallback(v8::Local<v8::
 static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "serializedScriptValueAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(RefPtr<SerializedScriptValue>, cppValue, SerializedScriptValue::create(v8Value, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(RefPtr<SerializedScriptValue>, cppValue, SerializedScriptValue::create(v8Value, 0, 0, exceptionState, info.GetIsolate()), exceptionState);
     impl->setSerializedScriptValueAttribute(WTF::getPtr(cppValue));
 }
 
@@ -6745,11 +6746,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtr<SerializedScriptValue> serializedScriptValueArg;
     {
-        serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
-        if (exceptionState.hadException()) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(serializedScriptValueArg, SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate()), exceptionState);
     }
     impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
