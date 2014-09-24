@@ -48,12 +48,20 @@ public:
     // Called from a thread that executes the task.
     void taskCompleted();
 
+#if ENABLE(ASSERT)
+    bool hasCheckedForTermination() const { return m_hasCheckedForTermination; }
+    void setHasCheckedForTermination() { m_hasCheckedForTermination = true; }
+#endif
+
 private:
     void waitForTaskCompletionInternal();
 
     bool m_taskCompleted;
     Mutex m_synchronousMutex;
     ThreadCondition m_synchronousCondition;
+#if ENABLE(ASSERT)
+    bool m_hasCheckedForTermination;
+#endif
 };
 
 } // namespace blink

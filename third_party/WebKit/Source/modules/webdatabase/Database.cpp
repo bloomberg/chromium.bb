@@ -259,7 +259,7 @@ void Database::trace(Visitor* visitor)
 bool Database::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     TaskSynchronizer synchronizer;
-    if (!databaseContext()->databaseThreadAvailable())
+    if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
         return false;
 
     DatabaseTracker::tracker().prepareToOpenDatabase(this);
@@ -330,7 +330,7 @@ void Database::scheduleTransaction()
     if (m_isTransactionQueueEnabled && !m_transactionQueue.isEmpty())
         transaction = m_transactionQueue.takeFirst();
 
-    if (transaction && databaseContext()->databaseThreadAvailable()) {
+    if (transaction && databaseContext()->databaseThread()) {
         OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
         WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
         m_transactionInProgress = true;
@@ -342,7 +342,7 @@ void Database::scheduleTransaction()
 
 void Database::scheduleTransactionStep(SQLTransactionBackend* transaction)
 {
-    if (!databaseContext()->databaseThreadAvailable())
+    if (!databaseContext()->databaseThread())
         return;
 
     OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
@@ -783,9 +783,10 @@ ExecutionContext* Database::executionContext() const
 void Database::closeImmediately()
 {
     ASSERT(executionContext()->isContextThread());
-    if (databaseContext()->databaseThreadAvailable() && opened()) {
+    DatabaseThread* databaseThread = databaseContext()->databaseThread();
+    if (databaseThread && !databaseThread->terminationRequested() && opened()) {
         logErrorMessage("forcibly closing database");
-        databaseContext()->databaseThread()->scheduleTask(DatabaseCloseTask::create(this, 0));
+        databaseThread->scheduleTask(DatabaseCloseTask::create(this, 0));
     }
 }
 
@@ -912,7 +913,7 @@ Vector<String> Database::tableNames()
     // this may not be true anymore.
     Vector<String> result;
     TaskSynchronizer synchronizer;
-    if (!databaseContext()->databaseThreadAvailable())
+    if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
         return result;
 
     OwnPtr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &synchronizer, result);

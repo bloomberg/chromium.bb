@@ -59,7 +59,7 @@ public:
 
     void start();
     void requestTermination(TaskSynchronizer* cleanupSync);
-    bool terminationRequested() const;
+    bool terminationRequested(TaskSynchronizer* = 0) const;
 
     void scheduleTask(PassOwnPtr<DatabaseTask>);
 
