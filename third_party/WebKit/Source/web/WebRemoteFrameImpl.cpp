@@ -355,11 +355,6 @@ void WebRemoteFrameImpl::setIsolatedWorldContentSecurityPolicy(int worldID, cons
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::setIsolatedWorldHumanReadableName(int worldID, const WebString&)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void WebRemoteFrameImpl::addMessageToConsole(const WebConsoleMessage&)
 {
     ASSERT_NOT_REACHED();
@@ -776,11 +771,6 @@ int WebRemoteFrameImpl::selectNearestFindMatch(const WebFloatPoint&, WebRect* se
 }
 
 void WebRemoteFrameImpl::setTickmarks(const WebVector<WebRect>&)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::sendOrientationChangeEvent()
 {
     ASSERT_NOT_REACHED();
 }

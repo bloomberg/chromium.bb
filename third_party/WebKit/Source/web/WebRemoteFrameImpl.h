@@ -64,7 +64,6 @@ public:
         int extensionGroup) OVERRIDE;
     virtual void setIsolatedWorldSecurityOrigin(int worldID, const WebSecurityOrigin&) OVERRIDE;
     virtual void setIsolatedWorldContentSecurityPolicy(int worldID, const WebString&) OVERRIDE;
-    virtual void setIsolatedWorldHumanReadableName(int worldID, const WebString&) OVERRIDE;
     virtual void addMessageToConsole(const WebConsoleMessage&) OVERRIDE;
     virtual void collectGarbage() OVERRIDE;
     virtual bool checkIfRunInsecureContent(const WebURL&) const OVERRIDE;
@@ -159,9 +158,6 @@ public:
     virtual void findMatchRects(WebVector<WebFloatRect>&) OVERRIDE;
     virtual int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) OVERRIDE;
     virtual void setTickmarks(const WebVector<WebRect>&) OVERRIDE;
-
-    virtual void sendOrientationChangeEvent() OVERRIDE;
-
     virtual void dispatchMessageEventWithOriginCheck(
         const WebSecurityOrigin& intendedTargetOrigin,
         const WebDOMEvent&) OVERRIDE;

@@ -887,28 +887,6 @@ void WebLocalFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseUR
     loadData(data, WebString::fromUTF8("text/html"), WebString::fromUTF8("UTF-8"), baseURL, unreachableURL, replace);
 }
 
-void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
-{
-    ASSERT(frame());
-    const Node* node = linkNode.constUnwrap<Node>();
-    if (isHTMLAnchorElement(node))
-        toHTMLAnchorElement(node)->sendPings(destinationURL);
-}
-
-bool WebLocalFrameImpl::isLoading() const
-{
-    if (!frame() || !frame()->document())
-        return false;
-    return frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() || !frame()->document()->loadEventFinished();
-}
-
-bool WebLocalFrameImpl::isResourceLoadInProgress() const
-{
-    if (!frame() || !frame()->document())
-        return false;
-    return frame()->document()->fetcher()->requestCount();
-}
-
 void WebLocalFrameImpl::stopLoading()
 {
     if (!frame())
@@ -1238,13 +1216,6 @@ void WebLocalFrameImpl::extendSelectionAndDelete(int before, int after)
     frame()->inputMethodController().extendSelectionAndDelete(before, after);
 }
 
-void WebLocalFrameImpl::navigateToSandboxedMarkup(const WebData& markup)
-{
-    ASSERT(document().securityOrigin().isUnique());
-    frame()->loader().forceSandboxFlags(SandboxAll);
-    loadHTMLString(markup, document().url(), WebURL(), true);
-}
-
 void WebLocalFrameImpl::setCaretVisible(bool visible)
 {
     frame()->selection().setCaretVisible(visible);
@@ -1408,20 +1379,6 @@ void WebLocalFrameImpl::increaseMatchCount(int count, int identifier)
 void WebLocalFrameImpl::resetMatchCount()
 {
     ensureTextFinder().resetMatchCount();
-}
-
-void WebLocalFrameImpl::sendOrientationChangeEvent()
-{
-    if (!frame())
-        return;
-
-    // Screen Orientation API
-    if (ScreenOrientationController::from(*frame()))
-        ScreenOrientationController::from(*frame())->notifyOrientationChanged();
-
-    // Legacy window.orientation API.
-    if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
-        frame()->domWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
 }
 
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
@@ -1852,6 +1809,28 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
 }
 
+void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
+{
+    ASSERT(frame());
+    const Node* node = linkNode.constUnwrap<Node>();
+    if (isHTMLAnchorElement(node))
+        toHTMLAnchorElement(node)->sendPings(destinationURL);
+}
+
+bool WebLocalFrameImpl::isLoading() const
+{
+    if (!frame() || !frame()->document())
+        return false;
+    return frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() || !frame()->document()->loadEventFinished();
+}
+
+bool WebLocalFrameImpl::isResourceLoadInProgress() const
+{
+    if (!frame() || !frame()->document())
+        return false;
+    return frame()->document()->fetcher()->requestCount();
+}
+
 void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)
 {
     RefPtrWillBeRawPtr<Element> styleElement = frame()->document()->createElement(HTMLNames::linkTag, false);
@@ -1861,6 +1840,37 @@ void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)
     styleElement->setAttribute(HTMLNames::hrefAttr, url);
 
     frame()->document()->head()->appendChild(styleElement.release(), IGNORE_EXCEPTION);
+}
+
+void WebLocalFrameImpl::navigateToSandboxedMarkup(const WebData& markup)
+{
+    ASSERT(document().securityOrigin().isUnique());
+    frame()->loader().forceSandboxFlags(SandboxAll);
+    loadHTMLString(markup, document().url(), WebURL(), true);
+}
+
+void WebLocalFrameImpl::sendOrientationChangeEvent()
+{
+    if (!frame())
+        return;
+
+    // Screen Orientation API
+    if (ScreenOrientationController::from(*frame()))
+        ScreenOrientationController::from(*frame())->notifyOrientationChanged();
+
+    // Legacy window.orientation API.
+    if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
+        frame()->domWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
+}
+
+v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValueForTests(const WebScriptSource& source)
+{
+    // FIXME: This fake UserGestureIndicator is required for a bunch of browser
+    // tests to pass. We should update the tests to simulate input and get rid
+    // of this.
+    // http://code.google.com/p/chromium/issues/detail?id=86397
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    return executeScriptAndReturnValue(source);
 }
 
 void WebLocalFrameImpl::willDetachParent()

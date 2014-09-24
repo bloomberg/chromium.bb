@@ -32,10 +32,8 @@ public:
     // the given element is not a frame, iframe or if the frame is empty.
     BLINK_EXPORT static WebLocalFrame* fromFrameOwnerElement(const WebElement&);
 
-    // Navigation Transitions  ---------------------------------------------
-    virtual void addStyleSheetByURL(const WebString& url) = 0;
-    virtual void navigateToSandboxedMarkup(const WebData& markup) = 0;
 
+    // Navigation Ping --------------------------------------------------------
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;
 
 
@@ -48,6 +46,27 @@ public:
     // primarily for use in layout tests. You probably want isLoading()
     // instead.
     virtual bool isResourceLoadInProgress() const = 0;
+
+
+    // Navigation Transitions -------------------------------------------------
+    virtual void addStyleSheetByURL(const WebString& url) = 0;
+    virtual void navigateToSandboxedMarkup(const WebData& markup) = 0;
+
+
+    // Orientation Changes ----------------------------------------------------
+
+    // Notify the frame that the screen orientation has changed.
+    virtual void sendOrientationChangeEvent() = 0;
+
+
+    // Scripting --------------------------------------------------------------
+    // ONLY FOR TESTS: Forwards to executeScriptAndReturnValue, but sets a fake
+    // UserGestureIndicator before execution.
+    virtual v8::Handle<v8::Value> executeScriptAndReturnValueForTests(const WebScriptSource&) = 0;
+
+    // Associates an isolated world with human-readable name which is useful for
+    // extension debugging.
+    virtual void setIsolatedWorldHumanReadableName(int worldID, const WebString&) = 0;
 };
 
 } // namespace blink

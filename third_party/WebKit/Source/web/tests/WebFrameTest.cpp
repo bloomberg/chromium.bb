@@ -4111,7 +4111,7 @@ protected:
         const WebSelectionBound* selectEnd = m_fakeSelectionLayerTreeView.end();
 
         v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-        v8::Handle<v8::Value> result = m_webViewHelper.webView()->mainFrame()->executeScriptAndReturnValueForTests(WebScriptSource("expectedResult"));
+        v8::Handle<v8::Value> result = m_webViewHelper.webView()->mainFrame()->toWebLocalFrame()->executeScriptAndReturnValueForTests(WebScriptSource("expectedResult"));
         if (result.IsEmpty() || (*result)->IsUndefined()) {
             EXPECT_FALSE(selectStart);
             EXPECT_FALSE(selectEnd);

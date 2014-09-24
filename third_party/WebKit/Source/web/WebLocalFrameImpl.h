@@ -137,9 +137,6 @@ public:
     virtual void loadHTMLString(
         const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
         bool replace) OVERRIDE;
-    virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) OVERRIDE;
-    virtual bool isLoading() const OVERRIDE;
-    virtual bool isResourceLoadInProgress() const OVERRIDE;
     virtual void stopLoading() OVERRIDE;
     virtual WebDataSource* provisionalDataSource() const OVERRIDE;
     virtual WebDataSource* dataSource() const OVERRIDE;
@@ -177,7 +174,6 @@ public:
     virtual bool setEditableSelectionOffsets(int start, int end) OVERRIDE;
     virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) OVERRIDE;
     virtual void extendSelectionAndDelete(int before, int after) OVERRIDE;
-    virtual void navigateToSandboxedMarkup(const WebData& markup) OVERRIDE;
     virtual void setCaretVisible(bool) OVERRIDE;
     virtual int printBegin(const WebPrintParams&, const WebNode& constrainToNode) OVERRIDE;
     virtual float printPage(int pageToPrint, WebCanvas*) OVERRIDE;
@@ -212,8 +208,6 @@ public:
     virtual int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) OVERRIDE;
     virtual void setTickmarks(const WebVector<WebRect>&) OVERRIDE;
 
-    virtual void sendOrientationChangeEvent() OVERRIDE;
-
     virtual void dispatchMessageEventWithOriginCheck(
         const WebSecurityOrigin& intendedTargetOrigin,
         const WebDOMEvent&) OVERRIDE;
@@ -228,7 +222,14 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const OVERRIDE;
 
     // WebLocalFrame methods:
+    virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) OVERRIDE;
+    virtual bool isLoading() const OVERRIDE;
+    virtual bool isResourceLoadInProgress() const OVERRIDE;
     virtual void addStyleSheetByURL(const WebString& url) OVERRIDE;
+    virtual void navigateToSandboxedMarkup(const WebData& markup) OVERRIDE;
+    virtual void sendOrientationChangeEvent() OVERRIDE;
+    virtual v8::Handle<v8::Value> executeScriptAndReturnValueForTests(
+        const WebScriptSource&) OVERRIDE;
 
     void willDetachParent();
 
