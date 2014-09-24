@@ -251,12 +251,22 @@ bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
       case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
       case DISPLAY_CONNECTION_TYPE_DVI:
       case DISPLAY_CONNECTION_TYPE_HDMI: {
-        HDCPState new_desired_state =
-            (all_desired & CONTENT_PROTECTION_METHOD_HDCP) ?
-                HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
-        if (!native_display_delegate_->SetHDCPState(*it->display,
-                                                    new_desired_state))
+        HDCPState current_state;
+        // Need to poll the driver for updates since other applications may
+        // have updated the state.
+        if (!native_display_delegate_->GetHDCPState(*it->display,
+                                                    &current_state))
           return false;
+        bool current_desired = (current_state != HDCP_STATE_UNDESIRED);
+        bool new_desired = (all_desired & CONTENT_PROTECTION_METHOD_HDCP);
+        // Don't enable again if HDCP is already active. Some buggy drivers
+        // may disable and enable if setting "desired" in active state.
+        if (current_desired != new_desired) {
+          HDCPState new_state =
+              new_desired ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
+          if (!native_display_delegate_->SetHDCPState(*it->display, new_state))
+            return false;
+        }
         break;
       }
       case DISPLAY_CONNECTION_TYPE_INTERNAL:

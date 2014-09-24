@@ -1177,12 +1177,41 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
   // Protections will be disabled only if no more clients request them.
   EXPECT_TRUE(configurator_.EnableContentProtection(
       client2, outputs_[1].display_id(), CONTENT_PROTECTION_METHOD_NONE));
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_DESIRED).c_str(),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   EXPECT_TRUE(configurator_.EnableContentProtection(
       client1, outputs_[1].display_id(), CONTENT_PROTECTION_METHOD_NONE));
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_UNDESIRED).c_str(),
             log_->GetActionsAndClear());
+}
+
+TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClientsEnable) {
+  DisplayConfigurator::ContentProtectionClientId client1 =
+      configurator_.RegisterContentProtectionClient();
+  DisplayConfigurator::ContentProtectionClientId client2 =
+      configurator_.RegisterContentProtectionClient();
+  EXPECT_NE(client1, client2);
+
+  configurator_.Init(false);
+  configurator_.ForceInitialConfigure(0);
+  UpdateOutputs(2, true);
+  log_->GetActionsAndClear();
+
+  // Only enable once if HDCP is enabling.
+  EXPECT_TRUE(configurator_.EnableContentProtection(
+      client1, outputs_[1].display_id(), CONTENT_PROTECTION_METHOD_HDCP));
+  native_display_delegate_->set_hdcp_state(HDCP_STATE_DESIRED);
+  EXPECT_TRUE(configurator_.EnableContentProtection(
+      client2, outputs_[1].display_id(), CONTENT_PROTECTION_METHOD_HDCP));
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_DESIRED).c_str(),
+            log_->GetActionsAndClear());
+  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+
+  // Don't enable again if HDCP is already active.
+  EXPECT_TRUE(configurator_.EnableContentProtection(
+      client1, outputs_[1].display_id(), CONTENT_PROTECTION_METHOD_HDCP));
+  EXPECT_TRUE(configurator_.EnableContentProtection(
+      client2, outputs_[1].display_id(), CONTENT_PROTECTION_METHOD_HDCP));
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 }
 
 TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
