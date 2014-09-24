@@ -32,14 +32,14 @@
 #define InstallEvent_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "modules/serviceworkers/InstallPhaseEvent.h"
+#include "modules/serviceworkers/ExtendableEvent.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class ExecutionContext;
 
-class InstallEvent FINAL : public InstallPhaseEvent {
+class InstallEvent FINAL : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InstallEvent> create();

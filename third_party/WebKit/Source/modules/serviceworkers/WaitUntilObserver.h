@@ -16,7 +16,7 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
-// Created for each InstallPhaseEvent instance.
+// Created for each ExtendableEvent instance.
 class WaitUntilObserver FINAL : public GarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
 public:
     enum EventType {

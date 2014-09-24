@@ -28,52 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "InstallPhaseEvent.h"
-
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/WaitUntilObserver.h"
-
-namespace blink {
-
-PassRefPtrWillBeRawPtr<InstallPhaseEvent> InstallPhaseEvent::create()
-{
-    return adoptRefWillBeNoop(new InstallPhaseEvent());
-}
-
-PassRefPtrWillBeRawPtr<InstallPhaseEvent> InstallPhaseEvent::create(const AtomicString& type, const EventInit& eventInit, WaitUntilObserver* observer)
-{
-    return adoptRefWillBeNoop(new InstallPhaseEvent(type, eventInit, observer));
-}
-
-InstallPhaseEvent::~InstallPhaseEvent()
-{
-}
-
-void InstallPhaseEvent::waitUntil(ScriptState* scriptState, const ScriptValue& value)
-{
-    m_observer->waitUntil(scriptState, value);
-}
-
-InstallPhaseEvent::InstallPhaseEvent()
-{
-}
-
-InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
-    : Event(type, initializer)
-    , m_observer(observer)
-{
-}
-
-const AtomicString& InstallPhaseEvent::interfaceName() const
-{
-    return EventNames::InstallPhaseEvent;
-}
-
-void InstallPhaseEvent::trace(Visitor* visitor)
-{
-    visitor->trace(m_observer);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#extendable-event-interface
+[
+    RuntimeEnabled=ServiceWorker,
+    Exposed=ServiceWorker,
+] interface ExtendableEvent : Event {
+    [CallWith=ScriptState] void waitUntil(any value);
+};

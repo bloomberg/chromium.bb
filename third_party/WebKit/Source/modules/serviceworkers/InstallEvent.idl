@@ -32,7 +32,7 @@
 [
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
-] interface InstallEvent : InstallPhaseEvent {
+] interface InstallEvent : ExtendableEvent {
     void replace();
     [CallWith=ScriptState] Promise reloadAll();
 };

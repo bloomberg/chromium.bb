@@ -28,36 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InstallPhaseEvent_h
-#define InstallPhaseEvent_h
+#include "config.h"
+#include "ExtendableEvent.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/EventModules.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/serviceworkers/WaitUntilObserver.h"
 
 namespace blink {
 
-class WaitUntilObserver;
+PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create()
+{
+    return adoptRefWillBeNoop(new ExtendableEvent());
+}
 
-class InstallPhaseEvent : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create();
-    static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const EventInit& eventInit, WaitUntilObserver* observer)
+{
+    return adoptRefWillBeNoop(new ExtendableEvent(type, eventInit, observer));
+}
 
-    virtual ~InstallPhaseEvent();
+ExtendableEvent::~ExtendableEvent()
+{
+}
 
-    void waitUntil(ScriptState*, const ScriptValue&);
+void ExtendableEvent::waitUntil(ScriptState* scriptState, const ScriptValue& value)
+{
+    m_observer->waitUntil(scriptState, value);
+}
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual void trace(Visitor*) OVERRIDE;
+ExtendableEvent::ExtendableEvent()
+{
+}
 
-protected:
-    InstallPhaseEvent();
-    InstallPhaseEvent(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+ExtendableEvent::ExtendableEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
+    : Event(type, initializer)
+    , m_observer(observer)
+{
+}
 
-    PersistentWillBeMember<WaitUntilObserver> m_observer;
-};
+const AtomicString& ExtendableEvent::interfaceName() const
+{
+    return EventNames::ExtendableEvent;
+}
+
+void ExtendableEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_observer);
+    Event::trace(visitor);
+}
 
 } // namespace blink
-
-#endif // InstallPhaseEvent_h

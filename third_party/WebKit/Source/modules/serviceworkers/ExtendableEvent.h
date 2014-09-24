@@ -28,10 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#install-phase-event-interface
-[
-    RuntimeEnabled=ServiceWorker,
-    Exposed=ServiceWorker,
-] interface InstallPhaseEvent : Event {
-    [CallWith=ScriptState] void waitUntil(any value);
+#ifndef ExtendableEvent_h
+#define ExtendableEvent_h
+
+#include "bindings/core/v8/ScriptValue.h"
+#include "modules/EventModules.h"
+
+namespace blink {
+
+class WaitUntilObserver;
+
+class ExtendableEvent : public Event {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static PassRefPtrWillBeRawPtr<ExtendableEvent> create();
+    static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+
+    virtual ~ExtendableEvent();
+
+    void waitUntil(ScriptState*, const ScriptValue&);
+
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual void trace(Visitor*) OVERRIDE;
+
+protected:
+    ExtendableEvent();
+    ExtendableEvent(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+
+    PersistentWillBeMember<WaitUntilObserver> m_observer;
 };
+
+} // namespace blink
+
+#endif // ExtendableEvent_h

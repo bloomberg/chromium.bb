@@ -40,9 +40,9 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/push_messaging/PushEvent.h"
+#include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
-#include "modules/serviceworkers/InstallPhaseEvent.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorkerRequest.h"
@@ -77,7 +77,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Activate, eventID);
     observer->willDispatchEvent();
-    m_workerGlobalScope->dispatchEvent(InstallPhaseEvent::create(EventTypeNames::activate, EventInit(), observer));
+    m_workerGlobalScope->dispatchEvent(ExtendableEvent::create(EventTypeNames::activate, EventInit(), observer));
     observer->didDispatchEvent();
 }
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>InstallPhaseEvent: waitUntil</title>
+<title>ExtendableEvent: waitUntil</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
@@ -11,7 +11,7 @@
 var properties = {timeout: 5500};
 
 function runTest(test, scope, onRegister) {
-  var script = 'resources/install-phase-event-waituntil.js';
+  var script = 'resources/extendable-event-waituntil.js';
   service_worker_unregister_and_register(test, script, scope)
     .then(function(registration) {
         return get_newest_worker(registration);
@@ -116,7 +116,7 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test InstallPhaseEvent multiple waitUntil fulfilled.', properties);
+  }, 'Test ExtendableEvent multiple waitUntil fulfilled.', properties);
 
 async_test(function(t) {
     var scope = 'activate-reject-precedence';
@@ -128,5 +128,5 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test InstallPhaseEvent waitUntil reject precedence.', properties);
+  }, 'Test ExtendableEvent waitUntil reject precedence.', properties);
 </script>

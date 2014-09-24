@@ -73,13 +73,13 @@ InstallEvent::InstallEvent()
 }
 
 InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
-    : InstallPhaseEvent(type, initializer, observer)
+    : ExtendableEvent(type, initializer, observer)
 {
 }
 
 void InstallEvent::trace(Visitor* visitor)
 {
-    InstallPhaseEvent::trace(visitor);
+    ExtendableEvent::trace(visitor);
 }
 
 } // namespace blink
