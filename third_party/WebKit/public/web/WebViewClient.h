@@ -204,14 +204,8 @@ public:
     // unless the view did not need a layout.
     virtual void didUpdateLayout() { }
 
-    // FIXME: This is a deprecated method. Remove it after the chromium change
-    // that uses the second didTapMultipleTargets() propagates.
-    //
     // Return true to swallow the input event if the embedder will start a disambiguation popup
     virtual bool didTapMultipleTargets(const WebGestureEvent&, const WebVector<WebRect>& targetRects) { return false; }
-
-    // Return true to swallow the input event if the embedder will start a disambiguation popup
-    virtual bool didTapMultipleTargets(const WebSize& pinchViewportOffset, const WebRect& touchRect, const WebVector<WebRect>& targetRects) { return false; }
 
     // Returns comma separated list of accept languages.
     virtual WebString acceptLanguages() { return WebString(); }

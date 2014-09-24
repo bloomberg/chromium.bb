@@ -748,31 +748,20 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Don't trigger a disambiguation popup on sites designed for mobile devices.
         // Instead, assume that the page has been designed with big enough buttons and links.
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds()) {
+            // FIXME: didTapMultipleTargets should just take a rect instead of
+            // an event.
             WebGestureEvent scaledEvent = event;
             scaledEvent.x = event.x / pageScaleFactor();
             scaledEvent.y = event.y / pageScaleFactor();
             scaledEvent.data.tap.width = event.data.tap.width / pageScaleFactor();
             scaledEvent.data.tap.height = event.data.tap.height / pageScaleFactor();
-            IntRect boundingBox(
-                scaledEvent.x - scaledEvent.data.tap.width / 2,
-                scaledEvent.y - scaledEvent.data.tap.height / 2,
-                scaledEvent.data.tap.width,
-                scaledEvent.data.tap.height);
-
-            WebSize pinchViewportOffset = pinchVirtualViewportEnabled() ?
-                flooredIntSize(page()->frameHost().pinchViewport().location()) : IntSize();
-
-            // Keep bounding box relative to the main frame.
-            boundingBox.move(pinchViewportOffset);
-
+            IntRect boundingBox(scaledEvent.x - scaledEvent.data.tap.width / 2, scaledEvent.y - scaledEvent.data.tap.height / 2, scaledEvent.data.tap.width, scaledEvent.data.tap.height);
             Vector<IntRect> goodTargets;
             WillBeHeapVector<RawPtrWillBeMember<Node> > highlightNodes;
             findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets, highlightNodes);
             // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
             // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
-            if (goodTargets.size() >= 2 && m_client
-                && m_client->didTapMultipleTargets(pinchViewportOffset, boundingBox, goodTargets)) {
-
+            if (goodTargets.size() >= 2 && m_client && m_client->didTapMultipleTargets(scaledEvent, goodTargets)) {
                 enableTapHighlights(highlightNodes);
                 for (size_t i = 0; i < m_linkHighlights.size(); ++i)
                     m_linkHighlights[i]->startHighlightAnimationIfNeeded();
