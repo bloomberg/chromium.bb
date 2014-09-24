@@ -108,6 +108,11 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
     const extensions::AppWindow::CreateParams& create_params) {
   ChromeNativeAppWindowViews::InitializeDefaultWindow(create_params);
 
+  // Remaining initialization is for Windows shell integration, which doesn't
+  // apply to app windows in Ash.
+  if (IsRunningInAsh())
+    return;
+
   const extensions::Extension* extension = app_window()->GetExtension();
   if (!extension)
     return;
@@ -122,10 +127,9 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
       ShellIntegration::GetAppModelIdForProfile(app_name_wide,
                                                 profile->GetPath());
   ui::win::SetAppIdForWindow(app_model_id_, hwnd);
-
   web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
 
-  if (!create_params.alpha_enabled && !IsRunningInAsh())
+  if (!create_params.alpha_enabled)
     EnsureCaptionStyleSet();
   UpdateShelfMenu();
 }
@@ -151,7 +155,7 @@ void ChromeNativeAppWindowViewsWin::Activate() {
 }
 
 void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
-  if (!JumpListUpdater::IsEnabled())
+  if (!JumpListUpdater::IsEnabled() || IsRunningInAsh())
     return;
 
   // Currently the only option is related to ephemeral apps, so avoid updating
@@ -169,6 +173,8 @@ void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
   base::FilePath chrome_path;
   if (!PathService::Get(base::FILE_EXE, &chrome_path))
     return;
+
+  DCHECK(!app_model_id_.empty());
 
   JumpListUpdater jumplist_updater(app_model_id_);
   if (!jumplist_updater.BeginUpdate())
