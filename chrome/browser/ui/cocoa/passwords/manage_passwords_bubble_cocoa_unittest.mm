@@ -106,14 +106,14 @@ TEST_F(ManagePasswordsBubbleCocoaTest, BackgroundCloseShouldDeleteBubble) {
 
 TEST_F(ManagePasswordsBubbleCocoaTest, ShowBubbleOnInactiveTabShouldDoNothing) {
   // Start in the tab that we'll try to show the bubble on.
-  EXPECT_TRUE(webContents()->GetTopLevelNativeWindow());
+  TabStripModel* tabStripModel = browser()->tab_strip_model();
+  EXPECT_EQ(0, tabStripModel->active_index());
 
   // Open a second tab and make it active.
   content::WebContents* webContents2 = CreateWebContents();
-  browser()->tab_strip_model()->AppendWebContents(webContents2,
-                                                  /*foreground=*/true);
-  EXPECT_FALSE(webContents()->GetTopLevelNativeWindow());
-  EXPECT_TRUE(webContents2->GetTopLevelNativeWindow());
+  tabStripModel->AppendWebContents(webContents2, /*foreground=*/true);
+  EXPECT_EQ(1, tabStripModel->active_index());
+  EXPECT_EQ(2, tabStripModel->count());
 
   // Try to show the bubble on the inactive tab. Nothing should happen.
   ShowBubble();
