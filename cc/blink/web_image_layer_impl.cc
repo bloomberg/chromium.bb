@@ -25,10 +25,6 @@ blink::WebLayer* WebImageLayerImpl::layer() {
   return layer_.get();
 }
 
-void WebImageLayerImpl::setBitmap(SkBitmap bitmap) {
-  setImageBitmap(bitmap);
-}
-
 void WebImageLayerImpl::setImageBitmap(const SkBitmap& bitmap) {
   if (WebLayerImpl::UsingPictureLayer()) {
     static_cast<cc::PictureImageLayer*>(layer_->layer())->SetBitmap(bitmap);

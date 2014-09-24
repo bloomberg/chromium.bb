@@ -21,8 +21,6 @@ class WebImageLayerImpl : public blink::WebImageLayer {
 
   // blink::WebImageLayer implementation.
   virtual blink::WebLayer* layer();
-  // TODO(vivekg): Remove setBitmap() once https://crrev.com/583733002 lands.
-  virtual void setBitmap(SkBitmap);
   virtual void setImageBitmap(const SkBitmap& bitmap);
 
  private:
