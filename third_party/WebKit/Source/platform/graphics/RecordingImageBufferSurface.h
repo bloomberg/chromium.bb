@@ -45,7 +45,7 @@ private:
     typedef LinkedStack<StateRec> StateStack;
     friend class ::RecordingImageBufferSurfaceTest; // for unit testing
     void fallBackToRasterCanvas();
-    void initializeCurrentFrame();
+    bool initializeCurrentFrame();
     bool finalizeFrameInternal();
 
     // saves current clip and transform matrix of canvas

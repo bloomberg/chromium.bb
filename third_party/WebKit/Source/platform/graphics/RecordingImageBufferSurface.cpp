@@ -28,8 +28,16 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, Op
 RecordingImageBufferSurface::~RecordingImageBufferSurface()
 { }
 
-void RecordingImageBufferSurface::initializeCurrentFrame()
+bool RecordingImageBufferSurface::initializeCurrentFrame()
 {
+    StateStack stateStack;
+    bool saved = false;
+    if (m_currentFrame) {
+        saved = saveState(m_currentFrame->getRecordingCanvas(), &stateStack);
+        if (!saved)
+            return false;
+    }
+
     static SkRTreeFactory rTreeFactory;
     m_currentFrame = adoptPtr(new SkPictureRecorder);
     m_currentFrame->beginRecording(size().width(), size().height(), &rTreeFactory);
@@ -38,6 +46,11 @@ void RecordingImageBufferSurface::initializeCurrentFrame()
         m_imageBuffer->context()->resetCanvas(m_currentFrame->getRecordingCanvas());
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
     }
+
+    if (saved)
+        setCurrentState(m_currentFrame->getRecordingCanvas(), &stateStack);
+
+    return true;
 }
 
 void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
@@ -134,16 +147,10 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
         return false;
     }
 
-    StateStack stateStack;
-
-    if (!saveState(m_currentFrame->getRecordingCanvas(), &stateStack)) {
-        return false;
-    }
-
     m_previousFrame = adoptRef(m_currentFrame->endRecording());
-    initializeCurrentFrame();
+    if (!initializeCurrentFrame())
+        return false;
 
-    setCurrentState(m_currentFrame->getRecordingCanvas(), &stateStack);
 
     m_frameWasCleared = false;
     return true;
