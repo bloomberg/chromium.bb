@@ -55,7 +55,7 @@ config("blink_headers_config") {
 # Depend on this target to use public blink API headers for things like enums
 # and public structures without actually linking against any Blink libraries.
 source_set("blink_headers") {
-  direct_dependent_configs = [
+  public_configs = [
     ":blink_headers_config",
     # Blink exposes icu headers in the public API.
     "//third_party/icu:icu_config",

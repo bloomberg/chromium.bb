@@ -191,35 +191,24 @@ component("platform") {
     "$root_gen_dir/blink",
   ]
 
-  deps = [
-    ":make_platform_generated",
+  public_deps = [
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
     "//third_party:jpeg",
-    "//third_party/harfbuzz-ng",
     "//third_party/iccjpeg",
-    "//third_party/icu",
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/ots",
     "//third_party/qcms",
-    "//third_party/WebKit/Source/wtf",
-    "//third_party/WebKit/Source/platform/heap",
     "//url",
     "//v8",
   ]
-
-  forward_dependent_configs_from = [
-    "//gpu/command_buffer/client:gles2_c_lib",
-    "//skia",
-    "//third_party:jpeg",
-    "//third_party/iccjpeg",
-    "//third_party/libpng",
-    "//third_party/libwebp",
-    "//third_party/ots",
-    "//third_party/qcms",
-    "//url",
-    "//v8",
+  deps = [
+    ":make_platform_generated",
+    "//third_party/harfbuzz-ng",
+    "//third_party/icu",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/heap",
   ]
 
   if (is_mac) {
@@ -306,7 +295,7 @@ component("platform") {
   }
 
   if (is_linux) {
-    direct_dependent_configs = [ "//build/config/linux:fontconfig" ]
+    public_configs = [ "//build/config/linux:fontconfig" ]
   }
 
   if (!use_default_render_theme) {

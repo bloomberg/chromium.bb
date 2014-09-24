@@ -77,7 +77,7 @@ source_set("generated") {
 
 # GYP version: WebKit/Source/core/core.gyp:webcore_prerequisites
 source_set("prerequisites") {
-  exported_deps = [
+  public_deps = [
     "//third_party/WebKit/Source/wtf",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
@@ -95,7 +95,6 @@ source_set("prerequisites") {
     "//url",
     "//v8",
   ]
-
   deps = [
     ":make_core_generated",
     "inspector:protocol_sources",
@@ -104,11 +103,9 @@ source_set("prerequisites") {
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
     "//third_party/WebKit/Source/platform",
-  ] + exported_deps
+  ]
 
-  forward_dependent_configs_from = exported_deps
-
-  direct_dependent_configs = [
+  public_configs = [
     ":core_include_dirs",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
@@ -123,15 +120,18 @@ source_set("prerequisites") {
 
 # Note that this is a source set rather than a group, even though it has no
 # sources. A group would implicitly forward all direct dependent configs
-# through it, but we want to keep our internal targets'
-# direct_dependent_configs private and only forward some of them.
+# through it, but we want to keep our internal targets' public_configs private
+# and only forward some of them.
 #
 # GYP version: WebKit/Source/core/core.gyp:webcore
 source_set("core") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
 
-  exported_deps = [
+  configs -= core_config_remove
+  configs += core_config_add
+
+  public_deps = [
     ":core_generated",
     "//skia",
     "//third_party/npapi",
@@ -141,21 +141,15 @@ source_set("core") {
     "//url",
     "//v8",
   ]
-
-  configs -= core_config_remove
-  configs += core_config_add
-
   deps = [
     ":dom",
     ":html",
     ":remaining",
     ":rendering",
     ":svg",
-  ] + exported_deps
+  ]
 
-  forward_dependent_configs_from = exported_deps
-
-  direct_dependent_configs = [
+  public_configs = [
     ":core_include_dirs",
   ]
 
