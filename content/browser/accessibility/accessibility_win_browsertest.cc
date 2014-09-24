@@ -9,6 +9,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
@@ -399,6 +400,9 @@ base::string16 AccessibleChecker::RoleVariantToString(
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestBusyAccessibilityTree) {
+ if (GetBaseAccessibilityMode() != AccessibilityModeOff)
+    return;
+
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while

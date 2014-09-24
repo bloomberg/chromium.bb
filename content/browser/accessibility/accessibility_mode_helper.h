@@ -10,6 +10,9 @@
 
 namespace content {
 
+// Returns base accessibility mode constant, depends on OS version.
+CONTENT_EXPORT AccessibilityMode GetBaseAccessibilityMode();
+
 // Adds the given accessibility mode constant to the given accessibility mode
 // bitmap.
 CONTENT_EXPORT AccessibilityMode

@@ -6,9 +6,6 @@
 #include "content/common/view_message_enums.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace content {
 
@@ -19,22 +16,14 @@ TEST(AccessibilityModeHelperTest, TestNoOpRemove) {
 }
 
 TEST(AccessibilityModeHelperTest, TestRemoveSelf) {
-  AccessibilityMode kOffMode = AccessibilityModeOff;
-#if defined(OS_WIN)
-  // Always preserve AccessibilityModeEditableTextOnly on Windows 8,
-  // see RemoveAccessibilityModeFrom() implementation.
-  // Test won't pass if switches::kDisableRendererAccessibility is set.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    kOffMode = AccessibilityModeEditableTextOnly;
-  }
-#endif  // defined(OS_WIN)
+  AccessibilityMode kBaseMode = GetBaseAccessibilityMode();
 
-  EXPECT_EQ(kOffMode,
+  EXPECT_EQ(kBaseMode,
             RemoveAccessibilityModeFrom(AccessibilityModeComplete,
                                         AccessibilityModeComplete));
 
   EXPECT_EQ(
-      kOffMode,
+      kBaseMode,
       RemoveAccessibilityModeFrom(AccessibilityModeEditableTextOnly,
                                   AccessibilityModeEditableTextOnly));
 }

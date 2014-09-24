@@ -30,6 +30,20 @@ AccessibilityMode CastToAccessibilityMode(unsigned int int_mode) {
 
 }  // namespace
 
+AccessibilityMode GetBaseAccessibilityMode() {
+  AccessibilityMode accessibility_mode = AccessibilityModeOff;
+#if defined(OS_WIN)
+  // On Windows 8, always enable accessibility for editable text controls
+  // so we can show the virtual keyboard when one is enabled.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
+    accessibility_mode = AccessibilityModeEditableTextOnly;
+  }
+#endif  // defined(OS_WIN)
+  return accessibility_mode;
+}
+
 AccessibilityMode AddAccessibilityModeTo(AccessibilityMode to,
                                          AccessibilityMode mode_to_add) {
   return CastToAccessibilityMode(to | mode_to_add);
