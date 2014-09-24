@@ -1360,6 +1360,11 @@ void BrowserOptionsHandler::OnAccountPictureManagedChanged(bool managed) {
 }
 
 void BrowserOptionsHandler::OnWallpaperManagedChanged(bool managed) {
+#if defined(USE_ATHENA)
+  // In Athena, we don't allow customizing wallpaper right now.
+  // TODO(mukai|bshe): remove this.  http://crbug.com/408734
+  managed = true;
+#endif
   web_ui()->CallJavascriptFunction("BrowserOptions.setWallpaperManaged",
                                    base::FundamentalValue(managed));
 }

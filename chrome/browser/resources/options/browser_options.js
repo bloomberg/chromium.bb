@@ -1523,6 +1523,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Enables or disables the ChromeOS display settings button.
+     * @private
+     */
+    enableDisplayButton_: function(enabled) {
+      if (cr.isChromeOS)
+        $('display-options').disabled = !enabled;
+    },
+
+    /**
      * Enables factory reset section.
      * @private
      */
@@ -1946,6 +1955,7 @@ cr.define('options', function() {
     'addBluetoothDevice',
     'deleteCurrentProfile',
     'enableCertificateButton',
+    'enableDisplayButton',
     'enableFactoryResetSection',
     'getCurrentProfile',
     'getStartStopSyncButton',

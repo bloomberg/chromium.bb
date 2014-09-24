@@ -156,7 +156,12 @@ void KeyboardHandler::RegisterMessages() {
 }
 
 void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
+#if defined(USE_ATHENA)
+  // Athena doesn't have ash::Shell and its new_window_delegate so keyboard
+  // shortcut overlays are not supported.
+  // TODO(mukai): re-enable this.
   ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
+#endif
 }
 
 }  // namespace options

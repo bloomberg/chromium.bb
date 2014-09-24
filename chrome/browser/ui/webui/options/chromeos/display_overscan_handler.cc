@@ -82,11 +82,17 @@ void DisplayOverscanHandler::RegisterMessages() {
 }
 
 void DisplayOverscanHandler::OnDisplayAdded(const gfx::Display& new_display) {
+  if (!overscan_calibrator_)
+    return;
+
   web_ui()->CallJavascriptFunction(
       "options.DisplayOverscan.onOverscanCanceled");
 }
 
 void DisplayOverscanHandler::OnDisplayRemoved(const gfx::Display& old_display) {
+  if (!overscan_calibrator_)
+    return;
+
   web_ui()->CallJavascriptFunction(
       "options.DisplayOverscan.onOverscanCanceled");
 }
