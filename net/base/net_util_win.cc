@@ -216,7 +216,8 @@ WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
     return WIFI_PHY_LAYER_PROTOCOL_NONE;
 
   WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
-  result = wlanapi.enum_interfaces_func(client, NULL, &interface_list_ptr);
+  result = wlanapi.enum_interfaces_func(client.Get(), NULL,
+                                        &interface_list_ptr);
   if (result != ERROR_SUCCESS)
     return WIFI_PHY_LAYER_PROTOCOL_NONE;
   scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
@@ -239,8 +240,9 @@ WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
   DWORD conn_info_size = 0;
   WLAN_OPCODE_VALUE_TYPE op_code;
   result = wlanapi.query_interface_func(
-      client, &info->InterfaceGuid, wlan_intf_opcode_current_connection, NULL,
-      &conn_info_size, reinterpret_cast<VOID**>(&conn_info_ptr), &op_code);
+      client.Get(), &info->InterfaceGuid, wlan_intf_opcode_current_connection,
+      NULL, &conn_info_size, reinterpret_cast<VOID**>(&conn_info_ptr),
+      &op_code);
   if (result != ERROR_SUCCESS)
     return WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
   scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter> conn_info(
