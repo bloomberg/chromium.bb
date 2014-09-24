@@ -348,10 +348,7 @@ TEST(CommandLineTest, ProgramQuotes) {
 
   // Check that quotes are added to command line string paths containing spaces.
   CommandLine::StringType cmd_string(cl_program_path.GetCommandLineString());
-  CommandLine::StringType program_string(cl_program_path.GetProgram().value());
-  EXPECT_EQ('"', cmd_string[0]);
-  EXPECT_EQ(program_string, cmd_string.substr(1, program_string.length()));
-  EXPECT_EQ('"', cmd_string[program_string.length() + 1]);
+  EXPECT_EQ(L"\"Program Path\"", cmd_string);
 }
 #endif
 
