@@ -60,6 +60,7 @@ GIT_REPOS = {
     'llvm-test-suite': 'pnacl-llvm-testsuite.git',
     'compiler-rt': 'pnacl-compiler-rt.git',
     'subzero': 'pnacl-subzero.git',
+    'binutils-x86': 'nacl-binutils.git',
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
@@ -72,6 +73,9 @@ KNOWN_MIRRORS = [('http://git.chromium.org/native_client/', GIT_BASE_URL)]
 PUSH_MIRRORS = [('http://git.chromium.org/native_client/', GIT_PUSH_URL),
                 (ALT_GIT_BASE_URL, GIT_PUSH_URL),
                 (GIT_BASE_URL, GIT_PUSH_URL)]
+
+PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
+BUG_URL = 'http://gonacl.com/reportissue'
 
 # TODO(dschuff): Some of this mingw logic duplicates stuff in command.py
 BUILD_CROSS_MINGW = False
@@ -224,6 +228,15 @@ def CmakeHostArchFlags(host, options):
   return cmake_flags
 
 
+def ConfigureBinutilsCommon():
+  return ['--with-pkgversion=' + PACKAGE_NAME,
+          '--with-bugurl=' + BUG_URL,
+          '--without-zlib',
+          '--prefix=',
+          '--disable-silent-rules',
+          '--enable-deterministic-archives',
+         ]
+
 def LLVMConfigureAssertionsFlags(options):
   if options.enable_llvm_assertions:
     return []
@@ -332,6 +345,11 @@ def HostToolsSources(GetGitSyncCmds):
           'output_dirname': 'subzero',
           'commands': GetGitSyncCmds('subzero'),
       },
+      'binutils_x86_src': {
+          'type': 'source',
+          'output_dirname': 'binutils-x86',
+          'commands': GetGitSyncCmds('binutils-x86'),
+      },
   }
   return sources
 
@@ -439,21 +457,18 @@ def HostTools(host, options):
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(binutils_pnacl_src)s/configure'] +
+                  ConfigureBinutilsCommon() +
                   ConfigureHostArchFlags(host, warning_flags, options) +
-                  ['--prefix=',
-                  '--disable-silent-rules',
-                  '--target=arm-pc-nacl',
+                  ['--target=arm-pc-nacl',
                   '--program-prefix=le32-nacl-',
                   '--enable-targets=arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl,' +
                   'mipsel-pc-nacl',
-                  '--enable-deterministic-archives',
                   '--enable-shared=no',
                   '--enable-gold=default',
                   '--enable-ld=no',
                   '--enable-plugins',
                   '--without-gas',
-                  '--without-zlib',
-                  '--with-sysroot=/arm-pc-nacl']),
+                  '--with-sysroot=/le32-nacl']),
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
@@ -538,6 +553,16 @@ def HostTools(host, options):
                                Exe('clang-format'), Exe('clang-check'),
                                Exe('c-index-test'), Exe('clang-tblgen'),
                                Exe('llvm-tblgen')])] +
+              [command.Command(['ln', '-f',
+                                command.path.join('%(output)s', 'bin','clang'),
+                                command.path.join('%(output)s', 'bin',
+                                                  arch + '-nacl-clang')])
+               for arch in ['i686', 'x86_64']] +
+              [command.Command(['ln', '-f',
+                                command.path.join('%(output)s', 'bin','clang'),
+                                command.path.join('%(output)s', 'bin',
+                                                  arch + '-nacl-clang++')])
+               for arch in ['i686', 'x86_64']] +
               CopyWindowsHostLibs(host),
       },
   }
@@ -607,6 +632,42 @@ def Metadata(revisions):
       }
   }
   return data
+
+
+def HostToolsDirectToNacl(host):
+  def H(component_name):
+    return GSDJoin(component_name, host)
+  tools = {
+      H('binutils_x86'): {
+          'type': 'build',
+          'dependencies': [H('llvm'), 'binutils_x86_src'],
+          'commands': [
+              command.SkipForIncrementalCommand(
+                  ['sh', '%(binutils_x86_src)s/configure'] +
+                  ConfigureBinutilsCommon() +
+                  ['--target=x86_64-nacl',
+                   '--enable-targets=x86_64-nacl,i686-nacl',
+                   '--disable-werror']),
+              command.Command(MakeCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
+              # Remove the share dir from this binutils build and leave the one
+              # from the newer version used for bitcode linking. Always remove
+              # the lib dirs, which have unneeded host libs.
+              [command.RemoveDirectory(os.path.join('%(output)s', dir))
+               for dir in ('lib', 'lib32', 'lib64', 'share')] +
+              # Create the set of directories for host libs and includes, for
+              # experimentation before we actually build them.
+              # Libc includes (libs dir is created by binutils)
+              [command.Mkdir(command.path.join(
+                  '%(output)s', target, 'include'), parents=True)
+                for target in ['i686-nacl', 'x86_64-nacl']] +
+              # Compiler libs (includes are shared)
+              [command.Mkdir(command.path.join('%(output)s',
+                  'lib', 'clang', '3.4', 'lib', target), parents=True)
+               for target in ['i686-nacl', 'x86_64-nacl']]
+      }
+  }
+  return tools
 
 def ParseComponentRevisionsFile(filename):
   ''' Parse a simple-format deps file, with fields of the form:
@@ -788,6 +849,7 @@ if __name__ == '__main__':
     for host in hosts:
       packages.update(HostLibs(host, args))
       packages.update(HostTools(host, args))
+      packages.update(HostToolsDirectToNacl(host))
     packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
     # Don't build the target libs on Windows because of pathname issues.
     # Only the linux64 bot is canonical (i.e. it will upload its packages).
