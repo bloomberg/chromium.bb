@@ -224,8 +224,8 @@ void ExternalCache::CheckCache() {
 
   // If request_context_ is missing we can't download anything.
   if (!downloader_ && request_context_.get()) {
-    downloader_.reset(
-        new extensions::ExtensionDownloader(this, request_context_.get()));
+    downloader_ = ChromeExtensionDownloaderFactory::CreateForRequestContext(
+        request_context_.get(), this);
   }
 
   cached_extensions_->Clear();
