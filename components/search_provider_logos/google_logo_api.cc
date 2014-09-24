@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "net/base/url_util.h"
 
 namespace search_provider_logos {
 
@@ -19,7 +18,22 @@ const char kResponsePreamble[] = ")]}'";
 
 GURL GoogleAppendFingerprintToLogoURL(const GURL& logo_url,
                                       const std::string& fingerprint) {
-  return net::AppendQueryParameter(logo_url, "async", "es_dfp:" + fingerprint);
+  // Note: we can't just use net::AppendQueryParameter() because it escapes
+  // ":" to "%3A", but the server requires the colon not to be escaped.
+  // See: http://crbug.com/413845
+
+  // TODO(newt): Switch to using net::AppendQueryParameter once it no longer
+  // escapes ":"
+
+  std::string query(logo_url.query());
+  if (!query.empty())
+    query += "&";
+
+  query += "async=es_dfp:";
+  query += fingerprint;
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  return logo_url.ReplaceComponents(replacements);
 }
 
 scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
