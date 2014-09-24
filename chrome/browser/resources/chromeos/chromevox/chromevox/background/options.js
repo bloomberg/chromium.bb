@@ -13,7 +13,6 @@ goog.require('cvox.BrailleBackground');
 goog.require('cvox.BrailleTable');
 goog.require('cvox.ChromeEarcons');
 goog.require('cvox.ChromeHost');
-goog.require('cvox.ChromeMsgs');
 goog.require('cvox.ChromeTts');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxPrefs');
@@ -22,6 +21,7 @@ goog.require('cvox.ExtensionBridge');
 goog.require('cvox.HostFactory');
 goog.require('cvox.KeyMap');
 goog.require('cvox.KeySequence');
+goog.require('cvox.Msgs');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
 
@@ -67,7 +67,7 @@ cvox.OptionsPage.TEXT_TO_KEYCODE = {
  * @suppress {missingProperties} Property prefs never defined on Window
  */
 cvox.OptionsPage.init = function() {
-  cvox.ChromeVox.msgs = cvox.HostFactory.getMsgs();
+  cvox.ChromeVox.msgs = new cvox.Msgs();
 
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
   cvox.OptionsPage.populateKeyMapSelect();

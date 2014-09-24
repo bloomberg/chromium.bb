@@ -13,7 +13,6 @@ goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AccessibilityApiHandler');
 goog.require('cvox.BrailleBackground');
 goog.require('cvox.BrailleCaptionsBackground');
-goog.require('cvox.ChromeMsgs');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.ChromeVoxPrefs');
@@ -23,6 +22,7 @@ goog.require('cvox.EarconsBackground');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.HostFactory');
 goog.require('cvox.InjectedScriptLoader');
+goog.require('cvox.Msgs');
 goog.require('cvox.NavBraille');
 // TODO(dtseng): This is required to prevent Closure from stripping our export
 // prefs on window.
@@ -56,7 +56,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
     return;
   }
 
-  cvox.ChromeVox.msgs = cvox.HostFactory.getMsgs();
+  cvox.ChromeVox.msgs = new cvox.Msgs();
   this.prefs = new cvox.ChromeVoxPrefs();
   this.readPrefs();
 

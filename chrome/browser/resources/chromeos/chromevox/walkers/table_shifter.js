@@ -70,7 +70,7 @@ cvox.TableShifter.prototype.getName = function() {
 /**
  * @override
  * @suppress {checkTypes} actual parameter 2 of
- * cvox.AbstractMsgs.prototype.getMsg does not match formal parameter
+ * cvox.Msgs.prototype.getMsg does not match formal parameter
  * found   : Array.<number>
  * required: (Array.<string>|null|undefined)
  */

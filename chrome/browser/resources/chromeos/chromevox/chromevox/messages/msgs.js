@@ -4,24 +4,16 @@
 
 
 /**
- * @fileoverview A cvox.AbstractMsgs implementation for Chrome.
+ * @fileoverview Defines methods related to retrieving translated messages.
  */
 
-goog.provide('cvox.ChromeMsgs');
-
-goog.require('cvox.AbstractMsgs');
-goog.require('cvox.HostFactory');
-
-
+goog.provide('cvox.Msgs');
 
 /**
  * @constructor
- * @extends {cvox.AbstractMsgs}
  */
-cvox.ChromeMsgs = function() {
-  cvox.AbstractMsgs.call(this);
+cvox.Msgs = function() {
 };
-goog.inherits(cvox.ChromeMsgs, cvox.AbstractMsgs);
 
 
 /**
@@ -30,14 +22,14 @@ goog.inherits(cvox.ChromeMsgs, cvox.AbstractMsgs);
  * @const
  * @private
  */
-cvox.ChromeMsgs.NAMESPACE_ = 'chromevox_';
+cvox.Msgs.NAMESPACE_ = 'chromevox_';
 
 
 /**
  * Return the current locale.
  * @return {string} The locale.
  */
-cvox.ChromeMsgs.prototype.getLocale = function() {
+cvox.Msgs.prototype.getLocale = function() {
   return chrome.i18n.getMessage('locale');
 };
 
@@ -48,15 +40,15 @@ cvox.ChromeMsgs.prototype.getLocale = function() {
  * If we can't find a message, throw an exception.  This allows us to catch
  * typos early.
  *
- * @param {string} message_id The id.
+ * @param {string} messageId The id.
  * @param {Array.<string>=} opt_subs Substitution strings.
  * @return {string} The message.
  */
-cvox.ChromeMsgs.prototype.getMsg = function(message_id, opt_subs) {
+cvox.Msgs.prototype.getMsg = function(messageId, opt_subs) {
   var message = chrome.i18n.getMessage(
-      cvox.ChromeMsgs.NAMESPACE_ + message_id, opt_subs);
+      cvox.Msgs.NAMESPACE_ + messageId, opt_subs);
   if (message == undefined || message == '') {
-    throw new Error('Invalid ChromeVox message id: ' + message_id);
+    throw new Error('Invalid ChromeVox message id: ' + messageId);
   }
   return message;
 };
@@ -68,7 +60,7 @@ cvox.ChromeMsgs.prototype.getMsg = function(message_id, opt_subs) {
  *
  * @param {Node} root The root node where the translation should be performed.
  */
-cvox.ChromeMsgs.prototype.addTranslatedMessagesToDom = function(root) {
+cvox.Msgs.prototype.addTranslatedMessagesToDom = function(root) {
   var elts = root.querySelectorAll('.i18n');
   for (var i = 0; i < elts.length; i++) {
     var msgid = elts[i].getAttribute('msgid');
@@ -87,8 +79,6 @@ cvox.ChromeMsgs.prototype.addTranslatedMessagesToDom = function(root) {
  * @param {number} num The number.
  * @return {string} The number in the correct locale.
  */
-cvox.ChromeMsgs.prototype.getNumber = function(num) {
+cvox.Msgs.prototype.getNumber = function(num) {
   return '' + num;
 };
-
-cvox.HostFactory.msgsConstructor = cvox.ChromeMsgs;

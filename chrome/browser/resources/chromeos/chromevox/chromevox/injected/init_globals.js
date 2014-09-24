@@ -46,7 +46,7 @@ cvox.InitGlobals.initGlobals = function() {
   cvox.ChromeVox.mathJax = cvox.HostFactory.getMathJax();
 
   cvox.ChromeVox.earcons = cvox.HostFactory.getEarcons();
-  cvox.ChromeVox.msgs = cvox.HostFactory.getMsgs();
+  cvox.ChromeVox.msgs = new cvox.Msgs();
   cvox.ChromeVox.isActive = true;
   cvox.ChromeVox.navigationManager = new cvox.NavigationManager();
   cvox.ChromeVox.navigationManager.updateIndicator();

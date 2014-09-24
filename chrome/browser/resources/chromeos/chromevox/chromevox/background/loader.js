@@ -7,5 +7,5 @@
  *
  */
 
-goog.require('cvox.ChromeMsgs');
 goog.require('cvox.ChromeVoxBackground');
+goog.require('cvox.Msgs');

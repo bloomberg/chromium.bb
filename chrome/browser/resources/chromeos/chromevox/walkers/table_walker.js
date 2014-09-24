@@ -55,7 +55,7 @@ cvox.TableWalker.prototype.sync = function(sel) {
 /**
  * @override
  * @suppress {checkTypes} actual parameter 2 of
- * cvox.AbstractMsgs.prototype.getMsg does not match formal parameter
+ * cvox.Msgs.prototype.getMsg does not match formal parameter
  * found   : Array.<number>
  * required: (Array.<string>|null|undefined)
  */
@@ -267,7 +267,7 @@ cvox.TableWalker.prototype.getHeaderText_ = function(sel) {
  * @param {!cvox.CursorSelection} sel A valid selection.
  * @return {Array.<cvox.NavDescription>} The location description.
  * @suppress {checkTypes} actual parameter 2 of
- * cvox.AbstractMsgs.prototype.getMsg does not match
+ * cvox.Msgs.prototype.getMsg does not match
  * formal parameter
  * found   : Array.<number>
  * required: (Array.<string>|null|undefined)
