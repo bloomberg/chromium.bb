@@ -7,13 +7,6 @@ License: BSD
 License File: src/COPYING.txt
 Security Critical: no
 
-Name:
-Shortname: protobuf
-URL: https://android.googlesource.com/platform/external/protobuf.git
-License: Google BSD like
-License File: src/COPYING
-Security Critical: no
-
 Description:
 Android protobuf library contains the nano version of the Java protobuf library,
 which generates Java-files with fewer methods than the protobuf lite compiler,
