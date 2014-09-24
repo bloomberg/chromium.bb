@@ -127,6 +127,11 @@ public:
 
     void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
 
+    LayoutUnit columnGap() const;
+
+    // The "CSS actual" value of column-count. This includes overflowing columns, if any.
+    unsigned actualColumnCount() const;
+
 private:
     RenderMultiColumnSet(RenderFlowThread*);
 
@@ -141,14 +146,9 @@ private:
 
     virtual const char* renderName() const OVERRIDE;
 
-    void paintColumnRules(PaintInfo&, const LayoutPoint& paintOffset);
-
     LayoutUnit calculateMaxColumnHeight() const;
-    LayoutUnit columnGap() const;
     LayoutRect columnRectAt(unsigned index) const;
 
-    // The "CSS actual" value of column-count. This includes overflowing columns, if any.
-    unsigned actualColumnCount() const;
 
     LayoutRect flowThreadPortionRectAt(unsigned index) const;
     LayoutRect flowThreadPortionOverflowRect(const LayoutRect& flowThreadPortion, unsigned index, unsigned colCount, LayoutUnit colGap) const;

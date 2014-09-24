@@ -1513,6 +1513,8 @@
             'paint/ListItemPainter.h',
             'paint/ObjectPainter.cpp',
             'paint/ObjectPainter.h',
+            'paint/MultiColumnSetPainter.cpp',
+            'paint/MultiColumnSetPainter.h',
             'paint/SVGForeignObjectPainter.cpp',
             'paint/SVGForeignObjectPainter.h',
             'paint/TablePainter.cpp',

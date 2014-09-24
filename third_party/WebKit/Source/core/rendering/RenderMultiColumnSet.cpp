@@ -27,6 +27,7 @@
 #include "core/rendering/RenderMultiColumnSet.h"
 
 #include "core/paint/BoxPainter.h"
+#include "core/paint/MultiColumnSetPainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
@@ -421,74 +422,7 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect&
 
 void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (style()->visibility() != VISIBLE)
-        return;
-
-    RenderBlockFlow::paintObject(paintInfo, paintOffset);
-
-    // FIXME: Right now we're only painting in the foreground phase.
-    // Columns should technically respect phases and allow for background/float/foreground overlap etc., just like
-    // RenderBlocks do. Note this is a pretty minor issue, since the old column implementation clipped columns
-    // anyway, thus making it impossible for them to overlap one another. It's also really unlikely that the columns
-    // would overlap another block.
-    if (!m_flowThread || !isValid() || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
-        return;
-
-    paintColumnRules(paintInfo, paintOffset);
-}
-
-void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    if (flowThread()->isRenderPagedFlowThread())
-        return;
-
-    RenderStyle* blockStyle = multiColumnBlockFlow()->style();
-    const Color& ruleColor = resolveColor(blockStyle, CSSPropertyWebkitColumnRuleColor);
-    bool ruleTransparent = blockStyle->columnRuleIsTransparent();
-    EBorderStyle ruleStyle = blockStyle->columnRuleStyle();
-    LayoutUnit ruleThickness = blockStyle->columnRuleWidth();
-    LayoutUnit colGap = columnGap();
-    bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent;
-    if (!renderRule)
-        return;
-
-    unsigned colCount = actualColumnCount();
-    if (colCount <= 1)
-        return;
-
-    bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
-
-    bool leftToRight = style()->isLeftToRightDirection();
-    LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : contentLogicalWidth();
-    LayoutUnit ruleAdd = borderAndPaddingLogicalLeft();
-    LayoutUnit ruleLogicalLeft = leftToRight ? LayoutUnit() : contentLogicalWidth();
-    LayoutUnit inlineDirectionSize = pageLogicalWidth();
-    BoxSide boxSide = isHorizontalWritingMode()
-        ? leftToRight ? BSLeft : BSRight
-        : leftToRight ? BSTop : BSBottom;
-
-    for (unsigned i = 0; i < colCount; i++) {
-        // Move to the next position.
-        if (leftToRight) {
-            ruleLogicalLeft += inlineDirectionSize + colGap / 2;
-            currLogicalLeftOffset += inlineDirectionSize + colGap;
-        } else {
-            ruleLogicalLeft -= (inlineDirectionSize + colGap / 2);
-            currLogicalLeftOffset -= (inlineDirectionSize + colGap);
-        }
-
-        // Now paint the column rule.
-        if (i < colCount - 1) {
-            LayoutUnit ruleLeft = isHorizontalWritingMode() ? paintOffset.x() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd : paintOffset.x() + borderLeft() + paddingLeft();
-            LayoutUnit ruleRight = isHorizontalWritingMode() ? ruleLeft + ruleThickness : ruleLeft + contentWidth();
-            LayoutUnit ruleTop = isHorizontalWritingMode() ? paintOffset.y() + borderTop() + paddingTop() : paintOffset.y() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
-            LayoutUnit ruleBottom = isHorizontalWritingMode() ? ruleTop + contentHeight() : ruleTop + ruleThickness;
-            IntRect pixelSnappedRuleRect = pixelSnappedIntRectFromEdges(ruleLeft, ruleTop, ruleRight, ruleBottom);
-            ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
-        }
-
-        ruleLogicalLeft = currLogicalLeftOffset;
-    }
+    MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
 void RenderMultiColumnSet::paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect) const
