@@ -1318,3 +1318,5 @@ crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received
 crbug.com/416846 inspector/elements/styles/styles-add-new-rule.html [ Pass Failure ]
 
 crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failure ]
+
+crbug.com/417235 [ Win ] fast/forms/autofilled.html [ NeedsRebaseline ]
