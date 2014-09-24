@@ -229,7 +229,8 @@ MojoResult ChannelMojo::WriteToFileDescriptorSet(
       return unwrap_result;
     }
 
-    bool ok = message->file_descriptor_set()->Add(platform_handle.release().fd);
+    bool ok = message->file_descriptor_set()->AddToOwn(
+        base::ScopedFD(platform_handle.release().fd));
     DCHECK(ok);
   }
 
@@ -238,17 +239,20 @@ MojoResult ChannelMojo::WriteToFileDescriptorSet(
 
 // static
 MojoResult ChannelMojo::ReadFromFileDescriptorSet(
-    const Message& message,
+    Message* message,
     std::vector<MojoHandle>* handles) {
   // We dup() the handles in IPC::Message to transmit.
   // IPC::FileDescriptorSet has intricate lifecycle semantics
   // of FDs, so just to dup()-and-own them is the safest option.
-  if (message.HasFileDescriptors()) {
-    const FileDescriptorSet* fdset = message.file_descriptor_set();
-    for (size_t i = 0; i < fdset->size(); ++i) {
-      int fd_to_send = dup(fdset->GetDescriptorAt(i));
+  if (message->HasFileDescriptors()) {
+    FileDescriptorSet* fdset = message->file_descriptor_set();
+    std::vector<base::PlatformFile> fds_to_send(fdset->size());
+    fdset->PeekDescriptors(&fds_to_send[0]);
+    for (size_t i = 0; i < fds_to_send.size(); ++i) {
+      int fd_to_send = dup(fds_to_send[i]);
       if (-1 == fd_to_send) {
         DPLOG(WARNING) << "Failed to dup FD to transmit.";
+        fdset->CommitAll();
         return MOJO_RESULT_UNKNOWN;
       }
 
@@ -260,11 +264,14 @@ MojoResult ChannelMojo::ReadFromFileDescriptorSet(
       if (MOJO_RESULT_OK != wrap_result) {
         DLOG(WARNING) << "Pipe failed to wrap handles. Closing: "
                       << wrap_result;
+        fdset->CommitAll();
         return wrap_result;
       }
 
       handles->push_back(wrapped_handle);
     }
+
+    fdset->CommitAll();
   }
 
   return MOJO_RESULT_OK;

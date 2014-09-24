@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_descriptor_posix.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "ipc/ipc_export.h"
 
 // -----------------------------------------------------------------------------
@@ -36,10 +37,10 @@ class IPC_EXPORT FileDescriptorSet
   // Interfaces for building during message serialisation...
 
   // Add a descriptor to the end of the set. Returns false iff the set is full.
-  bool Add(int fd);
+  bool AddToBorrow(base::PlatformFile fd);
   // Add a descriptor to the end of the set and automatically close it after
   // transmission. Returns false iff the set is full.
-  bool AddAndAutoClose(int fd);
+  bool AddToOwn(base::ScopedFD fd);
 
   // ---------------------------------------------------------------------------
 
@@ -50,15 +51,15 @@ class IPC_EXPORT FileDescriptorSet
   // Return the number of descriptors
   unsigned size() const { return descriptors_.size(); }
   // Return true if no unconsumed descriptors remain
-  bool empty() const { return descriptors_.empty(); }
-  // Fetch the nth descriptor from the beginning of the set. Code using this
-  // /must/ access the descriptors in order, except that it may wrap from the
-  // end to index 0 again.
+  bool empty() const { return 0 == size(); }
+  // Take the nth descriptor from the beginning of the set,
+  // transferring the ownership of the descriptor taken. Code using this
+  // /must/ access the descriptors in order, and must do it at most once.
   //
   // This interface is designed for the deserialising code as it doesn't
   // support close flags.
   //   returns: file descriptor, or -1 on error
-  int GetDescriptorAt(unsigned n) const;
+  base::PlatformFile TakeDescriptorAt(unsigned n);
 
   // ---------------------------------------------------------------------------
 
@@ -69,9 +70,9 @@ class IPC_EXPORT FileDescriptorSet
   // Fill an array with file descriptors without 'consuming' them. CommitAll
   // must be called after these descriptors have been transmitted.
   //   buffer: (output) a buffer of, at least, size() integers.
-  void GetDescriptors(int* buffer) const;
+  void PeekDescriptors(base::PlatformFile* buffer) const;
   // This must be called after transmitting the descriptors returned by
-  // GetDescriptors. It marks all the descriptors as consumed and closes those
+  // PeekDescriptors. It marks all the descriptors as consumed and closes those
   // which are auto-close.
   void CommitAll();
   // Returns true if any contained file descriptors appear to be handles to a
@@ -79,7 +80,7 @@ class IPC_EXPORT FileDescriptorSet
   bool ContainsDirectoryDescriptor() const;
   // Fetch all filedescriptors with the "auto close" property.
   // Used instead of CommitAll() when closing must be handled manually.
-  void ReleaseFDsToClose(std::vector<int>* fds);
+  void ReleaseFDsToClose(std::vector<base::PlatformFile>* fds);
 
   // ---------------------------------------------------------------------------
 
@@ -90,7 +91,7 @@ class IPC_EXPORT FileDescriptorSet
   // Set the contents of the set from the given buffer. This set must be empty
   // before calling. The auto-close flag is set on all the descriptors so that
   // unconsumed descriptors are closed on destruction.
-  void SetDescriptors(const int* buffer, unsigned count);
+  void AddDescriptorsToOwn(const base::PlatformFile* buffer, unsigned count);
 
   // ---------------------------------------------------------------------------
 
@@ -103,7 +104,8 @@ class IPC_EXPORT FileDescriptorSet
   // these descriptors are sent as control data. After sending, any descriptors
   // with a true flag are closed. If this message has been received, then these
   // are the descriptors which were received and all close flags are true.
-  std::vector<base::FileDescriptor> descriptors_;
+  std::vector<base::PlatformFile> descriptors_;
+  ScopedVector<base::ScopedFD> owned_descriptors_;
 
   // This contains the index of the next descriptor which should be consumed.
   // It's used in a couple of ways. Firstly, at destruction we can check that

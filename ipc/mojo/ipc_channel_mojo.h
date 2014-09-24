@@ -100,7 +100,7 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   static MojoResult WriteToFileDescriptorSet(
       const std::vector<MojoHandle>& handle_buffer,
       Message* message);
-  static MojoResult ReadFromFileDescriptorSet(const Message& message,
+  static MojoResult ReadFromFileDescriptorSet(Message* message,
                                               std::vector<MojoHandle>* handles);
 
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)

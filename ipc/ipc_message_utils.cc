@@ -462,8 +462,14 @@ void ParamTraits<base::FileDescriptor>::Write(Message* m, const param_type& p) {
   const bool valid = p.fd >= 0;
   WriteParam(m, valid);
 
-  if (valid) {
-    if (!m->WriteFileDescriptor(p))
+  if (!valid)
+    return;
+
+  if (p.auto_close) {
+    if (!m->WriteFile(base::ScopedFD(p.fd)))
+      NOTREACHED();
+  } else {
+    if (!m->WriteBorrowingFile(p.fd))
       NOTREACHED();
   }
 }
@@ -471,17 +477,22 @@ void ParamTraits<base::FileDescriptor>::Write(Message* m, const param_type& p) {
 bool ParamTraits<base::FileDescriptor>::Read(const Message* m,
                                              PickleIterator* iter,
                                              param_type* r) {
+  *r = base::FileDescriptor();
+
   bool valid;
   if (!ReadParam(m, iter, &valid))
     return false;
 
-  if (!valid) {
-    r->fd = -1;
-    r->auto_close = false;
+  // TODO(morrita): Seems like this should return false.
+  if (!valid)
     return true;
-  }
 
-  return m->ReadFileDescriptor(iter, r);
+  base::ScopedFD fd;
+  if (!m->ReadFile(iter, &fd))
+    return false;
+
+  *r = base::FileDescriptor(fd.release(), true);
+  return true;
 }
 
 void ParamTraits<base::FileDescriptor>::Log(const param_type& p,

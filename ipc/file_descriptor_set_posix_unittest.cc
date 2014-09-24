@@ -41,7 +41,7 @@ TEST(FileDescriptorSet, BasicAdd) {
 
   ASSERT_EQ(set->size(), 0u);
   ASSERT_TRUE(set->empty());
-  ASSERT_TRUE(set->Add(kFDBase));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase));
   ASSERT_EQ(set->size(), 1u);
   ASSERT_TRUE(!set->empty());
 
@@ -56,7 +56,7 @@ TEST(FileDescriptorSet, BasicAddAndClose) {
   ASSERT_EQ(set->size(), 0u);
   ASSERT_TRUE(set->empty());
   const int fd = GetSafeFd();
-  ASSERT_TRUE(set->AddAndAutoClose(fd));
+  ASSERT_TRUE(set->AddToOwn(base::ScopedFD(fd)));
   ASSERT_EQ(set->size(), 1u);
   ASSERT_TRUE(!set->empty());
 
@@ -68,9 +68,9 @@ TEST(FileDescriptorSet, MaxSize) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   for (size_t i = 0; i < FileDescriptorSet::kMaxDescriptorsPerMessage; ++i)
-    ASSERT_TRUE(set->Add(kFDBase + 1 + i));
+    ASSERT_TRUE(set->AddToBorrow(kFDBase + 1 + i));
 
-  ASSERT_TRUE(!set->Add(kFDBase));
+  ASSERT_TRUE(!set->AddToBorrow(kFDBase));
 
   set->CommitAll();
 }
@@ -79,12 +79,12 @@ TEST(FileDescriptorSet, SetDescriptors) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_TRUE(set->empty());
-  set->SetDescriptors(NULL, 0);
+  set->AddDescriptorsToOwn(NULL, 0);
   ASSERT_TRUE(set->empty());
 
   const int fd = GetSafeFd();
   static const int fds[] = {fd};
-  set->SetDescriptors(fds, 1);
+  set->AddDescriptorsToOwn(fds, 1);
   ASSERT_TRUE(!set->empty());
   ASSERT_EQ(set->size(), 1u);
 
@@ -93,15 +93,15 @@ TEST(FileDescriptorSet, SetDescriptors) {
   ASSERT_TRUE(VerifyClosed(fd));
 }
 
-TEST(FileDescriptorSet, GetDescriptors) {
+TEST(FileDescriptorSet, PeekDescriptors) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
-  set->GetDescriptors(NULL);
-  ASSERT_TRUE(set->Add(kFDBase));
+  set->PeekDescriptors(NULL);
+  ASSERT_TRUE(set->AddToBorrow(kFDBase));
 
   int fds[1];
   fds[0] = 0;
-  set->GetDescriptors(fds);
+  set->PeekDescriptors(fds);
   ASSERT_EQ(fds[0], kFDBase);
   set->CommitAll();
   ASSERT_TRUE(set->empty());
@@ -110,13 +110,15 @@ TEST(FileDescriptorSet, GetDescriptors) {
 TEST(FileDescriptorSet, WalkInOrder) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
-  ASSERT_TRUE(set->Add(kFDBase));
-  ASSERT_TRUE(set->Add(kFDBase + 1));
-  ASSERT_TRUE(set->Add(kFDBase + 2));
+  // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
+  // used to retrieve borrowed descriptors. That never happens in production.
+  ASSERT_TRUE(set->AddToBorrow(kFDBase));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase + 1));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase + 2));
 
-  ASSERT_EQ(set->GetDescriptorAt(0), kFDBase);
-  ASSERT_EQ(set->GetDescriptorAt(1), kFDBase + 1);
-  ASSERT_EQ(set->GetDescriptorAt(2), kFDBase + 2);
+  ASSERT_EQ(set->TakeDescriptorAt(0), kFDBase);
+  ASSERT_EQ(set->TakeDescriptorAt(1), kFDBase + 1);
+  ASSERT_EQ(set->TakeDescriptorAt(2), kFDBase + 2);
 
   set->CommitAll();
 }
@@ -124,12 +126,14 @@ TEST(FileDescriptorSet, WalkInOrder) {
 TEST(FileDescriptorSet, WalkWrongOrder) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
-  ASSERT_TRUE(set->Add(kFDBase));
-  ASSERT_TRUE(set->Add(kFDBase + 1));
-  ASSERT_TRUE(set->Add(kFDBase + 2));
+  // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
+  // used to retrieve borrowed descriptors. That never happens in production.
+  ASSERT_TRUE(set->AddToBorrow(kFDBase));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase + 1));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase + 2));
 
-  ASSERT_EQ(set->GetDescriptorAt(0), kFDBase);
-  ASSERT_EQ(set->GetDescriptorAt(2), -1);
+  ASSERT_EQ(set->TakeDescriptorAt(0), kFDBase);
+  ASSERT_EQ(set->TakeDescriptorAt(2), -1);
 
   set->CommitAll();
 }
@@ -137,19 +141,21 @@ TEST(FileDescriptorSet, WalkWrongOrder) {
 TEST(FileDescriptorSet, WalkCycle) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
-  ASSERT_TRUE(set->Add(kFDBase));
-  ASSERT_TRUE(set->Add(kFDBase + 1));
-  ASSERT_TRUE(set->Add(kFDBase + 2));
+  // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
+  // used to retrieve borrowed descriptors. That never happens in production.
+  ASSERT_TRUE(set->AddToBorrow(kFDBase));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase + 1));
+  ASSERT_TRUE(set->AddToBorrow(kFDBase + 2));
 
-  ASSERT_EQ(set->GetDescriptorAt(0), kFDBase);
-  ASSERT_EQ(set->GetDescriptorAt(1), kFDBase + 1);
-  ASSERT_EQ(set->GetDescriptorAt(2), kFDBase + 2);
-  ASSERT_EQ(set->GetDescriptorAt(0), kFDBase);
-  ASSERT_EQ(set->GetDescriptorAt(1), kFDBase + 1);
-  ASSERT_EQ(set->GetDescriptorAt(2), kFDBase + 2);
-  ASSERT_EQ(set->GetDescriptorAt(0), kFDBase);
-  ASSERT_EQ(set->GetDescriptorAt(1), kFDBase + 1);
-  ASSERT_EQ(set->GetDescriptorAt(2), kFDBase + 2);
+  ASSERT_EQ(set->TakeDescriptorAt(0), kFDBase);
+  ASSERT_EQ(set->TakeDescriptorAt(1), kFDBase + 1);
+  ASSERT_EQ(set->TakeDescriptorAt(2), kFDBase + 2);
+  ASSERT_EQ(set->TakeDescriptorAt(0), kFDBase);
+  ASSERT_EQ(set->TakeDescriptorAt(1), kFDBase + 1);
+  ASSERT_EQ(set->TakeDescriptorAt(2), kFDBase + 2);
+  ASSERT_EQ(set->TakeDescriptorAt(0), kFDBase);
+  ASSERT_EQ(set->TakeDescriptorAt(1), kFDBase + 1);
+  ASSERT_EQ(set->TakeDescriptorAt(2), kFDBase + 2);
 
   set->CommitAll();
 }
@@ -158,7 +164,7 @@ TEST(FileDescriptorSet, DontClose) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   const int fd = GetSafeFd();
-  ASSERT_TRUE(set->Add(fd));
+  ASSERT_TRUE(set->AddToBorrow(fd));
   set->CommitAll();
 
   ASSERT_FALSE(VerifyClosed(fd));
@@ -168,7 +174,7 @@ TEST(FileDescriptorSet, DoClose) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   const int fd = GetSafeFd();
-  ASSERT_TRUE(set->AddAndAutoClose(fd));
+  ASSERT_TRUE(set->AddToOwn(base::ScopedFD(fd)));
   set->CommitAll();
 
   ASSERT_TRUE(VerifyClosed(fd));

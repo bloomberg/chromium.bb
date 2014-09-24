@@ -302,10 +302,11 @@ class ListenerThatExpectsFile : public IPC::Listener {
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     PickleIterator iter(message);
-    base::FileDescriptor desc;
-    EXPECT_TRUE(message.ReadFileDescriptor(&iter, &desc));
+
+    base::ScopedFD fd;
+    EXPECT_TRUE(message.ReadFile(&iter, &fd));
+    base::File file(fd.release());
     std::string content(GetSendingFileContent().size(), ' ');
-    base::File file(desc.fd);
     file.Read(0, &content[0], content.size());
     EXPECT_EQ(content, GetSendingFileContent());
     base::MessageLoop::current()->Quit();
@@ -334,8 +335,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
     file.Flush();
     IPC::Message* message = new IPC::Message(
         0, 2, IPC::Message::PRIORITY_NORMAL);
-    message->WriteFileDescriptor(
-        base::FileDescriptor(file.TakePlatformFile(), false));
+    message->WriteFile(base::ScopedFD(file.TakePlatformFile()));
     ASSERT_TRUE(sender->Send(message));
   }
 

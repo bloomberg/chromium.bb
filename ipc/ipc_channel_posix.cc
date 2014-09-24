@@ -432,7 +432,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       cmsg->cmsg_level = SOL_SOCKET;
       cmsg->cmsg_type = SCM_RIGHTS;
       cmsg->cmsg_len = CMSG_LEN(sizeof(int) * num_fds);
-      msg->file_descriptor_set()->GetDescriptors(
+      msg->file_descriptor_set()->PeekDescriptors(
           reinterpret_cast<int*>(CMSG_DATA(cmsg)));
       msgh.msg_controllen = cmsg->cmsg_len;
 
@@ -769,8 +769,7 @@ void ChannelPosix::QueueHelloMessage() {
 #if defined(IPC_USES_READWRITE)
   scoped_ptr<Message> hello;
   if (remote_fd_pipe_ != -1) {
-    if (!msg->WriteFileDescriptor(base::FileDescriptor(remote_fd_pipe_,
-                                                       false))) {
+    if (!msg->WriteBorrowingFile(remote_fd_pipe_)) {
       NOTREACHED() << "Unable to pickle hello message file descriptors";
     }
     DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
@@ -896,8 +895,8 @@ bool ChannelPosix::WillDispatchInputMessage(Message* msg) {
   // The shenaniganery below with &foo.front() requires input_fds_ to have
   // contiguous underlying storage (such as a simple array or a std::vector).
   // This is why the header warns not to make input_fds_ a deque<>.
-  msg->file_descriptor_set()->SetDescriptors(&input_fds_.front(),
-                                             header_fds);
+  msg->file_descriptor_set()->AddDescriptorsToOwn(&input_fds_.front(),
+                                                  header_fds);
   input_fds_.erase(input_fds_.begin(), input_fds_.begin() + header_fds);
   return true;
 }
@@ -991,12 +990,11 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
         // server also contains the fd_pipe_, which  will be used for all
         // subsequent file descriptor passing.
         DCHECK_EQ(msg.file_descriptor_set()->size(), 1U);
-        base::FileDescriptor descriptor;
-        if (!msg.ReadFileDescriptor(&iter, &descriptor)) {
+        base::ScopedFD descriptor;
+        if (!msg.ReadFile(&iter, &descriptor)) {
           NOTREACHED();
         }
-        fd_pipe_ = descriptor.fd;
-        CHECK(descriptor.auto_close);
+        fd_pipe_ = descriptor.release();
       }
 #endif  // IPC_USES_READWRITE
       peer_pid_ = pid;

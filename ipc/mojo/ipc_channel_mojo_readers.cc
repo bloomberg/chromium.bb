@@ -138,7 +138,7 @@ bool MessageReader::Send(scoped_ptr<Message> message) {
   std::vector<MojoHandle> handles;
 #if defined(OS_POSIX) && !defined(OS_NACL)
   MojoResult read_result =
-      ChannelMojo::ReadFromFileDescriptorSet(*message, &handles);
+      ChannelMojo::ReadFromFileDescriptorSet(message.get(), &handles);
   if (read_result != MOJO_RESULT_OK) {
     std::for_each(handles.begin(), handles.end(), &MojoClose);
     CloseWithError(read_result);

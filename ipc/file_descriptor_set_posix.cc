@@ -16,56 +16,54 @@ FileDescriptorSet::FileDescriptorSet()
 }
 
 FileDescriptorSet::~FileDescriptorSet() {
-  if (consumed_descriptor_highwater_ == descriptors_.size())
+  if (consumed_descriptor_highwater_ == size())
     return;
 
-  LOG(WARNING) << "FileDescriptorSet destroyed with unconsumed descriptors";
-  // We close all the descriptors where the close flag is set. If this
-  // message should have been transmitted, then closing those with close
-  // flags set mirrors the expected behaviour.
+  // We close all the owning descriptors. If this message should have
+  // been transmitted, then closing those with close flags set mirrors
+  // the expected behaviour.
   //
   // If this message was received with more descriptors than expected
   // (which could a DOS against the browser by a rogue renderer) then all
   // the descriptors have their close flag set and we free all the extra
   // kernel resources.
-  for (unsigned i = consumed_descriptor_highwater_;
-       i < descriptors_.size(); ++i) {
-    if (descriptors_[i].auto_close)
-      if (IGNORE_EINTR(close(descriptors_[i].fd)) < 0)
-        PLOG(ERROR) << "close";
-  }
+  LOG(WARNING) << "FileDescriptorSet destroyed with unconsumed descriptors: "
+               << consumed_descriptor_highwater_ << "/" << size();
 }
 
-bool FileDescriptorSet::Add(int fd) {
-  if (descriptors_.size() == kMaxDescriptorsPerMessage) {
+bool FileDescriptorSet::AddToBorrow(base::PlatformFile fd) {
+  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
+
+  if (size() == kMaxDescriptorsPerMessage) {
     DLOG(WARNING) << "Cannot add file descriptor. FileDescriptorSet full.";
     return false;
   }
 
-  struct base::FileDescriptor sd;
-  sd.fd = fd;
-  sd.auto_close = false;
-  descriptors_.push_back(sd);
+  descriptors_.push_back(fd);
   return true;
 }
 
-bool FileDescriptorSet::AddAndAutoClose(int fd) {
-  if (descriptors_.size() == kMaxDescriptorsPerMessage) {
+bool FileDescriptorSet::AddToOwn(base::ScopedFD fd) {
+  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
+
+  if (size() == kMaxDescriptorsPerMessage) {
     DLOG(WARNING) << "Cannot add file descriptor. FileDescriptorSet full.";
     return false;
   }
 
-  struct base::FileDescriptor sd;
-  sd.fd = fd;
-  sd.auto_close = true;
-  descriptors_.push_back(sd);
-  DCHECK(descriptors_.size() <= kMaxDescriptorsPerMessage);
+  descriptors_.push_back(fd.get());
+  owned_descriptors_.push_back(new base::ScopedFD(fd.Pass()));
+  DCHECK(size() <= kMaxDescriptorsPerMessage);
   return true;
 }
 
-int FileDescriptorSet::GetDescriptorAt(unsigned index) const {
-  if (index >= descriptors_.size())
+base::PlatformFile FileDescriptorSet::TakeDescriptorAt(unsigned index) {
+  if (index >= size()) {
+    DLOG(WARNING) << "Accessing out of bound index:"
+                  << index << "/" << size();
     return -1;
+  }
+
 
   // We should always walk the descriptors in order, so it's reasonable to
   // enforce this. Consider the case where a compromised renderer sends us
@@ -86,6 +84,8 @@ int FileDescriptorSet::GetDescriptorAt(unsigned index) const {
   // There's one more wrinkle: When logging messages, we may reparse them. So
   // we have an exception: When the consumed_descriptor_highwater_ is at the
   // end of the array and index 0 is requested, we reset the highwater value.
+  // TODO(morrita): This is absurd. This "wringle" disallow to introduce clearer
+  // ownership model. Only client is NaclIPCAdapter. See crbug.com/415294
   if (index == 0 && consumed_descriptor_highwater_ == descriptors_.size())
     consumed_descriptor_highwater_ = 0;
 
@@ -93,22 +93,37 @@ int FileDescriptorSet::GetDescriptorAt(unsigned index) const {
     return -1;
 
   consumed_descriptor_highwater_ = index + 1;
-  return descriptors_[index].fd;
+
+  base::PlatformFile file = descriptors_[index];
+
+  // TODO(morrita): In production, descriptors_.size() should be same as
+  // owned_descriptors_.size() as all read descriptors are owned by Message.
+  // We have to do this because unit test breaks this assumption. It should be
+  // changed to exercise with own-able descriptors.
+  for (ScopedVector<base::ScopedFD>::const_iterator i =
+           owned_descriptors_.begin();
+       i != owned_descriptors_.end();
+       ++i) {
+    if ((*i)->get() == file) {
+      ignore_result((*i)->release());
+      break;
+    }
+  }
+
+  return file;
 }
 
-void FileDescriptorSet::GetDescriptors(int* buffer) const {
-  for (std::vector<base::FileDescriptor>::const_iterator
-       i = descriptors_.begin(); i != descriptors_.end(); ++i) {
-    *(buffer++) = i->fd;
-  }
+void FileDescriptorSet::PeekDescriptors(base::PlatformFile* buffer) const {
+  std::copy(descriptors_.begin(), descriptors_.end(), buffer);
 }
 
 bool FileDescriptorSet::ContainsDirectoryDescriptor() const {
   struct stat st;
 
-  for (std::vector<base::FileDescriptor>::const_iterator
-       i = descriptors_.begin(); i != descriptors_.end(); ++i) {
-    if (fstat(i->fd, &st) == 0 && S_ISDIR(st.st_mode))
+  for (std::vector<base::PlatformFile>::const_iterator i = descriptors_.begin();
+       i != descriptors_.end();
+       ++i) {
+    if (fstat(*i, &st) == 0 && S_ISDIR(st.st_mode))
       return true;
   }
 
@@ -116,36 +131,32 @@ bool FileDescriptorSet::ContainsDirectoryDescriptor() const {
 }
 
 void FileDescriptorSet::CommitAll() {
-  for (std::vector<base::FileDescriptor>::iterator
-       i = descriptors_.begin(); i != descriptors_.end(); ++i) {
-    if (i->auto_close)
-      if (IGNORE_EINTR(close(i->fd)) < 0)
-        PLOG(ERROR) << "close";
-  }
   descriptors_.clear();
+  owned_descriptors_.clear();
   consumed_descriptor_highwater_ = 0;
 }
 
-void FileDescriptorSet::ReleaseFDsToClose(std::vector<int>* fds) {
-  for (std::vector<base::FileDescriptor>::iterator
-       i = descriptors_.begin(); i != descriptors_.end(); ++i) {
-    if (i->auto_close)
-      fds->push_back(i->fd);
+void FileDescriptorSet::ReleaseFDsToClose(
+    std::vector<base::PlatformFile>* fds) {
+  for (ScopedVector<base::ScopedFD>::iterator i = owned_descriptors_.begin();
+       i != owned_descriptors_.end();
+       ++i) {
+    fds->push_back((*i)->release());
   }
-  descriptors_.clear();
-  consumed_descriptor_highwater_ = 0;
+
+  CommitAll();
 }
 
-void FileDescriptorSet::SetDescriptors(const int* buffer, unsigned count) {
+void FileDescriptorSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,
+                                            unsigned count) {
   DCHECK(count <= kMaxDescriptorsPerMessage);
-  DCHECK_EQ(descriptors_.size(), 0u);
+  DCHECK_EQ(size(), 0u);
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
 
   descriptors_.reserve(count);
+  owned_descriptors_.reserve(count);
   for (unsigned i = 0; i < count; ++i) {
-    struct base::FileDescriptor sd;
-    sd.fd = buffer[i];
-    sd.auto_close = true;
-    descriptors_.push_back(sd);
+    descriptors_.push_back(buffer[i]);
+    owned_descriptors_.push_back(new base::ScopedFD(buffer[i]));
   }
 }

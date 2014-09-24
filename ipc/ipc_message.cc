@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #include "ipc/file_descriptor_set_posix.h"
 #endif
 
@@ -122,19 +123,21 @@ void Message::set_received_time(int64 time) const {
 #endif
 
 #if defined(OS_POSIX)
-bool Message::WriteFileDescriptor(const base::FileDescriptor& descriptor) {
+bool Message::WriteFile(base::ScopedFD descriptor) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(file_descriptor_set()->size());
-  if (descriptor.auto_close) {
-    return file_descriptor_set()->AddAndAutoClose(descriptor.fd);
-  } else {
-    return file_descriptor_set()->Add(descriptor.fd);
-  }
+  return file_descriptor_set()->AddToOwn(descriptor.Pass());
 }
 
-bool Message::ReadFileDescriptor(PickleIterator* iter,
-                                 base::FileDescriptor* descriptor) const {
+bool Message::WriteBorrowingFile(const base::PlatformFile& descriptor) {
+  // We write the index of the descriptor so that we don't have to
+  // keep the current descriptor as extra decoding state when deserialising.
+  WriteInt(file_descriptor_set()->size());
+  return file_descriptor_set()->AddToBorrow(descriptor);
+}
+
+bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
   int descriptor_index;
   if (!ReadInt(iter, &descriptor_index))
     return false;
@@ -143,10 +146,13 @@ bool Message::ReadFileDescriptor(PickleIterator* iter,
   if (!file_descriptor_set)
     return false;
 
-  descriptor->fd = file_descriptor_set->GetDescriptorAt(descriptor_index);
-  descriptor->auto_close = true;
+  base::PlatformFile file =
+      file_descriptor_set->TakeDescriptorAt(descriptor_index);
+  if (file < 0)
+    return false;
 
-  return descriptor->fd >= 0;
+  descriptor->reset(file);
+  return true;
 }
 
 bool Message::HasFileDescriptors() const {
