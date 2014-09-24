@@ -49,7 +49,7 @@ cr.define('cr.ui.overlay', function() {
           return;
 
         // Close the overlay on escape.
-        if (e.keyCode == 27)  // Escape
+        if (e.keyIdentifier == 'U+001B')
           cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
 
         // Execute the overlay's default button on enter, unless focus is on an

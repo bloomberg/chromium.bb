@@ -873,6 +873,41 @@ TEST_F('HistoryWebUIRealBackendTest', 'leftRightChangeFocus', function() {
   testDone();
 });
 
+TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndCancel', function() {
+  waitForCallback('deleteComplete', function() {
+    testDone([false, "history deleted when it shouldn't have been"]);
+  });
+
+  document.querySelector('input[type=checkbox]').click();
+  $('remove-selected').click();
+
+  assertTrue($('alertOverlay').classList.contains('showing'));
+  assertFalse($('history-page').contains(document.activeElement));
+
+  var esc = document.createEvent('KeyboardEvent');
+  esc.initKeyboardEvent('keydown', true, true, window, 'U+001B');
+
+  document.dispatchEvent(esc);
+  assertFalse($('alertOverlay').classList.contains('showing'));
+
+  testDone();
+});
+
+TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndRemove', function() {
+  document.querySelector('input[type=checkbox]').click();
+  $('remove-selected').click();
+
+  assertTrue($('alertOverlay').classList.contains('showing'));
+  assertFalse($('history-page').contains(document.activeElement));
+
+  waitForCallback('deleteComplete', testDone);
+
+  var enter = document.createEvent('KeyboardEvent');
+  enter.initKeyboardEvent('keydown', true, true, window, 'Enter');
+  document.dispatchEvent(enter);
+  assertFalse($('alertOverlay').classList.contains('showing'));
+});
+
 /**
  * Fixture for History WebUI testing when deletions are prohibited.
  * @extends {HistoryWebUIRealBackendTest}

@@ -1975,7 +1975,13 @@ function openClearBrowsingData(e) {
 function showConfirmationOverlay() {
   $('alertOverlay').classList.add('showing');
   $('overlay').hidden = false;
+  $('history-page').setAttribute('aria-hidden', 'true');
   uber.invokeMethodOnParent('beginInterceptingEvents');
+
+  // If an element is focused behind the confirm overlay, blur it so focus
+  // doesn't accidentally get stuck behind it.
+  if ($('history-page').contains(document.activeElement))
+    document.activeElement.blur();
 }
 
 /**
@@ -1984,6 +1990,7 @@ function showConfirmationOverlay() {
 function hideConfirmationOverlay() {
   $('alertOverlay').classList.remove('showing');
   $('overlay').hidden = true;
+  $('history-page').removeAttribute('aria-hidden');
   uber.invokeMethodOnParent('stopInterceptingEvents');
 }
 
@@ -1999,10 +2006,10 @@ function confirmDeletion(okCallback, cancelCallback) {
   alertOverlay.setValues(
       loadTimeData.getString('removeSelected'),
       loadTimeData.getString('deleteWarning'),
-      loadTimeData.getString('cancel'),
       loadTimeData.getString('deleteConfirm'),
-      cancelCallback,
-      okCallback);
+      loadTimeData.getString('cancel'),
+      okCallback,
+      cancelCallback);
   showConfirmationOverlay();
 }
 
