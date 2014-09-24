@@ -5,21 +5,30 @@
 #include "chrome/browser/chromeos/drive/drive_url_request_job.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_file_system_options.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -28,6 +37,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,12 +48,8 @@ namespace {
 // A simple URLRequestJobFactory implementation to create DriveURLRequestJob.
 class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
-  TestURLRequestJobFactory(
-      const DriveURLRequestJob::FileSystemGetter& file_system_getter,
-      base::SequencedTaskRunner* sequenced_task_runner)
-      : file_system_getter_(file_system_getter),
-        sequenced_task_runner_(sequenced_task_runner) {
-  }
+  explicit TestURLRequestJobFactory(void* profile_id)
+      : profile_id_(profile_id) {}
 
   virtual ~TestURLRequestJobFactory() {}
 
@@ -51,10 +58,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new DriveURLRequestJob(file_system_getter_,
-                                  sequenced_task_runner_.get(),
-                                  request,
-                                  network_delegate);
+    return new DriveURLRequestJob(profile_id_, request, network_delegate);
   }
 
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
@@ -70,9 +74,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   }
 
  private:
-  const DriveURLRequestJob::FileSystemGetter file_system_getter_;
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
-
+  void* const profile_id_;
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestJobFactory);
 };
 
@@ -85,7 +87,7 @@ class TestDelegate : public net::TestDelegate {
   // net::TestDelegate override.
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) OVERRIDE{
+                                  bool* defer_redirect) OVERRIDE {
     redirect_url_ = redirect_info.new_url;
     net::TestDelegate::OnReceivedRedirect(
         request, redirect_info, defer_redirect);
@@ -102,38 +104,39 @@ class TestDelegate : public net::TestDelegate {
 class DriveURLRequestJobTest : public testing::Test {
  protected:
   DriveURLRequestJobTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        integration_service_factory_callback_(
+            base::Bind(&DriveURLRequestJobTest::CreateDriveIntegrationService,
+                       base::Unretained(this))),
+        fake_file_system_(NULL) {}
 
   virtual ~DriveURLRequestJobTest() {
   }
 
   virtual void SetUp() OVERRIDE {
-    // Initialize FakeDriveService.
-    fake_drive_service_.reset(new FakeDriveService);
-    ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
+    // Create a testing profile.
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+    Profile* const profile =
+        profile_manager_->CreateTestingProfile("test-user");
 
-    // Initialize FakeFileSystem.
-    fake_file_system_.reset(
-        new test_util::FakeFileSystem(fake_drive_service_.get()));
+    // Create the drive integration service for the profile.
+    integration_service_factory_scope_.reset(
+        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &integration_service_factory_callback_));
+    DriveIntegrationServiceFactory::GetForProfile(profile);
 
-    scoped_refptr<base::SequencedWorkerPool> blocking_pool =
-        content::BrowserThread::GetBlockingPool();
+    // Create the URL request job factory.
     test_network_delegate_.reset(new net::TestNetworkDelegate);
-    test_url_request_job_factory_.reset(new TestURLRequestJobFactory(
-        base::Bind(&DriveURLRequestJobTest::GetFileSystem,
-                   base::Unretained(this)),
-        blocking_pool->GetSequencedTaskRunner(
-            blocking_pool->GetSequenceToken()).get()));
+    test_url_request_job_factory_.reset(new TestURLRequestJobFactory(profile));
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_job_factory(test_url_request_job_factory_.get());
     url_request_context_->set_network_delegate(test_network_delegate_.get());
     test_delegate_.reset(new TestDelegate);
   }
 
-  FileSystemInterface* GetFileSystem() {
-    return fake_file_system_.get();
-  }
+  virtual void TearDown() { profile_manager_.reset(); }
 
   bool ReadDriveFileSync(
       const base::FilePath& file_path, std::string* out_content) {
@@ -174,15 +177,51 @@ class DriveURLRequestJobTest : public testing::Test {
     return true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<net::URLRequestContext> url_request_context_;
+  scoped_ptr<TestDelegate> test_delegate_;
 
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
+ private:
+  // Create the drive integration service for the |profile|
+  DriveIntegrationService* CreateDriveIntegrationService(Profile* profile) {
+    FakeDriveService* const drive_service = new FakeDriveService;
+    if (!test_util::SetUpTestEntries(drive_service))
+      return NULL;
+
+    const std::string& drive_mount_name =
+        util::GetDriveMountPointPath(profile).BaseName().AsUTF8Unsafe();
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        drive_mount_name,
+        storage::kFileSystemTypeDrive,
+        storage::FileSystemMountOption(),
+        util::GetDriveMountPointPath(profile));
+    DCHECK(!fake_file_system_);
+    fake_file_system_ = new test_util::FakeFileSystem(drive_service);
+    if (!drive_cache_dir_.CreateUniqueTempDir())
+      return NULL;
+    return new drive::DriveIntegrationService(profile,
+                                              NULL,
+                                              drive_service,
+                                              drive_mount_name,
+                                              drive_cache_dir_.path(),
+                                              fake_file_system_);
+  }
+
+  FileSystemInterface* GetFileSystem() { return fake_file_system_; }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  DriveIntegrationServiceFactory::FactoryCallback
+      integration_service_factory_callback_;
+  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+      integration_service_factory_scope_;
+  scoped_ptr<DriveIntegrationService> integration_service_;
+  test_util::FakeFileSystem* fake_file_system_;
 
   scoped_ptr<net::TestNetworkDelegate> test_network_delegate_;
   scoped_ptr<TestURLRequestJobFactory> test_url_request_job_factory_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<TestDelegate> test_delegate_;
+
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  base::ScopedTempDir drive_cache_dir_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 };
 
 TEST_F(DriveURLRequestJobTest, NonGetMethod) {

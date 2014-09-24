@@ -56,6 +56,12 @@ void GetRedirectURLForContentsOnUIThread(
     return;
   }
   const base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
+  if (file_path.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, GURL()));
+    return;
+  }
+
   file_system->GetResourceEntry(
       file_path,
       base::Bind(&GetRedirectURLForContentsOnUIThreadWithResourceEntry,

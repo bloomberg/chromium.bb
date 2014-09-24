@@ -9,16 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace
+#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace net {
 class IOBuffer;
@@ -28,26 +25,21 @@ class URLRequest;
 
 namespace drive {
 
-class DriveFileStreamReader;
-class FileSystemInterface;
-class ResourceEntry;
-
 // DriveURLRequestJob is the gateway between network-level drive:...
 // requests for drive resources and FileSystem.  It exposes content URLs
 // formatted as drive:<drive-file-path>.
-// The methods should be run on IO thread, and the operations to communicate
-// with a locally cached file will run on |file_task_runner|.
+// The methods should be run on IO thread.
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
+  // Callback to take results from an internal helper defined in
+  // drive_url_request_job.cc.
+  typedef base::Callback<
+      void(net::Error,
+           const scoped_refptr<storage::FileSystemContext>& file_system_context,
+           const storage::FileSystemURL& file_system_url,
+           const std::string& mime_type)> HelperCallback;
 
-  // Callback to return the FileSystemInterface instance. This is an
-  // injecting point for testing.
-  // Note that the callback will be copied between threads (IO and UI), and
-  // will be called on UI thread.
-  typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
-
-  DriveURLRequestJob(const FileSystemGetter& file_system_getter,
-                     base::SequencedTaskRunner* file_task_runner,
+  DriveURLRequestJob(void* profile_id,
                      net::URLRequest* request,
                      net::NetworkDelegate* network_delegate);
 
@@ -66,21 +58,35 @@ class DriveURLRequestJob : public net::URLRequestJob {
   virtual ~DriveURLRequestJob();
 
  private:
-  // Called when the initialization of DriveFileStreamReader is completed.
-  void OnDriveFileStreamReaderInitialized(
-      int error, scoped_ptr<ResourceEntry> entry);
+  // Called from an internal helper class defined in drive_url_request_job.cc,
+  // which is running on the UI thread.
+  void OnHelperResultObtained(
+      net::Error error,
+      const scoped_refptr<storage::FileSystemContext>& file_system_context,
+      const storage::FileSystemURL& file_system_url,
+      const std::string& mime_type);
+
+  // Called from FileSystemBackend::GetRedirectURLForContents.
+  void OnRedirectURLObtained(const GURL& redirect_url);
+
+  // Called from DriveURLRequestJob::OnFileInfoObtained.
+  void OnFileInfoObtained(base::File::Error result,
+                          const base::File::Info& file_info);
 
   // Called when DriveFileStreamReader::Read is completed.
   void OnReadCompleted(int read_result);
 
-  const FileSystemGetter file_system_getter_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  void* const profile_id_;
 
   // The range of the file to be returned.
   net::HttpByteRange byte_range_;
+  int64 remaining_bytes_;
 
-  scoped_ptr<DriveFileStreamReader> stream_reader_;
-  scoped_ptr<ResourceEntry> entry_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  storage::FileSystemURL file_system_url_;
+  std::string mime_type_;
+  scoped_ptr<storage::FileStreamReader> stream_reader_;
+  GURL redirect_url_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

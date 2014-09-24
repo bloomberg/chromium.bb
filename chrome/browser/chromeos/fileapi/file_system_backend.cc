@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
+#include "chrome/common/url_constants.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "storage/browser/blob/file_stream_reader.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -179,6 +180,11 @@ bool FileSystemBackend::IsAccessAllowed(
       url.type() == storage::kFileSystemTypeRestrictedNativeLocal) {
     return true;
   }
+
+  // Grant access for URL having "drive:" scheme. The URL filesystem:drive:/xxx
+  // cannot be parsed directly. The URL is created only by DriveURLRequestJob.
+  if (url.origin().scheme() == chrome::kDriveScheme)
+    return true;
 
   // Check first to make sure this extension has fileBrowserHander permissions.
   if (!special_storage_policy_.get() ||
