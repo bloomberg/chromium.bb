@@ -372,7 +372,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 // |Dispatcher*|.
 class MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport {
  public:
-  DispatcherTransport() : dispatcher_(NULL) {}
+  DispatcherTransport() : dispatcher_(nullptr) {}
 
   void End();
 

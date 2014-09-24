@@ -42,7 +42,7 @@ scoped_ptr<MessageInTransit> MakeTestMessage(uint32_t num_bytes) {
       new MessageInTransit(MessageInTransit::kTypeMessagePipeEndpoint,
                            MessageInTransit::kSubtypeMessagePipeEndpointData,
                            num_bytes,
-                           bytes.empty() ? NULL : &bytes[0]));
+                           bytes.empty() ? nullptr : &bytes[0]));
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
@@ -144,7 +144,7 @@ class TestMessageReaderAndChecker {
       // If we have the header....
       size_t message_size;
       if (MessageInTransit::GetNextMessageSize(
-              bytes_.empty() ? NULL : &bytes_[0],
+              bytes_.empty() ? nullptr : &bytes_[0],
               bytes_.size(),
               &message_size)) {
         // If we've read the whole message....

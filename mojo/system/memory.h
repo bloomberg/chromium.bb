@@ -91,15 +91,15 @@ class UserPointer {
   // |MakeUserPointer()| (or |NullUserPointer()| for null pointers). (The common
   // exception is when you have, e.g., a |char*| and want to get a
   // |UserPointer<void>|.)
-  UserPointer() : pointer_(NULL) {}
+  UserPointer() : pointer_(nullptr) {}
   explicit UserPointer(Type* pointer) : pointer_(pointer) {}
   // Allow implicit conversion from the "null user pointer".
-  UserPointer(NullUserPointer) : pointer_(NULL) {}
+  UserPointer(NullUserPointer) : pointer_(nullptr) {}
   ~UserPointer() {}
 
   // Allow assignment from the "null user pointer".
   UserPointer<Type>& operator=(NullUserPointer) {
-    pointer_ = NULL;
+    pointer_ = nullptr;
     return *this;
   }
 

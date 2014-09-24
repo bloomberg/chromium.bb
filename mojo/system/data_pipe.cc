@@ -436,8 +436,8 @@ DataPipe::DataPipe(bool has_local_producer,
       capacity_num_bytes_(validated_options.capacity_num_bytes),
       producer_open_(true),
       consumer_open_(true),
-      producer_waiter_list_(has_local_producer ? new WaiterList() : NULL),
-      consumer_waiter_list_(has_local_consumer ? new WaiterList() : NULL),
+      producer_waiter_list_(has_local_producer ? new WaiterList() : nullptr),
+      consumer_waiter_list_(has_local_consumer ? new WaiterList() : nullptr),
       producer_two_phase_max_num_bytes_written_(0),
       consumer_two_phase_max_num_bytes_read_(0) {
   // Check that the passed in options actually are validated.

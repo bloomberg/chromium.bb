@@ -50,8 +50,8 @@ class VistaOrHigherFunctions {
 
 VistaOrHigherFunctions::VistaOrHigherFunctions()
     : is_vista_or_higher_(base::win::GetVersion() >= base::win::VERSION_VISTA),
-      set_file_completion_notification_modes_(NULL),
-      cancel_io_ex_(NULL) {
+      set_file_completion_notification_modes_(nullptr),
+      cancel_io_ex_(nullptr) {
   if (!is_vista_or_higher_)
     return;
 
@@ -279,7 +279,7 @@ void RawChannelWin::RawChannelIOHandler::DetachFromOwnerNoLock(
   if (pending_write_)
     preserved_write_buffer_after_detach_ = write_buffer.Pass();
 
-  owner_ = NULL;
+  owner_ = nullptr;
   if (ShouldSelfDestruct())
     delete this;
 }
@@ -347,7 +347,7 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
 
 RawChannelWin::RawChannelWin(embedder::ScopedPlatformHandle handle)
     : handle_(handle.Pass()),
-      io_handler_(NULL),
+      io_handler_(nullptr),
       skip_completion_port_on_success_(
           g_vista_or_higher_functions.Get().is_vista_or_higher()) {
   DCHECK(handle_.is_valid());
@@ -367,7 +367,7 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
   DCHECK(io_handler_);
   DCHECK(!io_handler_->pending_read());
 
-  char* buffer = NULL;
+  char* buffer = nullptr;
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 
@@ -553,14 +553,16 @@ void RawChannelWin::OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
     // soon as possible.
     // Note: |CancelIo()| only cancels read/write requests started from this
     // thread.
-    if (g_vista_or_higher_functions.Get().is_vista_or_higher())
-      g_vista_or_higher_functions.Get().CancelIoEx(io_handler_->handle(), NULL);
-    else
+    if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
+      g_vista_or_higher_functions.Get().CancelIoEx(io_handler_->handle(),
+                                                   nullptr);
+    } else {
       CancelIo(io_handler_->handle());
+    }
   }
 
   io_handler_->DetachFromOwnerNoLock(read_buffer.Pass(), write_buffer.Pass());
-  io_handler_ = NULL;
+  io_handler_ = nullptr;
 }
 
 }  // namespace

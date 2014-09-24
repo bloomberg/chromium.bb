@@ -90,7 +90,7 @@ MojoHandle Core::AddDispatcher(const scoped_refptr<Dispatcher>& dispatcher) {
 
 scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
   if (handle == MOJO_HANDLE_INVALID)
-    return NULL;
+    return nullptr;
 
   base::AutoLock locker(handle_table_lock_);
   return handle_table_.GetDispatcher(handle);
@@ -131,7 +131,7 @@ MojoResult Core::Wait(MojoHandle handle,
                                    1,
                                    deadline,
                                    &unused,
-                                   signals_state.IsNull() ? NULL : &hss);
+                                   signals_state.IsNull() ? nullptr : &hss);
   if (rv != MOJO_RESULT_INVALID_ARGUMENT && !signals_state.IsNull())
     signals_state.Put(hss);
   return rv;
@@ -159,7 +159,7 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
                           num_handles,
                           deadline,
                           &index,
-                          NULL);
+                          nullptr);
   } else {
     UserPointer<MojoHandleSignalsState>::Writer signals_states_writer(
         signals_states, num_handles);
@@ -236,7 +236,7 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
 
   // Easy case: not sending any handles.
   if (num_handles == 0)
-    return dispatcher->WriteMessage(bytes, num_bytes, NULL, flags);
+    return dispatcher->WriteMessage(bytes, num_bytes, nullptr, flags);
 
   // We have to handle |handles| here, since we have to mark them busy in the
   // global handle table. We can't delegate this to the dispatcher, since the
@@ -309,7 +309,7 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   if (num_handles_value == 0) {
     // Easy case: won't receive any handles.
     rv = dispatcher->ReadMessage(
-        bytes, num_bytes, NULL, &num_handles_value, flags);
+        bytes, num_bytes, nullptr, &num_handles_value, flags);
   } else {
     DispatcherVector dispatchers;
     rv = dispatcher->ReadMessage(
@@ -574,7 +574,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   MojoResult rv = MOJO_RESULT_OK;
   for (i = 0; i < num_handles; i++) {
     rv = dispatchers[i]->AddWaiter(
-        &waiter, signals[i], i, signals_states ? &signals_states[i] : NULL);
+        &waiter, signals[i], i, signals_states ? &signals_states[i] : nullptr);
     if (rv != MOJO_RESULT_OK) {
       *result_index = i;
       break;
@@ -592,7 +592,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   // destroyed, but this would still be required if the waiter were in TLS.)
   for (i = 0; i < num_added; i++) {
     dispatchers[i]->RemoveWaiter(&waiter,
-                                 signals_states ? &signals_states[i] : NULL);
+                                 signals_states ? &signals_states[i] : nullptr);
   }
   if (signals_states) {
     for (; i < num_handles; i++)

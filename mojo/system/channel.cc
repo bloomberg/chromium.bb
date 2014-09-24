@@ -246,7 +246,7 @@ void Channel::DetachMessagePipeEndpoint(
     switch (it->second->state_) {
       case ChannelEndpoint::STATE_NORMAL:
         it->second->state_ = ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK;
-        it->second->message_pipe_ = NULL;
+        it->second->message_pipe_ = nullptr;
         if (remote_id == MessageInTransit::kInvalidEndpointId)
           return;
         // We have to send a remove message (outside the lock).
@@ -495,7 +495,7 @@ bool Channel::RemoveMessagePipeEndpoint(
         it->second->state_ = ChannelEndpoint::STATE_WAIT_LOCAL_DETACH;
         message_pipe = it->second->message_pipe_;
         port = it->second->port_;
-        it->second->message_pipe_ = NULL;
+        it->second->message_pipe_ = nullptr;
         // We have to send a remove ack message (outside the lock).
         break;
       case ChannelEndpoint::STATE_WAIT_LOCAL_DETACH:
@@ -534,8 +534,8 @@ bool Channel::SendControlMessage(MessageInTransit::Subtype subtype,
                                  MessageInTransit::EndpointId remote_id) {
   DVLOG(2) << "Sending channel control message: subtype " << subtype
            << ", local ID " << local_id << ", remote ID " << remote_id;
-  scoped_ptr<MessageInTransit> message(
-      new MessageInTransit(MessageInTransit::kTypeChannel, subtype, 0, NULL));
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(
+      MessageInTransit::kTypeChannel, subtype, 0, nullptr));
   message->set_source_id(local_id);
   message->set_destination_id(remote_id);
   return WriteMessage(message.Pass());

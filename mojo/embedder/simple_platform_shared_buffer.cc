@@ -20,7 +20,7 @@ SimplePlatformSharedBuffer* SimplePlatformSharedBuffer::Create(
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
     scoped_refptr<SimplePlatformSharedBuffer> deleter(rv);
-    return NULL;
+    return nullptr;
   }
 
   return rv;
@@ -38,7 +38,7 @@ SimplePlatformSharedBuffer::CreateFromPlatformHandle(
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
     scoped_refptr<SimplePlatformSharedBuffer> deleter(rv);
-    return NULL;
+    return nullptr;
   }
 
   return rv;

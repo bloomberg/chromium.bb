@@ -127,7 +127,7 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
   DCHECK_LE(static_cast<uint64_t>(real_offset),
             static_cast<uint64_t>(std::numeric_limits<off_t>::max()));
 
-  void* real_base = mmap(NULL,
+  void* real_base = mmap(nullptr,
                          real_length,
                          PROT_READ | PROT_WRITE,
                          MAP_SHARED,

@@ -53,7 +53,7 @@ class PlatformChannelPairPosixTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Restore the |SIGPIPE| handler.
-    ASSERT_EQ(0, sigaction(SIGPIPE, &old_action_, NULL));
+    ASSERT_EQ(0, sigaction(SIGPIPE, &old_action_, nullptr));
   }
 
  private:

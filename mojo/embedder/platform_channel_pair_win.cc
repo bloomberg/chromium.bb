@@ -36,15 +36,15 @@ PlatformChannelPair::PlatformChannelPair() {
   const DWORD kOpenMode =
       PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE;
   const DWORD kPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE;
-  server_handle_.reset(
-      PlatformHandle(CreateNamedPipeW(pipe_name.c_str(),
-                                      kOpenMode,
-                                      kPipeMode,
-                                      1,        // Max instances.
-                                      4096,     // Out buffer size.
-                                      4096,     // In buffer size.
-                                      5000,     // Timeout in milliseconds.
-                                      NULL)));  // Default security descriptor.
+  server_handle_.reset(PlatformHandle(
+      CreateNamedPipeW(pipe_name.c_str(),
+                       kOpenMode,
+                       kPipeMode,
+                       1,           // Max instances.
+                       4096,        // Out buffer size.
+                       4096,        // In buffer size.
+                       5000,        // Timeout in milliseconds.
+                       nullptr)));  // Default security descriptor.
   PCHECK(server_handle_.is_valid());
 
   const DWORD kDesiredAccess = GENERIC_READ | GENERIC_WRITE;
@@ -53,20 +53,21 @@ PlatformChannelPair::PlatformChannelPair() {
   const DWORD kFlags =
       SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED;
   // Allow the handle to be inherited by child processes.
-  SECURITY_ATTRIBUTES security_attributes = {sizeof(SECURITY_ATTRIBUTES), NULL,
-                                             TRUE};
-  client_handle_.reset(PlatformHandle(CreateFileW(pipe_name.c_str(),
-                                                  kDesiredAccess,
-                                                  0,  // No sharing.
-                                                  &security_attributes,
-                                                  OPEN_EXISTING,
-                                                  kFlags,
-                                                  NULL)));  // No template file.
+  SECURITY_ATTRIBUTES security_attributes = {sizeof(SECURITY_ATTRIBUTES),
+                                             nullptr, TRUE};
+  client_handle_.reset(
+      PlatformHandle(CreateFileW(pipe_name.c_str(),
+                                 kDesiredAccess,
+                                 0,  // No sharing.
+                                 &security_attributes,
+                                 OPEN_EXISTING,
+                                 kFlags,
+                                 nullptr)));  // No template file.
   PCHECK(client_handle_.is_valid());
 
   // Since a client has connected, ConnectNamedPipe() should return zero and
   // GetLastError() should return ERROR_PIPE_CONNECTED.
-  CHECK(!ConnectNamedPipe(server_handle_.get().handle, NULL));
+  CHECK(!ConnectNamedPipe(server_handle_.get().handle, nullptr));
   PCHECK(GetLastError() == ERROR_PIPE_CONNECTED);
 }
 

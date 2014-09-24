@@ -108,7 +108,7 @@ void ProxyMessagePipeEndpoint::Detach() {
   DCHECK(is_attached());
 
   channel_endpoint_->DetachFromMessagePipe();
-  channel_endpoint_ = NULL;
+  channel_endpoint_ = nullptr;
   is_running_ = false;
   paused_message_queue_.Clear();
 }

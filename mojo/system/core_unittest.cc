@@ -1097,7 +1097,7 @@ TEST_F(CoreTest, DataPipe) {
   EXPECT_EQ(-1, elements[1]);
 
   // Two-phase write.
-  void* write_ptr = NULL;
+  void* write_ptr = nullptr;
   num_bytes = 0u;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->BeginWriteData(ph,
@@ -1150,7 +1150,7 @@ TEST_F(CoreTest, DataPipe) {
                 MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
   // Read the remaining two characters, in two-phase mode (all-or-none).
-  const void* read_ptr = NULL;
+  const void* read_ptr = nullptr;
   num_bytes = 2;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->BeginReadData(ch,
@@ -1361,7 +1361,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   ch_received = MOJO_HANDLE_INVALID;
 
   // Make sure that |ph| can't be sent if it's in a two-phase write.
-  void* write_ptr = NULL;
+  void* write_ptr = nullptr;
   num_bytes = 0;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->BeginWriteData(ph,
@@ -1420,7 +1420,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
 
   // Make sure that |ch| can't be sent if it's in a two-phase read.
-  const void* read_ptr = NULL;
+  const void* read_ptr = nullptr;
   num_bytes = 1;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->BeginReadData(ch,

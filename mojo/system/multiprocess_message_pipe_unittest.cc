@@ -75,8 +75,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
     CHECK_EQ(mp->ReadMessage(0,
                              UserPointer<void>(&read_buffer[0]),
                              MakeUserPointer(&read_buffer_size),
-                             NULL,
-                             NULL,
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
@@ -91,7 +91,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
     CHECK_EQ(mp->WriteMessage(0,
                               UserPointer<const void>(write_buffer.data()),
                               static_cast<uint32_t>(write_buffer.size()),
-                              NULL,
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }
@@ -113,7 +113,7 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
             mp->WriteMessage(0,
                              UserPointer<const void>(hello.data()),
                              static_cast<uint32_t>(hello.size()),
-                             NULL,
+                             nullptr,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   HandleSignalsState hss;
@@ -130,8 +130,8 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
   CHECK_EQ(mp->ReadMessage(0,
                            UserPointer<void>(&read_buffer[0]),
                            MakeUserPointer(&read_buffer_size),
-                           NULL,
-                           NULL,
+                           nullptr,
+                           nullptr,
                            MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(read_buffer_size);
@@ -160,7 +160,7 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
               mp->WriteMessage(0,
                                UserPointer<const void>(write_buffer.data()),
                                static_cast<uint32_t>(write_buffer.size()),
-                               NULL,
+                               nullptr,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
@@ -169,7 +169,7 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
             mp->WriteMessage(0,
                              UserPointer<const void>(quitquitquit.data()),
                              static_cast<uint32_t>(quitquitquit.size()),
-                             NULL,
+                             nullptr,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   for (size_t i = 0; i < kNumMessages; i++) {
@@ -187,8 +187,8 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
     CHECK_EQ(mp->ReadMessage(0,
                              UserPointer<void>(&read_buffer[0]),
                              MakeUserPointer(&read_buffer_size),
-                             NULL,
-                             NULL,
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
@@ -272,7 +272,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   CHECK_EQ(mp->WriteMessage(0,
                             UserPointer<const void>(&go2[0]),
                             static_cast<uint32_t>(go2.size()),
-                            NULL,
+                            nullptr,
                             MOJO_WRITE_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
 
@@ -290,8 +290,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   CHECK_EQ(mp->ReadMessage(0,
                            UserPointer<void>(&read_buffer[0]),
                            MakeUserPointer(&num_bytes),
-                           NULL,
-                           NULL,
+                           nullptr,
+                           nullptr,
                            MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(num_bytes);
@@ -355,7 +355,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   transport.End();
 
   EXPECT_TRUE(dispatcher->HasOneRef());
-  dispatcher = NULL;
+  dispatcher = nullptr;
 
   // Wait for a message from the child.
   HandleSignalsState hss;
@@ -370,8 +370,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
             mp->ReadMessage(0,
                             UserPointer<void>(&read_buffer[0]),
                             MakeUserPointer(&num_bytes),
-                            NULL,
-                            NULL,
+                            nullptr,
+                            nullptr,
                             MOJO_READ_MESSAGE_FLAG_NONE));
   read_buffer.resize(num_bytes);
   EXPECT_EQ(std::string("go 2"), read_buffer);
@@ -391,7 +391,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
             mp->WriteMessage(0,
                              UserPointer<const void>(&go3[0]),
                              static_cast<uint32_t>(go3.size()),
-                             NULL,
+                             nullptr,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait for |mp| to become readable, which should fail.
@@ -504,7 +504,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
   transport.End();
 
   EXPECT_TRUE(dispatcher->HasOneRef());
-  dispatcher = NULL;
+  dispatcher = nullptr;
 
   // Wait for it to become readable, which should fail.
   HandleSignalsState hss;

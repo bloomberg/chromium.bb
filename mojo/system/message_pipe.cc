@@ -184,7 +184,7 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
 
 MojoResult MessagePipe::EnqueueMessage(unsigned port,
                                        scoped_ptr<MessageInTransit> message) {
-  return EnqueueMessageInternal(port, message.Pass(), NULL);
+  return EnqueueMessageInternal(port, message.Pass(), nullptr);
 }
 
 bool MessagePipe::Attach(unsigned port, ChannelEndpoint* channel_endpoint) {

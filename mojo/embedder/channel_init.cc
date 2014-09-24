@@ -11,7 +11,7 @@
 namespace mojo {
 namespace embedder {
 
-ChannelInit::ChannelInit() : channel_info_(NULL), weak_factory_(this) {
+ChannelInit::ChannelInit() : channel_info_(nullptr), weak_factory_(this) {
 }
 
 ChannelInit::~ChannelInit() {

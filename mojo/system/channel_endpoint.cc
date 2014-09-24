@@ -85,7 +85,7 @@ void ChannelEndpoint::DetachFromChannel() {
   DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
   // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
   // here as well.
-  channel_ = NULL;
+  channel_ = nullptr;
   local_id_ = MessageInTransit::kInvalidEndpointId;
   remote_id_ = MessageInTransit::kInvalidEndpointId;
 }

@@ -108,7 +108,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
       *num_dispatchers = 0;
   }
 
-  message = NULL;
+  message = nullptr;
 
   if (enough_space || (flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)) {
     message_queue_.DiscardMessage();

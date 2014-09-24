@@ -138,7 +138,7 @@ void RawChannelPosix::EnqueueMessageNoLock(
             MessageInTransit::kTypeRawChannel,
             MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles,
             0,
-            NULL));
+            nullptr));
         embedder::ScopedPlatformHandleVectorPtr fds(
             new embedder::PlatformHandleVector(
                 platform_handles->begin() + i,
@@ -405,7 +405,7 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 RawChannel::IOResult RawChannelPosix::ReadImpl(size_t* bytes_read) {
-  char* buffer = NULL;
+  char* buffer = nullptr;
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 

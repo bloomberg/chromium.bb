@@ -176,7 +176,7 @@ TEST(MemoryTest, InvalidDeath) {
 
   // Null:
   {
-    UserPointer<char> ptr(NULL);
+    UserPointer<char> ptr(nullptr);
     char array[5] = {};
     EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
     EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
@@ -186,7 +186,7 @@ TEST(MemoryTest, InvalidDeath) {
     EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
   }
   {
-    UserPointer<int32_t> ptr(NULL);
+    UserPointer<int32_t> ptr(nullptr);
     int32_t array[5] = {};
     EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
     EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
@@ -196,7 +196,7 @@ TEST(MemoryTest, InvalidDeath) {
     EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
   }
   {
-    UserPointer<int64_t> ptr(NULL);
+    UserPointer<int64_t> ptr(nullptr);
     int64_t array[5] = {};
     EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
     EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
@@ -207,7 +207,7 @@ TEST(MemoryTest, InvalidDeath) {
   }
   // Also check a const pointer:
   {
-    UserPointer<const int32_t> ptr(NULL);
+    UserPointer<const int32_t> ptr(nullptr);
     int32_t array[5] = {};
     EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
     EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);

@@ -50,7 +50,7 @@ class MultiprocessMessagePipePerfTest
     CHECK_EQ(mp->WriteMessage(0,
                               UserPointer<const void>(payload_.data()),
                               static_cast<uint32_t>(payload_.size()),
-                              NULL,
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     HandleSignalsState hss;
@@ -60,8 +60,8 @@ class MultiprocessMessagePipePerfTest
     CHECK_EQ(mp->ReadMessage(0,
                              UserPointer<void>(&read_buffer_[0]),
                              MakeUserPointer(&read_buffer_size),
-                             NULL,
-                             NULL,
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     CHECK_EQ(read_buffer_size, static_cast<uint32_t>(payload_.size()));
@@ -71,7 +71,7 @@ class MultiprocessMessagePipePerfTest
     CHECK_EQ(mp->WriteMessage(0,
                               UserPointer<const void>(""),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }
@@ -130,8 +130,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
     CHECK_EQ(mp->ReadMessage(0,
                              UserPointer<void>(&buffer[0]),
                              MakeUserPointer(&read_size),
-                             NULL,
-                             NULL,
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
 
@@ -142,7 +142,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
     CHECK_EQ(mp->WriteMessage(0,
                               UserPointer<const void>(&buffer[0]),
                               static_cast<uint32_t>(read_size),
-                              NULL,
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }

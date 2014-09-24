@@ -482,7 +482,7 @@ bool Dispatcher::EndSerializeAndClose(
 void DispatcherTransport::End() {
   DCHECK(dispatcher_);
   dispatcher_->lock_.Release();
-  dispatcher_ = NULL;
+  dispatcher_ = nullptr;
 }
 
 }  // namespace system

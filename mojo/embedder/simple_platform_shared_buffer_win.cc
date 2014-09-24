@@ -34,11 +34,11 @@ bool SimplePlatformSharedBuffer::Init() {
   // multiple of 64 KB). This may cause problems with NaCl. Cross this bridge
   // when we get there. crbug.com/210609
   handle_.reset(PlatformHandle(CreateFileMapping(INVALID_HANDLE_VALUE,
-                                                 NULL,
+                                                 nullptr,
                                                  PAGE_READWRITE,
                                                  0,
                                                  static_cast<DWORD>(num_bytes_),
-                                                 NULL)));
+                                                 nullptr)));
   if (!handle_.is_valid()) {
     PLOG(ERROR) << "CreateFileMapping";
     return false;

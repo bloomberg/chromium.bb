@@ -11,7 +11,7 @@
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/system/core.h"
 
-static mojo::system::Core* g_core = NULL;
+static mojo::system::Core* g_core = nullptr;
 
 using mojo::system::MakeUserPointer;
 

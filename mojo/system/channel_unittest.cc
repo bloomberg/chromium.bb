@@ -110,7 +110,7 @@ TEST_F(ChannelTest, InitShutdown) {
 
   // Okay to destroy |Channel| on not-the-I/O-thread.
   EXPECT_TRUE(channel()->HasOneRef());
-  *mutable_channel() = NULL;
+  *mutable_channel() = nullptr;
 }
 
 // ChannelTest.InitFails -------------------------------------------------------
@@ -178,7 +178,7 @@ TEST_F(ChannelTest, InitFails) {
 
   // Should destroy |Channel| with no |Shutdown()| (on not-the-I/O-thread).
   EXPECT_TRUE(channel()->HasOneRef());
-  *mutable_channel() = NULL;
+  *mutable_channel() = nullptr;
 }
 
 // ChannelTest.CloseBeforeRun --------------------------------------------------
@@ -252,8 +252,9 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
 
   Waiter waiter;
   waiter.Init();
-  ASSERT_EQ(MOJO_RESULT_OK,
-            mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
 
   // Don't wait for the shutdown to run ...
   io_thread()->PostTask(FROM_HERE,
@@ -262,7 +263,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
 
   // ... since this |Wait()| should fail once the channel is shut down.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            waiter.Wait(MOJO_DEADLINE_INDEFINITE, NULL));
+            waiter.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
   HandleSignalsState hss;
   mp->RemoveWaiter(0, &waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);

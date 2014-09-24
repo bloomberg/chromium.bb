@@ -27,7 +27,7 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp,
                                                       : add_result;
   }
 
-  MojoResult wait_result = waiter.Wait(MOJO_DEADLINE_INDEFINITE, NULL);
+  MojoResult wait_result = waiter.Wait(MOJO_DEADLINE_INDEFINITE, nullptr);
   mp->RemoveWaiter(0, &waiter, signals_state);
   return wait_result;
 }
@@ -94,7 +94,7 @@ void ChannelThread::InitChannelOnIOThread(
 void ChannelThread::ShutdownChannelOnIOThread() {
   CHECK(channel_.get());
   channel_->Shutdown();
-  channel_ = NULL;
+  channel_ = nullptr;
 }
 
 #if !defined(OS_IOS)

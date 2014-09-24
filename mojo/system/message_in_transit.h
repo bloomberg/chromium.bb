@@ -106,7 +106,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     const void* transport_data_buffer() const {
       return (total_size() > main_buffer_size())
                  ? static_cast<const char*>(buffer_) + main_buffer_size()
-                 : NULL;
+                 : nullptr;
     }
     size_t transport_data_buffer_size() const {
       return total_size() - main_buffer_size();

@@ -180,7 +180,7 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
 void SharedBufferDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   DCHECK(shared_buffer_.get());
-  shared_buffer_ = NULL;
+  shared_buffer_ = nullptr;
 }
 
 scoped_refptr<Dispatcher>
@@ -258,7 +258,7 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
       shared_buffer_->HasOneRef() ? shared_buffer_->PassPlatformHandle()
                                   : shared_buffer_->DuplicatePlatformHandle());
   if (!platform_handle.is_valid()) {
-    shared_buffer_ = NULL;
+    shared_buffer_ = nullptr;
     return false;
   }
 
@@ -267,7 +267,7 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
   platform_handles->push_back(platform_handle.release());
   *actual_size = sizeof(SerializedSharedBufferDispatcher);
 
-  shared_buffer_ = NULL;
+  shared_buffer_ = nullptr;
 
   return true;
 }

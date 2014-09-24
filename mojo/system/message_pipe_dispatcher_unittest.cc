@@ -65,12 +65,12 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // |d1|), then wait.
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, NULL));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, nullptr));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
               d1->WriteMessage(UserPointer<const void>(buffer),
                                kBufferSize,
-                               NULL,
+                               nullptr,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -101,7 +101,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
               d0->ReadMessage(UserPointer<void>(buffer),
                               MakeUserPointer(&buffer_size),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -109,9 +109,9 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for zero time for readability on |d0| (will time out).
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, NULL));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
     stopwatch.Start();
-    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
+    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, nullptr));
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     hss = HandleSignalsState();
     d0->RemoveWaiter(&w, &hss);
@@ -122,10 +122,10 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, NULL));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-              w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), NULL));
+              w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), nullptr));
     base::TimeDelta elapsed = stopwatch.Elapsed();
     EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
@@ -158,7 +158,7 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
             d0->WriteMessage(UserPointer<const void>(buffer),
                              std::numeric_limits<uint32_t>::max(),
-                             NULL,
+                             nullptr,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
@@ -188,21 +188,22 @@ TEST(MessagePipeDispatcherTest, InvalidParamsDeath) {
   // Null buffer with nonzero buffer size.
   EXPECT_DEATH_IF_SUPPORTED(
       d0->WriteMessage(
-          NullUserPointer(), 1, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE),
+          NullUserPointer(), 1, nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE),
       kMemoryCheckFailedRegex);
 
   // |ReadMessage|:
   // Null buffer with nonzero buffer size.
   // First write something so that we actually have something to read.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      d1->WriteMessage(
-          UserPointer<const void>("x"), 1, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            d1->WriteMessage(UserPointer<const void>("x"),
+                             1,
+                             nullptr,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
   uint32_t buffer_size = 1;
   EXPECT_DEATH_IF_SUPPORTED(d0->ReadMessage(NullUserPointer(),
                                             MakeUserPointer(&buffer_size),
                                             0,
-                                            NULL,
+                                            nullptr,
                                             MOJO_READ_MESSAGE_FLAG_NONE),
                             kMemoryCheckFailedRegex);
 
@@ -235,13 +236,13 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     EXPECT_EQ(MOJO_RESULT_OK,
               d1->WriteMessage(UserPointer<const void>(buffer),
                                kBufferSize,
-                               NULL,
+                               nullptr,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     buffer[0] = 234567890;
     EXPECT_EQ(MOJO_RESULT_OK,
               d1->WriteMessage(UserPointer<const void>(buffer),
                                kBufferSize,
-                               NULL,
+                               nullptr,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Try waiting for readable on |d0|; should fail (already satisfied).
@@ -261,7 +262,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
               d1->ReadMessage(UserPointer<void>(buffer),
                               MakeUserPointer(&buffer_size),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Close |d1|.
@@ -282,7 +283,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
               d0->ReadMessage(UserPointer<void>(buffer),
                               MakeUserPointer(&buffer_size),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -302,7 +303,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
               d0->ReadMessage(UserPointer<void>(buffer),
                               MakeUserPointer(&buffer_size),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(234567890, buffer[0]);
@@ -331,7 +332,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
               d0->ReadMessage(UserPointer<void>(buffer),
                               MakeUserPointer(&buffer_size),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Try writing to |d0|; should fail (other end closed).
@@ -339,7 +340,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               d0->WriteMessage(UserPointer<const void>(buffer),
                                kBufferSize,
-                               NULL,
+                               nullptr,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
@@ -393,7 +394,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
       EXPECT_EQ(MOJO_RESULT_OK,
                 d0->WriteMessage(UserPointer<const void>(buffer),
                                  kBufferSize,
-                                 NULL,
+                                 nullptr,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
     }  // Joins the thread.
     elapsed = stopwatch.Elapsed();
@@ -435,7 +436,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
               d1->ReadMessage(UserPointer<void>(buffer),
                               MakeUserPointer(&buffer_size),
                               0,
-                              NULL,
+                              nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -546,7 +547,7 @@ class WriterThread : public base::SimpleThread {
       EXPECT_EQ(MOJO_RESULT_OK,
                 write_dispatcher_->WriteMessage(UserPointer<const void>(buffer),
                                                 bytes_to_write,
-                                                NULL,
+                                                nullptr,
                                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
       *bytes_written_ += bytes_to_write;
     }
@@ -555,7 +556,7 @@ class WriterThread : public base::SimpleThread {
     EXPECT_EQ(MOJO_RESULT_OK,
               write_dispatcher_->WriteMessage(UserPointer<const void>("quit"),
                                               4,
-                                              NULL,
+                                              nullptr,
                                               MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
@@ -601,7 +602,7 @@ class ReaderThread : public base::SimpleThread {
           << "result: " << result;
       if (result == MOJO_RESULT_OK) {
         // Actually need to wait.
-        EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, NULL));
+        EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
         read_dispatcher_->RemoveWaiter(&w, &hss);
       }
       // We may not actually be readable, since we're racing with other threads.
@@ -614,7 +615,7 @@ class ReaderThread : public base::SimpleThread {
       result = read_dispatcher_->ReadMessage(UserPointer<void>(buffer),
                                              MakeUserPointer(&buffer_size),
                                              0,
-                                             NULL,
+                                             nullptr,
                                              MOJO_READ_MESSAGE_FLAG_NONE);
       EXPECT_TRUE(result == MOJO_RESULT_OK || result == MOJO_RESULT_SHOULD_WAIT)
           << "result: " << result;

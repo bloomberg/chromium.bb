@@ -297,7 +297,7 @@ const char* TransportData::ValidateBuffer(
       return kInvalidSerializedDispatcher;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 // static

@@ -114,7 +114,7 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   w.Init();
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 1, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 1, nullptr));
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -130,7 +130,7 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   w.Init();
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 2, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 2, nullptr));
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(0, &context));
@@ -146,7 +146,7 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   w.Init();
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, nullptr));
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -163,9 +163,9 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   w.Init();
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, nullptr));
   stopwatch.Start();
-  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, nullptr));
   EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   hss = HandleSignalsState();
   d->RemoveWaiter(&w, &hss);
@@ -178,10 +178,10 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   w.Init();
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 5, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 5, nullptr));
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), NULL));
+            w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), nullptr));
   base::TimeDelta elapsed = stopwatch.Elapsed();
   EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
   EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
@@ -218,7 +218,7 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE |
                            MOJO_HANDLE_SIGNAL_WRITABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 2, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 2, nullptr));
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -235,7 +235,7 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE |
                            MOJO_HANDLE_SIGNAL_WRITABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, nullptr));
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, w.Wait(0, &context));
@@ -252,7 +252,7 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE |
                            MOJO_HANDLE_SIGNAL_WRITABLE);
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, nullptr));
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -290,7 +290,7 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   d = new MockSimpleDispatcher();
   w.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 2, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 2, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_CANCELLED, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -302,7 +302,7 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   d = new MockSimpleDispatcher();
   w.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_CANCELLED, w.Wait(0, &context));
@@ -315,7 +315,7 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   d = new MockSimpleDispatcher();
   w.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, NULL));
+            d->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_CANCELLED,

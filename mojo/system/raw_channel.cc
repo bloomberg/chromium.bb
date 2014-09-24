@@ -149,8 +149,8 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
 // RawChannel ------------------------------------------------------------------
 
 RawChannel::RawChannel()
-    : message_loop_for_io_(NULL),
-      delegate_(NULL),
+    : message_loop_for_io_(nullptr),
+      delegate_(nullptr),
       read_stopped_(false),
       write_stopped_(false),
       weak_ptr_factory_(this) {
@@ -184,8 +184,8 @@ bool RawChannel::Init(Delegate* delegate) {
   write_buffer_.reset(new WriteBuffer(GetSerializedPlatformHandleSize()));
 
   if (!OnInit()) {
-    delegate_ = NULL;
-    message_loop_for_io_ = NULL;
+    delegate_ = nullptr;
+    message_loop_for_io_ = nullptr;
     read_buffer_.reset();
     write_buffer_.reset();
     return false;
@@ -216,7 +216,7 @@ void RawChannel::Shutdown() {
       << "Shutting down RawChannel with write buffer nonempty";
 
   // Reset the delegate so that it won't receive further calls.
-  delegate_ = NULL;
+  delegate_ = nullptr;
   read_stopped_ = true;
   write_stopped_ = true;
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -319,7 +319,7 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
           message_size, &read_buffer_->buffer_[read_buffer_start]);
       DCHECK_EQ(message_view.total_size(), message_size);
 
-      const char* error_message = NULL;
+      const char* error_message = nullptr;
       if (!message_view.IsValid(GetSerializedPlatformHandleSize(),
                                 &error_message)) {
         DCHECK(error_message);

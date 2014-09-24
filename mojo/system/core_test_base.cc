@@ -181,7 +181,7 @@ void CoreTestBase::SetUp() {
 
 void CoreTestBase::TearDown() {
   delete core_;
-  core_ = NULL;
+  core_ = nullptr;
 }
 
 MojoHandle CoreTestBase::CreateMockHandle(CoreTestBase::MockHandleInfo* info) {

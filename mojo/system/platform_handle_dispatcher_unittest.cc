@@ -88,7 +88,7 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
 
   transport.End();
   EXPECT_TRUE(dispatcher->HasOneRef());
-  dispatcher = NULL;
+  dispatcher = nullptr;
 
   ASSERT_EQ(Dispatcher::kTypePlatformHandle, generic_dispatcher->GetType());
   dispatcher = static_cast<PlatformHandleDispatcher*>(generic_dispatcher.get());

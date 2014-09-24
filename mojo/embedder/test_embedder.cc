@@ -48,7 +48,7 @@ void InitWithSimplePlatformSupport() {
 bool Shutdown() {
   system::Core* core = system::entrypoints::GetCore();
   CHECK(core);
-  system::entrypoints::SetCore(NULL);
+  system::entrypoints::SetCore(nullptr);
 
   bool rv = system::internal::ShutdownCheckNoLeaks(core);
   delete core;

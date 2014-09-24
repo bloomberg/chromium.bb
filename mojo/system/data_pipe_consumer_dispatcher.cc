@@ -36,7 +36,7 @@ void DataPipeConsumerDispatcher::CancelAllWaitersNoLock() {
 void DataPipeConsumerDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   data_pipe_->ConsumerClose();
-  data_pipe_ = NULL;
+  data_pipe_ = nullptr;
 }
 
 scoped_refptr<Dispatcher>
@@ -46,7 +46,7 @@ DataPipeConsumerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   scoped_refptr<DataPipeConsumerDispatcher> rv =
       new DataPipeConsumerDispatcher();
   rv->Init(data_pipe_);
-  data_pipe_ = NULL;
+  data_pipe_ = nullptr;
   return scoped_refptr<Dispatcher>(rv.get());
 }
 

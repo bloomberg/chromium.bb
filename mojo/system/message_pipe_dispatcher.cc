@@ -162,7 +162,7 @@ void MessagePipeDispatcher::CancelAllWaitersNoLock() {
 void MessagePipeDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   message_pipe_->Close(port_);
-  message_pipe_ = NULL;
+  message_pipe_ = nullptr;
   port_ = kInvalidPort;
 }
 
@@ -176,7 +176,7 @@ MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   scoped_refptr<MessagePipeDispatcher> rv =
       new MessagePipeDispatcher(kDefaultCreateOptions);
   rv->Init(message_pipe_, port_);
-  message_pipe_ = NULL;
+  message_pipe_ = nullptr;
   port_ = kInvalidPort;
   return scoped_refptr<Dispatcher>(rv.get());
 }
@@ -265,7 +265,7 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
   static_cast<SerializedMessagePipeDispatcher*>(destination)->endpoint_id =
       endpoint_id;
 
-  message_pipe_ = NULL;
+  message_pipe_ = nullptr;
   port_ = kInvalidPort;
 
   *actual_size = sizeof(SerializedMessagePipeDispatcher);

@@ -36,7 +36,7 @@ Dispatcher* HandleTable::GetDispatcher(MojoHandle handle) {
 
   HandleToEntryMap::iterator it = handle_to_entry_map_.find(handle);
   if (it == handle_to_entry_map_.end())
-    return NULL;
+    return nullptr;
   return it->second.dispatcher.get();
 }
 
