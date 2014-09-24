@@ -1640,8 +1640,10 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
 void EventSender::AddTouchPoint(gin::Arguments* args) {
   double x;
   double y;
-  args->GetNext(&x);
-  args->GetNext(&y);
+  if (!args->GetNext(&x) || !args->GetNext(&y)) {
+    args->ThrowError();
+    return;
+  }
 
   WebTouchPoint touch_point;
   touch_point.state = WebTouchPoint::StatePressed;
@@ -1761,8 +1763,10 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
 
   double x;
   double y;
-  args->GetNext(&x);
-  args->GetNext(&y);
+  if (!args->GetNext(&x) || !args->GetNext(&y)) {
+    args->ThrowError();
+    return;
+  }
   WebPoint mouse_pos(static_cast<int>(x), static_cast<int>(y));
 
   int modifiers = 0;
@@ -1924,9 +1928,10 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
                                gin::Arguments* args) {
   double x;
   double y;
-  args->GetNext(&x);
-  args->GetNext(&y);
-  WebPoint point(x, y);
+  if (!args->GetNext(&x) || !args->GetNext(&y)) {
+    args->ThrowError();
+    return;
+  }
 
   WebGestureEvent event;
   event.type = type;
@@ -1944,7 +1949,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
           current_gesture_location_.y + event.data.scrollUpdate.deltaY;
       break;
     case WebInputEvent::GestureScrollBegin:
-      current_gesture_location_ = WebPoint(point.x, point.y);
+      current_gesture_location_ = WebPoint(x, y);
       event.x = current_gesture_location_.x;
       event.y = current_gesture_location_.y;
       break;
@@ -1979,8 +1984,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.data.tap.tapCount = tap_count;
       event.data.tap.width = width;
       event.data.tap.height = height;
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       break;
     }
     case WebInputEvent::GestureTapUnconfirmed:
@@ -1994,8 +1999,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       } else {
         event.data.tap.tapCount = 1;
       }
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       break;
     case WebInputEvent::GestureTapDown:
     {
@@ -2013,8 +2018,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
           return;
         }
       }
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       event.data.tapDown.width = width;
       event.data.tapDown.height = height;
       break;
@@ -2035,19 +2040,19 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
           }
         }
       }
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       event.data.showPress.width = width;
       event.data.showPress.height = height;
       break;
     }
     case WebInputEvent::GestureTapCancel:
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       break;
     case WebInputEvent::GestureLongPress:
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       if (!args->PeekNext().IsEmpty()) {
         float width;
         if (!args->GetNext(&width)) {
@@ -2066,8 +2071,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       }
       break;
     case WebInputEvent::GestureLongTap:
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       if (!args->PeekNext().IsEmpty()) {
         float width;
         if (!args->GetNext(&width)) {
@@ -2086,8 +2091,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       }
       break;
     case WebInputEvent::GestureTwoFingerTap:
-      event.x = point.x;
-      event.y = point.y;
+      event.x = x;
+      event.y = y;
       if (!args->PeekNext().IsEmpty()) {
         float first_finger_width;
         if (!args->GetNext(&first_finger_width)) {
@@ -2123,7 +2128,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
     WebMouseEvent mouse_event;
     InitMouseEvent(WebInputEvent::MouseDown,
                    pressed_button_,
-                   point,
+                   WebPoint(x, y),
                    GetCurrentEventTimeSec(),
                    click_count_,
                    0,
