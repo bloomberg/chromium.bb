@@ -22,6 +22,8 @@
     "exclusions": [
       "chrome/test/data/.*",
       "content/test/data/.*",
+      "content/test/gpu/.*",
+      "gpu/gles2_conform_support/gles2_conform_test_expectations.txt",
       "net/data/.*",
       "tools/clang/scripts/plugin_flags.sh",
       "tools/clang/scripts/update.py",
