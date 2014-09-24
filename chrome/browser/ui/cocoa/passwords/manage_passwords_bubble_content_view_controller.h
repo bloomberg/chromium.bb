@@ -32,6 +32,7 @@ const CGFloat kUnrelatedControlVerticalPadding = 20;
 - (NSButton*)addButton:(NSString*)title target:(id)target action:(SEL)action;
 - (NSTextField*)addTitleLabel:(NSString*)title;
 - (NSTextField*)addLabel:(NSString*)title;
+- (void)bubbleWillDisappear;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_CONTENT_VIEW_CONTROLLER_H_

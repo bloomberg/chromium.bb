@@ -35,6 +35,13 @@ using namespace password_manager::mac::ui;
   return self;
 }
 
+- (void)bubbleWillDisappear {
+  // The "nope" drop-down won't be dismissed until the user chooses an option,
+  // but if the bubble is dismissed (by cross-platform code) before the user
+  // makes a choice, then the choice won't actually take any effect.
+  [[nopeButton_ menu] cancelTrackingWithoutAnimation];
+}
+
 - (void)onSaveClicked:(id)sender {
   model_->OnSaveClicked();
   [delegate_ viewShouldDismiss];

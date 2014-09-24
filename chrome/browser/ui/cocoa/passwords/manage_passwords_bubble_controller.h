@@ -23,7 +23,8 @@
                            ManagePasswordsBubblePendingViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;
-  base::scoped_nsobject<NSViewController> currentController_;
+  base::scoped_nsobject<ManagePasswordsBubbleContentViewController>
+      currentController_;
 }
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                      model:(ManagePasswordsBubbleModel*)model;

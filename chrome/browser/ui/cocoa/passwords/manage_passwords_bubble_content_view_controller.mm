@@ -43,4 +43,7 @@
   return label;
 }
 
+- (void)bubbleWillDisappear {
+}
+
 @end

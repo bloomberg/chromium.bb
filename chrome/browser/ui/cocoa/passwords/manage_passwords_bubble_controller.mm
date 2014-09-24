@@ -42,6 +42,11 @@
   [super showWindow:sender];
 }
 
+- (void)close {
+  [currentController_ bubbleWillDisappear];
+  [super close];
+}
+
 - (void)updateState {
   // Find the next view controller.
   currentController_.reset();
