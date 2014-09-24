@@ -18,34 +18,35 @@ class AsyncWaitTest(unittest.TestCase):
     self.handles = system.MessagePipe()
     self.cancel = self.handles.handle0.AsyncWait(system.HANDLE_SIGNAL_READABLE,
                                                  system.DEADLINE_INDEFINITE,
-                                                 self.OnResult)
-    self.loop.PostDelayedTask(self.WriteToHandle, 100)
+                                                 self._OnResult)
 
   def tearDown(self):
+    self.cancel()
     self.handles = None
     self.array = None
     self.loop = None
 
-  def OnResult(self, value):
+  def _OnResult(self, value):
     self.array.append(value)
 
-  def WriteToHandle(self):
+  def _WriteToHandle(self):
     self.handles.handle1.WriteMessage()
 
-  def testAsyncWait(self):
+  def _PostWriteAndRun(self):
+    self.loop.PostDelayedTask(self._WriteToHandle, 0)
     self.loop.RunUntilIdle()
+
+  def testAsyncWait(self):
+    self._PostWriteAndRun()
     self.assertEquals(len(self.array), 1)
     self.assertEquals(system.RESULT_OK, self.array[0])
-    self.cancel()
 
   def testAsyncWaitCancel(self):
-    self.loop.PostDelayedTask(self.cancel, 50)
-    self.loop.RunUntilIdle()
+    self.loop.PostDelayedTask(self.cancel, 0)
+    self._PostWriteAndRun()
     self.assertEquals(len(self.array), 0)
-    self.cancel()
 
   def testAsyncWaitImmediateCancel(self):
     self.cancel()
-    self.loop.RunUntilIdle()
+    self._PostWriteAndRun()
     self.assertEquals(len(self.array), 0)
-    self.cancel()

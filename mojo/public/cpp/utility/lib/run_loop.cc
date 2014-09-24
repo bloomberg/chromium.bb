@@ -93,37 +93,40 @@ bool RunLoop::HasHandler(const Handle& handle) const {
 }
 
 void RunLoop::Run() {
-  assert(current() == this);
-  RunState* old_state = run_state_;
-  RunState run_state;
-  run_state_ = &run_state;
-  while (!run_state.should_quit) {
-    DoDelayedWork();
-    Wait(false);
-  }
-  run_state_ = old_state;
+  RunInternal(UNTIL_EMPTY);
 }
 
 void RunLoop::RunUntilIdle() {
+  RunInternal(UNTIL_IDLE);
+}
+
+void RunLoop::RunInternal(RunMode run_mode) {
   assert(current() == this);
   RunState* old_state = run_state_;
   RunState run_state;
   run_state_ = &run_state;
-  while (!run_state.should_quit) {
-    DoDelayedWork();
-    if (!Wait(true) && delayed_tasks_.empty())
+  for (;;) {
+    bool did_work = DoDelayedWork();
+    if (run_state.should_quit)
+      break;
+    did_work |= Wait(run_mode == UNTIL_IDLE);
+    if (run_state.should_quit)
+      break;
+    if (!did_work && run_mode == UNTIL_IDLE)
       break;
   }
   run_state_ = old_state;
 }
 
-void RunLoop::DoDelayedWork() {
+bool RunLoop::DoDelayedWork() {
   MojoTimeTicks now = GetTimeTicksNow();
   if (!delayed_tasks_.empty() && delayed_tasks_.top().run_time <= now) {
     PendingTask task = delayed_tasks_.top();
     delayed_tasks_.pop();
     task.task.Run();
+    return true;
   }
+  return false;
 }
 
 void RunLoop::Quit() {

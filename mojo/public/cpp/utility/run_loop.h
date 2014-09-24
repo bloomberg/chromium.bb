@@ -40,13 +40,13 @@ class RunLoop {
   void RemoveHandler(const Handle& handle);
   bool HasHandler(const Handle& handle) const;
 
-  // Runs the loop servicing handles as they are ready. This returns when Quit()
-  // is invoked, or there no more handles.
+  // Runs the loop servicing handles and tasks as they are ready. This returns
+  // when Quit() is invoked, or there are no more handles nor tasks.
   void Run();
 
-  // Runs the loop servicing any handles that are ready. Does not wait for
-  // handles to become ready before returning. Returns early if Quit() is
-  // invoked.
+  // Runs the loop servicing any handles and tasks that are ready. Does not wait
+  // for handles or tasks to become ready before returning. Returns early if
+  // Quit() is invoked.
   void RunUntilIdle();
 
   void Quit();
@@ -83,13 +83,25 @@ class RunLoop {
     IGNORE_DEADLINE
   };
 
-  // Do one unit of delayed work, if eligible.
-  void DoDelayedWork();
+  // Mode of operation of the run loop.
+  enum RunMode {
+    UNTIL_EMPTY,
+    UNTIL_IDLE
+  };
 
-  // Waits for a handle to be ready. Returns after servicing at least one
-  // handle (or there are no more handles) unless |non_blocking| is true,
-  // in which case it will also return if servicing at least one handle
-  // would require blocking. Returns true if a RunLoopHandler was notified.
+  // Runs the loop servicing any handles and tasks that are ready. If
+  // |run_mode| is |UNTIL_IDLE|, does not wait for handles or tasks to become
+  // ready before returning. Returns early if Quit() is invoked.
+  void RunInternal(RunMode run_mode);
+
+  // Do one unit of delayed work, if eligible. Returns true is a task was run.
+  bool DoDelayedWork();
+
+  // Waits for a handle to be ready or until the next task must be run. Returns
+  // after servicing at least one handle (or there are no more handles) unless
+  // a task must be run or |non_blocking| is true, in which case it will also
+  // return if no task is registered and servicing at least one handle would
+  // require blocking. Returns true if a RunLoopHandler was notified.
   bool Wait(bool non_blocking);
 
   // Notifies handlers of |error|.  If |check| == CHECK_DEADLINE, this will

@@ -413,5 +413,25 @@ TEST_F(RunLoopTest, DelayedTaskOrder) {
   EXPECT_EQ(3, sequence[2]);
 }
 
+struct QuittingTask {
+  explicit QuittingTask(RunLoop* run_loop) : run_loop(run_loop) {}
+
+  void Run() const { run_loop->Quit(); }
+
+  RunLoop* run_loop;
+};
+
+TEST_F(RunLoopTest, QuitFromDelayedTask) {
+  TestRunLoopHandler handler;
+  MessagePipe test_pipe;
+  RunLoop run_loop;
+  run_loop.AddHandler(&handler,
+                      test_pipe.handle0.get(),
+                      MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_DEADLINE_INDEFINITE);
+  run_loop.PostDelayedTask(Closure(QuittingTask(&run_loop)), 0);
+  run_loop.Run();
+}
+
 }  // namespace
 }  // namespace mojo
