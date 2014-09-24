@@ -48,8 +48,13 @@ class ATHENA_EXPORT SplitViewController
 
   // Activates split-view mode with |left| and |right| windows. If |left| and/or
   // |right| is NULL, then the first window in the window-list (which is neither
-  // |left| nor |right|) is selected instead.
-  void ActivateSplitMode(aura::Window* left, aura::Window* right);
+  // |left| nor |right|) is selected instead. |to_activate| indicates which of
+  // |left| or |right| should be activated. If |to_activate| is NULL, the
+  // currently active window is kept active if it is one of the split-view
+  // windows.
+  void ActivateSplitMode(aura::Window* left,
+                         aura::Window* right,
+                         aura::Window* to_activate);
 
   // Resets the internal state to an inactive state.
   void DeactivateSplitMode();

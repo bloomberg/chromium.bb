@@ -176,6 +176,23 @@ WindowManagerImpl::~WindowManagerImpl() {
   instance = NULL;
 }
 
+void WindowManagerImpl::ToggleSplitView() {
+  if (IsOverviewModeActive())
+    return;
+
+  if (split_view_controller_->IsSplitViewModeActive()) {
+    split_view_controller_->DeactivateSplitMode();
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeExit());
+    // Relayout so that windows are maximzied.
+    container_->layout_manager()->OnWindowResized();
+  } else if (split_view_controller_->CanActivateSplitViewMode()) {
+    FOR_EACH_OBSERVER(WindowManagerObserver,
+                      observers_,
+                      OnSplitViewModeEnter());
+    split_view_controller_->ActivateSplitMode(NULL, NULL, NULL);
+  }
+}
+
 void WindowManagerImpl::ToggleOverview() {
   if (IsOverviewModeActive()) {
     SetInOverview(false);
@@ -241,7 +258,7 @@ void WindowManagerImpl::RemoveObserver(WindowManagerObserver* observer) {
 }
 
 void WindowManagerImpl::ToggleSplitViewForTest() {
-  ToggleSplitview();
+  ToggleSplitView();
 }
 
 WindowListProvider* WindowManagerImpl::GetWindowListProvider() {
@@ -290,8 +307,7 @@ void WindowManagerImpl::OnSelectSplitViewWindow(aura::Window* left,
                                                 aura::Window* to_activate) {
   SetInOverview(false);
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeEnter());
-  split_view_controller_->ActivateSplitMode(left, right);
-  wm::ActivateWindow(to_activate);
+  split_view_controller_->ActivateSplitMode(left, right, to_activate);
 }
 
 void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {
@@ -310,27 +326,10 @@ bool WindowManagerImpl::OnAcceleratorFired(int command_id,
       ToggleOverview();
       break;
     case CMD_TOGGLE_SPLIT_VIEW:
-      ToggleSplitview();
+      ToggleSplitView();
       break;
   }
   return true;
-}
-
-void WindowManagerImpl::ToggleSplitview() {
-  if (IsOverviewModeActive())
-    return;
-
-  if (split_view_controller_->IsSplitViewModeActive()) {
-    split_view_controller_->DeactivateSplitMode();
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeExit());
-    // Relayout so that windows are maximzied.
-    container_->layout_manager()->OnWindowResized();
-  } else if (split_view_controller_->CanActivateSplitViewMode()) {
-    FOR_EACH_OBSERVER(WindowManagerObserver,
-                      observers_,
-                      OnSplitViewModeEnter());
-    split_view_controller_->ActivateSplitMode(NULL, NULL);
-  }
 }
 
 aura::Window* WindowManagerImpl::GetWindowBehind(aura::Window* window) {
@@ -383,7 +382,6 @@ void WindowManagerImpl::OnTitleDragCompleted(aura::Window* window) {
     return;
   if (split_view_controller_->IsSplitViewModeActive()) {
     split_view_controller_->ReplaceWindow(window, next_window);
-    wm::ActivateWindow(next_window);
   } else {
     ui::ScopedLayerAnimationSettings
         settings(next_window->layer()->GetAnimator());

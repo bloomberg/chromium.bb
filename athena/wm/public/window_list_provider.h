@@ -33,10 +33,6 @@ class ATHENA_EXPORT WindowListProvider {
   // WindowListProvider.
   virtual bool IsValidWindow(aura::Window* window) const = 0;
 
-  // Moves a given |window| to the front of all windows of the window list.
-  // Note: The window has to be in the list already.
-  virtual void MoveToFront(aura::Window* window) = 0;
-
   // Stacks a given |window| in direct front of a |reference_window|.
   // Note: The |window| and |reference_window| has to be in the list already.
   virtual void StackWindowFrontOf(aura::Window* window,

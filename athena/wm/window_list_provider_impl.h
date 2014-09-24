@@ -29,7 +29,6 @@ class ATHENA_EXPORT WindowListProviderImpl : public WindowListProvider,
   virtual const aura::Window::Windows& GetWindowList() const OVERRIDE;
   virtual bool IsWindowInList(aura::Window* window) const OVERRIDE;
   virtual bool IsValidWindow(aura::Window* window) const OVERRIDE;
-  virtual void MoveToFront(aura::Window* window) OVERRIDE;
   virtual void StackWindowFrontOf(aura::Window* window,
                                   aura::Window*reference_window) OVERRIDE;
   virtual void StackWindowBehindTo(aura::Window* window,

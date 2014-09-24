@@ -66,11 +66,6 @@ bool WindowListProviderImpl::IsValidWindow(aura::Window* window) const {
       window->type() == ui::wm::WINDOW_TYPE_PANEL;
 }
 
-void WindowListProviderImpl::MoveToFront(aura::Window* window) {
-  DCHECK(IsWindowInList(window));
-  container_->StackChildAtTop(window);
-}
-
 void WindowListProviderImpl::StackWindowFrontOf(
     aura::Window* window,
     aura::Window* reference_window) {

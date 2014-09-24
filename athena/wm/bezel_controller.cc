@@ -83,14 +83,20 @@ void BezelController::SetState(BezelController::State state,
   if (!left_right_delegate_ || state == state_)
     return;
 
-  if (state == BEZEL_SCROLLING_TWO_FINGERS)
-    left_right_delegate_->BezelScrollBegin(scroll_bezel_, scroll_delta);
-  else if (state_ == BEZEL_SCROLLING_TWO_FINGERS)
-    left_right_delegate_->BezelScrollEnd();
+  State old_state = state_;
   state_ = state;
+
   if (state == NONE) {
     scroll_bezel_ = BEZEL_NONE;
     scroll_target_ = NULL;
+  }
+
+  if (state == BEZEL_SCROLLING_TWO_FINGERS) {
+    left_right_delegate_->BezelScrollBegin(scroll_bezel_, scroll_delta);
+  } else if (old_state == BEZEL_SCROLLING_TWO_FINGERS) {
+    // If BezelScrollEnd() hides |scroll_target_|, ET_GESTURE_END is dispatched
+    // and we get a reentrant call to SetState().
+    left_right_delegate_->BezelScrollEnd();
   }
 }
 

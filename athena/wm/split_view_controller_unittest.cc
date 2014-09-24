@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
@@ -32,18 +33,16 @@ class SplitViewControllerTest : public test::AthenaTestBase {
     test::AthenaTestBase::TearDown();
   }
 
-  // Returns whether the split view windows are topmost.
-  bool SplitViewWindowsTopmost() const {
-    SplitViewController* controller = api_->GetSplitViewController();
-    DCHECK(controller->IsSplitViewModeActive());
+  // Returns the topmost window in z-order.
+  const aura::Window* GetTopmostWindow() const {
+    return *api_->GetWindowListProvider()->GetWindowList().rbegin();
+  }
+
+  // Returns the second topmost window in z-order.
+  const aura::Window* GetSecondTopmostWindow() const {
     const aura::Window::Windows& list =
         api_->GetWindowListProvider()->GetWindowList();
-    aura::Window* topmost = *list.rbegin();
-    aura::Window* second_topmost = *(list.rbegin() + 1);
-    return (topmost == controller->left_window() ||
-            topmost == controller->right_window()) &&
-           (second_topmost == controller->left_window() ||
-            second_topmost == controller->right_window());
+    return *(list.rbegin() + 1);
   }
 
   // Returns whether only the split view windows are visible.
@@ -89,56 +88,76 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   }
 
   windows[kNumWindows - 1]->Show();
+  wm::ActivateWindow(windows[kNumWindows - 1]);
 
   SplitViewController* controller = api()->GetSplitViewController();
   ASSERT_FALSE(controller->IsSplitViewModeActive());
 
-  controller->ActivateSplitMode(NULL, NULL);
+  controller->ActivateSplitMode(NULL, NULL, NULL);
   ASSERT_TRUE(controller->IsSplitViewModeActive());
   // The last two windows should be on the left and right, respectively.
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 2], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[kNumWindows - 1], GetTopmostWindow());
+  EXPECT_EQ(windows[kNumWindows - 2], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   // Select the window that is currently on the left for the right panel. The
   // windows should switch.
-  controller->ActivateSplitMode(NULL, windows[kNumWindows - 1]);
+  controller->ActivateSplitMode(
+      NULL, windows[kNumWindows - 1], windows[kNumWindows - 1]);
   EXPECT_EQ(windows[kNumWindows - 2], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 1], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[kNumWindows - 1], GetTopmostWindow());
+  EXPECT_EQ(windows[kNumWindows - 2], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
-  controller->ActivateSplitMode(windows[kNumWindows - 1], NULL);
+  controller->ActivateSplitMode(
+      windows[kNumWindows - 1], NULL, windows[kNumWindows - 1]);
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 2], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[kNumWindows - 1], GetTopmostWindow());
+  EXPECT_EQ(windows[kNumWindows - 2], GetSecondTopmostWindow());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
+
+  // Select the same windows, but pass in a different window to activate.
+  controller->ActivateSplitMode(windows[kNumWindows - 1],
+                                windows[kNumWindows - 2],
+                                windows[kNumWindows - 2]);
+  EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
+  EXPECT_EQ(windows[kNumWindows - 2], controller->right_window());
+  EXPECT_EQ(windows[kNumWindows - 2], GetTopmostWindow());
+  EXPECT_EQ(windows[kNumWindows - 1], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   // Select one of the windows behind the stacks for the right panel. The window
   // on the left should remain unchanged.
-  controller->ActivateSplitMode(NULL, windows[0]);
+  controller->ActivateSplitMode(NULL, windows[0], windows[0]);
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[0], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[0], GetTopmostWindow());
+  EXPECT_EQ(windows[kNumWindows - 1], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
-  controller->ActivateSplitMode(windows[1], NULL);
+  controller->ActivateSplitMode(windows[1], NULL, NULL);
   EXPECT_EQ(windows[1], controller->left_window());
   EXPECT_EQ(windows[0], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[0], GetTopmostWindow());
+  EXPECT_EQ(windows[1], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
-  controller->ActivateSplitMode(windows[4], windows[5]);
+  controller->ActivateSplitMode(windows[4], windows[5], windows[5]);
   EXPECT_EQ(windows[4], controller->left_window());
   EXPECT_EQ(windows[5], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[5], GetTopmostWindow());
+  EXPECT_EQ(windows[4], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
-  controller->ActivateSplitMode(windows[0], NULL);
+  controller->ActivateSplitMode(windows[0], NULL, windows[0]);
   EXPECT_EQ(windows[0], controller->left_window());
   EXPECT_EQ(windows[5], controller->right_window());
-  EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_EQ(windows[0], GetTopmostWindow());
+  EXPECT_EQ(windows[5], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 }
 
@@ -148,8 +167,12 @@ TEST_F(SplitViewControllerTest, LandscapeOnly) {
   const int kNumWindows = 2;
   for (size_t i = 0; i < kNumWindows; ++i) {
     scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
+    window->Hide();
     windows.push_back(window.release());
   }
+  windows[kNumWindows - 1]->Show();
+  wm::ActivateWindow(windows[kNumWindows - 1]);
+
   ASSERT_EQ(gfx::Display::ROTATE_0,
             gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation());
 
@@ -157,7 +180,7 @@ TEST_F(SplitViewControllerTest, LandscapeOnly) {
   ASSERT_TRUE(IsSplitViewAllowed());
   ASSERT_FALSE(controller->IsSplitViewModeActive());
 
-  controller->ActivateSplitMode(NULL, NULL);
+  controller->ActivateSplitMode(NULL, NULL, NULL);
   ASSERT_TRUE(controller->IsSplitViewModeActive());
 
   // Screen rotation should be locked while in splitview.

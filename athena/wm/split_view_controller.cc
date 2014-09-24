@@ -25,6 +25,7 @@
 #include "ui/views/widget/root_view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace athena {
 
@@ -177,7 +178,8 @@ bool SplitViewController::IsSplitViewModeActive() const {
 }
 
 void SplitViewController::ActivateSplitMode(aura::Window* left,
-                                            aura::Window* right) {
+                                            aura::Window* right,
+                                            aura::Window* to_activate) {
   const aura::Window::Windows& windows = window_list_provider_->GetWindowList();
   aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
   if (state_ == ACTIVE) {
@@ -211,11 +213,30 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   if (right_window_ && right_window_ != left && right_window_ != right)
     to_hide_.push_back(right_window_);
 
+  left_window_ = left;
+  right_window_ = right;
+
   divider_position_ = GetDefaultDividerPosition();
   SetState(ACTIVE);
-  right_window_ = right;
-  left_window_ = left;
   UpdateLayout(true);
+
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(container_->GetRootWindow());
+  aura::Window* active_window = activation_client->GetActiveWindow();
+  if (to_activate) {
+    CHECK(to_activate == left_window_ || to_activate == right_window_);
+    wm::ActivateWindow(to_activate);
+  } else if (active_window != left_window_ &&
+             active_window != right_window_) {
+    // A window which does not belong to an activity could be active.
+    wm::ActivateWindow(left_window_);
+  }
+  active_window = activation_client->GetActiveWindow();
+
+  if (active_window == left_window_)
+    window_list_provider_->StackWindowBehindTo(right_window_, left_window_);
+  else
+    window_list_provider_->StackWindowBehindTo(left_window_, right_window_);
 }
 
 void SplitViewController::ReplaceWindow(aura::Window* window,
@@ -226,12 +247,19 @@ void SplitViewController::ReplaceWindow(aura::Window* window,
   CHECK(replace_with != left_window_ && replace_with != right_window_);
   DCHECK(window_list_provider_->IsWindowInList(replace_with));
 
-  if (window == left_window_)
+  aura::Window* not_replaced = NULL;
+  if (window == left_window_) {
     left_window_ = replace_with;
-  else
+    not_replaced = right_window_;
+  } else {
     right_window_ = replace_with;
-  wm::ActivateWindow(replace_with);
+    not_replaced = left_window_;
+  }
   UpdateLayout(false);
+
+  wm::ActivateWindow(replace_with);
+  window_list_provider_->StackWindowBehindTo(not_replaced, replace_with);
+
   window->SetTransform(gfx::Transform());
   window->Hide();
 }
@@ -367,8 +395,6 @@ void SplitViewController::UpdateLayout(bool animate) {
 
   left_window_->Show();
   right_window_->Show();
-  window_list_provider_->MoveToFront(right_window_);
-  window_list_provider_->MoveToFront(left_window_);
 
   gfx::Transform divider_transform;
   divider_transform.Translate(divider_position_, 0);

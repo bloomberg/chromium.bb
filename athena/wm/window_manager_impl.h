@@ -5,6 +5,7 @@
 #ifndef ATHENA_WM_WINDOW_MANAGER_IMPL_H_
 #define ATHENA_WM_WINDOW_MANAGER_IMPL_H_
 
+#include "athena/athena_export.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/wm/public/window_manager.h"
 #include "athena/wm/title_drag_controller.h"
@@ -29,14 +30,16 @@ class SplitViewController;
 class WindowListProvider;
 class WindowManagerObserver;
 
-class WindowManagerImpl : public WindowManager,
-                          public WindowOverviewModeDelegate,
-                          public aura::WindowObserver,
-                          public AcceleratorHandler,
-                          public TitleDragControllerDelegate {
+class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
+                                        public WindowOverviewModeDelegate,
+                                        public aura::WindowObserver,
+                                        public AcceleratorHandler,
+                                        public TitleDragControllerDelegate {
  public:
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
+
+  void ToggleSplitView();
 
   // WindowManager:
   virtual void ToggleOverview() OVERRIDE;
@@ -53,8 +56,6 @@ class WindowManagerImpl : public WindowManager,
 
   // Sets whether overview mode is active.
   void SetInOverview(bool active);
-
-  void ToggleSplitview();
 
   void InstallAccelerators();
 

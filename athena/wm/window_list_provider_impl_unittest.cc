@@ -206,51 +206,39 @@ TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
 
   EXPECT_EQ(0, observer.get()->calls());
 
-  // Move 2 to the front.
-  list_provider->MoveToFront(window2.get());
-  EXPECT_EQ("1 3 2", GetWindowOrder(original_order,
+  // Move 1 (from the back) in front of 2.
+  list_provider->StackWindowFrontOf(window1.get(), window2.get());
+  EXPECT_EQ("2 1 3", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
   EXPECT_EQ(1, observer->calls());
 
-  // Move 2 to the front again. Should not change anything.
-  list_provider->MoveToFront(window2.get());
-  EXPECT_EQ("1 3 2", GetWindowOrder(original_order,
-                                    list_provider->GetWindowList()));
-  EXPECT_EQ(1, observer->calls());
-
-  // Move 1 (from the back) in front of 3.
-  list_provider->StackWindowFrontOf(window1.get(), window3.get());
-  EXPECT_EQ("3 1 2", GetWindowOrder(original_order,
+  // Move 3 (from the front) in front of 2.
+  list_provider->StackWindowFrontOf(window3.get(), window2.get());
+  EXPECT_EQ("2 3 1", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
   EXPECT_EQ(2, observer->calls());
 
-  // Move 2 (from the front) in front of 3.
-  list_provider->StackWindowFrontOf(window2.get(), window3.get());
-  EXPECT_EQ("3 2 1", GetWindowOrder(original_order,
+  // Move 1 (from the front) behind 2.
+  list_provider->StackWindowBehindTo(window1.get(), window2.get());
+  EXPECT_EQ("1 2 3", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
   EXPECT_EQ(3, observer->calls());
 
-  // Move 1 (from the front) behind 3.
-  list_provider->StackWindowBehindTo(window1.get(), window3.get());
-  EXPECT_EQ("1 3 2", GetWindowOrder(original_order,
+  // Move 1 (from the back) in front of 3.
+  list_provider->StackWindowFrontOf(window1.get(), window3.get());
+  EXPECT_EQ("2 3 1", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
   EXPECT_EQ(4, observer->calls());
 
-  // Move 1 (from the back) in front of 2.
-  list_provider->StackWindowFrontOf(window1.get(), window2.get());
-  EXPECT_EQ("3 2 1", GetWindowOrder(original_order,
-                                    list_provider->GetWindowList()));
-  EXPECT_EQ(5, observer->calls());
-
   // Test that no change should also report no call.
-  list_provider->StackWindowFrontOf(window1.get(), window2.get());
-  EXPECT_EQ("3 2 1", GetWindowOrder(original_order,
+  list_provider->StackWindowFrontOf(window1.get(), window3.get());
+  EXPECT_EQ("2 3 1", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
-  EXPECT_EQ(5, observer->calls());
-  list_provider->StackWindowBehindTo(window2.get(), window1.get());
-  EXPECT_EQ("3 2 1", GetWindowOrder(original_order,
+  EXPECT_EQ(4, observer->calls());
+  list_provider->StackWindowBehindTo(window3.get(), window1.get());
+  EXPECT_EQ("2 3 1", GetWindowOrder(original_order,
                                     list_provider->GetWindowList()));
-  EXPECT_EQ(5, observer->calls());
+  EXPECT_EQ(4, observer->calls());
 }
 
 TEST_F(WindowListProviderImplTest, TestWindowRemovalNotification) {
