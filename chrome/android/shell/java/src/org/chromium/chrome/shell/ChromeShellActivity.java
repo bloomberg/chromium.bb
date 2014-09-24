@@ -167,8 +167,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         mToolbar.setMenuHandler(mAppMenuHandler);
 
         mDevToolsServer = new DevToolsServer("chrome_shell");
-        mDevToolsServer.setRemoteDebuggingEnabled(
-                true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
+        mDevToolsServer.setRemoteDebuggingEnabled(true);
 
         mPrintingController = PrintingControllerFactory.create(this);
 

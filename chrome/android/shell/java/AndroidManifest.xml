@@ -32,11 +32,6 @@
     <uses-permission android:name="org.chromium.chrome.shell.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-    <permission android:name="org.chromium.chrome.shell.permission.DEBUG"
-                android:label="Debug web pages in Chrome Shell"
-                android:permissionGroup="android.permission-group.DEVELOPMENT_TOOLS"
-                android:protectionLevel="signature" />
-
     <application android:name="org.chromium.chrome.shell.ChromeShellApplication"
             android:icon="@mipmap/app_icon"
             android:label="Chrome Shell">
