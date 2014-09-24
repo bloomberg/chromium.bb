@@ -24,16 +24,6 @@ blink::WebLayer* WebNinePatchLayerImpl::layer() {
   return layer_.get();
 }
 
-void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap,
-                                      const blink::WebRect& aperture) {
-  setBitmap(bitmap);
-  setAperture(aperture);
-  setBorder(blink::WebRect(aperture.x,
-                           aperture.y,
-                           bitmap.width() - aperture.width,
-                           bitmap.height() - aperture.height));
-}
-
 void WebNinePatchLayerImpl::setBitmap(const SkBitmap& bitmap) {
   cc::NinePatchLayer* nine_patch =
       static_cast<cc::NinePatchLayer*>(layer_->layer());
