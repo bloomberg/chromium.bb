@@ -151,8 +151,6 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   install_checker_.set_extension(
       file_util::LoadExtension(
           extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
-  PermissionsUpdater(service_weak_->profile())
-      .InitializePermissions(extension());
 
   if (!extension() ||
       !extension_l10n_util::ValidateExtensionLocales(
@@ -161,6 +159,9 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
     return false;
   }
 
+  PermissionsUpdater(
+      service_weak_->profile(), PermissionsUpdater::INIT_FLAG_TRANSIENT)
+      .InitializePermissions(extension());
   ShowInstallPrompt();
 
   *extension_id = extension()->id();
