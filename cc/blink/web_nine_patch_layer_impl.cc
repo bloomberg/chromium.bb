@@ -34,7 +34,7 @@ void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap,
                            bitmap.height() - aperture.height));
 }
 
-void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap) {
+void WebNinePatchLayerImpl::setBitmap(const SkBitmap& bitmap) {
   cc::NinePatchLayer* nine_patch =
       static_cast<cc::NinePatchLayer*>(layer_->layer());
   nine_patch->SetBitmap(bitmap);
@@ -50,12 +50,6 @@ void WebNinePatchLayerImpl::setBorder(const blink::WebRect& border) {
   cc::NinePatchLayer* nine_patch =
       static_cast<cc::NinePatchLayer*>(layer_->layer());
   nine_patch->SetBorder(gfx::Rect(border));
-}
-
-void WebNinePatchLayerImpl::setFillCenter(bool fill_center) {
-  cc::NinePatchLayer* nine_patch =
-      static_cast<cc::NinePatchLayer*>(layer_->layer());
-  nine_patch->SetFillCenter(fill_center);
 }
 
 }  // namespace cc_blink

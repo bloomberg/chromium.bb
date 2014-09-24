@@ -22,13 +22,12 @@ class WebNinePatchLayerImpl : public blink::WebNinePatchLayer {
   // blink::WebNinePatchLayer implementation.
   virtual blink::WebLayer* layer();
 
-  // TODO(ccameron): Remove setBitmap(SkBitmap, blink::WebRect) in favor of
-  // setBitmap(), setAperture(), and setBorder();
+  // TODO(vivekg): Remove setBitmap(SkBitmap, blink::WebRect) once blink side
+  // CL, http://crrev.com/594193002 lands
   virtual void setBitmap(SkBitmap bitmap, const blink::WebRect& aperture);
-  virtual void setBitmap(SkBitmap bitmap);
+  virtual void setBitmap(const SkBitmap& bitmap);
   virtual void setAperture(const blink::WebRect& aperture);
   virtual void setBorder(const blink::WebRect& border);
-  virtual void setFillCenter(bool fill_center);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;
