@@ -678,18 +678,16 @@ class GSContext(object):
 
   # TODO(mtennant): Enhance to add details to returned results, such as
   # size, modified time, generation.
-  def LS(self, path, raw=False, **kwargs):
+  def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path.
 
     Args:
       path: The path to get a listing of.
-      raw: Return the raw CommandResult object instead of parsing it.
       kwargs: See options that DoCommand takes.
 
     Returns:
-      If raw is False, a list of paths that matched |path|.  Might be more
-      than one if a directory or path include wildcards/etc...
-      If raw is True, then the CommandResult object.
+      A list of paths that matched |path|.  Might be more than one if a
+      directory or path include wildcards/etc...
     """
     kwargs['redirect_stdout'] = True
     if not path.startswith(BASE_GS_URL):
@@ -700,12 +698,9 @@ class GSContext(object):
     else:
       result = self.DoCommand(['ls', '--', path], **kwargs)
 
-    if raw:
-      return result
-    else:
-      # TODO: Process resulting lines when given -l/-a.
-      # See http://crbug.com/342918 for more details.
-      return result.output.splitlines()
+    # TODO: Process resulting lines when given -l/-a.
+    # See http://crbug.com/342918 for more details.
+    return result.output.splitlines()
 
   def DU(self, path, **kwargs):
     """Returns size of an object."""
