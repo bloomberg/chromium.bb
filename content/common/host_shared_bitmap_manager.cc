@@ -187,6 +187,11 @@ void HostSharedBitmapManager::ProcessRemoved(
   process_map_.erase(proc_it);
 }
 
+size_t HostSharedBitmapManager::AllocatedBitmapCount() const {
+  base::AutoLock lock(lock_);
+  return handle_map_.size();
+}
+
 void HostSharedBitmapManager::FreeSharedMemoryFromMap(
     cc::SharedBitmap* bitmap) {
   base::AutoLock lock(lock_);
