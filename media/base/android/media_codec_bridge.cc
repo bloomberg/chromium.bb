@@ -104,7 +104,15 @@ ToJavaIntArray(JNIEnv* env, scoped_ptr<jint[]> native_array, int size) {
 // static
 bool MediaCodecBridge::IsAvailable() {
   // MediaCodec is only available on JB and greater.
-  return base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16)
+    return false;
+  // Blacklist some devices on Jellybean as for MediaCodec support is buggy.
+  // http://crbug.com/365494.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() == 16) {
+    std::string model(base::android::BuildInfo::GetInstance()->model());
+    return model != "GT-I9100" && model != "GT-I9300" && model != "GT-N7000";
+  }
+  return true;
 }
 
 // static
