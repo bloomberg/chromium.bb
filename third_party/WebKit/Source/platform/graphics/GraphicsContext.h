@@ -120,14 +120,14 @@ public:
     StrokeStyle strokeStyle() const { return immutableState()->strokeData().style(); }
     void setStrokeStyle(StrokeStyle style) { mutableState()->setStrokeStyle(style); }
 
-    Color strokeColor() const { return immutableState()->strokeData().color(); }
+    Color strokeColor() const { return immutableState()->strokeColor(); }
     void setStrokeColor(const Color& color) { mutableState()->setStrokeColor(color); }
     SkColor effectiveStrokeColor() const { return immutableState()->effectiveStrokeColor(); }
 
-    Pattern* strokePattern() const { return immutableState()->strokeData().pattern(); }
+    Pattern* strokePattern() const { return immutableState()->strokePattern(); }
     void setStrokePattern(PassRefPtr<Pattern>);
 
-    Gradient* strokeGradient() const { return immutableState()->strokeData().gradient(); }
+    Gradient* strokeGradient() const { return immutableState()->strokeGradient(); }
     void setStrokeGradient(PassRefPtr<Gradient>);
 
     void setLineCap(LineCap cap) { mutableState()->setLineCap(cap); }

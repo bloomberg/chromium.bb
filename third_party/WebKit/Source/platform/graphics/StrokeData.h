@@ -41,14 +41,13 @@
 
 namespace blink {
 
-// Encapsulates stroke painting information.
+// Encapsulates stroke geometry information.
 // It is pulled out of GraphicsContextState to enable other methods to use it.
 class PLATFORM_EXPORT StrokeData {
 public:
     StrokeData()
         : m_style(SolidStroke)
         , m_thickness(0)
-        , m_color(Color::black)
         , m_lineCap(SkPaint::kDefault_Cap)
         , m_lineJoin(SkPaint::kDefault_Join)
         , m_miterLimit(4)
@@ -60,17 +59,6 @@ public:
 
     float thickness() const { return m_thickness; }
     void setThickness(float thickness) { m_thickness = thickness; }
-
-    Color color() const { return m_color; }
-    void setColor(const Color& color) { m_color = color; }
-
-    Gradient* gradient() const { return m_gradient.get(); }
-    void setGradient(const PassRefPtr<Gradient> gradient) { m_gradient = gradient; }
-    void clearGradient() { m_gradient.clear(); }
-
-    Pattern* pattern() const { return m_pattern.get(); }
-    void setPattern(const PassRefPtr<Pattern> pattern) { m_pattern = pattern; }
-    void clearPattern() { m_pattern.clear(); }
 
     LineCap lineCap() const { return (LineCap)m_lineCap; }
     void setLineCap(LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
@@ -97,9 +85,6 @@ public:
 private:
     StrokeStyle m_style;
     float m_thickness;
-    Color m_color;
-    RefPtr<Gradient> m_gradient;
-    RefPtr<Pattern> m_pattern;
     SkPaint::Cap m_lineCap;
     SkPaint::Join m_lineJoin;
     float m_miterLimit;

@@ -985,7 +985,7 @@ void GraphicsContext::drawRect(const IntRect& rect)
         drawRect(skRect, immutableState()->fillPaint());
 
     if (immutableState()->strokeData().style() != NoStroke
-        && immutableState()->strokeData().color().alpha()) {
+        && immutableState()->strokeColor().alpha()) {
         // Stroke a width: 1 inset border
         SkPaint paint(immutableState()->fillPaint());
         paint.setColor(effectiveStrokeColor());

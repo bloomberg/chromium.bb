@@ -68,27 +68,24 @@ public:
     void decrementSaveCount() { --m_saveCount; }
 
     // Stroke data
-    const StrokeData& strokeData() const { return m_strokeData; }
-
-    void setStrokeStyle(StrokeStyle);
-
-    void setStrokeThickness(float);
-
-    SkColor effectiveStrokeColor() const { return applyAlpha(m_strokeData.color().rgb()); }
+    Color strokeColor() const { return m_strokeColor; }
+    SkColor effectiveStrokeColor() const { return applyAlpha(m_strokeColor.rgb()); }
     void setStrokeColor(const Color&);
 
+    Gradient* strokeGradient() const { return m_strokeGradient.get(); }
     void setStrokeGradient(const PassRefPtr<Gradient>);
     void clearStrokeGradient();
 
+    Pattern* strokePattern() const { return m_strokePattern.get(); }
     void setStrokePattern(const PassRefPtr<Pattern>);
     void clearStrokePattern();
 
+    const StrokeData& strokeData() const { return m_strokeData; }
+    void setStrokeStyle(StrokeStyle);
+    void setStrokeThickness(float);
     void setLineCap(LineCap);
-
     void setLineJoin(LineJoin);
-
     void setMiterLimit(float);
-
     void setLineDash(const DashArray&, float);
 
     // Fill data
@@ -157,6 +154,10 @@ private:
     mutable SkPaint m_fillPaint;
 
     StrokeData m_strokeData;
+
+    Color m_strokeColor;
+    RefPtr<Gradient> m_strokeGradient;
+    RefPtr<Pattern> m_strokePattern;
 
     Color m_fillColor;
     WindRule m_fillRule;
