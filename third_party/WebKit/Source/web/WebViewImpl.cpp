@@ -1705,8 +1705,10 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     ViewportAnchor viewportAnchor(&localFrameRootTemporary()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
-        viewportAnchor.setAnchor(view->visibleContentRect(),
-                                 FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
+        viewportAnchor.setAnchor(
+            view->visibleContentRect(),
+            visibleRectInDocument(),
+            FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
     }
 
     // FIXME: TextAutosizer does not yet support out-of-process frames.
@@ -1726,13 +1728,31 @@ void WebViewImpl::resize(const WebSize& newSize)
 
         if (shouldAnchorAndRescaleViewport) {
             float newPageScaleFactor = oldPageScaleFactor / oldMinimumPageScaleFactor * minimumPageScaleFactor();
-            IntSize scaledViewportSize = newSize;
-            scaledViewportSize.scale(1 / newPageScaleFactor);
-            setPageScaleFactor(newPageScaleFactor, viewportAnchor.computeOrigin(scaledViewportSize));
+            newPageScaleFactor = clampPageScaleFactorToLimits(newPageScaleFactor);
+
+            FloatSize pinchViewportSize = FloatSize(newSize);
+            pinchViewportSize.scale(1 / newPageScaleFactor);
+
+            IntPoint mainFrameOrigin;
+            FloatPoint pinchViewportOrigin;
+            viewportAnchor.computeOrigins(*view, pinchViewportSize,
+                mainFrameOrigin, pinchViewportOrigin);
+            scrollAndRescaleViewports(newPageScaleFactor, mainFrameOrigin, pinchViewportOrigin);
         }
     }
 
     sendResizeEventAndRepaint();
+}
+
+IntRect WebViewImpl::visibleRectInDocument() const
+{
+    if (pinchVirtualViewportEnabled()) {
+        // Inner viewport in the document coordinates
+        return enclosedIntRect(page()->frameHost().pinchViewport().visibleRectInDocument());
+    }
+
+    // Outer viewport in the document coordinates
+    return localFrameRootTemporary()->frameView()->visibleContentRect();
 }
 
 void WebViewImpl::willEndLiveResize()
@@ -2940,6 +2960,36 @@ WebFloatPoint WebViewImpl::pinchViewportOffset() const
     return page()->frameHost().pinchViewport().visibleRect().location();
 }
 
+void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
+    const IntPoint& mainFrameOrigin,
+    const FloatPoint& pinchViewportOrigin)
+{
+    // Old way
+    if (!pinchVirtualViewportEnabled()) {
+        setPageScaleFactor(scaleFactor, mainFrameOrigin);
+        return;
+    }
+
+    if (!page())
+        return;
+
+    if (!mainFrameImpl())
+        return;
+
+    FrameView * view = mainFrameImpl()->frameView();
+    if (!view)
+        return;
+
+    // Order is important: pinch viewport location is clamped based on
+    // main frame scroll position and pinch viewport scale.
+
+    view->setScrollOffset(mainFrameOrigin);
+
+    setPageScaleFactor(scaleFactor);
+
+    page()->frameHost().pinchViewport().setLocation(pinchViewportOrigin);
+}
+
 void WebViewImpl::setPageScaleFactor(float scaleFactor)
 {
     ASSERT(page());
@@ -2981,7 +3031,6 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor, const WebPoint& origin)
     else
         page()->setPageScaleFactor(scaleFactor, newScrollOffset);
 }
-
 
 float WebViewImpl::deviceScaleFactor() const
 {
