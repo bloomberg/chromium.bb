@@ -62,9 +62,6 @@ int SQLiteStatement::prepare()
     CString query = m_query.stripWhiteSpace().utf8();
 
     ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
-    MutexLocker databaseLock(m_database.databaseMutex());
-    if (m_database.isInterrupted())
-        return SQLITE_INTERRUPT;
 
     WTF_LOG(SQLDatabase, "SQL - prepare - %s", query.data());
 
@@ -89,9 +86,6 @@ int SQLiteStatement::prepare()
 int SQLiteStatement::step()
 {
     ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
-    MutexLocker databaseLock(m_database.databaseMutex());
-    if (m_database.isInterrupted())
-        return SQLITE_INTERRUPT;
     //ASSERT(m_isPrepared);
 
     if (!m_statement)

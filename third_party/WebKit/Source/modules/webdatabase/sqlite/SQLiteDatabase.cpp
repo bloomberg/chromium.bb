@@ -50,7 +50,6 @@ SQLiteDatabase::SQLiteDatabase()
     , m_transactionInProgress(false)
     , m_sharable(false)
     , m_openingThread(0)
-    , m_interrupted(false)
     , m_openError(SQLITE_ERROR)
     , m_openErrorMessage()
     , m_lastChangesCount(0)
@@ -112,26 +111,6 @@ void SQLiteDatabase::close()
     m_openingThread = 0;
     m_openError = SQLITE_ERROR;
     m_openErrorMessage = CString();
-}
-
-void SQLiteDatabase::interrupt()
-{
-    m_interrupted = true;
-    while (!m_lockingMutex.tryLock()) {
-        MutexLocker locker(m_databaseClosingMutex);
-        if (!m_db)
-            return;
-        sqlite3_interrupt(m_db);
-        yield();
-    }
-
-    m_lockingMutex.unlock();
-}
-
-bool SQLiteDatabase::isInterrupted()
-{
-    ASSERT(!m_lockingMutex.tryLock());
-    return m_interrupted;
 }
 
 void SQLiteDatabase::setMaximumSize(int64_t size)
