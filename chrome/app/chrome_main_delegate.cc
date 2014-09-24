@@ -568,10 +568,12 @@ void ChromeMainDelegate::InitMacCrashReporter(
   //    itself.
   // * If Breakpad is disabled, we only turn on Crash Reporter for the
   //    Browser process in release mode.
-  if (base::mac::IsBackgroundOnlyProcess() ||
-      breakpad::IsCrashReporterEnabled() ||
-      is_debug_build) {
-    base::mac::DisableOSCrashDumps();
+  if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
+    bool disable_apple_crash_reporter = is_debug_build ||
+        base::mac::IsBackgroundOnlyProcess();
+    if (!breakpad::IsCrashReporterEnabled() && disable_apple_crash_reporter) {
+      base::mac::DisableOSCrashDumps();
+    }
   }
 
   // Mac Chrome is packaged with a main app bundle and a helper app bundle.
