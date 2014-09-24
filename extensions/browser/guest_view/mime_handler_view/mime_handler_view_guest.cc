@@ -131,6 +131,11 @@ void MimeHandlerViewGuest::DidInitialize() {
     delegate_->AttachHelpers();
 }
 
+void MimeHandlerViewGuest::ContentsZoomChange(bool zoom_in) {
+  if (delegate_)
+    delegate_->ChangeZoom(zoom_in);
+}
+
 void MimeHandlerViewGuest::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {

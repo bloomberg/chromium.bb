@@ -4,6 +4,7 @@
 
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -40,4 +41,12 @@ void ChromeMimeHandlerViewGuestDelegate::AttachHelpers() {
       web_contents,
       scoped_ptr<pdf::PDFWebContentsHelperClient>(
           new ChromePDFWebContentsHelperClient()));
+}
+
+void ChromeMimeHandlerViewGuestDelegate::ChangeZoom(bool zoom_in) {
+  // TODO(lazyboy): Move this to //extensions once ZoomController and friends
+  // move to //extensions.
+  chrome_page_zoom::Zoom(
+      guest_->embedder_web_contents(),
+      zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }

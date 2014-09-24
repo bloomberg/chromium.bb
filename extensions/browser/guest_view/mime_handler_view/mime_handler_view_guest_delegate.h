@@ -24,6 +24,10 @@ class MimeHandlerViewGuestDelegate {
   // Attaches helpers upon initializing the WebContents.
   virtual void AttachHelpers() {}
 
+  // Request to change the zoom level of the top level page containing
+  // this view.
+  virtual void ChangeZoom(bool zoom_in) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuestDelegate);
 };

@@ -37,6 +37,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   virtual void DidInitialize() OVERRIDE;
 
   // WebContentsDelegate implementation.
+  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
