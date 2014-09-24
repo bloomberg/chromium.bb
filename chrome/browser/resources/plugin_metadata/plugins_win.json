@@ -264,16 +264,6 @@
   },
   "windows-media-player": {
     "mime_types": [
-      "application/asx",
-      "application/x-mplayer2",
-      "application/x-ms-wmp",
-      "audio/x-ms-wax",
-      "audio/x-ms-wma",
-      "video/x-ms-asf",
-      "video/x-ms-asf-plugin",
-      "video/x-ms-wm",
-      "video/x-ms-wmv",
-      "video/x-ms-wvx"
     ],
     "lang": "en-US",
     "name": "Windows Media Player",
