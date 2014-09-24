@@ -138,7 +138,6 @@ private:
     static bool isFrameFocused(const Element&);
 
     bool m_strictParsing;
-    bool m_documentIsHTML;
     Mode m_mode;
 };
 
