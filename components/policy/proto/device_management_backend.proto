@@ -622,6 +622,91 @@ message DeviceStateRetrievalResponse {
   optional string management_domain = 2;
 }
 
+// Sent by the client to the server to pair the Host device with the Controller
+// device. The HTTP request contains an end-user OAuth token and only succeeds
+// if both Host and Controller devices belong to the end-user domain.
+message DevicePairingRequest {
+
+  // The device ID of the Host device.
+  optional string host_device_id = 1;
+
+  // The device ID of the Controller device.
+  optional string controller_device_id = 2;
+}
+
+// Response from the server to the device pairing request.
+message DevicePairingResponse {
+
+  // The client should check HTTP status code first. If HTTP status code is not
+  // 200 (e.g. 500 internal error), then it means the pairing fails. If HTTP
+  // status code is 200, then the client should check the status code within the
+  // response.
+  enum StatusCode {
+    SUCCESS = 0;
+
+    // A generic failure code for pairing.
+    FAILED = 1;
+
+    // The Host device cannot be found in the user's domain.
+    HOST_DEVICE_NOT_FOUND = 2;
+
+    // The Controller device cannot be found in the user's domain.
+    CONTROLLER_DEVICE_NOT_FOUND  = 3;
+
+    // The Host device is deprovisioned.
+    HOST_DEVICE_DEPROVISIONED = 4;
+
+    // The Controller device is deprovisioned.
+    CONTROLLER_DEVICE_DEPROVISIONED = 5;
+  }
+
+  optional StatusCode status_code = 1 [default = FAILED];
+}
+
+// Sent by the client to the server to check if the devices are paired. The HTTP
+// request contains controller service account OAuth token as well as the
+// DMToken from the Host device.
+message CheckDevicePairingRequest {
+
+  // The device ID of the Host device.
+  optional string host_device_id = 1;
+
+  // The device ID of the Controller device.
+  optional string controller_device_id = 2;
+}
+
+// Response from the server to the check device pairing request.
+message CheckDevicePairingResponse {
+
+  // The client should check HTTP status code first. If HTTP status code is not
+  // 200 (e.g. 500 internal error), then it means the pairing status is unknown.
+  // If HTTP status code is 200, then the client should check the status code
+  // within the response.
+  enum StatusCode {
+    PAIRED = 0;
+
+    // The Host and Controller devices are not paired.
+    NOT_PAIRED = 1;
+
+    // The Host device cannot be found in the Host device domain.
+    HOST_DEVICE_NOT_FOUND = 2;
+
+    // The Controller device cannot be found in the Host device domain.
+    CONTROLLER_DEVICE_NOT_FOUND  = 3;
+
+    // The Host device is deprovisioned.
+    HOST_DEVICE_DEPROVISIONED = 4;
+
+    // The Controller device is deprovisioned.
+    CONTROLLER_DEVICE_DEPROVISIONED = 5;
+
+    // Invalid controller identity.
+    INVALID_CONTROLLER_DEVICE_IDENTITY = 6;
+  }
+
+  optional StatusCode status_code = 1 [default = NOT_PAIRED];
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -630,15 +715,17 @@ message DeviceStateRetrievalResponse {
 // * Data mime type is application/x-protobuffer
 // * HTTP parameters are (all required, all case sensitive):
 //   * request: MUST BE one of
+//     * api_authorization
 //     * cert_upload
-//     * enterprise_check
+//     * check_device_pairing
+//     * device_pairing
 //     * device_state_retrieval
+//     * enterprise_check
 //     * ping
 //     * policy
 //     * register
 //     * status
 //     * unregister
-//     * api_authorization
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -659,8 +746,10 @@ message DeviceStateRetrievalResponse {
 // HTTP query parameter - request, as listed below. Other requests within the
 // container will be ignored.
 //   cert_upload: cert_upload_request
-//   enterprise_check: auto_enrollment_request
+//   check_device_pairing: check_device_pairing_request
+//   device_pairing: device_pairing_request
 //   device_state_retrieval: device_state_retrieval_request
+//   enterprise_check: auto_enrollment_request
 //   ping: policy_request
 //   policy: policy_request
 //   register: register_request
@@ -696,6 +785,12 @@ message DeviceManagementRequest {
 
   // Device state key update.
   optional DeviceStateKeyUpdateRequest device_state_key_update_request = 10;
+
+  // Pair two devices.
+  optional DevicePairingRequest device_pairing_request = 11;
+
+  // Check if two devices are paired.
+  optional CheckDevicePairingRequest check_device_pairing_request = 12;
 }
 
 // Response from server to device.
@@ -744,4 +839,10 @@ message DeviceManagementResponse {
 
   // Device-state retrieval.
   optional DeviceStateRetrievalResponse device_state_retrieval_response = 11;
+
+  // Response to device pairing request.
+  optional DevicePairingResponse device_pairing_response = 12;
+
+  // Response to check device pairing request.
+  optional CheckDevicePairingResponse check_device_pairing_response = 13;
 }
