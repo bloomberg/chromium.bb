@@ -318,8 +318,8 @@ TEST_F(WindowManagerTest, SplitModeActivationByShortcut) {
   int width =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().width();
 
-  EXPECT_EQ(w1->bounds().width(), w2->bounds().width());
-  EXPECT_GE(width / 2, w1->bounds().width());
+  EXPECT_EQ(width / 2, w1->bounds().width());
+  EXPECT_EQ(width / 2, w2->bounds().width());
 
   // Toggle back to normal mode.
   generator.PressKey(ui::VKEY_F6, ui::EF_CONTROL_DOWN);

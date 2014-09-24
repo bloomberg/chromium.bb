@@ -149,7 +149,6 @@ WindowManagerImpl::WindowManagerImpl() {
   bezel_controller_.reset(new BezelController(container_.get()));
   split_view_controller_.reset(
       new SplitViewController(container_.get(), window_list_provider_.get()));
-  AddObserver(split_view_controller_.get());
   bezel_controller_->set_left_right_delegate(split_view_controller_.get());
   container_->AddPreTargetHandler(bezel_controller_.get());
   title_drag_controller_.reset(new TitleDragController(container_.get(), this));
@@ -163,7 +162,6 @@ WindowManagerImpl::WindowManagerImpl() {
 
 WindowManagerImpl::~WindowManagerImpl() {
   overview_.reset();
-  RemoveObserver(split_view_controller_.get());
   split_view_controller_.reset();
   window_list_provider_.reset();
   if (container_) {
