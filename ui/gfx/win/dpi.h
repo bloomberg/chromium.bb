@@ -22,7 +22,7 @@ GFX_EXPORT void InitDeviceScaleFactor(float scale);
 GFX_EXPORT Size GetDPI();
 
 // Gets the scale factor of the display. For example, if the display DPI is
-// 96 then the scale factor is 1.0. 
+// 96 then the scale factor is 1.0.
 GFX_EXPORT float GetDPIScale();
 
 // Tests to see if the command line flag "--high-dpi-support" is set.
@@ -44,12 +44,14 @@ GFX_EXPORT Point ScreenToDIPPoint(const Point& pixel_point);
 
 GFX_EXPORT Point DIPToScreenPoint(const Point& dip_point);
 
+// WARNING: there is no right way to scale sizes and rects. The implementation
+// of these strives to maintain a constant size by scaling the size independent
+// of the origin. An alternative is to get the enclosing rect, which is the
+// right way for some situations. Understand which you need before blindly
+// assuming this is the right way.
 GFX_EXPORT Rect ScreenToDIPRect(const Rect& pixel_bounds);
-
 GFX_EXPORT Rect DIPToScreenRect(const Rect& dip_bounds);
-
 GFX_EXPORT Size ScreenToDIPSize(const Size& size_in_pixels);
-
 GFX_EXPORT Size DIPToScreenSize(const Size& dip_size);
 
 // Win32's GetSystemMetrics uses pixel measures. This function calls

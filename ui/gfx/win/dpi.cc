@@ -38,7 +38,7 @@ float GetUnforcedDeviceScaleFactor() {
   // If the global device scale factor is initialized use it. This is to ensure
   // we use the same scale factor across all callsites. We don't use the
   // GetDeviceScaleFactor function here because it fires a DCHECK if the
-  // g_device_scale_factor global is 0. 
+  // g_device_scale_factor global is 0.
   if (g_device_scale_factor)
     return g_device_scale_factor;
   return static_cast<float>(gfx::GetDPI().width()) /
@@ -184,7 +184,7 @@ float GetDeviceScaleFactor() {
 
 Point ScreenToDIPPoint(const Point& pixel_point) {
   return ToFlooredPoint(ScalePoint(pixel_point,
-      1.0f / GetDeviceScaleFactor()));
+                                   1.0f / GetDeviceScaleFactor()));
 }
 
 Point DIPToScreenPoint(const Point& dip_point) {
@@ -192,32 +192,30 @@ Point DIPToScreenPoint(const Point& dip_point) {
 }
 
 Rect ScreenToDIPRect(const Rect& pixel_bounds) {
-  // TODO(kevers): Switch to non-deprecated method for float to int conversions.
-  return ToFlooredRectDeprecated(
-      ScaleRect(pixel_bounds, 1.0f / GetDeviceScaleFactor()));
+  // It's important we scale the origin and size separately. If we instead
+  // calculated the size from the floored origin and ceiled right the size could
+  // vary depending upon where the two points land. That would cause problems
+  // for the places this code is used (in particular mapping from native window
+  // bounds to DIPs).
+  return Rect(ScreenToDIPPoint(pixel_bounds.origin()),
+              ScreenToDIPSize(pixel_bounds.size()));
 }
 
 Rect DIPToScreenRect(const Rect& dip_bounds) {
-  // We scale the origin by the scale factor and round up via ceil. This
-  // ensures that we get the original logical origin back when we scale down.
-  // We round the size down after scaling. It may be better to round this up
-  // on the same lines as the origin.
-  // TODO(ananta)
-  // Investigate if rounding size up on the same lines as origin is workable.
-  return gfx::Rect(
-      gfx::ToCeiledPoint(gfx::ScalePoint(
-          dip_bounds.origin(), GetDeviceScaleFactor())),
-      gfx::ToFlooredSize(gfx::ScaleSize(
-          dip_bounds.size(), GetDeviceScaleFactor())));
+  // See comment in ScreenToDIPRect for why we calculate size like this.
+  return Rect(DIPToScreenPoint(dip_bounds.origin()),
+              DIPToScreenSize(dip_bounds.size()));
 }
 
 Size ScreenToDIPSize(const Size& size_in_pixels) {
-  return ToFlooredSize(
+  // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
+  return ToCeiledSize(
       ScaleSize(size_in_pixels, 1.0f / GetDeviceScaleFactor()));
 }
 
 Size DIPToScreenSize(const Size& dip_size) {
-  return ToFlooredSize(ScaleSize(dip_size, GetDeviceScaleFactor()));
+  // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
+  return ToCeiledSize(ScaleSize(dip_size, GetDeviceScaleFactor()));
 }
 
 int GetSystemMetricsInDIP(int metric) {
