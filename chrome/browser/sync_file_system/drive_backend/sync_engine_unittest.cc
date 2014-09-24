@@ -73,6 +73,10 @@ class SyncEngineTest : public testing::Test,
     sync_engine_.reset();
     WaitForWorkerTaskRunner();
     worker_pool_->Shutdown();
+
+    worker_task_runner_ = NULL;
+    worker_pool_ = NULL;
+
     base::RunLoop().RunUntilIdle();
   }
 
