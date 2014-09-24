@@ -511,8 +511,6 @@ crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedica
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
-
 # On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-generate-non-extractable-key.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-key-manipulation.html [ Failure Pass ]
