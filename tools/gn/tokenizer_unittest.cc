@@ -180,5 +180,47 @@ TEST(Tokenizer, Comments) {
     { Token::RIGHT_BRACE, "}" },
   };
   EXPECT_TRUE(CheckTokenizer(
-      "# Stuff\nfun(\"foo\") {  # Things\n#Wee\nfoo = 12 #Zip\n}", fn));
+      "# Stuff\n"
+      "fun(\"foo\") {  # Things\n"
+      "#Wee\n"
+      "foo = 12 #Zip\n"
+      "}",
+      fn));
+}
+
+TEST(Tokenizer, CommentsContinued) {
+  // In the first test, the comments aren't horizontally aligned, so they're
+  // considered separate. In the second test, they are, so "B" is a
+  // continuation of "A" (another SUFFIX comment).
+  TokenExpectation fn1[] = {
+    { Token::IDENTIFIER, "fun" },
+    { Token::LEFT_PAREN, "(" },
+    { Token::STRING, "\"foo\"" },
+    { Token::RIGHT_PAREN, ")" },
+    { Token::LEFT_BRACE, "{" },
+    { Token::SUFFIX_COMMENT, "# A" },
+    { Token::LINE_COMMENT, "# B" },
+    { Token::RIGHT_BRACE, "}" },
+  };
+  EXPECT_TRUE(CheckTokenizer(
+      "fun(\"foo\") {  # A\n"
+      "  # B\n"
+      "}",
+      fn1));
+
+  TokenExpectation fn2[] = {
+    { Token::IDENTIFIER, "fun" },
+    { Token::LEFT_PAREN, "(" },
+    { Token::STRING, "\"foo\"" },
+    { Token::RIGHT_PAREN, ")" },
+    { Token::LEFT_BRACE, "{" },
+    { Token::SUFFIX_COMMENT, "# A" },
+    { Token::SUFFIX_COMMENT, "# B" },
+    { Token::RIGHT_BRACE, "}" },
+  };
+  EXPECT_TRUE(CheckTokenizer(
+      "fun(\"foo\") {  # A\n"
+      "              # B\n"  // Note that these are aligned, the \"s move A out.
+      "}",
+      fn2));
 }

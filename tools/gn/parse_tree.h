@@ -39,6 +39,10 @@ class Comments {
   void append_suffix(Token c) {
     suffix_.push_back(c);
   }
+  // Reverse the order of the suffix comments. When walking the tree in
+  // post-order we append suffix comments in reverse order, so this fixes them
+  // up.
+  void ReverseSuffix();
 
   const std::vector<Token>& after() const { return after_; }
   void append_after(Token c) {

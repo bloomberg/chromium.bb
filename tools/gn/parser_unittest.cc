@@ -589,6 +589,31 @@ TEST(Parser, CommentsSuffixDifferentLine) {
   DoParserPrintTest(input, expected);
 }
 
+TEST(Parser, CommentsSuffixMultiple) {
+  const char* input =
+    "executable(\"wee\") {\n"
+    "  sources = [\n"
+    "    \"a\",  # This is a comment,\n"
+    "          # and some more,\n"  // Note that this is aligned with above.
+    "          # then the end.\n"
+    "  ]\n"
+    "}\n";
+  const char* expected =
+    "BLOCK\n"
+    " FUNCTION(executable)\n"
+    "  LIST\n"
+    "   LITERAL(\"wee\")\n"
+    "  BLOCK\n"
+    "   BINARY(=)\n"
+    "    IDENTIFIER(sources)\n"
+    "    LIST\n"
+    "     LITERAL(\"a\")\n"
+    "      +SUFFIX_COMMENT(\"# This is a comment,\")\n"
+    "      +SUFFIX_COMMENT(\"# and some more,\")\n"
+    "      +SUFFIX_COMMENT(\"# then the end.\")\n";
+  DoParserPrintTest(input, expected);
+}
+
 TEST(Parser, HangingIf) {
   DoParserErrorTest("if", 1, 1);
 }

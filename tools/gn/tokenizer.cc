@@ -120,10 +120,17 @@ std::vector<Token> Tokenizer::Run() {
       else if (token_value == "false")
         type = Token::FALSE_TOKEN;
     } else if (type == Token::UNCLASSIFIED_COMMENT) {
-      if (AtStartOfLine(token_begin))
+      if (AtStartOfLine(token_begin) &&
+          // If it's a standalone comment, but is a continuation of a comment on
+          // a previous line, then instead make it a continued suffix comment.
+          (tokens_.empty() || tokens_.back().type() != Token::SUFFIX_COMMENT ||
+           tokens_.back().location().line_number() + 1 !=
+               location.line_number() ||
+           tokens_.back().location().char_offset() != location.char_offset())) {
         type = Token::LINE_COMMENT;
-      else
+      } else {
         type = Token::SUFFIX_COMMENT;
+      }
     }
 
     tokens_.push_back(Token(location, type, token_value));

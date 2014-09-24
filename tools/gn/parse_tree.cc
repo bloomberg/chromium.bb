@@ -27,6 +27,11 @@ Comments::Comments() {
 Comments::~Comments() {
 }
 
+void Comments::ReverseSuffix() {
+  for (int i = 0, j = static_cast<int>(suffix_.size() - 1); i < j; ++i, --j)
+    std::swap(suffix_[i], suffix_[j]);
+}
+
 ParseNode::ParseNode() {
 }
 
