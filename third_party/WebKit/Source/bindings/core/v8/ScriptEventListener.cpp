@@ -152,7 +152,7 @@ ScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* l
     return ScriptState::from(v8Context);
 }
 
-bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& sourceName, String& scriptId, int& lineNumber)
+bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& sourceName, String& scriptId, int& lineNumber, int& columnNumber)
 {
     if (listener->type() != EventListener::JSEventListenerType)
         return false;
@@ -176,6 +176,7 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
     else
         sourceName = "";
     lineNumber = originalFunction->GetScriptLineNumber();
+    columnNumber = originalFunction->GetScriptColumnNumber();
     return true;
 }
 

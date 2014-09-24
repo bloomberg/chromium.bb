@@ -3,7 +3,7 @@ Tests event listeners output in the Elements sidebar panel.
 Inspect Me
 
 ======== click ========
-[expanded] document event-listener-sidebar.html:19
+[expanded] document event-listener-sidebar.html:19:48
     handler: function (event) { console.log("click - document - capturing"); }
     isAttribute: false
     lineNumber: 19
@@ -12,7 +12,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document event-listener-sidebar.html:25
+[expanded] document event-listener-sidebar.html:25:27
     handler: ObjectHandler
     isAttribute: false
     lineNumber: 25
@@ -21,7 +21,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document event-listener-sidebar.html:31
+[expanded] document event-listener-sidebar.html:31:55
     handler: EventListenerImpl
     isAttribute: false
     lineNumber: 31
@@ -30,7 +30,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] button#node event-listener-sidebar.html:15
+[expanded] button#node event-listener-sidebar.html:15:46
     handler: function (event) { console.log("click - button - capturing"); }
     isAttribute: false
     lineNumber: 15
@@ -39,7 +39,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] button#node event-listener-sidebar.html:12
+[expanded] button#node event-listener-sidebar.html:12:26
     handler: function clickHandler(event) { console.log("click - button - bubbling (registered before attribute)"); }
     isAttribute: false
     lineNumber: 12
@@ -48,7 +48,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: false
-[expanded] button#node event-listener-sidebar.html:16
+[expanded] button#node event-listener-sidebar.html:16:30
     handler: function (event) { console.log("click - button - attribute"); }
     isAttribute: true
     lineNumber: 16
@@ -57,7 +57,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: false
-[expanded] button#node event-listener-sidebar.html:17
+[expanded] button#node event-listener-sidebar.html:17:46
     handler: function (event) { console.log("click - button - bubbling (registered after attribute)"); }
     isAttribute: false
     lineNumber: 17
@@ -66,7 +66,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: false
-[expanded] document event-listener-sidebar.html:6
+[expanded] document event-listener-sidebar.html:6:30
     handler: function documentClickHandler(event) { console.log("click - document - attribute"); }
     isAttribute: true
     lineNumber: 6
@@ -77,7 +77,7 @@ Inspect Me
     useCapture: false
 
 ======== custom event ========
-[expanded] body event-listener-sidebar.html:10
+[expanded] body event-listener-sidebar.html:10:15
     handler: function f() {}
     isAttribute: false
     lineNumber: 10
@@ -88,7 +88,7 @@ Inspect Me
     useCapture: true
 
 ======== hover ========
-[expanded] button#node event-listener-sidebar.html:14
+[expanded] button#node event-listener-sidebar.html:14:59
     handler: function hoverHandler(event) { console.log("hover - button - bubbling"); }
     isAttribute: false
     lineNumber: 14
@@ -99,7 +99,7 @@ Inspect Me
     useCapture: false
 
 ======== click ========
-[expanded] document event-listener-sidebar.html:19
+[expanded] document event-listener-sidebar.html:19:48
     handler: function (event) { console.log("click - document - capturing"); }
     isAttribute: false
     lineNumber: 19
@@ -108,7 +108,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document event-listener-sidebar.html:25
+[expanded] document event-listener-sidebar.html:25:27
     handler: ObjectHandler
     isAttribute: false
     lineNumber: 25
@@ -117,7 +117,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document event-listener-sidebar.html:31
+[expanded] document event-listener-sidebar.html:31:55
     handler: EventListenerImpl
     isAttribute: false
     lineNumber: 31
@@ -126,7 +126,7 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document event-listener-sidebar.html:6
+[expanded] document event-listener-sidebar.html:6:30
     handler: function documentClickHandler(event) { console.log("click - document - attribute"); }
     isAttribute: true
     lineNumber: 6
@@ -137,7 +137,7 @@ Inspect Me
     useCapture: false
 
 ======== custom event ========
-[expanded] body event-listener-sidebar.html:10
+[expanded] body event-listener-sidebar.html:10:15
     handler: function f() {}
     isAttribute: false
     lineNumber: 10

@@ -48,7 +48,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const 
 String eventListenerHandlerBody(Document*, EventListener*);
 ScriptValue eventListenerHandler(Document*, EventListener*);
 ScriptState* eventListenerHandlerScriptState(LocalFrame*, EventListener*);
-bool eventListenerHandlerLocation(Document*, EventListener*, String& sourceName, String& scriptId, int& lineNumber);
+bool eventListenerHandlerLocation(Document*, EventListener*, String& sourceName, String& scriptId, int& lineNumber, int& columnNumber);
 
 } // namespace blink
 

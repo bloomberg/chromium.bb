@@ -34,6 +34,17 @@ function setupEventListeners()
 
 function test()
 {
+    Object.defineProperty(WebInspector.EventListenerBar.prototype, "subtitleAsTextForTest", {
+        configurable: true,
+        get: function()
+        {
+            var result = this.subtitleElement.textContent;
+            var payload = this._eventListener.payload();
+            var columnNumber = payload.location.columnNumber + 1;
+            return result + ":" + columnNumber;
+        }
+    });
+
     WebInspector.settings.eventListenersFilter.set("all");
     InspectorTest.selectNodeWithId("node", step1);
 
@@ -59,7 +70,12 @@ function test()
     }
     function step5()
     {
-        InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest);
+        InspectorTest.expandAndDumpSelectedElementEventListeners(completeTest);
+    }
+    function completeTest()
+    {
+        delete WebInspector.EventListenerBar.prototype.subtitleAsTextForTest;
+        InspectorTest.completeTest()
     }
 }
 
