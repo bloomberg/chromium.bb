@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_cache.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
@@ -371,6 +372,42 @@ void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
   ReadHeaders(tmp_entry_ptr, headers_callback);
 }
 
+bool VaryMatches(const ServiceWorkerHeaderMap& request,
+                 const ServiceWorkerHeaderMap& cached_request,
+                 const ServiceWorkerHeaderMap& response) {
+  ServiceWorkerHeaderMap::const_iterator vary_iter = response.find("vary");
+  if (vary_iter == response.end())
+    return true;
+
+  std::vector<std::string> vary_keys;
+  Tokenize(vary_iter->second, ",", &vary_keys);
+  for (std::vector<std::string>::const_iterator it = vary_keys.begin();
+       it != vary_keys.end();
+       ++it) {
+    std::string trimmed;
+    base::TrimWhitespaceASCII(*it, base::TRIM_ALL, &trimmed);
+    if (trimmed == "*")
+      return false;
+
+    ServiceWorkerHeaderMap::const_iterator request_iter = request.find(trimmed);
+    ServiceWorkerHeaderMap::const_iterator cached_request_iter =
+        cached_request.find(trimmed);
+
+    // If the header exists in one but not the other, no match.
+    if ((request_iter == request.end()) !=
+        (cached_request_iter == cached_request.end()))
+      return false;
+
+    // If the header exists in one, it exists in both. Verify that the values
+    // are equal.
+    if (request_iter != request.end() &&
+        request_iter->second != cached_request_iter->second)
+      return false;
+  }
+
+  return true;
+}
+
 void MatchDidReadHeaderData(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
@@ -397,7 +434,20 @@ void MatchDidReadHeaderData(
     response->headers.insert(std::make_pair(header.name(), header.value()));
   }
 
-  // TODO(jkarlin): Insert vary validation here.
+  ServiceWorkerHeaderMap cached_request_headers;
+  for (int i = 0; i < headers->request_headers_size(); ++i) {
+    const ServiceWorkerRequestResponseHeaders::HeaderMap header =
+        headers->request_headers(i);
+    cached_request_headers[header.name()] = header.value();
+  }
+
+  if (!VaryMatches(
+          request->headers, cached_request_headers, response->headers)) {
+    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
+                 scoped_ptr<ServiceWorkerResponse>(),
+                 scoped_ptr<storage::BlobDataHandle>());
+    return;
+  }
 
   if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
     callback.Run(ServiceWorkerCache::ErrorTypeOK,

@@ -319,6 +319,66 @@ TEST_P(ServiceWorkerCacheTestP, MatchBody) {
   EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
 }
 
+TEST_P(ServiceWorkerCacheTestP, Vary) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_response_.headers["vary"] = "vary_foo";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  body_request_.headers["vary_foo"] = "bar";
+  EXPECT_FALSE(Match(body_request_));
+
+  body_request_.headers.erase("vary_foo");
+  EXPECT_FALSE(Match(body_request_));
+}
+
+TEST_P(ServiceWorkerCacheTestP, EmptyVary) {
+  body_response_.headers["vary"] = "";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  body_request_.headers["zoo"] = "zoo";
+  EXPECT_TRUE(Match(body_request_));
+}
+
+TEST_P(ServiceWorkerCacheTestP, NoVaryButDiffHeaders) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  body_request_.headers["zoo"] = "zoo";
+  EXPECT_TRUE(Match(body_request_));
+}
+
+TEST_P(ServiceWorkerCacheTestP, VaryMultiple) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_request_.headers["vary_bar"] = "bar";
+  body_response_.headers["vary"] = " vary_foo    , vary_bar";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  body_request_.headers["vary_bar"] = "foo";
+  EXPECT_FALSE(Match(body_request_));
+
+  body_request_.headers.erase("vary_bar");
+  EXPECT_FALSE(Match(body_request_));
+}
+
+TEST_P(ServiceWorkerCacheTestP, VaryNewHeader) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_response_.headers["vary"] = " vary_foo, vary_bar";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  body_request_.headers["vary_bar"] = "bar";
+  EXPECT_FALSE(Match(body_request_));
+}
+
+TEST_P(ServiceWorkerCacheTestP, VaryStar) {
+  body_response_.headers["vary"] = "*";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_FALSE(Match(body_request_));
+}
+
 TEST_P(ServiceWorkerCacheTestP, EmptyKeys) {
   EXPECT_TRUE(Keys());
   EXPECT_EQ(0u, callback_strings_.size());
