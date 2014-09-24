@@ -531,12 +531,12 @@ TEST_F(TrackedPreferencesMigrationTest, LegacyHashMigrationOnly) {
   EXPECT_TRUE(StoreModifiedByMigration(MOCK_UNPROTECTED_PREF_STORE));
   EXPECT_TRUE(StoreModifiedByMigration(MOCK_PROTECTED_PREF_STORE));
 
-  std::vector<std::pair<std::string, std::string> > expected_unprotected_values;
+  base::StringPairs expected_unprotected_values;
   expected_unprotected_values.push_back(
       std::make_pair(kUnprotectedPref, kUnprotectedPrefValue));
   VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE, expected_unprotected_values);
 
-  std::vector<std::pair<std::string, std::string> > expected_protected_values;
+  base::StringPairs expected_protected_values;
   expected_protected_values.push_back(
       std::make_pair(kProtectedPref, kProtectedPrefValue));
   VerifyValuesStored(MOCK_PROTECTED_PREF_STORE, expected_protected_values);
@@ -612,12 +612,12 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigrationWithLegacyHashStore) {
 
   // All values should have been moved to their preferred locations, including
   // MACs.
-  std::vector<std::pair<std::string, std::string> > expected_unprotected_values;
+  base::StringPairs expected_unprotected_values;
   expected_unprotected_values.push_back(
       std::make_pair(kUnprotectedPref, kUnprotectedPrefValue));
   expected_unprotected_values.push_back(
       std::make_pair(kPreviouslyProtectedPref, kPreviouslyProtectedPrefValue));
-  std::vector<std::pair<std::string, std::string> > expected_protected_values;
+  base::StringPairs expected_protected_values;
   expected_protected_values.push_back(
       std::make_pair(kProtectedPref, kProtectedPrefValue));
   expected_protected_values.push_back(std::make_pair(
@@ -738,8 +738,7 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
   // Values should have been migrated to their store, but migrated values should
   // still remain in the source store until cleanup tasks are later invoked.
   {
-    std::vector<std::pair<std::string, std::string> >
-        expected_unprotected_values;
+    base::StringPairs expected_unprotected_values;
     expected_unprotected_values.push_back(std::make_pair(
         kUnprotectedPref, kUnprotectedPrefValue));
     expected_unprotected_values.push_back(std::make_pair(
@@ -749,7 +748,7 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
     VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE,
                        expected_unprotected_values);
 
-    std::vector<std::pair<std::string, std::string> > expected_protected_values;
+    base::StringPairs expected_protected_values;
     expected_protected_values.push_back(std::make_pair(
         kProtectedPref, kProtectedPrefValue));
     expected_protected_values.push_back(std::make_pair(
@@ -778,8 +777,7 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
   SimulateSuccessfulWrite(MOCK_PROTECTED_PREF_STORE);
 
   {
-    std::vector<std::pair<std::string, std::string> >
-        expected_unprotected_values;
+    base::StringPairs expected_unprotected_values;
     expected_unprotected_values.push_back(std::make_pair(
         kUnprotectedPref, kUnprotectedPrefValue));
     expected_unprotected_values.push_back(std::make_pair(
@@ -787,7 +785,7 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
     VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE,
                        expected_unprotected_values);
 
-    std::vector<std::pair<std::string, std::string> > expected_protected_values;
+    base::StringPairs expected_protected_values;
     expected_protected_values.push_back(std::make_pair(
         kProtectedPref, kProtectedPrefValue));
     expected_protected_values.push_back(std::make_pair(
@@ -800,8 +798,7 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
   SimulateSuccessfulWrite(MOCK_UNPROTECTED_PREF_STORE);
 
   {
-    std::vector<std::pair<std::string, std::string> >
-        expected_unprotected_values;
+    base::StringPairs expected_unprotected_values;
     expected_unprotected_values.push_back(std::make_pair(
         kUnprotectedPref, kUnprotectedPrefValue));
     expected_unprotected_values.push_back(std::make_pair(
@@ -809,7 +806,7 @@ TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
     VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE,
                        expected_unprotected_values);
 
-    std::vector<std::pair<std::string, std::string> > expected_protected_values;
+    base::StringPairs expected_protected_values;
     expected_protected_values.push_back(std::make_pair(
         kProtectedPref, kProtectedPrefValue));
     expected_protected_values.push_back(std::make_pair(
@@ -893,8 +890,7 @@ TEST_F(TrackedPreferencesMigrationTest, CleanupOnly) {
   // Cleanup should happen synchronously if the values were already present in
   // their destination stores.
   {
-    std::vector<std::pair<std::string, std::string> >
-        expected_unprotected_values;
+    base::StringPairs expected_unprotected_values;
     expected_unprotected_values.push_back(std::make_pair(
         kUnprotectedPref, kUnprotectedPrefValue));
     expected_unprotected_values.push_back(std::make_pair(
@@ -902,7 +898,7 @@ TEST_F(TrackedPreferencesMigrationTest, CleanupOnly) {
     VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE,
                        expected_unprotected_values);
 
-    std::vector<std::pair<std::string, std::string> > expected_protected_values;
+    base::StringPairs expected_protected_values;
     expected_protected_values.push_back(std::make_pair(
         kProtectedPref, kProtectedPrefValue));
     expected_protected_values.push_back(std::make_pair(

@@ -171,8 +171,7 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
     std::string error;
     std::string expiration;
 
-    for (std::vector<std::pair<std::string, std::string> >::iterator
-             it = pairs.begin();
+    for (base::StringPairs::iterator it = pairs.begin();
          it != pairs.end();
          ++it) {
       if (it->first == kOAuth2RedirectAccessTokenKey)

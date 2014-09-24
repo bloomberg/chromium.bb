@@ -972,7 +972,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
     return;
 
   // Parse Google-Accounts-SignIn.
-  std::vector<std::pair<std::string, std::string> > pairs;
+  base::StringPairs pairs;
   base::SplitStringIntoKeyValuePairs(google_accounts_signin_value, '=', ',',
                                      &pairs);
   std::string session_index;

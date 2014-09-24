@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
@@ -25,7 +26,7 @@ class ResettableSettingsSnapshot {
  public:
   // ExtensionList is a vector of pairs. The first component is the extension
   // id, the second is the name.
-  typedef std::vector<std::pair<std::string, std::string> > ExtensionList;
+  typedef base::StringPairs ExtensionList;
   // All types of settings handled by this class.
   enum Field {
     STARTUP_MODE = 1 << 0,
