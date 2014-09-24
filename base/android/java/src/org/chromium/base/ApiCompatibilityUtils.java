@@ -5,10 +5,15 @@
 package org.chromium.base;
 
 import android.animation.ValueAnimator;
+import android.app.ActivityOptions;
+import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
@@ -277,6 +282,28 @@ public class ApiCompatibilityUtils {
         }
     }
 
+    /**
+     * @see android.app.Activity#startActivity(Intent, Bundle)
+     */
+    public static void startActivity(Context context, Intent intent, Bundle options) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            context.startActivity(intent, options);
+        } else {
+            context.startActivity(intent);
+        }
+    }
+
+    /**
+     * @see android.app.ActivityOptions#toBundle()
+     */
+    public static Bundle toBundle(ActivityOptions options) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            return options.toBundle();
+        } else {
+            return null;
+        }
+    }
+
     // These methods have a new name, and the old name is deprecated.
 
     /**
@@ -325,6 +352,18 @@ public class ApiCompatibilityUtils {
             return intent.getCreatorPackage();
         } else {
             return intent.getTargetPackage();
+        }
+    }
+
+    /**
+     * @see android.app.Notification.Builder#setLocalOnly(boolean)
+     */
+    @SuppressWarnings("deprecation")
+    public static Notification build(Notification.Builder builder) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            return builder.build();
+        } else {
+            return builder.getNotification();
         }
     }
 }
