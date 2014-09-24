@@ -37,18 +37,18 @@ class BezelController : public ui::EventHandler {
     // Beginning of a bezel scroll gesture started from the |bezel|.
     // |delta| is the difference between the x-coordinate of the current scroll
     // position and the bezel. It will be zero or negative for the right bezel.
-    virtual void ScrollBegin(Bezel bezel, float delta) = 0;
+    virtual void BezelScrollBegin(Bezel bezel, float delta) = 0;
 
     // End of the current bezel scroll
-    virtual void ScrollEnd() = 0;
+    virtual void BezelScrollEnd() = 0;
 
     // Update of the scroll position for the currently active bezel scroll.
     // |delta| has the same meaning as in ScrollBegin().
-    virtual void ScrollUpdate(float delta) = 0;
+    virtual void BezelScrollUpdate(float delta) = 0;
 
     // Should return false if the delegate isn't going to react to the scroll
     // events.
-    virtual bool CanScroll() = 0;
+    virtual bool BezelCanScroll() = 0;
   };
 
   explicit BezelController(aura::Window* container);
@@ -74,10 +74,6 @@ class BezelController : public ui::EventHandler {
   // |scroll_delta| only needs to be passed when |state| is one of the
   // BEZEL_SROLLING states.
   void SetState(State state, float scroll_delta);
-
-  // Returns the bezel corresponding to the |location| or BEZEL_NONE if the
-  // location is outside of the bezel area.
-  Bezel GetBezel(const gfx::PointF& location);
 
   // ui::EventHandler overrides
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

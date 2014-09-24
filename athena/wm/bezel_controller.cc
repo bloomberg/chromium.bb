@@ -46,6 +46,21 @@ float GetDistance(const gfx::PointF& location,
              : point_in_screen.x() - GetDisplay(window).bounds().width();
 }
 
+// Returns the bezel corresponding to the |location| in |window| or BEZEL_NONE
+// if the location is outside of the bezel area.
+// Only implemented for LEFT and RIGHT bezels.
+BezelController::Bezel GetBezel(const gfx::PointF& location,
+                                aura::Window* window) {
+  int screen_width = GetDisplay(window).bounds().width();
+  gfx::Point point_in_screen(gfx::ToRoundedPoint(location));
+  wm::ConvertPointToScreen(window, &point_in_screen);
+  if (point_in_screen.x() < kBezelWidth)
+    return BezelController::BEZEL_LEFT;
+  if (point_in_screen.x() > screen_width - kBezelWidth)
+    return BezelController::BEZEL_RIGHT;
+  return BezelController::BEZEL_NONE;
+}
+
 }  // namespace
 
 BezelController::BezelController(aura::Window* container)
@@ -69,25 +84,13 @@ void BezelController::SetState(BezelController::State state,
     return;
 
   if (state == BEZEL_SCROLLING_TWO_FINGERS)
-    left_right_delegate_->ScrollBegin(scroll_bezel_, scroll_delta);
+    left_right_delegate_->BezelScrollBegin(scroll_bezel_, scroll_delta);
   else if (state_ == BEZEL_SCROLLING_TWO_FINGERS)
-    left_right_delegate_->ScrollEnd();
+    left_right_delegate_->BezelScrollEnd();
   state_ = state;
   if (state == NONE) {
     scroll_bezel_ = BEZEL_NONE;
     scroll_target_ = NULL;
-  }
-}
-
-// Only implemented for LEFT and RIGHT bezels ATM.
-BezelController::Bezel BezelController::GetBezel(const gfx::PointF& location) {
-  int screen_width = GetDisplay(container_).bounds().width();
-  if (location.x() < kBezelWidth) {
-    return BEZEL_LEFT;
-  } else if (location.x() > screen_width - kBezelWidth) {
-    return BEZEL_RIGHT;
-  } else {
-    return BEZEL_NONE;
   }
 }
 
@@ -105,24 +108,35 @@ void BezelController::OnGestureEvent(ui::GestureEvent* event) {
   if (!ShouldProcessGesture(type))
     return;
 
+  const ui::GestureEventDetails& event_details = event->details();
+  int num_touch_points = event_details.touch_points();
+  if (num_touch_points == 1 && type == ui::ET_GESTURE_BEGIN) {
+    // Reset the state when the first finger touches and starts a gesture.
+    // Normally, the state gets reset when the last finger is lifted and we
+    // receive ET_GESTURE_END. However ET_GESTURE_END doesn't always get
+    // dispatched. (E.g. if the gesture target was hidden or deleted).
+    // Since we can't rely on receiving ET_GESTURE_END when the last finger is
+    // lifted, we also reset the state on ET_GESTURE_BEGIN when the first
+    // finger touches the screen.
+    SetState(NONE);
+  }
+
   if (scroll_target_ && event->target() != scroll_target_)
     return;
 
   const gfx::PointF& event_location = event->location_f();
-  const ui::GestureEventDetails& event_details = event->details();
-  int num_touch_points = event_details.touch_points();
   float scroll_delta = kScrollDeltaNone;
-  if (scroll_bezel_ != BEZEL_NONE) {
-    aura::Window* target_window = static_cast<aura::Window*>(event->target());
+  aura::Window* target_window = static_cast<aura::Window*>(event->target());
+  if (scroll_bezel_ != BEZEL_NONE)
     scroll_delta = GetDistance(event_location, target_window, scroll_bezel_);
-  }
 
   if (type == ui::ET_GESTURE_BEGIN) {
     if (num_touch_points > 2) {
       SetState(IGNORE_CURRENT_SCROLL);
       return;
     }
-    BezelController::Bezel event_bezel = GetBezel(event->location_f());
+    BezelController::Bezel event_bezel =
+        GetBezel(event->location_f(), target_window);
     switch (state_) {
       case NONE:
         scroll_bezel_ = event_bezel;
@@ -174,14 +188,14 @@ void BezelController::OnGestureEvent(ui::GestureEvent* event) {
 
     DCHECK_EQ(num_touch_points, 2);
     SetState(BEZEL_SCROLLING_TWO_FINGERS, scroll_delta);
-    if (left_right_delegate_->CanScroll())
+    if (left_right_delegate_->BezelCanScroll())
       event->SetHandled();
   } else if (type == ui::ET_GESTURE_SCROLL_UPDATE) {
     if (state_ != BEZEL_SCROLLING_TWO_FINGERS)
       return;
 
-    left_right_delegate_->ScrollUpdate(scroll_delta);
-    if (left_right_delegate_->CanScroll())
+    left_right_delegate_->BezelScrollUpdate(scroll_delta);
+    if (left_right_delegate_->BezelCanScroll())
       event->SetHandled();
   }
 }
