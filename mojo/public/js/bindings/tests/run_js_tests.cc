@@ -52,6 +52,10 @@ TEST(JSTest, codec) {
   RunTest("codec_unittests.js", true);
 }
 
+TEST(JSTest, struct) {
+  RunTest("struct_unittests.js", true);
+}
+
 TEST(JSTest, validation) {
   RunTest("validation_unittests.js", true);
 }
