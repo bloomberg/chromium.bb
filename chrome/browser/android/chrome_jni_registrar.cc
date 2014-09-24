@@ -17,6 +17,7 @@
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
+#include "chrome/browser/android/enhanced_bookmarks/enhanced_bookmarks_bridge.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
@@ -74,7 +75,6 @@
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
-#include "components/enhanced_bookmarks/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
@@ -93,8 +93,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   // Register JNI for components we depend on.
   { "Bookmarks", bookmarks::android::RegisterBookmarks },
   { "DomDistiller", dom_distiller::android::RegisterDomDistiller },
-  { "EnhancedBookmarks",
-    enhanced_bookmarks::android::RegisterEnhancedBookmarks },
   { "GCMDriver", gcm::android::RegisterGCMDriverJni },
   { "NavigationInterception",
     navigation_interception::RegisterNavigationInterceptionJni },
@@ -139,6 +137,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "DomDistillerServiceFactory",
     dom_distiller::android::DomDistillerServiceFactoryAndroid::Register },
   { "DomDistillerTabUtils", RegisterDomDistillerTabUtils },
+  { "EnhancedBookmarksBridge",
+    enhanced_bookmarks::android::RegisterEnhancedBookmarksBridge},
   { "ExternalPrerenderRequestHandler",
       prerender::ExternalPrerenderHandlerAndroid::
       RegisterExternalPrerenderHandlerAndroid },

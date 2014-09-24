@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ENHANCED_BOOKMARKS_ANDROID_ENHANCED_BOOKMARKS_BRIDGE_H_
-#define COMPONENTS_ENHANCED_BOOKMARKS_ANDROID_ENHANCED_BOOKMARKS_BRIDGE_H_
+#ifndef CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
+#define CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
 
 #include "base/android/jni_android.h"
 
@@ -40,4 +40,4 @@ bool RegisterEnhancedBookmarksBridge(JNIEnv* env);
 }  // namespace android
 }  // namespace enhanced_bookmarks
 
-#endif  // COMPONENTS_ENHANCED_BOOKMARKS_ANDROID_ENHANCED_BOOKMARKS_BRIDGE_H_
+#endif  // CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
