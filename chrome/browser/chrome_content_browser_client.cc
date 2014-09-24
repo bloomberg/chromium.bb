@@ -191,6 +191,7 @@
 #endif
 
 #if defined(USE_ATHENA)
+#include "athena/content/public/web_contents_view_delegate_creator.h"
 #include "chrome/browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h"
 #elif defined(USE_ASH)
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
@@ -793,7 +794,11 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
+#if defined(USE_ATHENA)
+  return athena::CreateWebContentsViewDelegate(web_contents);
+#else
   return chrome::CreateWebContentsViewDelegate(web_contents);
+#endif
 }
 
 void ChromeContentBrowserClient::RenderProcessWillLaunch(

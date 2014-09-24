@@ -1,6 +1,7 @@
 include_rules = [
   "+apps",
   "+ash",
+  "+athena/content/public",
   "+chrome/app",
   "+chrome/grit",  # For generated headers
   "+chrome/installer",
