@@ -114,12 +114,10 @@ to_fbdev_compositor(struct weston_compositor *base)
 static void
 fbdev_output_start_repaint_loop(struct weston_output *output)
 {
-	uint32_t msec;
-	struct timeval tv;
+	struct timespec ts;
 
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	weston_output_finish_frame(output, msec);
+	clock_gettime(output->compositor->presentation_clock, &ts);
+	weston_output_finish_frame(output, &ts);
 }
 
 static void
@@ -882,6 +880,10 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	if (weston_compositor_init(&compositor->base, display, argc, argv,
 	                           config) < 0)
 		goto out_free;
+
+	if (weston_compositor_set_presentation_clock_software(
+							&compositor->base) < 0)
+		goto out_compositor;
 
 	compositor->udev = udev_new();
 	if (compositor->udev == NULL) {

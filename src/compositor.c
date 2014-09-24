@@ -1896,7 +1896,7 @@ weston_compositor_build_view_list(struct weston_compositor *compositor)
 }
 
 static int
-weston_output_repaint(struct weston_output *output, uint32_t msecs)
+weston_output_repaint(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_view *ev;
@@ -1951,13 +1951,13 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	wl_event_loop_dispatch(ec->input_loop, 0);
 
 	wl_list_for_each_safe(cb, cnext, &frame_callback_list, link) {
-		wl_callback_send_done(cb->resource, msecs);
+		wl_callback_send_done(cb->resource, output->frame_time);
 		wl_resource_destroy(cb->resource);
 	}
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
 		animation->frame_counter++;
-		animation->frame(animation, output, msecs);
+		animation->frame(animation, output, output->frame_time);
 	}
 
 	return r;
@@ -1974,19 +1974,20 @@ weston_compositor_read_input(int fd, uint32_t mask, void *data)
 }
 
 WL_EXPORT void
-weston_output_finish_frame(struct weston_output *output, uint32_t msecs)
+weston_output_finish_frame(struct weston_output *output,
+			   const struct timespec *stamp)
 {
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop =
 		wl_display_get_event_loop(compositor->wl_display);
 	int fd, r;
 
-	output->frame_time = msecs;
+	output->frame_time = stamp->tv_sec * 1000 + stamp->tv_nsec / 1000000;
 
 	if (output->repaint_needed &&
 	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
 	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN) {
-		r = weston_output_repaint(output, msecs);
+		r = weston_output_repaint(output);
 		if (!r)
 			return;
 	}
@@ -3773,7 +3774,7 @@ bind_presentation(struct wl_client *client,
 
 	wl_resource_set_implementation(resource, &presentation_implementation,
 				       compositor, NULL);
-	presentation_send_clock_id(resource, CLOCK_MONOTONIC);
+	presentation_send_clock_id(resource, compositor->presentation_clock);
 }
 
 static void
@@ -3974,12 +3975,72 @@ weston_compositor_set_default_pointer_grab(struct weston_compositor *ec,
 	}
 }
 
+WL_EXPORT int
+weston_compositor_set_presentation_clock(struct weston_compositor *compositor,
+					 clockid_t clk_id)
+{
+	struct timespec ts;
+
+	if (clock_gettime(clk_id, &ts) < 0)
+		return -1;
+
+	compositor->presentation_clock = clk_id;
+
+	return 0;
+}
+
+/*
+ * For choosing the software clock, when the display hardware or API
+ * does not expose a compatible presentation timestamp.
+ */
+WL_EXPORT int
+weston_compositor_set_presentation_clock_software(
+					struct weston_compositor *compositor)
+{
+	/* In order of preference */
+	static const clockid_t clocks[] = {
+		CLOCK_MONOTONIC_RAW,	/* no jumps, no crawling */
+		CLOCK_MONOTONIC_COARSE,	/* no jumps, may crawl, fast & coarse */
+		CLOCK_MONOTONIC,	/* no jumps, may crawl */
+		CLOCK_REALTIME_COARSE,	/* may jump and crawl, fast & coarse */
+		CLOCK_REALTIME		/* may jump and crawl */
+	};
+	unsigned i;
+
+	for (i = 0; i < ARRAY_LENGTH(clocks); i++)
+		if (weston_compositor_set_presentation_clock(compositor,
+							     clocks[i]) == 0)
+			return 0;
+
+	weston_log("Error: no suitable presentation clock available.\n");
+
+	return -1;
+}
+
 WL_EXPORT void
 weston_version(int *major, int *minor, int *micro)
 {
 	*major = WESTON_VERSION_MAJOR;
 	*minor = WESTON_VERSION_MINOR;
 	*micro = WESTON_VERSION_MICRO;
+}
+
+static const char *
+clock_name(clockid_t clk_id)
+{
+	static const char *names[] = {
+		[CLOCK_REALTIME] =		"CLOCK_REALTIME",
+		[CLOCK_MONOTONIC] =		"CLOCK_MONOTONIC",
+		[CLOCK_MONOTONIC_RAW] =		"CLOCK_MONOTONIC_RAW",
+		[CLOCK_REALTIME_COARSE] =	"CLOCK_REALTIME_COARSE",
+		[CLOCK_MONOTONIC_COARSE] =	"CLOCK_MONOTONIC_COARSE",
+		[CLOCK_BOOTTIME] =		"CLOCK_BOOTTIME",
+	};
+
+	if (clk_id < 0 || (unsigned)clk_id >= ARRAY_LENGTH(names))
+		return "unknown";
+
+	return names[clk_id];
 }
 
 static const struct {
@@ -4003,6 +4064,10 @@ weston_compositor_log_capabilities(struct weston_compositor *compositor)
 				    capability_strings[i].desc,
 				    yes ? "yes" : "no");
 	}
+
+	weston_log_continue(STAMP_SPACE "presentation clock: %s, id %d\n",
+			    clock_name(compositor->presentation_clock),
+			    compositor->presentation_clock);
 }
 
 static int on_term_signal(int signal_number, void *data)

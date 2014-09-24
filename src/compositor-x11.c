@@ -338,12 +338,10 @@ x11_input_destroy(struct x11_compositor *compositor)
 static void
 x11_output_start_repaint_loop(struct weston_output *output)
 {
-	uint32_t msec;
-	struct timeval tv;
+	struct timespec ts;
 
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	weston_output_finish_frame(output, msec);
+	clock_gettime(output->compositor->presentation_clock, &ts);
+	weston_output_finish_frame(output, &ts);
 }
 
 static int
@@ -1496,6 +1494,9 @@ x11_compositor_create(struct wl_display *display,
 		return NULL;
 
 	if (weston_compositor_init(&c->base, display, argc, argv, config) < 0)
+		goto err_free;
+
+	if (weston_compositor_set_presentation_clock_software(&c->base) < 0)
 		goto err_free;
 
 	c->dpy = XOpenDisplay(NULL);

@@ -306,9 +306,14 @@ static void
 frame_done(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct weston_output *output = data;
+	struct timespec ts;
 
 	wl_callback_destroy(callback);
-	weston_output_finish_frame(output, time);
+
+	/* XXX: use the presentation extension for proper timings */
+	ts.tv_sec = time / 1000;
+	ts.tv_nsec = (time % 1000) * 1000000;
+	weston_output_finish_frame(output, &ts);
 }
 
 static const struct wl_callback_listener frame_listener = {
@@ -1943,8 +1948,10 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 				   config) < 0)
 		goto err_free;
 
-	c->parent.wl_display = wl_display_connect(display_name);
+	if (weston_compositor_set_presentation_clock_software(&c->base) < 0)
+		goto err_compositor;
 
+	c->parent.wl_display = wl_display_connect(display_name);
 	if (c->parent.wl_display == NULL) {
 		weston_log("failed to create display: %m\n");
 		goto err_compositor;

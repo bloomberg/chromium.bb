@@ -28,6 +28,7 @@
 extern "C" {
 #endif
 
+#include <time.h>
 #include <pixman.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -201,7 +202,7 @@ struct weston_output {
 	struct wl_signal frame_signal;
 	struct wl_signal destroy_signal;
 	int move_x, move_y;
-	uint32_t frame_time;
+	uint32_t frame_time; /* presentation timestamp in milliseconds */
 	int disable_planes;
 	int destroying;
 
@@ -663,6 +664,8 @@ struct weston_compositor {
 
 	int32_t kb_repeat_rate;
 	int32_t kb_repeat_delay;
+
+	clockid_t presentation_clock;
 };
 
 struct weston_buffer {
@@ -1046,7 +1049,8 @@ weston_compositor_stack_plane(struct weston_compositor *ec,
 			      struct weston_plane *above);
 
 void
-weston_output_finish_frame(struct weston_output *output, uint32_t msecs);
+weston_output_finish_frame(struct weston_output *output,
+			   const struct timespec *stamp);
 void
 weston_output_schedule_repaint(struct weston_output *output);
 void
@@ -1234,6 +1238,12 @@ weston_compositor_get_time(void);
 int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
 		       int *argc, char *argv[], struct weston_config *config);
+int
+weston_compositor_set_presentation_clock(struct weston_compositor *compositor,
+					 clockid_t clk_id);
+int
+weston_compositor_set_presentation_clock_software(
+					struct weston_compositor *compositor);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void

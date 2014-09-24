@@ -61,6 +61,7 @@ struct rpi_output;
 struct rpi_flippipe {
 	int readfd;
 	int writefd;
+	clockid_t clk_id;
 	struct wl_event_source *source;
 };
 
@@ -113,29 +114,19 @@ to_rpi_compositor(struct weston_compositor *base)
 	return container_of(base, struct rpi_compositor, base);
 }
 
-static uint64_t
-rpi_get_current_time(void)
-{
-	struct timeval tv;
-
-	/* XXX: use CLOCK_MONOTONIC instead? */
-	gettimeofday(&tv, NULL);
-	return (uint64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
 static void
 rpi_flippipe_update_complete(DISPMANX_UPDATE_HANDLE_T update, void *data)
 {
 	/* This function runs in a different thread. */
 	struct rpi_flippipe *flippipe = data;
-	uint64_t time;
+	struct timespec ts;
 	ssize_t ret;
 
 	/* manufacture flip completion timestamp */
-	time = rpi_get_current_time();
+	clock_gettime(flippipe->clk_id, &ts);
 
-	ret = write(flippipe->writefd, &time, sizeof time);
-	if (ret != sizeof time)
+	ret = write(flippipe->writefd, &ts, sizeof ts);
+	if (ret != sizeof ts)
 		weston_log("ERROR: %s failed to write, ret %zd, errno %d\n",
 			   __func__, ret, errno);
 }
@@ -159,26 +150,27 @@ rpi_dispmanx_update_submit(DISPMANX_UPDATE_HANDLE_T update,
 }
 
 static void
-rpi_output_update_complete(struct rpi_output *output, uint64_t time);
+rpi_output_update_complete(struct rpi_output *output,
+			   const struct timespec *stamp);
 
 static int
 rpi_flippipe_handler(int fd, uint32_t mask, void *data)
 {
 	struct rpi_output *output = data;
 	ssize_t ret;
-	uint64_t time;
+	struct timespec ts;
 
 	if (mask != WL_EVENT_READABLE)
 		weston_log("ERROR: unexpected mask 0x%x in %s\n",
 			   mask, __func__);
 
-	ret = read(fd, &time, sizeof time);
-	if (ret != sizeof time) {
+	ret = read(fd, &ts, sizeof ts);
+	if (ret != sizeof ts) {
 		weston_log("ERROR: %s failed to read, ret %zd, errno %d\n",
 			   __func__, ret, errno);
 	}
 
-	rpi_output_update_complete(output, time);
+	rpi_output_update_complete(output, &ts);
 
 	return 1;
 }
@@ -194,6 +186,7 @@ rpi_flippipe_init(struct rpi_flippipe *flippipe, struct rpi_output *output)
 
 	flippipe->readfd = fd[0];
 	flippipe->writefd = fd[1];
+	flippipe->clk_id = output->compositor->base.presentation_clock;
 
 	loop = wl_display_get_event_loop(output->compositor->base.wl_display);
 	flippipe->source = wl_event_loop_add_fd(loop, flippipe->readfd,
@@ -220,10 +213,10 @@ rpi_flippipe_release(struct rpi_flippipe *flippipe)
 static void
 rpi_output_start_repaint_loop(struct weston_output *output)
 {
-	uint64_t time;
+	struct timespec ts;
 
-	time = rpi_get_current_time();
-	weston_output_finish_frame(output, time);
+	clock_gettime(output->compositor->presentation_clock, &ts);
+	weston_output_finish_frame(output, &ts);
 }
 
 static int
@@ -254,11 +247,13 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 }
 
 static void
-rpi_output_update_complete(struct rpi_output *output, uint64_t time)
+rpi_output_update_complete(struct rpi_output *output,
+			   const struct timespec *stamp)
 {
-	DBG("frame update complete(%" PRIu64 ")\n", time);
+	DBG("frame update complete(%ld.%09ld)\n",
+	    (long)stamp->tv_sec, (long)stamp->tv_nsec);
 	rpi_renderer_finish_frame(&output->base);
-	weston_output_finish_frame(&output->base, time);
+	weston_output_finish_frame(&output->base, stamp);
 }
 
 static void
@@ -502,6 +497,10 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	if (weston_compositor_init(&compositor->base, display, argc, argv,
 				   config) < 0)
 		goto out_free;
+
+	if (weston_compositor_set_presentation_clock_software(
+							&compositor->base) < 0)
+		goto out_compositor;
 
 	compositor->udev = udev_new();
 	if (compositor->udev == NULL) {

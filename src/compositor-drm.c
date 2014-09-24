@@ -118,7 +118,6 @@ struct drm_compositor {
 
 	uint32_t prev_state;
 
-	clockid_t clock;
 	struct udev_input input;
 
 	uint32_t cursor_width;
@@ -700,7 +699,6 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	struct drm_compositor *compositor = (struct drm_compositor *)
 		output_base->compositor;
 	uint32_t fb_id;
-	uint32_t msec;
 	struct timespec ts;
 
 	if (output->destroy_pending)
@@ -723,9 +721,8 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 
 finish_frame:
 	/* if we cannot page-flip, immediately finish frame */
-	clock_gettime(compositor->clock, &ts);
-	msec = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-	weston_output_finish_frame(output_base, msec);
+	clock_gettime(compositor->base.presentation_clock, &ts);
+	weston_output_finish_frame(output_base, &ts);
 }
 
 static void
@@ -734,7 +731,7 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 {
 	struct drm_sprite *s = (struct drm_sprite *)data;
 	struct drm_output *output = s->output;
-	uint32_t msecs;
+	struct timespec ts;
 
 	output->vblank_pending = 0;
 
@@ -743,8 +740,9 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	s->next = NULL;
 
 	if (!output->page_flip_pending) {
-		msecs = sec * 1000 + usec / 1000;
-		weston_output_finish_frame(&output->base, msecs);
+		ts.tv_sec = sec;
+		ts.tv_nsec = usec * 1000;
+		weston_output_finish_frame(&output->base, &ts);
 	}
 }
 
@@ -756,7 +754,7 @@ page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
 	struct drm_output *output = (struct drm_output *) data;
-	uint32_t msecs;
+	struct timespec ts;
 
 	/* We don't set page_flip_pending on start_repaint_loop, in that case
 	 * we just want to page flip to the current buffer to get an accurate
@@ -772,8 +770,9 @@ page_flip_handler(int fd, unsigned int frame,
 	if (output->destroy_pending)
 		drm_output_destroy(&output->base);
 	else if (!output->vblank_pending) {
-		msecs = sec * 1000 + usec / 1000;
-		weston_output_finish_frame(&output->base, msecs);
+		ts.tv_sec = sec;
+		ts.tv_nsec = usec * 1000;
+		weston_output_finish_frame(&output->base, &ts);
 
 		/* We can't call this from frame_notify, because the output's
 		 * repaint needed flag is cleared just after that */
@@ -1282,6 +1281,7 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	const char *filename, *sysnum;
 	uint64_t cap;
 	int fd, ret;
+	clockid_t clk_id;
 
 	sysnum = udev_device_get_sysnum(device);
 	if (sysnum)
@@ -1307,9 +1307,15 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 
 	ret = drmGetCap(fd, DRM_CAP_TIMESTAMP_MONOTONIC, &cap);
 	if (ret == 0 && cap == 1)
-		ec->clock = CLOCK_MONOTONIC;
+		clk_id = CLOCK_MONOTONIC;
 	else
-		ec->clock = CLOCK_REALTIME;
+		clk_id = CLOCK_REALTIME;
+
+	if (weston_compositor_set_presentation_clock(&ec->base, clk_id) < 0) {
+		weston_log("Error: failed to set presentation clock %d.\n",
+			   clk_id);
+		return -1;
+	}
 
 	ret = drmGetCap(fd, DRM_CAP_CURSOR_WIDTH, &cap);
 	if (ret == 0)
