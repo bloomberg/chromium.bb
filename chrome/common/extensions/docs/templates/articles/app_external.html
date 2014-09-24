@@ -81,7 +81,7 @@ sample.
 </p>
 
 <p>
-The <code>webview</code> tag allows you to embed external web content in your
+The <a href="webview_tag"><code>webview</code></a> tag allows you to embed external web content in your
 app, for example, a web page. It replaces iframes that point to remote URLs,
 which are disabled inside Chrome Apps. Unlike iframes, the
 <code>webview</code> tag runs in a separate process. This means that an exploit
@@ -279,7 +279,7 @@ To find out more,
 see <a href="https://developer.mozilla.org/en/DOM/window.postMessage">window.postMessage</a>.
 </p>
 
-<h3 id="listen_message">Listen for message</h3>
+<h3 id="listen_message">Listen for message and reply</h3>
 
 <p>
 Here's a sample message receiver
@@ -287,11 +287,20 @@ that gets added to your sandboxed page:
 </p>
 
 <pre data-filename="sandboxed.html">
-var messageHandler = function(e) {
-  console.log('Background script says hello.', e.data);
+var messageHandler = function(event) {
+  console.log('Background script says hello.', event.data);
+
+  // Send a reply
+  event.source.postMessage(
+      {'reply': 'Sandbox received: ' + event.data}, event.origin);
 };
 
 window.addEventListener('message', messageHandler);
 </pre>
+
+<p>
+For more details, check out the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/sandbox">sandbox</a> sample.
+</p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
