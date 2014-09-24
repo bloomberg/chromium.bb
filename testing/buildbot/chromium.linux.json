@@ -160,6 +160,106 @@
       "wm_unittests"
     ]
   },
+  "Linux Tests (dbg)": {
+    "gtest_tests": [
+      "accessibility_unittests",
+      "app_list_unittests",
+      "app_shell_browsertests",
+      "aura_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        }
+      },
+      "cacheinvalidation_unittests",
+      "cast_unittests",
+      "cc_unittests",
+      "chromedriver_unittests",
+      "components_unittests",
+      "compositor_unittests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "crypto_unittests",
+      "dbus_unittests",
+      "device_unittests",
+      "display_unittests",
+      "events_unittests",
+      "extensions_unittests",
+      "gcm_unit_tests",
+      "gfx_unittests",
+      "google_apis_unittests",
+      "gpu_unittests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        }
+      },
+      "ipc_mojo_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "mojo_application_manager_unittests",
+      "mojo_apps_js_unittests",
+      "mojo_common_unittests",
+      "mojo_js_unittests",
+      "mojo_public_bindings_unittests",
+      "mojo_public_environment_unittests",
+      "mojo_public_system_unittests",
+      "mojo_public_utility_unittests",
+      "mojo_shell_tests",
+      "mojo_system_unittests",
+      "mojo_view_manager_unittests",
+      "nacl_loader_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "sql_unittests",
+      "ui_unittests",
+      {
+        "test": "sync_integration_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "sync_unit_tests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "url_unittests",
+      "views_unittests",
+      "wm_unittests"
+    ]
+  },
   "Linux Tests (dbg)(1)": {
     "gtest_tests": [
     ]
