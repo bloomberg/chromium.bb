@@ -167,15 +167,15 @@ ResourceManagerImpl::ResourceManagerImpl(ResourceManagerDelegate* delegate)
       next_resource_management_time_(base::Time::Now()),
       wait_time_for_resource_deallocation_(base::TimeDelta::FromMilliseconds(
           delegate_->MemoryPressureIntervalInMS())) {
-  WindowManager::GetInstance()->AddObserver(this);
-  WindowManager::GetInstance()->GetWindowListProvider()->AddObserver(this);
+  WindowManager::Get()->AddObserver(this);
+  WindowManager::Get()->GetWindowListProvider()->AddObserver(this);
   ActivityManager::Get()->AddObserver(this);
 }
 
 ResourceManagerImpl::~ResourceManagerImpl() {
   ActivityManager::Get()->RemoveObserver(this);
-  WindowManager::GetInstance()->GetWindowListProvider()->RemoveObserver(this);
-  WindowManager::GetInstance()->RemoveObserver(this);
+  WindowManager::Get()->GetWindowListProvider()->RemoveObserver(this);
+  WindowManager::Get()->RemoveObserver(this);
 
   while (!activity_list_.empty())
     OnActivityEnding(activity_list_.front());
@@ -418,7 +418,7 @@ void ResourceManagerImpl::UpdateActivityOrder() {
     return;
   std::vector<Activity*> new_activity_list;
   const aura::Window::Windows children =
-      activity_list_[0]->GetWindow()->parent()->children();
+      WindowManager::Get()->GetWindowListProvider()->GetWindowList();
   // Find the first window in the container which is part of the application.
   for (aura::Window::Windows::const_reverse_iterator child_iterator =
          children.rbegin();

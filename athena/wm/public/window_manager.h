@@ -19,7 +19,7 @@ class ATHENA_EXPORT WindowManager {
   // implementation.
   static WindowManager* Create();
   static void Shutdown();
-  static WindowManager* GetInstance();
+  static WindowManager* Get();
 
   virtual ~WindowManager() {}
 

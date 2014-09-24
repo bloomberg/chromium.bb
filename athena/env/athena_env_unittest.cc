@@ -99,6 +99,8 @@ TEST_F(AthenaEnvTest, TerminatingCallback) {
   // Adding empty callback should not fail.
   env->AddTerminatingCallback(base::Closure());
   env->OnTerminating();
+  env->RemoveTerminatingCallback(cb_1_2);
+  env->RemoveTerminatingCallback(cb_2_1);
 }
 
 namespace {

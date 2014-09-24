@@ -103,7 +103,7 @@ void AppActivity::Init() {
     // Note: At this time the |AppActivity| did not get registered to the
     // |ResourceManager| - so we can move it around if needed.
     WindowListProvider* window_list_provider =
-        WindowManager::GetInstance()->GetWindowListProvider();
+        WindowManager::Get()->GetWindowListProvider();
     window_list_provider->StackWindowFrontOf(app_proxy->GetWindow(),
                                              GetWindow());
     Activity::Delete(app_proxy);

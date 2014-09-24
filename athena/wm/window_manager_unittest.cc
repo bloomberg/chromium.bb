@@ -44,7 +44,7 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
   test::WindowManagerImplTestApi wm_api;
   wm::ActivateWindow(second.get());
 
-  ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+  ASSERT_FALSE(WindowManager::Get()->IsOverviewModeActive());
   EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
   EXPECT_EQ(gfx::Screen::GetNativeScreen()
                 ->GetPrimaryDisplay()
@@ -52,11 +52,11 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
                 .size()
                 .ToString(),
             first->bounds().size().ToString());
-  EXPECT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+  EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
 
   // Tests that going into overview mode does not change the window bounds.
-  WindowManager::GetInstance()->ToggleOverview();
-  ASSERT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+  WindowManager::Get()->ToggleOverview();
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
   EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
   EXPECT_EQ(gfx::Screen::GetNativeScreen()
                 ->GetPrimaryDisplay()
@@ -69,8 +69,8 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
 
   // Terminate overview mode. |first| should be hidden, since it's not visible
   // to the user anymore.
-  WindowManager::GetInstance()->ToggleOverview();
-  ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+  WindowManager::Get()->ToggleOverview();
+  ASSERT_FALSE(WindowManager::Get()->IsOverviewModeActive());
   EXPECT_FALSE(first->IsVisible());
   EXPECT_TRUE(second->IsVisible());
 }
@@ -84,7 +84,7 @@ TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
   scoped_ptr<aura::Window> w3(CreateAndShowWindow(&delegate));
   wm::ActivateWindow(w3.get());
 
-  WindowManager::GetInstance()->ToggleOverview();
+  WindowManager::Get()->ToggleOverview();
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_TRUE(w3->IsVisible());
@@ -102,7 +102,7 @@ TEST_F(WindowManagerTest, NewWindowFromOverview) {
   scoped_ptr<aura::Window> w1(CreateAndShowWindow(&delegate));
   scoped_ptr<aura::Window> w2(CreateAndShowWindow(&delegate));
 
-  WindowManager::GetInstance()->ToggleOverview();
+  WindowManager::Get()->ToggleOverview();
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
 
@@ -110,7 +110,7 @@ TEST_F(WindowManagerTest, NewWindowFromOverview) {
   // have been opened by JavaScript or by the home card.
   scoped_ptr<aura::Window> w3(CreateAndShowWindow(&delegate));
 
-  ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+  ASSERT_FALSE(WindowManager::Get()->IsOverviewModeActive());
   EXPECT_TRUE(w3->IsVisible());
   EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
   EXPECT_FALSE(w1->IsVisible());
@@ -340,7 +340,7 @@ TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
 
   // Get into split-view mode, and then turn on overview mode.
   wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL);
-  WindowManager::GetInstance()->ToggleOverview();
+  WindowManager::Get()->ToggleOverview();
   EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
   EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
   EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());

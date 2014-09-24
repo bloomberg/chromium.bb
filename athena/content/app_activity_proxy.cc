@@ -62,7 +62,7 @@ void AppActivityProxy::Init() {
   // Get the content proxy to present the content.
   content_proxy_ = replaced_activity_->GetContentProxy(GetWindow());
   WindowListProvider* window_list_provider =
-      WindowManager::GetInstance()->GetWindowListProvider();
+      WindowManager::Get()->GetWindowListProvider();
   window_list_provider->StackWindowBehindTo(GetWindow(),
                                             replaced_activity_->GetWindow());
   // Creating this object was moving the activation to this window which should

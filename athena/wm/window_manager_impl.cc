@@ -426,7 +426,7 @@ void WindowManager::Shutdown() {
 }
 
 // static
-WindowManager* WindowManager::GetInstance() {
+WindowManager* WindowManager::Get() {
   DCHECK(instance);
   return instance;
 }

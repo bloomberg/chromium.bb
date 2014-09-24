@@ -197,7 +197,7 @@ class HomeCardView : public views::WidgetDelegateView {
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (HomeCard::Get()->GetState() == HomeCard::VISIBLE_MINIMIZED &&
         event.IsLeftMouseButton() && event.GetClickCount() == 1) {
-      athena::WindowManager::GetInstance()->ToggleOverview();
+      athena::WindowManager::Get()->ToggleOverview();
       return true;
     }
     return false;
@@ -232,12 +232,12 @@ HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
       activation_client_(NULL) {
   DCHECK(!instance);
   instance = this;
-  WindowManager::GetInstance()->AddObserver(this);
+  WindowManager::Get()->AddObserver(this);
 }
 
 HomeCardImpl::~HomeCardImpl() {
   DCHECK(instance);
-  WindowManager::GetInstance()->RemoveObserver(this);
+  WindowManager::Get()->RemoveObserver(this);
   if (activation_client_)
     activation_client_->RemoveObserver(this);
   home_card_widget_->CloseNow();
@@ -379,7 +379,7 @@ void HomeCardImpl::OnGestureEnded(State final_state, bool is_fling) {
   if (state_ != final_state &&
       (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
     SetState(final_state);
-    WindowManager::GetInstance()->ToggleOverview();
+    WindowManager::Get()->ToggleOverview();
   } else {
     state_ = final_state;
     // When the animation happens after a fling, EASE_IN_OUT would cause weird

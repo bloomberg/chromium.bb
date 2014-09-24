@@ -229,7 +229,7 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
 
   // Once the split view mode gets turned on, more windows should become
   // visible.
-  WindowManager::GetInstance()->ToggleSplitViewForTest();
+  WindowManager::Get()->ToggleSplitViewForTest();
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
   EXPECT_NE(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
