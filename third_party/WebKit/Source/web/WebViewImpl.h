@@ -498,7 +498,10 @@ public:
 
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
+    virtual void setTopControlsLayoutHeight(float) OVERRIDE;
+
 private:
+    void didUpdateTopControls();
     void setTopControlsContentOffset(float);
 
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
@@ -730,7 +733,13 @@ private:
     float m_zoomFactorOverride;
 
     bool m_userGestureObserved;
+
+    // The top controls offset since the last compositor commit.
     float m_topControlsContentOffset;
+
+    // The top controls offset at the time of the last Resize event. This is the
+    // amount that the viewport was shrunk by to accomodate the top controls.
+    float m_topControlsLayoutHeight;
 };
 
 // We have no ways to check if the specified WebView is an instance of

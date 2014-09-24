@@ -123,6 +123,10 @@ const int touchPointPadding = 32;
     EXPECT_EQ(a.width(), b.width()); \
     EXPECT_EQ(a.height(), b.height());
 
+#define EXPECT_EQ_POINT(a, b) \
+    EXPECT_EQ(a.x(), b.x()); \
+    EXPECT_EQ(a.y(), b.y());
+
 class FakeCompositingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     virtual bool enterFullScreen() OVERRIDE { return true; }
@@ -5802,6 +5806,68 @@ TEST_F(WebFrameTest, FrameViewSetFrameRect)
     EXPECT_EQ_RECT(IntRect(0, 0, 200, 200), frameView->frameRect());
     frameView->setFrameRect(IntRect(100, 100, 200, 200));
     EXPECT_EQ_RECT(IntRect(100, 100, 200, 200), frameView->frameRect());
+}
+
+// FIXME(bokan) Renable once Chromium-side of patch lands
+TEST_F(WebFrameTest, DISABLED_FrameViewScrollAccountsForTopControls)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("about:blank");
+
+    WebViewImpl* webView = webViewHelper.webViewImpl();
+    FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+
+    webView->setTopControlsLayoutHeight(0);
+    webView->resize(WebSize(100, 100));
+    webView->setPageScaleFactor(2.0f);
+    webView->layout();
+
+    webView->setMainFrameScrollOffset(WebPoint(20, 100));
+    EXPECT_EQ_POINT(IntPoint(20, 50), IntPoint(frameView->scrollOffset()));
+
+    // Simulate the top controls showing by 20px, thus shrinking the viewport
+    // and allowing it to scroll an additional 10px (since we're 2X zoomed).
+    webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 20.0f);
+    EXPECT_EQ_POINT(IntPoint(50, 60), frameView->maximumScrollPosition());
+
+    // Show more, make sure the scroll actually gets clamped. Horizontal
+    // direction shouldn't be affected.
+    webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 20.0f);
+    webView->setMainFrameScrollOffset(WebPoint(100, 100));
+    EXPECT_EQ_POINT(IntPoint(50, 70), IntPoint(frameView->scrollOffset()));
+
+    // Hide until there's 10px showing.
+    webView->applyViewportDeltas(WebSize(0, 0), 1.0f, -30.0f);
+    EXPECT_EQ_POINT(IntPoint(50, 55), frameView->maximumScrollPosition());
+
+    // Simulate a RenderWidget::resize. The frame is resized to accomodate
+    // the top controls and Blink's view of the top controls matches that of
+    // the CC
+    webView->setTopControlsLayoutHeight(10.0f);
+    webView->resize(WebSize(100, 90));
+    webView->layout();
+    EXPECT_EQ_POINT(IntPoint(50, 45), frameView->maximumScrollPosition());
+
+    // Now simulate hiding.
+    webView->applyViewportDeltas(WebSize(0, 0), 1.0f, -10.0f);
+    EXPECT_EQ_POINT(IntPoint(50, 40), frameView->maximumScrollPosition());
+
+    // Reset to original state: 100px widget height, top controls fully hidden.
+    webView->setTopControlsLayoutHeight(0.0f);
+    webView->resize(WebSize(100, 100));
+    webView->layout();
+    EXPECT_EQ_POINT(IntPoint(50, 50), frameView->maximumScrollPosition());
+
+    // Show the top controls by just 1px, since we're zoomed in to 2X, that
+    // should allow an extra 0.5px of scrolling, but since we quantize to ints
+    // it should clamp such that we don't show anything outside bounds.
+    webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 1.0f);
+    EXPECT_EQ_POINT(IntPoint(50, 50), frameView->maximumScrollPosition());
+
+    webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 2.0f);
+    EXPECT_EQ_POINT(IntPoint(50, 51), frameView->maximumScrollPosition());
+
+
 }
 
 TEST_F(WebFrameTest, FullscreenLayerNonScrollable)

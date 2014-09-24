@@ -262,6 +262,9 @@ public:
     // but not the select popup.
     virtual WebPagePopup* pagePopup() const { return 0; }
 
+    // Sets the height subtracted from the Widget to accomodate the top controls.
+    virtual void setTopControlsLayoutHeight(float) { }
+
 protected:
     ~WebWidget() { }
 };

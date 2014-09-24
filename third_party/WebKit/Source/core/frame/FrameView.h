@@ -313,6 +313,13 @@ public:
     // If |m_tickmarks| is empty, the default behavior is restored.
     void setTickmarks(const Vector<IntRect>& tickmarks) { m_tickmarks = tickmarks; }
 
+    // Since the compositor can resize the viewport due to top controls and
+    // commit scroll offsets before a WebView::resize occurs, we need to adjust
+    // our scroll extents to prevent clamping the scroll offsets.
+    void setTopControlsViewportAdjustment(float);
+
+    virtual IntPoint maximumScrollPosition() const OVERRIDE;
+
     // ScrollableArea interface
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
     virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
@@ -506,6 +513,7 @@ private:
     Vector<IntRect> m_tickmarks;
 
     bool m_needsUpdateWidgetPositions;
+    float m_topControlsViewportAdjustment;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

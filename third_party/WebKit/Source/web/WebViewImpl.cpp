@@ -420,6 +420,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
     , m_topControlsContentOffset(0)
+    , m_topControlsLayoutHeight(0)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -1687,6 +1688,27 @@ void WebViewImpl::setTopControlsContentOffset(float offset)
 {
     m_topControlsContentOffset = offset;
     m_layerTreeView->setTopControlsContentOffset(offset);
+    didUpdateTopControls();
+}
+
+void WebViewImpl::setTopControlsLayoutHeight(float height)
+{
+    m_topControlsLayoutHeight = height;
+    didUpdateTopControls();
+}
+
+void WebViewImpl::didUpdateTopControls()
+{
+    FrameView* view = localFrameRootTemporary()->frameView();
+    if (!view)
+        return;
+
+    // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
+    // the FrameView about it so it can make correct scroll offset clamping decisions during compositor
+    // commits.
+    // FIXME(bokan) Reenable once Chromium side lands.
+    // float topControlsViewportAdjustment = m_topControlsContentOffset - m_topControlsLayoutHeight;
+    // view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
 }
 
 void WebViewImpl::resize(const WebSize& newSize)

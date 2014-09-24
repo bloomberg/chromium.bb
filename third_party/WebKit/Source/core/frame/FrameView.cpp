@@ -121,6 +121,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
     , m_needsUpdateWidgetPositions(false)
+    , m_topControlsViewportAdjustment(0)
 {
     ASSERT(m_frame);
     init();
@@ -3006,6 +3007,25 @@ void FrameView::willRemoveScrollbar(Scrollbar* scrollbar, ScrollbarOrientation o
         cache->remove(scrollbar);
         cache->handleScrollbarUpdate(this);
     }
+}
+
+void FrameView::setTopControlsViewportAdjustment(float adjustment)
+{
+    m_topControlsViewportAdjustment = adjustment;
+}
+
+IntPoint FrameView::maximumScrollPosition() const
+{
+    FloatSize visibleContentSizeF = unscaledVisibleContentSize(ExcludeScrollbars);
+    visibleContentSizeF.expand(0, -m_topControlsViewportAdjustment);
+    visibleContentSizeF.scale(1 / visibleContentScaleFactor());
+    IntSize visibleSize = expandedIntSize(visibleContentSizeF);
+
+    IntPoint maximumOffset(
+        contentsWidth() - visibleSize.width() - scrollOrigin().x(),
+        contentsHeight() - visibleSize.height() - scrollOrigin().y());
+    maximumOffset.clampNegativeToZero();
+    return maximumOffset;
 }
 
 } // namespace blink
