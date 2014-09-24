@@ -475,6 +475,7 @@ def v8_conversion_needs_exception_state(idl_type):
             idl_type.name in ('ByteString', 'ScalarValueString'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
+IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
 
 
 def v8_conversion_is_trivial(idl_type):
@@ -536,12 +537,12 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
         native_array_element_type.name != 'Dictionary'):
         this_cpp_type = None
         ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', native_array_element_type.gc_type)
-        expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}))'
+        expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState))'
         add_includes_for_type(native_array_element_type)
     else:
         ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type
-        expression_format = 'toImplArray<{cpp_type}>({v8_value}, {index}, {isolate})'
+        expression_format = 'toImplArray<{cpp_type}>({v8_value}, {index}, {isolate}, exceptionState)'
     expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value, isolate=isolate)
     return expression
 

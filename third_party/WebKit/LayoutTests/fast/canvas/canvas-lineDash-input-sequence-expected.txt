@@ -48,21 +48,21 @@ PASS lineDash[0] is 5
 PASS lineDash[1] is 15
 PASS lineDash[2] is 25
 * Test passing a Date as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing a RegExp as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing an Object without length as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing a Number as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing a String as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing a Boolean as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing null as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 * Test passing undefined as input.
-PASS ctx.setLineDash(inputArray) threw exception TypeError: The 1st argument is neither an array, nor does it have indexed properties..
+PASS ctx.setLineDash(inputArray) threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': The 1st argument is neither an array, nor does it have indexed properties..
 PASS successfullyParsed is true
 
 TEST COMPLETE

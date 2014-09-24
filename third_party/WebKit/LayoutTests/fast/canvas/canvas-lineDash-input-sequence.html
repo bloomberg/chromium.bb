@@ -38,7 +38,7 @@ function checkLineDash(testArray, shouldFail) {
     ctx.setLineDash([]);
     // Set line dash.
     if (shouldFail) {
-        shouldThrow("ctx.setLineDash(inputArray)", "'TypeError: The 1st argument is neither an array, nor does it have indexed properties.'");
+        shouldThrow("ctx.setLineDash(inputArray)", "'TypeError: Failed to execute \\'setLineDash\\' on \\'CanvasRenderingContext2D\\': The 1st argument is neither an array, nor does it have indexed properties.'");
     } else {
         ctx.setLineDash(inputArray);
         lineDash = ctx.getLineDash();

@@ -539,12 +539,9 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
         exceptionState.throwTypeError("Array length exceeds supported limit.");
         return;
     }
-    v8::TryCatch block;
-    Vector<float> implArray = toImplArray<float>(array, 0, info.GetIsolate());
-    if (block.HasCaught()) {
-        block.ReThrow();
+    Vector<float> implArray = toImplArray<float>(array, 0, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
         return;
-    }
     switch (functionToCall) {
     case kUniform1v: context->uniform1fv(location, implArray.data(), implArray.size()); break;
     case kUniform2v: context->uniform2fv(location, implArray.data(), implArray.size()); break;
@@ -609,12 +606,9 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, Func
         exceptionState.throwTypeError("Array length exceeds supported limit.");
         return;
     }
-    v8::TryCatch block;
-    Vector<int> implArray = toImplArray<int>(array, 0, info.GetIsolate());
-    if (block.HasCaught()) {
-        block.ReThrow();
+    Vector<int> implArray = toImplArray<int>(array, 0, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
         return;
-    }
     switch (functionToCall) {
     case kUniform1v: context->uniform1iv(location, implArray.data(), implArray.size()); break;
     case kUniform2v: context->uniform2iv(location, implArray.data(), implArray.size()); break;
@@ -723,12 +717,9 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
         exceptionState.throwTypeError("Array length exceeds supported limit.");
         return;
     }
-    v8::TryCatch block;
-    Vector<float> implArray = toImplArray<float>(array, 0, info.GetIsolate());
-    if (block.HasCaught()) {
-        block.ReThrow();
+    Vector<float> implArray = toImplArray<float>(array, 0, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
         return;
-    }
     switch (matrixSize) {
     case 2: context->uniformMatrix2fv(location, transpose, implArray.data(), implArray.size()); break;
     case 3: context->uniformMatrix3fv(location, transpose, implArray.data(), implArray.size()); break;

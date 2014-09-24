@@ -305,7 +305,8 @@ TEST_F(V8ValueTraitsTest, toImplArray)
         v8StringArray->Set(toV8Value(0), toV8Value("Hello, World!"));
         v8StringArray->Set(toV8Value(1), toV8Value("Hi, Mom!"));
 
-        Vector<String> stringVector = toImplArray<String>(v8StringArray, 0, m_scope.isolate());
+        NonThrowableExceptionState exceptionState;
+        Vector<String> stringVector = toImplArray<String>(v8StringArray, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(2U, stringVector.size());
         EXPECT_EQ("Hello, World!", stringVector[0]);
         EXPECT_EQ("Hi, Mom!", stringVector[1]);
@@ -316,7 +317,8 @@ TEST_F(V8ValueTraitsTest, toImplArray)
         v8UnsignedArray->Set(toV8Value(1), toV8Value(1729));
         v8UnsignedArray->Set(toV8Value(2), toV8Value(31773));
 
-        Vector<unsigned> unsignedVector = toImplArray<unsigned>(v8UnsignedArray, 0, m_scope.isolate());
+        NonThrowableExceptionState exceptionState;
+        Vector<unsigned> unsignedVector = toImplArray<unsigned>(v8UnsignedArray, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(3U, unsignedVector.size());
         EXPECT_EQ(42U, unsignedVector[0]);
         EXPECT_EQ(1729U, unsignedVector[1]);
@@ -328,11 +330,12 @@ TEST_F(V8ValueTraitsTest, toImplArray)
         v8::Handle<v8::Array> v8RealArray = v8::Array::New(m_scope.isolate(), 1);
         v8RealArray->Set(toV8Value(0), toV8Value(doublePi));
 
-        Vector<double> doubleVector = toImplArray<double>(v8RealArray, 0, m_scope.isolate());
+        NonThrowableExceptionState exceptionState;
+        Vector<double> doubleVector = toImplArray<double>(v8RealArray, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(1U, doubleVector.size());
         EXPECT_EQ(doublePi, doubleVector[0]);
 
-        Vector<float> floatVector = toImplArray<float>(v8RealArray, 0, m_scope.isolate());
+        Vector<float> floatVector = toImplArray<float>(v8RealArray, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(1U, floatVector.size());
         EXPECT_EQ(floatPi, floatVector[0]);
     }
@@ -342,14 +345,14 @@ TEST_F(V8ValueTraitsTest, toImplArray)
         v8Array->Set(toV8Value(1), toV8Value(65535));
         v8Array->Set(toV8Value(2), toV8Value(0.125));
 
-        Vector<v8::Handle<v8::Value> > v8HandleVector = toImplArray<v8::Handle<v8::Value> >(v8Array, 0, m_scope.isolate());
-        EXPECT_EQ(3U, v8HandleVector.size());
         NonThrowableExceptionState exceptionState;
+        Vector<v8::Handle<v8::Value> > v8HandleVector = toImplArray<v8::Handle<v8::Value> >(v8Array, 0, m_scope.isolate(), exceptionState);
+        EXPECT_EQ(3U, v8HandleVector.size());
         EXPECT_EQ("Vini, vidi, vici.", toScalarValueString(v8HandleVector[0], exceptionState));
         EXPECT_EQ(65535U, toUInt32(v8HandleVector[1]));
         EXPECT_EQ(0.125, toFloat(v8HandleVector[2]));
 
-        Vector<ScriptValue> scriptValueVector = toImplArray<ScriptValue>(v8Array, 0, m_scope.isolate());
+        Vector<ScriptValue> scriptValueVector = toImplArray<ScriptValue>(v8Array, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(3U, scriptValueVector.size());
         String reportOnZela;
         EXPECT_TRUE(scriptValueVector[0].toString(reportOnZela));
@@ -369,7 +372,8 @@ TEST_F(V8ValueTraitsTest, toImplArray)
         v8StringArrayArray->Set(toV8Value(0), v8StringArray1);
         v8StringArrayArray->Set(toV8Value(1), v8StringArray2);
 
-        Vector<Vector<String> > stringVectorVector = toImplArray<Vector<String> >(v8StringArrayArray, 0, m_scope.isolate());
+        NonThrowableExceptionState exceptionState;
+        Vector<Vector<String> > stringVectorVector = toImplArray<Vector<String> >(v8StringArrayArray, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(2U, stringVectorVector.size());
         EXPECT_EQ(2U, stringVectorVector[0].size());
         EXPECT_EQ("foo", stringVectorVector[0][0]);

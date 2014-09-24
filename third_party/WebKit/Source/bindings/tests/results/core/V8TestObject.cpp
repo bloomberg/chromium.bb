@@ -1454,8 +1454,9 @@ static void stringArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "stringArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Vector<String>, cppValue, toImplArray<String>(v8Value, 0, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<String>, cppValue, toImplArray<String>(v8Value, 0, info.GetIsolate(), exceptionState), exceptionState);
     impl->setStringArrayAttribute(cppValue);
 }
 
@@ -1483,8 +1484,9 @@ static void testInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8
 static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceEmptyArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Vector<RefPtr<TestInterfaceEmpty> >, cppValue, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(v8Value, 0, info.GetIsolate())));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<RefPtr<TestInterfaceEmpty> >, cppValue, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState)), exceptionState);
     impl->setTestInterfaceEmptyArrayAttribute(cppValue);
 }
 
@@ -1512,8 +1514,9 @@ static void floatArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, co
 static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "floatArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Vector<float>, cppValue, toImplArray<float>(v8Value, 0, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<float>, cppValue, toImplArray<float>(v8Value, 0, info.GetIsolate(), exceptionState), exceptionState);
     impl->setFloatArrayAttribute(cppValue);
 }
 
@@ -1906,8 +1909,9 @@ static void cachedArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 static void cachedArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "cachedArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Vector<String>, cppValue, toImplArray<String>(v8Value, 0, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<String>, cppValue, toImplArray<String>(v8Value, 0, info.GetIsolate(), exceptionState), exceptionState);
     impl->setCachedArrayAttribute(cppValue);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedArrayAttribute")); // Invalidate the cached value.
 }
@@ -6078,16 +6082,16 @@ static void testInterfaceEmptyArrayMethodMethodCallback(const v8::FunctionCallba
 
 static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodArrayLongArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> arrayLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayLongArg, toImplArray<int>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayLongArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodArrayLongArg(arrayLongArg);
 }
@@ -6101,16 +6105,16 @@ static void voidMethodArrayLongArgMethodCallback(const v8::FunctionCallbackInfo<
 
 static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodArrayStringArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<String> arrayStringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayStringArg, toImplArray<String>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayStringArg, toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodArrayStringArg(arrayStringArg);
 }
@@ -6124,16 +6128,16 @@ static void voidMethodArrayStringArgMethodCallback(const v8::FunctionCallbackInf
 
 static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodArrayTestInterfaceEmptyArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > arrayTestInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayTestInterfaceEmptyArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayTestInterfaceEmptyArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     impl->voidMethodArrayTestInterfaceEmptyArg(arrayTestInterfaceEmptyArg);
 }
@@ -6186,16 +6190,16 @@ static void testInterfaceEmptySequenceMethodMethodCallback(const v8::FunctionCal
 
 static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodSequenceLongArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> longSequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(longSequenceArg, toImplArray<int>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longSequenceArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodSequenceLongArg(longSequenceArg);
 }
@@ -6209,16 +6213,16 @@ static void voidMethodSequenceLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodSequenceStringArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<String> stringSequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(stringSequenceArg, toImplArray<String>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringSequenceArg, toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodSequenceStringArg(stringSequenceArg);
 }
@@ -6232,16 +6236,16 @@ static void voidMethodSequenceStringArgMethodCallback(const v8::FunctionCallback
 
 static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodSequenceTestInterfaceEmptyArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptySequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptySequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceEmptySequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     impl->voidMethodSequenceTestInterfaceEmptyArg(testInterfaceEmptySequenceArg);
 }
@@ -6255,16 +6259,16 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethodCallback(const v8::Func
 
 static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceSequenceDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodSequenceSequenceDOMStringArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<Vector<String> > stringSequenceSequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(stringSequenceSequenceArg, toImplArray<Vector<String>>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringSequenceSequenceArg, toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodSequenceSequenceDOMStringArg(stringSequenceSequenceArg);
 }
@@ -6596,7 +6600,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         arg2 = Dictionary(info[1], info.GetIsolate());
         TOSTRING_VOID_PROMISE_INTERNAL(arg3, info[2], info);
-        TONATIVE_VOID_PROMISE_INTERNAL(variadic, toImplArguments<String>(info, 3), info);
+        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(variadic, toImplArguments<String>(info, 3, exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
     v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
 }
@@ -6784,16 +6788,16 @@ static void voidMethodXPathNSResolverArgMethodCallback(const v8::FunctionCallbac
 
 static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDictionarySequenceArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodDictionarySequenceArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<Dictionary> dictionarySequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(dictionarySequenceArg, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(dictionarySequenceArg, toImplArray<Dictionary>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodDictionarySequenceArg(dictionarySequenceArg);
 }
@@ -7367,12 +7371,11 @@ static void voidMethodDefaultNullableTestInterfaceArgMethodCallback(const v8::Fu
 
 static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicStringArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<String> variadicStringArgs;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(variadicStringArgs, toImplArguments<String>(info, 0));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(variadicStringArgs, toImplArguments<String>(info, 0, exceptionState), exceptionState);
     }
     impl->voidMethodVariadicStringArg(variadicStringArgs);
 }
@@ -7386,18 +7389,18 @@ static void voidMethodVariadicStringArgMethodCallback(const v8::FunctionCallback
 
 static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgVariadicStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodStringArgVariadicStringArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> stringArg;
     Vector<String> variadicStringArgs;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
-        TONATIVE_VOID_INTERNAL(variadicStringArgs, toImplArguments<String>(info, 1));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(variadicStringArgs, toImplArguments<String>(info, 1, exceptionState), exceptionState);
     }
     impl->voidMethodStringArgVariadicStringArg(stringArg, variadicStringArgs);
 }
@@ -7411,12 +7414,14 @@ static void voidMethodStringArgVariadicStringArgMethodCallback(const v8::Functio
 
 static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
     {
         for (int i = 0; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-                V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+                exceptionState.throwIfNeeded();
                 return;
             }
             variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
@@ -7434,8 +7439,10 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethodCallback(const v8::Func
 
 static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7445,7 +7452,8 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         for (int i = 1; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-                V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", "parameter 2 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+                exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+                exceptionState.throwIfNeeded();
                 return;
             }
             variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
@@ -7463,12 +7471,14 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCa
 
 static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceGarbageCollectedArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceGarbageCollected> > variadicTestInterfaceGarbageCollectedArg;
     {
         for (int i = 0; i < info.Length(); ++i) {
             if (!V8TestInterfaceGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
-                V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceGarbageCollectedArg", "TestObject", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."), info.GetIsolate());
+                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceGarbageCollected'.");
+                exceptionState.throwIfNeeded();
                 return;
             }
             variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
@@ -7486,12 +7496,14 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback(con
 
 static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > variadicTestInterfaceWillBeGarbageCollectedArg;
     {
         for (int i = 0; i < info.Length(); ++i) {
             if (!V8TestInterfaceWillBeGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
-                V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", "TestObject", "parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'."), info.GetIsolate());
+                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'.");
+                exceptionState.throwIfNeeded();
                 return;
             }
             variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
@@ -7695,12 +7707,11 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> longArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(longArrayArg, toImplArray<int>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArrayArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->overloadedMethodD(longArrayArg);
 }
@@ -8441,7 +8452,8 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0);
+        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingAccessForAllWorldsMethod", "TestObject", info.Holder(), info.GetIsolate());
+        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethod(info);
@@ -9170,7 +9182,8 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0);
+        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -9189,7 +9202,8 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0);
+        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
@@ -9208,7 +9222,8 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0);
+        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -9675,12 +9690,14 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback(c
 
 static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyArg;
     {
         for (int i = 0; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-                V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+                exceptionState.throwIfNeeded();
                 return;
             }
             testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
@@ -9746,16 +9763,16 @@ static void unforgeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceGarbageCollectedSequenceArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceGarbageCollectedSequenceArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceGarbageCollected> > testInterfaceGarbageCollectedSequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceGarbageCollectedSequenceArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceGarbageCollectedSequenceArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     impl->voidMethodTestInterfaceGarbageCollectedSequenceArg(testInterfaceGarbageCollectedSequenceArg);
 }
@@ -9769,16 +9786,16 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback(con
 
 static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceGarbageCollectedArrayArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceGarbageCollectedArrayArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceGarbageCollected> > testInterfaceGarbageCollectedArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceGarbageCollectedArrayArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceGarbageCollectedArrayArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     impl->voidMethodTestInterfaceGarbageCollectedArrayArg(testInterfaceGarbageCollectedArrayArg);
 }
@@ -9792,16 +9809,16 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const 
 
 static void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > testInterfaceWillBeGarbageCollectedSequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceWillBeGarbageCollectedSequenceArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceWillBeGarbageCollectedSequenceArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     impl->voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(testInterfaceWillBeGarbageCollectedSequenceArg);
 }
@@ -9815,16 +9832,16 @@ static void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethodCallba
 
 static void voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceWillBeGarbageCollectedArrayArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceWillBeGarbageCollectedArrayArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > testInterfaceWillBeGarbageCollectedArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceWillBeGarbageCollectedArrayArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceWillBeGarbageCollectedArrayArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     impl->voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(testInterfaceWillBeGarbageCollectedArrayArg);
 }

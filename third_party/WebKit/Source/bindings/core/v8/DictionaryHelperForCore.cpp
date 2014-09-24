@@ -265,22 +265,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, MessagePortArray& value)
-{
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return false;
-
-    ASSERT(dictionary.isolate());
-    ASSERT(dictionary.isolate() == v8::Isolate::GetCurrent());
-    if (blink::isUndefinedOrNull(v8Value))
-        return true;
-    bool success = false;
-    value = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(v8Value, key, dictionary.isolate(), &success);
-    return success;
-}
-
-template <>
 bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, HashSet<AtomicString>& value)
 {
     v8::Local<v8::Value> v8Value;
@@ -663,7 +647,18 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    return DictionaryHelper::get(dictionary, key, value);
+    ASSERT(dictionary.isolate());
+    ASSERT(dictionary.isolate() == v8::Isolate::GetCurrent());
+
+    if (isUndefinedOrNull(v8Value))
+        return true;
+
+    value = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(v8Value, key, dictionary.isolate(), context.exceptionState());
+
+    if (context.exceptionState().throwIfNeeded())
+        return false;
+
+    return true;
 }
 
 } // namespace blink

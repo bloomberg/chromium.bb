@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 error is: TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: DataError: Invalid unwrappingKey argument
-error is: TypeError: The 7th argument is neither an array, nor does it have indexed properties.
+error is: TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': The 7th argument is neither an array, nor does it have indexed properties.
 error is: SyntaxError: Algorithm: Not an object
 error is: TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': parameter 5 ('unwrappedKeyAlgorithm') is not an object.
 error is: SyntaxError: Invalid keyFormat argument

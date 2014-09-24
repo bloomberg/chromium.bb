@@ -95,7 +95,7 @@ void animate2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
     Element* impl = V8Element::toImpl(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     RefPtrWillBeRawPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -129,7 +129,7 @@ void animate5Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
     Element* impl = V8Element::toImpl(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     TONATIVE_VOID(double, duration, static_cast<double>(info[1]->NumberValue()));
     RefPtrWillBeRawPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, duration, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -142,7 +142,7 @@ void animate6Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
     Element* impl = V8Element::toImpl(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    TONATIVE_VOID_EXCEPTIONSTATE(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate()));
     if (!timingInput.isUndefinedOrNull() && !timingInput.isObject()) {
         exceptionState.throwTypeError("parameter 2 ('timingInput') is not an object.");

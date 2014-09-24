@@ -3010,8 +3010,9 @@ bool SerializedScriptValue::extractTransferables(v8::Local<v8::Value> value, int
     if (value->IsArray()) {
         v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
         length = array->Length();
-    } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex + 1));
+    } else if (!toV8Sequence(value, length, isolate, exceptionState)) {
+        if (!exceptionState.hadException())
+            exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex + 1));
         return false;
     }
 

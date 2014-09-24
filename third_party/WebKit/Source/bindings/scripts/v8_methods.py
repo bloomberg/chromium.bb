@@ -63,17 +63,19 @@ def argument_needs_try_catch(method, argument):
         idl_type.is_callback_interface or
         base_type == 'SerializedScriptValue' or
         (argument.is_variadic and idl_type.is_wrapper_type) or
+        # Variadic arguments use toImplArguments() with throws excentions via
+        # its ExceptionState& argument.
+        argument.is_variadic or
         # String and enumeration arguments converted using one of the
         # TOSTRING_* macros except for _PROMISE variants in
         # Source/bindings/core/v8/V8BindingMacros.h don't use a v8::TryCatch.
         ((base_type == 'DOMString' or idl_type.is_enum) and
-         not argument.is_variadic and
          not return_promise) or
         # Conversion that take an ExceptionState& argument throw all their
         # exceptions via it, and doesn't need/use a TryCatch, except if the
         # argument has [Clamp], in which case it uses a separate code path in
         # Source/bindings/templates/methods.cpp, which *does* use a TryCatch.
-        idl_type.v8_conversion_needs_exception_state or
+        argument.v8_conversion_needs_exception_state or
         # A trivial conversion cannot throw exceptions at all, so doesn't need a
         # TryCatch to catch them.
         idl_type.v8_conversion_is_trivial)
@@ -171,8 +173,8 @@ def method_context(interface, method):
             is_check_security_for_frame or
             is_check_security_for_window or
             any(argument for argument in arguments
-                if argument.idl_type.name == 'SerializedScriptValue' or
-                   argument.idl_type.v8_conversion_needs_exception_state),
+                if (argument.idl_type.name == 'SerializedScriptValue' or
+                    argument.v8_conversion_needs_exception_state)),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -381,15 +383,16 @@ def v8_value_to_local_cpp_variadic_value(argument, index, return_promise):
 
     suffix = ''
 
-    macro = 'TONATIVE_VOID'
+    macro = 'TONATIVE_VOID_EXCEPTIONSTATE'
     macro_args = [
-      argument.name,
-      'toImplArguments<%s>(info, %s)' % (idl_type.cpp_type, index),
+        argument.name,
+        'toImplArguments<%s>(info, %s, exceptionState)' % (idl_type.cpp_type, index),
+        'exceptionState',
     ]
 
     if return_promise:
         suffix += '_PROMISE'
-        macro_args.append('info')
+        macro_args.extend(['info', 'ScriptState::current(info.GetIsolate())'])
 
     suffix += '_INTERNAL'
 
@@ -468,3 +471,10 @@ def argument_default_cpp_value(argument):
 IdlTypeBase.union_arguments = None
 IdlUnionType.union_arguments = property(union_arguments)
 IdlArgument.default_cpp_value = property(argument_default_cpp_value)
+
+
+def v8_conversion_needs_exception_state(argument):
+    return (argument.idl_type.v8_conversion_needs_exception_state or
+            argument.is_variadic)
+
+IdlArgument.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)

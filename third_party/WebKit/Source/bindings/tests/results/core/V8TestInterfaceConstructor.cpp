@@ -62,8 +62,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary optionalDictionaryArg;
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
@@ -73,8 +71,8 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
         dictionaryArg = Dictionary(info[3], info.GetIsolate());
-        TONATIVE_VOID_INTERNAL(sequenceStringArg, toImplArray<String>(info[4], 5, info.GetIsolate()));
-        TONATIVE_VOID_INTERNAL(sequenceDictionaryArg, toImplArray<Dictionary>(info[5], 6, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(sequenceStringArg, toImplArray<String>(info[4], 5, info.GetIsolate(), exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(sequenceDictionaryArg, toImplArray<Dictionary>(info[5], 6, info.GetIsolate(), exceptionState), exceptionState);
         if (!isUndefinedOrNull(info[6]) && !info[6]->IsObject()) {
             exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();

@@ -104,6 +104,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 
 void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "initMessageEvent", "MessageEvent", info.Holder(), info.GetIsolate());
     MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
     TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
@@ -116,9 +117,8 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     const int portArrayIndex = 7;
     if (!isUndefinedOrNull(info[portArrayIndex])) {
         portArray = adoptPtrWillBeNoop(new MessagePortArray);
-        bool success = false;
-        *portArray = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), &success);
-        if (!success)
+        *portArray = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.throwIfNeeded())
             return;
     }
     event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, originArg, lastEventIdArg, sourceArg, portArray.release());

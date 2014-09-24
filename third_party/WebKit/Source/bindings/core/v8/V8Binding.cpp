@@ -964,7 +964,9 @@ void GetDevToolsFunctionInfo(v8::Handle<v8::Function> function, v8::Isolate* iso
     scriptId = originalFunction->ScriptId();
     v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
     if (!origin.ResourceName().IsEmpty()) {
-        resourceName = NativeValueTraits<String>::nativeValue(origin.ResourceName(), isolate);
+        V8StringResource<> stringResource(origin.ResourceName());
+        stringResource.prepare();
+        resourceName = stringResource;
         lineNumber = originalFunction->GetScriptLineNumber() + 1;
     }
     if (resourceName.isEmpty()) {

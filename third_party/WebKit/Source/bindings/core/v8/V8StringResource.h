@@ -26,6 +26,7 @@
 #ifndef V8StringResource_h
 #define V8StringResource_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
@@ -198,6 +199,37 @@ public:
 
     bool prepare()
     {
+        if (prepareFast())
+            return true;
+
+        m_v8Object = m_v8Object->ToString();
+        // Handle the case where an exception is thrown as part of invoking toString on the object.
+        if (m_v8Object.IsEmpty())
+            return false;
+        return true;
+    }
+
+    bool prepare(ExceptionState& exceptionState)
+    {
+        if (prepareFast())
+            return true;
+
+        v8::TryCatch block;
+        m_v8Object = m_v8Object->ToString();
+        // Handle the case where an exception is thrown as part of invoking toString on the object.
+        if (block.HasCaught()) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return false;
+        }
+        return true;
+    }
+
+    operator String() const { return toString<String>(); }
+    operator AtomicString() const { return toString<AtomicString>(); }
+
+private:
+    bool prepareFast()
+    {
         if (m_v8Object.IsEmpty())
             return true;
 
@@ -215,16 +247,9 @@ public:
         }
 
         m_mode = DoNotExternalize;
-        m_v8Object = m_v8Object->ToString();
-        // Handle the case where an exception is thrown as part of invoking toString on the object.
-        if (m_v8Object.IsEmpty())
-            return false;
-        return true;
+        return false;
     }
-    operator String() const { return toString<String>(); }
-    operator AtomicString() const { return toString<AtomicString>(); }
 
-private:
     bool isValid() const;
     String fallbackString() const;
 

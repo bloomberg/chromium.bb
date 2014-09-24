@@ -9,10 +9,10 @@ PASS localStream.getVideoTracks().length is 1
 PASS typeof webkitMediaStream === 'function' is true
 PASS checkIdAttribute(localStream.id) is true
 PASS new webkitMediaStream(document) threw exception TypeError: Failed to construct 'MediaStream': No matching constructor signature..
-PASS new webkitMediaStream([document]) threw exception TypeError: Invalid Array element type.
-PASS new webkitMediaStream([stream.getAudioTracks()[0], document]) threw exception TypeError: Invalid Array element type.
-PASS new webkitMediaStream([null]) threw exception TypeError: Invalid Array element type.
-PASS new webkitMediaStream([undefined]) threw exception TypeError: Invalid Array element type.
+PASS new webkitMediaStream([document]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
+PASS new webkitMediaStream([stream.getAudioTracks()[0], document]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
+PASS new webkitMediaStream([null]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
+PASS new webkitMediaStream([undefined]) threw exception TypeError: Failed to construct 'MediaStream': Invalid Array element type.
 PASS new webkitMediaStream(null) threw exception TypeError: Failed to construct 'MediaStream': No matching constructor signature..
 PASS new webkitMediaStream(undefined) threw exception TypeError: Failed to construct 'MediaStream': No matching constructor signature..
 PASS Stream constructed

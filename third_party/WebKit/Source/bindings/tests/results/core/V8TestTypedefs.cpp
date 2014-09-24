@@ -88,16 +88,15 @@ static void TestTypedefsForceSetAttributeOnThisCallback(v8::Local<v8::String> na
 
 static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayOfLongsArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<int> arrayOfLongsArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             impl->voidMethodArrayOfLongsArg();
             return;
         }
-        TONATIVE_VOID_INTERNAL(arrayOfLongsArg, toImplArray<int>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayOfLongsArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
@@ -161,16 +160,16 @@ static void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::Funct
 
 static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyTypeSequenceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState)), exceptionState);
     }
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
@@ -232,16 +231,16 @@ static void domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo
 
 static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> arrayOfStringsArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayOfStringsArg, toImplArray<String>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayOfStringsArg, toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
@@ -255,16 +254,16 @@ static void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::Functi
 
 static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayMethodStringArrayArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("stringArrayMethodStringArrayArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> stringArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(stringArrayArg, toImplArray<String>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringArrayArg, toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
