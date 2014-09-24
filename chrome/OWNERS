@@ -20,12 +20,13 @@ per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
 
 # Android OWNERS from chrome/android/OWNERS
-per-file *android*=aruslan@chromium.org
-per-file *android*=bauerb@chromium.org
-per-file *android*=dtrainor@chromium.org
-per-file *android*=nyquist@chromium.org
-per-file *android*=tedchoc@chromium.org
-per-file *android*=yfriedman@chromium.org
+per-file chrome_android*.gypi=aruslan@chromium.org
+per-file chrome_android*.gypi=bauerb@chromium.org
+per-file chrome_android*.gypi=dtrainor@chromium.org
+per-file chrome_android*.gypi=miguelg@chromium.org
+per-file chrome_android*.gypi=nyquist@chromium.org
+per-file chrome_android*.gypi=tedchoc@chromium.org
+per-file chrome_android*.gypi=yfriedman@chromium.org
 
 # Chrome OS OWNERS from chrome/browser/chromeos/OWNERS
 per-file chrome_browser_chromeos.gypi=achuith@chromium.org
