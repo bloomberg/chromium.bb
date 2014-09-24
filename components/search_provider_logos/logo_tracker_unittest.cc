@@ -371,8 +371,7 @@ void LogoTrackerTest::SetServerResponseWhenFingerprint(
     const std::string& response_when_fingerprint,
     net::URLRequestStatus::Status request_status,
     net::HttpStatusCode response_code) {
-  GURL url_with_fp =
-      net::AppendQueryParameter(logo_url_, "async", "es_dfp:" + fingerprint);
+  GURL url_with_fp = GoogleAppendFingerprintToLogoURL(logo_url_, fingerprint);
   fake_url_fetcher_factory_.SetFakeResponse(
       url_with_fp, response_when_fingerprint, response_code, request_status);
 }
@@ -383,6 +382,16 @@ void LogoTrackerTest::GetLogo() {
 }
 
 // Tests -----------------------------------------------------------------------
+
+TEST_F(LogoTrackerTest, FingerprintURLHasColon) {
+  GURL url_with_fp = GoogleAppendFingerprintToLogoURL(
+      GURL("http://logourl.com/path"), "abc123");
+  EXPECT_EQ("http://logourl.com/path?async=es_dfp:abc123", url_with_fp.spec());
+
+  url_with_fp = GoogleAppendFingerprintToLogoURL(
+      GURL("http://logourl.com/?a=b"), "cafe0");
+  EXPECT_EQ("http://logourl.com/?a=b&async=es_dfp:cafe0", url_with_fp.spec());
+}
 
 TEST_F(LogoTrackerTest, DownloadAndCacheLogo) {
   Logo logo = GetSampleLogo(logo_url_, test_clock_->Now());
