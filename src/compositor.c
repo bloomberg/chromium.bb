@@ -1,7 +1,7 @@
 /*
  * Copyright © 2010-2011 Intel Corporation
  * Copyright © 2008-2011 Kristian Høgsberg
- * Copyright © 2012 Collabora, Ltd.
+ * Copyright © 2012-2014 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -55,6 +55,7 @@
 
 #include "compositor.h"
 #include "scaler-server-protocol.h"
+#include "presentation_timing-server-protocol.h"
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
 #include "version.h"
@@ -3736,6 +3737,46 @@ bind_scaler(struct wl_client *client,
 }
 
 static void
+presentation_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+presentation_feedback(struct wl_client *client,
+		      struct wl_resource *resource,
+		      struct wl_resource *surface,
+		      uint32_t callback)
+{
+	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_METHOD,
+			       "presentation_feedback unimplemented");
+}
+
+static const struct presentation_interface presentation_implementation = {
+	presentation_destroy,
+	presentation_feedback
+};
+
+static void
+bind_presentation(struct wl_client *client,
+		  void *data, uint32_t version, uint32_t id)
+{
+	struct weston_compositor *compositor = data;
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, &presentation_interface,
+				      MIN(version, 1), id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &presentation_implementation,
+				       compositor, NULL);
+	presentation_send_clock_id(resource, CLOCK_MONOTONIC);
+}
+
+static void
 compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)
 {
@@ -3828,6 +3869,10 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	if (!wl_global_create(ec->wl_display, &wl_scaler_interface, 2,
 			      ec, bind_scaler))
+		return -1;
+
+	if (!wl_global_create(ec->wl_display, &presentation_interface, 1,
+			      ec, bind_presentation))
 		return -1;
 
 	wl_list_init(&ec->view_list);
