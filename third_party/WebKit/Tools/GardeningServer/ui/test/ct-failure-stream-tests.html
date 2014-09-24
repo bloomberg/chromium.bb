@@ -84,8 +84,9 @@ describe('ct-failure-stream', function() {
     it('adding a bug number should show bugs link', function(done) {
       var cl = new CTCommitListMock();
       var group = new CTFailureGroup('', new CTStepFailureGroupData([
-        new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
-                      {'blink':158544})], cl));
+          new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a', failingBuildCount: 2}},
+              {'blink':158547}, {'blink':158544}),
+        ], cl));
       group.setBug(123);
 
       stream.groups = [group];
