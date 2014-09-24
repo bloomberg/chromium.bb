@@ -125,9 +125,9 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
   gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(png.data()),
                         png.size(), &bitmap);
   SkColor color(bitmap.getColor(0, 0));
-  EXPECT_LE(std::abs(0x12-(int)SkColorGetR(color)), 1);
-  EXPECT_LE(std::abs(0x34-(int)SkColorGetG(color)), 1);
-  EXPECT_LE(std::abs(0x56-(int)SkColorGetB(color)), 1);
+  EXPECT_TRUE(std::abs(0x12-(int)SkColorGetR(color)) <= 1);
+  EXPECT_TRUE(std::abs(0x34-(int)SkColorGetG(color)) <= 1);
+  EXPECT_TRUE(std::abs(0x56-(int)SkColorGetB(color)) <= 1);
 }
 
 }  // namespace content
