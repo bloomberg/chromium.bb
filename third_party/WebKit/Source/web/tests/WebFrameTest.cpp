@@ -50,8 +50,10 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/events/MouseEvent.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
@@ -117,11 +119,25 @@ using namespace blink;
 
 const int touchPointPadding = 32;
 
-#define EXPECT_EQ_RECT(a, b) \
-    EXPECT_EQ(a.x(), b.x()); \
-    EXPECT_EQ(a.y(), b.y()); \
-    EXPECT_EQ(a.width(), b.width()); \
-    EXPECT_EQ(a.height(), b.height());
+#define EXPECT_RECT_EQ(a, b) \
+    do {                                   \
+        EXPECT_EQ(a.x(), b.x());           \
+        EXPECT_EQ(a.y(), b.y());           \
+        EXPECT_EQ(a.width(), b.width());   \
+        EXPECT_EQ(a.height(), b.height()); \
+    } while (false)
+
+#define EXPECT_POINT_EQ(expected, actual) \
+    do { \
+        EXPECT_EQ((expected).x(), (actual).x()); \
+        EXPECT_EQ((expected).y(), (actual).y()); \
+    } while (false)
+
+#define EXPECT_FLOAT_POINT_EQ(expected, actual) \
+    do { \
+        EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
+        EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
+    } while (false)
 
 class FakeCompositingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
@@ -2198,7 +2214,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     GraphicsContext context(&canvas);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
-    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
+    EXPECT_RECT_EQ(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
 
     FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     IntRect paintRect(0, 0, 200, 200);
@@ -2212,7 +2228,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     int viewportWidthMinusScrollbar = 50 - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     int viewportHeightMinusScrollbar = 50 - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     IntRect clippedRect(0, 0, viewportWidthMinusScrollbar * 2, viewportHeightMinusScrollbar * 2);
-    EXPECT_EQ_RECT(clippedRect, context.opaqueRegion().asRect());
+    EXPECT_RECT_EQ(clippedRect, context.opaqueRegion().asRect());
 #endif
 }
 
@@ -4209,7 +4225,7 @@ TEST_F(WebFrameTest, CompositedSelectionBoundsCleared)
 
 class DisambiguationPopupTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
-    virtual bool didTapMultipleTargets(const WebGestureEvent&, const WebVector<WebRect>& targetRects) OVERRIDE
+    virtual bool didTapMultipleTargets(const WebSize&, const WebRect&, const WebVector<WebRect>& targetRects) OVERRIDE
     {
         EXPECT_GE(targetRects.size(), 2u);
         m_triggered = true;
@@ -4365,6 +4381,57 @@ TEST_F(WebFrameTest, DisambiguationPopupViewportSite)
         webViewHelper.webView()->handleInputEvent(fatTap(10 + i * 5, 590));
         EXPECT_FALSE(client.triggered());
     }
+}
+
+static void enableVirtualViewport(WebSettings* settings)
+{
+    settings->setPinchVirtualViewportEnabled(true);
+    settings->setViewportEnabled(true);
+    settings->setViewportMetaEnabled(true);
+    settings->setShrinksViewportContentToFit(true);
+}
+
+TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
+{
+    const std::string htmlFile = "disambiguation_popup_200_by_800.html";
+    registerMockedHttpURLLoad(htmlFile);
+
+    DisambiguationPopupTestWebViewClient client;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + htmlFile, true, 0, &client, enableVirtualViewport);
+
+    WebViewImpl* webViewImpl = webViewHelper.webViewImpl();
+    ASSERT_TRUE(webViewImpl);
+    LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
+    ASSERT_TRUE(frame);
+
+    webViewHelper.webView()->resize(WebSize(200, 400));
+
+    // Scroll main frame to the bottom of the document
+    webViewImpl->setMainFrameScrollOffset(WebPoint(0, 400));
+    EXPECT_POINT_EQ(IntPoint(0, 400), frame->view()->scrollPosition());
+
+    webViewImpl->setPageScaleFactor(2.0);
+
+    // Scroll pinch viewport to the top of the main frame.
+    PinchViewport& pinchViewport = frame->page()->frameHost().pinchViewport();
+    pinchViewport.setLocation(FloatPoint(0, 0));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0), pinchViewport.location());
+
+    // Tap at the top: there is nothing there.
+    client.resetTriggered();
+    webViewHelper.webView()->handleInputEvent(fatTap(10, 60));
+    EXPECT_FALSE(client.triggered());
+
+    // Scroll pinch viewport to the bottom of the main frame.
+    pinchViewport.setLocation(FloatPoint(0, 200));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 200), pinchViewport.location());
+
+    // Now the tap with the same coordinates should hit two elements.
+    client.resetTriggered();
+    webViewHelper.webView()->handleInputEvent(fatTap(10, 60));
+    EXPECT_TRUE(client.triggered());
 }
 
 TEST_F(WebFrameTest, DisambiguationPopupBlacklist)
@@ -5799,9 +5866,9 @@ TEST_F(WebFrameTest, FrameViewSetFrameRect)
 
     FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     frameView->setFrameRect(IntRect(0, 0, 200, 200));
-    EXPECT_EQ_RECT(IntRect(0, 0, 200, 200), frameView->frameRect());
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), frameView->frameRect());
     frameView->setFrameRect(IntRect(100, 100, 200, 200));
-    EXPECT_EQ_RECT(IntRect(100, 100, 200, 200), frameView->frameRect());
+    EXPECT_RECT_EQ(IntRect(100, 100, 200, 200), frameView->frameRect());
 }
 
 TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
