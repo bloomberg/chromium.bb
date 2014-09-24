@@ -290,7 +290,7 @@ void LocalToRemoteSyncer::ContinueAsBackgroundTask(
   //   and may delete FileTracker.  So, ensure |change_id| is not changed and
   //   check if FileTracker still exists.
   // - For UninstallAppTask, it may also delete FileMetadata and FileTracker.
-  //   And also, check if FileTracker still exists.
+  //   Check if FileTracker still exists.
   // - Others, SyncEngineInitializer and RegisterAppTask doesn't affect to
   //   LocalToRemoteSyncer.
   if (remote_file_tracker_) {
@@ -663,8 +663,7 @@ void LocalToRemoteSyncer::DidUploadNewFile(
   SyncCompleted(token.Pass(), status);
 }
 
-void LocalToRemoteSyncer::CreateRemoteFolder(
-    scoped_ptr<SyncTaskToken> token) {
+void LocalToRemoteSyncer::CreateRemoteFolder(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
   base::FilePath title = storage::VirtualPath::BaseName(target_path_);
