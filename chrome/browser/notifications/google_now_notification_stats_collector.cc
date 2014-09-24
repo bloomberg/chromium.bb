@@ -8,13 +8,13 @@
 
 #include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/message_center/notification.h"
 
 namespace {
-const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
 const int kNotificationsMaxCount = 20;
 }
 
@@ -57,7 +57,8 @@ bool GoogleNowNotificationStatsCollector::IsNotificationIdForGoogleNow(
     isGoogleNowNotification =
         ((notification->notifier_id().type ==
               message_center::NotifierId::APPLICATION) &&
-        (notification->notifier_id().id == kChromeNowExtensionID));
+        (notification->notifier_id().id ==
+              ExtensionWelcomeNotification::kChromeNowExtensionID));
   }
   return isGoogleNowNotification;
 }
@@ -70,7 +71,8 @@ int GoogleNowNotificationStatsCollector::CountVisibleGoogleNowNotifications() {
   for (Notifications::iterator iter = visible_notifications.begin();
       iter != visible_notifications.end();
       ++iter) {
-    if ((*iter)->notifier_id().id == kChromeNowExtensionID)
+    if ((*iter)->notifier_id().id ==
+            ExtensionWelcomeNotification::kChromeNowExtensionID)
       google_now_notification_count++;
   }
   return google_now_notification_count;

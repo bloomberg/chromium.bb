@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/api/notification_provider/notification_provider_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/extension_welcome_notification.h"
+#include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 #include "chrome/browser/notifications/fullscreen_notification_blocker.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/notification.h"
@@ -122,7 +124,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   if (Update(notification, profile))
     return;
 
-  DesktopNotificationServiceFactory::GetForProfile(profile)->
+  ExtensionWelcomeNotificationFactory::GetForBrowserContext(profile)->
       ShowWelcomeNotificationIfNecessary(notification);
 
   // WARNING: You MUST update the message center via the notification within a

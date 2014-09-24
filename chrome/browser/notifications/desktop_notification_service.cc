@@ -55,8 +55,6 @@ using message_center::NotifierId;
 
 namespace {
 
-const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
-
 void CancelNotification(const std::string& id) {
   g_browser_process->notification_ui_manager()->CancelById(id);
 }
@@ -74,7 +72,6 @@ void DesktopNotificationService::RegisterProfilePrefs(
   registry->RegisterListPref(
       prefs::kMessageCenterDisabledSystemComponentIds,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
 }
 
 // static
@@ -268,19 +265,6 @@ void DesktopNotificationService::SetNotifierEnabled(
     list->AppendIfNotPresent(id.release());
   } else {
     list->Remove(*id, NULL);
-  }
-}
-
-void DesktopNotificationService::ShowWelcomeNotificationIfNecessary(
-    const Notification& notification) {
-  if (!chrome_now_welcome_notification_) {
-    chrome_now_welcome_notification_ =
-        ExtensionWelcomeNotification::Create(kChromeNowExtensionID, profile_);
-  }
-
-  if (chrome_now_welcome_notification_) {
-    chrome_now_welcome_notification_->ShowWelcomeNotificationIfNecessary(
-        notification);
   }
 }
 

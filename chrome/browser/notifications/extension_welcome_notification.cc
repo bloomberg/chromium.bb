@@ -27,6 +27,8 @@
 #include "ui/message_center/notification_types.h"
 
 const int ExtensionWelcomeNotification::kRequestedShowTimeDays = 14;
+const char ExtensionWelcomeNotification::kChromeNowExtensionID[] =
+    "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
 
 namespace {
 
@@ -135,10 +137,10 @@ class DefaultDelegate : public ExtensionWelcomeNotification::Delegate {
 }  // namespace
 
 ExtensionWelcomeNotification::ExtensionWelcomeNotification(
-    const std::string& extension_id,
     Profile* const profile,
     ExtensionWelcomeNotification::Delegate* const delegate)
-    : notifier_id_(message_center::NotifierId::APPLICATION, extension_id),
+    : notifier_id_(message_center::NotifierId::APPLICATION,
+          kChromeNowExtensionID),
       profile_(profile),
       delegate_(delegate) {
   welcome_notification_dismissed_pref_.Init(
@@ -153,19 +155,15 @@ ExtensionWelcomeNotification::ExtensionWelcomeNotification(
 }
 
 // static
-scoped_ptr<ExtensionWelcomeNotification> ExtensionWelcomeNotification::Create(
-    const std::string& extension_id,
+ExtensionWelcomeNotification* ExtensionWelcomeNotification::Create(
     Profile* const profile) {
-  return Create(extension_id, profile, new DefaultDelegate()).Pass();
+  return Create(profile, new DefaultDelegate());
 }
 
 // static
-scoped_ptr<ExtensionWelcomeNotification> ExtensionWelcomeNotification::Create(
-    const std::string& extension_id,
-    Profile* const profile,
-    Delegate* const delegate) {
-  return scoped_ptr<ExtensionWelcomeNotification>(
-      new ExtensionWelcomeNotification(extension_id, profile, delegate)).Pass();
+ExtensionWelcomeNotification* ExtensionWelcomeNotification::Create(
+    Profile* const profile, Delegate* const delegate) {
+  return new ExtensionWelcomeNotification(profile, delegate);
 }
 
 ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {

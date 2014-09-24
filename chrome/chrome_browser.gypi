@@ -1758,10 +1758,6 @@
       'browser/notifications/desktop_notification_service.h',
       'browser/notifications/desktop_notification_service_factory.cc',
       'browser/notifications/desktop_notification_service_factory.h',
-      'browser/notifications/extension_welcome_notification.cc',
-      'browser/notifications/extension_welcome_notification.h',
-      'browser/notifications/google_now_notification_stats_collector.cc',
-      'browser/notifications/google_now_notification_stats_collector.h',
       'browser/notifications/message_center_notification_manager_win.cc',
       'browser/notifications/notification.cc',
       'browser/notifications/notification.h',
@@ -1783,6 +1779,12 @@
     ],
     # Used on non-Android platforms when notifications are enabled.
     'chrome_browser_non_android_notifications_sources': [
+      'browser/notifications/extension_welcome_notification.cc',
+      'browser/notifications/extension_welcome_notification.h',
+      'browser/notifications/extension_welcome_notification_factory.cc',
+      'browser/notifications/extension_welcome_notification_factory.h',
+      'browser/notifications/google_now_notification_stats_collector.cc',
+      'browser/notifications/google_now_notification_stats_collector.h',
       'browser/notifications/message_center_notification_manager.cc',
       'browser/notifications/message_center_notification_manager.h',
       'browser/notifications/message_center_settings_controller.cc',

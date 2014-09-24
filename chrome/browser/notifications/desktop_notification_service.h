@@ -18,7 +18,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/permission_context_base.h"
-#include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
@@ -108,10 +107,6 @@ class DesktopNotificationService : public PermissionContextBase
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled);
 
-  // Adds in a the welcome notification if required for components built
-  // into Chrome that show notifications like Chrome Now.
-  void ShowWelcomeNotificationIfNecessary(const Notification& notification);
-
  private:
   // Returns a display name for an origin in the process id, to be used in
   // permission infobar or on the frame of the notification toast.  Different
@@ -170,9 +165,6 @@ class DesktopNotificationService : public PermissionContextBase
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 #endif
-
-  // Welcome Notification
-  scoped_ptr<ExtensionWelcomeNotification> chrome_now_welcome_notification_;
 
   base::WeakPtrFactory<DesktopNotificationService> weak_factory_;
 

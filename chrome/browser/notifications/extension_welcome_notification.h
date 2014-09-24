@@ -11,6 +11,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace base {
@@ -32,14 +33,16 @@ class PrefRegistrySyncable;
 class Notification;
 class Profile;
 
-// ExtensionWelcomeNotification is a part of DesktopNotificationService and
-// manages showing and hiding a welcome notification for built-in components
-// that show notifications. The Welcome Notification presumes network
-// connectivity since it relies on synced preferences to work. This is generally
-// fine since the current consumers on the welcome notification also presume
-// network connectivity.
+// ExtensionWelcomeNotification is a keyed service which manages showing and
+// hiding a welcome notification for built-in components that show
+// notifications. The Welcome Notification presumes network connectivity since
+// it relies on synced preferences to work. This is generally fine since the
+// current consumers on the welcome notification also presume network
+// connectivity.
+//
 // This class expects to be created and called from the UI thread.
-class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
+class ExtensionWelcomeNotification : public KeyedService,
+                                     public PrefServiceSyncableObserver {
  public:
   // Allows for overriding global calls.
   class Delegate {
@@ -58,22 +61,19 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   // Requested time from showing the welcome notification to expiration.
   static const int kRequestedShowTimeDays;
 
+  // The extension Id associated with the Google Now extension.
+  static const char kChromeNowExtensionID[];
+
   virtual ~ExtensionWelcomeNotification();
 
   // To workaround the lack of delegating constructors prior to C++11, we use
   // static Create methods.
-  // Creates an ExtensionWelcomeNotification owned by the specified
-  // extension id with the default delegate.
-  static scoped_ptr<ExtensionWelcomeNotification> Create(
-      const std::string& extension_id,
-      Profile* const profile);
+  // Creates an ExtensionWelcomeNotification with the default delegate.
+  static ExtensionWelcomeNotification* Create(Profile* const profile);
 
-  // Creates an ExtensionWelcomeNotification owned by the specified
-  // extension id with the specified delegate.
-  static scoped_ptr<ExtensionWelcomeNotification> Create(
-      const std::string& extension_id,
-      Profile* const profile,
-      Delegate* const delegate);
+  // Creates an ExtensionWelcomeNotification with the specified delegate.
+  static ExtensionWelcomeNotification* Create(Profile* const profile,
+                                              Delegate* const delegate);
 
   // PrefServiceSyncableObserver
   virtual void OnIsSyncingChanged() OVERRIDE;
@@ -89,7 +89,6 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   enum PopUpRequest { POP_UP_HIDDEN = 0, POP_UP_SHOWN = 1, };
 
   ExtensionWelcomeNotification(
-      const std::string& extension_id,
       Profile* const profile,
       ExtensionWelcomeNotification::Delegate* const delegate);
 

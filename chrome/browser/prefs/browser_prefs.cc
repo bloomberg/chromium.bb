@@ -43,6 +43,7 @@
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -426,6 +427,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(ENABLE_NOTIFICATIONS) && defined(ENABLE_EXTENSIONS) && \
+    !defined(OS_ANDROID)
+  // The extension welcome notification requires a build that enables extensions
+  // and notifications, and uses the UI message center.
+  ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)

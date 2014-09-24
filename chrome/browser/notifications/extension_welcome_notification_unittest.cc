@@ -23,8 +23,6 @@
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification.h"
 
-const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
-
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter()
@@ -140,8 +138,8 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
         new base::ThreadTaskRunnerHandle(task_runner_));
     profile_.reset(new TestingProfile());
     delegate_ = new WelcomeNotificationDelegate();
-    welcome_notification_ = ExtensionWelcomeNotification::Create(
-        kChromeNowExtensionID, profile_.get(), delegate_);
+    welcome_notification_.reset(
+        ExtensionWelcomeNotification::Create(profile_.get(), delegate_));
   }
 
   virtual void TearDown() {
@@ -166,8 +164,9 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   void ShowChromeNowNotification() const {
     ShowNotification(
         "ChromeNowNotification",
-        message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                   kChromeNowExtensionID));
+        message_center::NotifierId(
+            message_center::NotifierId::APPLICATION,
+            ExtensionWelcomeNotification::kChromeNowExtensionID));
   }
 
   void ShowRegularNotification() const {
