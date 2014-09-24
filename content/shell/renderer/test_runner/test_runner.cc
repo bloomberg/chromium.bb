@@ -2496,6 +2496,8 @@ void TestRunner::OverridePreference(const std::string key,
     prefs->should_respect_image_orientation = value->BooleanValue();
   } else if (key == "WebKitWebAudioEnabled") {
     DCHECK(value->BooleanValue());
+  } else if (key == "WebKitWebSecurityEnabled") {
+    prefs->web_security_enabled = value->BooleanValue();
   } else {
     std::string message("Invalid name for preference: ");
     message.append(key);

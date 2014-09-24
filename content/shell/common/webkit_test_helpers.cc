@@ -47,6 +47,8 @@ void ExportLayoutTestSpecificPreferences(const TestPreferences& from,
   to->allow_file_access_from_file_urls = from.allow_file_access_from_file_urls;
   to->javascript_can_open_windows_automatically =
       from.java_script_can_open_windows_automatically;
+  to->web_security_enabled =
+      from.web_security_enabled;
 }
 
 // Applies settings that differ between layout tests and regular mode. Some

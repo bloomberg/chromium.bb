@@ -49,6 +49,7 @@ void TestPreferences::Reset() {
   hyperlink_auditing_enabled = false;
   should_respect_image_orientation = false;
   asynchronous_spell_checking_enabled = false;
+  web_security_enabled = true;
 }
 
 }  // namespace content
