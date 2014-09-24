@@ -582,6 +582,9 @@ weston_simple_im_LDADD = $(CLIENT_LIBS)
 weston_simple_im_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_info_SOURCES = clients/weston-info.c
+nodist_weston_info_SOURCES =				\
+	protocol/presentation_timing-protocol.c		\
+	protocol/presentation_timing-client-protocol.h
 weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 

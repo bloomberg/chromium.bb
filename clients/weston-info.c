@@ -27,10 +27,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <wayland-client.h>
 
 #include "../shared/os-compatibility.h"
+#include "presentation_timing-client-protocol.h"
+
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
@@ -96,6 +100,13 @@ struct seat_info {
 
 	int32_t repeat_rate;
 	int32_t repeat_delay;
+};
+
+struct presentation_info {
+	struct global_info global;
+	struct presentation *presentation;
+
+	clockid_t clk_id;
 };
 
 struct weston_info {
@@ -554,6 +565,74 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 }
 
 static void
+destroy_presentation_info(void *info)
+{
+	struct presentation_info *prinfo = info;
+
+	presentation_destroy(prinfo->presentation);
+}
+
+static const char *
+clock_name(clockid_t clk_id)
+{
+	static const char *names[] = {
+		[CLOCK_REALTIME] =		"CLOCK_REALTIME",
+		[CLOCK_MONOTONIC] =		"CLOCK_MONOTONIC",
+		[CLOCK_MONOTONIC_RAW] =		"CLOCK_MONOTONIC_RAW",
+		[CLOCK_REALTIME_COARSE] =	"CLOCK_REALTIME_COARSE",
+		[CLOCK_MONOTONIC_COARSE] =	"CLOCK_MONOTONIC_COARSE",
+		[CLOCK_BOOTTIME] =		"CLOCK_BOOTTIME",
+	};
+
+	if (clk_id < 0 || (unsigned)clk_id >= ARRAY_LENGTH(names))
+		return "unknown";
+
+	return names[clk_id];
+}
+
+static void
+print_presentation_info(void *info)
+{
+	struct presentation_info *prinfo = info;
+
+	print_global_info(info);
+
+	printf("\tpresentation clock id: %d (%s)\n",
+		prinfo->clk_id, clock_name(prinfo->clk_id));
+}
+
+static void
+presentation_handle_clock_id(void *data, struct presentation *presentation,
+			     uint32_t clk_id)
+{
+	struct presentation_info *prinfo = data;
+
+	prinfo->clk_id = clk_id;
+}
+
+static const struct presentation_listener presentation_listener = {
+	presentation_handle_clock_id
+};
+
+static void
+add_presentation_info(struct weston_info *info, uint32_t id, uint32_t version)
+{
+	struct presentation_info *prinfo = xzalloc(sizeof *prinfo);
+
+	init_global_info(info, &prinfo->global, id, "presentation", version);
+	prinfo->global.print = print_presentation_info;
+	prinfo->global.destroy = destroy_presentation_info;
+
+	prinfo->clk_id = -1;
+	prinfo->presentation = wl_registry_bind(info->registry, id,
+						&presentation_interface, 1);
+	presentation_add_listener(prinfo->presentation, &presentation_listener,
+				  prinfo);
+
+	info->roundtrip_needed = true;
+}
+
+static void
 destroy_global_info(void *data)
 {
 }
@@ -581,6 +660,8 @@ global_handler(void *data, struct wl_registry *registry, uint32_t id,
 		add_shm_info(info, id, version);
 	else if (!strcmp(interface, "wl_output"))
 		add_output_info(info, id, version);
+	else if (!strcmp(interface, "presentation"))
+		add_presentation_info(info, id, version);
 	else
 		add_global_info(info, id, interface, version);
 }
