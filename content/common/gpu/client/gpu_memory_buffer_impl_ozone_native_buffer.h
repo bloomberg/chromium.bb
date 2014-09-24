@@ -16,15 +16,17 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
                                        unsigned internalformat);
   virtual ~GpuMemoryBufferImplOzoneNativeBuffer();
 
+  // Create an ozone native buffer backed GPU memory buffer with |size| and
+  // |internalformat| for |usage| by current process using |client_id|.
   static void Create(const gfx::Size& size,
                      unsigned internalformat,
                      unsigned usage,
                      int client_id,
                      const CreationCallback& callback);
 
-  // Allocates an Ozone native buffer backed GPU memory buffer with |size| and
-  // |internalformat| with usage |usage| for use by |child_id|.
-  static void AllocateOzoneNativeBufferForChildId(
+  // Allocate an ozone native buffer backed GPU memory buffer with |size| and
+  // |internalformat| for |usage| by a child process using |child_client_id|.
+  static void AllocateOzoneNativeBufferForChildProcess(
       const gfx::Size& size,
       unsigned internalformat,
       unsigned usage,
@@ -44,10 +46,6 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
 
  private:
-  static void OnGpuMemoryBufferCreated(
-      const AllocationCallback& callback,
-      const gfx::GpuMemoryBufferHandle& handle);
-
   gfx::GpuMemoryBufferId id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplOzoneNativeBuffer);

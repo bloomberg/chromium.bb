@@ -14,13 +14,29 @@ namespace {
 
 base::StaticAtomicSequenceNumber g_next_buffer_id;
 
-void AllocatedOzoneNativeBuffer(
+void GpuMemoryBufferCreated(
     const gfx::Size& size,
     unsigned internalformat,
     const GpuMemoryBufferImpl::CreationCallback& callback,
     const gfx::GpuMemoryBufferHandle& handle) {
-  callback.Run(
-      GpuMemoryBufferImpl::CreateFromHandle(handle, size, internalformat));
+  DCHECK_EQ(gfx::OZONE_NATIVE_BUFFER, handle.type);
+
+  scoped_ptr<GpuMemoryBufferImplOzoneNativeBuffer> buffer(
+      new GpuMemoryBufferImplOzoneNativeBuffer(size, internalformat));
+  if (!buffer->InitializeFromHandle(handle)) {
+    callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
+    return;
+  }
+
+  callback.Run(buffer.PassAs<GpuMemoryBufferImpl>());
+}
+
+void GpuMemoryBufferCreatedForChildProcess(
+    const GpuMemoryBufferImpl::AllocationCallback& callback,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  DCHECK_EQ(gfx::OZONE_NATIVE_BUFFER, handle.type);
+
+  callback.Run(handle);
 }
 
 }  // namespace
@@ -50,11 +66,12 @@ void GpuMemoryBufferImplOzoneNativeBuffer::Create(
       size,
       internalformat,
       usage,
-      base::Bind(&AllocatedOzoneNativeBuffer, size, internalformat, callback));
+      base::Bind(&GpuMemoryBufferCreated, size, internalformat, callback));
 }
 
 // static
-void GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
+void
+GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildProcess(
     const gfx::Size& size,
     unsigned internalformat,
     unsigned usage,
@@ -69,7 +86,7 @@ void GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
       size,
       internalformat,
       usage,
-      base::Bind(&OnGpuMemoryBufferCreated, callback));
+      base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
 }
 
 // static
@@ -126,12 +143,6 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativeBuffer::GetHandle()
   handle.type = gfx::OZONE_NATIVE_BUFFER;
   handle.global_id = id_;
   return handle;
-}
-
-void GpuMemoryBufferImplOzoneNativeBuffer::OnGpuMemoryBufferCreated(
-    const AllocationCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  callback.Run(handle);
 }
 
 }  // namespace content

@@ -42,8 +42,9 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     const AllocationCallback& callback) {
   if (GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
           internalformat, usage)) {
-    GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
-        size, internalformat, usage, child_client_id, callback);
+    GpuMemoryBufferImplOzoneNativeBuffer::
+        AllocateOzoneNativeBufferForChildProcess(
+            size, internalformat, usage, child_client_id, callback);
     return;
   }
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
