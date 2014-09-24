@@ -194,10 +194,12 @@ TEST_F(ChannelTest, CloseBeforeRun) {
       base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
+  scoped_refptr<ChannelEndpoint> channel_endpoint;
+  scoped_refptr<MessagePipe> mp(
+      MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  MessageInTransit::EndpointId local_id = channel()->AttachEndpoint(
-      make_scoped_refptr(new ChannelEndpoint(mp.get(), 1)));
+  MessageInTransit::EndpointId local_id =
+      channel()->AttachEndpoint(channel_endpoint);
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
   mp->Close(0);
@@ -232,10 +234,12 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
       base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
+  scoped_refptr<ChannelEndpoint> channel_endpoint;
+  scoped_refptr<MessagePipe> mp(
+      MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  MessageInTransit::EndpointId local_id = channel()->AttachEndpoint(
-      make_scoped_refptr(new ChannelEndpoint(mp.get(), 1)));
+  MessageInTransit::EndpointId local_id =
+      channel()->AttachEndpoint(channel_endpoint);
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
   // TODO(vtl): Currently, we always "expect" a |RunMessagePipeEndpoint()| after
@@ -282,10 +286,12 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
       base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
+  scoped_refptr<ChannelEndpoint> channel_endpoint;
+  scoped_refptr<MessagePipe> mp(
+      MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  MessageInTransit::EndpointId local_id = channel()->AttachEndpoint(
-      make_scoped_refptr(new ChannelEndpoint(mp.get(), 1)));
+  MessageInTransit::EndpointId local_id =
+      channel()->AttachEndpoint(channel_endpoint);
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
   EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,

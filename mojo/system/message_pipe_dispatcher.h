@@ -5,8 +5,6 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_DISPATCHER_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_DISPATCHER_H_
 
-#include <utility>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/dispatcher.h"
@@ -16,6 +14,7 @@
 namespace mojo {
 namespace system {
 
+class ChannelEndpoint;
 class MessagePipe;
 class MessagePipeDispatcherTransport;
 
@@ -51,9 +50,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // the message pipe, port 0).
   // TODO(vtl): This currently uses |kDefaultCreateOptions|, which is okay since
   // there aren't any options, but eventually options should be plumbed through.
-  static std::pair<scoped_refptr<MessagePipeDispatcher>,
-                   scoped_refptr<MessagePipe> >
-      CreateRemoteMessagePipe();
+  static scoped_refptr<MessagePipeDispatcher> CreateRemoteMessagePipe(
+      scoped_refptr<ChannelEndpoint>* channel_endpoint);
 
   // The "opposite" of |SerializeAndClose()|. (Typically this is called by
   // |Dispatcher::Deserialize()|.)

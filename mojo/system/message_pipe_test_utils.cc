@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
+#include "mojo/system/channel.h"
 #include "mojo/system/channel_endpoint.h"
+#include "mojo/system/message_pipe.h"
 #include "mojo/system/waiter.h"
 
 namespace mojo {
@@ -40,14 +42,14 @@ ChannelThread::~ChannelThread() {
 }
 
 void ChannelThread::Start(embedder::ScopedPlatformHandle platform_handle,
-                          scoped_refptr<MessagePipe> message_pipe) {
+                          scoped_refptr<ChannelEndpoint> channel_endpoint) {
   test_io_thread_.Start();
   test_io_thread_.PostTaskAndWait(
       FROM_HERE,
       base::Bind(&ChannelThread::InitChannelOnIOThread,
                  base::Unretained(this),
                  base::Passed(&platform_handle),
-                 message_pipe));
+                 channel_endpoint));
 }
 
 void ChannelThread::Stop() {
@@ -68,7 +70,7 @@ void ChannelThread::Stop() {
 
 void ChannelThread::InitChannelOnIOThread(
     embedder::ScopedPlatformHandle platform_handle,
-    scoped_refptr<MessagePipe> message_pipe) {
+    scoped_refptr<ChannelEndpoint> channel_endpoint) {
   CHECK_EQ(base::MessageLoop::current(), test_io_thread_.message_loop());
   CHECK(platform_handle.is_valid());
 
@@ -83,8 +85,7 @@ void ChannelThread::InitChannelOnIOThread(
   // receive/process messages (which it can do as soon as it's hooked up to
   // the IO thread message loop, and that message loop runs) before the
   // message pipe endpoint is attached.
-  CHECK_EQ(channel_->AttachEndpoint(
-               make_scoped_refptr(new ChannelEndpoint(message_pipe.get(), 1))),
+  CHECK_EQ(channel_->AttachEndpoint(channel_endpoint),
            Channel::kBootstrapEndpointId);
   CHECK(channel_->RunMessagePipeEndpoint(Channel::kBootstrapEndpointId,
                                          Channel::kBootstrapEndpointId));
@@ -104,8 +105,8 @@ MultiprocessMessagePipeTestBase::MultiprocessMessagePipeTestBase()
 MultiprocessMessagePipeTestBase::~MultiprocessMessagePipeTestBase() {
 }
 
-void MultiprocessMessagePipeTestBase::Init(scoped_refptr<MessagePipe> mp) {
-  channel_thread_.Start(helper_.server_platform_handle.Pass(), mp);
+void MultiprocessMessagePipeTestBase::Init(scoped_refptr<ChannelEndpoint> ep) {
+  channel_thread_.Start(helper_.server_platform_handle.Pass(), ep);
 }
 #endif
 

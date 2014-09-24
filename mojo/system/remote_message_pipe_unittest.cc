@@ -60,31 +60,29 @@ class RemoteMessagePipeTest : public testing::Test {
   }
 
  protected:
-  // This connects MP 0, port 1 and MP 1, port 0 (leaving MP 0, port 0 and MP 1,
-  // port 1 as the user-visible endpoints) to channel 0 and 1, respectively. MP
-  // 0, port 1 and MP 1, port 0 must have |ProxyMessagePipeEndpoint|s.
-  void ConnectMessagePipes(scoped_refptr<MessagePipe> mp0,
-                           scoped_refptr<MessagePipe> mp1) {
+  // This connects the two given |ChannelEndpoint|s.
+  void ConnectChannelEndpoints(scoped_refptr<ChannelEndpoint> ep0,
+                               scoped_refptr<ChannelEndpoint> ep1) {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
-        base::Bind(&RemoteMessagePipeTest::ConnectMessagePipesOnIOThread,
+        base::Bind(&RemoteMessagePipeTest::ConnectChannelEndpointsOnIOThread,
                    base::Unretained(this),
-                   mp0,
-                   mp1));
+                   ep0,
+                   ep1));
   }
 
-  // This connects |mp|'s port |channel_index ^ 1| to channel |channel_index|.
-  // It assumes/requires that this is the bootstrap case, i.e., that the
-  // endpoint IDs are both/will both be |Channel::kBootstrapEndpointId|. This
-  // returns *without* waiting for it to finish connecting.
-  void BootstrapMessagePipeNoWait(unsigned channel_index,
-                                  scoped_refptr<MessagePipe> mp) {
+  // This bootstraps |ep| on |channels_[channel_index]|. It assumes/requires
+  // that this is the bootstrap case, i.e., that the endpoint IDs are both/will
+  // both be |Channel::kBootstrapEndpointId|. This returns *without* waiting for
+  // it to finish connecting.
+  void BootstrapChannelEndpointNoWait(unsigned channel_index,
+                                      scoped_refptr<ChannelEndpoint> ep) {
     io_thread_.PostTask(
         FROM_HERE,
-        base::Bind(&RemoteMessagePipeTest::BootstrapMessagePipeOnIOThread,
+        base::Bind(&RemoteMessagePipeTest::BootstrapChannelEndpointOnIOThread,
                    base::Unretained(this),
                    channel_index,
-                   mp));
+                   ep));
   }
 
   void RestoreInitialState() {
@@ -129,8 +127,8 @@ class RemoteMessagePipeTest : public testing::Test {
         RawChannel::Create(platform_handles_[channel_index].Pass())));
   }
 
-  void ConnectMessagePipesOnIOThread(scoped_refptr<MessagePipe> mp0,
-                                     scoped_refptr<MessagePipe> mp1) {
+  void ConnectChannelEndpointsOnIOThread(scoped_refptr<ChannelEndpoint> ep0,
+                                         scoped_refptr<ChannelEndpoint> ep1) {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     if (!channels_[0].get())
@@ -138,26 +136,21 @@ class RemoteMessagePipeTest : public testing::Test {
     if (!channels_[1].get())
       CreateAndInitChannel(1);
 
-    MessageInTransit::EndpointId local_id0 = channels_[0]->AttachEndpoint(
-        make_scoped_refptr(new ChannelEndpoint(mp0.get(), 1)));
-    MessageInTransit::EndpointId local_id1 = channels_[1]->AttachEndpoint(
-        make_scoped_refptr(new ChannelEndpoint(mp1.get(), 0)));
+    MessageInTransit::EndpointId local_id0 = channels_[0]->AttachEndpoint(ep0);
+    MessageInTransit::EndpointId local_id1 = channels_[1]->AttachEndpoint(ep1);
 
     CHECK(channels_[0]->RunMessagePipeEndpoint(local_id0, local_id1));
     CHECK(channels_[1]->RunMessagePipeEndpoint(local_id1, local_id0));
   }
 
-  void BootstrapMessagePipeOnIOThread(unsigned channel_index,
-                                      scoped_refptr<MessagePipe> mp) {
+  void BootstrapChannelEndpointOnIOThread(unsigned channel_index,
+                                          scoped_refptr<ChannelEndpoint> ep) {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
     CHECK(channel_index == 0 || channel_index == 1);
 
-    unsigned port = channel_index ^ 1u;
-
     CreateAndInitChannel(channel_index);
     MessageInTransit::EndpointId endpoint_id =
-        channels_[channel_index]->AttachEndpoint(
-            make_scoped_refptr(new ChannelEndpoint(mp.get(), port)));
+        channels_[channel_index]->AttachEndpoint(ep);
     if (endpoint_id == MessageInTransit::kInvalidEndpointId)
       return;
 
@@ -194,9 +187,11 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   // connected to MP 1, port 0, which will be attached to channel 1. This leaves
   // MP 0, port 0 and MP 1, port 1 as the "user-facing" endpoints.
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp0, mp1);
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+  ConnectChannelEndpoints(ep0, ep1);
 
   // Write in one direction: MP 0, port 0 -> ... -> MP 1, port 1.
 
@@ -303,15 +298,19 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   // Connect message pipes as in the |Basic| test.
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp0, mp1);
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+  ConnectChannelEndpoints(ep0, ep1);
 
   // Now put another message pipe on the channel.
 
-  scoped_refptr<MessagePipe> mp2(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp3(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp2, mp3);
+  scoped_refptr<ChannelEndpoint> ep2;
+  scoped_refptr<MessagePipe> mp2(MessagePipe::CreateLocalProxy(&ep2));
+  scoped_refptr<ChannelEndpoint> ep3;
+  scoped_refptr<MessagePipe> mp3(MessagePipe::CreateProxyLocal(&ep3));
+  ConnectChannelEndpoints(ep2, ep3);
 
   // Write: MP 2, port 0 -> MP 3, port 1.
 
@@ -450,7 +449,8 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   // connected to MP 1, port 0, which will be attached to channel 1. This leaves
   // MP 0, port 0 and MP 1, port 1 as the "user-facing" endpoints.
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
 
   // Write to MP 0, port 0.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -460,12 +460,13 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
                               NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  BootstrapMessagePipeNoWait(0, mp0);
+  BootstrapChannelEndpointNoWait(0, ep0);
 
   // Close MP 0, port 0 before channel 1 is even connected.
   mp0->Close(0);
 
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
 
   // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
   // it later, it might already be readable.)
@@ -473,7 +474,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   ASSERT_EQ(MOJO_RESULT_OK,
             mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
-  BootstrapMessagePipeNoWait(1, mp1);
+  BootstrapChannelEndpointNoWait(1, ep1);
 
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -508,9 +509,11 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   HandleSignalsState hss;
   uint32_t context = 0;
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp0, mp1);
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+  ConnectChannelEndpoints(ep0, ep1);
 
   // We'll try to pass this dispatcher.
   scoped_refptr<MessagePipeDispatcher> dispatcher(
@@ -676,9 +679,11 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   HandleSignalsState hss;
   uint32_t context = 0;
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp0, mp1);
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+  ConnectChannelEndpoints(ep0, ep1);
 
   // We'll try to pass this dispatcher.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
@@ -810,9 +815,11 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   uint32_t context = 0;
   HandleSignalsState hss;
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp0, mp1);
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+  ConnectChannelEndpoints(ep0, ep1);
 
   base::FilePath unused;
   base::ScopedFILE fp(
@@ -913,11 +920,13 @@ TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
 
   for (unsigned i = 0; i < 256; i++) {
     DVLOG(2) << "---------------------------------------- " << i;
-    scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-    BootstrapMessagePipeNoWait(0, mp0);
+    scoped_refptr<ChannelEndpoint> ep0;
+    scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+    BootstrapChannelEndpointNoWait(0, ep0);
 
-    scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-    BootstrapMessagePipeNoWait(1, mp1);
+    scoped_refptr<ChannelEndpoint> ep1;
+    scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+    BootstrapChannelEndpointNoWait(1, ep1);
 
     if (i & 1u) {
       io_thread()->task_runner()->PostTask(
@@ -951,9 +960,11 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   HandleSignalsState hss;
   uint32_t context = 0;
 
-  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
-  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
-  ConnectMessagePipes(mp0, mp1);
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+  ConnectChannelEndpoints(ep0, ep1);
 
   // We'll try to pass this dispatcher.
   scoped_refptr<MessagePipeDispatcher> dispatcher(

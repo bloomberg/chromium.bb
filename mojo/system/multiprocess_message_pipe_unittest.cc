@@ -17,7 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "build/build_config.h"              // TODO(vtl): Remove this.
+#include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/common/test/test_utils.h"
 #include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/embedder/scoped_platform_handle.h"
@@ -48,8 +48,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  channel_thread.Start(client_platform_handle.Pass(), mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  channel_thread.Start(client_platform_handle.Pass(), ep);
 
   const std::string quitquitquit("quitquitquit");
   int rv = 0;
@@ -103,8 +104,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
 TEST_F(MultiprocessMessagePipeTest, Basic) {
   helper()->StartChild("EchoEcho");
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  Init(mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  Init(ep);
 
   std::string hello("hello");
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -147,8 +149,9 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
 TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
   helper()->StartChild("EchoEcho");
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  Init(mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  Init(ep);
 
   static const size_t kNumMessages = 1001;
   for (size_t i = 0; i < kNumMessages; i++) {
@@ -213,8 +216,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  channel_thread.Start(client_platform_handle.Pass(), mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  channel_thread.Start(client_platform_handle.Pass(), ep);
 
   // Wait for the first message from our parent.
   HandleSignalsState hss;
@@ -312,8 +316,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
 TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   helper()->StartChild("CheckSharedBuffer");
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  Init(mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  Init(ep);
 
   // Make a shared buffer.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
@@ -407,8 +412,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  channel_thread.Start(client_platform_handle.Pass(), mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  channel_thread.Start(client_platform_handle.Pass(), ep);
 
   HandleSignalsState hss;
   CHECK_EQ(test::WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss),
@@ -465,8 +471,9 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
 
   helper()->StartChild("CheckPlatformHandleFile");
 
-  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
-  Init(mp);
+  scoped_refptr<ChannelEndpoint> ep;
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
+  Init(ep);
 
   base::FilePath unused;
   base::ScopedFILE fp(

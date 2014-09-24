@@ -14,14 +14,20 @@
 namespace mojo {
 namespace system {
 
-ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint()
-    : is_running_(false), is_peer_open_(true) {
+ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
+    ChannelEndpoint* channel_endpoint)
+    : channel_endpoint_(channel_endpoint),
+      is_running_(false),
+      is_peer_open_(true) {
 }
 
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
+    ChannelEndpoint* channel_endpoint,
     LocalMessagePipeEndpoint* local_message_pipe_endpoint,
     bool is_peer_open)
-    : is_running_(false), is_peer_open_(is_peer_open) {
+    : channel_endpoint_(channel_endpoint),
+      is_running_(false),
+      is_peer_open_(is_peer_open) {
   paused_message_queue_.Swap(local_message_pipe_endpoint->message_queue());
   local_message_pipe_endpoint->Close();
 }
@@ -70,12 +76,6 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
   } else {
     paused_message_queue_.AddMessage(message.Pass());
   }
-}
-
-void ProxyMessagePipeEndpoint::Attach(ChannelEndpoint* channel_endpoint) {
-  DCHECK(channel_endpoint);
-  DCHECK(!is_attached());
-  channel_endpoint_ = channel_endpoint;
 }
 
 bool ProxyMessagePipeEndpoint::Run() {

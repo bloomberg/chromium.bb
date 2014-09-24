@@ -15,31 +15,36 @@
 namespace mojo {
 namespace system {
 
-MessagePipe::MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint0,
-                         scoped_ptr<MessagePipeEndpoint> endpoint1) {
-  endpoints_[0].reset(endpoint0.release());
-  endpoints_[1].reset(endpoint1.release());
-}
-
 // static
 MessagePipe* MessagePipe::CreateLocalLocal() {
-  return new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint));
+  MessagePipe* message_pipe = new MessagePipe();
+  message_pipe->endpoints_[0].reset(new LocalMessagePipeEndpoint());
+  message_pipe->endpoints_[1].reset(new LocalMessagePipeEndpoint());
+  return message_pipe;
 }
 
 // static
-MessagePipe* MessagePipe::CreateLocalProxy() {
-  return new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint));
+MessagePipe* MessagePipe::CreateLocalProxy(
+    scoped_refptr<ChannelEndpoint>* channel_endpoint) {
+  DCHECK(!channel_endpoint->get());  // Not technically wrong, but unlikely.
+  MessagePipe* message_pipe = new MessagePipe();
+  message_pipe->endpoints_[0].reset(new LocalMessagePipeEndpoint());
+  *channel_endpoint = new ChannelEndpoint(message_pipe, 1);
+  message_pipe->endpoints_[1].reset(
+      new ProxyMessagePipeEndpoint(channel_endpoint->get()));
+  return message_pipe;
 }
 
 // static
-MessagePipe* MessagePipe::CreateProxyLocal() {
-  return new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint));
+MessagePipe* MessagePipe::CreateProxyLocal(
+    scoped_refptr<ChannelEndpoint>* channel_endpoint) {
+  DCHECK(!channel_endpoint->get());  // Not technically wrong, but unlikely.
+  MessagePipe* message_pipe = new MessagePipe();
+  *channel_endpoint = new ChannelEndpoint(message_pipe, 0);
+  message_pipe->endpoints_[0].reset(
+      new ProxyMessagePipeEndpoint(channel_endpoint->get()));
+  message_pipe->endpoints_[1].reset(new LocalMessagePipeEndpoint());
+  return message_pipe;
 }
 
 // static
@@ -165,13 +170,16 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
       << "Direct message pipe passing across multiple channels not yet "
          "implemented; will proxy";
 
+  scoped_refptr<ChannelEndpoint> channel_endpoint(
+      new ChannelEndpoint(this, port));
   scoped_ptr<MessagePipeEndpoint> replacement_endpoint(
       new ProxyMessagePipeEndpoint(
+          channel_endpoint.get(),
           static_cast<LocalMessagePipeEndpoint*>(endpoints_[port].get()),
           is_peer_open));
   endpoints_[port].swap(replacement_endpoint);
 
-  return make_scoped_refptr(new ChannelEndpoint(this, port));
+  return channel_endpoint;
 }
 
 MojoResult MessagePipe::EnqueueMessage(unsigned port,
@@ -188,7 +196,6 @@ bool MessagePipe::Attach(unsigned port, ChannelEndpoint* channel_endpoint) {
     return false;
 
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeProxy);
-  endpoints_[port]->Attach(channel_endpoint);
   return true;
 }
 
@@ -215,6 +222,9 @@ void MessagePipe::OnRemove(unsigned port) {
       endpoints_[destination_port].reset();
   }
   endpoints_[port].reset();
+}
+
+MessagePipe::MessagePipe() {
 }
 
 MessagePipe::~MessagePipe() {

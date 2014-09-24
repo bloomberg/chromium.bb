@@ -34,22 +34,23 @@ class Waiter;
 class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
     : public base::RefCountedThreadSafe<MessagePipe> {
  public:
-  MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint0,
-              scoped_ptr<MessagePipeEndpoint> endpoint1);
-
   // Creates a |MessagePipe| with two new |LocalMessagePipeEndpoint|s.
   static MessagePipe* CreateLocalLocal();
 
   // Creates a |MessagePipe| with a |LocalMessagePipeEndpoint| on port 0 and a
-  // |ProxyMessagePipeEndpoint| on port 1.
-  static MessagePipe* CreateLocalProxy();
+  // |ProxyMessagePipeEndpoint| on port 1. |*channel_endpoint| is set to the
+  // (newly-created) |ChannelEndpoint| for the latter.
+  static MessagePipe* CreateLocalProxy(
+      scoped_refptr<ChannelEndpoint>* channel_endpoint);
 
   // Creates a |MessagePipe| with a |ProxyMessagePipeEndpoint| on port 0 and a
-  // |LocalMessagePipeEndpoint| on port 1.
+  // |LocalMessagePipeEndpoint| on port 1. |*channel_endpoint| is set to the
+  // (newly-created) |ChannelEndpoint| for the former.
   // Note: This is really only needed in tests (outside of tests, this
   // configuration arises from a local message pipe having its port 0
   // "converted" using |ConvertLocalToProxy()|).
-  static MessagePipe* CreateProxyLocal();
+  static MessagePipe* CreateProxyLocal(
+      scoped_refptr<ChannelEndpoint>* channel_endpoint);
 
   // Gets the other port number (i.e., 0 -> 1, 1 -> 0).
   static unsigned GetPeerPort(unsigned port);
@@ -95,11 +96,14 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
                             scoped_ptr<MessageInTransit> message);
 
   // These are used by |Channel|.
+  // TODO(vtl): Remove |Attach()|.
   bool Attach(unsigned port, ChannelEndpoint* channel_endpoint);
   void Run(unsigned port);
   void OnRemove(unsigned port);
 
  private:
+  MessagePipe();
+
   friend class base::RefCountedThreadSafe<MessagePipe>;
   virtual ~MessagePipe();
 

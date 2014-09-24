@@ -83,14 +83,15 @@ Dispatcher::Type MessagePipeDispatcher::GetType() const {
 }
 
 // static
-std::pair<scoped_refptr<MessagePipeDispatcher>, scoped_refptr<MessagePipe> >
-MessagePipeDispatcher::CreateRemoteMessagePipe() {
-  scoped_refptr<MessagePipe> message_pipe(MessagePipe::CreateLocalProxy());
+scoped_refptr<MessagePipeDispatcher>
+MessagePipeDispatcher::CreateRemoteMessagePipe(
+    scoped_refptr<ChannelEndpoint>* channel_endpoint) {
+  scoped_refptr<MessagePipe> message_pipe(
+      MessagePipe::CreateLocalProxy(channel_endpoint));
   scoped_refptr<MessagePipeDispatcher> dispatcher(
       new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   dispatcher->Init(message_pipe, 0);
-
-  return std::make_pair(dispatcher, message_pipe);
+  return dispatcher;
 }
 
 // static
@@ -103,8 +104,9 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     return scoped_refptr<MessagePipeDispatcher>();
   }
 
-  std::pair<scoped_refptr<MessagePipeDispatcher>, scoped_refptr<MessagePipe> >
-      remote_message_pipe = CreateRemoteMessagePipe();
+  scoped_refptr<ChannelEndpoint> channel_endpoint;
+  scoped_refptr<MessagePipeDispatcher> dispatcher =
+      CreateRemoteMessagePipe(&channel_endpoint);
 
   MessageInTransit::EndpointId remote_id =
       static_cast<const SerializedMessagePipeDispatcher*>(source)->endpoint_id;
@@ -117,8 +119,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     return scoped_refptr<MessagePipeDispatcher>();
   }
   MessageInTransit::EndpointId local_id =
-      channel->AttachEndpoint(make_scoped_refptr(
-          new ChannelEndpoint(remote_message_pipe.second.get(), 1)));
+      channel->AttachEndpoint(channel_endpoint);
   if (local_id == MessageInTransit::kInvalidEndpointId) {
     LOG(ERROR) << "Failed to deserialize message pipe dispatcher (failed to "
                   "attach; remote ID = " << remote_id << ")";
@@ -135,7 +136,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
 
   // TODO(vtl): FIXME -- Need some error handling here.
   channel->RunRemoteMessagePipeEndpoint(local_id, remote_id);
-  return remote_message_pipe.first;
+  return dispatcher;
 }
 
 MessagePipeDispatcher::~MessagePipeDispatcher() {
