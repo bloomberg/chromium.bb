@@ -1082,16 +1082,6 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request) {
   // Start monitoring the devices when doing the first enumeration.
   StartMonitoring();
 
-#if defined(OS_CHROMEOS)
-  if (!has_checked_keyboard_mic_) {
-    has_checked_keyboard_mic_ = true;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&MediaStreamManager::CheckKeyboardMicOnUIThread,
-                   base::Unretained(this)));
-  }
-#endif
-
   // Start enumeration for devices of all requested device types.
   const MediaStreamType streams[] = { request->audio_type(),
                                       request->video_type() };
@@ -1233,6 +1223,10 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
                           MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
     return;
   }
+
+#if defined(OS_CHROMEOS)
+  EnsureKeyboardMicChecked();
+#endif
 
   if (!is_web_contents_capture && !is_screen_capture) {
     if (EnumerationRequired(&audio_enumeration_cache_, audio_type) ||
@@ -2098,6 +2092,17 @@ void MediaStreamManager::OnMediaStreamUIWindowId(MediaStreamType video_type,
 }
 
 #if defined(OS_CHROMEOS)
+void MediaStreamManager::EnsureKeyboardMicChecked() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!has_checked_keyboard_mic_) {
+    has_checked_keyboard_mic_ = true;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MediaStreamManager::CheckKeyboardMicOnUIThread,
+                   base::Unretained(this)));
+  }
+}
+
 void MediaStreamManager::CheckKeyboardMicOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

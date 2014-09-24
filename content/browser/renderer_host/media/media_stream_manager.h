@@ -364,6 +364,11 @@ class CONTENT_EXPORT MediaStreamManager
                                gfx::NativeViewId window_id);
 
 #if defined(OS_CHROMEOS)
+  // Ensures that we have checked for presence of a keyboard mic. This is only
+  // done once. This function should be called before posting a request on the
+  // UI thread.
+  void EnsureKeyboardMicChecked();
+
   // Checks if the system has a keyboard mic, and if so, inform the audio
   // manager via SetKeyboardMicOnDeviceThread().
   void CheckKeyboardMicOnUIThread();
