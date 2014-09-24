@@ -277,19 +277,36 @@ except ImportError:
   class BlobReferenceProperty(object):
     pass
 
-  class FakeTaskQueue(object):
+  # Executes any queued tasks synchronously as they are queued.
+  _task_runner = None
+
+  def SetTaskRunnerForTest(task_runner):
+    global _task_runner
+    _task_runner = task_runner
+
+  class SynchronousTaskQueue(object):
     class Task(object):
       def __init__(self, url=None, params={}):
-        pass
+        self.url_ = url
+        self.params_ = params
+
+      def GetUrl(self):
+        return self.url_
+
+      def GetCommit(self):
+        return self.params_.get('commit')
 
     class Queue(object):
       def __init__(self, name='default'):
         pass
 
       def add(self, task):
+        global _task_runner
+        if _task_runner:
+          _task_runner(task.GetUrl(), task.GetCommit())
         return _RPC()
 
       def purge(self):
         return _RPC()
 
-  taskqueue = FakeTaskQueue()
+  taskqueue = SynchronousTaskQueue()

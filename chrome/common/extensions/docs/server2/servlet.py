@@ -33,8 +33,11 @@ class Request(object):
     self.arguments = arguments
 
   @staticmethod
-  def ForTest(path, host=None, headers=None):
-    return Request(path, host or 'http://developer.chrome.com', headers or {})
+  def ForTest(path, host=None, headers=None, arguments=None):
+    return Request(path,
+                   host or 'http://developer.chrome.com',
+                   headers or {},
+                   arguments or {})
 
   def __repr__(self):
     return 'Request(path=%s, host=%s, headers=%s)' % (

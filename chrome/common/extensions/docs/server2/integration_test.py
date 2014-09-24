@@ -16,6 +16,7 @@ import sys
 import time
 import unittest
 
+from appengine_wrappers import SetTaskRunnerForTest
 from branch_utility import BranchUtility
 from chroot_file_system import ChrootFileSystem
 from extensions_paths import (
@@ -91,6 +92,13 @@ class IntegrationTest(unittest.TestCase):
     '''
     if _EXPLICIT_TEST_FILES is not None:
       return
+
+
+    def task_runner(url, commit=None):
+      arguments = { 'commit': commit } if commit else {}
+      Handler(Request.ForTest(url, arguments=arguments)).Get()
+
+    SetTaskRunnerForTest(task_runner)
 
     print('Running cron...')
     start_time = time.time()
