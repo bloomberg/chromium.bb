@@ -266,7 +266,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoErraticTestClient) {
   return 0;
 }
 
-TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
+// https://crbug.com/417439
+TEST_F(IPCChannelMojoErrorTest, DISABLED_SendFailWithPendingMessages) {
   Init("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
