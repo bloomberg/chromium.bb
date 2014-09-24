@@ -36,14 +36,12 @@
 #include "base/strings/string_piece.h"
 
 namespace base {
+
 class Value;
 
 namespace internal {
 class JSONParser;
 }
-}
-
-namespace base {
 
 enum JSONParserOptions {
   // Parses the input strictly according to RFC 4627, except for where noted

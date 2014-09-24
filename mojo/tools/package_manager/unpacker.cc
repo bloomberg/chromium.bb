@@ -14,10 +14,8 @@ Unpacker::Unpacker() {
 }
 
 Unpacker::~Unpacker() {
-  if (!dir_.empty()) {
-    printf("Deleting %s\n", dir_.value().c_str());
-    //DeleteFile(dir_, true);
-  }
+  if (!dir_.empty())
+    DeleteFile(dir_, true);
 }
 
 bool Unpacker::Unpack(const base::FilePath& zip_file) {

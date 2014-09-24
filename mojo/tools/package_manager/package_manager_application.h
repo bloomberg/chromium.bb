@@ -6,15 +6,17 @@
 #define MOJO_PACKAGE_MANAGER_PACKAGE_MANAGER_APPLICATION_H_
 
 #include <map>
+#include <set>
 
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/tools/package_manager/package_fetcher.h"
-#include "mojo/tools/package_manager/unpacker.h"
 
 namespace mojo {
+
+class Manifest;
 
 class PackageManagerApplication
     : public ApplicationDelegate,
@@ -29,9 +31,12 @@ class PackageManagerApplication
     ~PendingLoad();
 
     scoped_ptr<PackageFetcher> fetcher;
-    Unpacker unpacker;
   };
   typedef std::map<GURL, PendingLoad*> PendingLoadMap;
+
+  void StartLoad(const GURL& url);
+
+  void LoadDeps(const Manifest& manifest);
 
   // Deletes the pending load entry for the given URL and possibly exits the
   // message loop if all loads are done.
@@ -48,6 +53,7 @@ class PackageManagerApplication
   mojo::NetworkServicePtr network_service_;
 
   PendingLoadMap pending_;  // Owning pointers.
+  std::set<GURL> completed_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(PackageManagerApplication);
 };
