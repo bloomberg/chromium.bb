@@ -123,6 +123,20 @@ void ChromeWebViewGuestDelegate::OnEmbedderDestroyed() {
           web_view_guest()->view_instance_id()));
 }
 
+void ChromeWebViewGuestDelegate::OnDidAttachToEmbedder() {
+  // TODO(fsamuel): This code should be implemented in GuestViewBase once the
+  // ZoomController moves to the extensions module.
+  ZoomController* zoom_controller = ZoomController::FromWebContents(
+      web_view_guest()->embedder_web_contents());
+  if (!zoom_controller)
+    return;
+  // Listen to the embedder's zoom changes.
+  zoom_controller->AddObserver(this);
+  // Set the guest's initial zoom level to be equal to the embedder's.
+  ZoomController::FromWebContents(guest_web_contents())->
+      SetZoomLevel(zoom_controller->GetZoomLevel());
+}
+
 void ChromeWebViewGuestDelegate::OnDidCommitProvisionalLoadForFrame(
     bool is_main_frame) {
   // Update the current zoom factor for the new page.
@@ -238,3 +252,9 @@ void ChromeWebViewGuestDelegate::OnAccessibilityStatusChanged(
   }
 }
 #endif
+
+void ChromeWebViewGuestDelegate::OnZoomChanged(
+    const ZoomController::ZoomChangedEventData& data) {
+  ZoomController::FromWebContents(guest_web_contents())->
+      SetZoomLevel(data.new_zoom_level);
+}

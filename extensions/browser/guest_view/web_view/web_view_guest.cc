@@ -301,6 +301,9 @@ void WebViewGuest::DidAttachToEmbedder() {
   // We need to set the background opaque flag after navigation to ensure that
   // there is a RenderWidgetHostView available.
   SetAllowTransparency(allow_transparency);
+
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnDidAttachToEmbedder();
 }
 
 void WebViewGuest::DidInitialize() {

@@ -43,6 +43,10 @@ class WebViewGuestDelegate {
   // Called to perform some cleanup prior to destruction.
   virtual void OnEmbedderDestroyed() = 0;
 
+  // Called after the guest has been attached to an embedder and suspended
+  // resource loads have been resumed.
+  virtual void OnDidAttachToEmbedder() = 0;
+
   // Called when the guest WebContents commits a provisional load in any frame.
   virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) = 0;
 
