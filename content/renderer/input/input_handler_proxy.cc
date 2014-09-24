@@ -70,7 +70,7 @@ bool ShouldSuppressScrollForFlingBoosting(
 
   gfx::Vector2dF dx(scroll_update_event.data.scrollUpdate.deltaX,
                     scroll_update_event.data.scrollUpdate.deltaY);
-  if (gfx::DotProduct(current_fling_velocity, dx) < 0)
+  if (gfx::DotProduct(current_fling_velocity, dx) <= 0)
     return false;
 
   if (time_since_last_boost_event < 0.001)
@@ -94,7 +94,7 @@ bool ShouldBoostFling(const gfx::Vector2dF& current_fling_velocity,
       fling_start_event.data.flingStart.velocityX,
       fling_start_event.data.flingStart.velocityY);
 
-  if (gfx::DotProduct(current_fling_velocity, new_fling_velocity) < 0)
+  if (gfx::DotProduct(current_fling_velocity, new_fling_velocity) <= 0)
     return false;
 
   if (current_fling_velocity.LengthSquared() < kMinBoostFlingSpeedSquare)
@@ -550,6 +550,8 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
       WebFloatPoint velocity(current_fling_velocity_.x(),
                              current_fling_velocity_.y());
       deferred_fling_cancel_time_seconds_ = 0;
+      disallow_horizontal_fling_scroll_ = !velocity.x;
+      disallow_vertical_fling_scroll_ = !velocity.y;
       last_fling_boost_event_ = WebGestureEvent();
       fling_curve_.reset(client_->CreateFlingAnimationCurve(
           gesture_event.sourceDevice,

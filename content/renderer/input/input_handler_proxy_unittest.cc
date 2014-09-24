@@ -1793,6 +1793,48 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
   VERIFY_AND_RESET_MOCKS();
 }
 
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfFlingInDifferentDirection) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
+
+  // Cancel the fling.  The fling cancellation should be deferred to allow
+  // fling boosting events to arrive.
+  time += dt;
+  CancelFling(time);
+
+  // If the new fling is orthogonal to the existing fling, no boosting should
+  // take place, with the new fling replacing the old.
+  WebFloatPoint orthogonal_fling_delta =
+      WebFloatPoint(fling_delta.y, -fling_delta.x);
+  gesture_ = CreateFling(time,
+                         blink::WebGestureDeviceTouchscreen,
+                         orthogonal_fling_delta,
+                         fling_point,
+                         fling_point,
+                         0);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Note that the new fling delta uses the orthogonal, unboosted fling
+  // velocity.
+  time += dt;
+  float expected_delta = dt.InSecondsF() * -orthogonal_fling_delta.y;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::y,
+                                         testing::Eq(expected_delta))))
+      .WillOnce(testing::Return(true));
+  input_handler_->Animate(time);
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
 TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollInDifferentDirection) {
   base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
   base::TimeTicks time = base::TimeTicks() + dt;

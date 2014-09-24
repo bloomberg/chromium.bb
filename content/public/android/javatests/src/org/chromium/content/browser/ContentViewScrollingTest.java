@@ -19,7 +19,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
-/*
+/**
  * Tests that we can scroll and fling a ContentView running inside ContentShell.
  */
 public class ContentViewScrollingTest extends ContentShellTestBase {
@@ -152,24 +152,30 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"Main"})
     public void testFling() throws Throwable {
+        // Scaling the initial velocity by the device scale factor ensures that
+        // it's of sufficient magnitude for all displays densities.
+        float deviceScaleFactor =
+                getInstrumentation().getTargetContext().getResources().getDisplayMetrics().density;
+        int velocity = (int) (1000 * deviceScaleFactor);
+
         // Vertical fling to lower-left.
-        fling(0, -1000);
+        fling(0, -velocity);
         assertWaitForScroll(true, false);
 
         // Horizontal fling to lower-right.
-        fling(-1000, 0);
+        fling(-velocity, 0);
         assertWaitForScroll(false, false);
 
         // Vertical fling to upper-right.
-        fling(0, 1000);
+        fling(0, velocity);
         assertWaitForScroll(false, true);
 
         // Horizontal fling to top-left.
-        fling(1000, 0);
+        fling(velocity, 0);
         assertWaitForScroll(true, true);
 
         // Diagonal fling to bottom-right.
-        fling(-1000, -1000);
+        fling(-velocity, -velocity);
         assertWaitForScroll(false, false);
     }
 
