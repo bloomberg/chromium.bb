@@ -848,6 +848,7 @@
         'renderer/resources/app_window_custom_bindings.js',
         'renderer/resources/binding.js',
         'renderer/resources/context_menus_custom_bindings.js',
+        'renderer/resources/declarative_webrequest_custom_bindings.js',
         'renderer/resources/entry_id_manager.js',
         'renderer/resources/event.js',
         'renderer/resources/extension.css',

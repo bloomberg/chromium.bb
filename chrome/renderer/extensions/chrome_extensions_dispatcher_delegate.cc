@@ -159,8 +159,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("declarativeContent",
                              IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("declarativeWebRequest",
-                             IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("desktopCapture",
                              IDR_DESKTOP_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("developerPrivate",

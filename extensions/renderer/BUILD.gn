@@ -82,6 +82,7 @@ source_set("renderer") {
     "resources/app_window_custom_bindings.js",
     "resources/binding.js",
     "resources/context_menus_custom_bindings.js",
+    "resources/declarative_webrequest_custom_bindings.js",
     "resources/entry_id_manager.js",
     "resources/event.js",
     "resources/extension.css",

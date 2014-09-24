@@ -149,7 +149,6 @@
       'renderer/resources/extensions/chrome_setting.js',
       'renderer/resources/extensions/content_setting.js',
       'renderer/resources/extensions/declarative_content_custom_bindings.js',
-      'renderer/resources/extensions/declarative_webrequest_custom_bindings.js',
       'renderer/resources/extensions/enterprise_platform_keys_custom_bindings.js',
       'renderer/resources/extensions/extension_options.js',
       'renderer/resources/extensions/feedback_private_custom_bindings.js',

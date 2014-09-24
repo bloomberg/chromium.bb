@@ -13,7 +13,6 @@
       <include name="IDR_EXTENSION_API_JSON_BROWSERACTION" file="extensions\api\browser_action.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COMMANDS" file="extensions\api\commands.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT" file="extensions\api\declarative_content.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarative_web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\file_browser_handler.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE" file="extensions\api\input_method_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGEACTION" file="extensions\api\page_action.json" type="BINDATA" />

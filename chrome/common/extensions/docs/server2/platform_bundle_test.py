@@ -33,8 +33,6 @@ _TEST_DATA = {
     '_manifest_features.json': '{}',
     '_permission_features.json': '{}',
     'alarms.idl': ReadFile(CHROME_API, 'alarms.idl'),
-    'declarative_web_request.json': ReadFile(
-        CHROME_API, 'declarative_web_request.json'),
     'input_ime.json': ReadFile(CHROME_API, 'input_ime.json'),
     'page_action.json': ReadFile(CHROME_API, 'page_action.json'),
   },
