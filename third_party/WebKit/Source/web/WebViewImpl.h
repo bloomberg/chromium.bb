@@ -119,6 +119,11 @@ public:
         const WebSize& scrollDelta,
         float pageScaleDelta,
         float topControlsDelta) OVERRIDE;
+    virtual void applyViewportDeltas(
+        const WebSize& pinchViewportDelta,
+        const WebSize& mainFrameDelta,
+        float pageScaleDelta,
+        float topControlsDelta) OVERRIDE;
     virtual void mouseCaptureLost() OVERRIDE;
     virtual void setFocus(bool enable) OVERRIDE;
     virtual bool setComposition(

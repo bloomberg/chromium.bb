@@ -153,6 +153,14 @@ public:
         float scaleFactor,
         float topControlsDelta) { }
 
+    // Applies viewport related properties during a commit from the compositor
+    // thread.
+    virtual void applyViewportDeltas(
+        const WebSize& pinchViewportDelta,
+        const WebSize& mainFrameDelta,
+        float scaleFactor,
+        float topControlsDelta) { }
+
     // Called to inform the WebWidget that mouse capture was lost.
     virtual void mouseCaptureLost() { }
 

@@ -4185,6 +4185,16 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
     frameView->setInProgrammaticScroll(oldProgrammaticScroll);
 }
 
+void WebViewImpl::applyViewportDeltas(
+    const WebSize& pinchViewportDelta,
+    const WebSize& mainFrameDelta,
+    float pageScaleDelta,
+    float topControlsDelta)
+{
+    // FIXME(bokan): Will be replaced in 3-sided patch once Chromium side is landed.
+    applyViewportDeltas(pinchViewportDelta + mainFrameDelta, pageScaleDelta, topControlsDelta);
+}
+
 void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)
 {
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
