@@ -13,7 +13,6 @@ var examples = [
 ];
 var exampleMap = {};  // Created below.
 
-var iframeEl = null;
 var isChrome = /Chrome\/([^\s]+)/.test(navigator.userAgent);
 var isMobile = /Mobi/.test(navigator.userAgent);
 var hasPnacl = navigator.mimeTypes['application/x-pnacl'] !== undefined;
@@ -21,13 +20,13 @@ var hasPnacl = navigator.mimeTypes['application/x-pnacl'] !== undefined;
 if (isChrome && !isMobile) {
   if (hasPnacl) {
     makeExampleList();
-    window.onpopstate = function(popState) {
-      if (popState.state == null) {
-        updateViewFromLocation();
-      } else {
-        var exampleName = popState.state;
-        loadExample(popState.state);
-      }
+    if (history.state == null) {
+      updateViewFromLocation();
+    }
+
+    window.onpopstate = function(event) {
+      var exampleName = event.state;
+      loadExample(exampleName);
     }
   } else {
     // Older version of Chrome?
@@ -131,20 +130,17 @@ function createHomeIframe() {
 }
 
 function createIframe(src) {
-  var oldIframeEl = iframeEl;
-
-  iframeEl = document.createElement('iframe');
-  iframeEl.setAttribute('frameborder', '0');
-  iframeEl.setAttribute('width', '100%');
-  iframeEl.setAttribute('height', '100%');
-  iframeEl.src = src;
-  iframeEl.setAttribute('hidden', '');
-  iframeEl.onload = function() {
-    if (oldIframeEl)
-      oldIframeEl.parentNode.removeChild(oldIframeEl);
-    iframeEl.removeAttribute('hidden');
+  var iframeEl = document.querySelector('iframe');
+  if (iframeEl === null) {
+    iframeEl = document.createElement('iframe');
+    iframeEl.setAttribute('frameborder', '0');
+    iframeEl.setAttribute('width', '100%');
+    iframeEl.setAttribute('height', '100%');
+    iframeEl.src = src;
+    document.querySelector('section').appendChild(iframeEl);
+  } else {
+    iframeEl.contentDocument.location.replace(src);
   }
-  document.querySelector('section').appendChild(iframeEl);
 }
 
 function pushState(exampleName) {
