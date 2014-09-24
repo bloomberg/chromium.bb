@@ -362,6 +362,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "themes", IDS_THEMES_GROUP_NAME },
 #endif
     { "themesReset", IDS_THEMES_RESET_BUTTON },
+    { "accessibilityTitle",
+      IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
+    { "accessibilityFeaturesLink",
+      IDS_OPTIONS_ACCESSIBILITY_FEATURES_LINK },
 #if defined(OS_CHROMEOS)
     { "accessibilityExplanation",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION },
@@ -385,8 +389,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_STICKY_KEYS_DESCRIPTION },
     { "accessibilitySpokenFeedback",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION },
-    { "accessibilityTitle",
-      IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityVirtualKeyboard",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
     { "accessibilityAlwaysShowMenu",

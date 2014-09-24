@@ -11833,6 +11833,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
         System
       </message>
 
+      <!-- Accessibility options -->
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
+        Accessibility
+      </message>
+      <message name="IDS_OPTIONS_ACCESSIBILITY_FEATURES_LINK">
+        Add additional accessibility features
+      </message>
+
       <!-- Multiple download warning-->
       <message name="IDS_MULTI_DOWNLOAD_WARNING" desc="Warning invoked if multiple downloads are attempted without user interaction.">
         This site is attempting to download multiple files. Do you want to allow this?

@@ -706,162 +706,176 @@
 
 <if expr="chromeos">
   <include src="startup_section.html">
-  <section>
-    <h3 i18n-content="accessibilityTitle"></h3>
-    <div class="option-control-table">
-      <p id="accessibility-explanation" class="settings-row">
-        <span i18n-content="accessibilityExplanation"></span>
-        <a id="accessibility-learn-more" target="_blank"
-           i18n-content="learnMore"></a>
-      </p>
-      <div class="option-name">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input
-                pref="settings.a11y.enable_menu" type="checkbox"
-                metric="Options_AccessibilitySystemMenu">
-            <span>
-              <span i18n-content="accessibilityAlwaysShowMenu"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.enable_menu"></span>
-            </span>
-          </label>
+</if>
+
+<section>
+  <h3 i18n-content="accessibilityTitle"></h3>
+
+  <div>
+    <a href="https://chrome.google.com/webstore/category/collection/accessibility"
+        id="accessibility-features" target="_blank"
+        i18n-content="accessibilityFeaturesLink"></a>
+  </div>
+
+<if expr="chromeos">
+  <div class="option-control-table">
+    <p id="accessibility-explanation" class="settings-row">
+      <span i18n-content="accessibilityExplanation"></span>
+      <a id="accessibility-learn-more" target="_blank"
+         i18n-content="learnMore"></a>
+    </p>
+    <div class="option-name">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input
+              pref="settings.a11y.enable_menu" type="checkbox"
+              metric="Options_AccessibilitySystemMenu">
+          <span>
+            <span i18n-content="accessibilityAlwaysShowMenu"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.enable_menu"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div class="option-name">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input
+              pref="settings.a11y.large_cursor_enabled" type="checkbox"
+              metric="Options_AccessibilityLargeMouseCursor">
+          <span>
+            <span i18n-content="accessibilityLargeCursor"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.large_cursor_enabled"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div class="option-name">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input id="accessibility-high-contrast-check"
+              pref="settings.a11y.high_contrast_enabled" type="checkbox"
+              metric="Options_AccessibilityHighContrastMode">
+          <span>
+            <span i18n-content="accessibilityHighContrast"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.high_contrast_enabled"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div id="accessibility-sticky-keys" class="option-name">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input id="accessibility-sticky-keys-check"
+              pref="settings.a11y.sticky_keys_enabled" type="checkbox"
+              metric="Options_AccessibilityStickyKeys">
+          <span>
+            <span i18n-content="accessibilityStickyKeys"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.sticky_keys_enabled"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div class="option-name">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input id="accessibility-spoken-feedback-check"
+              pref="settings.accessibility" type="checkbox"
+              metric="Options_AccessibilitySpokenFeedback">
+          <span>
+            <span i18n-content="accessibilitySpokenFeedback"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.accessibility"></span>
+          </span>
+        </label>
+        <div id="accessibility-settings" hidden>
+          <button id="accessibility-settings-button"
+            i18n-content="accessibilitySettings"></button>
         </div>
       </div>
-      <div class="option-name">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input
-                pref="settings.a11y.large_cursor_enabled" type="checkbox"
-                metric="Options_AccessibilityLargeMouseCursor">
-            <span>
-              <span i18n-content="accessibilityLargeCursor"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.large_cursor_enabled"></span>
-            </span>
-          </label>
-        </div>
+    </div>
+    <div class="option-name">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input
+              pref="settings.a11y.screen_magnifier" type="checkbox"
+              metric="Options_AccessibilityScreenMagnifier">
+          <span>
+            <span i18n-content="accessibilityScreenMagnifier"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.screen_magnifier"></span>
+          </span>
+        </label>
       </div>
-      <div class="option-name">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input id="accessibility-high-contrast-check"
-                pref="settings.a11y.high_contrast_enabled" type="checkbox"
-                metric="Options_AccessibilityHighContrastMode">
-            <span>
-              <span i18n-content="accessibilityHighContrast"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.high_contrast_enabled"></span>
-            </span>
-          </label>
-        </div>
+    </div>
+    <div class="option-name" id="accessibility-tap-dragging">
+      <div class="checkbox">
+        <label>
+          <input id="accessibility-tap-dragging-check"
+              pref="settings.touchpad.enable_tap_dragging" type="checkbox"
+              metric="Options_AccessibilityTapDragging">
+          <span i18n-content="accessibilityTapDragging"></span>
+        </label>
       </div>
-      <div id="accessibility-sticky-keys" class="option-name">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input id="accessibility-sticky-keys-check"
-                pref="settings.a11y.sticky_keys_enabled" type="checkbox"
-                metric="Options_AccessibilityStickyKeys">
-            <span>
-              <span i18n-content="accessibilityStickyKeys"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.sticky_keys_enabled"></span>
-            </span>
-          </label>
-        </div>
+    </div>
+    <div class="option-name" id="accessibility-autoclick">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input id="accessibility-autoclick-check"
+              pref="settings.a11y.autoclick" type="checkbox">
+          <span>
+            <span i18n-content="accessibilityAutoclick"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.autoclick"></span>
+          </span>
+        </label>
       </div>
-      <div class="option-name">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input id="accessibility-spoken-feedback-check"
-                pref="settings.accessibility" type="checkbox"
-                metric="Options_AccessibilitySpokenFeedback">
-            <span>
-              <span i18n-content="accessibilitySpokenFeedback"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.accessibility"></span>
-            </span>
-          </label>
-          <div id="accessibility-settings" hidden>
-            <button id="accessibility-settings-button"
-              i18n-content="accessibilitySettings"></button>
-          </div>
-        </div>
+      <div class="checkbox">
+        <!-- No whitespace between elements. -->
+        <input type="checkbox" class="spacer-checkbox"><span
+            id="accessibility-autoclick-label"
+            i18n-content="accessibilityAutoclickDropdown">
+        </span><select id="accessibility-autoclick-dropdown" class="control"
+            data-type="number"
+            aria-labelledby="accessibility-autoclick-label"
+            pref="settings.a11y.autoclick_delay_ms">
+          <option value="200"
+              i18n-content="autoclickDelayExtremelyShort"></option>
+          <option value="400"
+              i18n-content="autoclickDelayVeryShort"></option>
+          <option value="600" i18n-content="autoclickDelayShort">
+          </option>
+          <option value="800" i18n-content="autoclickDelayLong">
+          </option>
+          <option value="1000"
+              i18n-content="autoclickDelayVeryLong"></option>
+        </select>
+        <span class="controlled-setting-indicator"
+            pref="settings.a11y.autoclick_delay_ms"></span>
       </div>
-      <div class="option-name">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input
-                pref="settings.a11y.screen_magnifier" type="checkbox"
-                metric="Options_AccessibilityScreenMagnifier">
-            <span>
-              <span i18n-content="accessibilityScreenMagnifier"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.screen_magnifier"></span>
-            </span>
-          </label>
-        </div>
+    </div>
+    <div class="option_name" id="accessibility_onscreen_keyboard">
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input pref="settings.a11y.virtual_keyboard" type="checkbox"
+              metric="Options_AccessibilityOnScreenKeyboard">
+          <span>
+            <span i18n-content="accessibilityVirtualKeyboard"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.virtual_keyboard"></span>
+          </span>
+        </label>
       </div>
-      <div class="option-name" id="accessibility-tap-dragging">
-        <div class="checkbox">
-          <label>
-            <input id="accessibility-tap-dragging-check"
-                pref="settings.touchpad.enable_tap_dragging" type="checkbox"
-                metric="Options_AccessibilityTapDragging">
-            <span i18n-content="accessibilityTapDragging"></span>
-          </label>
-        </div>
-      </div>
-      <div class="option-name" id="accessibility-autoclick">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input id="accessibility-autoclick-check"
-                pref="settings.a11y.autoclick" type="checkbox">
-            <span>
-              <span i18n-content="accessibilityAutoclick"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.autoclick"></span>
-            </span>
-          </label>
-        </div>
-        <div class="checkbox">
-          <!-- No whitespace between elements. -->
-          <input type="checkbox" class="spacer-checkbox"><span
-              id="accessibility-autoclick-label"
-              i18n-content="accessibilityAutoclickDropdown">
-          </span><select id="accessibility-autoclick-dropdown" class="control"
-              data-type="number"
-              aria-labelledby="accessibility-autoclick-label"
-              pref="settings.a11y.autoclick_delay_ms">
-            <option value="200"
-                i18n-content="autoclickDelayExtremelyShort"></option>
-            <option value="400"
-                i18n-content="autoclickDelayVeryShort"></option>
-            <option value="600" i18n-content="autoclickDelayShort">
-            </option>
-            <option value="800" i18n-content="autoclickDelayLong">
-            </option>
-            <option value="1000"
-                i18n-content="autoclickDelayVeryLong"></option>
-          </select>
-          <span class="controlled-setting-indicator"
-              pref="settings.a11y.autoclick_delay_ms"></span>
-        </div>
-      </div>
-      <div class="option_name" id="accessibility_onscreen_keyboard">
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input pref="settings.a11y.virtual_keyboard" type="checkbox"
-                metric="Options_AccessibilityOnScreenKeyboard">
-            <span>
-              <span i18n-content="accessibilityVirtualKeyboard"></span>
-              <span class="controlled-setting-indicator"
-                  pref="settings.a11y.virtual_keyboard"></span>
-            </span>
-          </label>
-        </div>
-      </div>
-  </section>
+    </div>
+  </div>
+</if>
+
+</section>
+
 <if expr="chromeos">
   <section id="factory-reset-section" hidden>
     <h3 i18n-content="factoryResetTitle"></h3>

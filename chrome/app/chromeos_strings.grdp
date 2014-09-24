@@ -1826,9 +1826,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE">
     Language
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
-    Accessibility
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_BATTERY_DESCRIPTION" desc="The 'Battery' button on the chrome://settings page.">
     Battery...
   </message>
