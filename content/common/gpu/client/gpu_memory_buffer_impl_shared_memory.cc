@@ -43,13 +43,13 @@ void GpuMemoryBufferImplSharedMemory::AllocateSharedMemoryForChildProcess(
     base::ProcessHandle child_process,
     const AllocationCallback& callback) {
   DCHECK(IsLayoutSupported(size, internalformat));
-  gfx::GpuMemoryBufferHandle handle;
   base::SharedMemory shared_memory;
   if (!shared_memory.CreateAnonymous(size.GetArea() *
                                      BytesPerPixel(internalformat))) {
-    handle.type = gfx::EMPTY_BUFFER;
+    callback.Run(gfx::GpuMemoryBufferHandle());
     return;
   }
+  gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   shared_memory.GiveToProcess(child_process, &handle.handle);
   callback.Run(handle);
