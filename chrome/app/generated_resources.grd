@@ -12944,7 +12944,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Generated password saved
     </message>
     <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT" desc="The text that is used in the manage passwords bubble when a generated password is saved. Text inside |bars| is link text.">
-      Access it anytime in your |Google saved passwords|.
+      You can access it and all your |Google saved passwords| securely from any browser.
     </message>
     <message name="IDS_MANAGE_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
       Saved passwords for this site:
