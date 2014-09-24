@@ -44,15 +44,5 @@
       },
       'sources': ['hello.cc'],
     },
-    {
-      'target_name': 'test_target_lib_arm',
-      'type': 'static_library',
-      'msvs_settings': {
-        'VCLibrarianTool': {
-          'TargetMachine': '3',
-        },
-      },
-      'sources': ['hello.cc'],
-    },
   ]
 }
