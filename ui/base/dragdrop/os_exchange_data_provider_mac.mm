@@ -10,7 +10,6 @@
 #include "base/pickle.h"
 #include "base/strings/sys_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
-#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -45,12 +44,16 @@ void OSExchangeDataProviderMac::SetString(const base::string16& string) {
 
 void OSExchangeDataProviderMac::SetURL(const GURL& url,
                                        const base::string16& title) {
-  [pasteboard_ setDataForURL:base::SysUTF8ToNSString(url.spec())
-                       title:base::SysUTF16ToNSString(title)];
+  NSURL* ns_url = [NSURL URLWithString:base::SysUTF8ToNSString(url.spec())];
+  [pasteboard_ writeObjects:@[ ns_url ]];
+
+  [pasteboard_ setString:base::SysUTF16ToNSString(title)
+                 forType:kCorePasteboardFlavorType_urln];
 }
 
 void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
-  NOTIMPLEMENTED();
+  [pasteboard_ setPropertyList:@[ base::SysUTF8ToNSString(path.value()) ]
+                       forType:NSFilenamesPboardType];
 }
 
 void OSExchangeDataProviderMac::SetFilenames(
@@ -80,13 +83,39 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(
     OSExchangeData::FilenameToURLPolicy policy,
     GURL* url,
     base::string16* title) const {
-  return PopulateURLAndTitleFromPasteboard(
-      url, title, pasteboard_, policy == OSExchangeData::CONVERT_FILENAMES);
+  DCHECK(url);
+  DCHECK(title);
+  NSArray* items = [pasteboard_ readObjectsForClasses:@[ [NSURL class] ]
+                                              options:@{ }];
+  if ([items count] == 0)
+    return false;
+
+  NSURL* ns_url = [items objectAtIndex:0];
+
+  if (policy == OSExchangeData::DO_NOT_CONVERT_FILENAMES) {
+    // If the URL matches a filename, assume that it came from SetFilename().
+    // Don't return it if we are not supposed to convert filename to URL.
+    NSArray* paths = [pasteboard_ propertyListForType:NSFilenamesPboardType];
+    NSString* url_path = [[ns_url path] stringByStandardizingPath];
+    for (NSString* path in paths) {
+      if ([[path stringByStandardizingPath] isEqualToString:url_path])
+        return false;
+    }
+  }
+
+  *url = GURL([[ns_url absoluteString] UTF8String]);
+  *title = base::SysNSStringToUTF16(
+      [pasteboard_ stringForType:kCorePasteboardFlavorType_urln]);
+  return true;
 }
 
 bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
-  NOTIMPLEMENTED();
-  return false;
+  NSArray* paths = [pasteboard_ propertyListForType:NSFilenamesPboardType];
+  if ([paths count] == 0)
+    return false;
+
+  *path = base::FilePath([[paths objectAtIndex:0] UTF8String]);
+  return true;
 }
 
 bool OSExchangeDataProviderMac::GetFilenames(
@@ -120,8 +149,7 @@ bool OSExchangeDataProviderMac::HasURL(
 }
 
 bool OSExchangeDataProviderMac::HasFile() const {
-  NOTIMPLEMENTED();
-  return false;
+  return [[pasteboard_ types] containsObject:NSFilenamesPboardType];
 }
 
 bool OSExchangeDataProviderMac::HasCustomFormat(

@@ -104,6 +104,7 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
   ASSERT_TRUE(base::GetCurrentDirectory(&current_directory));
 
   data.SetFilename(current_directory);
+
   {
     EXPECT_FALSE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
     GURL actual_url;
@@ -113,6 +114,7 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
     EXPECT_EQ(GURL(), actual_url);
     EXPECT_EQ(base::string16(), actual_title);
   }
+
   {
 // Filename to URL conversion is not implemented on ChromeOS or on non-X11 Linux
 // builds.
@@ -130,7 +132,9 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
         expected_success,
         data.GetURLAndTitle(
             OSExchangeData::CONVERT_FILENAMES, &actual_url, &actual_title));
-    EXPECT_EQ(expected_url, actual_url);
+    // Some Mac OS versions return the URL in file://localhost form instead
+    // of file:///, so we compare the url's path not its absolute string.
+    EXPECT_EQ(expected_url.path(), actual_url.path());
     EXPECT_EQ(base::string16(), actual_title);
   }
   EXPECT_TRUE(data.HasFile());
