@@ -16,7 +16,8 @@ The script creates chroots for 32bit and 64bit Ubuntu Lucid and then builds
 binutils inside the roots.
 
 Local patches:
- * ehframe.patch for http://crbug.com/161942
+ * ehframe-race.patch for http://crbug.com/161942 from upstream change
+   https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=635aa30e3ae9735e362cfd1cda2be9f7b65b32a2
 
  * (build-all.sh|build-one.sh|upload.sh) scripts for building the binutils
    binaries and uploading them to Google storage.

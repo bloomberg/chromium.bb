@@ -43,7 +43,7 @@ if [ ! -d binutils-$VERSION ]; then
   # Patch the source
   (
     cd binutils-$VERSION
-    patch -p1 < ../ehframe.patch
+    patch -p1 < ../ehframe-race.patch
   )
 fi
 
