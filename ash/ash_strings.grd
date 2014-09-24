@@ -253,6 +253,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER" desc="The error message when the primary user forbids multiple signin because of not-allowed policy or because of usage policy-pushed certificates.">
         The administrator for this account has disallowed multiple sign-in.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS" desc="The error message when all the users are added into multi-profile session.">
+        All available users have already been added to this session.
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth

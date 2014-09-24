@@ -11,4 +11,19 @@ bool SessionStateDelegate::IsInSecondaryLoginScreen() const {
       ash::SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY;
 }
 
+bool SessionStateDelegate::CanAddUserToMultiProfile(
+    SessionStateDelegate::AddUserError* error) const {
+  if (!IsMultiProfileAllowedByPrimaryUserPolicy()) {
+    if (error)
+      *error = ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER;
+    return false;
+  }
+  if (NumberOfLoggedInUsers() >= GetMaximumNumberOfLoggedInUsers()) {
+    if (error)
+      *error = ADD_USER_ERROR_MAXIMUM_USERS_REACHED;
+    return false;
+  }
+  return true;
+}
+
 } // namespace ash

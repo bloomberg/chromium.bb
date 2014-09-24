@@ -207,7 +207,7 @@ UserView::UserView(SystemTrayItem* owner,
       owner_(owner),
       is_user_card_button_(false),
       logout_button_(NULL),
-      add_user_disabled_(false),
+      add_user_enabled_(true),
       for_detailed_view_(for_detailed_view),
       focus_manager_(NULL) {
   CHECK_NE(user::LOGGED_IN_NONE, login);
@@ -238,8 +238,7 @@ void UserView::MouseMovedOutOfHost() {
 
 TrayUser::TestState UserView::GetStateForTest() const {
   if (add_menu_option_.get()) {
-    return add_user_disabled_ ? TrayUser::ACTIVE_BUT_DISABLED
-                              : TrayUser::ACTIVE;
+    return add_user_enabled_ ? TrayUser::ACTIVE : TrayUser::ACTIVE_BUT_DISABLED;
   }
 
   if (!is_user_card_button_)
@@ -497,30 +496,41 @@ void UserView::ToggleAddUserMenuOption() {
   const SessionStateDelegate* delegate =
       Shell::GetInstance()->session_state_delegate();
 
-  bool multi_profile_allowed =
-      delegate->IsMultiProfileAllowedByPrimaryUserPolicy();
-  add_user_disabled_ = (delegate->NumberOfLoggedInUsers() >=
-                        delegate->GetMaximumNumberOfLoggedInUsers()) ||
-                       !multi_profile_allowed;
+  SessionStateDelegate::AddUserError add_user_error;
+  add_user_enabled_ = delegate->CanAddUserToMultiProfile(&add_user_error);
 
-  ButtonFromView* button = new ButtonFromView(
-      add_user_view,
-      add_user_disabled_ ? NULL : this,
-      !add_user_disabled_,
-      gfx::Insets(1, 1, 1, 1));
+  ButtonFromView* button = new ButtonFromView(add_user_view,
+                                              add_user_enabled_ ? this : NULL,
+                                              add_user_enabled_,
+                                              gfx::Insets(1, 1, 1, 1));
   button->set_request_focus_on_press(false);
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   button->ForceBorderVisible(true);
   add_menu_option_->SetContentsView(button);
 
-  if (add_user_disabled_) {
+  if (add_user_enabled_) {
+    // We activate the entry automatically if invoked with focus.
+    if (user_card_view_->HasFocus()) {
+      button->GetFocusManager()->SetFocusedView(button);
+      user_card_view_->GetFocusManager()->SetFocusedView(button);
+    }
+  } else {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    int message_id;
-    if (!multi_profile_allowed)
-      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER;
-    else
-      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER;
+    int message_id = 0;
+    switch (add_user_error) {
+      case SessionStateDelegate::ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER:
+        message_id = IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER;
+        break;
+      case SessionStateDelegate::ADD_USER_ERROR_MAXIMUM_USERS_REACHED:
+        message_id = IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER;
+        break;
+      case SessionStateDelegate::ADD_USER_ERROR_OUT_OF_USERS:
+        message_id = IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS;
+        break;
+      default:
+        NOTREACHED() << "Unknown adding user error " << add_user_error;
+    }
 
     popup_message_.reset(new PopupMessage(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER),
@@ -530,12 +540,6 @@ void UserView::ToggleAddUserMenuOption() {
         views::BubbleBorder::TOP_LEFT,
         gfx::Size(parent()->bounds().width() - kPopupMessageOffset, 0),
         2 * kPopupMessageOffset));
-  } else {
-    // We activate the entry automatically if invoked with focus.
-    if (user_card_view_->HasFocus()) {
-      button->GetFocusManager()->SetFocusedView(button);
-      user_card_view_->GetFocusManager()->SetFocusedView(button);
-    }
   }
   // Find the screen area which encloses both elements and sets then a mouse
   // watcher which will close the "menu".

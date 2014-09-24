@@ -91,8 +91,8 @@ class UserView : public views::View,
   scoped_ptr<PopupMessage> popup_message_;
   scoped_ptr<views::Widget> add_menu_option_;
 
-  // True when the add user panel is visible but not activatable.
-  bool add_user_disabled_;
+  // False when the add user panel is visible but not activatable.
+  bool add_user_enabled_;
 
   // True if this view will be used inside detailed view.
   bool for_detailed_view_;

@@ -229,4 +229,63 @@ TEST_F(SessionStateDelegateChromeOSTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// Make sure adding users to multiprofiles disabled by reaching maximum
+// number of users in sessions.
+TEST_F(SessionStateDelegateChromeOSTest,
+       AddUserToMultiprofileDisallowedByMaximumUsers) {
+  InitForMultiProfile();
+  ash::SessionStateDelegate::AddUserError add_user_error;
+
+  EXPECT_TRUE(
+      session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
+  while (session_state_delegate()->NumberOfLoggedInUsers() <
+         session_state_delegate()->GetMaximumNumberOfLoggedInUsers()) {
+    UserAddedToSession("bb@b.b");
+  }
+  EXPECT_FALSE(
+      session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
+  EXPECT_EQ(ash::SessionStateDelegate::ADD_USER_ERROR_MAXIMUM_USERS_REACHED,
+            add_user_error);
+}
+
+// Make sure adding users to multiprofiles disabled by logging in all possible
+// users.
+TEST_F(SessionStateDelegateChromeOSTest,
+       AddUserToMultiprofileDisallowedByAllUsersLogged) {
+  InitForMultiProfile();
+  ash::SessionStateDelegate::AddUserError add_user_error;
+
+  EXPECT_TRUE(
+      session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
+  UserAddedToSession("bb@b.b");
+  EXPECT_FALSE(
+      session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
+  EXPECT_EQ(ash::SessionStateDelegate::ADD_USER_ERROR_OUT_OF_USERS,
+            add_user_error);
+}
+
+// Make sure adding users to multiprofiles disabled by primary user policy.
+TEST_F(SessionStateDelegateChromeOSTest,
+       AddUserToMultiprofileDisallowedByPrimaryUserPolicy) {
+  InitForMultiProfile();
+  ash::SessionStateDelegate::AddUserError add_user_error;
+
+  EXPECT_TRUE(
+      session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
+  user_profile_->GetPrefs()->SetString(
+      prefs::kMultiProfileUserBehavior,
+      chromeos::MultiProfileUserController::kBehaviorNotAllowed);
+  user_manager()->AddUser("bb@b.b");
+  EXPECT_FALSE(
+      session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
+  EXPECT_EQ(ash::SessionStateDelegate::ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER,
+            add_user_error);
+}
+
 }  // namespace chromeos

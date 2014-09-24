@@ -49,6 +49,12 @@ class ASH_EXPORT SessionStateDelegate {
     CYCLE_TO_PREVIOUS_USER,  // Cycle to the previous user.
   };
 
+  enum AddUserError {
+    ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER = 0,
+    ADD_USER_ERROR_OUT_OF_USERS,
+    ADD_USER_ERROR_MAXIMUM_USERS_REACHED,
+  };
+
   // Defines session state i.e. whether session is running or not and
   // whether user session is blocked by things like multi-profile login.
   enum SessionState {
@@ -81,6 +87,11 @@ class ASH_EXPORT SessionStateDelegate {
   // Returns the number of signed in users. If 0 is returned, there is either
   // no session in progress or no active user.
   virtual int NumberOfLoggedInUsers() const = 0;
+
+  // Returns true if there is possible to add more users to multiprofile
+  // session. Error is stored in |error| if it is not NULL and function
+  // returned false.
+  virtual bool CanAddUserToMultiProfile(AddUserError* error) const;
 
   // Returns |true| if the session has been fully started for the active user.
   // When a user becomes active, the profile and browser UI are not immediately

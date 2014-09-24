@@ -83,6 +83,18 @@ int SessionStateDelegateChromeos::NumberOfLoggedInUsers() const {
   return user_manager::UserManager::Get()->GetLoggedInUsers().size();
 }
 
+bool SessionStateDelegateChromeos::CanAddUserToMultiProfile(
+    AddUserError* error) const {
+  if (user_manager::UserManager::Get()
+          ->GetUsersAdmittedForMultiProfile()
+          .size() == 0) {
+    if (error)
+      *error = ADD_USER_ERROR_OUT_OF_USERS;
+    return false;
+  }
+  return SessionStateDelegate::CanAddUserToMultiProfile(error);
+}
+
 bool SessionStateDelegateChromeos::IsActiveUserSessionStarted() const {
   return user_manager::UserManager::Get()->IsSessionStarted();
 }

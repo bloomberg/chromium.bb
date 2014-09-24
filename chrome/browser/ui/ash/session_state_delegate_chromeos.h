@@ -33,6 +33,7 @@ class SessionStateDelegateChromeos
       aura::Window* window) OVERRIDE;
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
+  virtual bool CanAddUserToMultiProfile(AddUserError* error) const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
   virtual bool CanLockScreen() const OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
