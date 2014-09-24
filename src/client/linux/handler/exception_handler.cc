@@ -149,9 +149,8 @@ void InstallAlternateStackLocked() {
   // one is too small.
   if (sys_sigaltstack(NULL, &old_stack) == -1 || !old_stack.ss_sp ||
       old_stack.ss_size < kSigStackSize) {
-    new_stack.ss_sp = malloc(kSigStackSize);
+    new_stack.ss_sp = calloc(1, kSigStackSize);
     new_stack.ss_size = kSigStackSize;
-    memset(new_stack.ss_sp, 0, kSigStackSize);
 
     if (sys_sigaltstack(&new_stack, NULL) == -1) {
       free(new_stack.ss_sp);
@@ -188,7 +187,7 @@ void RestoreAlternateStackLocked() {
   stack_installed = false;
 }
 
-// The global exception handler stack. This is need because there may exist
+// The global exception handler stack. This is needed because there may exist
 // multiple ExceptionHandler instances in a process. Each will have itself
 // registered in this stack.
 std::vector<ExceptionHandler*>* g_handler_stack_ = NULL;
