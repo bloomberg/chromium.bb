@@ -23,13 +23,12 @@
 
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
+#include "core/paint/SVGForeignObjectPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGForeignObjectElement.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -51,41 +50,7 @@ bool RenderSVGForeignObject::isChildAllowed(RenderObject* child, RenderStyle* st
 
 void RenderSVGForeignObject::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
-        return;
-
-    PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-    childPaintInfo.applyTransform(localTransform());
-
-    if (SVGRenderSupport::isOverflowHidden(this))
-        childPaintInfo.context->clip(m_viewport);
-
-    SVGRenderingContext renderingContext;
-    bool continueRendering = true;
-    if (paintInfo.phase == PaintPhaseForeground) {
-        renderingContext.prepareToRenderSVGContent(this, childPaintInfo);
-        continueRendering = renderingContext.isRenderingPrepared();
-    }
-
-    if (continueRendering) {
-        // Paint all phases of FO elements atomically, as though the FO element established its
-        // own stacking context.
-        bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
-        LayoutPoint childPoint = IntPoint();
-        childPaintInfo.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
-        RenderBlock::paint(childPaintInfo, IntPoint());
-        if (!preservePhase) {
-            childPaintInfo.phase = PaintPhaseChildBlockBackgrounds;
-            RenderBlock::paint(childPaintInfo, childPoint);
-            childPaintInfo.phase = PaintPhaseFloat;
-            RenderBlock::paint(childPaintInfo, childPoint);
-            childPaintInfo.phase = PaintPhaseForeground;
-            RenderBlock::paint(childPaintInfo, childPoint);
-            childPaintInfo.phase = PaintPhaseOutline;
-            RenderBlock::paint(childPaintInfo, childPoint);
-        }
-    }
+    SVGForeignObjectPainter(*this).paint(paintInfo);
 }
 
 const AffineTransform& RenderSVGForeignObject::localToParentTransform() const

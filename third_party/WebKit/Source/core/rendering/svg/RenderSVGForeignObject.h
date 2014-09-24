@@ -50,6 +50,8 @@ public:
 
     virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
 
+    FloatRect viewportRect() { return m_viewport; }
+
 private:
     virtual void updateLogicalWidth() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
