@@ -1319,3 +1319,5 @@ crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received
 
 crbug.com/417182 [ Mac ] compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsRebaseline ]
 crbug.com/417182 [ Mac ] compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsRebaseline ]
+
+crbug.com/416846 inspector/elements/styles/styles-add-new-rule.html [ Pass Failure ]
