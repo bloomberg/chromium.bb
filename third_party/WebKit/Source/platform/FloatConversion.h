@@ -29,6 +29,8 @@
 #ifndef FloatConversion_h
 #define FloatConversion_h
 
+#include "wtf/MathExtras.h"
+
 namespace blink {
 
 template<typename T>
@@ -37,7 +39,7 @@ float narrowPrecisionToFloat(T);
 template<>
 inline float narrowPrecisionToFloat(double number)
 {
-    return static_cast<float>(number);
+    return clampTo<float>(number);
 }
 
 } // namespace blink
