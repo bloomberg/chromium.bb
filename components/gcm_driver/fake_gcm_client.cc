@@ -11,6 +11,7 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/encryptor.h"
+#include "google_apis/gcm/engine/account_mapping.h"
 #include "net/base/ip_endpoint.h"
 
 namespace gcm {
@@ -179,7 +180,7 @@ std::string FakeGCMClient::GetRegistrationIdFromSenderIds(
 }
 
 void FakeGCMClient::CheckinFinished() {
-  delegate_->OnGCMReady();
+  delegate_->OnGCMReady(std::vector<AccountMapping>());
   delegate_->OnConnected(net::IPEndPoint());
 }
 

@@ -50,7 +50,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnSendAcknowledged(const std::string& app_id,
                                   const std::string& message_id) OVERRIDE;
-  virtual void OnGCMReady() OVERRIDE;
+  virtual void OnGCMReady(
+      const std::vector<AccountMapping>& account_mappings) OVERRIDE;
   virtual void OnActivityRecorded() OVERRIDE;
   virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
   virtual void OnDisconnected() OVERRIDE;
@@ -201,10 +202,12 @@ void GCMDriverDesktop::IOWorker::OnSendAcknowledged(
           &GCMDriverDesktop::SendAcknowledged, service_, app_id, message_id));
 }
 
-void GCMDriverDesktop::IOWorker::OnGCMReady() {
+void GCMDriverDesktop::IOWorker::OnGCMReady(
+    const std::vector<AccountMapping>& account_mappings) {
   ui_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::GCMClientReady, service_));
+      base::Bind(
+          &GCMDriverDesktop::GCMClientReady, service_, account_mappings));
 }
 
 void GCMDriverDesktop::IOWorker::OnActivityRecorded() {
@@ -714,7 +717,8 @@ void GCMDriverDesktop::SendAcknowledged(const std::string& app_id,
   GetAppHandler(app_id)->OnSendAcknowledged(app_id, message_id);
 }
 
-void GCMDriverDesktop::GCMClientReady() {
+void GCMDriverDesktop::GCMClientReady(
+    const std::vector<AccountMapping>& account_mappings) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   delayed_task_controller_->SetReady();

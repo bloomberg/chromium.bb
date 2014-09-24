@@ -258,7 +258,8 @@ class GCMClientImplTest : public testing::Test,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnSendAcknowledged(const std::string& app_id,
                                   const std::string& message_id) OVERRIDE;
-  virtual void OnGCMReady() OVERRIDE;
+  virtual void OnGCMReady(
+      const std::vector<AccountMapping>& account_mappings) OVERRIDE;
   virtual void OnActivityRecorded() OVERRIDE {}
   virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE {}
   virtual void OnDisconnected() OVERRIDE {}
@@ -490,9 +491,12 @@ void GCMClientImplTest::ReceiveOnMessageSentToMCS(
   gcm_client_->OnMessageSentToMCS(0LL, app_id, message_id, status);
 }
 
-void GCMClientImplTest::OnGCMReady() {
+void GCMClientImplTest::OnGCMReady(
+    const std::vector<AccountMapping>& account_mappings) {
   last_event_ = LOADING_COMPLETED;
   QuitLoop();
+  // TODO(fgorski): Add scenario verifying contents of account_mappings, when
+  // the list is not empty.
 }
 
 void GCMClientImplTest::OnMessageReceived(

@@ -321,11 +321,16 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
     device_checkin_info_.accounts_set = true;
   last_checkin_time_ = result->last_checkin_time;
   gservices_settings_.UpdateFromLoadResult(*result);
+  // Taking over the value of account_mappings before passing the ownership of
+  // load result to InitializeMCSClient.
+  std::vector<AccountMapping> account_mappings;
+  account_mappings.swap(result->account_mappings);
+
   InitializeMCSClient(result.Pass());
 
   if (device_checkin_info_.IsValid()) {
     SchedulePeriodicCheckin();
-    OnReady();
+    OnReady(account_mappings);
     return;
   }
 
@@ -379,14 +384,15 @@ void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
       base::Bind(&GCMClientImpl::SetDeviceCredentialsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  OnReady();
+  OnReady(std::vector<AccountMapping>());
 }
 
-void GCMClientImpl::OnReady() {
+void GCMClientImpl::OnReady(
+    const std::vector<AccountMapping>& account_mappings) {
   state_ = READY;
   StartMCSLogin();
 
-  delegate_->OnGCMReady();
+  delegate_->OnGCMReady(account_mappings);
 }
 
 void GCMClientImpl::StartMCSLogin() {

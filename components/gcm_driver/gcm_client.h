@@ -201,7 +201,10 @@ class GCMClient {
     // Called when the GCM becomes ready. To get to this state, GCMClient
     // finished loading from the GCM store and retrieved the device check-in
     // from the server if it hadn't yet.
-    virtual void OnGCMReady() = 0;
+    // |account_mappings|: a persisted list of accounts mapped to this GCM
+    //                     client.
+    virtual void OnGCMReady(
+        const std::vector<AccountMapping>& account_mappings) = 0;
 
     // Called when activities are being recorded and a new activity has just
     // been recorded.

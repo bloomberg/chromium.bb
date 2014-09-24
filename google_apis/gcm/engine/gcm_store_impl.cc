@@ -179,7 +179,7 @@ class GCMStoreImpl::Backend
                            std::set<std::string>* accounts);
   bool LoadGServicesSettings(std::map<std::string, std::string>* settings,
                              std::string* digest);
-  bool LoadAccountMappingInfo(AccountMappingMap* account_mappings);
+  bool LoadAccountMappingInfo(AccountMappings* account_mappings);
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
@@ -792,7 +792,7 @@ bool GCMStoreImpl::Backend::LoadGServicesSettings(
 }
 
 bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
-    AccountMappingMap* account_mappings) {
+    AccountMappings* account_mappings) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
@@ -808,7 +808,7 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
       return false;
     }
     DVLOG(1) << "Found account mapping with ID: " << account_mapping.account_id;
-    (*account_mappings)[account_mapping.account_id] = account_mapping;
+    account_mappings->push_back(account_mapping);
   }
 
   return true;

@@ -34,8 +34,8 @@ class GCM_EXPORT GCMStore {
   typedef std::map<std::string, linked_ptr<google::protobuf::MessageLite> >
       OutgoingMessageMap;
 
-  // Map of account id to account info for account mappings.
-  typedef std::map<std::string, AccountMapping> AccountMappingMap;
+  // List of account mappings.
+  typedef std::vector<AccountMapping> AccountMappings;
 
   // Container for Load(..) results.
   struct GCM_EXPORT LoadResult {
@@ -54,7 +54,7 @@ class GCM_EXPORT GCMStore {
     std::string gservices_digest;
     base::Time last_checkin_time;
     std::set<std::string> last_checkin_accounts;
-    AccountMappingMap account_mappings;
+    AccountMappings account_mappings;
   };
 
   typedef std::vector<std::string> PersistentIdList;

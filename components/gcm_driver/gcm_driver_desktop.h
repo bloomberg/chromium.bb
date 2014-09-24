@@ -129,7 +129,8 @@ class GCMDriverDesktop : public GCMDriver {
                         const GCMClient::SendErrorDetails& send_error_details);
   void SendAcknowledged(const std::string& app_id,
                         const std::string& message_id);
-  void GCMClientReady();
+  void GCMClientReady(
+      const std::vector<AccountMapping>& account_mappings);
   void OnConnected(const net::IPEndPoint& ip_endpoint);
   void OnDisconnected();
 

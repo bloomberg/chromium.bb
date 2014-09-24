@@ -198,7 +198,7 @@ class GCMClientImpl
   void ResetState();
   // Sets state to ready. This will initiate the MCS login and notify the
   // delegates.
-  void OnReady();
+  void OnReady(const std::vector<AccountMapping>& account_mappings);
 
   // Starts a first time device checkin.
   void StartCheckin();

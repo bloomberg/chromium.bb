@@ -11,6 +11,8 @@ static_library("gcm_driver") {
     "default_gcm_app_handler.h",
     "gcm_activity.cc",
     "gcm_activity.h",
+    "gcm_account_mapper.cc",
+    "gcm_account_mapper.h",
     "gcm_app_handler.cc",
     "gcm_app_handler.h",
     "gcm_backoff_policy.cc",
@@ -51,6 +53,8 @@ static_library("gcm_driver") {
 
   if (is_android) {
     sources -= [
+      "gcm_account_mapper.cc",
+      "gcm_account_mapper.h",
       "gcm_channel_status_request.cc",
       "gcm_channel_status_request.h",
       "gcm_channel_status_syncer.cc",
