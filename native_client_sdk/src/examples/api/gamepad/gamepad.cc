@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <algorithm>
 #include <cassert>
 
 #include "ppapi/c/ppb_gamepad.h"
