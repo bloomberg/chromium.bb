@@ -369,9 +369,15 @@ void PermissionQueueController::UpdateContentSetting(
 
   ContentSetting content_setting =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+
+  ContentSettingsPattern embedder_pattern =
+      (type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) ?
+      ContentSettingsPattern::Wildcard() :
+      ContentSettingsPattern::FromURLNoWildcard(embedder.GetOrigin());
+
   profile_->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(requesting_frame.GetOrigin()),
-      ContentSettingsPattern::FromURLNoWildcard(embedder.GetOrigin()),
+      embedder_pattern,
       type_,
       std::string(),
       content_setting);

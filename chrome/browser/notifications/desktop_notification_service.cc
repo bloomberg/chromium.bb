@@ -317,6 +317,23 @@ void DesktopNotificationService::OnExtensionUninstalled(
 }
 #endif
 
+// Unlike other permission types, granting a notification for a given origin
+// will not take into account the |embedder_origin|, it will only be based
+// on the requesting iframe origin.
+// TODO(mukai) Consider why notifications behave differently than
+// other permissions. crbug.com/416894
+void DesktopNotificationService::UpdateContentSetting(
+    const GURL& requesting_origin,
+    const GURL& embedder_origin,
+    bool allowed) {
+  if (allowed) {
+    DesktopNotificationProfileUtil::GrantPermission(
+        profile_, requesting_origin);
+  } else {
+    DesktopNotificationProfileUtil::DenyPermission(profile_, requesting_origin);
+  }
+}
+
 void DesktopNotificationService::OnNotificationPermissionRequested(
     const NotificationPermissionCallback& callback, bool allowed) {
   blink::WebNotificationPermission permission = allowed ?
