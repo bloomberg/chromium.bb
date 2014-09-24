@@ -726,6 +726,17 @@ finish_frame:
 }
 
 static void
+drm_output_update_msc(struct drm_output *output, unsigned int seq)
+{
+	uint64_t msc_hi = output->base.msc >> 32;
+
+	if (seq < (output->base.msc & 0xffffffff))
+		msc_hi++;
+
+	output->base.msc = (msc_hi << 32) + seq;
+}
+
+static void
 vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	       void *data)
 {
@@ -733,6 +744,7 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	struct drm_output *output = s->output;
 	struct timespec ts;
 
+	drm_output_update_msc(output, frame);
 	output->vblank_pending = 0;
 
 	drm_output_release_fb(output, s->current);
@@ -755,6 +767,8 @@ page_flip_handler(int fd, unsigned int frame,
 {
 	struct drm_output *output = (struct drm_output *) data;
 	struct timespec ts;
+
+	drm_output_update_msc(output, frame);
 
 	/* We don't set page_flip_pending on start_repaint_loop, in that case
 	 * we just want to page flip to the current buffer to get an accurate

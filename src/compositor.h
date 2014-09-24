@@ -203,6 +203,7 @@ struct weston_output {
 	struct wl_signal destroy_signal;
 	int move_x, move_y;
 	uint32_t frame_time; /* presentation timestamp in milliseconds */
+	uint64_t msc;        /* media stream counter */
 	int disable_planes;
 	int destroying;
 	struct wl_list feedback_list;

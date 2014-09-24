@@ -2065,7 +2065,7 @@ weston_output_finish_frame(struct weston_output *output,
 	refresh_nsec = 1000000000000UL / output->current_mode->refresh;
 	weston_presentation_feedback_present_list(&output->feedback_list,
 						  output, refresh_nsec, stamp,
-						  0);
+						  output->msc);
 
 	output->frame_time = stamp->tv_sec * 1000 + stamp->tv_nsec / 1000000;
 
