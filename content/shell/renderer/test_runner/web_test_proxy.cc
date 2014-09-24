@@ -489,9 +489,9 @@ void WebTestProxyBase::CopyImageAtAndCapturePixels(
   // It may happen that there is a scheduled animation and
   // no rootGraphicsLayer yet. If so we would run it right now. Otherwise
   // isAcceleratedCompositingActive will return false;
+  // TODO(enne): remove this: http://crbug.com/397321
   AnimateNow();
 
-  DCHECK(web_widget_->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
   uint64_t sequence_number =  blink::Platform::current()->clipboard()->
       sequenceNumber(blink::WebClipboard::Buffer());
@@ -574,9 +574,9 @@ void WebTestProxyBase::CapturePixelsAsync(
   // It may happen that there is a scheduled animation and
   // no rootGraphicsLayer yet. If so we would run it right now. Otherwise
   // isAcceleratedCompositingActive will return false;
+  // TODO(enne): remove this: http://crbug.com/397321
   AnimateNow();
 
-  DCHECK(web_widget_->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
 
   if (test_interfaces_->GetTestRunner()->isPrinting()) {
@@ -626,9 +626,9 @@ void WebTestProxyBase::DisplayAsyncThen(const base::Closure& callback) {
   // It may happen that there is a scheduled animation and
   // no rootGraphicsLayer yet. If so we would run it right now. Otherwise
   // isAcceleratedCompositingActive will return false;
+  // TODO(enne): remove this: http://crbug.com/397321
   AnimateNow();
 
-  CHECK(web_widget_->isAcceleratedCompositingActive());
   CapturePixelsAsync(base::Bind(
       &WebTestProxyBase::DidDisplayAsync, base::Unretained(this), callback));
 }
