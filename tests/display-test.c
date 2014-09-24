@@ -410,7 +410,7 @@ threading_post_err(void)
 	/* kill test in 3 seconds. This should be enough time for the
 	 * thread to exit if it's not blocking. If everything is OK, than
 	 * the thread was woken up and the test will end before the SIGALRM */
-	alarm(3);
+	test_set_timeout(3);
 	pthread_join(thread, NULL);
 
 	wl_proxy_destroy((struct wl_proxy *) c->tc);
@@ -462,7 +462,7 @@ threading_cancel_read(void)
 	/* kill test in 3 seconds. This should be enough time for the
 	 * thread to exit if it's not blocking. If everything is OK, than
 	 * the thread was woken up and the test will end before the SIGALRM */
-	alarm(3);
+	test_set_timeout(3);
 	pthread_join(th1, NULL);
 	pthread_join(th2, NULL);
 	pthread_join(th3, NULL);
@@ -501,7 +501,7 @@ threading_read_eagain(void)
 	 * set it - check if we're testing the right case */
 	assert(errno == EAGAIN);
 
-	alarm(3);
+	test_set_timeout(3);
 	pthread_join(th1, NULL);
 	pthread_join(th2, NULL);
 	pthread_join(th3, NULL);
@@ -562,7 +562,7 @@ threading_read_after_error(void)
 	assert(wl_display_read_events(c->wl_display) == -1);
 
 	/* kill test in 3 seconds */
-	alarm(3);
+	test_set_timeout(3);
 	pthread_join(thread, NULL);
 
 	wl_proxy_destroy((struct wl_proxy *) c->tc);
