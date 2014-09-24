@@ -146,8 +146,11 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 
+# FIXME: Remove the following test after it has been removed from its location,
+# i.e after the next import of w3c/web-platform-tests/.
+crbug.com/330083 imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
+
 # New W3C failures (dpranke@ to triage)
-crbug.com/330083 imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/IndexedDB/interfaces.html [ Timeout ]
 crbug.com/330083 imported/web-platform-tests/IndexedDB/key_invalid.htm [ Failure ]

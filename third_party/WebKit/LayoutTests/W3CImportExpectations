@@ -146,6 +146,9 @@ imported/web-platform-tests/html-imports/loading-import.html [ Skip ]
 # user media.
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
 
+# Requires http server. Moved the following test to http/tests/custom-elements/.
+imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
+
 # crbug.com/404303: Was broken as of 2014-07-06.
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
