@@ -46,6 +46,11 @@
       "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
     },
     {
+      "test": "extensions_unittests",
+      "platforms": ["linux", "win", "mac"],
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
       "test": "gcm_unit_tests",
       "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
     },
