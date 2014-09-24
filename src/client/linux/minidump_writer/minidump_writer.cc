@@ -59,6 +59,7 @@
 #include <sys/ucontext.h>
 #include <sys/user.h>
 #include <sys/utsname.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <algorithm>
