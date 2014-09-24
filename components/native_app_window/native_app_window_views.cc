@@ -219,8 +219,7 @@ bool NativeAppWindowViews::CanMaximize() const {
 }
 
 bool NativeAppWindowViews::CanMinimize() const {
-  // TODO(jackhou): Change this to always be true.
-  return CanMaximize();
+  return true;
 }
 
 base::string16 NativeAppWindowViews::GetWindowTitle() const {
