@@ -34,8 +34,25 @@
 
 namespace blink {
 
-const QualifiedName& pseudoElementTagName()
+const QualifiedName& pseudoElementTagName(PseudoId pseudoId)
 {
+    switch (pseudoId) {
+    case AFTER: {
+        DEFINE_STATIC_LOCAL(QualifiedName, after, (nullAtom, "<pseudo:after>", nullAtom));
+        return after;
+    }
+    case BEFORE: {
+        DEFINE_STATIC_LOCAL(QualifiedName, before, (nullAtom, "<pseudo:before>", nullAtom));
+        return before;
+    }
+    case BACKDROP: {
+        DEFINE_STATIC_LOCAL(QualifiedName, backdrop, (nullAtom, "<pseudo:backdrop>", nullAtom));
+        return backdrop;
+    }
+    default: {
+        ASSERT_NOT_REACHED();
+    }
+    }
     DEFINE_STATIC_LOCAL(QualifiedName, name, (nullAtom, "<pseudo>", nullAtom));
     return name;
 }
@@ -55,7 +72,7 @@ String PseudoElement::pseudoElementNameForEvents(PseudoId pseudoId)
 }
 
 PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
-    : Element(pseudoElementTagName(), &parent->document(), CreateElement)
+    : Element(pseudoElementTagName(pseudoId), &parent->document(), CreateElement)
     , m_pseudoId(pseudoId)
 {
     ASSERT(pseudoId != NOPSEUDO);
