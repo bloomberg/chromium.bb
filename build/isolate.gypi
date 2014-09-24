@@ -89,6 +89,7 @@
 
         '--config-variable', 'OS=<(OS)',
         '--config-variable', 'CONFIGURATION_NAME=<(CONFIGURATION_NAME)',
+        '--config-variable', 'asan=<(asan)',
         '--config-variable', 'chromeos=<(chromeos)',
         '--config-variable', 'component=<(component)',
         '--config-variable', 'fastbuild=<(fastbuild)',

@@ -113,6 +113,7 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
 
       '--config-variable', 'OS', 'android',
       '--config-variable', 'CONFIGURATION_NAME', constants.GetBuildType(),
+      '--config-variable', 'asan', '0',
       '--config-variable', 'chromeos', '0',
       '--config-variable', 'component', 'static_library',
       '--config-variable', 'fastbuild', '0',

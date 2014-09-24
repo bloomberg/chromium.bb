@@ -9,6 +9,13 @@
     '../third_party/icu/icu.isolate',
   ],
   'conditions': [
+    ['OS=="linux" and asan==1', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/lib/libc++.so',
+        ],
+      },
+    }],
     ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
       'variables': {
         'isolate_dependency_tracked': [
