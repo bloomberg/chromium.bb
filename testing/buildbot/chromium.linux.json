@@ -138,7 +138,12 @@
       "components_unittests",
       "compositor_unittests",
       "content_browsertests",
-      "content_unittests",
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "dbus_unittests",
       "device_unittests",
