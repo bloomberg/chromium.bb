@@ -77,9 +77,7 @@ class PRINTING_EXPORT Emf : public Metafile {
   // Should be passed to Playback to keep the exact same size.
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
 
-  virtual unsigned int GetPageCount() const OVERRIDE {
-    return page_count_;
-  }
+  virtual unsigned int GetPageCount() const OVERRIDE { return 1; }
 
   virtual HDC context() const OVERRIDE {
     return hdc_;
@@ -118,8 +116,6 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Valid when generating EMF data through a virtual HDC.
   HDC hdc_;
-
-  int page_count_;
 
   DISALLOW_COPY_AND_ASSIGN(Emf);
 };

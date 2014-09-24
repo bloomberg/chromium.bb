@@ -335,7 +335,9 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         double scale_factor,
         const printing::MetafilePlayer& emf) OVERRIDE {
       PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
+      ::StartPage(printer_dc_.Get());
       emf.SafePlayback(printer_dc_.Get());
+      ::EndPage(printer_dc_.Get());
     }
 
     // ServiceUtilityProcessHost::Client implementation.

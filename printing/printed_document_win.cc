@@ -69,9 +69,11 @@ void PrintedDocument::RenderPrintedPage(
         content_area.y() - page_setup.printable_area().y(),
         page.shrink_factor());
 
+    ::StartPage(context);
     if (!page.metafile()->SafePlayback(context)) {
       NOTREACHED();
     }
+    ::EndPage(context);
 
     BOOL res = RestoreDC(context, saved_state);
     DCHECK_NE(res, 0);
