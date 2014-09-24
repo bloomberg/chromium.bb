@@ -1,0 +1,5 @@
+Tests that "Show Function Definition" jumps to the correct location.
+
+Jumping to 7:18
+PASS: Console message has correct line number
+

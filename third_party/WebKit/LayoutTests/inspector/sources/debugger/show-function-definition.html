@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function jumpToMe()
+{
+    var result = 12345;
+    return window.foo || result;
+}
+
+function test()
+{
+    var jumpToMeLineNumber = 7;
+
+    var panel = WebInspector.inspectorView.showPanel("sources");
+    InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
+    WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, didGetFunction);
+
+    function didGetFunction(funcObject, wasThrown)
+    {
+        var error = !funcObject || wasThrown;
+        InspectorTest.assertTrue(!error);
+        panel._showFunctionDefinition(funcObject);
+    }
+
+    function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
+    {
+        // lineNumber and columnNumber are 0-based
+        ++lineNumber;
+        ++columnNumber;
+        InspectorTest.assertEquals(jumpToMeLineNumber, lineNumber);
+        InspectorTest.addResult("Jumping to " + lineNumber + ":" + columnNumber);
+
+        InspectorTest.waitUntilNthMessageReceived(2, onConsoleMessagesReceived);
+        WebInspector.ConsoleModel.evaluateCommandInConsole(WebInspector.context.flavor(WebInspector.ExecutionContext), "jumpToMe");
+    }
+
+    function onConsoleMessagesReceived()
+    {
+        var messages = [];
+        InspectorTest.disableConsoleViewport();
+        var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+        for (var i = 0; i < viewMessages.length; ++i) {
+            var uiMessage = viewMessages[i];
+            var element = uiMessage.contentElement();
+            messages.push(element.textContent);
+        }
+
+        var text = messages.join("\n");
+        if (text.indexOf("show-function-definition.html:" + jumpToMeLineNumber) !== -1)
+            InspectorTest.addResult("PASS: Console message has correct line number");
+        else
+            InspectorTest.addResult("FAIL: Wrong line number in console message:\n" + text);
+
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that "Show Function Definition" jumps to the correct location.
+</p>
+
+</body>
+</html>
