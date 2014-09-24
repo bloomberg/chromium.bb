@@ -149,7 +149,7 @@ void PrintResponseDescription(WebTestDelegate* delegate,
 }
 
 std::string URLDescription(const GURL& url) {
-  if (url.SchemeIs("file"))
+  if (url.SchemeIs(url::kFileScheme))
     return url.ExtractFileName();
   return url.possibly_invalid_spec();
 }
@@ -1158,11 +1158,12 @@ void WebTestProxyBase::WillSendRequest(
   }
 
   std::string host = url.host();
-  if (!host.empty() && (url.SchemeIs("http") || url.SchemeIs("https"))) {
+  if (!host.empty() &&
+      (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme))) {
     if (!IsLocalHost(host) && !IsTestHost(host) &&
         !HostIsUsedBySomeTestsToGenerateError(host) &&
-        ((!main_document_url.SchemeIs("http") &&
-          !main_document_url.SchemeIs("https")) ||
+        ((!main_document_url.SchemeIs(url::kHttpScheme) &&
+          !main_document_url.SchemeIs(url::kHttpsScheme)) ||
          IsLocalHost(main_document_url.host())) &&
         !delegate_->AllowExternalPages()) {
       delegate_->PrintMessage(std::string("Blocked access to external URL ") +

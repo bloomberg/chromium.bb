@@ -613,7 +613,7 @@ class ResourceScheduler::Client {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
     }
 
-    if (using_spdy_proxy_ && url_request.url().SchemeIs("http")) {
+    if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme)) {
       return START_REQUEST;
     }
 

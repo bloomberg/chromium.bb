@@ -1047,7 +1047,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   // destroy the stream and invoke the NPP_DestroyStream function on the
   // plugin if the HTTP request fails.
   const GURL& url = response.url();
-  if (url.SchemeIs("http") || url.SchemeIs("https")) {
+  if (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme)) {
     if (response.httpStatusCode() < 100 || response.httpStatusCode() >= 400) {
       // The plugin instance could be in the process of deletion here.
       // Verify if the WebPluginResourceClient instance still exists before
@@ -1170,7 +1170,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   // in which case we route the output to the plugin rather than routing it
   // to the plugin's frame.
   bool is_javascript_url =
-      url::FindAndCompareScheme(url, strlen(url), "javascript", NULL);
+      url::FindAndCompareScheme(url, strlen(url), url::kJavaScriptScheme, NULL);
   RoutingStatus routing_status = RouteToFrame(
       url, is_javascript_url, popups_allowed, method, target, buf, len,
       notify_id, referrer_flag);

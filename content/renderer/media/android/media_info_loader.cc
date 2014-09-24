@@ -126,7 +126,7 @@ void MediaInfoLoader::didReceiveResponse(
                "Unknown")
            << " " << response.httpStatusCode();
   DCHECK(active_loader_.get());
-  if (!url_.SchemeIs("http") && !url_.SchemeIs("https")) {
+  if (!url_.SchemeIs(url::kHttpScheme) && !url_.SchemeIs(url::kHttpsScheme)) {
       DidBecomeReady(kOk);
       return;
   }

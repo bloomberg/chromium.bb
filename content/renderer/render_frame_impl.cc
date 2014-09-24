@@ -2902,7 +2902,7 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
   // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
   // filter them out here.
   GURL url(request.url());
-  if (url.SchemeIs("data"))
+  if (url.SchemeIs(url::kDataScheme))
     return;
 
   // Let the browser know we loaded a resource from the memory cache.  This

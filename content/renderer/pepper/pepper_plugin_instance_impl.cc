@@ -3213,7 +3213,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
   web_request.setHasUserGesture(from_user_action);
 
   GURL gurl(web_request.url());
-  if (gurl.SchemeIs("javascript")) {
+  if (gurl.SchemeIs(url::kJavaScriptScheme)) {
     // In imitation of the NPAPI implementation, only |target_frame == frame| is
     // allowed for security reasons.
     WebFrame* target_frame =

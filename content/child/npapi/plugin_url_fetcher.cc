@@ -307,7 +307,7 @@ void PluginURLFetcher::OnReceivedResponse(const ResourceResponseInfo& info) {
     // of the HTTP requests issued via NPN_GetURLNotify. Webkit and FF destroy
     // the stream and invoke the NPP_DestroyStream function on the plugin if the
     // HTTPrequest fails.
-    if ((url_.SchemeIs("http") || url_.SchemeIs("https")) &&
+    if ((url_.SchemeIs(url::kHttpScheme) || url_.SchemeIs(url::kHttpsScheme)) &&
         (response_code < 100 || response_code >= 400)) {
       pending_failure_notification_ = true;
     }

@@ -90,7 +90,7 @@ void GetSavableResourceLinkForElement(
   // Ignore those URLs which are not standard protocols. Because FTP
   // protocol does no have cache mechanism, we will skip all
   // sub-resources if they use FTP protocol.
-  if (!u.SchemeIsHTTPOrHTTPS() && !u.SchemeIs("file"))
+  if (!u.SchemeIsHTTPOrHTTPS() && !u.SchemeIs(url::kFileScheme))
     return;
   // Ignore duplicated resource link.
   if (!unique_check->resources_set->insert(u).second)

@@ -333,7 +333,7 @@ bool SiteIsolationPolicy::IsBlockableScheme(const GURL& url) {
   // We exclude ftp:// from here. FTP doesn't provide a Content-Type
   // header which our policy depends on, so we cannot protect any
   // document from FTP servers.
-  return url.SchemeIs("http") || url.SchemeIs("https");
+  return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme);
 }
 
 bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,

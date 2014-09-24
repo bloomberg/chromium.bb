@@ -241,7 +241,7 @@ bool URLRequestRequiresUniversalAccess(const URLRequestInfoData& data) {
   return data.has_custom_referrer_url ||
          data.has_custom_content_transfer_encoding ||
          data.has_custom_user_agent ||
-         url::FindAndCompareScheme(data.url, "javascript", NULL);
+         url::FindAndCompareScheme(data.url, url::kJavaScriptScheme, NULL);
 }
 
 }  // namespace content

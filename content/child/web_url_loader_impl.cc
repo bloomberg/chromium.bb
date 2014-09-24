@@ -660,7 +660,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 
 bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
   GURL url = request_.url();
-  if (!url.SchemeIs("data"))
+  if (!url.SchemeIs(url::kDataScheme))
     return false;
 
   // The fast paths for data URL, Start() and HandleDataURL(), don't support
