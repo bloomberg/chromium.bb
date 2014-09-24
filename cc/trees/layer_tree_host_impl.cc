@@ -129,6 +129,11 @@ unsigned GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
   return GL_TEXTURE_2D;
 }
 
+size_t GetMaxStagingResourceCount() {
+  // Upper bound for number of staging resource to allow.
+  return 32;
+}
+
 }  // namespace
 
 namespace cc {
@@ -264,8 +269,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
       shared_bitmap_manager_(manager),
-      id_(id),
-      transfer_buffer_memory_limit_(0u) {
+      id_(id) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
   animation_registrar_->set_supports_scroll_animations(
@@ -1238,14 +1242,13 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
       unused_memory_limit_in_bytes,
       global_tile_state_.num_resources_limit);
 
-  // Staging pool resources are used as transfer buffers so we use
-  // |transfer_buffer_memory_limit_| as the memory limit for this resource pool.
+  // Release all staging resources when invisible.
   if (staging_resource_pool_) {
     staging_resource_pool_->CheckBusyResources();
     staging_resource_pool_->SetResourceUsageLimits(
-        visible_ ? transfer_buffer_memory_limit_ : 0,
-        transfer_buffer_memory_limit_,
-        std::numeric_limits<size_t>::max());
+        std::numeric_limits<size_t>::max(),
+        std::numeric_limits<size_t>::max(),
+        visible_ ? GetMaxStagingResourceCount() : 0);
   }
 
   DidModifyTilePriorities();
@@ -1963,9 +1966,6 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(proxy_->ImplThreadTaskRunner());
 
   ContextProvider* context_provider = output_surface_->context_provider();
-  transfer_buffer_memory_limit_ =
-      GetMaxTransferBufferUsageBytes(context_provider, settings_.refresh_rate);
-
   if (use_gpu_rasterization_ && context_provider) {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
@@ -2004,7 +2004,8 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         RasterWorkerPool::GetTaskGraphRunner(),
         context_provider,
         resource_provider_.get(),
-        transfer_buffer_memory_limit_);
+        GetMaxTransferBufferUsageBytes(context_provider,
+                                       settings_.refresh_rate));
   } else {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),

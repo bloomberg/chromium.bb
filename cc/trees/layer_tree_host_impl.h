@@ -698,8 +698,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
-  size_t transfer_buffer_memory_limit_;
-
   std::vector<PictureLayerImpl*> picture_layers_;
   std::vector<PictureLayerImpl::Pair> picture_layer_pairs_;
 
