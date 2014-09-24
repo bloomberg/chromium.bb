@@ -166,7 +166,7 @@ deps = {
    Var('chromium_git') + '/external/swarming.client.git' + '@' +  Var('swarming_revision'),
 
   'src/v8':
-    Var('chromium_git') + '/external/v8.git' + '@' +  Var('v8_revision'),
+    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src/native_client':
    Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
