@@ -287,7 +287,7 @@ bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunSync() {
     error_ = networking_private::kErrorNotSupported;
     return false;
   }
-  scoped_ptr<base::ListValue> enabled_networks_list;
+  scoped_ptr<base::ListValue> enabled_networks_list(new base::ListValue);
   for (base::ListValue::iterator iter = enabled_networks_onc_types->begin();
        iter != enabled_networks_onc_types->end(); ++iter) {
     std::string type;
