@@ -122,17 +122,17 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(Context context, String url, String title, Bitmap favicon,
+    private static void addShortcut(Context context, String url, String title, Bitmap icon,
             int red, int green, int blue, boolean isWebappCapable, int orientation) {
         assert sFullScreenAction != null;
 
         Intent shortcutIntent;
         if (isWebappCapable) {
-            // Encode the favicon as a base64 string (Launcher drops Bitmaps in the Intent).
+            // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
             String encodedIcon = "";
-            if (favicon != null) {
+            if (icon != null) {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                favicon.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                icon.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
                 byte[] byteArray = byteArrayOutputStream.toByteArray();
                 encodedIcon = Base64.encodeToString(byteArray, Base64.DEFAULT);
             }
@@ -159,7 +159,7 @@ public class ShortcutHelper {
 
         shortcutIntent.setPackage(context.getPackageName());
         context.sendBroadcast(BookmarkUtils.createAddToHomeIntent(context, shortcutIntent, title,
-                favicon, red, green, blue));
+                icon, red, green, blue));
 
         // User is sent to the homescreen as soon as the shortcut is created.
         Intent homeIntent = new Intent(Intent.ACTION_MAIN);
