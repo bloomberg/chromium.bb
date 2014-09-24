@@ -59,11 +59,11 @@ ActivityFrameView::ActivityFrameView(views::Widget* frame,
   UpdateWindowTitle();
   UpdateWindowIcon();
 
-  WindowManager::Get()->AddObserver(this);
+  WindowManager::GetInstance()->AddObserver(this);
 }
 
 ActivityFrameView::~ActivityFrameView() {
-  WindowManager::Get()->RemoveObserver(this);
+  WindowManager::GetInstance()->RemoveObserver(this);
 }
 
 gfx::Rect ActivityFrameView::GetBoundsForClientView() const {

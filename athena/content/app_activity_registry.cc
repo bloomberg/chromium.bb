@@ -119,7 +119,7 @@ void AppActivityRegistry::DelayedUnload() {
 AppActivity* AppActivityRegistry::GetMruActivity() {
   DCHECK(activity_list_.size());
   WindowListProvider* window_list_provider =
-      WindowManager::Get()->GetWindowListProvider();
+      WindowManager::GetInstance()->GetWindowListProvider();
   const aura::Window::Windows& children =
       window_list_provider->GetWindowList();
   // Find the first window in the container which is part of the application.
