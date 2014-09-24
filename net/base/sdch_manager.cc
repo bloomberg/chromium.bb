@@ -54,7 +54,7 @@ const size_t SdchManager::kMaxDictionarySize = 1000 * 1000;
 bool SdchManager::g_sdch_enabled_ = true;
 
 // static
-bool SdchManager::g_secure_scheme_supported_ = false;
+bool SdchManager::g_secure_scheme_supported_ = true;
 
 //------------------------------------------------------------------------------
 SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,

@@ -24,15 +24,19 @@ static const char kTestVcdiffDictionary[] = "DictionaryFor"
 class SdchManagerTest : public testing::Test {
  protected:
   SdchManagerTest()
-    : sdch_manager_(new SdchManager) {
+      : sdch_manager_(new SdchManager),
+        default_support_(false),
+        default_https_support_(false) {
+    default_support_ = sdch_manager_->sdch_enabled();
+    default_https_support_ = sdch_manager_->secure_scheme_supported();
   }
 
   SdchManager* sdch_manager() { return sdch_manager_.get(); }
 
   // Reset globals back to default state.
   virtual void TearDown() {
-    SdchManager::EnableSdchSupport(true);
-    SdchManager::EnableSecureSchemeSupport(false);
+    SdchManager::EnableSdchSupport(default_support_);
+    SdchManager::EnableSecureSchemeSupport(default_https_support_);
   }
 
   // Attempt to add a dictionary to the manager and probe for success or
@@ -51,6 +55,8 @@ class SdchManagerTest : public testing::Test {
 
  private:
   scoped_ptr<SdchManager> sdch_manager_;
+  bool default_support_;
+  bool default_https_support_;
 };
 
 //------------------------------------------------------------------------------
@@ -192,6 +198,7 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
+  SdchManager::EnableSecureSchemeSupport(false);
   EXPECT_FALSE(AddSdchDictionary(dictionary_text,
                                  GURL("https://" + dictionary_domain)));
   SdchManager::EnableSecureSchemeSupport(true);
@@ -512,11 +519,11 @@ TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
   GURL secure_url("https://www.google.com");
 
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
-  EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(secure_url));
-
-  SdchManager::EnableSecureSchemeSupport(true);
-  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(secure_url));
+
+  SdchManager::EnableSecureSchemeSupport(false);
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
+  EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(secure_url));
 }
 
 TEST_F(SdchManagerTest, ClearDictionaryData) {

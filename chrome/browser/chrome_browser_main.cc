@@ -1374,28 +1374,22 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_process_->intranet_redirect_detector();
   GoogleSearchCounter::RegisterForNotifications();
 
-  if (parsed_command_line().HasSwitch(switches::kEnableSdchOverHttps)) {
-    net::SdchManager::EnableSecureSchemeSupport(true);
-  } else {
-    // Check SDCH field trial.
-    const char kSdchFieldTrialName[] = "SDCH";
-    const char kEnabledAllGroupName[] = "EnabledAll";
-    const char kEnabledHttpOnlyGroupName[] = "EnabledHttpOnly";
-    const char kDisabledAllGroupName[] = "DisabledAll";
+  // Check SDCH field trial.  Default is now that everything is enabled,
+  // so provide options for disabling HTTPS or all of SDCH.
+  const char kSdchFieldTrialName[] = "SDCH";
+  const char kEnabledHttpOnlyGroupName[] = "EnabledHttpOnly";
+  const char kDisabledAllGroupName[] = "DisabledAll";
 
-    // Store in a string on return to keep underlying storage for
-    // StringPiece stable.
-    std::string sdch_trial_group_string =
-        base::FieldTrialList::FindFullName(kSdchFieldTrialName);
-    base::StringPiece sdch_trial_group(sdch_trial_group_string);
-    if (sdch_trial_group.starts_with(kEnabledAllGroupName)) {
-      net::SdchManager::EnableSecureSchemeSupport(true);
-      net::SdchManager::EnableSdchSupport(true);
-    } else if (sdch_trial_group.starts_with(kEnabledHttpOnlyGroupName)) {
-      net::SdchManager::EnableSdchSupport(true);
-    } else if (sdch_trial_group.starts_with(kDisabledAllGroupName)) {
-      net::SdchManager::EnableSdchSupport(false);
-    }
+  // Store in a string on return to keep underlying storage for
+  // StringPiece stable.
+  std::string sdch_trial_group_string =
+      base::FieldTrialList::FindFullName(kSdchFieldTrialName);
+  base::StringPiece sdch_trial_group(sdch_trial_group_string);
+  if (sdch_trial_group.starts_with(kEnabledHttpOnlyGroupName)) {
+    net::SdchManager::EnableSdchSupport(true);
+    net::SdchManager::EnableSecureSchemeSupport(false);
+  } else if (sdch_trial_group.starts_with(kDisabledAllGroupName)) {
+    net::SdchManager::EnableSdchSupport(false);
   }
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
