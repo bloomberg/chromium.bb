@@ -70,10 +70,13 @@ function test()
             {
                 var panel = WebInspector.inspectorView.panel("sources");
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
-                for (var i = 0; i < uiSourceCodes.length; ++i) {
+                var ignored = true;
+                for (var i = 0; i < uiSourceCodes.length && ignored; ++i) {
                     if (uiSourceCodes[i].originURL().indexOf("inlineScriptURL.js") !== -1)
-                        InspectorTest.addResult("FAILED: sourceURL comment in inline script was used as a script name");
+                        ignored = false;
                 }
+                if (ignored)
+                    InspectorTest.addResult("FAILED: sourceURL comment in inline script was ignored");
                 next();
             }
         },

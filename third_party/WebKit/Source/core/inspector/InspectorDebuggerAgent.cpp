@@ -1317,13 +1317,9 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     const bool* isContentScript = script.isContentScript ? &script.isContentScript : 0;
 
     bool hasSyntaxError = compileResult != CompileSuccess;
-    if (!script.startLine && !script.startColumn) {
-        if (hasSyntaxError) {
-            bool deprecated;
-            script.sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
-        }
-    } else {
-        script.sourceURL = String();
+    if (hasSyntaxError) {
+        bool deprecated;
+        script.sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
     }
 
     bool hasSourceURL = !script.sourceURL.isEmpty();

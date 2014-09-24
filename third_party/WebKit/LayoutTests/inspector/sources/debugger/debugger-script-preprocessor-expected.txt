@@ -16,7 +16,7 @@ sourceURLs[0]=inspector-test.js
 sourceURLs[1]=debugger-test.js
 sourceURLs[2]=script1.js.js
 sourceURLs[3]=debugger-script-preprocessor_html.js
-sourceURLs[4]=debugger-script-preprocessor.html
+sourceURLs[4]=debugger-script-preprocessor_html_onload.js
 sourceURLs[5]=dynamicScript1
 sourceURLs[6]=dynamicScript2
 Page reloaded.
