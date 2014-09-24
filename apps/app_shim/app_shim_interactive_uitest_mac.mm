@@ -226,7 +226,8 @@ namespace apps {
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
-#define MAYBE_Launch Launch
+// Launch is flaky http://crbug.com/415422.
+#define MAYBE_Launch DISABLED_Launch
 #define MAYBE_RebuildShim RebuildShim
 #endif
 
