@@ -138,7 +138,6 @@ describe('ct-failures', function() {
         failureType: 'a_type',
         failing_build: 1,
         last_failing_build: 2,
-        failing_build_count: 2,
         master_url: 'https://build.chromium.org/p/chromium',
       }, {
         tree: 'chromium',
@@ -147,8 +146,7 @@ describe('ct-failures', function() {
         builder_name: 'Win',
         failureType: 'another_type',
         failing_build: 3,
-        last_failing_build: 5,
-        failing_build_count: 42,
+        last_failing_build: 44,
         master_url: 'https://build.chromium.org/p/chromium',
       }, {
         tree: 'blink',
@@ -158,7 +156,6 @@ describe('ct-failures', function() {
         failureType: 'a_type',
         failing_build: 1,
         last_failing_build: 2,
-        failing_build_count: 2,
         master_url: 'https://build.chromium.org/p/chromium.webkit',
       }], annotations);
       assert.equal(Object.size(failuresByTree), 2);
@@ -178,7 +175,7 @@ describe('ct-failures', function() {
       assert.equal(Object.size(chromiumBuilders.Win), 7);
       assert.propertyVal(chromiumBuilders.Win, 'key', 'https_//build.chromium.org/p/chromium::Win::3::unit_tests::MyTest');
       assert.propertyVal(chromiumBuilders.Win, 'actual', 'another_type');
-      assert.propertyVal(chromiumBuilders.Win, 'lastFailingBuild', 5);
+      assert.propertyVal(chromiumBuilders.Win, 'lastFailingBuild', 44);
       assert.propertyVal(chromiumBuilders.Win, 'earliestFailingBuild', 3);
       assert.propertyVal(chromiumBuilders.Win, 'masterUrl', 'https://build.chromium.org/p/chromium');
       assert.propertyVal(chromiumBuilders.Win, 'failingBuildCount', 42);
@@ -255,7 +252,6 @@ describe('ct-failures', function() {
           alerts: [
             {
               last_result_time: 1409697347.089103,
-              failing_build_count: 4,
               passing_build: 2485,
               last_failing_build: 2489,
               failing_build: 2486,
@@ -393,7 +389,6 @@ describe('ct-failures', function() {
               'last_failing_build': 1234,
               'failing_build': 1234,
               'master_url': 'http://build.chromium.org/p/chromium',
-              'failing_build_count': 1,
               'reason': 'test-reason',
           }
       }

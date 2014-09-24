@@ -170,7 +170,7 @@ CTFailures.prototype._groupFailuresByTreeAndReason = function(failures, annotati
       lastFailingBuild: failure.last_failing_build,
       earliestFailingBuild: failure.failing_build,
       masterUrl: failure.master_url,
-      failingBuildCount: failure.failing_build_count,
+      failingBuildCount: (1 + failure.last_failing_build - failure.failing_build),
       annotation: annotations[failureKey],
     };
   });
