@@ -323,6 +323,7 @@ function Download(download) {
   }
 
   this.nodeImg_ = createElementWithClassName('img', 'icon');
+  this.nodeImg_.alt = '';
   this.safe_.appendChild(this.nodeImg_);
 
   // FileLink is used for completed downloads, otherwise we show FileName.
@@ -405,6 +406,7 @@ function Download(download) {
   this.node.appendChild(this.danger_);
 
   this.dangerNodeImg_ = createElementWithClassName('img', 'icon');
+  this.dangerNodeImg_.alt = '';
   this.danger_.appendChild(this.dangerNodeImg_);
 
   this.dangerDesc_ = document.createElement('div');

@@ -36,6 +36,12 @@ BaseDownloadsWebUITest.prototype = {
     GEN('  SetDeleteAllowed(true);');
   },
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
   /**
    * Sends TOTAL_RESULT_COUNT fake downloads to the page. This can't be called
    * in the preLoad, because it requires the global Download object to have
