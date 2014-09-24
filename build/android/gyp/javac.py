@@ -10,7 +10,6 @@ import os
 import shutil
 import re
 import sys
-import textwrap
 
 from util import build_utils
 from util import md5_check
@@ -100,43 +99,6 @@ def DoJavac(
       input_strings=javac_cmd)
 
 
-_MAX_MANIFEST_LINE_LEN = 72
-
-
-def CreateManifest(manifest_path, classpath, main_class=None):
-  """Creates a manifest file with the given parameters.
-
-  This generates a manifest file that compiles with the spec found at
-  http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#JAR_Manifest
-
-  Args:
-    manifest_path: The path to the manifest file that should be created.
-    classpath: The JAR files that should be listed on the manifest file's
-      classpath.
-    main_class: If present, the class containing the main() function.
-
-  """
-  output = ['Manifest-Version: 1.0']
-  if main_class:
-    output.append('Main-Class: %s' % main_class)
-  if classpath:
-    sanitized_paths = []
-    for path in classpath:
-      sanitized_paths.append(os.path.basename(path.strip('"')))
-    output.append('Class-Path: %s' % ' '.join(sanitized_paths))
-  output.append('Created-By: ')
-  output.append('')
-
-  wrapper = textwrap.TextWrapper(break_long_words=True,
-                                 drop_whitespace=False,
-                                 subsequent_indent=' ',
-                                 width=_MAX_MANIFEST_LINE_LEN - 2)
-  output = '\r\n'.join(w for l in output for w in wrapper.wrap(l))
-
-  with open(manifest_path, 'w') as f:
-    f.write(output)
-
-
 def main(argv):
   colorama.init()
 
@@ -177,16 +139,10 @@ def main(argv):
       '--classes-dir',
       help='Directory for compiled .class files.')
   parser.add_option('--jar-path', help='Jar output path.')
-  parser.add_option(
-      '--main-class',
-      help='The class containing the main method.')
 
   parser.add_option('--stamp', help='Path to touch on success.')
 
   options, args = parser.parse_args(argv)
-
-  if options.main_class and not options.jar_path:
-    parser.error('--main-class requires --jar-path')
 
   classpath = []
   for arg in options.classpath:
@@ -229,16 +185,9 @@ def main(argv):
         java_files)
 
     if options.jar_path:
-      if options.main_class:
-        manifest_file = os.path.join(temp_dir, 'manifest')
-        CreateManifest(manifest_file, classpath,
-                       options.main_class)
-      else:
-        manifest_file = None
       jar.JarDirectory(classes_dir,
                        build_utils.ParseGypList(options.jar_excluded_classes),
-                       options.jar_path,
-                       manifest_file=manifest_file)
+                       options.jar_path)
 
     if options.classes_dir:
       # Delete the old classes directory. This ensures that all .class files in
