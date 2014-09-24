@@ -840,33 +840,54 @@ void ThumbnailStore::DecompressionTask(
         post_decompression_callback,
     skia::RefPtr<SkPixelRef> compressed_data,
     float scale,
-    const gfx::Size& encoded_size) {
-  SkBitmap raw_data;
+    const gfx::Size& content_size) {
+  SkBitmap raw_data_small;
   bool success = false;
 
   if (compressed_data.get()) {
-    size_t pixel_size = 4;  // Pixel size is 4 bytes for kARGB_8888_Config.
-    size_t stride = pixel_size * encoded_size.width();
+    gfx::Size buffer_size = gfx::Size(compressed_data->info().width(),
+                                      compressed_data->info().height());
 
-    raw_data.allocPixels(SkImageInfo::Make(encoded_size.width(),
-                                            encoded_size.height(),
-                                            kRGBA_8888_SkColorType,
-                                            kOpaque_SkAlphaType));
+    SkBitmap raw_data;
+    raw_data.allocPixels(SkImageInfo::Make(buffer_size.width(),
+                                           buffer_size.height(),
+                                           kRGBA_8888_SkColorType,
+                                           kOpaque_SkAlphaType));
     SkAutoLockPixels raw_data_lock(raw_data);
+    compressed_data->lockPixels();
     success = etc1_decode_image(
         reinterpret_cast<unsigned char*>(compressed_data->pixels()),
         reinterpret_cast<unsigned char*>(raw_data.getPixels()),
-        encoded_size.width(),
-        encoded_size.height(),
-        pixel_size,
-        stride);
+        buffer_size.width(),
+        buffer_size.height(),
+        raw_data.bytesPerPixel(),
+        raw_data.rowBytes());
+    compressed_data->unlockPixels();
     raw_data.setImmutable();
+
+    if (!success) {
+      // Leave raw_data_small empty for consistency with other failure modes.
+    } else if (content_size == buffer_size) {
+      // Shallow copy the pixel reference.
+      raw_data_small = raw_data;
+    } else {
+      // The content size is smaller than the buffer size (likely because of
+      // a power-of-two rounding), so deep copy the bitmap.
+      raw_data_small.allocPixels(SkImageInfo::Make(content_size.width(),
+                                                   content_size.height(),
+                                                   kRGBA_8888_SkColorType,
+                                                   kOpaque_SkAlphaType));
+      SkAutoLockPixels raw_data_small_lock(raw_data_small);
+      SkCanvas small_canvas(raw_data_small);
+      small_canvas.drawBitmap(raw_data, 0, 0);
+      raw_data_small.setImmutable();
+    }
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(post_decompression_callback, success, raw_data));
+      base::Bind(post_decompression_callback, success, raw_data_small));
 }
 
 ThumbnailStore::ThumbnailMetaData::ThumbnailMetaData() {
