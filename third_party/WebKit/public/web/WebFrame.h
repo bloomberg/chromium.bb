@@ -118,9 +118,14 @@ public:
 
     BLINK_EXPORT bool swap(WebFrame*);
 
-    // This method closes and deletes the WebFrame.
+    // This method closes and deletes the WebFrame. This is typically called by
+    // the embedder in response to a frame detached callback to the WebFrame
+    // client.
     virtual void close() = 0;
 
+    // Called by the embedder when it needs to detach the subtree rooted at this
+    // frame.
+    void detach();
 
     // Basic properties ---------------------------------------------------
 

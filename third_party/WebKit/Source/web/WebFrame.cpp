@@ -87,6 +87,11 @@ bool WebFrame::swap(WebFrame* frame)
     return true;
 }
 
+void WebFrame::detach()
+{
+    toCoreFrame(this)->detach();
+}
+
 WebFrame* WebFrame::opener() const
 {
     return m_opener;
