@@ -420,6 +420,17 @@ void BaseSearchProvider::AddMatchToMap(
           i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
       }
     }
+    // Copy over answer data from lower-ranking item, if necessary.
+    // This depends on the lower-ranking item always being added last - see
+    // use of push_back above.
+    AutocompleteMatch& more_relevant_match = i.first->second;
+    const AutocompleteMatch& less_relevant_match =
+        more_relevant_match.duplicate_matches.back();
+    if (!less_relevant_match.answer_type.empty() &&
+        more_relevant_match.answer_type.empty()) {
+      more_relevant_match.answer_type = less_relevant_match.answer_type;
+      more_relevant_match.answer_contents = less_relevant_match.answer_contents;
+    }
   }
 }
 
