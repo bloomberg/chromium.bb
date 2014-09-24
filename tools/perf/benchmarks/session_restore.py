@@ -30,7 +30,8 @@ class _SessionRestoreTest(benchmark.Benchmark):
       args.browser_options.profile_dir = os.path.join(profile_dir, profile_type)
 
 
-@benchmark.Disabled('android', 'linux')  # crbug.com/325479, crbug.com/381990
+# crbug.com/325479, crbug.com/381990
+@benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreColdTypical25(_SessionRestoreTest):
   tag = 'cold'
   test = session_restore.SessionRestore
@@ -39,7 +40,8 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
              'pageset_repeat': 5}
 
 
-@benchmark.Disabled('android', 'linux')  # crbug.com/325479, crbug.com/381990
+# crbug.com/325479, crbug.com/381990
+@benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
   test = session_restore.SessionRestore
@@ -49,7 +51,7 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/405386
-@benchmark.Disabled('android', 'linux', 'snowleopard')
+@benchmark.Disabled('android', 'linux', 'reference', 'snowleopard')
 class SessionRestoreWithUrlCold(_SessionRestoreTest):
   """Measure Chrome cold session restore with startup URLs."""
   tag = 'cold'
@@ -60,7 +62,7 @@ class SessionRestoreWithUrlCold(_SessionRestoreTest):
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/405386
-@benchmark.Disabled('android', 'linux', 'snowleopard')
+@benchmark.Disabled('android', 'linux', 'reference', 'snowleopard')
 class SessionRestoreWithUrlWarm(_SessionRestoreTest):
   """Measure Chrome warm session restore with startup URLs."""
   tag = 'warm'
