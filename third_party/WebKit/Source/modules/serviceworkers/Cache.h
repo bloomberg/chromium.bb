@@ -8,13 +8,12 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMException.h"
-#include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace blink {
 
@@ -22,8 +21,9 @@ class Dictionary;
 class Response;
 class Request;
 class ScriptState;
+class WebServiceWorkerCache;
 
-class Cache FINAL : public GarbageCollectedFinalized<Cache>, public ScriptWrappable {
+class Cache FINAL : public GarbageCollected<Cache>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:
@@ -45,23 +45,14 @@ public:
     ScriptPromise keys(ScriptState*, Request*, const Dictionary& queryParams);
     ScriptPromise keys(ScriptState*, const String&, const Dictionary& queryParams);
 
-    static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
-
     void trace(Visitor*) { }
 
+    static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
+
 private:
-    explicit Cache(WebServiceWorkerCache*);
+    explicit Cache(WebServiceWorkerCache* webCache);
 
-    ScriptPromise matchImpl(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise matchAllImpl(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise addImpl(ScriptState*, Request*);
-    ScriptPromise addAllImpl(ScriptState*, Vector<Request*>);
-    ScriptPromise deleteImpl(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise putImpl(ScriptState*, Request*, Response*);
-    ScriptPromise keysImpl(ScriptState*);
-    ScriptPromise keysImpl(ScriptState*, Request*, const Dictionary& queryParams);
-
-    OwnPtr<WebServiceWorkerCache> m_webCache;
+    WebServiceWorkerCache const* ALLOW_UNUSED m_webCache;
 };
 
 } // namespace blink

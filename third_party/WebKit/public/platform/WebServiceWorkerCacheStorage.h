@@ -15,7 +15,7 @@ namespace blink {
 
 class WebServiceWorkerCache;
 
-// An interface to the CacheStorage API, implemented by the embedder and passed in to Blink. Blink's implementation
+// An interface to the CacheStorage API, implemented by the embedder and passed in to blink. Blink's implementation
 // of the ServiceWorker spec will call these methods to create/open caches, and expect callbacks from the embedder
 // after operations complete.
 class WebServiceWorkerCacheStorage {
@@ -26,11 +26,8 @@ public:
 
     virtual ~WebServiceWorkerCacheStorage() { }
 
-    // Ownership of the CacheStorage*Callbacks methods passes to the WebServiceWorkerCacheStorage instance, which
-    // will delete it after calling onSuccess or onFailure.
-
-    // dispatchGet() or dispatchCreate() can return a WebServiceWorkerCache object, and these objects are owned by
-    // Blink, and should be destroyed when they are no longer needed.
+    // Ownership of the CacheStorage*Callbacks methods passes to the WebServiceWorkerCacheStorage
+    // instance, which will delete it after calling onSuccess or onFailure.
     virtual void dispatchGet(CacheStorageWithCacheCallbacks*, const WebString& cacheName) = 0;
     virtual void dispatchHas(CacheStorageCallbacks*, const WebString& cacheName) = 0;
     virtual void dispatchCreate(CacheStorageWithCacheCallbacks*, const WebString& cacheName) = 0;

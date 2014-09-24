@@ -1025,7 +1025,6 @@
       'indexeddb/IDBKeyPathTest.cpp',
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',
-      'serviceworkers/CacheTest.cpp',
       'serviceworkers/RequestTest.cpp',
       'serviceworkers/ResponseTest.cpp',
       'serviceworkers/ServiceWorkerContainerTest.cpp',
