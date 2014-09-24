@@ -4,6 +4,7 @@
 
 #include "athena/test/athena_test_base.h"
 
+#include "athena/env/public/athena_env.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/test/athena_test_helper.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -47,6 +48,8 @@ void AthenaTestBase::SetUp() {
 }
 
 void AthenaTestBase::TearDown() {
+  AthenaEnv::Get()->OnTerminating();
+
   teardown_called_ = true;
 
   // Flush the message loop because we have pending release tasks

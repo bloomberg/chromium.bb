@@ -10,7 +10,7 @@ namespace athena {
 namespace test {
 
 WindowManagerImplTestApi::WindowManagerImplTestApi()
-    : wm_(static_cast<WindowManagerImpl*>(WindowManager::GetInstance())) {
+    : wm_(static_cast<WindowManagerImpl*>(WindowManager::Get())) {
 }
 
 WindowManagerImplTestApi::~WindowManagerImplTestApi() {
