@@ -78,6 +78,8 @@ nodist_weston_SOURCES =					\
 	protocol/input-method-server-protocol.h		\
 	protocol/workspaces-protocol.c			\
 	protocol/workspaces-server-protocol.h		\
+	protocol/presentation_timing-protocol.c		\
+	protocol/presentation_timing-server-protocol.h	\
 	protocol/scaler-protocol.c			\
 	protocol/scaler-server-protocol.h
 
@@ -445,6 +447,8 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/scaler-client-protocol.h		\
 	protocol/workspaces-protocol.c			\
 	protocol/workspaces-client-protocol.h		\
+	protocol/presentation_timing-protocol.c		\
+	protocol/presentation_timing-client-protocol.h	\
 	protocol/xdg-shell-protocol.c			\
 	protocol/xdg-shell-client-protocol.h
 
@@ -987,6 +991,7 @@ EXTRA_DIST +=					\
 	protocol/wayland-test.xml		\
 	protocol/xdg-shell.xml			\
 	protocol/fullscreen-shell.xml		\
+	protocol/presentation_timing.xml	\
 	protocol/scaler.xml
 
 man_MANS = weston.1 weston.ini.5
