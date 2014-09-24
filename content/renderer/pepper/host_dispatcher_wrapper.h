@@ -34,7 +34,7 @@ class HostDispatcherWrapper {
   bool Init(const IPC::ChannelHandle& channel_handle,
             PP_GetInterface_Func local_get_interface,
             const ppapi::Preferences& preferences,
-            PepperHungPluginFilter* filter);
+            scoped_refptr<PepperHungPluginFilter> filter);
 
   // Implements GetInterface for the proxied plugin.
   const void* GetProxiedInterface(const char* name);
