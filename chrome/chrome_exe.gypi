@@ -90,12 +90,6 @@
             '../tools/cygprofile/cygprofile.gyp:cygprofile',
           ],
         }],
-        ['asan==1', {
-          'xcode_settings': {
-            'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
-            'STRIPFLAGS': '-s $(CHROMIUM_STRIP_SAVE_FILE)',
-         },
-        }],
         ['order_text_section!=""', {
           'target_conditions' : [
             ['_toolset=="target"', {

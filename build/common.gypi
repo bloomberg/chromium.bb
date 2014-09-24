@@ -2150,7 +2150,7 @@
       ['asan==1 and OS=="mac"', {
         # TODO(glider): we do not strip ASan binaries until the dynamic ASan
         # runtime is fully adopted. See http://crbug.com/242503.
-        'mac_strip_release': 1,
+        'mac_strip_release': 0,
       }],
       ['tsan==1', {
         'use_custom_libcxx%': 1,
@@ -4997,10 +4997,10 @@
             'conditions': [
               ['asan==1', {
                 'variables': {
-                 'asan_saves_file_path': 'asan.saves',
+                 'asan_saves_file': 'asan.saves',
                 },
                 'xcode_settings': {
-                  'CHROMIUM_STRIP_SAVE_FILE': '<(asan_saves_file_path)',
+                  'CHROMIUM_STRIP_SAVE_FILE': '<(asan_saves_file)',
                 },
               }],
             ],
@@ -5047,7 +5047,7 @@
                           'conditions': [
                             ['asan==1', {
                               'STRIPFLAGS': '-s $(CHROMIUM_STRIP_SAVE_FILE)',
-                            }],
+                            }]
                           ],
                         }],  # _type=="executable" and asan==1
                       ],  # target_conditions
