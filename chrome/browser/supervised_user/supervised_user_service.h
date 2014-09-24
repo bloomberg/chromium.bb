@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -35,6 +36,7 @@ class GoogleServiceAuthError;
 class PermissionRequestCreator;
 class Profile;
 class SupervisedUserRegistrationUtility;
+class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
 class SupervisedUserSiteList;
 class SupervisedUserURLFilter;
@@ -165,6 +167,9 @@ class SupervisedUserService : public KeyedService,
 
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
   void DidBlockNavigation(content::WebContents* web_contents);
+
+  void AddObserver(SupervisedUserServiceObserver* observer);
+  void RemoveObserver(SupervisedUserServiceObserver* observer);
 
 #if defined(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:
@@ -325,6 +330,8 @@ class SupervisedUserService : public KeyedService,
 
   // Used to create permission requests.
   scoped_ptr<PermissionRequestCreator> permissions_creator_;
+
+  ObserverList<SupervisedUserServiceObserver> observer_list_;
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
 };

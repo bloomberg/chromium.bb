@@ -24,6 +24,7 @@
 #include "chrome/browser/supervised_user/supervised_user_pref_mapping_service.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_mapping_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
@@ -313,6 +314,16 @@ void SupervisedUserService::DidBlockNavigation(
   }
 }
 
+void SupervisedUserService::AddObserver(
+    SupervisedUserServiceObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void SupervisedUserService::RemoveObserver(
+    SupervisedUserServiceObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 #if defined(ENABLE_EXTENSIONS)
 std::string SupervisedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
@@ -532,16 +543,25 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
   SupervisedUserURLFilter::FilteringBehavior behavior =
       SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
   url_filter_context_.SetDefaultFilteringBehavior(behavior);
+
+  FOR_EACH_OBSERVER(
+      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
 
 void SupervisedUserService::UpdateSiteLists() {
 #if defined(ENABLE_EXTENSIONS)
   url_filter_context_.LoadWhitelists(GetActiveSiteLists());
+
+  FOR_EACH_OBSERVER(
+      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 #endif
 }
 
 void SupervisedUserService::LoadBlacklist(const base::FilePath& path) {
   url_filter_context_.LoadBlacklist(path);
+
+  FOR_EACH_OBSERVER(
+      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
 
 bool SupervisedUserService::AccessRequestsEnabled() {
@@ -814,6 +834,9 @@ void SupervisedUserService::UpdateManualHosts() {
     (*host_map)[it.key()] = allow;
   }
   url_filter_context_.SetManualHosts(host_map.Pass());
+
+  FOR_EACH_OBSERVER(
+      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
 
 void SupervisedUserService::UpdateManualURLs() {
@@ -827,6 +850,9 @@ void SupervisedUserService::UpdateManualURLs() {
     (*url_map)[GURL(it.key())] = allow;
   }
   url_filter_context_.SetManualURLs(url_map.Pass());
+
+  FOR_EACH_OBSERVER(
+      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
 
 void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {

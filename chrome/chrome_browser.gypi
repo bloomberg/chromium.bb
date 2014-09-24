@@ -2285,6 +2285,7 @@
       'browser/supervised_user/supervised_user_service.h',
       'browser/supervised_user/supervised_user_service_factory.cc',
       'browser/supervised_user/supervised_user_service_factory.h',
+      'browser/supervised_user/supervised_user_service_observer.h',
       'browser/supervised_user/supervised_user_settings_service.cc',
       'browser/supervised_user/supervised_user_settings_service.h',
       'browser/supervised_user/supervised_user_settings_service_factory.cc',

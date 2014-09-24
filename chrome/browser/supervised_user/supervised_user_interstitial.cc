@@ -111,11 +111,14 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
     const GURL& url,
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       interstitial_page_(NULL),
       url_(url),
       callback_(callback) {}
 
-SupervisedUserInterstitial::~SupervisedUserInterstitial() {}
+SupervisedUserInterstitial::~SupervisedUserInterstitial() {
+  DCHECK(!web_contents_);
+}
 
 bool SupervisedUserInterstitial::Init() {
   if (ShouldProceed()) {
@@ -152,24 +155,9 @@ bool SupervisedUserInterstitial::Init() {
     }
   }
 
-  // TODO(bauerb): Extract an observer callback on SupervisedUserService for
-  // this.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
-  pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(
-      prefs::kDefaultSupervisedUserFilteringBehavior,
-      base::Bind(&SupervisedUserInterstitial::OnFilteringPrefsChanged,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kSupervisedUserManualHosts,
-      base::Bind(&SupervisedUserInterstitial::OnFilteringPrefsChanged,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kSupervisedUserManualURLs,
-      base::Bind(&SupervisedUserInterstitial::OnFilteringPrefsChanged,
-                 base::Unretained(this)));
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  supervised_user_service->AddObserver(this);
 
   interstitial_page_ =
       content::InterstitialPage::Create(web_contents_, true, url_, this);
@@ -183,22 +171,20 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   strings.SetString("blockPageTitle",
                     l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_TITLE));
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
+      SupervisedUserServiceFactory::GetForProfile(profile_);
 
   bool allow_access_requests = supervised_user_service->AccessRequestsEnabled();
   strings.SetBoolean("allowAccessRequests", allow_access_requests);
 
-  std::string profile_image_url = profile->GetPrefs()->GetString(
+  std::string profile_image_url = profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianProfileImageURL);
   strings.SetString("avatarURL1x", BuildAvatarImageUrl(profile_image_url,
                                                        kAvatarSize1x));
   strings.SetString("avatarURL2x", BuildAvatarImageUrl(profile_image_url,
                                                        kAvatarSize2x));
 
-  std::string profile_image_url2 = profile->GetPrefs()->GetString(
+  std::string profile_image_url2 = profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserSecondCustodianProfileImageURL);
   strings.SetString("secondAvatarURL1x", BuildAvatarImageUrl(profile_image_url2,
                                                              kAvatarSize1x));
@@ -263,10 +249,8 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
                               ACCESS_REQUEST,
                               HISTOGRAM_BOUNDING_VALUE);
 
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     SupervisedUserService* supervised_user_service =
-        SupervisedUserServiceFactory::GetForProfile(profile);
+        SupervisedUserServiceFactory::GetForProfile(profile_);
     supervised_user_service->AddAccessRequest(url_);
     DVLOG(1) << "Sent access request for " << url_.spec();
 
@@ -287,24 +271,30 @@ void SupervisedUserInterstitial::OnDontProceed() {
   DispatchContinueRequest(false);
 }
 
+void SupervisedUserInterstitial::OnURLFilterChanged() {
+  if (ShouldProceed())
+    interstitial_page_->Proceed();
+}
+
 bool SupervisedUserInterstitial::ShouldProceed() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
+      SupervisedUserServiceFactory::GetForProfile(profile_);
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
   return url_filter->GetFilteringBehaviorForURL(url_) !=
          SupervisedUserURLFilter::BLOCK;
 }
 
-void SupervisedUserInterstitial::OnFilteringPrefsChanged() {
-  if (ShouldProceed())
-    interstitial_page_->Proceed();
-}
-
 void SupervisedUserInterstitial::DispatchContinueRequest(
     bool continue_request) {
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  supervised_user_service->RemoveObserver(this);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(callback_, continue_request));
+
+  // After this, the WebContents may be destroyed. Make sure we don't try to use
+  // it again.
+  web_contents_ = NULL;
 }
