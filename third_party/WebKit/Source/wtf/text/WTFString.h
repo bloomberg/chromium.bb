@@ -655,6 +655,7 @@ template<> struct DefaultHash<String> {
 
 // Shared global empty string.
 WTF_EXPORT const String& emptyString();
+WTF_EXPORT const String& emptyString16Bit();
 WTF_EXPORT extern const String& xmlnsWithColon;
 
 } // namespace WTF
@@ -667,6 +668,7 @@ using WTF::StrictUTF8Conversion;
 using WTF::StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD;
 using WTF::String;
 using WTF::emptyString;
+using WTF::emptyString16Bit;
 using WTF::append;
 using WTF::appendNumber;
 using WTF::charactersAreAllASCII;

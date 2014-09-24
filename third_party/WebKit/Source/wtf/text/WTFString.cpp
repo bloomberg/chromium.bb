@@ -887,7 +887,7 @@ String String::make8BitFrom16BitSource(const UChar* source, size_t length)
 String String::make16BitFrom8BitSource(const LChar* source, size_t length)
 {
     if (!length)
-        return emptyString();
+        return emptyString16Bit();
 
     UChar* destination;
     String result = String::createUninitialized(length, destination);
@@ -1223,6 +1223,12 @@ float charactersToFloat(const UChar* data, size_t length, size_t& parsedLength)
 const String& emptyString()
 {
     DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty()));
+    return emptyString;
+}
+
+const String& emptyString16Bit()
+{
+    DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty16Bit()));
     return emptyString;
 }
 
