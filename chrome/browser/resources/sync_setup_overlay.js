@@ -815,7 +815,7 @@ cr.define('options', function() {
      */
     showSetupUI_: function() {
       chrome.send('SyncSetupShowSetupUI');
-      chrome.send('coreOptionsUserMetricsAction', ['Options_SyncShowAdvanced']);
+      chrome.send('coreOptionsUserMetricsAction', ['Options_ShowSyncAdvanced']);
     },
 
     /**
