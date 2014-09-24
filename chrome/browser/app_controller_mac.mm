@@ -69,6 +69,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_class_mac.h"
@@ -1006,7 +1007,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // for a locked profile, we have to show the User Manager instead as the
   // locked profile needs authentication.
   if (IsProfileSignedOut(lastProfile)) {
-    chrome::ShowUserManager(lastProfile->GetPath());
+    UserManager::Show(lastProfile->GetPath(),
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     return;
   }
 
@@ -1207,10 +1210,13 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // implemented as forced incognito, we can't open a new guest browser either,
   // so we have to show the User Manager as well.
   Profile* lastProfile = [self lastProfile];
-  if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile))
-    chrome::ShowUserManager(lastProfile->GetPath());
-  else
+  if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile)) {
+    UserManager::Show(lastProfile->GetPath(),
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  } else {
     CreateBrowser(lastProfile);
+  }
 
   // We've handled the reopen event, so return NO to tell AppKit not
   // to do anything.

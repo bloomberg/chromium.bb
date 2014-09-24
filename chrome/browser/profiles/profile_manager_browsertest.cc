@@ -35,7 +35,7 @@
 
 namespace {
 
-const profiles::ProfileSwitchingDoneCallback kOnProfileSwitchDoNothing;
+const ProfileManager::CreateCallback kOnProfileSwitchDoNothing;
 
 // An observer that returns back to test code after a new profile is
 // initialized.

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
@@ -27,23 +28,9 @@
 const int kWindowWidth = 900;
 const int kWindowHeight = 700;
 
-namespace chrome {
-
-// Declared in browser_dialogs.h so others don't have to depend on this header.
-void ShowUserManager(const base::FilePath& profile_path_to_focus) {
-  UserManagerMac::Show(
-      profile_path_to_focus, profiles::USER_MANAGER_NO_TUTORIAL);
-}
-
-void ShowUserManagerWithTutorial(profiles::UserManagerTutorialMode tutorial) {
-  UserManagerMac::Show(base::FilePath(), tutorial);
-}
-
-void HideUserManager() {
-  UserManagerMac::Hide();
-}
-
-}  // namespace chrome
+// An open User Manager window. There can only be one open at a time. This
+// is reset to NULL when the window is closed.
+UserManagerMac* instance_ = NULL;  // Weak.
 
 // Custom WebContentsDelegate that allows handling of hotkeys.
 class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
@@ -178,8 +165,35 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
 
 @end
 
-// static
-UserManagerMac* UserManagerMac::instance_ = NULL;
+
+void UserManager::Show(
+    const base::FilePath& profile_path_to_focus,
+    profiles::UserManagerTutorialMode tutorial_mode,
+    profiles::UserManagerProfileSelected profile_open_action) {
+  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
+  if (instance_) {
+    // If there's a user manager window open already, just activate it.
+    [instance_->window_controller() show];
+    return;
+  }
+
+  // Create the guest profile, if necessary, and open the User Manager
+  // from the guest profile.
+  profiles::CreateGuestProfileForUserManager(
+      profile_path_to_focus,
+      tutorial_mode,
+      profile_open_action,
+      base::Bind(&UserManagerMac::OnGuestProfileCreated));
+}
+
+void UserManager::Hide() {
+  if (instance_)
+    [instance_->window_controller() close];
+}
+
+bool UserManager::IsShowing() {
+  return instance_ ? [instance_->window_controller() isVisible]: false;
+}
 
 UserManagerMac::UserManagerMac(Profile* profile) {
   window_controller_.reset([[UserManagerWindowController alloc]
@@ -190,39 +204,11 @@ UserManagerMac::~UserManagerMac() {
 }
 
 // static
-void UserManagerMac::Show(const base::FilePath& profile_path_to_focus,
-                          profiles::UserManagerTutorialMode tutorial_mode) {
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
-  if (instance_) {
-    // If there's a user manager window open already, just activate it.
-    [instance_->window_controller_ show];
-    return;
-  }
-
-  // Create the guest profile, if necessary, and open the User Manager
-  // from the guest profile.
-  profiles::CreateGuestProfileForUserManager(
-      profile_path_to_focus,
-      tutorial_mode,
-      base::Bind(&UserManagerMac::OnGuestProfileCreated));
-}
-
-// static
-void UserManagerMac::Hide() {
-  if (instance_)
-    [instance_->window_controller_ close];
-}
-
-// static
-bool UserManagerMac::IsShowing() {
-  return instance_ ? [instance_->window_controller_ isVisible]: false;
-}
-
-// static
 void UserManagerMac::OnGuestProfileCreated(Profile* guest_profile,
                                            const std::string& url) {
+  DCHECK(!instance_);
   instance_ = new UserManagerMac(guest_profile);
-  [instance_->window_controller_ showURL:GURL(url)];
+  [instance_->window_controller() showURL:GURL(url)];
 }
 
 void UserManagerMac::WindowWasClosed() {

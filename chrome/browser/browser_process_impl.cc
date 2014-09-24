@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -255,7 +256,7 @@ void BrowserProcessImpl::StartTearDown() {
     // The desktop User Manager needs to be closed before the guest profile
     // can be destroyed.
     if (switches::IsNewAvatarMenu())
-      chrome::HideUserManager();
+      UserManager::Hide();
     profile_manager_.reset();
   }
 

@@ -19,38 +19,27 @@ class NavigationController;
 class WebContents;
 }
 
-// Dialog widget that contains the Desktop User Manager webui.
+// Dialog widget that contains the Desktop User Manager webui. This object
+// should always be created from the UserManager::Show() method. Note that only
+// one User Manager will exist at a time.
 class UserManagerMac {
  public:
-  // Shows the User Manager or re-activates an existing one, focusing the
-  // profile given by |profile_path_to_focus|. Based on the value of
-  // |tutorial_mode|, a tutorial could be shown, in which case
-  // |profile_path_to_focus| is ignored.
-  static void Show(const base::FilePath& profile_path_to_focus,
-                   profiles::UserManagerTutorialMode tutorial_mode);
-
-  // Hide the User Manager.
-  static void Hide();
-
-  // Returns whether or not the User Manager is showing.
-  static bool IsShowing();
-
   // Called by the cocoa window controller when its window closes and the
   // controller destroyed itself. Deletes the instance.
   void WindowWasClosed();
 
- private:
-  explicit UserManagerMac(Profile* profile);
-  virtual ~UserManagerMac();
-
-  // Creates a new UserManagerMac instance for the |guest_profile| and
-  // shows the |url|.
+  // Called from the UserManager class once the |guest_profile| is ready. Will
+  // construct a UserManagerMac object and show |url|.
   static void OnGuestProfileCreated(Profile* guest_profile,
                                     const std::string& url);
 
-  // An open User Manager window. There can only be one open at a time. This
-  // is reset to NULL when the window is closed.
-  static UserManagerMac* instance_;  // Weak.
+  UserManagerWindowController* window_controller() {
+    return window_controller_.get();
+  }
+
+ private:
+  explicit UserManagerMac(Profile* profile);
+  virtual ~UserManagerMac();
 
   // Controller of the window.
   base::scoped_nsobject<UserManagerWindowController> window_controller_;

@@ -306,6 +306,11 @@ class BackgroundModeManager
   // Returns true if we should be in background mode.
   bool ShouldBeInBackgroundMode() const;
 
+  // Finds the BackgroundModeData associated with the last active profile,
+  // if the profile isn't locked. Returns NULL otherwise.
+  BackgroundModeManager::BackgroundModeData*
+      GetBackgroundModeDataForLastProfile() const;
+
   // Reference to the profile info cache. It is used to update the background
   // app status of profiles when they open/close background apps.
   ProfileInfoCache* profile_cache_;

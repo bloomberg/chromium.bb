@@ -10,8 +10,8 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   EXPECT_EQ(0U, browser_list->size());
 
   // Signing out brings up the User Manager which we should close before exit.
-  chrome::HideUserManager();
+  UserManager::Hide();
 }
 
 #if defined(OS_CHROMEOS)

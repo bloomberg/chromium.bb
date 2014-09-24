@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 
   EXPECT_FALSE(result);
   EXPECT_EQ(2u, active_browser_list_->size());
-  EXPECT_FALSE(UserManagerMac::IsShowing());
+  EXPECT_FALSE(UserManager::IsShowing());
 }
 
 // Test that for a locked last profile, a reopen event opens the User Manager.
@@ -248,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, active_browser_list_->size());
-  EXPECT_TRUE(UserManagerMac::IsShowing());
-  UserManagerMac::Hide();
+  EXPECT_TRUE(UserManager::IsShowing());
+  UserManager::Hide();
 }
 
 // Test that for a guest last profile, a reopen event opens the User Manager.
@@ -274,8 +274,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, active_browser_list_->size());
-  EXPECT_TRUE(UserManagerMac::IsShowing());
-  UserManagerMac::Hide();
+  EXPECT_TRUE(UserManager::IsShowing());
+  UserManager::Hide();
 }
 
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {

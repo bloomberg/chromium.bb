@@ -8,6 +8,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -30,10 +31,10 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/user_manager.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -895,14 +896,18 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showUserManager:(id)sender {
-  chrome::ShowUserManager(base::FilePath());
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_NO_TUTORIAL,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   [self postActionPerformed:
       ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER];
 }
 
 - (IBAction)exitGuest:(id)sender {
   DCHECK(browser_->profile()->IsGuestSession());
-  chrome::ShowUserManager(base::FilePath());
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_NO_TUTORIAL,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   profiles::CloseGuestProfileWindows();
 }
 
@@ -976,8 +981,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)seeWhatsNew:(id)sender {
-  chrome::ShowUserManagerWithTutorial(
-      profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_TUTORIAL_OVERVIEW,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_WHATS_NEW);
 }

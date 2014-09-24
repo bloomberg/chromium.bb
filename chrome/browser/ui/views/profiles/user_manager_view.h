@@ -19,24 +19,8 @@ class WebView;
 // Dialog widget that contains the Desktop User Manager webui.
 class UserManagerView : public views::DialogDelegateView {
  public:
-  // Shows the User Manager or re-activates an existing one, focusing the
-  // profile given by |profile_path_to_focus|. Based on the value of
-  // |tutorial_mode|, a tutorial could be shown, in which case
-  // |profile_path_to_focus| is ignored.
-  static void Show(const base::FilePath& profile_path_to_focus,
-                   profiles::UserManagerTutorialMode tutorial_mode);
-
-  // Hide the User Manager.
-  static void Hide();
-
-  // Returns whether or not the User Manager is showing.
-  static bool IsShowing();
-
- private:
-  friend struct base::DefaultDeleter<UserManagerView>;
-
+  // Do not call directly. To display the User Manager, use UserManager::Show().
   UserManagerView();
-  virtual ~UserManagerView();
 
   // Creates a new UserManagerView instance for the |guest_profile| and
   // shows the |url|.
@@ -44,6 +28,11 @@ class UserManagerView : public views::DialogDelegateView {
                                     const base::FilePath& profile_path_to_focus,
                                     Profile* guest_profile,
                                     const std::string& url);
+
+ private:
+  virtual ~UserManagerView();
+
+  friend struct base::DefaultDeleter<UserManagerView>;
 
   // Creates dialog and initializes UI.
   void Init(const base::FilePath& profile_path_to_focus,
@@ -66,9 +55,6 @@ class UserManagerView : public views::DialogDelegateView {
   views::WebView* web_view_;
 
   scoped_ptr<AutoKeepAlive> keep_alive_;
-  // An open User Manager window. There can only be one open at a time. This
-  // is reset to NULL when the window is closed.
-  static UserManagerView* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerView);
 };

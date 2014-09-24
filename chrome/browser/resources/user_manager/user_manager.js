@@ -140,7 +140,8 @@ cr.define('UserManager', function() {
     // Hide the header bar until the showUserManagerMethod can apply function
     // parameters that affect widget visiblity.
     $('login-header-bar').hidden = true;
-    chrome.send('userManagerInitialize');
+
+    chrome.send('userManagerInitialize', [window.location.hash]);
   }
 
   // Return an object with all of the exports.

@@ -8,8 +8,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
@@ -132,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(NewAvatarMenuButtonTest, MAYBE_SignOut) {
   EXPECT_TRUE(browser_list->empty());
 
   // If the User Manager hasn't shown yet, wait for it to show up.
-  if (!UserManagerView::IsShowing())
+  if (!UserManager::IsShowing())
     base::MessageLoop::current()->RunUntilIdle();
 
   // We need to hide the User Manager or else the process can't die.
-  chrome::HideUserManager();
+  UserManager::Hide();
 }

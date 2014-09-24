@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -38,10 +39,12 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(UserManagerMacTest, ShowUserManager) {
-  EXPECT_FALSE(UserManagerMac::IsShowing());
-  UserManagerMac::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL);
-  EXPECT_TRUE(UserManagerMac::IsShowing());
+  EXPECT_FALSE(UserManager::IsShowing());
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_NO_TUTORIAL,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  EXPECT_TRUE(UserManager::IsShowing());
 
-  UserManagerMac::Hide();
-  EXPECT_FALSE(UserManagerMac::IsShowing());
+  UserManager::Hide();
+  EXPECT_FALSE(UserManager::IsShowing());
 }

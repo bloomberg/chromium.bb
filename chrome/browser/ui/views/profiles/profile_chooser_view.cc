@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -721,10 +722,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
   if (sender == users_button_) {
     // If this is a guest session, close all the guest browser windows.
-    if (browser_->profile()->IsGuestSession())
+    if (browser_->profile()->IsGuestSession()) {
       profiles::CloseGuestProfileWindows();
-    else
-      chrome::ShowUserManager(base::FilePath());
+    } else {
+      UserManager::Show(base::FilePath(),
+                        profiles::USER_MANAGER_NO_TUTORIAL,
+                        profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+    }
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
   } else if (sender == go_incognito_button_) {
     DCHECK(ShouldShowGoIncognito());
@@ -747,8 +751,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == tutorial_see_whats_new_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
         ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_WHATS_NEW);
-    chrome::ShowUserManagerWithTutorial(
-        profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+    UserManager::Show(base::FilePath(),
+                      profiles::USER_MANAGER_TUTORIAL_OVERVIEW,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   } else if (sender == remove_account_button_) {
     RemoveAccount();
   } else if (sender == account_removal_cancel_button_) {
@@ -772,7 +777,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == add_person_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuNotYou(
         ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_ADD_PERSON);
-    chrome::ShowUserManager(base::FilePath());
+    UserManager::Show(base::FilePath(),
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   } else if (sender == disconnect_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuNotYou(
         ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_DISCONNECT);

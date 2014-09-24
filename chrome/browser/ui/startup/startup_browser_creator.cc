@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -634,7 +635,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       bool signin_required = profile_index != std::string::npos &&
           profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
       if (signin_required || last_used_profile->IsGuestSession()) {
-        chrome::ShowUserManager(base::FilePath());
+        UserManager::Show(base::FilePath(),
+                          profiles::USER_MANAGER_NO_TUTORIAL,
+                          profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
         return true;
       }
     }

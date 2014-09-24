@@ -11,9 +11,13 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -27,7 +31,8 @@ class ListValue;
 
 class UserManagerScreenHandler : public content::WebUIMessageHandler,
                                  public ScreenlockBridge::LockHandler,
-                                 public GaiaAuthConsumer {
+                                 public GaiaAuthConsumer,
+                                 public content::NotificationObserver {
  public:
   UserManagerScreenHandler();
   virtual ~UserManagerScreenHandler();
@@ -36,6 +41,11 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
+
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ScreenlockBridge::LockHandler implementation.
   virtual void ShowBannerMessage(const base::string16& message) OVERRIDE;
@@ -70,12 +80,19 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
       OVERRIDE;
 
+  // Handle when Notified of a NOTIFICATION_BROWSER_WINDOW_READY event.
+  void OnBrowserWindowReady(Browser* browser);
+
   // Sends user list to account chooser.
   void SendUserList();
 
   // Pass success/failure information back to the web page.
   void ReportAuthenticationResult(bool success,
                                   ProfileMetrics::ProfileAuth metric);
+
+  // Perform cleanup once the profile and browser are open.
+  void OnSwitchToProfileComplete(Profile* profile,
+                                 Profile::CreateStatus profile_create_status);
 
   // Observes the ProfileInfoCache and gets notified when a profile has been
   // modified, so that the displayed user pods can be updated.
@@ -93,9 +110,16 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   // Login password, held during on-line auth for saving later if correct.
   std::string password_attempt_;
 
+  // URL hash, used to key post-profile actions if present.
+  std::string url_hash_;
+
   typedef std::map<std::string, ScreenlockBridge::LockHandler::AuthType>
       UserAuthTypeMap;
   UserAuthTypeMap user_auth_type_map_;
+
+  base::WeakPtrFactory<UserManagerScreenHandler> weak_ptr_factory_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };

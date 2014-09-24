@@ -98,16 +98,6 @@ void ShowProfileSigninConfirmationDialog(
     const std::string& username,
     ui::ProfileSigninConfirmationDelegate* delegate);
 
-
-// Shows the Desktop User Manager with the |profile_path_to_focus| user focused.
-void ShowUserManager(const base::FilePath& profile_path_to_focus);
-
-// Shows the Desktop User Manager with a specific |tutorial|.
-void ShowUserManagerWithTutorial(profiles::UserManagerTutorialMode tutorial);
-
-// Hides the User Manager.
-void HideUserManager();
-
 // Shows the Signed Certificate Timestamps viewer, to view the signed
 // certificate timestamps in |sct_ids_list|
 void ShowSignedCertificateTimestampsViewer(
