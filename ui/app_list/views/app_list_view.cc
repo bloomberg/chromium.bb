@@ -282,6 +282,11 @@ void AppListView::OnProfilesChanged() {
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
+void AppListView::OnShutdown() {
+  // Nothing to do on views - the widget will soon be closed, which will tear
+  // everything down.
+}
+
 void AppListView::SetProfileByPath(const base::FilePath& profile_path) {
   delegate_->SetProfileByPath(profile_path);
   app_list_main_view_->ModelChanged();

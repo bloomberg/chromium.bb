@@ -646,6 +646,9 @@ void AppListViewDelegate::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_APP_TERMINATING:
+      FOR_EACH_OBSERVER(
+          app_list::AppListViewDelegateObserver, observers_, OnShutdown());
+
       SetProfile(NULL);  // Ensures launcher page web contents are torn down.
 
       // SigninManagerFactory is not a leaky singleton (unlike this class), and

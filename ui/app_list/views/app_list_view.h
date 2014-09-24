@@ -100,6 +100,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from AppListViewDelegateObserver:
   virtual void OnProfilesChanged() OVERRIDE;
+  virtual void OnShutdown() OVERRIDE;
 
   void Prerender();
 

@@ -23,6 +23,10 @@ class Display;
 class Point;
 }
 
+namespace test {
+class AppListServiceMacTestApi;
+}
+
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
 class AppListServiceMac : public AppListServiceImpl,
@@ -80,6 +84,7 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
 
  private:
+  friend class test::AppListServiceMacTestApi;
   friend struct DefaultSingletonTraits<AppListServiceMac>;
 
   AppListServiceMac();

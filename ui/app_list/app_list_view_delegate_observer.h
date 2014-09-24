@@ -15,6 +15,11 @@ class APP_LIST_EXPORT AppListViewDelegateObserver {
   // profile changes its signin status.
   virtual void OnProfilesChanged() = 0;
 
+  // Invoked on Chrome shutdown. This is only needed on Mac, since reference-
+  // counting in Objective-C means that simply closing the window isn't enough
+  // to guarantee references to Chrome objects are gone.
+  virtual void OnShutdown() = 0;
+
  protected:
   virtual ~AppListViewDelegateObserver() {}
 };

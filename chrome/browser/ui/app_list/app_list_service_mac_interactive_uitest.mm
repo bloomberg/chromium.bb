@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_service_mac.h"
+#import "chrome/browser/ui/app_list/app_list_service_mac.h"
 
 #include <vector>
 
@@ -12,8 +12,20 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#import "ui/app_list/cocoa/app_list_window_controller.h"
 
 using apps::AppShimHandler;
+
+namespace test {
+
+class AppListServiceMacTestApi {
+ public:
+  static AppListWindowController* window_controller() {
+    return AppListServiceMac::GetInstance()->window_controller_;
+  }
+};
+
+}  // namespace test
 
 namespace {
 
@@ -30,6 +42,23 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
         OnShimLaunch(this,
                      apps::APP_SHIM_LAUNCH_NORMAL,
                      std::vector<base::FilePath>());
+  }
+
+  AppListViewController* GetViewController() {
+    return [test::AppListServiceMacTestApi::window_controller()
+        appListViewController];
+  }
+
+  // testing::Test overrides:
+  virtual void TearDown() OVERRIDE {
+    // At tear-down, NOTIFICATION_APP_TERMINATING should have been sent for the
+    // browser shutdown. References to browser-owned objects must be removed
+    // from the app list UI.
+    AppListViewController* view_controller = GetViewController();
+    // Note this first check will fail if the test doesn't ever show the
+    // app list, but currently all tests in this file do.
+    EXPECT_TRUE(view_controller);
+    EXPECT_FALSE([view_controller delegate]);
   }
 
   // AppShimHandler::Host overrides:
@@ -61,15 +90,16 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
 
 }  // namespace
 
-// Flaky on Mac. See https://crbug.com/415264
-IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest,
-                       DISABLED_ShowAppListUsingShim) {
+IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest, ShowAppListUsingShim) {
   // Check that AppListService has registered as a shim handler for "app_list".
   EXPECT_TRUE(AppShimHandler::GetForAppMode(app_mode::kAppListModeId));
 
   AppListService* service =
       AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
   EXPECT_FALSE(service->IsAppListVisible());
+
+  // Creation should be lazy.
+  EXPECT_FALSE(GetViewController());
 
   // With no saved profile, the default profile should be chosen and saved.
   service->Show();
@@ -96,4 +126,9 @@ IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest,
   EXPECT_EQ(3, launch_count_);
   service->DismissAppList();
   EXPECT_FALSE(service->IsAppListVisible());
+
+  // View sticks around until shutdown.
+  AppListViewController* view_controller = GetViewController();
+  EXPECT_TRUE(view_controller);
+  EXPECT_TRUE([view_controller delegate]);
 }

@@ -169,7 +169,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   scoped_ptr<SearchResults> results_;
 
   Status status_;
-  ObserverList<AppListModelObserver> observers_;
+  ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
