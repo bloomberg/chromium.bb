@@ -6,6 +6,8 @@
 
 namespace autofill {
 
+const SkColor PasswordGenerationPopupView::kPasswordTextColor =
+    SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor PasswordGenerationPopupView::kExplanatoryTextBackgroundColor =
     SkColorSetRGB(0xF5, 0xF5, 0xF5);
 const SkColor PasswordGenerationPopupView::kExplanatoryTextColor =

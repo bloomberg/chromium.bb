@@ -44,6 +44,7 @@ class PasswordGenerationPopupView {
   static PasswordGenerationPopupView* Create(
       PasswordGenerationPopupController* controller);
 
+  static const SkColor kPasswordTextColor;
   static const SkColor kExplanatoryTextBackgroundColor;
   static const SkColor kExplanatoryTextColor;
   static const SkColor kDividerColor;

@@ -40,7 +40,7 @@ class PasswordTextBox : public views::View {
             const base::string16& generated_password,
             const gfx::FontList& font_list) {
     views::BoxLayout* box_layout = new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 10, 5);
+        views::BoxLayout::kVertical, 0, 12, 5);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     SetLayoutManager(box_layout);
@@ -49,14 +49,14 @@ class PasswordTextBox : public views::View {
         suggestion_text, font_list.DeriveWithStyle(gfx::Font::BOLD));
     suggestion_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     suggestion_label->SetEnabledColor(
-        PasswordGenerationPopupViewViews::kItemTextColor);
+        PasswordGenerationPopupView::kPasswordTextColor);
     AddChildView(suggestion_label);
 
     views::Label* password_label =
         new views::Label(generated_password, font_list);
     password_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     password_label->SetEnabledColor(
-        PasswordGenerationPopupViewViews::kItemTextColor);
+        PasswordGenerationPopupView::kPasswordTextColor);
     AddChildView(password_label);
   }
 
