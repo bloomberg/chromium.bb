@@ -311,10 +311,10 @@ AgentHostDelegate::GetOrCreateAgentHost(
     const std::string& id,
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
     const std::string& debug_url) {
-   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-   AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
-   if (it != g_host_delegates.Get().end())
-     return it->second->agent_host_;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
+  if (it != g_host_delegates.Get().end())
+    return it->second->agent_host_;
 
   AgentHostDelegate* delegate = new AgentHostDelegate(id, browser, debug_url);
   scoped_refptr<content::DevToolsAgentHost> result =
@@ -415,6 +415,7 @@ class RemotePageTarget : public DevToolsTargetImpl,
   std::string frontend_url_;
   std::string remote_id_;
   std::string remote_type_;
+  std::string local_id_;
   DISALLOW_COPY_AND_ASSIGN(RemotePageTarget);
 };
 
@@ -451,7 +452,8 @@ RemotePageTarget::RemotePageTarget(
       browser_(browser),
       debug_url_(GetDebugURL(value)),
       remote_id_(GetStringProperty(value, "id")),
-      remote_type_(GetStringProperty(value, "type")) {
+      remote_type_(GetStringProperty(value, "type")),
+      local_id_(BuildUniqueTargetId(browser.get(), value)) {
   set_type("adb_page");
   set_url(GURL(GetStringProperty(value, "url")));
   set_title(base::UTF16ToUTF8(net::UnescapeForHTML(base::UTF8ToUTF16(
@@ -480,7 +482,7 @@ std::string RemotePageTarget::GetFrontendURL() {
 }
 
 std::string RemotePageTarget::GetId() const {
-  return remote_id_;
+  return local_id_;
 }
 
 bool RemotePageTarget::IsAttached() const {
