@@ -321,7 +321,11 @@ void ScriptInjectionManager::InjectScripts(
 void ScriptInjectionManager::HandleExecuteCode(
     const ExtensionMsg_ExecuteCode_Params& params,
     content::RenderView* render_view) {
-  blink::WebFrame* main_frame = render_view->GetWebView()->mainFrame();
+  // TODO(dcheng): Not sure how this can happen today. In an OOPI world, it
+  // would indicate a logic error--the browser must direct this request to the
+  // right renderer process to begin with.
+  blink::WebLocalFrame* main_frame =
+      render_view->GetWebView()->mainFrame()->toWebLocalFrame();
   if (!main_frame) {
     render_view->Send(
         new ExtensionHostMsg_ExecuteCodeFinished(render_view->GetRoutingID(),
@@ -357,10 +361,12 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
     int script_id,
     const GURL& url) {
   const Extension* extension = extensions_->GetByID(extension_id);
+  // TODO(dcheng): This function signature should really be a WebLocalFrame,
+  // rather than trying to coerce it here.
   scoped_ptr<ScriptInjection> injection =
       user_script_set_manager_->GetInjectionForDeclarativeScript(
           script_id,
-          web_frame,
+          web_frame->toWebLocalFrame(),
           tab_id,
           url,
           extension);

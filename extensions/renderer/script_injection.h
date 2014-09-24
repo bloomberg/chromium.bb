@@ -11,7 +11,7 @@
 #include "extensions/renderer/script_injector.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace extensions {
@@ -29,7 +29,7 @@ class ScriptInjection {
   static void RemoveIsolatedWorld(const std::string& extension_id);
 
   ScriptInjection(scoped_ptr<ScriptInjector> injector,
-                  blink::WebFrame* web_frame,
+                  blink::WebLocalFrame* web_frame,
                   const std::string& extension_id,
                   UserScript::RunLocation run_location,
                   int tab_id);
@@ -50,7 +50,7 @@ class ScriptInjection {
                            ScriptsRunInfo* scripts_run_info);
 
   // Accessors.
-  blink::WebFrame* web_frame() const { return web_frame_; }
+  blink::WebLocalFrame* web_frame() const { return web_frame_; }
   const std::string& extension_id() const { return extension_id_; }
   int64 request_id() const { return request_id_; }
 
@@ -64,11 +64,11 @@ class ScriptInjection {
   // Inject any JS scripts into the |frame|, optionally populating
   // |execution_results|.
   void InjectJs(const Extension* extension,
-                blink::WebFrame* frame,
+                blink::WebLocalFrame* frame,
                 base::ListValue* execution_results);
 
   // Inject any CSS source into the |frame|.
-  void InjectCss(blink::WebFrame* frame);
+  void InjectCss(blink::WebLocalFrame* frame);
 
   // Notify that we will not inject, and mark it as acknowledged.
   void NotifyWillNotInject(ScriptInjector::InjectFailureReason reason);
@@ -77,7 +77,7 @@ class ScriptInjection {
   scoped_ptr<ScriptInjector> injector_;
 
   // The (main) WebFrame into which this should inject the script.
-  blink::WebFrame* web_frame_;
+  blink::WebLocalFrame* web_frame_;
 
   // The id of the associated extension.
   std::string extension_id_;

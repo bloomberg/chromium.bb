@@ -21,7 +21,7 @@
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -59,7 +59,7 @@ void AppendAllChildFrames(blink::WebFrame* parent_frame,
 // |frame|. If no isolated world has been created for that extension,
 // one will be created and initialized.
 int GetIsolatedWorldIdForExtension(const Extension* extension,
-                                   blink::WebFrame* frame) {
+                                   blink::WebLocalFrame* frame) {
   static int g_next_isolated_world_id =
       ExtensionsRendererClient::Get()->GetLowestIsolatedWorldId();
 
@@ -114,7 +114,7 @@ void ScriptInjection::RemoveIsolatedWorld(const std::string& extension_id) {
 
 ScriptInjection::ScriptInjection(
     scoped_ptr<ScriptInjector> injector,
-    blink::WebFrame* web_frame,
+    blink::WebLocalFrame* web_frame,
     const std::string& extension_id,
     UserScript::RunLocation run_location,
     int tab_id)
@@ -223,7 +223,9 @@ void ScriptInjection::Inject(const Extension* extension,
   for (std::vector<blink::WebFrame*>::iterator iter = frame_vector.begin();
        iter != frame_vector.end();
        ++iter) {
-    blink::WebFrame* frame = *iter;
+    // TODO(dcheng): Unfortunately, the code as written won't work in an OOPI
+    // world. This is just a temporary hack to make things compile.
+    blink::WebLocalFrame* frame = (*iter)->toWebLocalFrame();
 
     // We recheck access here in the renderer for extra safety against races
     // with navigation, but different frames can have different URLs, and the
@@ -251,7 +253,7 @@ void ScriptInjection::Inject(const Extension* extension,
 }
 
 void ScriptInjection::InjectJs(const Extension* extension,
-                               blink::WebFrame* frame,
+                               blink::WebLocalFrame* frame,
                                base::ListValue* execution_results) {
   std::vector<blink::WebScriptSource> sources =
       injector_->GetJsSources(run_location_);
@@ -307,7 +309,7 @@ void ScriptInjection::InjectJs(const Extension* extension,
   }
 }
 
-void ScriptInjection::InjectCss(blink::WebFrame* frame) {
+void ScriptInjection::InjectCss(blink::WebLocalFrame* frame) {
   std::vector<std::string> css_sources =
       injector_->GetCssSources(run_location_);
   for (std::vector<std::string>::const_iterator iter = css_sources.begin();

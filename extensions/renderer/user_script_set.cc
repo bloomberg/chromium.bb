@@ -171,6 +171,8 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
   return scoped_ptr<ScriptInjection>();
 }
 
+// TODO(dcheng): Scripts can't be injected on a remote frame, so this function
+// signature needs to be updated.
 scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     UserScript* script,
     blink::WebFrame* web_frame,
@@ -208,7 +210,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (inject_css || inject_js) {
     injection.reset(new ScriptInjection(
         injector.Pass(),
-        web_frame,
+        web_frame->toWebLocalFrame(),
         extension->id(),
         run_location,
         tab_id));
