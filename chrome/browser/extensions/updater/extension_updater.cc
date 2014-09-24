@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -37,6 +36,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 
 using base::RandDouble;
 using base::RandInt;
@@ -119,15 +119,29 @@ void DetermineForcedUpdatesOnBlockingPool(
         extensions::kPlatformSpecificFolder);
     if (base::PathExists(platform_specific_path)) {
       bool force = true;
-      base::FileEnumerator all_archs(platform_specific_path,
-                                     false,
-                                     base::FileEnumerator::DIRECTORIES);
-      base::FilePath arch;
-      while (!(arch = all_archs.Next()).empty()) {
-        std::string arch_name = arch.BaseName().AsUTF8Unsafe();
-        std::replace(arch_name.begin(), arch_name.end(), '_', '-');
-        if (arch_name == OmahaQueryParams::GetNaclArch())
-          force = false;
+      const base::ListValue* platforms;
+      if (extension->manifest()->GetList(extensions::manifest_keys::kPlatforms,
+                                         &platforms)) {
+        for (size_t i = 0; i < platforms->GetSize(); ++i) {
+          const base::DictionaryValue* p;
+          if (platforms->GetDictionary(i, &p)) {
+            std::string nacl_arch;
+            if (p->GetString(extensions::manifest_keys::kNaClArch,
+                             &nacl_arch) &&
+                nacl_arch == OmahaQueryParams::GetNaclArch()) {
+              std::string subpath;
+              if (p->GetString(extensions::manifest_keys::kSubPackagePath,
+                               &subpath)) {
+                // _platform_specific is part of the sub_package_path entry.
+                base::FilePath platform_specific_subpath =
+                    extension->path().AppendASCII(subpath);
+                if (base::PathExists(platform_specific_subpath)) {
+                  force = false;
+                }
+              }
+            }
+          }
+        }
       }
 
       if (force)
