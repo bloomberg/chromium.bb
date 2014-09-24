@@ -205,6 +205,7 @@ struct weston_output {
 	uint32_t frame_time; /* presentation timestamp in milliseconds */
 	int disable_planes;
 	int destroying;
+	struct wl_list feedback_list;
 
 	char *make, *model, *serial_number;
 	uint32_t subpixel;
@@ -835,6 +836,9 @@ struct weston_surface_state {
 	/* wl_surface.frame */
 	struct wl_list frame_callback_list;
 
+	/* presentation.feedback */
+	struct wl_list feedback_list;
+
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_scaling_factor */
 	/* wl_viewport.set */
@@ -874,6 +878,7 @@ struct weston_surface {
 	uint32_t output_mask;
 
 	struct wl_list frame_callback_list;
+	struct wl_list feedback_list;
 
 	struct weston_buffer_reference buffer_ref;
 	struct weston_buffer_viewport buffer_viewport;

@@ -439,6 +439,74 @@ struct weston_frame_callback {
 	struct wl_list link;
 };
 
+struct weston_presentation_feedback {
+	struct wl_resource *resource;
+
+	/* XXX: could use just wl_resource_get_link() instead */
+	struct wl_list link;
+};
+
+static void
+weston_presentation_feedback_discard(
+		struct weston_presentation_feedback *feedback)
+{
+	presentation_feedback_send_discarded(feedback->resource);
+	wl_resource_destroy(feedback->resource);
+}
+
+static void
+weston_presentation_feedback_discard_list(struct wl_list *list)
+{
+	struct weston_presentation_feedback *feedback, *tmp;
+
+	wl_list_for_each_safe(feedback, tmp, list, link)
+		weston_presentation_feedback_discard(feedback);
+}
+
+static void
+weston_presentation_feedback_present(
+		struct weston_presentation_feedback *feedback,
+		struct weston_output *output,
+		uint32_t refresh_nsec,
+		const struct timespec *ts,
+		uint64_t seq)
+{
+	struct wl_client *client = wl_resource_get_client(feedback->resource);
+	struct wl_resource *o;
+	uint64_t secs;
+	uint32_t flags = 0;
+
+	wl_resource_for_each(o, &output->resource_list) {
+		if (wl_resource_get_client(o) != client)
+			continue;
+
+		presentation_feedback_send_sync_output(feedback->resource, o);
+	}
+
+	secs = ts->tv_sec;
+	presentation_feedback_send_presented(feedback->resource,
+					     secs >> 32, secs & 0xffffffff,
+					     ts->tv_nsec,
+					     refresh_nsec,
+					     seq >> 32, seq & 0xffffffff,
+					     flags);
+	wl_resource_destroy(feedback->resource);
+}
+
+static void
+weston_presentation_feedback_present_list(struct wl_list *list,
+					  struct weston_output *output,
+					  uint32_t refresh_nsec,
+					  const struct timespec *ts,
+					  uint64_t seq)
+{
+	struct weston_presentation_feedback *feedback, *tmp;
+
+	wl_list_for_each_safe(feedback, tmp, list, link)
+		weston_presentation_feedback_present(feedback, output,
+						     refresh_nsec, ts, seq);
+}
+
 static void
 surface_state_handle_buffer_destroy(struct wl_listener *listener, void *data)
 {
@@ -464,6 +532,7 @@ weston_surface_state_init(struct weston_surface_state *state)
 	region_init_infinite(&state->input);
 
 	wl_list_init(&state->frame_callback_list);
+	wl_list_init(&state->feedback_list);
 
 	state->buffer_viewport.buffer.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	state->buffer_viewport.buffer.scale = 1;
@@ -480,6 +549,8 @@ weston_surface_state_fini(struct weston_surface_state *state)
 	wl_list_for_each_safe(cb, next,
 			      &state->frame_callback_list, link)
 		wl_resource_destroy(cb->resource);
+
+	weston_presentation_feedback_discard_list(&state->feedback_list);
 
 	pixman_region32_fini(&state->input);
 	pixman_region32_fini(&state->opaque);
@@ -539,6 +610,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_init(&surface->views);
 
 	wl_list_init(&surface->frame_callback_list);
+	wl_list_init(&surface->feedback_list);
 
 	wl_list_init(&surface->subsurface_list);
 	wl_list_init(&surface->subsurface_list_pending);
@@ -1555,6 +1627,8 @@ weston_surface_destroy(struct weston_surface *surface)
 	wl_list_for_each_safe(cb, next, &surface->frame_callback_list, link)
 		wl_resource_destroy(cb->resource);
 
+	weston_presentation_feedback_discard_list(&surface->feedback_list);
+
 	free(surface);
 }
 
@@ -1656,6 +1730,7 @@ weston_surface_attach(struct weston_surface *surface,
 	surface->compositor->renderer->attach(surface, buffer);
 
 	weston_surface_calculate_size_from_buffer(surface);
+	weston_presentation_feedback_discard_list(&surface->feedback_list);
 }
 
 WL_EXPORT void
@@ -1927,6 +2002,10 @@ weston_output_repaint(struct weston_output *output)
 			wl_list_insert_list(&frame_callback_list,
 					    &ev->surface->frame_callback_list);
 			wl_list_init(&ev->surface->frame_callback_list);
+
+			wl_list_insert_list(&output->feedback_list,
+					    &ev->surface->feedback_list);
+			wl_list_init(&ev->surface->feedback_list);
 		}
 	}
 
@@ -1981,6 +2060,12 @@ weston_output_finish_frame(struct weston_output *output,
 	struct wl_event_loop *loop =
 		wl_display_get_event_loop(compositor->wl_display);
 	int fd, r;
+	uint32_t refresh_nsec;
+
+	refresh_nsec = 1000000000000UL / output->current_mode->refresh;
+	weston_presentation_feedback_present_list(&output->feedback_list,
+						  output, refresh_nsec, stamp,
+						  0);
 
 	output->frame_time = stamp->tv_sec * 1000 + stamp->tv_nsec / 1000000;
 
@@ -2274,6 +2359,16 @@ weston_surface_commit_state(struct weston_surface *surface,
 	wl_list_insert_list(&surface->frame_callback_list,
 			    &state->frame_callback_list);
 	wl_list_init(&state->frame_callback_list);
+
+	/* XXX:
+	 * What should happen with a feedback request, if there
+	 * is no wl_buffer attached for this commit?
+	 */
+
+	/* presentation.feedback */
+	wl_list_insert_list(&surface->feedback_list,
+			    &state->feedback_list);
+	wl_list_init(&state->feedback_list);
 }
 
 static void
@@ -2501,6 +2596,8 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 						surface->pending.buffer);
 		weston_buffer_reference(&sub->cached_buffer_ref,
 					surface->pending.buffer);
+		weston_presentation_feedback_discard_list(
+					&sub->cached.feedback_list);
 	}
 	sub->cached.sx += surface->pending.sx;
 	sub->cached.sy += surface->pending.sy;
@@ -2521,6 +2618,10 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	wl_list_insert_list(&sub->cached.frame_callback_list,
 			    &surface->pending.frame_callback_list);
 	wl_list_init(&surface->pending.frame_callback_list);
+
+	wl_list_insert_list(&sub->cached.feedback_list,
+			    &surface->pending.feedback_list);
+	wl_list_init(&surface->pending.feedback_list);
 
 	sub->has_cached_data = 1;
 }
@@ -3254,6 +3355,8 @@ weston_output_destroy(struct weston_output *output)
 
 	output->destroying = 1;
 
+	weston_presentation_feedback_discard_list(&output->feedback_list);
+
 	weston_compositor_remove_output(output->compositor, output);
 	wl_list_remove(&output->link);
 
@@ -3462,6 +3565,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	wl_signal_init(&output->destroy_signal);
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
+	wl_list_init(&output->feedback_list);
 
 	output->id = ffs(~output->compositor->output_id_pool) - 1;
 	output->compositor->output_id_pool |= 1 << output->id;
@@ -3738,6 +3842,17 @@ bind_scaler(struct wl_client *client,
 }
 
 static void
+destroy_presentation_feedback(struct wl_resource *feedback_resource)
+{
+	struct weston_presentation_feedback *feedback;
+
+	feedback = wl_resource_get_user_data(feedback_resource);
+
+	wl_list_remove(&feedback->link);
+	free(feedback);
+}
+
+static void
 presentation_destroy(struct wl_client *client, struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
@@ -3745,12 +3860,37 @@ presentation_destroy(struct wl_client *client, struct wl_resource *resource)
 
 static void
 presentation_feedback(struct wl_client *client,
-		      struct wl_resource *resource,
-		      struct wl_resource *surface,
+		      struct wl_resource *presentation_resource,
+		      struct wl_resource *surface_resource,
 		      uint32_t callback)
 {
-	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_METHOD,
-			       "presentation_feedback unimplemented");
+	struct weston_surface *surface;
+	struct weston_presentation_feedback *feedback;
+
+	surface = wl_resource_get_user_data(surface_resource);
+
+	feedback = calloc(1, sizeof *feedback);
+	if (!feedback)
+		goto err_calloc;
+
+	feedback->resource = wl_resource_create(client,
+					&presentation_feedback_interface,
+					1, callback);
+	if (!feedback->resource)
+		goto err_create;
+
+	wl_resource_set_implementation(feedback->resource, NULL, feedback,
+				       destroy_presentation_feedback);
+
+	wl_list_insert(&surface->pending.feedback_list, &feedback->link);
+
+	return;
+
+err_create:
+	free(feedback);
+
+err_calloc:
+	wl_client_post_no_memory(client);
 }
 
 static const struct presentation_interface presentation_implementation = {
