@@ -11,6 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chromeos/ime/input_method_manager.h"
 
+class PrefService;
+
 namespace chromeos {
 namespace input_method {
 
@@ -38,6 +40,10 @@ class InputMethodPersistence : public InputMethodManager::Observer {
   InputMethodManager::UISessionState ui_session_;
   DISALLOW_COPY_AND_ASSIGN(InputMethodPersistence);
 };
+
+void SetUserLRUInputMethodPreferenceForTesting(const std::string& username,
+                                               const std::string& input_method,
+                                               PrefService* local_state);
 
 }  // namespace input_method
 }  // namespace chromeos

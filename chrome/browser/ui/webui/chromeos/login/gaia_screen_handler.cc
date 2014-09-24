@@ -12,6 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -22,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -103,6 +106,16 @@ void ClearDnsCache(IOThread* io_thread) {
     return;
 
   io_thread->ClearHostCache();
+}
+
+void PushFrontIMIfNotExists(const std::string& input_method,
+                            std::vector<std::string>* input_methods) {
+  if (input_method.empty())
+    return;
+
+  if (std::find(input_methods->begin(), input_methods->end(), input_method) ==
+      input_methods->end())
+    input_methods->insert(input_methods->begin(), input_method);
 }
 
 }  // namespace
@@ -557,9 +570,37 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   else
     Delegate()->LoadWallpaper(populated_email_);
 
+  input_method::InputMethodManager* imm =
+      input_method::InputMethodManager::Get();
+
+  scoped_refptr<input_method::InputMethodManager::State> gaia_ime_state =
+      imm->GetActiveIMEState()->Clone();
+  imm->SetState(gaia_ime_state);
+
   // Set Least Recently Used input method for the user.
-  if (!populated_email_.empty())
-    signin_screen_handler_->SetUserInputMethod(populated_email_);
+  if (!populated_email_.empty()) {
+    signin_screen_handler_->SetUserInputMethod(populated_email_,
+                                               gaia_ime_state.get());
+  } else {
+    std::vector<std::string> input_methods =
+        imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
+    const std::string owner_im = signin_screen_handler_->GetUserLRUInputMethod(
+        user_manager::UserManager::Get()->GetOwnerEmail());
+    const std::string system_im = g_browser_process->local_state()->GetString(
+        language_prefs::kPreferredKeyboardLayout);
+
+    PushFrontIMIfNotExists(owner_im, &input_methods);
+    PushFrontIMIfNotExists(system_im, &input_methods);
+
+    gaia_ime_state->EnableLoginLayouts(
+        g_browser_process->GetApplicationLocale(), input_methods);
+
+    if (!system_im.empty()) {
+      gaia_ime_state->ChangeInputMethod(system_im, false /* show_message */);
+    } else if (!owner_im.empty()) {
+      gaia_ime_state->ChangeInputMethod(owner_im, false /* show_message */);
+    }
+  }
 
   LoadAuthExtension(!gaia_silent_load_, false, false);
   signin_screen_handler_->UpdateUIState(

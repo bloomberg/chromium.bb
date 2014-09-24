@@ -67,6 +67,8 @@ class LoginManagerTest : public MixinBasedBrowserTest {
 
   content::WebContents* web_contents() { return web_contents_; }
 
+  test::JSChecker& js_checker() { return js_checker_; }
+
  private:
   void InitializeWebContents();
 
