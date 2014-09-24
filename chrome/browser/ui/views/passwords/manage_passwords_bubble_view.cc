@@ -627,7 +627,7 @@ ManagePasswordsBubbleView::SaveConfirmationView::~SaveConfirmationView() {
 void ManagePasswordsBubbleView::SaveConfirmationView::StyledLabelLinkClicked(
     const gfx::Range& range, int event_flags) {
   DCHECK_EQ(range, parent_->model()->save_confirmation_link_range());
-  parent_->model()->OnRemoteManageLinkClicked();
+  parent_->model()->OnManageLinkClicked();
   parent_->Close();
 }
 

@@ -167,18 +167,6 @@ void ManagePasswordsUIController::
 #endif
 }
 
-void ManagePasswordsUIController::NavigateToAccountCentralManagementPage() {
-  // TODO(gcasto): FindBowserWithWebContents() doesn't exist on Android.
-  // Need to determine how this should work there.
-#if !defined(OS_ANDROID)
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  content::OpenURLParams params(
-      GURL(chrome::kAutoPasswordGenerationLearnMoreURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
-#endif
-}
-
 void ManagePasswordsUIController::SavePassword() {
   DCHECK(PasswordPendingUserDecision());
   SavePasswordInternal();

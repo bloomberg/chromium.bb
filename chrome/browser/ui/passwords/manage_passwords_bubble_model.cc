@@ -167,16 +167,6 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
       ->NavigateToPasswordManagerSettingsPage();
 }
 
-// TODO(gcasto): Is it worth having a new dismissal reason to distinguish
-// the two management cases? User intention is pretty similar between the two,
-// but the context in which they are shown is pretty different since one is
-// from an explict action and the other isn't.
-void ManagePasswordsBubbleModel::OnRemoteManageLinkClicked() {
-  dismissal_reason_ = metrics_util::CLICKED_MANAGE;
-  ManagePasswordsUIController::FromWebContents(web_contents())
-      ->NavigateToAccountCentralManagementPage();
-}
-
 void ManagePasswordsBubbleModel::OnPasswordAction(
     const autofill::PasswordForm& password_form,
     PasswordAction action) {

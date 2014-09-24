@@ -10,7 +10,6 @@ ManagePasswordsUIControllerMock::ManagePasswordsUIControllerMock(
     content::WebContents* contents)
     : ManagePasswordsUIController(contents),
       navigated_to_settings_page_(false),
-      navigated_to_account_central_management_page_(false),
       saved_password_(false),
       never_saved_password_(false) {
   contents->SetUserData(UserDataKey(), this);
@@ -22,10 +21,6 @@ ManagePasswordsUIControllerMock::
 void ManagePasswordsUIControllerMock::
     NavigateToPasswordManagerSettingsPage() {
   navigated_to_settings_page_ = true;
-}
-
-void ManagePasswordsUIControllerMock::NavigateToAccountCentralManagementPage() {
-  navigated_to_account_central_management_page_ = true;
 }
 
 const autofill::PasswordForm&

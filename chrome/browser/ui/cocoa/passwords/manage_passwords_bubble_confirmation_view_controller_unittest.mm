@@ -76,7 +76,7 @@ TEST_F(ManagePasswordsBubbleConfirmationViewControllerTest,
        ShouldOpenPasswordsAndDismissWhenLinkClicked) {
   [controller().confirmationText clickedOnLink:nil atIndex:0];
   EXPECT_TRUE([delegate() dismissed]);
-  EXPECT_TRUE(ui_controller()->navigated_to_account_central_management_page());
+  EXPECT_TRUE(ui_controller()->navigated_to_settings_page());
 }
 
 }  // namespace

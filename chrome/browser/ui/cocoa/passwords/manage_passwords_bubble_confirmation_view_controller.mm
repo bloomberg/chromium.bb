@@ -41,7 +41,7 @@ using namespace password_manager::mac::ui;
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  model_->OnRemoteManageLinkClicked();
+  model_->OnManageLinkClicked();
   [delegate_ viewShouldDismiss];
   return YES;
 }
