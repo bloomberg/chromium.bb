@@ -42,22 +42,6 @@ describe('ct-failure-card-buttons', function() {
       card.shadowRoot.getElementById('examine').dispatchEvent(new CustomEvent('tap'));
     });
 
-    it('adding a bug number should show link', function(done) {
-      group.setBug(123);
-
-      setTimeout(function() {
-        var links = card.shadowRoot.querySelectorAll('a');
-        assert.lengthOf(links, 1);
-        assert.match(links[0].href, /crbug.com\/123/);
-        done();
-      });
-    });
-
-    it('should not show link without a bug number', function() {
-      var links = card.shadowRoot.querySelectorAll('a');
-      assert.lengthOf(links, 0);
-    });
-
     it('clicking link bug should show dialog', function(done) {
       card.shadowRoot.getElementById('link-bug').dispatchEvent(new CustomEvent('tap'));
       setTimeout(function() {

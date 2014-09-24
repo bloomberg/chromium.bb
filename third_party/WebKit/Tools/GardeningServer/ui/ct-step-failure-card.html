@@ -12,20 +12,38 @@ found in the LICENSE file.
   <template>
     <style>
       :host {
+        display: flex;
+      }
+
+      :host > * {
+        flex: 1;
+      }
+
+      ct-test-list,
+      ct-builder-grid {
         display: block;
+        margin-bottom: 10px;
+        min-height: 24px;
       }
 
       ct-commit-list {
-        margin-top: 15px;
+        margin-left: 25px;
       }
 
-      ct-builder-grid {
-        display: block;
-        margin-top: 10px;
+      @media (max-width: 800px) {
+        :host {
+          flex-direction: column;
+        }
+
+        ct-commit-list {
+          margin-left: 0px;
+        }
       }
     </style>
-    <ct-test-list tests="{{ group.failures }}"></ct-test-list>
-    <ct-builder-grid builderList="{{ group.builderList }}"></ct-builder-grid>
+    <div>
+      <ct-builder-grid builderList="{{ group.builderList }}"></ct-builder-grid>
+      <ct-test-list tests="{{ group.failures }}"></ct-test-list>
+    </div>
     <ct-commit-list commitList="{{ group.commitList }}"></ct-commit-list>
   </template>
   <script>

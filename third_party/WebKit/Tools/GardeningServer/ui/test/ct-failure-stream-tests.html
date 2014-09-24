@@ -81,6 +81,39 @@ describe('ct-failure-stream', function() {
       });
     });
 
+    it('adding a bug number should show bugs link', function(done) {
+      var cl = new CTCommitListMock();
+      var group = new CTFailureGroup('', new CTStepFailureGroupData([
+        new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
+                      {'blink':158544})], cl));
+      group.setBug(123);
+
+      stream.groups = [group];
+      stream.category = 'default';
+
+      setTimeout(function() {
+        var links = stream.shadowRoot.querySelectorAll('.bugs a');
+        assert.lengthOf(links, 1);
+        assert.match(links[0].href, /crbug.com\/123/);
+        done();
+      });
+    });
+
+    it('should not show bugs link without a bug number', function(done) {
+      var cl = new CTCommitListMock();
+      var group = new CTFailureGroup('', new CTStepFailureGroupData([
+        new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
+                      {'blink':158544})], cl));
+
+      stream.groups = [group];
+      stream.category = 'default';
+
+      setTimeout(function() {
+        var links = stream.shadowRoot.querySelectorAll('.bugs');
+        assert.lengthOf(links, 0);
+        done();
+      });
+    });
   });
 });
 

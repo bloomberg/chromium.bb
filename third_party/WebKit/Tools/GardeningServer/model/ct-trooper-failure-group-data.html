@@ -15,6 +15,7 @@ function CTTrooperFailureGroupData(details, url, raw, type, tree) {
 };
 
 CTTrooperFailureGroupData.prototype.getAnnotations = function() {
+  // FIXME: Merge in annotations!
   return [];
 };
 
@@ -23,6 +24,7 @@ CTTrooperFailureGroupData.prototype.dataToExamine = function() {
 };
 
 CTTrooperFailureGroupData.prototype.failureKeys = function() {
+  // FIXME: This should return a unique key for this CTTrooperFailureGroupData.
   return [];
 };
 </script>

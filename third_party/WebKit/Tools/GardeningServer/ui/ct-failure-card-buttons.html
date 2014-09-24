@@ -12,6 +12,17 @@ found in the LICENSE file.
 
 <polymer-element name="ct-failure-card-buttons" attributes="group bug">
   <template>
+    <style>
+      :host {
+        display: flex;
+      }
+      :host > * {
+        margin-right: 5px;
+      }
+      ct-button {
+        white-space: nowrap;
+      }
+    </style>
     <ct-button id="examine" on-tap="{{ examine }}" label="Examine"></ct-button>
     <template if="{{ !group.isSnoozed }}">
       <ct-button id="snooze" on-tap="{{ snooze }}" label="Snooze"></ct-button>
@@ -20,12 +31,6 @@ found in the LICENSE file.
       <ct-button id="snooze" on-tap="{{ unsnooze }}" label="Unsnooze"></ct-button>
     </template>
     <ct-button id="link-bug" on-tap="{{ linkBug }}" label="Link Bug"></ct-button>
-    <template if="{{ group.bug !== undefined }}">
-      <div>
-        <a href="{{ group.bug }}">
-          {{ group.bugLabel }}</a>
-      </div>
-    </template>
 
     <paper-dialog heading="Enter bug number" transition="paper-transition-center" id="bugDialog">
       <paper-input label="Bug# or URL" floatingLabel autofocus id="bug"></paper-input>

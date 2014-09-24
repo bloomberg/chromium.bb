@@ -14,20 +14,29 @@ found in the LICENSE file.
     <style>
       :host {
         display: block;
+        word-wrap: break-word;
+      }
+
+      .bugs {
+        margin-bottom: 10px;
+        min-height: 24px;
       }
 
       .card {
-        padding: 15px 5px;
+        padding: 10px 5px 0;
         border-bottom: 1px solid lightgrey;
         display: flex;
       }
 
       .card > * {
         flex: 1;
+        min-width: 120px;
       }
 
       .card > ct-failure-card-buttons {
-        flex: none;
+        flex: 0 1 auto;
+        margin-right: 10px;
+        margin-bottom: 10px;
       }
 
       /* FIXME: Don't use before hax to add labels */
@@ -44,21 +53,40 @@ found in the LICENSE file.
       .snoozed {
         opacity: 0.5;
       }
+
+      @media (max-width: 1200px) {
+        .card > ct-failure-card-buttons {
+          margin-right: 0px;
+        }
+
+        .card {
+          flex-direction: column;
+        }
+      }
     </style>
     <template repeat="{{ group in groups }}">
       <template if="{{ group.category == category }}">
         <div> <!-- FIXME: Remove when we have a better title solution. -->
           <div class="card">
-            <template if="{{ group.data.category == 'step' }}">
-              <ct-step-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}" commitLog="{{ commitLog }}"></ct-step-failure-card>
-            </template>
-            <template if="{{ group.data.category == 'builder' }}">
-              <ct-builder-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-builder-failure-card>
-            </template>
-            <template if="{{ group.data.category == 'trooper' }}">
-              <ct-trooper-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-trooper-card>
-            </template>
             <ct-failure-card-buttons group="{{ group }}" bug="{{ bug }}"></ct-failure-card-buttons>
+            <div>
+              <template if="{{ group.bug }}">
+                <div class="bugs">
+                  <span style="font-weight: bold">Bugs:</span>
+                  <a href="{{ group.bug }}">{{ group.bugLabel }}</a>
+                </div>
+              </template>
+
+              <template if="{{ group.data.category == 'step' }}">
+                <ct-step-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}" commitLog="{{ commitLog }}"></ct-step-failure-card>
+              </template>
+              <template if="{{ group.data.category == 'builder' }}">
+                <ct-builder-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-builder-failure-card>
+              </template>
+              <template if="{{ group.data.category == 'trooper' }}">
+                <ct-trooper-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-trooper-card>
+              </template>
+            </div>
           </div>
         </div>
       </template>

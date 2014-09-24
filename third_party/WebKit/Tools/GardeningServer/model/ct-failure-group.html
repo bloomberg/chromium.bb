@@ -59,7 +59,7 @@ CTFailureGroup.prototype._computeProperties = function() {
     } else {
       this.category = this._originalCategory;
     }
-    // FIXME: crbug.com/400397 Split into: Whole step failure, Tree closer, Test failure, Flaky tests
+    // FIXME: crbug.com/400397 Split Tree closers into their own list.
   }
 
   this.bug = this._annotation.bug;
