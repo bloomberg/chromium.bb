@@ -951,6 +951,8 @@
         'browser/extension_error_test_util.h',
         'browser/extensions_test.cc',
         'browser/extensions_test.h',
+        'browser/guest_view/web_view/test_guest_view_manager.cc',
+        'browser/guest_view/web_view/test_guest_view_manager.h',
         'browser/mock_extension_system.cc',
         'browser/mock_extension_system.h',
         'browser/test_extensions_browser_client.cc',
