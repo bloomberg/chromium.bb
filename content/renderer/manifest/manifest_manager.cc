@@ -59,6 +59,12 @@ void ManifestManager::OnRequestManifestComplete(
         ipc_manifest.short_name.string().substr(0,
                                                 Manifest::kMaxIPCStringLength),
         ipc_manifest.short_name.is_null());
+  for (size_t i = 0; i < ipc_manifest.icons.size(); ++i) {
+    ipc_manifest.icons[i].type = base::NullableString16(
+        ipc_manifest.icons[i].type.string().substr(
+            0, Manifest::kMaxIPCStringLength),
+        ipc_manifest.icons[i].type.is_null());
+  }
 
   Send(new ManifestManagerHostMsg_RequestManifestResponse(
       routing_id(), request_id, ipc_manifest));

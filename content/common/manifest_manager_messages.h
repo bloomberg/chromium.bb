@@ -17,12 +17,19 @@
 IPC_ENUM_TRAITS_MAX_VALUE(content::Manifest::DisplayMode,
                           content::Manifest::DISPLAY_MODE_BROWSER)
 
+IPC_STRUCT_TRAITS_BEGIN(content::Manifest::Icon)
+  IPC_STRUCT_TRAITS_MEMBER(src)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(density)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::Manifest)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(short_name)
   IPC_STRUCT_TRAITS_MEMBER(start_url)
   IPC_STRUCT_TRAITS_MEMBER(display)
   IPC_STRUCT_TRAITS_MEMBER(orientation)
+  IPC_STRUCT_TRAITS_MEMBER(icons)
 IPC_STRUCT_TRAITS_END()
 
 // The browser process requests for the manifest linked with the associated

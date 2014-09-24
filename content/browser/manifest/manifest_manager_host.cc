@@ -109,8 +109,16 @@ void ManifestManagerHost::OnRequestManifestResponse(
   manifest.short_name = base::NullableString16(
         manifest.short_name.string().substr(0, Manifest::kMaxIPCStringLength),
         manifest.short_name.is_null());
-  if (!manifest.start_url.is_empty() && !manifest.start_url.is_valid())
+  if (!manifest.start_url.is_valid())
     manifest.start_url = GURL();
+  for (size_t i = 0; i < manifest.icons.size(); ++i) {
+    if (!manifest.icons[i].src.is_valid())
+      manifest.icons[i].src = GURL();
+    manifest.icons[i].type = base::NullableString16(
+        manifest.icons[i].type.string().substr(0,
+                                               Manifest::kMaxIPCStringLength),
+        manifest.icons[i].type.is_null());
+  }
 
   callback->Run(manifest);
   callbacks->Remove(request_id);

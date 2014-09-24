@@ -325,4 +325,171 @@ TEST_F(ManifestParserTest, OrientationParserRules) {
   }
 }
 
+TEST_F(ManifestParserTest, IconsParseRules) {
+  // Smoke test: if no icon, empty list.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [] }");
+    EXPECT_EQ(manifest.icons.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+  }
+
+  // Smoke test: if empty icon, empty list.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {} ] }");
+    EXPECT_EQ(manifest.icons.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+  }
+
+  // Smoke test: icon with invalid src, empty list.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ { \"icons\": [] } ] }");
+    EXPECT_EQ(manifest.icons.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+  }
+
+  // Smoke test: if icon with empty src, it will be present in the list.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ { \"src\": \"\" } ] }");
+    EXPECT_EQ(manifest.icons.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].src.spec(), "http://foo.com/index.html");
+    EXPECT_FALSE(manifest.IsEmpty());
+  }
+
+  // Smoke test: if one icons with valid src, it will be present in the list.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [{ \"src\": \"foo.jpg\" }] }");
+    EXPECT_EQ(manifest.icons.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].src.spec(), "http://foo.com/foo.jpg");
+    EXPECT_FALSE(manifest.IsEmpty());
+  }
+}
+
+TEST_F(ManifestParserTest, IconSrcParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"foo.png\" } ] }");
+    EXPECT_EQ(manifest.icons[0].src.spec(),
+              default_document_url.Resolve("foo.png").spec());
+  }
+
+  // Whitespaces.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"   foo.png   \" } ] }");
+    EXPECT_EQ(manifest.icons[0].src.spec(),
+              default_document_url.Resolve("foo.png").spec());
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": {} } ] }");
+    EXPECT_TRUE(manifest.icons.empty());
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": 42 } ] }");
+    EXPECT_TRUE(manifest.icons.empty());
+  }
+
+  // Resolving has to happen based on the document_url.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"icons/foo.png\" } ] }",
+                      GURL("http://foo.com/landing/index.html"));
+    EXPECT_EQ(manifest.icons[0].src.spec(),
+              "http://foo.com/landing/icons/foo.png");
+  }
+}
+
+TEST_F(ManifestParserTest, IconTypeParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": \"foo\" } ] }");
+    EXPECT_TRUE(EqualsASCII(manifest.icons[0].type.string(), "foo"));
+  }
+
+  // Trim whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+                                      " \"type\": \"  foo  \" } ] }");
+    EXPECT_TRUE(EqualsASCII(manifest.icons[0].type.string(), "foo"));
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": {} } ] }");
+    EXPECT_TRUE(manifest.icons[0].type.is_null());
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": 42 } ] }");
+    EXPECT_TRUE(manifest.icons[0].type.is_null());
+  }
+}
+
+TEST_F(ManifestParserTest, IconDensityParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": 42 } ] }");
+    EXPECT_EQ(manifest.icons[0].density, 42);
+  }
+
+  // Decimal value.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": 2.5 } ] }");
+    EXPECT_EQ(manifest.icons[0].density, 2.5);
+  }
+
+  // Parse fail if it isn't a float.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": {} } ] }");
+    EXPECT_EQ(manifest.icons[0].density, Manifest::Icon::kDefaultDensity);
+  }
+
+  // Parse fail if it isn't a float.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\":\"2\" } ] }");
+    EXPECT_EQ(manifest.icons[0].density, Manifest::Icon::kDefaultDensity);
+  }
+
+  // Edge case: 1.0.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": 1.00 } ] }");
+    EXPECT_EQ(manifest.icons[0].density, 1);
+  }
+
+  // Edge case: values between 0.0 and 1.0 are allowed.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": 0.42 } ] }");
+    EXPECT_EQ(manifest.icons[0].density, 0.42);
+  }
+
+  // 0 is an invalid value.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": 0.0 } ] }");
+    EXPECT_EQ(manifest.icons[0].density, Manifest::Icon::kDefaultDensity);
+  }
+
+  // Negative values are invalid.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"density\": -2.5 } ] }");
+    EXPECT_EQ(manifest.icons[0].density, Manifest::Icon::kDefaultDensity);
+  }
+}
+
 } // namespace content

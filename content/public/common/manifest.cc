@@ -6,7 +6,15 @@
 
 namespace content {
 
+const double Manifest::Icon::kDefaultDensity = 1;
 const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
+
+Manifest::Icon::Icon()
+    : density(kDefaultDensity) {
+}
+
+Manifest::Icon::~Icon() {
+}
 
 Manifest::Manifest()
     : display(DISPLAY_MODE_UNSPECIFIED),
@@ -21,7 +29,8 @@ bool Manifest::IsEmpty() const {
          short_name.is_null() &&
          start_url.is_empty() &&
          display == DISPLAY_MODE_UNSPECIFIED &&
-         orientation == blink::WebScreenOrientationLockDefault;
+         orientation == blink::WebScreenOrientationLockDefault &&
+         icons.empty();
 }
 
 } // namespace content

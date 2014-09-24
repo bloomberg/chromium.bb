@@ -38,6 +38,20 @@ base::NullableString16 ParseString(const base::DictionaryValue& dictionary,
   return base::NullableString16(value, false);
 }
 
+// Helper function to parse URLs present on a given |dictionary| in a given
+// field identified by its |key|. The URL is first parsed as a string then
+// resolved using |base_url|.
+// Returns a GURL. If the parsing failed, the GURL will not be valid.
+GURL ParseURL(const base::DictionaryValue& dictionary,
+              const std::string& key,
+              const GURL& base_url) {
+  base::NullableString16 url_str = ParseString(dictionary, key, NoTrim);
+  if (url_str.is_null())
+    return GURL();
+
+  return base_url.Resolve(url_str.string());
+}
+
 // Parses the 'name' field of the manifest, as defined in:
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
 // Returns the parsed string if any, a null string if the parsing failed.
@@ -59,13 +73,7 @@ base::NullableString16 ParseShortName(
 GURL ParseStartURL(const base::DictionaryValue& dictionary,
                    const GURL& manifest_url,
                    const GURL& document_url) {
-  base::NullableString16 start_url_str =
-      ParseString(dictionary, "start_url", NoTrim);
-
-  if (start_url_str.is_null())
-    return GURL();
-
-  GURL start_url = manifest_url.Resolve(start_url_str.string());
+  GURL start_url = ParseURL(dictionary, "start_url", manifest_url);
   if (!start_url.is_valid())
     return GURL();
 
@@ -131,6 +139,65 @@ blink::WebScreenOrientationLockType ParseOrientation(
     return blink::WebScreenOrientationLockDefault;
 }
 
+// Parses the 'src' field of an icon, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-the-src-member-of-an-icon
+// Returns the parsed GURL if any, an empty GURL if the parsing failed.
+GURL ParseIconSrc(const base::DictionaryValue& icon,
+                  const GURL& manifest_url) {
+  return ParseURL(icon, "src", manifest_url);
+}
+
+// Parses the 'type' field of an icon, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-the-type-member-of-an-icon
+// Returns the parsed string if any, a null string if the parsing failed.
+base::NullableString16 ParseIconType(const base::DictionaryValue& icon) {
+    return ParseString(icon, "type", Trim);
+}
+
+// Parses the 'density' field of an icon, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-a-density-member-of-an-icon
+// Returns the parsed double if any, Manifest::Icon::kDefaultDensity if the
+// parsing failed.
+double ParseIconDensity(const base::DictionaryValue& icon) {
+  double density;
+  if (!icon.GetDouble("density", &density) || density <= 0)
+    return Manifest::Icon::kDefaultDensity;
+  return density;
+}
+
+std::vector<Manifest::Icon> ParseIcons(const base::DictionaryValue& dictionary,
+                                       const GURL& manifest_url) {
+  std::vector<Manifest::Icon> icons;
+  if (!dictionary.HasKey("icons"))
+    return icons;
+
+  const base::ListValue* icons_list = 0;
+  if (!dictionary.GetList("icons", &icons_list)) {
+    // TODO(mlamouri): provide a custom message to the developer console about
+    // the property being incorrectly set.
+    return icons;
+  }
+
+  for (size_t i = 0; i < icons_list->GetSize(); ++i) {
+    const base::DictionaryValue* icon_dictionary = 0;
+    if (!icons_list->GetDictionary(i, &icon_dictionary))
+      continue;
+
+    Manifest::Icon icon;
+    icon.src = ParseIconSrc(*icon_dictionary, manifest_url);
+    // An icon MUST have a valid src. If it does not, it MUST be ignored.
+    if (!icon.src.is_valid())
+      continue;
+    icon.type = ParseIconType(*icon_dictionary);
+    icon.density = ParseIconDensity(*icon_dictionary);
+    // TODO(mlamouri): icon.sizes
+
+    icons.push_back(icon);
+  }
+
+  return icons;
+}
+
 } // anonymous namespace
 
 Manifest ManifestParser::Parse(const base::StringPiece& json,
@@ -162,6 +229,7 @@ Manifest ManifestParser::Parse(const base::StringPiece& json,
   manifest.start_url = ParseStartURL(*dictionary, manifest_url, document_url);
   manifest.display = ParseDisplay(*dictionary);
   manifest.orientation = ParseOrientation(*dictionary);
+  manifest.icons = ParseIcons(*dictionary, manifest_url);
 
   return manifest;
 }
