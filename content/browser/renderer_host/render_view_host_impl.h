@@ -388,7 +388,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
   void OnUpdateState(int32 page_id, const PageState& state);
-  void OnUpdateTargetURL(int32 page_id, const GURL& url);
+  void OnUpdateTargetURL(const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);

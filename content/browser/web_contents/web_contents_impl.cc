@@ -2631,7 +2631,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // clicking on a link); see bugs 1184641 and 980803. We don't want to
     // clear the bubble when a user navigates to a named anchor in the same
     // page.
-    UpdateTargetURL(details.entry->GetPageID(), GURL());
+    UpdateTargetURL(GURL());
   }
 
   if (!details.is_in_page) {
@@ -3678,9 +3678,9 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   controller_.NotifyEntryChanged(entry, entry_index);
 }
 
-void WebContentsImpl::UpdateTargetURL(int32 page_id, const GURL& url) {
+void WebContentsImpl::UpdateTargetURL(const GURL& url) {
   if (delegate_)
-    delegate_->UpdateTargetURL(this, page_id, url);
+    delegate_->UpdateTargetURL(this, url);
 }
 
 void WebContentsImpl::Close(RenderViewHost* rvh) {

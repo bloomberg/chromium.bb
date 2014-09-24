@@ -144,7 +144,6 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Notification that the target URL has changed.
   virtual void UpdateTargetURL(WebContents* source,
-                               int32 page_id,
                                const GURL& url) {}
 
   // Notification that there was a mouse event, along with the absolute

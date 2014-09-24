@@ -1094,9 +1094,9 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
   delegate_->UpdateState(this, page_id, state);
 }
 
-void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {
+void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
   if (IsRVHStateActive(rvh_state_))
-    delegate_->UpdateTargetURL(page_id, url);
+    delegate_->UpdateTargetURL(url);
 
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.

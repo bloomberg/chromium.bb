@@ -275,7 +275,6 @@ bool WebContentsDelegateAndroid::AddMessageToConsole(
 // navigation. So we only handle the first case and pass the source TabContents'
 // url to Java to update the UI.
 void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
-                                                 int32 page_id,
                                                  const GURL& url) {
   if (!url.is_empty())
     return;

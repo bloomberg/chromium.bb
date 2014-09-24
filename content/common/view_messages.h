@@ -1075,8 +1075,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
 
 // Notifies the browser that we want to show a destination url for a potential
 // action (e.g. when the user is hovering over a link).
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL,
-                    int32,
+IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
                     GURL)
 
 // Sent when the document element is available for the top-level frame.  This

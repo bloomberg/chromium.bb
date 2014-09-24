@@ -1428,8 +1428,7 @@ bool Browser::IsPopupOrPanel(const WebContents* source) const {
   return is_type_popup();
 }
 
-void Browser::UpdateTargetURL(WebContents* source, int32 page_id,
-                              const GURL& url) {
+void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
   if (!GetStatusBubble())
     return;
 

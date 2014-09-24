@@ -1447,10 +1447,8 @@ void RenderViewImpl::OnSaveImageAt(int x, int y) {
 
 void RenderViewImpl::OnUpdateTargetURLAck() {
   // Check if there is a targeturl waiting to be sent.
-  if (target_url_status_ == TARGET_PENDING) {
-    Send(new ViewHostMsg_UpdateTargetURL(routing_id_, page_id_,
-                                         pending_target_url_));
-  }
+  if (target_url_status_ == TARGET_PENDING)
+    Send(new ViewHostMsg_UpdateTargetURL(routing_id_, pending_target_url_));
 
   target_url_status_ = TARGET_NONE;
 }
@@ -1891,7 +1889,7 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
     // see |ParamTraits<GURL>|.
     if (latest_url.possibly_invalid_spec().size() > GetMaxURLChars())
       latest_url = GURL();
-    Send(new ViewHostMsg_UpdateTargetURL(routing_id_, page_id_, latest_url));
+    Send(new ViewHostMsg_UpdateTargetURL(routing_id_, latest_url));
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
   }

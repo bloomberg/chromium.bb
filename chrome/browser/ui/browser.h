@@ -560,7 +560,7 @@ class Browser : public TabStripModelObserver,
                             const gfx::Rect& pos) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
-  virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
+  virtual void UpdateTargetURL(content::WebContents* source,
                                const GURL& url) OVERRIDE;
   virtual void ContentsMouseEvent(content::WebContents* source,
                                   const gfx::Point& location,

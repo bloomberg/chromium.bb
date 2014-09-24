@@ -72,7 +72,7 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   test_web_contents_delegate_->ActivateContents(NULL);
   test_web_contents_delegate_->LoadingStateChanged(NULL, true);
   test_web_contents_delegate_->CloseContents(NULL);
-  test_web_contents_delegate_->UpdateTargetURL(NULL, 0, GURL());
+  test_web_contents_delegate_->UpdateTargetURL(NULL, GURL());
   test_web_contents_delegate_->MoveContents(NULL, gfx::Rect());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());

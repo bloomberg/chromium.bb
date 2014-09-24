@@ -80,7 +80,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                                    int32 line_no,
                                    const base::string16& source_id) OVERRIDE;
   virtual void UpdateTargetURL(content::WebContents* source,
-                               int32 page_id,
                                const GURL& url) OVERRIDE;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
