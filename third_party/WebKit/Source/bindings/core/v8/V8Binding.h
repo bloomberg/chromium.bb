@@ -684,7 +684,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
         v8::Handle<v8::Value> element = object->Get(i);
         if (block.HasCaught()) {
             exceptionState.rethrowV8Exception(block.Exception());
-            return Vector<RefPtr<T> >();
+            return WillBeHeapVector<RefPtrWillBeMember<T> >();
         }
         if (V8T::hasInstance(element, isolate)) {
             v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
