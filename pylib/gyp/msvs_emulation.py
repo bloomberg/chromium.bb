@@ -406,6 +406,8 @@ class MsvsSettings(object):
     cl('WholeProgramOptimization', map={'true': '/GL'})
     cl('WarningLevel', prefix='/W')
     cl('WarnAsError', map={'true': '/WX'})
+    cl('CallingConvention',
+        map={'0': 'd', '1': 'r', '2': 'z'}, prefix='/G')
     cl('DebugInformationFormat',
         map={'1': '7', '3': 'i', '4': 'I'}, prefix='/Z')
     cl('RuntimeTypeInfo', map={'true': '/GR', 'false': '/GR-'})
