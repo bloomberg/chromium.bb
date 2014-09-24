@@ -473,18 +473,78 @@ int SimpleBackendImpl::DoomEntriesSince(
   return DoomEntriesBetween(initial_time, Time(), callback);
 }
 
-int SimpleBackendImpl::OpenNextEntry(void** iter,
-                                     Entry** next_entry,
-                                     const CompletionCallback& callback) {
-  CompletionCallback get_next_entry =
-      base::Bind(&SimpleBackendImpl::GetNextEntryInIterator, AsWeakPtr(), iter,
-                 next_entry, callback);
-  return index_->ExecuteWhenReady(get_next_entry);
-}
+class SimpleBackendImpl::SimpleIterator FINAL : public Iterator {
+ public:
+  explicit SimpleIterator(base::WeakPtr<SimpleBackendImpl> backend)
+      : backend_(backend),
+        weak_factory_(this) {
+  }
 
-void SimpleBackendImpl::EndEnumeration(void** iter) {
-  active_enumerations_.Remove(IteratorToEnumerationId(iter));
-  *iter = NULL;
+  // From Backend::Iterator:
+  virtual int OpenNextEntry(Entry** next_entry,
+                            const CompletionCallback& callback) OVERRIDE {
+    CompletionCallback open_next_entry_impl =
+        base::Bind(&SimpleIterator::OpenNextEntryImpl,
+                   weak_factory_.GetWeakPtr(), next_entry, callback);
+    return backend_->index_->ExecuteWhenReady(open_next_entry_impl);
+  }
+
+  void OpenNextEntryImpl(Entry** next_entry,
+                         const CompletionCallback& callback,
+                         int index_initialization_error_code) {
+    if (!backend_) {
+      callback.Run(net::ERR_FAILED);
+      return;
+    }
+    if (index_initialization_error_code != net::OK) {
+      callback.Run(index_initialization_error_code);
+      return;
+    }
+    if (!hashes_to_enumerate_)
+      hashes_to_enumerate_ = backend_->index()->GetAllHashes().Pass();
+
+    while (!hashes_to_enumerate_->empty()) {
+      uint64 entry_hash = hashes_to_enumerate_->back();
+      hashes_to_enumerate_->pop_back();
+      if (backend_->index()->Has(entry_hash)) {
+        *next_entry = NULL;
+        CompletionCallback continue_iteration = base::Bind(
+            &SimpleIterator::CheckIterationReturnValue,
+            weak_factory_.GetWeakPtr(),
+            next_entry,
+            callback);
+        int error_code_open = backend_->OpenEntryFromHash(entry_hash,
+                                                          next_entry,
+                                                          continue_iteration);
+        if (error_code_open == net::ERR_IO_PENDING)
+          return;
+        if (error_code_open != net::ERR_FAILED) {
+          callback.Run(error_code_open);
+          return;
+        }
+      }
+    }
+    callback.Run(net::ERR_FAILED);
+  }
+
+  void CheckIterationReturnValue(Entry** entry,
+                                 const CompletionCallback& callback,
+                                 int error_code) {
+    if (error_code == net::ERR_FAILED) {
+      OpenNextEntry(entry, callback);
+      return;
+    }
+    callback.Run(error_code);
+  }
+
+ private:
+  base::WeakPtr<SimpleBackendImpl> backend_;
+  scoped_ptr<std::vector<uint64> > hashes_to_enumerate_;
+  base::WeakPtrFactory<SimpleIterator> weak_factory_;
+};
+
+scoped_ptr<Backend::Iterator> SimpleBackendImpl::CreateIterator() {
+  return scoped_ptr<Iterator>(new SimpleIterator(AsWeakPtr()));
 }
 
 void SimpleBackendImpl::GetStats(
@@ -497,27 +557,6 @@ void SimpleBackendImpl::GetStats(
 
 void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
   index_->UseIfExists(simple_util::GetEntryHashKey(key));
-}
-
-// static
-SimpleBackendImpl::ActiveEnumerationMap::KeyType
-    SimpleBackendImpl::IteratorToEnumerationId(void** iter) {
-  COMPILE_ASSERT(sizeof(ptrdiff_t) >= sizeof(*iter),
-                 integer_type_must_fit_ptr_type_for_cast_to_be_reversible);
-  const ptrdiff_t ptrdiff_enumeration_id = reinterpret_cast<ptrdiff_t>(*iter);
-  const ActiveEnumerationMap::KeyType enumeration_id = ptrdiff_enumeration_id;
-  DCHECK_EQ(enumeration_id, ptrdiff_enumeration_id);
-  return enumeration_id;
-}
-
-// static
-void* SimpleBackendImpl::EnumerationIdToIterator(
-    ActiveEnumerationMap::KeyType enumeration_id) {
-  const ptrdiff_t ptrdiff_enumeration_id = enumeration_id;
-  DCHECK_EQ(enumeration_id, ptrdiff_enumeration_id);
-  COMPILE_ASSERT(sizeof(ptrdiff_t) >= sizeof(void*),
-                 integer_type_must_fit_ptr_type_for_cast_to_be_reversible);
-  return reinterpret_cast<void*>(ptrdiff_enumeration_id);
 }
 
 void SimpleBackendImpl::InitializeIndex(const CompletionCallback& callback,
@@ -633,49 +672,6 @@ int SimpleBackendImpl::DoomEntryFromHash(uint64 entry_hash,
   return net::ERR_IO_PENDING;
 }
 
-void SimpleBackendImpl::GetNextEntryInIterator(
-    void** iter,
-    Entry** next_entry,
-    const CompletionCallback& callback,
-    int error_code) {
-  if (error_code != net::OK) {
-    callback.Run(error_code);
-    return;
-  }
-  std::vector<uint64>* entry_list = NULL;
-  if (*iter == NULL) {
-    const ActiveEnumerationMap::KeyType new_enumeration_id =
-        active_enumerations_.Add(
-            entry_list = index()->GetAllHashes().release());
-    *iter = EnumerationIdToIterator(new_enumeration_id);
-  } else {
-    entry_list = active_enumerations_.Lookup(IteratorToEnumerationId(iter));
-  }
-  while (entry_list->size() > 0) {
-    uint64 entry_hash = entry_list->back();
-    entry_list->pop_back();
-    if (index()->Has(entry_hash)) {
-      *next_entry = NULL;
-      CompletionCallback continue_iteration = base::Bind(
-          &SimpleBackendImpl::CheckIterationReturnValue,
-          AsWeakPtr(),
-          iter,
-          next_entry,
-          callback);
-      int error_code_open = OpenEntryFromHash(entry_hash,
-                                              next_entry,
-                                              continue_iteration);
-      if (error_code_open == net::ERR_IO_PENDING)
-        return;
-      if (error_code_open != net::ERR_FAILED) {
-        callback.Run(error_code_open);
-        return;
-      }
-    }
-  }
-  callback.Run(net::ERR_FAILED);
-}
-
 void SimpleBackendImpl::OnEntryOpenedFromHash(
     uint64 hash,
     Entry** entry,
@@ -727,18 +723,6 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
     SIMPLE_CACHE_UMA(BOOLEAN, "KeyMatchedOnOpen", cache_type_, key_matches);
   }
   callback.Run(final_code);
-}
-
-void SimpleBackendImpl::CheckIterationReturnValue(
-    void** iter,
-    Entry** entry,
-    const CompletionCallback& callback,
-    int error_code) {
-  if (error_code == net::ERR_FAILED) {
-    OpenNextEntry(iter, entry, callback);
-    return;
-  }
-  callback.Run(error_code);
 }
 
 void SimpleBackendImpl::DoomEntriesComplete(

@@ -26,7 +26,6 @@ SimpleCacheDumper::SimpleCacheDumper(base::FilePath input_path,
       output_path_(output_path),
       writer_(new DiskDumper(output_path)),
       cache_thread_(new base::Thread("CacheThead")),
-      iter_(NULL),
       src_entry_(NULL),
       dst_entry_(NULL),
       io_callback_(base::Bind(&SimpleCacheDumper::OnIOComplete,
@@ -150,15 +149,15 @@ int SimpleCacheDumper::DoOpenEntry() {
   DCHECK(!dst_entry_);
   DCHECK(!src_entry_);
   state_ = STATE_OPEN_ENTRY_COMPLETE;
-  return cache_->OpenNextEntry(&iter_, &src_entry_, io_callback_);
+  if (!iter_)
+    iter_ = cache_->CreateIterator();
+  return iter_->OpenNextEntry(&src_entry_, io_callback_);
 }
 
 int SimpleCacheDumper::DoOpenEntryComplete(int rv) {
   // ERR_FAILED indicates iteration finished.
-  if (rv == ERR_FAILED) {
-    cache_->EndEnumeration(&iter_);
+  if (rv == ERR_FAILED)
     return OK;
-  }
 
   if (rv < 0)
     return rv;

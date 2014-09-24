@@ -381,14 +381,14 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
     return net::ERR_FAILED;
 
   EntryImpl* node;
-  void* iter = NULL;
-  EntryImpl* next = OpenNextEntryImpl(&iter);
+  scoped_ptr<Rankings::Iterator> iterator(new Rankings::Iterator());
+  EntryImpl* next = OpenNextEntryImpl(iterator.get());
   if (!next)
     return net::OK;
 
   while (next) {
     node = next;
-    next = OpenNextEntryImpl(&iter);
+    next = OpenNextEntryImpl(iterator.get());
 
     if (node->GetLastUsed() >= initial_time &&
         node->GetLastUsed() < end_time) {
@@ -397,7 +397,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
       if (next)
         next->Release();
       next = NULL;
-      SyncEndEnumeration(iter);
+      SyncEndEnumeration(iterator.Pass());
     }
 
     node->Release();
@@ -415,31 +415,31 @@ int BackendImpl::SyncDoomEntriesSince(const base::Time initial_time) {
 
   stats_.OnEvent(Stats::DOOM_RECENT);
   for (;;) {
-    void* iter = NULL;
-    EntryImpl* entry = OpenNextEntryImpl(&iter);
+    scoped_ptr<Rankings::Iterator> iterator(new Rankings::Iterator());
+    EntryImpl* entry = OpenNextEntryImpl(iterator.get());
     if (!entry)
       return net::OK;
 
     if (initial_time > entry->GetLastUsed()) {
       entry->Release();
-      SyncEndEnumeration(iter);
+      SyncEndEnumeration(iterator.Pass());
       return net::OK;
     }
 
     entry->DoomImpl();
     entry->Release();
-    SyncEndEnumeration(iter);  // Dooming the entry invalidates the iterator.
+    SyncEndEnumeration(iterator.Pass());  // The doom invalidated the iterator.
   }
 }
 
-int BackendImpl::SyncOpenNextEntry(void** iter, Entry** next_entry) {
-  *next_entry = OpenNextEntryImpl(iter);
+int BackendImpl::SyncOpenNextEntry(Rankings::Iterator* iterator,
+                                   Entry** next_entry) {
+  *next_entry = OpenNextEntryImpl(iterator);
   return (*next_entry) ? net::OK : net::ERR_FAILED;
 }
 
-void BackendImpl::SyncEndEnumeration(void* iter) {
-  scoped_ptr<Rankings::Iterator> iterator(
-      reinterpret_cast<Rankings::Iterator*>(iter));
+void BackendImpl::SyncEndEnumeration(scoped_ptr<Rankings::Iterator> iterator) {
+  iterator->Reset();
 }
 
 void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
@@ -604,20 +604,14 @@ EntryImpl* BackendImpl::CreateEntryImpl(const std::string& key) {
   return cache_entry.get();
 }
 
-EntryImpl* BackendImpl::OpenNextEntryImpl(void** iter) {
+EntryImpl* BackendImpl::OpenNextEntryImpl(Rankings::Iterator* iterator) {
   if (disabled_)
     return NULL;
 
-  DCHECK(iter);
-
   const int kListsToSearch = 3;
   scoped_refptr<EntryImpl> entries[kListsToSearch];
-  scoped_ptr<Rankings::Iterator> iterator(
-      reinterpret_cast<Rankings::Iterator*>(*iter));
-  *iter = NULL;
-
-  if (!iterator.get()) {
-    iterator.reset(new Rankings::Iterator(&rankings_));
+  if (!iterator->my_rankings) {
+    iterator->my_rankings = &rankings_;
     bool ret = false;
 
     // Get an entry from each list.
@@ -627,8 +621,10 @@ EntryImpl* BackendImpl::OpenNextEntryImpl(void** iter) {
                                         &iterator->nodes[i], &temp);
       entries[i].swap(&temp);  // The entry was already addref'd.
     }
-    if (!ret)
+    if (!ret) {
+      iterator->Reset();
       return NULL;
+    }
   } else {
     // Get the next entry from the last list, and the actual entries for the
     // elements on the other lists.
@@ -664,13 +660,14 @@ EntryImpl* BackendImpl::OpenNextEntryImpl(void** iter) {
     }
   }
 
-  if (newest < 0 || oldest < 0)
+  if (newest < 0 || oldest < 0) {
+    iterator->Reset();
     return NULL;
+  }
 
   EntryImpl* next_entry;
   next_entry = entries[newest].get();
   iterator->list = static_cast<Rankings::List>(newest);
-  *iter = iterator.release();
   next_entry->AddRef();
   return next_entry;
 }
@@ -1250,16 +1247,33 @@ int BackendImpl::DoomEntriesSince(const base::Time initial_time,
   return net::ERR_IO_PENDING;
 }
 
-int BackendImpl::OpenNextEntry(void** iter, Entry** next_entry,
-                               const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-  background_queue_.OpenNextEntry(iter, next_entry, callback);
-  return net::ERR_IO_PENDING;
-}
+class BackendImpl::IteratorImpl : public Backend::Iterator {
+ public:
+  explicit IteratorImpl(base::WeakPtr<InFlightBackendIO> background_queue)
+      : background_queue_(background_queue),
+        iterator_(new Rankings::Iterator()) {
+  }
 
-void BackendImpl::EndEnumeration(void** iter) {
-  background_queue_.EndEnumeration(*iter);
-  *iter = NULL;
+  virtual ~IteratorImpl() {
+    if (background_queue_)
+      background_queue_->EndEnumeration(iterator_.Pass());
+  }
+
+  virtual int OpenNextEntry(Entry** next_entry,
+                            const net::CompletionCallback& callback) OVERRIDE {
+    if (!background_queue_)
+      return net::ERR_FAILED;
+    background_queue_->OpenNextEntry(iterator_.get(), next_entry, callback);
+    return net::ERR_IO_PENDING;
+  }
+
+ private:
+  const base::WeakPtr<InFlightBackendIO> background_queue_;
+  scoped_ptr<Rankings::Iterator> iterator_;
+};
+
+scoped_ptr<Backend::Iterator> BackendImpl::CreateIterator() {
+  return scoped_ptr<Backend::Iterator>(new IteratorImpl(GetBackgroundQueue()));
 }
 
 void BackendImpl::GetStats(StatsItems* stats) {

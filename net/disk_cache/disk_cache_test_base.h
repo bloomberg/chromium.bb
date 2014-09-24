@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "net/base/cache_type.h"
+#include "net/disk_cache/disk_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -57,6 +58,17 @@ class DiskCacheTest : public PlatformTest {
 // Provides basic support for cache related tests.
 class DiskCacheTestWithCache : public DiskCacheTest {
  protected:
+  class TestIterator {
+   public:
+    explicit TestIterator(scoped_ptr<disk_cache::Backend::Iterator> iterator);
+    ~TestIterator();
+
+    int OpenNextEntry(disk_cache::Entry** next_entry);
+
+   private:
+    scoped_ptr<disk_cache::Backend::Iterator> iterator_;
+  };
+
   DiskCacheTestWithCache();
   virtual ~DiskCacheTestWithCache();
 
@@ -117,7 +129,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   int DoomEntriesBetween(const base::Time initial_time,
                          const base::Time end_time);
   int DoomEntriesSince(const base::Time initial_time);
-  int OpenNextEntry(void** iter, disk_cache::Entry** next_entry);
+  scoped_ptr<TestIterator> CreateIterator();
   void FlushQueueForTest();
   void RunTaskForTest(const base::Closure& closure);
   int ReadData(disk_cache::Entry* entry, int index, int offset,

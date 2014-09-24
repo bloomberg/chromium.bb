@@ -74,14 +74,14 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   int SyncDoomEntriesBetween(base::Time initial_time,
                              base::Time end_time);
   int SyncDoomEntriesSince(base::Time initial_time);
-  int SyncOpenNextEntry(void** iter, Entry** next_entry);
-  void SyncEndEnumeration(void* iter);
+  int SyncOpenNextEntry(Rankings::Iterator* iterator, Entry** next_entry);
+  void SyncEndEnumeration(scoped_ptr<Rankings::Iterator> iterator);
   void SyncOnExternalCacheHit(const std::string& key);
 
   // Open or create an entry for the given |key| or |iter|.
   EntryImpl* OpenEntryImpl(const std::string& key);
   EntryImpl* CreateEntryImpl(const std::string& key);
-  EntryImpl* OpenNextEntryImpl(void** iter);
+  EntryImpl* OpenNextEntryImpl(Rankings::Iterator* iter);
 
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int max_bytes);
@@ -273,14 +273,21 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
                                  const CompletionCallback& callback) OVERRIDE;
   virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
-  virtual int OpenNextEntry(void** iter, Entry** next_entry,
-                            const CompletionCallback& callback) OVERRIDE;
-  virtual void EndEnumeration(void** iter) OVERRIDE;
+  // NOTE: The blockfile Backend::Iterator::OpenNextEntry method does not modify
+  // the last_used field of the entry, and therefore it does not impact the
+  // eviction ranking of the entry. However, an enumeration will go through all
+  // entries on the cache only if the cache is not modified while the
+  // enumeration is taking place. Significantly altering the entry pointed by
+  // the iterator (for example, deleting the entry) will invalidate the
+  // iterator. Performing operations on an entry that modify the entry may
+  // result in loops in the iteration, skipped entries or similar.
+  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
   virtual void GetStats(StatsItems* stats) OVERRIDE;
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
   typedef base::hash_map<CacheAddr, EntryImpl*> EntriesMap;
+  class IteratorImpl;
 
   // Creates a new backing file for the cache index.
   bool CreateBackingStore(disk_cache::File* file);

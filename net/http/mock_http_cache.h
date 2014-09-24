@@ -114,9 +114,7 @@ class MockDiskCache : public disk_cache::Backend {
   virtual int DoomEntriesSince(
       base::Time initial_time,
       const net::CompletionCallback& callback) OVERRIDE;
-  virtual int OpenNextEntry(void** iter, disk_cache::Entry** next_entry,
-                            const net::CompletionCallback& callback) OVERRIDE;
-  virtual void EndEnumeration(void** iter) OVERRIDE;
+  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
   virtual void GetStats(
       std::vector<std::pair<std::string, std::string> >* stats) OVERRIDE;
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
@@ -143,6 +141,7 @@ class MockDiskCache : public disk_cache::Backend {
 
  private:
   typedef base::hash_map<std::string, MockDiskEntry*> EntryMap;
+  class NotImplementedIterator;
 
   void CallbackLater(const net::CompletionCallback& callback, int result);
 

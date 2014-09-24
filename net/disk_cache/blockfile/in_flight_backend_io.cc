@@ -26,8 +26,7 @@ BackendIO::BackendIO(InFlightIO* controller, BackendImpl* backend,
       callback_(callback),
       operation_(OP_NONE),
       entry_ptr_(NULL),
-      iter_ptr_(NULL),
-      iter_(NULL),
+      iterator_(NULL),
       entry_(NULL),
       index_(0),
       offset_(0),
@@ -116,15 +115,16 @@ void BackendIO::DoomEntriesSince(const base::Time initial_time) {
   initial_time_ = initial_time;
 }
 
-void BackendIO::OpenNextEntry(void** iter, Entry** next_entry) {
+void BackendIO::OpenNextEntry(Rankings::Iterator* iterator,
+                              Entry** next_entry) {
   operation_ = OP_OPEN_NEXT;
-  iter_ptr_ = iter;
+  iterator_ = iterator;
   entry_ptr_ = next_entry;
 }
 
-void BackendIO::EndEnumeration(void* iterator) {
+void BackendIO::EndEnumeration(scoped_ptr<Rankings::Iterator> iterator) {
   operation_ = OP_END_ENUMERATION;
-  iter_ = iterator;
+  scoped_iterator_ = iterator.Pass();
 }
 
 void BackendIO::OnExternalCacheHit(const std::string& key) {
@@ -245,10 +245,10 @@ void BackendIO::ExecuteBackendOperation() {
       result_ = backend_->SyncDoomEntriesSince(initial_time_);
       break;
     case OP_OPEN_NEXT:
-      result_ = backend_->SyncOpenNextEntry(iter_ptr_, entry_ptr_);
+      result_ = backend_->SyncOpenNextEntry(iterator_, entry_ptr_);
       break;
     case OP_END_ENUMERATION:
-      backend_->SyncEndEnumeration(iter_);
+      backend_->SyncEndEnumeration(scoped_iterator_.Pass());
       result_ = net::OK;
       break;
     case OP_ON_EXTERNAL_CACHE_HIT:
@@ -382,17 +382,19 @@ void InFlightBackendIO::DoomEntriesSince(
   PostOperation(operation.get());
 }
 
-void InFlightBackendIO::OpenNextEntry(void** iter, Entry** next_entry,
+void InFlightBackendIO::OpenNextEntry(Rankings::Iterator* iterator,
+                                      Entry** next_entry,
                                       const net::CompletionCallback& callback) {
   scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
-  operation->OpenNextEntry(iter, next_entry);
+  operation->OpenNextEntry(iterator, next_entry);
   PostOperation(operation.get());
 }
 
-void InFlightBackendIO::EndEnumeration(void* iterator) {
+void InFlightBackendIO::EndEnumeration(
+    scoped_ptr<Rankings::Iterator> iterator) {
   scoped_refptr<BackendIO> operation(
       new BackendIO(this, backend_, net::CompletionCallback()));
-  operation->EndEnumeration(iterator);
+  operation->EndEnumeration(iterator.Pass());
   PostOperation(operation.get());
 }
 

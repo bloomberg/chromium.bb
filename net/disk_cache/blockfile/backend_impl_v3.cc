@@ -660,17 +660,27 @@ int BackendImplV3::DoomEntriesSince(base::Time initial_time,
   }
 }
 
-int BackendImplV3::OpenNextEntry(void** iter, Entry** next_entry,
-                                 const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-  background_queue_.OpenNextEntry(iter, next_entry, callback);
-  return net::ERR_IO_PENDING;
-}
+class BackendImplV3::IteratorImpl : public Backend::Iterator {
+ public:
+  explicit IteratorImpl(base::WeakPtr<InFlightBackendIO> background_queue)
+      : background_queue_(background_queue), data_(NULL) {
+  }
 
-void BackendImplV3::EndEnumeration(void** iter) {
-  scoped_ptr<IndexIterator> iterator(
-      reinterpret_cast<IndexIterator*>(*iter));
-  *iter = NULL;
+  virtual int OpenNextEntry(Entry** next_entry,
+                            const net::CompletionCallback& callback) OVERRIDE {
+    if (!background_queue_)
+      return net::ERR_FAILED;
+    background_queue_->OpenNextEntry(&data_, next_entry, callback);
+    return net::ERR_IO_PENDING;
+  }
+
+ private:
+  const base::WeakPtr<InFlightBackendIO> background_queue_;
+  void* data_;
+};
+
+scoped_ptr<Backend::Iterator> BackendImplV3::CreateIterator() {
+  return scoped_ptr<Backend::Iterator>(new IteratorImpl(GetBackgroundQueue()));
 }
 
 void BackendImplV3::GetStats(StatsItems* stats) {
@@ -1497,13 +1507,17 @@ int BackendImplV3::DoomEntriesSince(base::Time initial_time,
   return net::ERR_FAILED;
 }
 
-int BackendImplV3::OpenNextEntry(void** iter, Entry** next_entry,
-                                 const CompletionCallback& callback) {
-  return net::ERR_FAILED;
-}
 
-void BackendImplV3::EndEnumeration(void** iter) {
-  NOTIMPLEMENTED();
+class BackendImplV3::NotImplementedIterator : public Backend::Iterator {
+ public:
+  virtual int OpenNextEntry(disk_cache::Entry** next_entry,
+                            const net::CompletionCallback& callback) OVERRIDE {
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+};
+
+scoped_ptr<Backend::Iterator> BackendImplV3::CreateIterator() {
+  return scoped_ptr<Iterator>(new NotImplementedIterator());
 }
 
 void BackendImplV3::GetStats(StatsItems* stats) {

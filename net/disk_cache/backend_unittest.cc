@@ -81,7 +81,7 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
 
   bool CreateSetOfRandomEntries(std::set<std::string>* key_pool);
   bool EnumerateAndMatchKeys(int max_to_open,
-                             void** iter,
+                             TestIterator* iter,
                              std::set<std::string>* keys_to_match,
                              size_t* count);
 
@@ -256,12 +256,14 @@ bool DiskCacheBackendTest::CreateSetOfRandomEntries(
 // OpenNextEntry stops returning net::OK.
 bool DiskCacheBackendTest::EnumerateAndMatchKeys(
     int max_to_open,
-    void** iter,
+    TestIterator* iter,
     std::set<std::string>* keys_to_match,
     size_t* count) {
   disk_cache::Entry* entry;
 
-  while (OpenNextEntry(iter, &entry) == net::OK) {
+  if (!iter)
+    return false;
+  while (iter->OpenNextEntry(&entry) == net::OK) {
     if (!entry)
       return false;
     EXPECT_EQ(1U, keys_to_match->erase(entry->GetKey()));
@@ -1237,11 +1239,11 @@ void DiskCacheBackendTest::BackendEnumerations() {
   Time final = Time::Now();
 
   disk_cache::Entry* entry;
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
   Time last_modified[kNumEntries];
   Time last_used[kNumEntries];
-  while (OpenNextEntry(&iter, &entry) == net::OK) {
+  while (iter->OpenNextEntry(&entry) == net::OK) {
     ASSERT_TRUE(NULL != entry);
     if (count < kNumEntries) {
       last_modified[count] = entry->GetLastModified();
@@ -1255,10 +1257,10 @@ void DiskCacheBackendTest::BackendEnumerations() {
   };
   EXPECT_EQ(kNumEntries, count);
 
-  iter = NULL;
+  iter = CreateIterator();
   count = 0;
   // The previous enumeration should not have changed the timestamps.
-  while (OpenNextEntry(&iter, &entry) == net::OK) {
+  while (iter->OpenNextEntry(&entry) == net::OK) {
     ASSERT_TRUE(NULL != entry);
     if (count < kNumEntries) {
       EXPECT_TRUE(last_modified[count] == entry->GetLastModified());
@@ -1309,8 +1311,8 @@ void DiskCacheBackendTest::BackendEnumerations2() {
   // Make sure that the timestamp is not the same.
   AddDelay();
   ASSERT_EQ(net::OK, OpenEntry(second, &entry1));
-  void* iter = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry2));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry2));
   EXPECT_EQ(entry2->GetKey(), second);
 
   // Two entries and the iterator pointing at "first".
@@ -1318,15 +1320,15 @@ void DiskCacheBackendTest::BackendEnumerations2() {
   entry2->Close();
 
   // The iterator should still be valid, so we should not crash.
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry2));
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry2));
   EXPECT_EQ(entry2->GetKey(), first);
   entry2->Close();
-  cache_->EndEnumeration(&iter);
+  iter = CreateIterator();
 
   // Modify the oldest entry and get the newest element.
   ASSERT_EQ(net::OK, OpenEntry(first, &entry1));
   EXPECT_EQ(0, WriteData(entry1, 0, 200, NULL, 0, false));
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry2));
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry2));
   if (type_ == net::APP_CACHE) {
     // The list is not updated.
     EXPECT_EQ(entry2->GetKey(), second);
@@ -1336,7 +1338,6 @@ void DiskCacheBackendTest::BackendEnumerations2() {
 
   entry1->Close();
   entry2->Close();
-  cache_->EndEnumeration(&iter);
 }
 
 TEST_F(DiskCacheBackendTest, Enumerations2) {
@@ -1391,11 +1392,10 @@ TEST_F(DiskCacheBackendTest, ShaderCacheEnumerationReadData) {
   EXPECT_EQ(kSize, ReadData(entry1, 0, 0, buffer1.get(), kSize));
   entry1->Close();
 
-  void* iter = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry2));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry2));
   EXPECT_EQ(entry2->GetKey(), second);
   entry2->Close();
-  cache_->EndEnumeration(&iter);
 }
 
 #if !defined(LEAK_SANITIZER)
@@ -1424,9 +1424,9 @@ void DiskCacheBackendTest::BackendInvalidEntryEnumeration() {
 
   SimulateCrash();
 
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
-  while (OpenNextEntry(&iter, &entry) == net::OK) {
+  while (iter->OpenNextEntry(&entry) == net::OK) {
     ASSERT_TRUE(NULL != entry);
     EXPECT_EQ(key2, entry->GetKey());
     entry->Close();
@@ -1466,9 +1466,8 @@ void DiskCacheBackendTest::BackendFixEnumerators() {
   EXPECT_EQ(kNumEntries, cache_->GetEntryCount());
 
   disk_cache::Entry *entry1, *entry2;
-  void* iter1 = NULL;
-  void* iter2 = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter1, &entry1));
+  scoped_ptr<TestIterator> iter1 = CreateIterator(), iter2 = CreateIterator();
+  ASSERT_EQ(net::OK, iter1->OpenNextEntry(&entry1));
   ASSERT_TRUE(NULL != entry1);
   entry1->Close();
   entry1 = NULL;
@@ -1477,17 +1476,17 @@ void DiskCacheBackendTest::BackendFixEnumerators() {
   for (int i = 0; i < kNumEntries / 2; i++) {
     if (entry1)
       entry1->Close();
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter1, &entry1));
+    ASSERT_EQ(net::OK, iter1->OpenNextEntry(&entry1));
     ASSERT_TRUE(NULL != entry1);
 
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter2, &entry2));
+    ASSERT_EQ(net::OK, iter2->OpenNextEntry(&entry2));
     ASSERT_TRUE(NULL != entry2);
     entry2->Close();
   }
 
   // Messing up with entry1 will modify entry2->next.
   entry1->Doom();
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter2, &entry2));
+  ASSERT_EQ(net::OK, iter2->OpenNextEntry(&entry2));
   ASSERT_TRUE(NULL != entry2);
 
   // The link entry2->entry1 should be broken.
@@ -1496,12 +1495,9 @@ void DiskCacheBackendTest::BackendFixEnumerators() {
   entry2->Close();
 
   // And the second iterator should keep working.
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter2, &entry2));
+  ASSERT_EQ(net::OK, iter2->OpenNextEntry(&entry2));
   ASSERT_TRUE(NULL != entry2);
   entry2->Close();
-
-  cache_->EndEnumeration(&iter1);
-  cache_->EndEnumeration(&iter2);
 }
 
 TEST_F(DiskCacheBackendTest, FixEnumerators) {
@@ -2027,8 +2023,8 @@ void DiskCacheBackendTest::BackendInvalidEntry3() {
   InitCache();
 
   disk_cache::Entry* entry;
-  void* iter = NULL;
-  while (OpenNextEntry(&iter, &entry) == net::OK) {
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  while (iter->OpenNextEntry(&entry) == net::OK) {
     entry->Close();
   }
 }
@@ -2172,8 +2168,8 @@ void DiskCacheBackendTest::BackendInvalidEntry7() {
   EXPECT_EQ(1, cache_->GetEntryCount());
 
   // We should delete the cache. The list still has a corrupt node.
-  void* iter = NULL;
-  EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
   FlushQueueForTest();
   EXPECT_EQ(0, cache_->GetEntryCount());
 }
@@ -2216,10 +2212,10 @@ void DiskCacheBackendTest::BackendInvalidEntry8() {
   EXPECT_EQ(1, cache_->GetEntryCount());
 
   // We should not delete the cache.
-  void* iter = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
   entry->Close();
-  EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+  EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
   EXPECT_EQ(1, cache_->GetEntryCount());
 }
 
@@ -2266,13 +2262,13 @@ void DiskCacheBackendTest::BackendInvalidEntry9(bool eviction) {
   } else {
     // We should detect the problem through the list, but we should not delete
     // the entry, just fail the iteration.
-    void* iter = NULL;
-    EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+    scoped_ptr<TestIterator> iter = CreateIterator();
+    EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
 
     // Now a full iteration will work, and return one entry.
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+    ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
-    EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+    EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
 
     // This should detect what's left of the bad entry.
     EXPECT_NE(net::OK, OpenEntry(second, &entry));
@@ -2343,13 +2339,13 @@ void DiskCacheBackendTest::BackendInvalidEntry10(bool eviction) {
     // Detection order: third -> second -> first.
     // We should detect the problem through the list, but we should not delete
     // the entry.
-    void* iter = NULL;
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+    scoped_ptr<TestIterator> iter = CreateIterator();
+    ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+    ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     EXPECT_EQ(first, entry->GetKey());
     entry->Close();
-    EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+    EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
   }
   DisableIntegrityCheck();
 }
@@ -2410,17 +2406,17 @@ void DiskCacheBackendTest::BackendInvalidEntry11(bool eviction) {
     // Detection order: third -> second.
     // We should detect the problem through the list, but we should not delete
     // the entry, just fail the iteration.
-    void* iter = NULL;
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+    scoped_ptr<TestIterator> iter = CreateIterator();
+    ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
-    EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+    EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
 
     // Now a full iteration will work, and return two entries.
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+    ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
-    ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+    ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
     entry->Close();
-    EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+    EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
   }
   DisableIntegrityCheck();
 }
@@ -2498,12 +2494,12 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankings2) {
 // If the LRU is corrupt, we delete the cache.
 void DiskCacheBackendTest::BackendInvalidRankings() {
   disk_cache::Entry* entry;
-  void* iter = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
   entry->Close();
   EXPECT_EQ(2, cache_->GetEntryCount());
 
-  EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry));
+  EXPECT_NE(net::OK, iter->OpenNextEntry(&entry));
   FlushQueueForTest();  // Allow the restart to finish.
   EXPECT_EQ(0, cache_->GetEntryCount());
 }
@@ -2543,10 +2539,10 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankingsFailure) {
 // If the LRU is corrupt and we have open entries, we disable the cache.
 void DiskCacheBackendTest::BackendDisable() {
   disk_cache::Entry *entry1, *entry2;
-  void* iter = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry1));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
 
-  EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry2));
+  EXPECT_NE(net::OK, iter->OpenNextEntry(&entry2));
   EXPECT_EQ(0, cache_->GetEntryCount());
   EXPECT_NE(net::OK, CreateEntry("Something new", &entry2));
 
@@ -2594,9 +2590,9 @@ void DiskCacheBackendTest::BackendDisable2() {
   EXPECT_EQ(8, cache_->GetEntryCount());
 
   disk_cache::Entry* entry;
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   int count = 0;
-  while (OpenNextEntry(&iter, &entry) == net::OK) {
+  while (iter->OpenNextEntry(&entry) == net::OK) {
     ASSERT_TRUE(NULL != entry);
     entry->Close();
     count++;
@@ -2642,12 +2638,12 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableFailure2) {
 // If the index size changes when we disable the cache, we should not crash.
 void DiskCacheBackendTest::BackendDisable3() {
   disk_cache::Entry *entry1, *entry2;
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   EXPECT_EQ(2, cache_->GetEntryCount());
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry1));
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
   entry1->Close();
 
-  EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry2));
+  EXPECT_NE(net::OK, iter->OpenNextEntry(&entry2));
   FlushQueueForTest();
 
   ASSERT_EQ(net::OK, CreateEntry("Something new", &entry2));
@@ -2676,8 +2672,8 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess3) {
 // If we disable the cache, already open entries should work as far as possible.
 void DiskCacheBackendTest::BackendDisable4() {
   disk_cache::Entry *entry1, *entry2, *entry3, *entry4;
-  void* iter = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry1));
+  scoped_ptr<TestIterator> iter = CreateIterator();
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry1));
 
   char key2[2000];
   char key3[20000];
@@ -2695,7 +2691,7 @@ void DiskCacheBackendTest::BackendDisable4() {
   EXPECT_EQ(kBufSize, WriteData(entry3, 0, 0, buf.get(), kBufSize, false));
 
   // This line should disable the cache but not delete it.
-  EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry4));
+  EXPECT_NE(net::OK, iter->OpenNextEntry(&entry4));
   EXPECT_EQ(0, cache_->GetEntryCount());
 
   EXPECT_NE(net::OK, CreateEntry("cache is disabled", &entry4));
@@ -3376,29 +3372,29 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationBasics) {
 
   // Check that enumeration returns all entries.
   std::set<std::string> keys_to_match(key_pool);
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
-  ASSERT_TRUE(EnumerateAndMatchKeys(-1, &iter, &keys_to_match, &count));
-  cache_->EndEnumeration(&iter);
+  ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
+  iter.reset();
   EXPECT_EQ(key_pool.size(), count);
   EXPECT_TRUE(keys_to_match.empty());
 
   // Check that opening entries does not affect enumeration.
   keys_to_match = key_pool;
-  iter = NULL;
+  iter = CreateIterator();
   count = 0;
   disk_cache::Entry* entry_opened_before;
   ASSERT_EQ(net::OK, OpenEntry(*(key_pool.begin()), &entry_opened_before));
   ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size()/2,
-                                    &iter,
+                                    iter.get(),
                                     &keys_to_match,
                                     &count));
 
   disk_cache::Entry* entry_opened_middle;
   ASSERT_EQ(net::OK,
             OpenEntry(*(keys_to_match.begin()), &entry_opened_middle));
-  ASSERT_TRUE(EnumerateAndMatchKeys(-1, &iter, &keys_to_match, &count));
-  cache_->EndEnumeration(&iter);
+  ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
+  iter.reset();
   entry_opened_before->Close();
   entry_opened_middle->Close();
 
@@ -3416,10 +3412,10 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
 
   // Check that enumeration returns all entries but the doomed one.
   std::set<std::string> keys_to_match(key_pool);
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
   ASSERT_TRUE(EnumerateAndMatchKeys(key_pool.size()/2,
-                                    &iter,
+                                    iter.get(),
                                     &keys_to_match,
                                     &count));
 
@@ -3427,8 +3423,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
   DoomEntry(key_to_delete);
   keys_to_match.erase(key_to_delete);
   key_pool.erase(key_to_delete);
-  ASSERT_TRUE(EnumerateAndMatchKeys(-1, &iter, &keys_to_match, &count));
-  cache_->EndEnumeration(&iter);
+  ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
+  iter.reset();
 
   EXPECT_EQ(key_pool.size(), count);
   EXPECT_TRUE(keys_to_match.empty());
@@ -3464,10 +3460,10 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
 
   // Check that enumeration returns all entries but the corrupt one.
   std::set<std::string> keys_to_match(key_pool);
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   size_t count = 0;
-  ASSERT_TRUE(EnumerateAndMatchKeys(-1, &iter, &keys_to_match, &count));
-  cache_->EndEnumeration(&iter);
+  ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
+  iter.reset();
 
   EXPECT_EQ(key_pool.size(), count);
   EXPECT_TRUE(keys_to_match.empty());
@@ -3481,9 +3477,9 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
   std::set<std::string> key_pool;
   ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
 
-  void* iter = NULL;
+  scoped_ptr<TestIterator> iter = CreateIterator();
   disk_cache::Entry* entry = NULL;
-  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+  ASSERT_EQ(net::OK, iter->OpenNextEntry(&entry));
   EXPECT_TRUE(entry);
   disk_cache::ScopedEntryPtr entry_closer(entry);
 

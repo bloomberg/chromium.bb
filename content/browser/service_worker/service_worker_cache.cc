@@ -645,7 +645,6 @@ struct ServiceWorkerCache::KeysContext {
       : original_callback(callback),
         cache(cache),
         out_keys(new ServiceWorkerCache::Requests()),
-        backend_iterator(NULL),
         enumerated_entry(NULL) {}
 
   ~KeysContext() {
@@ -653,8 +652,6 @@ struct ServiceWorkerCache::KeysContext {
       entries[i]->Close();
     if (enumerated_entry)
       enumerated_entry->Close();
-    if (cache && backend_iterator && cache->backend_)
-      cache->backend_->EndEnumeration(&backend_iterator);
   }
 
   // The callback passed to the Keys() function.
@@ -670,7 +667,7 @@ struct ServiceWorkerCache::KeysContext {
   scoped_ptr<ServiceWorkerCache::Requests> out_keys;
 
   // Used for enumerating cache entries.
-  void* backend_iterator;
+  scoped_ptr<disk_cache::Backend::Iterator> backend_iterator;
   disk_cache::Entry* enumerated_entry;
 };
 
@@ -822,14 +819,14 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
   scoped_ptr<KeysContext> keys_context(
       new KeysContext(callback, weak_ptr_factory_.GetWeakPtr()));
 
-  void** backend_iterator = &keys_context->backend_iterator;
+  keys_context->backend_iterator = backend_->CreateIterator();
+  disk_cache::Backend::Iterator& iterator = *keys_context->backend_iterator;
   disk_cache::Entry** enumerated_entry = &keys_context->enumerated_entry;
 
   net::CompletionCallback open_entry_callback =
       base::Bind(KeysDidOpenNextEntry, base::Passed(keys_context.Pass()));
 
-  int rv = backend_->OpenNextEntry(
-      backend_iterator, enumerated_entry, open_entry_callback);
+  int rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
   if (rv != net::ERR_IO_PENDING)
     open_entry_callback.Run(rv);
@@ -912,14 +909,12 @@ void ServiceWorkerCache::KeysDidOpenNextEntry(
   keys_context->enumerated_entry = NULL;
 
   // Enumerate the next entry.
-  void** backend_iterator = &keys_context->backend_iterator;
+  disk_cache::Backend::Iterator& iterator = *keys_context->backend_iterator;
   disk_cache::Entry** enumerated_entry = &keys_context->enumerated_entry;
-
   net::CompletionCallback open_entry_callback =
       base::Bind(KeysDidOpenNextEntry, base::Passed(keys_context.Pass()));
 
-  rv = cache->backend_->OpenNextEntry(
-      backend_iterator, enumerated_entry, open_entry_callback);
+  rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
   if (rv != net::ERR_IO_PENDING)
     open_entry_callback.Run(rv);

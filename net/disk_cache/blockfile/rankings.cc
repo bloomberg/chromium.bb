@@ -202,14 +202,16 @@ Rankings::ScopedRankingsBlock::ScopedRankingsBlock(
     Rankings* rankings, CacheRankingsBlock* node)
     : scoped_ptr<CacheRankingsBlock>(node), rankings_(rankings) {}
 
-Rankings::Iterator::Iterator(Rankings* rankings) {
+Rankings::Iterator::Iterator() {
   memset(this, 0, sizeof(Iterator));
-  my_rankings = rankings;
 }
 
-Rankings::Iterator::~Iterator() {
-  for (int i = 0; i < 3; i++)
-    ScopedRankingsBlock(my_rankings, nodes[i]);
+void Rankings::Iterator::Reset() {
+  if (my_rankings) {
+    for (int i = 0; i < 3; i++)
+      ScopedRankingsBlock(my_rankings, nodes[i]);
+  }
+  memset(this, 0, sizeof(Iterator));
 }
 
 Rankings::Rankings() : init_(false) {}
@@ -897,10 +899,8 @@ void Rankings::InvalidateIterators(CacheRankingsBlock* node) {
   CacheAddr address = node->address().value();
   for (IteratorList::iterator it = iterators_.begin(); it != iterators_.end();
        ++it) {
-    if (it->first == address) {
-      DLOG(INFO) << "Invalidating iterator at 0x" << std::hex << address;
+    if (it->first == address)
       it->second->Discard();
-    }
   }
 }
 
