@@ -889,11 +889,11 @@ bool RenderWidgetHostViewAndroid::CanCopyToVideoFrame() const {
 }
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap) {
+    const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap) {
   if (!content_view_core_)
     return;
 
-  content_view_core_->ShowDisambiguationPopup(target_rect, zoomed_bitmap);
+  content_view_core_->ShowDisambiguationPopup(rect_pixels, zoomed_bitmap);
 }
 
 scoped_ptr<SyntheticGestureTarget>

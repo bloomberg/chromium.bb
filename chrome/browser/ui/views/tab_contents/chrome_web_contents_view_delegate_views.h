@@ -11,6 +11,7 @@
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
+class LinkDisambiguationPopup;
 class RenderViewContextMenu;
 class RenderViewContextMenuViews;
 
@@ -49,6 +50,13 @@ class ChromeWebContentsViewDelegateViews
       content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
+  virtual void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect,
+      const SkBitmap& zoomed_bitmap,
+      const gfx::NativeView content,
+      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) OVERRIDE;
+  virtual void HideDisambiguationPopup() OVERRIDE;
 
   // Overridden from ContextMenuDelegate.
   virtual scoped_ptr<RenderViewContextMenu> BuildMenu(
@@ -73,6 +81,8 @@ class ChromeWebContentsViewDelegateViews
   scoped_ptr<content::WebDragDestDelegate> bookmark_handler_;
 
   content::WebContents* web_contents_;
+
+  scoped_ptr<LinkDisambiguationPopup> link_disambiguation_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViews);
 };

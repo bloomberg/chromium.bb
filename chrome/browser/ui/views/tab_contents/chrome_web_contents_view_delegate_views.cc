@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.h"
 
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -20,6 +21,10 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/link_disambiguation/link_disambiguation_popup.h"
+#endif
 
 ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(
     content::WebContents* web_contents)
@@ -164,6 +169,26 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   ShowMenu(
       BuildMenu(content::WebContents::FromRenderFrameHost(render_frame_host),
                 params));
+}
+
+void ChromeWebContentsViewDelegateViews::ShowDisambiguationPopup(
+    const gfx::Rect& target_rect,
+    const SkBitmap& zoomed_bitmap,
+    const gfx::NativeView content,
+    const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+    const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {
+#if defined(USE_AURA)
+  if (!browser_defaults::kShowLinkDisambiguationPopup)
+    return;
+
+  link_disambiguation_popup_.reset(new LinkDisambiguationPopup);
+  link_disambiguation_popup_->Show(
+      zoomed_bitmap, target_rect, content, gesture_cb, mouse_cb);
+#endif
+}
+
+void ChromeWebContentsViewDelegateViews::HideDisambiguationPopup() {
+  link_disambiguation_popup_.reset();
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {

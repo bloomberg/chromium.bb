@@ -335,10 +335,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                   size_t start_offset,
                                                   size_t end_offset) {};
 
-#if defined(OS_ANDROID)
-  virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+  virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                        const SkBitmap& zoomed_bitmap) = 0;
+#endif
 
+#if defined(OS_ANDROID)
   // Instructs the view to not drop the surface even when the view is hidden.
   virtual void LockCompositingSurface() = 0;
   virtual void UnlockCompositingSurface() = 0;

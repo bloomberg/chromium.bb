@@ -51,6 +51,17 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
     // See c/b/ui/views/tab_contents/chrome_web_contents_view_delegate_views.cc
   }
 
+  virtual void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect,
+      const SkBitmap& zoomed_bitmap,
+      const gfx::NativeView content,
+      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) OVERRIDE {
+  }
+
+  virtual void HideDisambiguationPopup() OVERRIDE {
+  }
+
   scoped_ptr<RenderViewContextMenuImpl> BuildMenu(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) {

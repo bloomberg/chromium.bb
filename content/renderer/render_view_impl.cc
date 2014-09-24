@@ -120,6 +120,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
@@ -202,7 +203,6 @@
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
 #include "net/android/network_library.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "ui/gfx/rect_f.h"
@@ -4045,7 +4045,7 @@ void RenderViewImpl::OnEnableViewSourceMode() {
   main_frame->enableViewSourceMode(true);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 bool RenderViewImpl::didTapMultipleTargets(
     const blink::WebGestureEvent& event,
     const WebVector<WebRect>& target_rects) {
@@ -4123,7 +4123,7 @@ bool RenderViewImpl::didTapMultipleTargets(
 
   return handled;
 }
-#endif
+#endif  // defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 
 unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
   return history_list_length_;

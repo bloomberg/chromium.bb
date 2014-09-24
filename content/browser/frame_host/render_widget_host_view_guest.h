@@ -132,10 +132,13 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
   // RenderWidgetHostViewBase implementation.
-  virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
+  virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
+#endif  // defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+
+#if defined(OS_ANDROID)
   virtual void LockCompositingSurface() OVERRIDE;
   virtual void UnlockCompositingSurface() OVERRIDE;
 #endif  // defined(OS_ANDROID)

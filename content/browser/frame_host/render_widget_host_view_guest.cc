@@ -457,12 +457,14 @@ bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
 
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
+    const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
 }
+#endif  // defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 
+#if defined(OS_ANDROID)
 void RenderWidgetHostViewGuest::LockCompositingSurface() {
 }
 

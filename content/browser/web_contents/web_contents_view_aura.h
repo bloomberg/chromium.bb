@@ -136,6 +136,12 @@ class WebContentsViewAura
   virtual void UpdateDragCursor(blink::WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
+  virtual void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect,
+      const SkBitmap& zoomed_bitmap,
+      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) OVERRIDE;
+  virtual void HideDisambiguationPopup() OVERRIDE;
 
   // Overridden from OverscrollControllerDelegate:
   virtual gfx::Rect GetVisibleBounds() const OVERRIDE;

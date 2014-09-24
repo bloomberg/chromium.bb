@@ -237,10 +237,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void StartContentIntent(const GURL& content_url);
 
   // Shows the disambiguation popup
-  // |target_rect|   --> window coordinates which |zoomed_bitmap| represents
+  // |rect_pixels|   --> window coordinates which |zoomed_bitmap| represents
   // |zoomed_bitmap| --> magnified image of potential touch targets
   void ShowDisambiguationPopup(
-      const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
+      const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap);
 
   // Creates a java-side touch event, used for injecting touch event for
   // testing/benchmarking purposes

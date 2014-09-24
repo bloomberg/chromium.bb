@@ -654,7 +654,7 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
 }
 
 void ContentViewCoreImpl::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
+    const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
   JNIEnv* env = AttachCurrentThread();
 
@@ -662,7 +662,7 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
   if (obj.is_null())
     return;
 
-  ScopedJavaLocalRef<jobject> rect_object(CreateJavaRect(env, target_rect));
+  ScopedJavaLocalRef<jobject> rect_object(CreateJavaRect(env, rect_pixels));
 
   ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(&zoomed_bitmap);

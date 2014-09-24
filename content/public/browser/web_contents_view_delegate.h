@@ -9,7 +9,10 @@
 #import <Cocoa/Cocoa.h>
 #endif
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(__OBJC__)
 @protocol RenderWidgetHostViewMacDelegate;
@@ -17,6 +20,11 @@
 
 namespace gfx {
 class Size;
+}
+
+namespace ui {
+class GestureEvent;
+class MouseEvent;
 }
 
 namespace content {
@@ -46,6 +54,26 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual bool Focus();
   virtual void TakeFocus(bool reverse);
   virtual void SizeChanged(const gfx::Size& size);
+
+#if defined(TOOLKIT_VIEWS)
+  // Shows a popup window containing the |zoomed_bitmap| of web content with
+  // more than one link, allowing the user to more easily select which link
+  // they were trying to touch. |target_rect| is the rectangle in DIPs in the
+  // coordinate system of |content| that has been scaled up in |zoomed_bitmap|.
+  // Should the popup receive any gesture events they should be translated back
+  // to the coordinate system of |content| and then provided to the |callback|
+  // for forwarding on to the original scale web content.
+  virtual void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect,
+      const SkBitmap& zoomed_bitmap,
+      const gfx::NativeView content,
+      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) = 0;
+
+  // Hides the link disambiguation popup window if it is showing, otherwise does
+  // nothing.
+  virtual void HideDisambiguationPopup() = 0;
+#endif
 
   // Returns a newly-created delegate for the RenderWidgetHostViewMac, to handle
   // events on the responder chain.

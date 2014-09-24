@@ -187,12 +187,14 @@ void RenderWidgetHostViewChildFrame::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
+    const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
 }
+#endif
 
+#if defined(OS_ANDROID)
 void RenderWidgetHostViewChildFrame::LockCompositingSurface() {
 }
 

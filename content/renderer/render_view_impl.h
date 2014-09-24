@@ -408,7 +408,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void focusPrevious();
   virtual void focusedNodeChanged(const blink::WebNode& node);
   virtual void didUpdateLayout();
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
   virtual bool didTapMultipleTargets(
       const blink::WebGestureEvent& event,
       const blink::WebVector<blink::WebRect>& target_rects);

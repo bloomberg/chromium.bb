@@ -619,7 +619,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                    bool last_unlocked_by_target,
                    bool privileged);
   void OnUnlockMouse();
-  void OnShowDisambiguationPopup(const gfx::Rect& rect,
+  void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                  const gfx::Size& size,
                                  const cc::SharedBitmapId& id);
 #if defined(OS_WIN)

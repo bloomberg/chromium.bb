@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
@@ -810,7 +811,7 @@ void WebContentsViewAura::InstallOverscrollControllerDelegate(
 void WebContentsViewAura::PrepareOverscrollWindow() {
   // If there is an existing |overscroll_window_| which is in the middle of an
   // animation, then destroying the window here causes the animation to be
-  // completed immidiately, which triggers |OnImplicitAnimationsCompleted()|
+  // completed immediately, which triggers |OnImplicitAnimationsCompleted()|
   // callback, and that tries to reset |overscroll_window_| again, causing a
   // double-free. So use a temporary variable here.
   if (overscroll_window_) {
@@ -1267,6 +1268,22 @@ void WebContentsViewAura::TakeFocus(bool reverse) {
       delegate_.get()) {
     delegate_->TakeFocus(reverse);
   }
+}
+
+void WebContentsViewAura::ShowDisambiguationPopup(
+    const gfx::Rect& target_rect,
+    const SkBitmap& zoomed_bitmap,
+    const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+    const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {
+  if (delegate_) {
+    delegate_->ShowDisambiguationPopup(target_rect, zoomed_bitmap,
+        window_.get(), gesture_cb, mouse_cb);
+  }
+}
+
+void WebContentsViewAura::HideDisambiguationPopup() {
+  if (delegate_)
+    delegate_->HideDisambiguationPopup();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

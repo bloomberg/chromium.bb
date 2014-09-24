@@ -2310,6 +2310,8 @@
       'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h',
       'browser/ui/gesture_prefs_observer_factory_aura.cc',
       'browser/ui/gesture_prefs_observer_factory_aura.h',
+      'browser/ui/views/link_disambiguation/link_disambiguation_popup.cc',
+      'browser/ui/views/link_disambiguation/link_disambiguation_popup.h',
       'browser/ui/webui/gesture_config_ui.cc',
       'browser/ui/webui/gesture_config_ui.h',
       'browser/ui/window_sizer/window_sizer_aura.cc',

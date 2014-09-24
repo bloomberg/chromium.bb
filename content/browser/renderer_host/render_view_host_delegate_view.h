@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
@@ -18,6 +19,11 @@ namespace gfx {
 class ImageSkia;
 class Rect;
 class Vector2d;
+}
+
+namespace ui {
+class GestureEvent;
+class MouseEvent;
 }
 
 namespace content {
@@ -74,6 +80,22 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
   // Hides a popup menu opened by ShowPopupMenu().
   virtual void HidePopupMenu() {};
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  // Shows a Link Disambiguation Popup. |target_rect| is the area the user
+  // touched that resulted in ambiguity, in DIPs in the host's coordinate
+  // system, |zoomed_bitmap| is an enlarged image of that |target_rect|, and
+  // |callback| is for forwarding on to the original scale web content.
+  virtual void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect,
+      const SkBitmap& zoomed_bitmap,
+      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {}
+
+  // Hides the Link Disambiguation Popup, if it was showing, otherwise does
+  // nothing.
+  virtual void HideDisambiguationPopup() {}
 #endif
 
  protected:

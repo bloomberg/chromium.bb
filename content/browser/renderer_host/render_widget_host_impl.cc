@@ -1715,10 +1715,10 @@ void RenderWidgetHostImpl::OnUnlockMouse() {
 }
 
 void RenderWidgetHostImpl::OnShowDisambiguationPopup(
-    const gfx::Rect& rect,
+    const gfx::Rect& rect_pixels,
     const gfx::Size& size,
     const cc::SharedBitmapId& id) {
-  DCHECK(!rect.IsEmpty());
+  DCHECK(!rect_pixels.IsEmpty());
   DCHECK(!size.IsEmpty());
 
   scoped_ptr<cc::SharedBitmap> bitmap =
@@ -1735,13 +1735,17 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   SkBitmap zoomed_bitmap;
   zoomed_bitmap.installPixels(info, bitmap->pixels(), info.minRowBytes());
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+  // Note that |rect| is in coordinates of pixels relative to the window origin.
+  // Aura-based systems will want to convert this to DIPs.
   if (view_)
-    view_->ShowDisambiguationPopup(rect, zoomed_bitmap);
+    view_->ShowDisambiguationPopup(rect_pixels, zoomed_bitmap);
 #else
   NOTIMPLEMENTED();
 #endif
 
+  // It is assumed that the disambiguation popup will make a copy of the
+  // provided zoomed image, so we delete this one.
   zoomed_bitmap.setPixels(0);
   Send(new ViewMsg_ReleaseDisambiguationPopupBitmap(GetRoutingID(), id));
 }
