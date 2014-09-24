@@ -781,6 +781,7 @@
             '../sandbox/sandbox.gyp:sandbox_linux_unittests_stripped',
             '../sql/sql.gyp:sql_unittests',
             '../sync/sync.gyp:sync_unit_tests',
+            '../testing/android/junit/junit_test.gyp:junit_unit_tests',
             '../third_party/leveldatabase/leveldatabase.gyp:env_chromium_unittests',
             '../third_party/WebKit/public/all.gyp:*',
             '../tools/android/android_tools.gyp:android_tools',
