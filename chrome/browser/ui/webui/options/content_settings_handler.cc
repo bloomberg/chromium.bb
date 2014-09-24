@@ -1495,8 +1495,14 @@ void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
 }
 
 void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
-  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
+#if defined(OS_CHROMEOS)
+  // Guests cannot modify exceptions. UIAccountTweaks will disabled the button.
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
+    return;
+#endif
+
   // Exceptions apply only when the feature is enabled.
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   bool enable_exceptions = prefs->GetBoolean(prefs::kEnableDRM);
   web_ui()->CallJavascriptFunction(
       "ContentSettings.enableProtectedContentExceptions",
