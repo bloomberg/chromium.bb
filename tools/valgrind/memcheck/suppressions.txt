@@ -3179,16 +3179,6 @@
    fun:_ZN5blink24DocumentThreadableLoader11loadRequestERKNS_15ResourceRequestENS_19SecurityCheckPolicyE
 }
 {
-   bug_332335
-   Memcheck:Param
-   sendmsg(msg.msg_iov[0])
-   ...
-   fun:_ZN8breakpad12_GLOBAL__N_122NonBrowserCrashHandler11RequestDumpEPKvm
-   fun:_ZN15google_breakpad16ExceptionHandler12GenerateDumpEPNS0_12CrashContextE
-   fun:_ZN15google_breakpad16ExceptionHandler12HandleSignalEiP7siginfoPv
-   fun:_ZN15google_breakpad16ExceptionHandler13SignalHandlerEiP7siginfoPv
-}
-{
    bug_340952
    Memcheck:Leak
    fun:_Znw*
