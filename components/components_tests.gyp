@@ -217,7 +217,6 @@
             'storage_monitor/storage_monitor_unittest.cc',
             'storage_monitor/storage_monitor_win_unittest.cc',
             'suggestions/blacklist_store_unittest.cc',
-            'suggestions/image_manager_unittest.cc',
             'suggestions/suggestions_service_unittest.cc',
             'suggestions/suggestions_store_unittest.cc',
             'sync_driver/non_ui_data_type_controller_unittest.cc',

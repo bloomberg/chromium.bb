@@ -1,6 +1,5 @@
 include_rules = [
   "+components/keyed_service/core",
-  "+components/leveldb_proto",
   "+components/pref_registry",
   "+components/variations",
   "+net",
