@@ -23,7 +23,6 @@
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:sel_ldr_launcher_base',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
-        '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
         '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
         '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
