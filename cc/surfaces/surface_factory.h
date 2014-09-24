@@ -55,10 +55,10 @@ class CC_SURFACES_EXPORT SurfaceFactory
  private:
   SurfaceManager* manager_;
   SurfaceFactoryClient* client_;
+  SurfaceResourceHolder holder_;
+
   typedef base::ScopedPtrHashMap<SurfaceId, Surface> OwningSurfaceMap;
   base::ScopedPtrHashMap<SurfaceId, Surface> surface_map_;
-
-  SurfaceResourceHolder holder_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactory);
 };
