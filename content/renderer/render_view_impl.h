@@ -125,7 +125,6 @@ namespace content {
 class BrowserPluginManager;
 class DevToolsAgent;
 class DocumentState;
-class FaviconHelper;
 class HistoryController;
 class HistoryEntry;
 class ImageResourceFetcher;
@@ -753,20 +752,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Misc private functions ----------------------------------------------------
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
-
-  // This callback is triggered when DownloadFavicon completes, either
-  // succesfully or with a failure. See DownloadFavicon for more
-  // details.
-  void DidDownloadFavicon(ImageResourceFetcher* fetcher,
-                          const SkBitmap& image);
-
-  // Requests to download a favicon image. When done, the RenderView is notified
-  // by way of DidDownloadFavicon. Returns true if the request was successfully
-  // started, false otherwise. id is used to uniquely identify the request and
-  // passed back to the DidDownloadFavicon method. If the image has multiple
-  // frames, the frame whose size is image_size is returned. If the image
-  // doesn't have a frame at the specified size, the first is returned.
-  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
   // Called to get the WebPlugin to handle find requests in the document.
   // Returns NULL if there is no such WebPlugin.
