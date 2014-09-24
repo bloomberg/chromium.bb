@@ -228,7 +228,6 @@ private:
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;
     int m_suggestedIndex;
-    bool m_isAutofilledByPreview;
 };
 
 } // namespace blink

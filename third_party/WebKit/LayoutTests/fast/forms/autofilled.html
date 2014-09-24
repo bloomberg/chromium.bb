@@ -30,7 +30,6 @@ function test() {
     textarea2.value = 'autofilled is true';
     var select1 = document.getElementById('select1');
     select2 = document.getElementById('select2');
-    var select3 = document.getElementById('select3');
 
     shouldBe('foregroundOf(textarea1)', 'originalForeground');
     shouldBe('backgroundOf(textarea1)', 'originalBackground');
@@ -41,7 +40,6 @@ function test() {
     window.internals.setAutofilled(textarea2, true);
     window.internals.setAutofilled(select1, true);
     window.internals.setAutofilled(select2, true);
-    window.internals.setAutofilled(select3, true);
 
     shouldBeEqualToString('search.value', 'Search value');
 
@@ -58,8 +56,6 @@ function test() {
     shouldNotBe('backgroundOf(select1)', 'originalBackground');
     shouldNotBe('foregroundOf(select2)', 'originalForeground');
     shouldNotBe('backgroundOf(select2)', 'originalBackground');
-    shouldNotBe('foregroundOf(select3)', 'originalForeground');
-    shouldNotBe('backgroundOf(select3)', 'originalBackground');
 
     // Remove an unselected option from <select> element. This should not affect the background color for the autofilled <select> element.
     shouldBe('select2.options.length', '3');
@@ -92,9 +88,6 @@ function test() {
     // Remove selected option for select2 element
     select2.removeChild(select2[select2.selectedIndex]);
 
-    // Change selected option for select3 element
-    select3.selectedIndex = 2;
-
     // Colors should be restored.
     shouldBe('foregroundOf(field)', 'originalForeground');
     shouldBe('backgroundOf(field)', 'originalBackground');
@@ -108,13 +101,11 @@ function test() {
     shouldBe('backgroundOf(select1)', 'originalBackground');
     shouldBe('foregroundOf(select2)', 'originalForeground');
     shouldBe('backgroundOf(select2)', 'originalBackground');
-    shouldBe('foregroundOf(select3)', 'originalForeground');
-    shouldBe('backgroundOf(select3)', 'originalBackground');
 }
 </script>
 
 <style>
-#field, #search, #textarea1, #textarea2, #select1, #select2, #select3 {
+#field, #search, #textarea1, #textarea2, #select1, #select2 {
     color: #FFFFFF;
     background-color: #FFFFFF;
 }
@@ -129,11 +120,6 @@ function test() {
         <textarea id="textarea2"></textarea>
         <select id="select1"></select>
         <select id="select2">
-            <option selected>1</option>
-            <option >2</option>
-            <option>3</option>
-        </select>
-        <select id="select3">
             <option selected>1</option>
             <option >2</option>
             <option>3</option>
