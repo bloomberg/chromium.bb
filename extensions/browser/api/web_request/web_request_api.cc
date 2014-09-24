@@ -30,8 +30,6 @@
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
-#include "extensions/browser/api/web_request/web_request_api_utils.h"
-#include "extensions/browser/api/web_request/web_request_api_utils.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/event_router.h"
@@ -81,7 +79,6 @@ using extensions::WarningSet;
 
 namespace activitylog = activity_log_web_request_constants;
 namespace helpers = extension_web_request_api_helpers;
-namespace utils = extension_web_request_api_utils;
 namespace keys = extension_web_request_api_constants;
 namespace web_request = extensions::core_api::web_request;
 namespace declarative_keys = extensions::declarative_webrequest_constants;
@@ -212,7 +209,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
   *routing_id = info->GetRouteID();
 
   // Restrict the resource type to the values we care about.
-  if (utils::IsRelevantResourceType(info->GetResourceType()))
+  if (helpers::IsRelevantResourceType(info->GetResourceType()))
     *resource_type = info->GetResourceType();
   else
     *resource_type = content::RESOURCE_TYPE_LAST_TYPE;
@@ -577,7 +574,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         std::string type_str;
         ResourceType type;
         if (!types_value->GetString(i, &type_str) ||
-            !utils::ParseResourceType(type_str, &type))
+            !helpers::ParseResourceType(type_str, &type))
           return false;
         types.push_back(type);
       }
@@ -696,7 +693,7 @@ void ExtensionWebRequestEventRouter::ExtractRequestInfo(
   out->SetString(keys::kMethodKey, request->method());
   out->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
   out->SetInteger(keys::kParentFrameIdKey, parent_frame_id_for_extension);
-  out->SetString(keys::kTypeKey, utils::ResourceTypeToString(resource_type));
+  out->SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   if (web_request_event_router_delegate_) {
     web_request_event_router_delegate_->ExtractExtraRequestDetails(

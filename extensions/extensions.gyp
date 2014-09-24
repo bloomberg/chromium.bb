@@ -500,8 +500,6 @@
         'browser/api/web_request/web_request_api_constants.h',
         'browser/api/web_request/web_request_api_helpers.cc',
         'browser/api/web_request/web_request_api_helpers.h',
-        'browser/api/web_request/web_request_api_utils.cc',
-        'browser/api/web_request/web_request_api_utils.h',
         'browser/api/web_request/web_request_event_router_delegate.cc',
         'browser/api/web_request/web_request_event_router_delegate.h',
         'browser/api/web_request/web_request_permissions.cc',

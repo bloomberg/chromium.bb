@@ -231,8 +231,6 @@ source_set("browser") {
       "api/web_request/web_request_api_constants.h",
       "api/web_request/web_request_api_helpers.cc",
       "api/web_request/web_request_api_helpers.h",
-      "api/web_request/web_request_api_utils.cc",
-      "api/web_request/web_request_api_utils.h",
       "api/web_request/web_request_permissions.cc",
       "api/web_request/web_request_permissions.h",
       "api/web_request/web_request_event_router_delegate.cc",

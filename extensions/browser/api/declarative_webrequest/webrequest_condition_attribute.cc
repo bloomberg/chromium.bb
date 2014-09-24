@@ -16,7 +16,7 @@
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
-#include "extensions/browser/api/web_request/web_request_api_utils.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -32,7 +32,7 @@ using base::StringValue;
 using base::Value;
 using content::ResourceType;
 
-namespace utils = extension_web_request_api_utils;
+namespace helpers = extension_web_request_api_helpers;
 namespace keys = extensions::declarative_webrequest_constants;
 
 namespace extensions {
@@ -154,7 +154,7 @@ WebRequestConditionAttributeResourceType::Create(
     std::string resource_type_string;
     ResourceType type = content::RESOURCE_TYPE_LAST_TYPE;
     if (!value_as_list->GetString(i, &resource_type_string) ||
-        !utils::ParseResourceType(resource_type_string, &type)) {
+        !helpers::ParseResourceType(resource_type_string, &type)) {
       *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                               keys::kResourceTypeKey);
       return scoped_refptr<const WebRequestConditionAttribute>(NULL);
