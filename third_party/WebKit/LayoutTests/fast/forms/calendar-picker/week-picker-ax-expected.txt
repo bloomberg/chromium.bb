@@ -1,0 +1,14 @@
+Tests if typing an arrow key dispatches |Focus| and |ActiveDescendantChanged| a11y events.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Focused: AXDescription: 
+Focused: AXDescription: Week 13 2000 starting on Monday March 27 2000
+PASS Received ActiveDescendantChanged
+Focused: AXDescription: Week 14 2000 starting on Monday April 3 2000
+PASS Received ActiveDescendantChanged
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
