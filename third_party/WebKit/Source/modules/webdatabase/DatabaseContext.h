@@ -59,6 +59,7 @@ public:
 
     DatabaseContext* backend();
     DatabaseThread* databaseThread();
+    bool databaseThreadAvailable();
 
     void setHasOpenDatabases() { m_hasOpenDatabases = true; }
     // Blocks the caller thread until cleanup tasks are completed.

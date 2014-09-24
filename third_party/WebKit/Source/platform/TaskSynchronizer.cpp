@@ -35,9 +35,6 @@ namespace blink {
 
 TaskSynchronizer::TaskSynchronizer()
     : m_taskCompleted(false)
-#if ENABLE(ASSERT)
-    , m_hasCheckedForTermination(false)
-#endif
 {
 }
 

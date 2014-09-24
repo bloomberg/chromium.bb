@@ -165,6 +165,11 @@ DatabaseThread* DatabaseContext::databaseThread()
     return m_databaseThread.get();
 }
 
+bool DatabaseContext::databaseThreadAvailable()
+{
+    return databaseThread() && !m_hasRequestedTermination;
+}
+
 void DatabaseContext::stopDatabases()
 {
     // Though we initiate termination of the DatabaseThread here in
@@ -177,7 +182,7 @@ void DatabaseContext::stopDatabases()
     // m_databaseThread RefPtr destructor will deref and delete the
     // DatabaseThread.
 
-    if (m_databaseThread && !m_hasRequestedTermination) {
+    if (databaseThreadAvailable()) {
         TaskSynchronizer sync;
         m_databaseThread->requestTermination(&sync);
         m_hasRequestedTermination = true;
