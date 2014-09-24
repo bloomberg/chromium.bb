@@ -15,6 +15,7 @@ goog.provide('cvox.BrailleTable');
  *   dots:string,
  *   id:string,
  *   grade:(string|undefined),
+ *   variant:(string|undefined),
  *   fileName:string
  * }}
  */
@@ -90,4 +91,26 @@ cvox.BrailleTable.getUncontracted = function(tables, table) {
     return current;
   }
   return tables.reduce(mostUncontractedOf, table);
+};
+
+
+/**
+ * @param {!cvox.BrailleTable.Table} table Table to get name for.
+ * @return {string} Localized display name.
+ */
+cvox.BrailleTable.getDisplayName = function(table) {
+  var msgs = cvox.ChromeVox.msgs;
+  var localeName = msgs.getLocaleDisplayName(table.locale);
+  if (!table.grade && !table.variant) {
+    return localeName;
+  } else if (table.grade && !table.variant) {
+    return msgs.getMsg('braille_table_name_with_grade',
+                       [localeName, table.grade]);
+  } else if (!table.grade && table.variant) {
+    return msgs.getMsg('braille_table_name_with_variant',
+                       [localeName, table.variant]);
+  } else {
+    return msgs.getMsg('braille_table_name_with_variant_and_grade',
+                       [localeName, table.variant, table.grade]);
+  }
 };

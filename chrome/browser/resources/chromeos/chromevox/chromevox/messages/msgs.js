@@ -13,6 +13,11 @@ goog.provide('cvox.Msgs');
  * @constructor
  */
 cvox.Msgs = function() {
+  /**
+   * @type {Object.<string, string>}
+   * @private
+   */
+  this.localeNameDict_ = null;
 };
 
 
@@ -81,4 +86,24 @@ cvox.Msgs.prototype.addTranslatedMessagesToDom = function(root) {
  */
 cvox.Msgs.prototype.getNumber = function(num) {
   return '' + num;
+};
+
+/**
+ * Gets a localized display name for a locale.
+ * NOTE: Only a subset of locale identifiers are supported.  See the
+ * |CHROMEVOX_LOCALE_DICT| message.
+ * @param {string} locale On the form |ll| or |ll_CC|, where |ll| is
+ *     the language code and |CC| the country code.
+ * @return {string} The display name.
+ */
+cvox.Msgs.prototype.getLocaleDisplayName = function(locale) {
+  if (!this.localeNameDict_) {
+    this.localeNameDict_ = /** @type {Object.<string, string>} */(
+        JSON.parse(this.getMsg('locale_dict')));
+  }
+  var name = this.localeNameDict_[locale];
+  if (!name) {
+    throw Error('Unsupported locale identifier: ' + locale);
+  }
+  return name;
 };

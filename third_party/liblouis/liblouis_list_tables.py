@@ -25,7 +25,11 @@ def ToNativePath(pathname):
 
 def LoadTablesFile(filename):
   with open(ToNativePath(filename), 'r') as fh:
-    return json.load(fh)
+    try:
+      return json.load(fh)
+    except ValueError, e:
+      raise ValueError('Error parsing braille table file %s: %s' %
+                       (filename, e.message))
 
 
 def FindFile(filename, directories):

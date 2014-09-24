@@ -365,32 +365,26 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
     return;
   }
   var tables = cvox.OptionsPage.brailleTables;
-  var localeDict = JSON.parse(cvox.ChromeVox.msgs.getMsg('locale_dict'));
   var populateSelect = function(node, dots) {
-    var localeCount = [];
     var activeTable = localStorage[node.id] || localStorage['brailleTable'];
+    // Gather the display names and sort them according to locale.
+    var items = [];
     for (var i = 0, table; table = tables[i]; i++) {
       if (table.dots !== dots) {
         continue;
       }
-      var item = document.createElement('option');
-      item.id = table.id;
-      if (!localeCount[table.locale]) {
-        localeCount[table.locale] = 0;
+      items.push({id: table.id,
+                  name: cvox.BrailleTable.getDisplayName(table)});
+    }
+    items.sort(function(a, b) { return a.name.localeCompare(b.name);});
+    for (var i = 0, item; item = items[i]; ++i) {
+      var elem = document.createElement('option');
+      elem.id = item.id;
+      elem.textContent = item.name;
+      if (item.id == activeTable) {
+        elem.setAttribute('selected', '');
       }
-      localeCount[table.locale]++;
-      var grade = table.grade;
-      if (!grade) {
-        item.textContent = localeDict[table.locale];
-      } else {
-        item.textContent = cvox.ChromeVox.msgs.getMsg(
-            'options_braille_locale_grade',
-            [localeDict[table.locale], grade]);
-      }
-      if (table.id == activeTable) {
-        item.setAttribute('selected', '');
-      }
-      node.appendChild(item);
+      node.appendChild(elem);
     }
   };
   var select6 = $('brailleTable6');

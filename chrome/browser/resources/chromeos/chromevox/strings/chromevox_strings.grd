@@ -473,8 +473,14 @@
       <message desc="Labels the braille table selection list box.  A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_DESCRIPTION_6">
         Change the current 6 dot braille table by selecting an option from the list below.
       </message>
-      <message desc="Labels each item in a braille selection listbox.  For example, a locale could be 'U.S. English' and a grade could be 'Grade 2'. Together they would be 'U.S. English, Grade 2'. A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_LOCALE_GRADE">
+      <message desc="How to present the name of a braille table to the user. For example, a locale could be 'English (United States)' and a grade could be '2'. Together they would be 'English (UnitedStates), Grade 2'. A braille table describes how text gets converted from Unicode text into a pattern of braille dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_BRAILLE_TABLE_NAME_WITH_GRADE">
         <ph name="locale">$1</ph>, Grade <ph name="grade">$2</ph>
+      </message>
+      <message desc="How to present the name of a braille table to the user. For example, a locale could be 'English' and a variant could be 'UEB' (for 'Unified English Braille'). Together they would be 'English (UEB)'. A braille table describes how text gets converted from Unicode text into a pattern of braille dots. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_BRAILLE_TABLE_NAME_WITH_VARIANT">
+        <ph name="locale">$1</ph> (<ph name="variant">$2</ph>)
+      </message>
+      <message desc="How to present the name of a braille table to the user. For example, a locale could be 'English', variant could be 'UEB' (for 'Unified English Braille') and a grade could be '2'. Together they would be 'English (UEB), Grade 2'. A braille table describes how text gets converted from Unicode text into a pattern of braille dots. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_BRAILLE_TABLE_NAME_WITH_VARIANT_AND_GRADE">
+        <ph name="locale">$1</ph> (<ph name="variant">$2</ph>), Grade <ph name="grade">$3</ph>
       </message>
       <message desc="Labels the braille table selection list box.  A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_DESCRIPTION_8">
         Change the current 8 dot braille table by selecting an option from the list below.
@@ -2387,8 +2393,49 @@
       <message desc="Brailled to describe an access key.  An access key consists of a single letter. When pressed along with a modifier (usually alt, but depends on platform), a targetted node will be activated." name="IDS_CHROMEVOX_ACCESS_KEY_BRL">
         access key:<ph name="key">$1</ph>
       </message>
-      <message desc="A dictionary mapping locale identifiers to their corresponding language names.  The format is the following: { ..., 'en_US': 'U.S. English', ...}. Localization only needed for the language name (i.e. English (United States)). All other strings should be kept as is." name="IDS_CHROMEVOX_LOCALE_DICT">
-        {"ar": "Arabic","bg": "Bulgarian","ca": "Catalan","hr": "Croatian","cs": "Czech","da": "Danish","nl": "Dutch","en_CA": "English (Canada)","en_GB": "English (United Kingdom)","en_US": "English (United States)","et": "Estonian","fr": "French","fr_CA": "French (Canada)","fr_FR": "French (France)","fi": "Finnish","de": "German","de_CH": "German (Switzerland)","de_DE": "German (Germany)","el": "Greek","hi": "Hindi","hu": "Hungarian","is": "Icelandic","it": "Italian","lv": "Latvian","lt": "Lithuanian","nb": "Norwegian Bokmål","pl": "Polish","pt": "Portuguese","ro": "Romanian","ru": "Russian","sr": "Serbian","sk": "Slovak","sl": "Slovenian","es": "Spanish","sv": "Swedish","tr": "Turkish","vi": "Vietnamese","zh": "Chinese","zh_TW": "Chinese (Traditional Han)"}
+      <message desc="A dictionary mapping locale identifiers to their corresponding language names. The format is the following: { ..., 'en_US': 'English (United States)', ...}. Translation only needed for the language and country names (e.g. English (United States)). All other strings must be kept as is." name="IDS_CHROMEVOX_LOCALE_DICT">
+        {"ar": "Arabic",
+        "bg": "Bulgarian",
+        "ca": "Catalan",
+        "cs": "Czech",
+        "da": "Danish",
+        "de": "German",
+        "de_CH": "German (Switzerland)",
+        "de_DE": "German (Germany)",
+        "el": "Greek",
+        "en": "English",
+        "en_CA": "English (Canada)",
+        "en_GB": "English (United Kingdom)",
+        "en_US": "English (United States)",
+        "es": "Spanish",
+        "et": "Estonian",
+        "fr": "French",
+        "fr_CA": "French (Canada)",
+        "fr_FR": "French (France)",
+        "fi": "Finnish",
+        "he": "Hebrew",
+        "hi": "Hindi",
+        "hr": "Croatian",
+        "hu": "Hungarian",
+        "is": "Icelandic",
+        "it": "Italian",
+        "ko": "Korean",
+        "lt": "Lithuanian",
+        "lv": "Latvian",
+        "nb": "Norwegian Bokmål",
+        "nl": "Dutch",
+        "pl": "Polish",
+        "pt": "Portuguese",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "sk": "Slovak",
+        "sl": "Slovenian",
+        "sr": "Serbian",
+        "sv": "Swedish",
+        "tr": "Turkish",
+        "vi": "Vietnamese",
+        "zh": "Chinese",
+        "zh_TW": "Chinese (Traditional Han)"}
       </message>
       <message desc="The text to speak when the user moves their cursor to the end of a block of editable text, in verbose mode." name="IDS_CHROMEVOX_END_OF_TEXT_VERBOSE">
         End of text
