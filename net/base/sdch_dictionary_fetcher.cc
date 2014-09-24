@@ -203,13 +203,14 @@ int SdchDictionaryFetcher::DoRead(int rv) {
     if (current_request_->status().is_io_pending())
       return ERR_IO_PENDING;
 
-    DCHECK_NE(current_request_->status().error(), OK);
     if (current_request_->status().error() == OK) {
       // This "should never happen", but if it does the result will be
       // an infinite loop.  It's not clear how to handle a read failure
       // without a promise to invoke the callback at some point in the future,
       // so the request is failed.
       SdchManager::SdchErrorRecovery(SdchManager::DICTIONARY_FETCH_READ_FAILED);
+      DLOG(FATAL) <<
+          "URLRequest::Read() returned false without IO pending or error!";
       return ERR_FAILED;
     }
 
