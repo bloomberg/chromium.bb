@@ -198,8 +198,8 @@ function test()
         function testRacyStart(next)
         {
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-            InspectorTest.evaluateInPage("startTimeline()", timelineStarted);
             panel._toggleTimelineButtonClicked();
+            InspectorTest.evaluateInPage("startTimeline()", timelineStarted);
 
             function timelineStarted()
             {
