@@ -13,6 +13,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+        '../net/net.gyp:net',
       ],
       'sources': [
         "proximity_auth/bluetooth_util.cc",
