@@ -1285,6 +1285,9 @@ crbug.com/409535 [ Win Release ] http/tests/xmlhttprequest/workers/close.html [ 
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 crbug.com/409534 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 
+crbug.com/416580 svg/custom/external-paintserver-reference.svg [ NeedsRebaseline ]
+crbug.com/416580 svg/custom/linking-base-external-reference.xhtml [ NeedsRebaseline ]
+
 crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]

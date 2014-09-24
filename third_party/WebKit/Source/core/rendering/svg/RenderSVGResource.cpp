@@ -35,18 +35,6 @@
 
 namespace blink {
 
-static inline bool inheritColorFromParentStyle(RenderObject* object, bool applyToFill, Color& color)
-{
-    if (!object->parent() || !object->parent()->style())
-        return false;
-    const SVGRenderStyle& parentSVGStyle = object->parent()->style()->svgStyle();
-    SVGPaintType paintType = applyToFill ? parentSVGStyle.fillPaintType() : parentSVGStyle.strokePaintType();
-    if (paintType != SVG_PAINTTYPE_RGBCOLOR)
-        return false;
-    color = applyToFill ? parentSVGStyle.fillPaintColor() : parentSVGStyle.strokePaintColor();
-    return true;
-}
-
 RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, RenderObject* object, const RenderStyle* style, bool& hasFallback)
 {
     ASSERT(object);
@@ -121,12 +109,8 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
 
     // If the requested resource is not available, return the color resource or 'none'.
     if (!uriResource) {
-        // The fallback is 'none'.
-        if (paintType == SVG_PAINTTYPE_URI_NONE)
-            return 0;
-        // If there's no fallback color, attempt to use the the parents paint
-        // server if it's a simple <color>.
-        if (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color))
+        // The fallback is 'none'. (SVG2 say 'none' is implied when no fallback is specified.)
+        if (paintType == SVG_PAINTTYPE_URI_NONE || !hasColor)
             return 0;
 
         colorResource->setColor(color);
