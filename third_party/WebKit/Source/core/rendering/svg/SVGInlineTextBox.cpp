@@ -353,7 +353,7 @@ public:
     }
     ~PaintingResourceScope() { ASSERT(!m_paintingResource); }
 
-    bool acquirePaintingResource(GraphicsContext*&, float scalingFactor, RenderStyle*, RenderSVGResourceModeFlags);
+    bool acquirePaintingResource(GraphicsContext*&, RenderStyle*, RenderSVGResourceModeFlags);
     void releasePaintingResource(GraphicsContext*&);
 
 private:
@@ -361,11 +361,8 @@ private:
     RenderSVGResource* m_paintingResource;
 };
 
-bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, float scalingFactor,
-    RenderStyle* style, RenderSVGResourceModeFlags resourceModeFlags)
+bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, RenderStyle* style, RenderSVGResourceModeFlags resourceModeFlags)
 {
-    // Callers must save the context state before calling when scalingFactor is not 1.
-    ASSERT(scalingFactor);
     ASSERT(style);
     ASSERT(resourceModeFlags != ApplyToDefaultMode);
     RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
@@ -382,10 +379,6 @@ bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, f
             m_paintingResource->applyResource(&m_renderer, style, context, resourceModeFlags);
         }
     }
-
-    if (scalingFactor != 1 && resourceModeFlags & ApplyToStrokeMode)
-        context->setStrokeThickness(context->strokeThickness() * scalingFactor);
-
     return true;
 }
 
@@ -461,16 +454,17 @@ bool SVGInlineTextBox::mapStartEndPositionsIntoFragmentCoordinates(const SVGText
     return true;
 }
 
-static inline float positionOffsetForDecoration(TextDecoration decoration, const FontMetrics& fontMetrics, float thickness)
+// Offset from the baseline for |decoration|. Positive offsets are above the baseline.
+static inline float baselineOffsetForDecoration(TextDecoration decoration, const FontMetrics& fontMetrics, float thickness)
 {
     // FIXME: For SVG Fonts we need to use the attributes defined in the <font-face> if specified.
-    // Compatible with Batik/Opera.
+    // Compatible with Batik/Presto.
     if (decoration == TextDecorationUnderline)
-        return fontMetrics.floatAscent() + thickness * 1.5f;
+        return -thickness * 1.5f;
     if (decoration == TextDecorationOverline)
-        return thickness;
+        return fontMetrics.floatAscent() - thickness;
     if (decoration == TextDecorationLineThrough)
-        return fontMetrics.floatAscent() * 5 / 8.0f;
+        return fontMetrics.floatAscent() * 3 / 8.0f;
 
     ASSERT_NOT_REACHED();
     return 0.0f;
@@ -479,7 +473,7 @@ static inline float positionOffsetForDecoration(TextDecoration decoration, const
 static inline float thicknessForDecoration(TextDecoration, const Font& font)
 {
     // FIXME: For SVG Fonts we need to use the attributes defined in the <font-face> if specified.
-    // Compatible with Batik/Opera
+    // Compatible with Batik/Presto
     return font.fontDescription().computedSize() / 20.0f;
 }
 
@@ -546,33 +540,19 @@ void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDe
     RenderSVGInlineText::computeNewScaledFontForStyle(decorationRenderer, decorationStyle, scalingFactor, scaledFont);
     ASSERT(scalingFactor);
 
-    // The initial y value refers to overline position.
     float thickness = thicknessForDecoration(decoration, scaledFont);
 
     if (fragment.width <= 0 && thickness <= 0)
         return;
 
-    FloatPoint decorationOrigin(fragment.x, fragment.y);
-    float width = fragment.width;
-    const FontMetrics& scaledFontMetrics = scaledFont.fontMetrics();
-
-    GraphicsContextStateSaver stateSaver(*context, false);
-    if (scalingFactor != 1) {
-        stateSaver.save();
-        width *= scalingFactor;
-        decorationOrigin.scale(scalingFactor, scalingFactor);
-        context->scale(1 / scalingFactor, 1 / scalingFactor);
-    }
-
-    decorationOrigin.move(0, -scaledFontMetrics.floatAscent() + positionOffsetForDecoration(decoration, scaledFontMetrics, thickness));
+    float decorationOffset = baselineOffsetForDecoration(decoration, scaledFont.fontMetrics(), thickness);
+    FloatPoint decorationOrigin(fragment.x, fragment.y - decorationOffset / scalingFactor);
 
     Path path;
-    path.addRect(FloatRect(decorationOrigin, FloatSize(width, thickness)));
+    path.addRect(FloatRect(decorationOrigin, FloatSize(fragment.width, thickness / scalingFactor)));
 
-    // acquirePaintingResource also modifies state if the scalingFactor is non-identity.
-    // Above we have saved the state for this case.
     PaintingResourceScope resourceScope(*decorationRenderer);
-    if (resourceScope.acquirePaintingResource(context, scalingFactor, decorationStyle, resourceMode)) {
+    if (resourceScope.acquirePaintingResource(context, decorationStyle, resourceMode)) {
         SVGRenderSupport::fillOrStrokePath(context, resourceMode, path);
         resourceScope.releasePaintingResource(context);
     }
@@ -607,7 +587,10 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
         context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha));
 
     PaintingResourceScope resourceScope(parent()->renderer());
-    if (resourceScope.acquirePaintingResource(context, scalingFactor, style, resourceMode)) {
+    if (resourceScope.acquirePaintingResource(context, style, resourceMode)) {
+        if (scalingFactor != 1 && resourceMode & ApplyToStrokeMode)
+            context->setStrokeThickness(context->strokeThickness() * scalingFactor);
+
         TextRunPaintInfo textRunPaintInfo(textRun);
         textRunPaintInfo.from = startPosition;
         textRunPaintInfo.to = endPosition;
