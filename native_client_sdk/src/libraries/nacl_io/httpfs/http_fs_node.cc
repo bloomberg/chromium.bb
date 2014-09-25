@@ -236,6 +236,10 @@ HttpFsNode::HttpFsNode(Filesystem* filesystem,
   SetMode(S_IRALL);
 }
 
+HttpFsNode::~HttpFsNode() {
+  free(buffer_);
+}
+
 Error HttpFsNode::GetStat_Locked(struct stat* stat) {
   // Assume we need to 'HEAD' if we do not know the size, otherwise, assume
   // that the information is constant.  We can add a timeout if needed.

@@ -43,6 +43,8 @@ class HttpFsNode : public Node {
              const std::string& url,
              bool cache_content);
 
+  virtual ~HttpFsNode();
+
  private:
   Error GetStat_Locked(struct stat* stat);
   Error OpenUrl(const char* method,

@@ -37,6 +37,7 @@ MemFsNode::MemFsNode(Filesystem* filesystem)
 }
 
 MemFsNode::~MemFsNode() {
+  free(data_);
 }
 
 Error MemFsNode::Read(const HandleAttr& attr,
