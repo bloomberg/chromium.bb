@@ -181,8 +181,9 @@ void shutdown()
 {
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {
-        ASSERT(s_endOfTaskRunner);
-        Platform::current()->currentThread()->removeTaskObserver(s_endOfTaskRunner);
+        // We don't need to (cannot) remove s_endOfTaskRunner from the current
+        // message loop, because the message loop is already destructed before
+        // the shutdown() is called.
         delete s_endOfTaskRunner;
         s_endOfTaskRunner = 0;
     }
