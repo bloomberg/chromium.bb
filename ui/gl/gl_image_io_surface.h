@@ -17,7 +17,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
   explicit GLImageIOSurface(const gfx::Size& size);
 
-  bool Initialize(const gfx::GpuMemoryBufferHandle& handle);
+  bool Initialize(IOSurfaceRef io_surface);
 
   // Overridden from GLImage:
   virtual void Destroy(bool have_context) OVERRIDE;

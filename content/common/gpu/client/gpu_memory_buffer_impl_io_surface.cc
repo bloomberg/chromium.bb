@@ -4,9 +4,40 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 
+#include "base/atomic_sequence_num.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
+namespace {
+
+base::StaticAtomicSequenceNumber g_next_buffer_id;
+
+void Noop() {
+}
+
+void GpuMemoryBufferCreated(
+    const gfx::Size& size,
+    unsigned internalformat,
+    const GpuMemoryBufferImpl::CreationCallback& callback,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  DCHECK_EQ(gfx::IO_SURFACE_BUFFER, handle.type);
+
+  callback.Run(GpuMemoryBufferImplIOSurface::CreateFromHandle(
+      handle, size, internalformat, base::Bind(&Noop)));
+}
+
+void GpuMemoryBufferCreatedForChildProcess(
+    const GpuMemoryBufferImpl::AllocationCallback& callback,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  DCHECK_EQ(gfx::IO_SURFACE_BUFFER, handle.type);
+
+  callback.Run(handle);
+}
+
+}  // namespace
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     const gfx::Size& size,
@@ -18,6 +49,43 @@ GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
 }
 
 GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
+}
+
+// static
+void GpuMemoryBufferImplIOSurface::Create(const gfx::Size& size,
+                                          unsigned internalformat,
+                                          unsigned usage,
+                                          int client_id,
+                                          const CreationCallback& callback) {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::IO_SURFACE_BUFFER;
+  handle.global_id.primary_id = g_next_buffer_id.GetNext();
+  handle.global_id.secondary_id = client_id;
+  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
+      handle,
+      size,
+      internalformat,
+      usage,
+      base::Bind(&GpuMemoryBufferCreated, size, internalformat, callback));
+}
+
+// static
+void GpuMemoryBufferImplIOSurface::AllocateForChildProcess(
+    const gfx::Size& size,
+    unsigned internalformat,
+    unsigned usage,
+    int child_client_id,
+    const AllocationCallback& callback) {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::IO_SURFACE_BUFFER;
+  handle.global_id.primary_id = g_next_buffer_id.GetNext();
+  handle.global_id.secondary_id = child_client_id;
+  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
+      handle,
+      size,
+      internalformat,
+      usage,
+      base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
 }
 
 // static

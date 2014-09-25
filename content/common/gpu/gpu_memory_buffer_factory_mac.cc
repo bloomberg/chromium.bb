@@ -5,8 +5,8 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 
 #include "base/logging.h"
+#include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
 #include "ui/gl/gl_image.h"
-#include "ui/gl/gl_image_io_surface.h"
 #include "ui/gl/gl_image_shared_memory.h"
 
 namespace content {
@@ -20,12 +20,25 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::Size& size,
       unsigned internalformat,
       unsigned usage) OVERRIDE {
-    NOTREACHED();
-    return gfx::GpuMemoryBufferHandle();
+    switch (handle.type) {
+      case gfx::IO_SURFACE_BUFFER:
+        return io_surface_factory_.CreateGpuMemoryBuffer(
+            handle.global_id, size, internalformat);
+      default:
+        NOTREACHED();
+        return gfx::GpuMemoryBufferHandle();
+    }
   }
   virtual void DestroyGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle) OVERRIDE {
-    NOTREACHED();
+    switch (handle.type) {
+      case gfx::IO_SURFACE_BUFFER:
+        io_surface_factory_.DestroyGpuMemoryBuffer(handle.global_id);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
@@ -42,18 +55,21 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
         return image;
       }
       case gfx::IO_SURFACE_BUFFER: {
-        scoped_refptr<gfx::GLImageIOSurface> image(
-            new gfx::GLImageIOSurface(size));
-        if (!image->Initialize(handle))
-          return NULL;
+        // Verify that client is the owner of the buffer we're about to use.
+        if (handle.global_id.secondary_id != client_id)
+          return scoped_refptr<gfx::GLImage>();
 
-        return image;
+        return io_surface_factory_.CreateImageForGpuMemoryBuffer(
+            handle.global_id, size, internalformat);
       }
       default:
         NOTREACHED();
         return scoped_refptr<gfx::GLImage>();
     }
   }
+
+ private:
+  GpuMemoryBufferFactoryIOSurface io_surface_factory_;
 };
 
 }  // namespace

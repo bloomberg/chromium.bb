@@ -19,13 +19,9 @@ GLImageIOSurface::~GLImageIOSurface() {
   DCHECK(!io_surface_);
 }
 
-bool GLImageIOSurface::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
-  io_surface_.reset(IOSurfaceLookup(handle.io_surface_id));
-  if (!io_surface_) {
-    LOG(ERROR) << "IOSurface lookup failed";
-    return false;
-  }
-
+bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface) {
+  DCHECK(!io_surface_);
+  io_surface_.reset(io_surface);
   return true;
 }
 

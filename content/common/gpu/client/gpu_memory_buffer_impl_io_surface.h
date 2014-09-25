@@ -15,6 +15,18 @@ namespace content {
 // Implementation of GPU memory buffer based on IO surfaces.
 class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
  public:
+  static void Create(const gfx::Size& size,
+                     unsigned internalformat,
+                     unsigned usage,
+                     int client_id,
+                     const CreationCallback& callback);
+
+  static void AllocateForChildProcess(const gfx::Size& size,
+                                      unsigned internalformat,
+                                      unsigned usage,
+                                      int child_client_id,
+                                      const AllocationCallback& callback);
+
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,

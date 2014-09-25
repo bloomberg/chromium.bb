@@ -344,10 +344,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
 
-#if defined(OS_MACOSX)
-  base::ScopedCFTypeRef<IOSurfaceRef> last_io_surface_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };
 

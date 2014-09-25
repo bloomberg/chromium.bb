@@ -73,7 +73,6 @@
 #include "ui/gfx/color_profile.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 #include "content/common/mac/font_descriptor.h"
 #else
 #include "gpu/GLES2/gl2extchromium.h"
@@ -227,23 +226,6 @@ class OpenChannelToPpapiBrokerCallback
   int routing_id_;
 };
 #endif  // defined(ENABLE_PLUGINS)
-
-#if defined(OS_MACOSX)
-void AddBooleanValue(CFMutableDictionaryRef dictionary,
-                     const CFStringRef key,
-                     bool value) {
-  CFDictionaryAddValue(
-      dictionary, key, value ? kCFBooleanTrue : kCFBooleanFalse);
-}
-
-void AddIntegerValue(CFMutableDictionaryRef dictionary,
-                     const CFStringRef key,
-                     int32 value) {
-  base::ScopedCFTypeRef<CFNumberRef> number(
-      CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
-  CFDictionaryAddValue(dictionary, key, number.get());
-}
-#endif
 
 }  // namespace
 
@@ -1301,46 +1283,6 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
     GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
     return;
   }
-
-#if defined(OS_MACOSX)
-  // TODO(reveman): This should be moved to
-  // GpuMemoryBufferImpl::AllocateForChildProcess and
-  // GpuMemoryBufferImplIOSurface. crbug.com/325045, crbug.com/323304
-  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(internalformat,
-                                                             usage)) {
-    base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
-    properties.reset(
-        CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                  0,
-                                  &kCFTypeDictionaryKeyCallBacks,
-                                  &kCFTypeDictionaryValueCallBacks));
-    AddIntegerValue(properties, kIOSurfaceWidth, width);
-    AddIntegerValue(properties, kIOSurfaceHeight, height);
-    AddIntegerValue(properties,
-                    kIOSurfaceBytesPerElement,
-                    GpuMemoryBufferImpl::BytesPerPixel(internalformat));
-    AddIntegerValue(properties,
-                    kIOSurfacePixelFormat,
-                    GpuMemoryBufferImplIOSurface::PixelFormat(internalformat));
-    // TODO(reveman): Remove this when using a mach_port_t to transfer
-    // IOSurface to renderer process. crbug.com/323304
-    AddBooleanValue(properties, kIOSurfaceIsGlobal, true);
-
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceCreate(properties));
-    if (io_surface) {
-      gfx::GpuMemoryBufferHandle handle;
-      handle.type = gfx::IO_SURFACE_BUFFER;
-      handle.io_surface_id = IOSurfaceGetID(io_surface);
-
-      // TODO(reveman): This makes the assumption that the renderer will
-      // grab a reference to the surface before sending another message.
-      // crbug.com/325045
-      last_io_surface_ = io_surface;
-      GpuMemoryBufferAllocated(reply, handle);
-      return;
-    }
-  }
-#endif
 
 #if defined(OS_ANDROID)
   // TODO(reveman): This should be moved to
