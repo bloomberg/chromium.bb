@@ -112,13 +112,13 @@ PR_ImplodeTime(const PRExplodedTime *exploded)
     ULARGE_INTEGER uli = {0};
 
     st.wYear = exploded->tm_year;
-    st.wMonth = exploded->tm_month + 1;
+    st.wMonth = static_cast<WORD>(exploded->tm_month + 1);
     st.wDayOfWeek = exploded->tm_wday;
-    st.wDay = exploded->tm_mday;
-    st.wHour = exploded->tm_hour;
-    st.wMinute = exploded->tm_min;
-    st.wSecond = exploded->tm_sec;
-    st.wMilliseconds = exploded->tm_usec/1000;
+    st.wDay = static_cast<WORD>(exploded->tm_mday);
+    st.wHour = static_cast<WORD>(exploded->tm_hour);
+    st.wMinute = static_cast<WORD>(exploded->tm_min);
+    st.wSecond = static_cast<WORD>(exploded->tm_sec);
+    st.wMilliseconds = static_cast<WORD>(exploded->tm_usec/1000);
      // Convert to FILETIME.
     if (!SystemTimeToFileTime(&st, &ft)) {
       NOTREACHED() << "Unable to convert time";
@@ -380,7 +380,7 @@ PR_NormalizeTime(PRExplodedTime *time, PRTimeParamFn params)
 
     /* Normalize month and year before mday */
     if (time->tm_month < 0 || time->tm_month >= 12) {
-        time->tm_year += time->tm_month / 12;
+        time->tm_year += static_cast<PRInt16>(time->tm_month / 12);
         time->tm_month %= 12;
         if (time->tm_month < 0) {
             time->tm_month += 12;
@@ -416,9 +416,9 @@ PR_NormalizeTime(PRExplodedTime *time, PRTimeParamFn params)
     }
 
     /* Recompute yday and wday */
-    time->tm_yday = time->tm_mday +
-            lastDayOfMonth[IsLeapYear(time->tm_year)][time->tm_month];
-	    
+    time->tm_yday = static_cast<PRInt16>(time->tm_mday +
+            lastDayOfMonth[IsLeapYear(time->tm_year)][time->tm_month]);
+
     numDays = DAYS_BETWEEN_YEARS(1970, time->tm_year) + time->tm_yday;
     time->tm_wday = (numDays + 4) % 7;
     if (time->tm_wday < 0) {
@@ -1132,7 +1132,7 @@ PR_ParseTimeString(
 
   memset(result, 0, sizeof(*result));
   if (usec != -1)
-        result->tm_usec = usec; 
+        result->tm_usec = usec;
   if (sec != -1)
         result->tm_sec = sec;
   if (min != -1)
@@ -1144,9 +1144,9 @@ PR_ParseTimeString(
   if (month != TT_UNKNOWN)
         result->tm_month = (((int)month) - ((int)TT_JAN));
   if (year != -1)
-        result->tm_year = year;
+        result->tm_year = static_cast<PRInt16>(year);
   if (dotw != TT_UNKNOWN)
-        result->tm_wday = (((int)dotw) - ((int)TT_SUN));
+        result->tm_wday = static_cast<PRInt8>(((int)dotw) - ((int)TT_SUN));
   /*
    * Mainly to compute wday and yday, but normalized time is also required
    * by the check below that works around a Visual C++ 2005 mktime problem.
@@ -1179,7 +1179,7 @@ PR_ParseTimeString(
              * time, we call mktime().  However, we need to see if we are
              * on 1-Jan-1970 or before.  If we are, we can't call mktime()
              * because mktime() will crash on win16. In that case, we
-             * calculate zone_offset based on the zone offset at 
+             * calculate zone_offset based on the zone offset at
              * 00:00:00, 2 Jan 1970 GMT, and subtract zone_offset from the
              * date we are parsing to transform the date to GMT.  We also
              * do so if mktime() returns (time_t) -1 (time out of range).
