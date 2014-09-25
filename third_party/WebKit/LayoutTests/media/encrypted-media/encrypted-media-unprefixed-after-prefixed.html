@@ -22,9 +22,13 @@
                     MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
                         assert_not_equals(mediaKeys, null);
                         assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-                        assert_throws('InvalidStateError',
-                                       function () { video.setMediaKeys(mediaKeys); });
-                        test.done();
+                        video.setMediaKeys(mediaKeys).then(function(result) {
+                            assert_unreached('setMediaKeys should have failed.');
+                        }, function(error) {
+                            assert_equals(error.name, 'InvalidStateError');
+                            assert_not_equals(error.message, '');
+                            test.done();
+                        });
                     }).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });

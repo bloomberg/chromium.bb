@@ -17,6 +17,8 @@ namespace blink {
 class ExceptionState;
 class HTMLMediaElement;
 class MediaKeys;
+class ScriptPromise;
+class ScriptState;
 
 class HTMLMediaElementEncryptedMedia FINAL : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
@@ -36,7 +38,7 @@ public:
 
     // encrypted media extensions (WD)
     static MediaKeys* mediaKeys(HTMLMediaElement&);
-    static void setMediaKeys(HTMLMediaElement&, MediaKeys*, ExceptionState&);
+    static ScriptPromise setMediaKeys(ScriptState*, HTMLMediaElement&, MediaKeys*);
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(needkey);
 
     static void keyAdded(HTMLMediaElement&, const String& keySystem, const String& sessionId);
@@ -52,6 +54,8 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
+    friend class SetMediaKeysHandler;
+
     HTMLMediaElementEncryptedMedia();
     void generateKeyRequest(WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
     void addKey(WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
@@ -69,10 +73,9 @@ private:
 
     // check (and set if necessary) the encrypted media extensions (EME) mode
     // (v0.1b or WD). Returns whether the mode is allowed and successfully set.
-    bool setEmeMode(EmeMode, ExceptionState&);
+    bool setEmeMode(EmeMode);
 
     WebContentDecryptionModule* contentDecryptionModule();
-    void setMediaKeysInternal(HTMLMediaElement&, MediaKeys*);
 
     EmeMode m_emeMode;
 

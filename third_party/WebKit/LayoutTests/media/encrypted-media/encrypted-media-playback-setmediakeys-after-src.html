@@ -74,7 +74,8 @@
                     waitForEventAndRunStep('playing', video, onPlaying, test);
 
                     video.src = '../content/test-encrypted.webm';
-                    video.setMediaKeys(mediaKeys);
+                    return video.setMediaKeys(mediaKeys);
+                }).then(function(result) {
                     video.play();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

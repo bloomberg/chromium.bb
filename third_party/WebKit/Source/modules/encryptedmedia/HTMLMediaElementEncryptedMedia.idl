@@ -13,6 +13,6 @@ partial interface HTMLMediaElement {
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
 
     [RuntimeEnabled=EncryptedMedia] readonly attribute MediaKeys mediaKeys;
-    [RuntimeEnabled=EncryptedMedia, RaisesException, TypeChecking=Interface] void setMediaKeys(MediaKeys? mediaKeys);
+    [RuntimeEnabled=EncryptedMedia, TypeChecking=Interface, CallWith=ScriptState] Promise setMediaKeys(MediaKeys? mediaKeys);
     [RuntimeEnabled=EncryptedMedia] attribute EventHandler onneedkey;
 };

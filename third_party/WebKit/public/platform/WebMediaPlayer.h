@@ -32,6 +32,7 @@
 #define WebMediaPlayer_h
 
 #include "WebCanvas.h"
+#include "WebContentDecryptionModule.h"
 #include "WebMediaSource.h"
 #include "WebString.h"
 #include "WebTimeRange.h"
@@ -156,7 +157,7 @@ public:
     virtual MediaKeyException generateKeyRequest(const WebString& keySystem, const unsigned char* initData, unsigned initDataLength) { return MediaKeyExceptionKeySystemNotSupported; }
     virtual MediaKeyException addKey(const WebString& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const WebString& sessionId) { return MediaKeyExceptionKeySystemNotSupported; }
     virtual MediaKeyException cancelKeyRequest(const WebString& keySystem, const WebString& sessionId) { return MediaKeyExceptionKeySystemNotSupported; }
-    virtual void setContentDecryptionModule(WebContentDecryptionModule* cdm) { }
+    virtual void setContentDecryptionModule(WebContentDecryptionModule* cdm, WebContentDecryptionModuleResult result) { result.completeWithError(WebContentDecryptionModuleExceptionNotSupportedError, 0, "ERROR"); }
 
     // Sets the poster image URL.
     virtual void setPoster(const WebURL& poster) { }

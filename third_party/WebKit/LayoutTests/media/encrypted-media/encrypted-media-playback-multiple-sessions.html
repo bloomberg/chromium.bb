@@ -91,12 +91,11 @@
                 }
 
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
-
                     waitForEventAndRunStep('needkey', video, onNeedKey, test);
                     waitForEventAndRunStep('playing', video, onPlaying, test);
-
-                    video.setMediaKeys(mediaKeys);
                     video.src = '../content/test-encrypted-different-av-keys.webm';
+                    return video.setMediaKeys(mediaKeys);
+                }).then(function(result) {
                     video.play();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);
