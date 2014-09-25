@@ -13,12 +13,12 @@
 #include "chrome/browser/search/search.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/image/image.h"
 
 namespace {

@@ -10,12 +10,12 @@
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_view.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/native_theme/native_theme.h"
 

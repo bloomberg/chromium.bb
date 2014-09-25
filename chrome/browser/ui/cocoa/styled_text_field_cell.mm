@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 

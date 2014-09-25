@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/nsview_additions.h"
+#include "ui/base/cocoa/nsview_additions.h"
 
 // The baseline shift for text in the NSTextView.
 const float kTextBaselineShift = -1.0;

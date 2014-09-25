@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_separator_view.h"
 
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/resource/resource_bundle.h"
 
 @implementation OmniboxPopupTopSeparatorView

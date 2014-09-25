@@ -9,10 +9,10 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "components/infobars/core/infobar.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/theme_provider.h"
 
 @implementation InfoBarGradientView

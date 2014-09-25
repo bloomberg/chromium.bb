@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
-typedef CocoaTest NSViewChromeAdditionsTest;
+typedef ui::CocoaTest NSViewChromeAdditionsTest;
 
 @interface ParentView : NSView {
  @private

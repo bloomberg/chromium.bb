@@ -7,13 +7,13 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/mac/sdk_forward_declarations.h"
 #import "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/fullscreen.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_switches.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 NSString* const kWillEnterFullscreenNotification =
     @"WillEnterFullscreenNotification";

@@ -6,9 +6,9 @@
 
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 @interface BackgroundGradientView (Private)
 - (void)commonInit;

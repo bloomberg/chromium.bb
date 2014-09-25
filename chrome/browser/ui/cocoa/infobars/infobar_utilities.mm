@@ -7,8 +7,8 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "components/infobars/core/infobar.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 @interface InfobarLabelTextField : NSTextField
 @end

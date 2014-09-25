@@ -16,7 +16,6 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -26,6 +25,7 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 #import "ui/base/cocoa/focus_tracker.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using content::NativeWebKeyboardEvent;

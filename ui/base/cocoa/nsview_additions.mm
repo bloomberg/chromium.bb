@@ -4,8 +4,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
-#include "chrome/common/chrome_switches.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 #include "base/logging.h"

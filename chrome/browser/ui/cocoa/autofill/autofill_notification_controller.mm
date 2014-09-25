@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 
 @interface AutofillNotificationView : NSView {
  @private

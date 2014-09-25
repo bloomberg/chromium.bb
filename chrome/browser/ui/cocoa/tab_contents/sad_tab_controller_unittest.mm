@@ -5,11 +5,11 @@
 #include "base/debug/debugger.h"
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 
 @interface SadTabView (ExposedForTesting)
 // Implementation is below.

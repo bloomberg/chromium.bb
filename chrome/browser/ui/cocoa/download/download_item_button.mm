@@ -9,8 +9,8 @@
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_context_menu_controller.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 @implementation DownloadItemButton
 

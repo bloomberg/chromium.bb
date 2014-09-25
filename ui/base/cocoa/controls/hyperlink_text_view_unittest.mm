@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "testing/gtest_mac.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {
 
-class HyperlinkTextViewTest : public CocoaTest {
+class HyperlinkTextViewTest : public ui::CocoaTest {
  public:
   HyperlinkTextViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 50);

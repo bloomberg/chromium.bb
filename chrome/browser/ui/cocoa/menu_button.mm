@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 @interface MenuButton (Private)
 - (void)showMenu:(BOOL)isDragging;

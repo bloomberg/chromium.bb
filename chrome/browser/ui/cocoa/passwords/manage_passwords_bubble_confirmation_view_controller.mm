@@ -8,13 +8,13 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using namespace password_manager::mac::ui;
 

@@ -12,10 +12,10 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using base::UserMetricsAction;

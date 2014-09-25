@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #import "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
@@ -18,6 +17,7 @@
 #include "grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
