@@ -116,13 +116,13 @@ void ShellAudioController::ActivateDevices() {
       best_output = it->id;
   }
 
-  if (best_input && best_input != handler->GetActiveInputNode()) {
+  if (best_input && best_input != handler->GetPrimaryActiveInputNode()) {
     const chromeos::AudioDevice* device = GetDevice(devices, best_input);
     DCHECK(device);
     VLOG(1) << "Activating input device: " << device->ToString();
     handler->SwitchToDevice(*device);
   }
-  if (best_output && best_output != handler->GetActiveOutputNode()) {
+  if (best_output && best_output != handler->GetPrimaryActiveOutputNode()) {
     const chromeos::AudioDevice* device = GetDevice(devices, best_output);
     DCHECK(device);
     VLOG(1) << "Activating output device: " << device->ToString();

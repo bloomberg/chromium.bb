@@ -26,7 +26,7 @@ int TrayAudioDelegateChromeOs::GetOutputVolumeLevel() {
 
 int TrayAudioDelegateChromeOs::GetActiveOutputDeviceIconId() {
   chromeos::AudioDevice device;
-  if (!CrasAudioHandler::Get()->GetActiveOutputDevice(&device))
+  if (!CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device))
     return kNoAudioDeviceIcon;
 
   if (device.type == chromeos::AUDIO_TYPE_HEADPHONE)

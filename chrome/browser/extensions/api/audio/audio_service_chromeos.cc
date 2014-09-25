@@ -9,8 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/cras_audio_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -137,62 +135,12 @@ void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
   if (!cras_audio_handler_)
     return;
 
-  // De-activate all the nodes with RemoveActive{Input/Output}Node API. This is
-  // kind of hacky, but we don't know which set of nodes are active from
-  // CrasAudioHandler.
-  // TODO(rkc): Fix it in http://crbug.com/402072.
-  chromeos::AudioDeviceList devices;
-  cras_audio_handler_->GetAudioDevices(&devices);
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (devices[i].is_input) {
-      chromeos::DBusThreadManager::Get()
-          ->GetCrasAudioClient()
-          ->RemoveActiveInputNode(devices[i].id);
-    } else {  // output
-      chromeos::DBusThreadManager::Get()
-          ->GetCrasAudioClient()
-          ->RemoveActiveOutputNode(devices[i].id);
-    }
-  }
+  cras_audio_handler_->RemoveAllActiveNodes();
 
-  bool input_device_set = false;
-  bool output_device_set = false;
-  std::string active_input_node_ids, active_output_node_ids;
   for (size_t i = 0; i < device_list.size(); ++i) {
     chromeos::AudioDevice device;
-    bool found = FindDevice(GetIdFromStr(device_list[i]), &device);
-    if (found) {
-      if (device.is_input) {
-        if (!input_device_set) {
-          cras_audio_handler_->SwitchToDevice(device);
-          input_device_set = true;
-        } else {
-          active_input_node_ids.push_back(device.id);
-        }
-      } else {  // output device
-        if (!output_device_set) {
-          cras_audio_handler_->SwitchToDevice(device);
-          output_device_set = true;
-        } else {
-          active_output_node_ids.push_back(device.id);
-        }
-      }
-    }
-  }
-
-  // Once we have set our devices to active and all the inactive ones have been
-  // set correctly to inactive, go through our active devices again and set
-  // them to active using the AddActiveNode API.
-  // TODO(rkc):Fix this ugly hack in http://crbug.com/402072.
-  for (size_t i = 0; i < active_input_node_ids.size(); ++i) {
-    chromeos::DBusThreadManager::Get()
-        ->GetCrasAudioClient()
-        ->AddActiveInputNode(active_input_node_ids[i]);
-  }
-  for (size_t i = 0; i < active_output_node_ids.size(); ++i) {
-    chromeos::DBusThreadManager::Get()
-        ->GetCrasAudioClient()
-        ->AddActiveOutputNode(active_output_node_ids[i]);
+    if (FindDevice(GetIdFromStr(device_list[i]), &device))
+      cras_audio_handler_->AddActiveNode(device.id);
   }
 }
 

@@ -1122,7 +1122,7 @@ void LoginDisplayHostImpl::SetOobeProgressBarVisible(bool visible) {
 
 void LoginDisplayHostImpl::TryToPlayStartupSound() {
   if (startup_sound_played_ || login_prompt_visible_time_.is_null() ||
-      !CrasAudioHandler::Get()->GetActiveOutputNode()) {
+      !CrasAudioHandler::Get()->GetPrimaryActiveOutputNode()) {
     return;
   }
 

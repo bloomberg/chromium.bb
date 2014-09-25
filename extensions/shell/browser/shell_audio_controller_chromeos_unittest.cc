@@ -97,8 +97,8 @@ TEST_F(ShellAudioControllerTest, SelectBestDevices) {
   all_nodes.push_back(headphone);
   all_nodes.push_back(external_mic);
   audio_client_->SetAudioNodesAndNotifyObserversForTesting(all_nodes);
-  EXPECT_EQ(headphone.id, audio_handler_->GetActiveOutputNode());
-  EXPECT_EQ(external_mic.id, audio_handler_->GetActiveInputNode());
+  EXPECT_EQ(headphone.id, audio_handler_->GetPrimaryActiveOutputNode());
+  EXPECT_EQ(external_mic.id, audio_handler_->GetPrimaryActiveInputNode());
 
   // Unplug the headphones and mic and check that we switch to the internal
   // devices.
@@ -106,16 +106,16 @@ TEST_F(ShellAudioControllerTest, SelectBestDevices) {
   internal_nodes.push_back(internal_speaker);
   internal_nodes.push_back(internal_mic);
   audio_client_->SetAudioNodesAndNotifyObserversForTesting(internal_nodes);
-  EXPECT_EQ(internal_speaker.id, audio_handler_->GetActiveOutputNode());
-  EXPECT_EQ(internal_mic.id, audio_handler_->GetActiveInputNode());
+  EXPECT_EQ(internal_speaker.id, audio_handler_->GetPrimaryActiveOutputNode());
+  EXPECT_EQ(internal_mic.id, audio_handler_->GetPrimaryActiveInputNode());
 
   // Switch back to the external devices. Mark the previously-activated internal
   // devices as being active so CrasAudioHandler doesn't complain.
   SetNodeActive(&all_nodes, internal_speaker.id, true);
   SetNodeActive(&all_nodes, internal_mic.id, true);
   audio_client_->SetAudioNodesAndNotifyObserversForTesting(all_nodes);
-  EXPECT_EQ(headphone.id, audio_handler_->GetActiveOutputNode());
-  EXPECT_EQ(external_mic.id, audio_handler_->GetActiveInputNode());
+  EXPECT_EQ(headphone.id, audio_handler_->GetPrimaryActiveOutputNode());
+  EXPECT_EQ(external_mic.id, audio_handler_->GetPrimaryActiveInputNode());
 }
 
 // Tests that active audio devices are unmuted and set to 100% volume.

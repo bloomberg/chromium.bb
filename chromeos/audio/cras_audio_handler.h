@@ -87,7 +87,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns true if keyboard mic exists.
   virtual bool HasKeyboardMic();
 
-  // Returns true if audio output is muted.
+  // Returns true if audio output is muted for the system.
   virtual bool IsOutputMuted();
 
   // Returns true if audio output is muted for a device.
@@ -119,31 +119,35 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Gets volume level in 0-100% range (0 being pure silence) for a device.
   virtual int GetInputGainPercentForDevice(uint64 device_id);
 
-  // Returns node_id of the active output node.
-  virtual uint64 GetActiveOutputNode() const;
+  // Returns node_id of the primary active output node.
+  virtual uint64 GetPrimaryActiveOutputNode() const;
 
-  // Returns the node_id of the active input node.
-  virtual uint64 GetActiveInputNode() const;
+  // Returns the node_id of the primary active input node.
+  virtual uint64 GetPrimaryActiveInputNode() const;
 
   // Gets the audio devices back in |device_list|.
   virtual void GetAudioDevices(AudioDeviceList* device_list) const;
 
-  virtual bool GetActiveOutputDevice(AudioDevice* device) const;
+  virtual bool GetPrimaryActiveOutputDevice(AudioDevice* device) const;
 
   // Whether there is alternative input/output audio device.
   virtual bool has_alternative_input() const;
   virtual bool has_alternative_output() const;
 
-  // Sets volume level to |volume_percent|, whose range is from 0-100%.
+  // Sets all active output devices' volume level to |volume_percent|, whose
+  // range is from 0-100%.
   virtual void SetOutputVolumePercent(int volume_percent);
 
-  // Sets gain level to |gain_percent|, whose range is from 0-100%.
+  // Sets all active input devices' gain level to |gain_percent|, whose range is
+  // from 0-100%.
   virtual void SetInputGainPercent(int gain_percent);
 
-  // Adjusts volume up (positive percentage) or down (negative percentage).
+  // Adjusts all active output devices' volume up (positive percentage) or down
+  // (negative percentage).
   virtual void AdjustOutputVolumeByPercent(int adjust_by_percent);
 
-  // Adjusts output volume to a minimum audible level if it is too low.
+  // Adjusts all active output devices' volume to a minimum audible level if it
+  // is too low.
   virtual void AdjustOutputVolumeToAudibleLevel();
 
   // Mutes or unmutes audio output device.
@@ -164,6 +168,22 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Activates or deactivates keyboard mic if there's one.
   virtual void SetKeyboardMicActive(bool active);
 
+  // Adds an active node.
+  // If there is no active node, |node_id| will be switched to become the
+  // primary active node. Otherwise, it will be added as an additional active
+  // node.
+  virtual void AddActiveNode(uint64 node_id);
+
+  // Removes an active audio node.
+  // If |node_id| is the only active input/output node, or is an additional
+  // active input/output node, it will be removed and becomes inactive.
+  // Note: It is not proper call this api to remove the primary active node
+  // while there are additional active nodes.
+  virtual void RemoveActiveNode(uint64 node_id);
+
+  // Removes all active audio nodes, including the primary active ones.
+  virtual void RemoveAllActiveNodes();
+
   // Enables error logging.
   virtual void LogErrors();
 
@@ -173,6 +193,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual ~CrasAudioHandler();
 
  private:
+  friend class CrasAudioHandlerTest;
+
   // CrasAudioClient::Observer overrides.
   virtual void AudioClientRestarted() OVERRIDE;
   virtual void NodesChanged() OVERRIDE;
@@ -194,6 +216,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetupAudioInputState();
   void SetupAudioOutputState();
 
+  // Sets up the additional active audio node's state.
+  void SetupAdditionalActiveAudioNodeState(uint64 node_id);
+
   const AudioDevice* GetDeviceFromId(uint64 device_id) const;
   const AudioDevice* GetKeyboardMic() const;
 
@@ -208,12 +233,16 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets output volume of |node_id| to |volume|.
   void SetOutputNodeVolume(uint64 node_id, int volume);
 
+  void SetOutputNodeVolumePercent(uint64 node_id, int volume_percent);
+
   // Sets output mute state to |mute_on| internally, returns true if output mute
   // is set.
   bool SetOutputMuteInternal(bool mute_on);
 
   // Sets input gain of |node_id| to |gain|.
   void SetInputNodeGain(uint64 node_id, int gain);
+
+  void SetInputNodeGainPercent(uint64 node_id, int gain_percent);
 
   // Sets input mute state to |mute_on| internally, returns true if input mute
   // is set.
@@ -248,11 +277,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void HandleGetNodesError(const std::string& error_name,
                            const std::string& error_msg);
 
-  // Returns true if |device| is not found in audio_devices_.
-  bool FoundNewDevice(const AudioDevice& device);
+  // Adds |node_id| into additional active nodes.
+  void AddAdditionalActiveNode(uint64 node_id);
 
-  // Returns a sanitized AudioDevice from |node|.
-  AudioDevice GetSanitizedAudioDevice(const AudioNode& node);
+  // Removes |node_id| from additional active nodes.
+  void RemoveActiveNodeInternal(uint64 node_id);
+
+  // Returns true if |device| is not found in audio_devices_, or it is found
+  // but changed its |active| property.
+  bool FoundNewOrChangedDevice(const AudioDevice& device);
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   ObserverList<AudioObserver> observers_;
