@@ -296,6 +296,21 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._Prepare('falco-chrome-pfq')
     self._RunHWTestSuite(returncode=4, fails=True)
 
+  def testReturnBoardNotAvailableForCanary(self):
+    """Tests that we pass canary on BOARD_NOT_AVAILABLE."""
+    self._Prepare('x86-alex-release')
+    self._RunHWTestSuite(returncode=5, fails=False)
+
+  def testReturnBoardNotAvailableForCQ(self):
+    """Tests that we fail CQ on BOARD_NOT_AVAILABLE."""
+    self._Prepare('x86-alex-paladin')
+    self._RunHWTestSuite(returncode=5, fails=True)
+
+  def testReturnBoardNotAvailableForPFQ(self):
+    """Tests that we fail PFQ on BOARD_NOT_AVAILABLE."""
+    self._Prepare('falco-chrome-pfq')
+    self._RunHWTestSuite(returncode=5, fails=True)
+
   def testRaiseTimeoutForCanary(self):
     """Canary should pass even if timeout exception is raised."""
     self._Prepare('x86-alex-release')

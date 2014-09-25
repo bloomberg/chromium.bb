@@ -59,6 +59,9 @@ class TestWarning(failures_lib.StepFailure):
 class SuiteTimedOut(failures_lib.TestLabFailure):
   """Raised if a test suite timed out with no test failures."""
 
+class BoardNotAvailable(failures_lib.TestLabFailure):
+  """Raised if the board is not available in the lab."""
+
 
 # =========================== Command Helpers =================================
 
@@ -887,6 +890,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     lab_warning_codes = (2,)
     infra_error_codes = (3, 11, 12, 13)
     timeout_codes = (4,)
+    board_not_available_codes = (5,)
 
     if result.returncode in lab_warning_codes:
       raise TestWarning('** Suite passed with a warning code **')
@@ -896,6 +900,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
           '(code %d) **' % result.returncode)
     elif result.returncode in timeout_codes:
       raise SuiteTimedOut('** Suite timed out before completion **')
+    elif result.returncode in board_not_available_codes:
+      raise BoardNotAvailable('** Board was not availble in the lab **')
     elif result.returncode != 0:
       raise TestFailure('** HWTest failed (code %d) **' % result.returncode)
 
