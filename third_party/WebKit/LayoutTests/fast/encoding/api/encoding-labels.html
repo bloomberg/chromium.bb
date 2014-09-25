@@ -10,11 +10,11 @@ encodings_table.forEach(function(section) {
         return encoding.name !== 'replacement';
     }).forEach(function(encoding) {
         var name = encoding.name;
-        test(function(){
-            encoding.labels.forEach(function(label) {
+        encoding.labels.forEach(function(label) {
+            test(function(){
                 assert_equals(new TextDecoder(label).encoding, encoding.name);
-            });
-        }, 'Labels for: ' + name);
+                }, 'name=' + name + ' label=' + label);
+        });
     });
 });
 
