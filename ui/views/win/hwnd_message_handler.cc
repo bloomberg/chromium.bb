@@ -868,6 +868,23 @@ void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
     PerformDwmTransition();
 }
 
+void HWNDMessageHandler::SizeConstraintsChanged() {
+  LONG style = GetWindowLong(hwnd(), GWL_STYLE);
+  if (delegate_->CanResize()) {
+    style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+    if (!delegate_->CanMaximize())
+      style &= ~WS_MAXIMIZEBOX;
+  } else {
+    style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+  }
+  if (delegate_->CanMinimize()) {
+    style |= WS_MINIMIZEBOX;
+  } else {
+    style &= ~WS_MINIMIZEBOX;
+  }
+  SetWindowLong(hwnd(), GWL_STYLE, style);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, InputMethodDelegate implementation:
 

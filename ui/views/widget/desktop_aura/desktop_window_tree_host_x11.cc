@@ -850,6 +850,10 @@ bool DesktopWindowTreeHostX11::IsTranslucentWindowOpacitySupported() const {
   return false;
 }
 
+void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
+  UpdateMinAndMaxSize();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 

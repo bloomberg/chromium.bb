@@ -156,6 +156,9 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Returns true if the Widget supports translucency.
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;
+
+  // Called when the window's size constraints change.
+  virtual void SizeConstraintsChanged() = 0;
 };
 
 }  // namespace views

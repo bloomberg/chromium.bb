@@ -81,14 +81,19 @@ void CalculateWindowStylesFromInitParams(
       }
       // Else, no break. Fall through to TYPE_WINDOW.
     case Widget::InitParams::TYPE_WINDOW: {
-      *style |= WS_SYSMENU | WS_CAPTION;
-      bool can_resize = widget_delegate->CanResize();
-      bool can_maximize = widget_delegate->CanMaximize();
-      if (can_maximize) {
-        *style |= WS_OVERLAPPEDWINDOW;
-      } else if (can_resize || params.remove_standard_frame) {
-        *style |= WS_OVERLAPPED | WS_THICKFRAME;
-      }
+      // WS_OVERLAPPEDWINDOW is equivalent to:
+      //   WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
+      //   WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+      *style |= WS_OVERLAPPEDWINDOW;
+      if (!widget_delegate->CanMaximize())
+        *style &= ~WS_MAXIMIZEBOX;
+      if (!widget_delegate->CanMinimize())
+        *style &= ~WS_MINIMIZEBOX;
+      if (!widget_delegate->CanResize())
+        *style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+      if (params.remove_standard_frame)
+        *style &= ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+
       if (native_widget_delegate->IsDialogBox()) {
         *style |= DS_MODALFRAME;
         // NOTE: Turning this off means we lose the close button, which is bad.

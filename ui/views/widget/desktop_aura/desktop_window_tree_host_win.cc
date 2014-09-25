@@ -454,6 +454,10 @@ bool DesktopWindowTreeHostWin::IsTranslucentWindowOpacitySupported() const {
   return ui::win::IsAeroGlassEnabled();
 }
 
+void DesktopWindowTreeHostWin::SizeConstraintsChanged() {
+  message_handler_->SizeConstraintsChanged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, WindowTreeHost implementation:
 

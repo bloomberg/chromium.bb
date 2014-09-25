@@ -205,6 +205,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   void SetFullscreen(bool fullscreen);
 
+  // Updates the window style to reflect whether it can be resized or maximized.
+  void SizeConstraintsChanged();
+
  private:
   typedef std::set<DWORD> TouchIDs;
 

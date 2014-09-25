@@ -938,6 +938,7 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
                                GetWidget()->widget_delegate()->CanMaximize());
   content_window_->SetProperty(aura::client::kCanResizeKey,
                                GetWidget()->widget_delegate()->CanResize());
+  desktop_window_tree_host_->SizeConstraintsChanged();
 }
 
 void DesktopNativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
