@@ -14,9 +14,9 @@
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
-namespace {
+namespace chromecast {
+namespace shell {
 
-#if defined(PLAYREADY_CDM_AVAILABLE)
 void AddKeySystemWithCodecs(
     const std::string& key_system_name,
     std::vector<content::KeySystemInfo>* concrete_key_systems) {
@@ -24,12 +24,6 @@ void AddKeySystemWithCodecs(
   info.supported_codecs = content::EME_CODEC_MP4_ALL;
   concrete_key_systems->push_back(info);
 }
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
-
-}  // namespace
-
-namespace chromecast {
-namespace shell {
 
 void AddChromecastKeySystems(
     std::vector<content::KeySystemInfo>* key_systems_info) {
@@ -40,7 +34,8 @@ void AddChromecastKeySystems(
 #endif
 
 #if defined(PLAYREADY_CDM_AVAILABLE)
-  AddKeySystemWithCodecs(kChromecastPlayreadyKeySystem, key_systems_info);
+  AddKeySystemWithCodecs(media::kChromecastPlayreadyKeySystem,
+                         key_systems_info);
 #endif
 }
 
