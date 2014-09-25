@@ -348,9 +348,9 @@ HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
   }
 
   HBITMAP old_bitmap = reinterpret_cast<HBITMAP>(
-      SelectObject(working_dc, bitmap_handle));
-  SetBkMode(working_dc, TRANSPARENT);
-  SelectObject(working_dc, old_bitmap);
+      SelectObject(working_dc.Get(), bitmap_handle));
+  SetBkMode(working_dc.Get(), TRANSPARENT);
+  SelectObject(working_dc.Get(), old_bitmap);
 
   base::win::ScopedGDIObject<HBITMAP> mask(
       CreateBitmap(icon_size.width(),

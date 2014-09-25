@@ -180,9 +180,9 @@ std::string PlatformFontWin::GetLocalizedFontName() const {
 
   // When a font has a localized name for a language matching the system
   // locale, GetTextFace() returns the localized name.
-  base::win::ScopedSelectObject font(memory_dc, font_ref_->hfont());
+  base::win::ScopedSelectObject font(memory_dc.Get(), font_ref_->hfont());
   wchar_t localized_font_name[LF_FACESIZE];
-  int length = GetTextFace(memory_dc, arraysize(localized_font_name),
+  int length = GetTextFace(memory_dc.Get(), arraysize(localized_font_name),
                            &localized_font_name[0]);
   if (length <= 0)
     return GetFontName();

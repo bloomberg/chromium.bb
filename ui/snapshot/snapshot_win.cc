@@ -56,18 +56,18 @@ bool GrabHwndSnapshot(HWND window_handle,
                           &hdr);
   unsigned char *bit_ptr = NULL;
   base::win::ScopedBitmap bitmap(
-      CreateDIBSection(mem_hdc,
+      CreateDIBSection(mem_hdc.Get(),
                        reinterpret_cast<BITMAPINFO*>(&hdr),
                        DIB_RGB_COLORS,
                        reinterpret_cast<void **>(&bit_ptr),
                        NULL, 0));
 
-  base::win::ScopedSelectObject select_bitmap(mem_hdc, bitmap);
+  base::win::ScopedSelectObject select_bitmap(mem_hdc.Get(), bitmap);
   // Clear the bitmap to white (so that rounded corners on windows
   // show up on a white background, and strangely-shaped windows
   // look reasonable). Not capturing an alpha mask saves a
   // bit of space.
-  PatBlt(mem_hdc, 0, 0, snapshot_bounds.width(), snapshot_bounds.height(),
+  PatBlt(mem_hdc.Get(), 0, 0, snapshot_bounds.width(), snapshot_bounds.height(),
          WHITENESS);
   // Grab a copy of the window
   // First, see if PrintWindow is defined (it's not in Windows 2000).
@@ -82,10 +82,11 @@ bool GrabHwndSnapshot(HWND window_handle,
   // than nothing and will work fine in the average case (window is
   // completely on screen).  Always BitBlt when grabbing the whole screen.
   if (snapshot_bounds.origin() == gfx::Point() && print_window && window_handle)
-    (*print_window)(window_handle, mem_hdc, 0);
+    (*print_window)(window_handle, mem_hdc.Get(), 0);
   else
-    BitBlt(mem_hdc, 0, 0, snapshot_bounds.width(), snapshot_bounds.height(),
-           window_hdc, snapshot_bounds.x(), snapshot_bounds.y(), SRCCOPY);
+    BitBlt(mem_hdc.Get(), 0, 0, snapshot_bounds.width(),
+           snapshot_bounds.height(), window_hdc, snapshot_bounds.x(),
+           snapshot_bounds.y(), SRCCOPY);
 
   // We now have a copy of the window contents in a DIB, so
   // encode it into a useful format for posting to the bug report
