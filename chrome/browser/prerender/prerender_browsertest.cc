@@ -30,9 +30,11 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
@@ -66,6 +68,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -98,6 +102,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using chrome_browser_net::NetworkPredictionOptions;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::NavigationController;
@@ -109,6 +114,7 @@ using content::RenderWidgetHost;
 using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
+using net::NetworkChangeNotifier;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 // Prerender tests work as follows:
@@ -124,6 +130,20 @@ using task_manager::browsertest_util::WaitForTaskManagerRows;
 namespace prerender {
 
 namespace {
+
+class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
+ public:
+  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+    return NetworkChangeNotifier::CONNECTION_WIFI;
+  }
+};
+
+class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
+ public:
+  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+    return NetworkChangeNotifier::CONNECTION_4G;
+  }
+};
 
 // Constants used in the test HTML files.
 const char* kReadyTitle = "READY";
@@ -1070,6 +1090,80 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kAlwaysAuthorizePlugins);
   }
 
+  void SetPreference(NetworkPredictionOptions value) {
+    browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kNetworkPredictionOptions, value);
+  }
+
+  void CreateTestFieldTrial(const std::string& name,
+                            const std::string& group_name) {
+    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+        name, group_name);
+    trial->group();
+  }
+
+  // Verifies, for the current field trial, whether
+  // ShouldDisableLocalPredictorDueToPreferencesAndNetwork produces the desired
+  // output.
+  void TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
+      bool preference_wifi_network_wifi,
+      bool preference_wifi_network_4g,
+      bool preference_always_network_wifi,
+      bool preference_always_network_4g,
+      bool preference_never_network_wifi,
+      bool preference_never_network_4g) {
+    Profile* profile = browser()->profile();
+
+    // Set real NetworkChangeNotifier singleton aside.
+    scoped_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
+        new NetworkChangeNotifier::DisableForTest);
+
+    // Set preference to WIFI_ONLY: prefetch when not on cellular.
+    SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_WIFI_ONLY);
+    {
+      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+      EXPECT_EQ(
+          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
+          preference_wifi_network_wifi);
+    }
+    {
+      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+      EXPECT_EQ(
+          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
+          preference_wifi_network_4g);
+    }
+
+    // Set preference to ALWAYS: always prefetch.
+    SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_ALWAYS);
+    {
+      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+      EXPECT_EQ(
+          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
+          preference_always_network_wifi);
+    }
+    {
+      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+      EXPECT_EQ(
+          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
+          preference_always_network_4g);
+    }
+
+    // Set preference to NEVER: never prefetch.
+    SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_NEVER);
+    {
+      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
+      EXPECT_EQ(
+          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
+          preference_never_network_wifi);
+    }
+    {
+      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
+      EXPECT_EQ(
+          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
+          preference_never_network_4g);
+    }
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     current_browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
@@ -1669,6 +1763,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   std::string loader_query_;
   Browser* explicitly_set_browser_;
   base::HistogramTester histogram_tester_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -4451,6 +4546,68 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   // Prerender should be running, but abandoned.
   EXPECT_TRUE(
       GetAutocompleteActionPredictor()->IsPrerenderAbandonedForTesting());
+}
+
+// Prefetch should be allowed depending on preference and network type.
+// This test is for the bsae case: no Finch overrides should never disable.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       LocalPredictorDisableWorksBaseCase) {
+  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
+      false /*preference_wifi_network_wifi*/,
+      false /*preference_wifi_network_4g*/,
+      false /*preference_always_network_wifi*/,
+      false /*preference_always_network_4g*/,
+      false /*preference_never_network_wifi*/,
+      false /*preference_never_network_4g*/);
+}
+
+// Prefetch should be allowed depending on preference and network type.
+// LocalPredictorOnCellularOnly should disable all wifi cases.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       LocalPredictorDisableWorksCellularOnly) {
+  CreateTestFieldTrial("PrerenderLocalPredictorSpec",
+                       "LocalPredictorOnCellularOnly=Enabled");
+  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
+      true /*preference_wifi_network_wifi*/,
+      false /*preference_wifi_network_4g*/,
+      true /*preference_always_network_wifi*/,
+      false /*preference_always_network_4g*/,
+      true /*preference_never_network_wifi*/,
+      false /*preference_never_network_4g*/);
+}
+
+// Prefetch should be allowed depending on preference and network type.
+// LocalPredictorNetworkPredictionEnabledOnly should disable whenever
+// network predictions will not be exercised.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       LocalPredictorDisableWorksNetworkPredictionEnableOnly) {
+  CreateTestFieldTrial("PrerenderLocalPredictorSpec",
+                       "LocalPredictorNetworkPredictionEnabledOnly=Enabled");
+  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
+      false /*preference_wifi_network_wifi*/,
+      true /*preference_wifi_network_4g*/,
+      false /*preference_always_network_wifi*/,
+      false /*preference_always_network_4g*/,
+      true /*preference_never_network_wifi*/,
+      true /*preference_never_network_4g*/);
+}
+
+// Prefetch should be allowed depending on preference and network type.
+// If LocalPredictorNetworkPredictionEnabledOnly and
+// LocalPredictorOnCellularOnly are both selected, we must disable whenever
+// network predictions are not exercised, or when we are on wifi.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       LocalPredictorDisableWorksBothOptions) {
+  CreateTestFieldTrial("PrerenderLocalPredictorSpec",
+                       "LocalPredictorOnCellularOnly=Enabled:"
+                       "LocalPredictorNetworkPredictionEnabledOnly=Enabled");
+  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
+      true /*preference_wifi_network_wifi*/,
+      true /*preference_wifi_network_4g*/,
+      true /*preference_always_network_wifi*/,
+      false /*preference_always_network_4g*/,
+      true /*preference_never_network_wifi*/,
+      true /*preference_never_network_4g*/);
 }
 
 }  // namespace prerender

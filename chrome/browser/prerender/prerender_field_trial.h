@@ -32,7 +32,11 @@ bool IsLocalPredictorEnabled();
 
 // Indicates whether to disable the local predictor due to unencrypted sync
 // settings and configuration.
-bool DisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile);
+bool ShouldDisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile);
+
+// Returns whether or not the local predictor is temporarily disabled, due
+// to network predictive action settings and current network.
+bool ShouldDisableLocalPredictorDueToPreferencesAndNetwork(Profile* profile);
 
 // Returns true iff the LoggedIn Predictor is enabled.
 bool IsLoggedInPredictorEnabled();

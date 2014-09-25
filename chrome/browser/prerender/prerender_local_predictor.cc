@@ -616,6 +616,11 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
   }
   if (ShouldExcludeTransitionForPrediction(info.transition))
     return;
+  Profile* profile = prerender_manager_->profile();
+  if (!profile ||
+      ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile)) {
+    return;
+  }
   RecordEvent(EVENT_ADD_VISIT_RELEVANT_TRANSITION);
   base::TimeDelta max_age =
       base::TimeDelta::FromMilliseconds(GetMaxLocalPredictionTimeMs());
@@ -1126,7 +1131,8 @@ void PrerenderLocalPredictor::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RecordEvent(EVENT_INIT_STARTED);
   Profile* profile = prerender_manager_->profile();
-  if (!profile || DisableLocalPredictorBasedOnSyncAndConfiguration(profile)) {
+  if (!profile ||
+      ShouldDisableLocalPredictorBasedOnSyncAndConfiguration(profile)) {
     RecordEvent(EVENT_INIT_FAILED_UNENCRYPTED_SYNC_NOT_ENABLED);
     return;
   }

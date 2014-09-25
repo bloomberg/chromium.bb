@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -41,6 +43,9 @@ const char kLocalPredictorSpecTrialName[] = "PrerenderLocalPredictorSpec";
 const char kLocalPredictorKeyName[] = "LocalPredictor";
 const char kLocalPredictorUnencryptedSyncOnlyKeyName[] =
     "LocalPredictorUnencryptedSyncOnly";
+const char kLocalPredictorNetworkPredictionEnabledOnly[] =
+    "LocalPredictorNetworkPredictionEnabledOnly";
+const char kLocalPredictorOnCellularOnly[] = "LocalPredictorOnCellularOnly";
 const char kSideEffectFreeWhitelistKeyName[] = "SideEffectFreeWhitelist";
 const char kPrerenderLaunchKeyName[] = "PrerenderLaunch";
 const char kPrerenderAlwaysControlKeyName[] = "PrerenderAlwaysControl";
@@ -331,11 +336,36 @@ bool IsLocalPredictorEnabled() {
       GetLocalPredictorSpecValue(kLocalPredictorKeyName) == kEnabledGroup;
 }
 
-bool DisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile) {
+bool ShouldDisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile) {
   return
       GetLocalPredictorSpecValue(kLocalPredictorUnencryptedSyncOnlyKeyName) ==
           kEnabledGroup &&
       !IsUnencryptedSyncEnabled(profile);
+}
+
+bool ShouldDisableLocalPredictorDueToPreferencesAndNetwork(Profile* profile) {
+  bool on_cellular =
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType());
+  // If the user is not on a cellular connection, but we require a cellular
+  // connection, we must temporarily disable our local predictions.
+  if (!on_cellular &&
+      GetLocalPredictorSpecValue(kLocalPredictorOnCellularOnly) ==
+      kEnabledGroup) {
+    return true;
+  }
+
+  // If we don't care whether or not network prediction will actually be
+  // exercised, we do not need to temporarily disable our predictions.
+  if (GetLocalPredictorSpecValue(kLocalPredictorNetworkPredictionEnabledOnly) !=
+      kEnabledGroup) {
+    return false;
+  }
+
+  // We should temporarily disable iff the predictive network action would
+  // not be exercised.
+
+  return !chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs());
 }
 
 bool IsLoggedInPredictorEnabled() {
