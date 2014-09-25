@@ -65,7 +65,7 @@ public:
     }
 
 private:
-    PersistentWillBeMember<DirectoryReaderSync> m_reader;
+    Member<DirectoryReaderSync> m_reader;
 };
 
 class DirectoryReaderSync::ErrorCallbackHelper FINAL : public ErrorCallback {
@@ -87,7 +87,7 @@ public:
     }
 
 private:
-    PersistentWillBeMember<DirectoryReaderSync> m_reader;
+    Member<DirectoryReaderSync> m_reader;
 };
 
 DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem, const String& fullPath)
@@ -104,7 +104,7 @@ DirectoryReaderSync::~DirectoryReaderSync()
 EntrySyncHeapVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
 {
     if (!m_callbacksId) {
-        m_callbacksId = filesystem()->readDirectory(this, m_fullPath, adoptPtrWillBeNoop(new EntriesCallbackHelper(this)), adoptPtrWillBeNoop(new ErrorCallbackHelper(this)), DOMFileSystemBase::Synchronous);
+        m_callbacksId = filesystem()->readDirectory(this, m_fullPath, new EntriesCallbackHelper(this), new ErrorCallbackHelper(this), DOMFileSystemBase::Synchronous);
     }
 
     if (m_errorCode == FileError::OK && m_hasMoreEntries && m_entries.isEmpty())

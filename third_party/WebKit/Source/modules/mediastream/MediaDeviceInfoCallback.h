@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class MediaDeviceInfoCallback : public NoBaseWillBeGarbageCollectedFinalized<MediaDeviceInfoCallback> {
+class MediaDeviceInfoCallback : public GarbageCollectedFinalized<MediaDeviceInfoCallback> {
 public:
     virtual ~MediaDeviceInfoCallback() { }
     virtual void trace(Visitor*) { }

@@ -140,7 +140,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceTypeArg = nullptr;;
+    TestCallbackInterface* testCallbackInterfaceTypeArg;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
@@ -148,7 +148,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
         }
         testCallbackInterfaceTypeArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg.release());
+    impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
 }
 
 static void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

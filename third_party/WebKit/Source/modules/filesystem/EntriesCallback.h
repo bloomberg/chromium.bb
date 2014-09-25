@@ -38,7 +38,7 @@ namespace blink {
 class Entry;
 typedef HeapVector<Member<Entry> > EntryHeapVector;
 
-class EntriesCallback : public NoBaseWillBeGarbageCollectedFinalized<EntriesCallback> {
+class EntriesCallback : public GarbageCollectedFinalized<EntriesCallback> {
 public:
     virtual ~EntriesCallback() { }
     virtual void trace(Visitor*) { }

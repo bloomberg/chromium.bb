@@ -69,7 +69,7 @@ String DataTransferItem::type() const
     return m_item->type();
 }
 
-void DataTransferItem::getAsString(ExecutionContext* context, PassOwnPtrWillBeRawPtr<StringCallback> callback) const
+void DataTransferItem::getAsString(ExecutionContext* context, StringCallback* callback) const
 {
     if (!m_dataTransfer->canReadData())
         return;

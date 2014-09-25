@@ -63,25 +63,25 @@ public:
     // Other callback methods are implemented by each subclass.
 
 protected:
-    FileSystemCallbacksBase(PassOwnPtrWillBeRawPtr<ErrorCallback>, DOMFileSystemBase*, ExecutionContext*);
+    FileSystemCallbacksBase(ErrorCallback*, DOMFileSystemBase*, ExecutionContext*);
 
     bool shouldScheduleCallback() const;
 
 #if !ENABLE(OILPAN)
     template <typename CB, typename CBArg>
-    void handleEventOrScheduleCallback(PassOwnPtr<CB>, RawPtr<CBArg>);
+    void handleEventOrScheduleCallback(RawPtr<CB>, RawPtr<CBArg>);
 #endif
 
     template <typename CB, typename CBArg>
-    void handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB>, CBArg*);
+    void handleEventOrScheduleCallback(RawPtr<CB>, CBArg*);
 
     template <typename CB, typename CBArg>
-    void handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB>, PassRefPtrWillBeRawPtr<CBArg>);
+    void handleEventOrScheduleCallback(RawPtr<CB>, PassRefPtrWillBeRawPtr<CBArg>);
 
     template <typename CB>
-    void handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB>);
+    void handleEventOrScheduleCallback(RawPtr<CB>);
 
-    OwnPtrWillBePersistent<ErrorCallback> m_errorCallback;
+    Persistent<ErrorCallback> m_errorCallback;
     Persistent<DOMFileSystemBase> m_fileSystem;
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
     int m_asyncOperationId;
@@ -91,25 +91,25 @@ protected:
 
 class EntryCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtrWillBeRawPtr<EntryCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
     virtual void didSucceed() OVERRIDE;
 
 private:
-    EntryCallbacks(PassOwnPtrWillBeRawPtr<EntryCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
-    OwnPtrWillBePersistent<EntryCallback> m_successCallback;
+    EntryCallbacks(EntryCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
+    Persistent<EntryCallback> m_successCallback;
     String m_expectedPath;
     bool m_isDirectory;
 };
 
 class EntriesCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtrWillBeRawPtr<EntriesCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(EntriesCallback*, ErrorCallback*, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
     virtual void didReadDirectoryEntry(const String& name, bool isDirectory) OVERRIDE;
     virtual void didReadDirectoryEntries(bool hasMore) OVERRIDE;
 
 private:
-    EntriesCallbacks(PassOwnPtrWillBeRawPtr<EntriesCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
-    OwnPtrWillBePersistent<EntriesCallback> m_successCallback;
+    EntriesCallbacks(EntriesCallback*, ErrorCallback*, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
+    Persistent<EntriesCallback> m_successCallback;
     Persistent<DirectoryReaderBase> m_directoryReader;
     String m_basePath;
     PersistentHeapVector<Member<Entry> > m_entries;
@@ -117,66 +117,66 @@ private:
 
 class FileSystemCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtrWillBeRawPtr<FileSystemCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, FileSystemType);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(FileSystemCallback*, ErrorCallback*, ExecutionContext*, FileSystemType);
     virtual void didOpenFileSystem(const String& name, const KURL& rootURL) OVERRIDE;
 
 private:
-    FileSystemCallbacks(PassOwnPtrWillBeRawPtr<FileSystemCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, FileSystemType);
-    OwnPtrWillBePersistent<FileSystemCallback> m_successCallback;
+    FileSystemCallbacks(FileSystemCallback*, ErrorCallback*, ExecutionContext*, FileSystemType);
+    Persistent<FileSystemCallback> m_successCallback;
     FileSystemType m_type;
 };
 
 class ResolveURICallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtrWillBeRawPtr<EntryCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*);
     virtual void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectry) OVERRIDE;
 
 private:
-    ResolveURICallbacks(PassOwnPtrWillBeRawPtr<EntryCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*);
-    OwnPtrWillBePersistent<EntryCallback> m_successCallback;
+    ResolveURICallbacks(EntryCallback*, ErrorCallback*, ExecutionContext*);
+    Persistent<EntryCallback> m_successCallback;
 };
 
 class MetadataCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtrWillBeRawPtr<MetadataCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DOMFileSystemBase*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(MetadataCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
     virtual void didReadMetadata(const FileMetadata&) OVERRIDE;
 
 private:
-    MetadataCallbacks(PassOwnPtrWillBeRawPtr<MetadataCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DOMFileSystemBase*);
-    OwnPtrWillBePersistent<MetadataCallback> m_successCallback;
+    MetadataCallbacks(MetadataCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
+    Persistent<MetadataCallback> m_successCallback;
 };
 
 class FileWriterBaseCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<FileWriterBase>, PassOwnPtrWillBeRawPtr<FileWriterBaseCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<FileWriterBase>, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
     virtual void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) OVERRIDE;
 
 private:
-    FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase>, PassOwnPtrWillBeRawPtr<FileWriterBaseCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*);
+    FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase>, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
     Persistent<FileWriterBase> m_fileWriter;
-    OwnPtrWillBePersistent<FileWriterBaseCallback> m_successCallback;
+    Persistent<FileWriterBaseCallback> m_successCallback;
 };
 
 class SnapshotFileCallback FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystemBase*, const String& name, const KURL&, PassOwnPtrWillBeRawPtr<FileCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystemBase*, const String& name, const KURL&, FileCallback*, ErrorCallback*, ExecutionContext*);
     virtual void didCreateSnapshotFile(const FileMetadata&, PassRefPtr<BlobDataHandle> snapshot);
 
 private:
-    SnapshotFileCallback(DOMFileSystemBase*, const String& name, const KURL&, PassOwnPtrWillBeRawPtr<FileCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*);
+    SnapshotFileCallback(DOMFileSystemBase*, const String& name, const KURL&, FileCallback*, ErrorCallback*, ExecutionContext*);
     String m_name;
     KURL m_url;
-    OwnPtrWillBePersistent<FileCallback> m_successCallback;
+    Persistent<FileCallback> m_successCallback;
 };
 
 class VoidCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DOMFileSystemBase*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(VoidCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
     virtual void didSucceed() OVERRIDE;
 
 private:
-    VoidCallbacks(PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>, ExecutionContext*, DOMFileSystemBase*);
-    OwnPtrWillBePersistent<VoidCallback> m_successCallback;
+    VoidCallbacks(VoidCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
+    Persistent<VoidCallback> m_successCallback;
 };
 
 } // namespace blink

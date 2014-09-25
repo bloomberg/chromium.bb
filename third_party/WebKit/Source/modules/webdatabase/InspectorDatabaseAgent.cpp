@@ -69,9 +69,9 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
 
 class StatementCallback FINAL : public SQLStatementCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<StatementCallback> create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
+    static StatementCallback* create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
-        return adoptPtrWillBeNoop(new StatementCallback(requestCallback));
+        return new StatementCallback(requestCallback);
     }
 
     virtual ~StatementCallback() { }
@@ -113,9 +113,9 @@ private:
 
 class StatementErrorCallback FINAL : public SQLStatementErrorCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<StatementErrorCallback> create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
+    static StatementErrorCallback* create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
-        return adoptPtrWillBeNoop(new StatementErrorCallback(requestCallback));
+        return new StatementErrorCallback(requestCallback);
     }
 
     virtual ~StatementErrorCallback() { }
@@ -140,9 +140,9 @@ private:
 
 class TransactionCallback FINAL : public SQLTransactionCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<TransactionCallback> create(const String& sqlStatement, PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
+    static TransactionCallback* create(const String& sqlStatement, PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
-        return adoptPtrWillBeNoop(new TransactionCallback(sqlStatement, requestCallback));
+        return new TransactionCallback(sqlStatement, requestCallback);
     }
 
     virtual ~TransactionCallback() { }
@@ -159,9 +159,9 @@ public:
             return true;
 
         Vector<SQLValue> sqlValues;
-        OwnPtrWillBeRawPtr<SQLStatementCallback> callback(StatementCallback::create(m_requestCallback.get()));
-        OwnPtrWillBeRawPtr<SQLStatementErrorCallback> errorCallback(StatementErrorCallback::create(m_requestCallback.get()));
-        transaction->executeSQL(m_sqlStatement, sqlValues, callback.release(), errorCallback.release(), IGNORE_EXCEPTION);
+        SQLStatementCallback* callback = StatementCallback::create(m_requestCallback.get());
+        SQLStatementErrorCallback* errorCallback = StatementErrorCallback::create(m_requestCallback.get());
+        transaction->executeSQL(m_sqlStatement, sqlValues, callback, errorCallback, IGNORE_EXCEPTION);
         return true;
     }
 private:
@@ -174,9 +174,9 @@ private:
 
 class TransactionErrorCallback FINAL : public SQLTransactionErrorCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<TransactionErrorCallback> create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
+    static TransactionErrorCallback* create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
-        return adoptPtrWillBeNoop(new TransactionErrorCallback(requestCallback));
+        return new TransactionErrorCallback(requestCallback);
     }
 
     virtual ~TransactionErrorCallback() { }
@@ -200,9 +200,9 @@ private:
 
 class TransactionSuccessCallback FINAL : public VoidCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<TransactionSuccessCallback> create()
+    static TransactionSuccessCallback* create()
     {
-        return adoptPtrWillBeNoop(new TransactionSuccessCallback());
+        return new TransactionSuccessCallback();
     }
 
     virtual ~TransactionSuccessCallback() { }
@@ -314,10 +314,10 @@ void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, 
         return;
     }
 
-    OwnPtrWillBeRawPtr<SQLTransactionCallback> callback(TransactionCallback::create(query, requestCallback.get()));
-    OwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback(TransactionErrorCallback::create(requestCallback.get()));
-    OwnPtrWillBeRawPtr<VoidCallback> successCallback(TransactionSuccessCallback::create());
-    database->transaction(callback.release(), errorCallback.release(), successCallback.release());
+    SQLTransactionCallback* callback = TransactionCallback::create(query, requestCallback.get());
+    SQLTransactionErrorCallback* errorCallback = TransactionErrorCallback::create(requestCallback.get());
+    VoidCallback* successCallback = TransactionSuccessCallback::create();
+    database->transaction(callback, errorCallback, successCallback);
 }
 
 InspectorDatabaseResource* InspectorDatabaseAgent::findByFileName(const String& fileName)

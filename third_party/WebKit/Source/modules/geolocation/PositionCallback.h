@@ -32,7 +32,7 @@ namespace blink {
 
     class Geoposition;
 
-    class PositionCallback : public NoBaseWillBeGarbageCollectedFinalized<PositionCallback> {
+    class PositionCallback : public GarbageCollectedFinalized<PositionCallback> {
     public:
         virtual ~PositionCallback() { }
         virtual void trace(Visitor*) { }

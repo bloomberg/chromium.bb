@@ -67,14 +67,14 @@ public:
     static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
     virtual ~RTCPeerConnection();
 
-    void createOffer(PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>, const Dictionary&, ExceptionState&);
+    void createOffer(RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
-    void createAnswer(PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>, const Dictionary&, ExceptionState&);
+    void createAnswer(RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
-    void setLocalDescription(RTCSessionDescription*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>, ExceptionState&);
+    void setLocalDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
     RTCSessionDescription* localDescription(ExceptionState&);
 
-    void setRemoteDescription(RTCSessionDescription*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>, ExceptionState&);
+    void setRemoteDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
     RTCSessionDescription* remoteDescription(ExceptionState&);
 
     String signalingState() const;
@@ -84,7 +84,7 @@ public:
     // DEPRECATED
     void addIceCandidate(RTCIceCandidate*, ExceptionState&);
 
-    void addIceCandidate(RTCIceCandidate*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>, ExceptionState&);
+    void addIceCandidate(RTCIceCandidate*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
 
     String iceGatheringState() const;
 
@@ -100,7 +100,7 @@ public:
 
     void removeStream(MediaStream*, ExceptionState&);
 
-    void getStats(PassOwnPtrWillBeRawPtr<RTCStatsCallback> successCallback, MediaStreamTrack* selector);
+    void getStats(RTCStatsCallback* successCallback, MediaStreamTrack* selector);
 
     RTCDataChannel* createDataChannel(String label, const Dictionary& dataChannelDict, ExceptionState&);
 

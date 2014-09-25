@@ -64,7 +64,7 @@ DOMFileSystemSync::~DOMFileSystemSync()
 {
 }
 
-void DOMFileSystemSync::reportError(PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
+void DOMFileSystemSync::reportError(ErrorCallback* errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
 {
     errorCallback->handleEvent(fileError.get());
 }
@@ -165,9 +165,9 @@ namespace {
 
 class ReceiveFileWriterCallback FINAL : public FileWriterBaseCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<ReceiveFileWriterCallback> create()
+    static ReceiveFileWriterCallback* create()
     {
-        return adoptPtrWillBeNoop(new ReceiveFileWriterCallback());
+        return new ReceiveFileWriterCallback();
     }
 
     virtual void handleEvent(FileWriterBase*) OVERRIDE
@@ -182,9 +182,9 @@ private:
 
 class LocalErrorCallback FINAL : public ErrorCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<LocalErrorCallback> create(FileError::ErrorCode& errorCode)
+    static LocalErrorCallback* create(FileError::ErrorCode& errorCode)
     {
-        return adoptPtrWillBeNoop(new LocalErrorCallback(errorCode));
+        return new LocalErrorCallback(errorCode);
     }
 
     virtual void handleEvent(FileError* error) OVERRIDE
@@ -209,11 +209,11 @@ FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, 
     ASSERT(fileEntry);
 
     FileWriterSync* fileWriter = FileWriterSync::create();
-    OwnPtrWillBeRawPtr<ReceiveFileWriterCallback> successCallback = ReceiveFileWriterCallback::create();
+    ReceiveFileWriterCallback* successCallback = ReceiveFileWriterCallback::create();
     FileError::ErrorCode errorCode = FileError::OK;
-    OwnPtrWillBeRawPtr<LocalErrorCallback> errorCallback = LocalErrorCallback::create(errorCode);
+    LocalErrorCallback* errorCallback = LocalErrorCallback::create(errorCode);
 
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback.release(), errorCallback.release(), m_context);
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback, m_context);
     callbacks->setShouldBlockUntilCompletion(true);
 
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());

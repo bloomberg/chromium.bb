@@ -53,7 +53,7 @@ public:
 
     typedef int CallbackId;
 
-    int registerCallback(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback>);
+    int registerCallback(RequestAnimationFrameCallback*);
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
 
@@ -73,7 +73,7 @@ private:
     void executeCallbacks(double monotonicTimeNow);
     void callMediaQueryListListeners();
 
-    typedef WillBeHeapVector<OwnPtrWillBeMember<RequestAnimationFrameCallback> > CallbackList;
+    typedef PersistentHeapVectorWillBeHeapVector<Member<RequestAnimationFrameCallback> > CallbackList;
     CallbackList m_callbacks;
     CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
 

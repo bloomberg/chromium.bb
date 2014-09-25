@@ -19,7 +19,7 @@ class PositionOptions;
 
 class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
 public:
-    static GeoNotifier* create(Geolocation* geolocation, PassOwnPtrWillBeRawPtr<PositionCallback> positionCallback, PassOwnPtrWillBeRawPtr<PositionErrorCallback> positionErrorCallback, PositionOptions* options)
+    static GeoNotifier* create(Geolocation* geolocation, PositionCallback* positionCallback, PositionErrorCallback* positionErrorCallback, PositionOptions* options)
     {
         return new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options);
     }
@@ -49,11 +49,11 @@ public:
     void timerFired(Timer<GeoNotifier>*);
 
 private:
-    GeoNotifier(Geolocation*, PassOwnPtrWillBeRawPtr<PositionCallback>, PassOwnPtrWillBeRawPtr<PositionErrorCallback>, PositionOptions*);
+    GeoNotifier(Geolocation*, PositionCallback*, PositionErrorCallback*, PositionOptions*);
 
     Member<Geolocation> m_geolocation;
-    OwnPtrWillBeMember<PositionCallback> m_successCallback;
-    OwnPtrWillBeMember<PositionErrorCallback> m_errorCallback;
+    Member<PositionCallback> m_successCallback;
+    Member<PositionErrorCallback> m_errorCallback;
     Member<PositionOptions> m_options;
     Timer<GeoNotifier> m_timer;
     Member<PositionError> m_fatalError;

@@ -41,14 +41,14 @@
 
 namespace blink {
 
-RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
+RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCErrorCallback* errorCallback)
 {
     RTCSessionDescriptionRequestImpl* request = new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback);
     request->suspendIfNeeded();
     return request;
 }
 
-RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
+RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCErrorCallback* errorCallback)
     : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)

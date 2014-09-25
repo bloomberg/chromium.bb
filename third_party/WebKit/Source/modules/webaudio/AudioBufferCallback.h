@@ -33,7 +33,7 @@ namespace blink {
 
 class AudioBuffer;
 
-class AudioBufferCallback : public NoBaseWillBeGarbageCollectedFinalized<AudioBufferCallback> {
+class AudioBufferCallback : public GarbageCollectedFinalized<AudioBufferCallback> {
 public:
     virtual ~AudioBufferCallback() { }
     virtual void trace(Visitor*) { }

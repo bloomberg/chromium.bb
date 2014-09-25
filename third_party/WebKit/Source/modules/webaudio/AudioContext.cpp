@@ -234,7 +234,7 @@ AudioBuffer* AudioContext::createBuffer(unsigned numberOfChannels, size_t number
     return AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 }
 
-void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassOwnPtrWillBeRawPtr<AudioBufferCallback> successCallback, PassOwnPtrWillBeRawPtr<AudioBufferCallback> errorCallback, ExceptionState& exceptionState)
+void AudioContext::decodeAudioData(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
 {
     if (!audioData) {
         exceptionState.throwDOMException(

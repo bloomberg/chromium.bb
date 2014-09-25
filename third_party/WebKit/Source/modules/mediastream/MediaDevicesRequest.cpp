@@ -33,14 +33,14 @@
 
 namespace blink {
 
-MediaDevicesRequest* MediaDevicesRequest::create(ExecutionContext* context, UserMediaController* controller, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
+MediaDevicesRequest* MediaDevicesRequest::create(ExecutionContext* context, UserMediaController* controller, MediaDeviceInfoCallback* callback, ExceptionState& exceptionState)
 {
     MediaDevicesRequest* request = new MediaDevicesRequest(context, controller, callback);
     request->suspendIfNeeded();
     return request;
 }
 
-MediaDevicesRequest::MediaDevicesRequest(ExecutionContext* context, UserMediaController* controller, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback> callback)
+MediaDevicesRequest::MediaDevicesRequest(ExecutionContext* context, UserMediaController* controller, MediaDeviceInfoCallback* callback)
     : ActiveDOMObject(context)
     , m_controller(controller)
     , m_callback(callback)

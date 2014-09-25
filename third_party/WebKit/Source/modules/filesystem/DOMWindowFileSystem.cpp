@@ -48,7 +48,7 @@ DOMWindowFileSystem::~DOMWindowFileSystem()
 {
 }
 
-void DOMWindowFileSystem::webkitRequestFileSystem(LocalDOMWindow& window, int type, long long size, PassOwnPtrWillBeRawPtr<FileSystemCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void DOMWindowFileSystem::webkitRequestFileSystem(LocalDOMWindow& window, int type, long long size, FileSystemCallback* successCallback, ErrorCallback* errorCallback)
 {
     if (!window.isCurrentlyDisplayedInFrame())
         return;
@@ -71,7 +71,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(LocalDOMWindow& window, int ty
     LocalFileSystem::from(*document)->requestFileSystem(document, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, document, fileSystemType));
 }
 
-void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(LocalDOMWindow& window, const String& url, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(LocalDOMWindow& window, const String& url, EntryCallback* successCallback, ErrorCallback* errorCallback)
 {
     if (!window.isCurrentlyDisplayedInFrame())
         return;

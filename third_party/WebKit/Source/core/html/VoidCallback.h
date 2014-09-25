@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class VoidCallback : public NoBaseWillBeGarbageCollectedFinalized<VoidCallback> {
+class VoidCallback : public GarbageCollectedFinalized<VoidCallback> {
 public:
     virtual ~VoidCallback() { }
     virtual void trace(Visitor*) { }

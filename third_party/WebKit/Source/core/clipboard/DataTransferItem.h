@@ -55,7 +55,7 @@ public:
     String kind() const;
     String type() const;
 
-    void getAsString(ExecutionContext*, PassOwnPtrWillBeRawPtr<StringCallback>) const;
+    void getAsString(ExecutionContext*, StringCallback*) const;
     PassRefPtrWillBeRawPtr<Blob> getAsFile() const;
 
     DataTransfer* dataTransfer() { return m_dataTransfer.get(); }

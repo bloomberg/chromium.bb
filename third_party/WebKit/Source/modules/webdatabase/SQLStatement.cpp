@@ -43,13 +43,13 @@
 namespace blink {
 
 PassOwnPtrWillBeRawPtr<SQLStatement> SQLStatement::create(Database* database,
-    PassOwnPtrWillBeRawPtr<SQLStatementCallback> callback, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback> errorCallback)
+    SQLStatementCallback* callback, SQLStatementErrorCallback* errorCallback)
 {
     return adoptPtrWillBeNoop(new SQLStatement(database, callback, errorCallback));
 }
 
-SQLStatement::SQLStatement(Database* database, PassOwnPtrWillBeRawPtr<SQLStatementCallback> callback,
-    PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback> errorCallback)
+SQLStatement::SQLStatement(Database* database, SQLStatementCallback* callback,
+    SQLStatementErrorCallback* errorCallback)
     : m_statementCallbackWrapper(callback, database->executionContext())
     , m_statementErrorCallbackWrapper(errorCallback, database->executionContext())
 {
@@ -88,8 +88,8 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
 
     bool callbackError = false;
 
-    OwnPtrWillBeRawPtr<SQLStatementCallback> callback = m_statementCallbackWrapper.unwrap();
-    OwnPtrWillBeRawPtr<SQLStatementErrorCallback> errorCallback = m_statementErrorCallbackWrapper.unwrap();
+    SQLStatementCallback* callback = m_statementCallbackWrapper.unwrap();
+    SQLStatementErrorCallback* errorCallback = m_statementErrorCallbackWrapper.unwrap();
     SQLErrorData* error = m_backend->sqlError();
 
     // Call the appropriate statement callback and track if it resulted in an error,

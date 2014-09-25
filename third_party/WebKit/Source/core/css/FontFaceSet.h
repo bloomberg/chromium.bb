@@ -81,8 +81,8 @@ public:
     void add(FontFace*, ExceptionState&);
     void clear();
     bool remove(FontFace*, ExceptionState&);
-    void forEach(PassOwnPtrWillBeRawPtr<FontFaceSetForEachCallback>, const ScriptValue& thisArg) const;
-    void forEach(PassOwnPtrWillBeRawPtr<FontFaceSetForEachCallback>) const;
+    void forEach(FontFaceSetForEachCallback*, const ScriptValue& thisArg) const;
+    void forEach(FontFaceSetForEachCallback*) const;
     bool has(FontFace*, ExceptionState&) const;
 
     unsigned long size() const;
@@ -137,7 +137,7 @@ private:
     bool hasLoadedFonts() const { return !m_loadedFonts.isEmpty() || !m_failedFonts.isEmpty(); }
 
     bool inActiveDocumentContext() const;
-    void forEachInternal(PassOwnPtrWillBeRawPtr<FontFaceSetForEachCallback>, const ScriptValue* thisArg) const;
+    void forEachInternal(FontFaceSetForEachCallback*, const ScriptValue* thisArg) const;
     void addToLoadingFonts(PassRefPtrWillBeRawPtr<FontFace>);
     void removeFromLoadingFonts(PassRefPtrWillBeRawPtr<FontFace>);
     void fireLoadingEvent();

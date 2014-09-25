@@ -44,7 +44,7 @@ namespace blink {
 template<typename T> class SQLCallbackWrapper {
     DISALLOW_ALLOCATION();
 public:
-    SQLCallbackWrapper(PassOwnPtrWillBeRawPtr<T> callback, ExecutionContext* executionContext)
+    SQLCallbackWrapper(T* callback, ExecutionContext* executionContext)
         : m_callback(callback)
         , m_executionContext(m_callback ? executionContext : 0)
     {
@@ -75,7 +75,6 @@ public:
         m_executionContext.clear();
 #else
         ExecutionContext* context;
-        OwnPtr<T> callback;
         {
             MutexLocker locker(m_mutex);
             if (!m_callback) {
@@ -88,13 +87,12 @@ public:
                 return;
             }
             context = m_executionContext.release().leakRef();
-            callback = m_callback.release();
         }
-        context->postTask(SafeReleaseTask::create(callback.release()));
+        context->postTask(SafeReleaseTask::create(m_callback));
 #endif
     }
 
-    PassOwnPtrWillBeRawPtr<T> unwrap()
+    T* unwrap()
     {
         MutexLocker locker(m_mutex);
         ASSERT(!m_callback || m_executionContext->isContextThread());
@@ -109,7 +107,7 @@ private:
 #if !ENABLE(OILPAN)
     class SafeReleaseTask : public ExecutionContextTask {
     public:
-        static PassOwnPtr<SafeReleaseTask> create(PassOwnPtr<T> callbackToRelease)
+        static PassOwnPtr<SafeReleaseTask> create(T* callbackToRelease)
         {
             return adoptPtr(new SafeReleaseTask(callbackToRelease));
         }
@@ -124,17 +122,17 @@ private:
         virtual bool isCleanupTask() const { return true; }
 
     private:
-        explicit SafeReleaseTask(PassOwnPtr<T> callbackToRelease)
+        explicit SafeReleaseTask(T* callbackToRelease)
             : m_callbackToRelease(callbackToRelease)
         {
         }
 
-        OwnPtr<T> m_callbackToRelease;
+        CrossThreadPersistent<T> m_callbackToRelease;
     };
 #endif
 
     Mutex m_mutex;
-    OwnPtrWillBeMember<T> m_callback;
+    CrossThreadPersistentWillBeMember<T> m_callback;
     RefPtrWillBeMember<ExecutionContext> m_executionContext;
 };
 

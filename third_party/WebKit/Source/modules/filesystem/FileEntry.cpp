@@ -44,12 +44,12 @@ FileEntry::FileEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
 {
 }
 
-void FileEntry::createWriter(PassOwnPtrWillBeRawPtr<FileWriterCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void FileEntry::createWriter(FileWriterCallback* successCallback, ErrorCallback* errorCallback)
 {
     filesystem()->createWriter(this, successCallback, errorCallback);
 }
 
-void FileEntry::file(PassOwnPtrWillBeRawPtr<FileCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void FileEntry::file(FileCallback* successCallback, ErrorCallback* errorCallback)
 {
     filesystem()->createFile(this, successCallback, errorCallback);
 }

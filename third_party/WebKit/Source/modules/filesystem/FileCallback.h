@@ -37,7 +37,7 @@ namespace blink {
 
 class File;
 
-class FileCallback : public NoBaseWillBeGarbageCollectedFinalized<FileCallback> {
+class FileCallback : public GarbageCollectedFinalized<FileCallback> {
 public:
     virtual ~FileCallback() { }
     virtual void trace(Visitor*) { }

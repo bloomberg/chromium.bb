@@ -37,7 +37,7 @@ namespace blink {
 
 class DOMFileSystem;
 
-class FileSystemCallback : public NoBaseWillBeGarbageCollectedFinalized<FileSystemCallback> {
+class FileSystemCallback : public GarbageCollectedFinalized<FileSystemCallback> {
 public:
     virtual ~FileSystemCallback() { }
     virtual void trace(Visitor*) { }

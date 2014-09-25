@@ -5211,7 +5211,7 @@ ScriptedAnimationController& Document::ensureScriptedAnimationController()
     return *m_scriptedAnimationController;
 }
 
-int Document::requestAnimationFrame(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback> callback)
+int Document::requestAnimationFrame(RequestAnimationFrameCallback* callback)
 {
     return ensureScriptedAnimationController().registerCallback(callback);
 }

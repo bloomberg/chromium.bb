@@ -1454,7 +1454,7 @@ void LocalDOMWindow::resizeTo(float width, float height) const
     host->chrome().setWindowRect(adjustWindowRect(*m_frame, update));
 }
 
-int LocalDOMWindow::requestAnimationFrame(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback> callback)
+int LocalDOMWindow::requestAnimationFrame(RequestAnimationFrameCallback* callback)
 {
     callback->m_useLegacyTimeBase = false;
     if (Document* d = document())
@@ -1462,7 +1462,7 @@ int LocalDOMWindow::requestAnimationFrame(PassOwnPtrWillBeRawPtr<RequestAnimatio
     return 0;
 }
 
-int LocalDOMWindow::webkitRequestAnimationFrame(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback> callback)
+int LocalDOMWindow::webkitRequestAnimationFrame(RequestAnimationFrameCallback* callback)
 {
     callback->m_useLegacyTimeBase = true;
     if (Document* d = document())

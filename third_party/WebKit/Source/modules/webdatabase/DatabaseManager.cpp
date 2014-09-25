@@ -65,7 +65,7 @@ DatabaseManager::~DatabaseManager()
 
 class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback)
+    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, DatabaseCallback* creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
@@ -76,14 +76,14 @@ public:
     }
 
 private:
-    DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtrWillBeRawPtr<DatabaseCallback> callback)
+    DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, DatabaseCallback* callback)
         : m_database(database)
         , m_creationCallback(callback)
     {
     }
 
     RefPtrWillBePersistent<Database> m_database;
-    OwnPtrWillBePersistent<DatabaseCallback> m_creationCallback;
+    Persistent<DatabaseCallback> m_creationCallback;
 };
 
 DatabaseContext* DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
@@ -189,7 +189,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabaseInternal(Execution
 
 PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback,
+    unsigned long estimatedSize, DatabaseCallback* creationCallback,
     DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);
@@ -203,7 +203,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
     databaseContextFor(context)->setHasOpenDatabases();
     DatabaseClient::from(context)->didOpenDatabase(database, context->securityOrigin()->host(), name, expectedVersion);
 
-    if (database->isNew() && creationCallback.get()) {
+    if (database->isNew() && creationCallback) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
         database->executionContext()->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
     }

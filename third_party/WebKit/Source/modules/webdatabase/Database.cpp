@@ -792,40 +792,40 @@ void Database::closeImmediately()
 void Database::changeVersion(
     const String& oldVersion,
     const String& newVersion,
-    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
-    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
-    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
+    SQLTransactionCallback* callback,
+    SQLTransactionErrorCallback* errorCallback,
+    VoidCallback* successCallback)
 {
     ChangeVersionData data(oldVersion, newVersion);
     runTransaction(callback, errorCallback, successCallback, false, &data);
 }
 
 void Database::transaction(
-    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
-    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
-    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
+    SQLTransactionCallback* callback,
+    SQLTransactionErrorCallback* errorCallback,
+    VoidCallback* successCallback)
 {
     runTransaction(callback, errorCallback, successCallback, false);
 }
 
 void Database::readTransaction(
-    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
-    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
-    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
+    SQLTransactionCallback* callback,
+    SQLTransactionErrorCallback* errorCallback,
+    VoidCallback* successCallback)
 {
     runTransaction(callback, errorCallback, successCallback, true);
 }
 
-static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback, PassOwnPtr<SQLErrorData> errorData)
+static void callTransactionErrorCallback(ExecutionContext*, SQLTransactionErrorCallback* callback, PassOwnPtr<SQLErrorData> errorData)
 {
     RefPtrWillBeRawPtr<SQLError> error = SQLError::create(*errorData);
     callback->handleEvent(error.get());
 }
 
 void Database::runTransaction(
-    PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
-    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
-    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback,
+    SQLTransactionCallback* callback,
+    SQLTransactionErrorCallback* errorCallback,
+    VoidCallback* successCallback,
     bool readOnly,
     const ChangeVersionData* changeVersionData)
 {
@@ -834,16 +834,16 @@ void Database::runTransaction(
     // into Database so that we only create the SQLTransaction if we're
     // actually going to run it.
 #if ENABLE(ASSERT)
-    SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
+    SQLTransactionErrorCallback* originalErrorCallback = errorCallback;
 #endif
     RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
     RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = runTransaction(transaction, readOnly, changeVersionData);
     if (!transactionBackend) {
-        OwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
+        SQLTransactionErrorCallback* callback = transaction->releaseErrorCallback();
         ASSERT(callback == originalErrorCallback);
         if (callback) {
             OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
-            executionContext()->postTask(createCrossThreadTask(&callTransactionErrorCallback, callback.release(), error.release()));
+            executionContext()->postTask(createCrossThreadTask(&callTransactionErrorCallback, callback, error.release()));
         }
     }
 }

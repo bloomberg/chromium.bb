@@ -38,8 +38,8 @@ class FileSystemCallback;
 
 class DOMWindowFileSystem {
 public:
-    static void webkitRequestFileSystem(LocalDOMWindow&, int type, long long size, PassOwnPtrWillBeRawPtr<FileSystemCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>);
-    static void webkitResolveLocalFileSystemURL(LocalDOMWindow&, const String&, PassOwnPtrWillBeRawPtr<EntryCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback>);
+    static void webkitRequestFileSystem(LocalDOMWindow&, int type, long long size, FileSystemCallback*, ErrorCallback*);
+    static void webkitResolveLocalFileSystemURL(LocalDOMWindow&, const String&, EntryCallback*, ErrorCallback*);
 
     // They are placed here and in all capital letters so they can be checked against the constants in the
     // IDL at compile time.

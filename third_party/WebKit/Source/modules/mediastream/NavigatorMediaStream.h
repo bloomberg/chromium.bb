@@ -35,9 +35,9 @@ class NavigatorUserMediaSuccessCallback;
 
 class NavigatorMediaStream {
 public:
-    static void webkitGetUserMedia(Navigator&, const Dictionary&, PassOwnPtrWillBeRawPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtrWillBeRawPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
+    static void webkitGetUserMedia(Navigator&, const Dictionary&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
 
-    static void getMediaDevices(Navigator&, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback>, ExceptionState&);
+    static void getMediaDevices(Navigator&, MediaDeviceInfoCallback*, ExceptionState&);
 
 private:
     NavigatorMediaStream();

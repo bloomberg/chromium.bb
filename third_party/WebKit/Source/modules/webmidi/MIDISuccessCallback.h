@@ -38,7 +38,7 @@ namespace blink {
 
 class MIDIAccess;
 
-class MIDISuccessCallback : public NoBaseWillBeGarbageCollectedFinalized<MIDISuccessCallback> {
+class MIDISuccessCallback : public GarbageCollectedFinalized<MIDISuccessCallback> {
 public:
     virtual ~MIDISuccessCallback() { }
     virtual void trace(Visitor*) { }

@@ -81,7 +81,7 @@ void ScriptedAnimationController::resume()
     scheduleAnimationIfNeeded();
 }
 
-ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback> callback)
+ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(RequestAnimationFrameCallback* callback)
 {
     ScriptedAnimationController::CallbackId id = ++m_nextCallbackId;
     callback->m_cancelled = false;

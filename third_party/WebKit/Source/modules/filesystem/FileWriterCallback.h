@@ -37,7 +37,7 @@ namespace blink {
 
 class FileWriter;
 
-class FileWriterCallback : public NoBaseWillBeGarbageCollectedFinalized<FileWriterCallback> {
+class FileWriterCallback : public GarbageCollectedFinalized<FileWriterCallback> {
 public:
     virtual ~FileWriterCallback() { }
     virtual void trace(Visitor*) { }

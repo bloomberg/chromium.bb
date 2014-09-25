@@ -31,7 +31,7 @@ namespace blink {
 
 class MediaStream;
 
-class NavigatorUserMediaSuccessCallback : public NoBaseWillBeGarbageCollectedFinalized<NavigatorUserMediaSuccessCallback> {
+class NavigatorUserMediaSuccessCallback : public GarbageCollectedFinalized<NavigatorUserMediaSuccessCallback> {
 public:
     virtual ~NavigatorUserMediaSuccessCallback() { }
     virtual void trace(Visitor*) { }

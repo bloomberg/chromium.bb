@@ -935,7 +935,7 @@ public:
 
     const DocumentTiming& timing() const { return m_documentTiming; }
 
-    int requestAnimationFrame(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback>);
+    int requestAnimationFrame(RequestAnimationFrameCallback*);
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 

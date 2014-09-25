@@ -40,7 +40,7 @@ class RTCStatsCallback;
 
 class RTCStatsRequestImpl FINAL : public RTCStatsRequest, public ActiveDOMObject {
 public:
-    static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCStatsCallback>, MediaStreamTrack*);
+    static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
     virtual ~RTCStatsRequestImpl();
 
     virtual RTCStatsResponseBase* createResponse() OVERRIDE;
@@ -55,11 +55,11 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCStatsCallback>, MediaStreamTrack*);
+    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
 
     void clear();
 
-    OwnPtrWillBeMember<RTCStatsCallback> m_successCallback;
+    Member<RTCStatsCallback> m_successCallback;
     RefPtr<MediaStreamComponent> m_component;
     Member<RTCPeerConnection> m_requester;
 };

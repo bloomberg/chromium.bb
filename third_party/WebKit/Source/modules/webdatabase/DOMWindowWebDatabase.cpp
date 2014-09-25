@@ -40,7 +40,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Database> DOMWindowWebDatabase::openDatabase(LocalDOMWindow& window, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Database> DOMWindowWebDatabase::openDatabase(LocalDOMWindow& window, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, DatabaseCallback* creationCallback, ExceptionState& exceptionState)
 {
     if (!window.isCurrentlyDisplayedInFrame())
         return nullptr;

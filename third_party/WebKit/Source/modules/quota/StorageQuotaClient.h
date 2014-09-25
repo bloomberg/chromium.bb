@@ -51,7 +51,7 @@ public:
     StorageQuotaClient() { }
     virtual ~StorageQuotaClient() { }
 
-    virtual void requestQuota(ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, PassOwnPtrWillBeRawPtr<StorageQuotaCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>) = 0;
+    virtual void requestQuota(ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*) = 0;
     virtual ScriptPromise requestPersistentQuota(ScriptState*, unsigned long long newQuotaInBytes) = 0;
 
     static const char* supplementName();

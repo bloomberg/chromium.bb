@@ -46,7 +46,7 @@ class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl FINAL : public RTCSessionDescriptionRequest, public ActiveDOMObject {
 public:
-    static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
+    static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCErrorCallback*);
     virtual ~RTCSessionDescriptionRequestImpl();
 
     virtual void requestSucceeded(const WebRTCSessionDescription&) OVERRIDE;
@@ -58,12 +58,12 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
+    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCErrorCallback*);
 
     void clear();
 
-    OwnPtrWillBeMember<RTCSessionDescriptionCallback> m_successCallback;
-    OwnPtrWillBeMember<RTCErrorCallback> m_errorCallback;
+    Member<RTCSessionDescriptionCallback> m_successCallback;
+    Member<RTCErrorCallback> m_errorCallback;
     Member<RTCPeerConnection> m_requester;
 };
 

@@ -83,8 +83,8 @@ public:
         return m_result;
     }
 
-    PassOwnPtrWillBeRawPtr<SuccessCallback> successCallback() { return SuccessCallbackImpl::create(this); }
-    PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback() { return ErrorCallbackImpl::create(this); }
+    SuccessCallback* successCallback() { return SuccessCallbackImpl::create(this); }
+    ErrorCallback* errorCallback() { return ErrorCallbackImpl::create(this); }
 
     void trace(Visitor* visitor)
     {
@@ -100,9 +100,9 @@ private:
 
     class SuccessCallbackImpl FINAL : public SuccessCallback {
     public:
-        static PassOwnPtrWillBeRawPtr<SuccessCallbackImpl> create(HelperType* helper)
+        static SuccessCallbackImpl* create(HelperType* helper)
         {
-            return adoptPtrWillBeNoop(new SuccessCallbackImpl(helper));
+            return new SuccessCallbackImpl(helper);
         }
 
         virtual void handleEvent()
@@ -125,9 +125,9 @@ private:
 
     class ErrorCallbackImpl FINAL : public ErrorCallback {
     public:
-        static PassOwnPtrWillBeRawPtr<ErrorCallbackImpl> create(HelperType* helper)
+        static ErrorCallbackImpl* create(HelperType* helper)
         {
-            return adoptPtrWillBeNoop(new ErrorCallbackImpl(helper));
+            return new ErrorCallbackImpl(helper);
         }
 
         virtual void handleEvent(FileError* error) OVERRIDE

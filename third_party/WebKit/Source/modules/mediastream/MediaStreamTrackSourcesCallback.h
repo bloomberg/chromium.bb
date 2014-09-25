@@ -31,7 +31,7 @@ namespace blink {
 
 class MediaStreamTrackSourcesResponse;
 
-class MediaStreamTrackSourcesCallback : public NoBaseWillBeGarbageCollectedFinalized<MediaStreamTrackSourcesCallback> {
+class MediaStreamTrackSourcesCallback : public GarbageCollectedFinalized<MediaStreamTrackSourcesCallback> {
 public:
     virtual ~MediaStreamTrackSourcesCallback() { }
     virtual void trace(Visitor*) { }

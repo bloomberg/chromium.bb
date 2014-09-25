@@ -57,8 +57,8 @@ public:
     }
 
 private:
-    // FIXME: This Persistent keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
-    PersistentWillBeMember<DirectoryReader> m_reader;
+    // FIXME: This Member keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
+    Member<DirectoryReader> m_reader;
 };
 
 class DirectoryReader::ErrorCallbackHelper FINAL : public ErrorCallback {
@@ -80,7 +80,7 @@ public:
     }
 
 private:
-    PersistentWillBeMember<DirectoryReader> m_reader;
+    Member<DirectoryReader> m_reader;
 };
 
 DirectoryReader::DirectoryReader(DOMFileSystemBase* fileSystem, const String& fullPath)
@@ -93,11 +93,11 @@ DirectoryReader::~DirectoryReader()
 {
 }
 
-void DirectoryReader::readEntries(PassOwnPtrWillBeRawPtr<EntriesCallback> entriesCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void DirectoryReader::readEntries(EntriesCallback* entriesCallback, ErrorCallback* errorCallback)
 {
     if (!m_isReading) {
         m_isReading = true;
-        filesystem()->readDirectory(this, m_fullPath, adoptPtrWillBeNoop(new EntriesCallbackHelper(this)), adoptPtrWillBeNoop(new ErrorCallbackHelper(this)));
+        filesystem()->readDirectory(this, m_fullPath, new EntriesCallbackHelper(this), new ErrorCallbackHelper(this));
     }
 
     if (m_error) {
@@ -126,7 +126,7 @@ void DirectoryReader::addEntries(const EntryHeapVector& entries)
     m_entries.appendVector(entries);
     m_errorCallback = nullptr;
     if (m_entriesCallback) {
-        OwnPtrWillBeRawPtr<EntriesCallback> entriesCallback = m_entriesCallback.release();
+        EntriesCallback* entriesCallback = m_entriesCallback.release();
         EntryHeapVector entries;
         entries.swap(m_entries);
         entriesCallback->handleEvent(entries);
@@ -138,7 +138,7 @@ void DirectoryReader::onError(FileError* error)
     m_error = error;
     m_entriesCallback = nullptr;
     if (m_errorCallback) {
-        OwnPtrWillBeRawPtr<ErrorCallback> errorCallback = m_errorCallback.release();
+        ErrorCallback* errorCallback = m_errorCallback.release();
         errorCallback->handleEvent(error);
     }
 }

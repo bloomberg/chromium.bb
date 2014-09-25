@@ -37,7 +37,7 @@ namespace blink {
 
 class DOMError;
 
-class MIDIErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<MIDIErrorCallback> {
+class MIDIErrorCallback : public GarbageCollectedFinalized<MIDIErrorCallback> {
 public:
     virtual ~MIDIErrorCallback() { }
     virtual void trace(Visitor*) { }

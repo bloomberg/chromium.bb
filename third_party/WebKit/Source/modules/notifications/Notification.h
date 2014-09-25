@@ -80,7 +80,7 @@ public:
 
     static const String& permissionString(NotificationClient::Permission);
     static const String& permission(ExecutionContext*);
-    static void requestPermission(ExecutionContext*, PassOwnPtrWillBeRawPtr<NotificationPermissionCallback> = nullptr);
+    static void requestPermission(ExecutionContext*, NotificationPermissionCallback* = nullptr);
 
     // EventTarget interface.
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }

@@ -159,7 +159,7 @@ const String& Notification::permission(ExecutionContext* context)
     return permissionString(NotificationController::clientFrom(context).checkPermission(context));
 }
 
-void Notification::requestPermission(ExecutionContext* context, PassOwnPtrWillBeRawPtr<NotificationPermissionCallback> callback)
+void Notification::requestPermission(ExecutionContext* context, NotificationPermissionCallback* callback)
 {
     // FIXME: Assert that this code-path will only be reached for Document environments
     // when Blink supports [Exposed] annotations on class members in IDL definitions.

@@ -6444,7 +6444,7 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceArg = nullptr;;
+    TestCallbackInterface* testCallbackInterfaceArg;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
@@ -6452,7 +6452,7 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
         }
         testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    impl->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
+    impl->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg);
 }
 
 static void voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6465,17 +6465,19 @@ static void voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionC
 static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg = nullptr;;
+    TestCallbackInterface* optionalTestCallbackInterfaceArg;
     {
-        if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
+        if (!isUndefinedOrNull(info[0])) {
             if (!info[0]->IsFunction()) {
                 V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
                 return;
             }
             optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+        } else {
+            optionalTestCallbackInterfaceArg = nullptr;
         }
     }
-    impl->voidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release());
+    impl->voidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg);
 }
 
 static void voidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6492,7 +6494,7 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceArg = nullptr;;
+    TestCallbackInterface* testCallbackInterfaceArg;
     {
         if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
@@ -6500,7 +6502,7 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
         }
         testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    impl->voidMethodTestCallbackInterfaceOrNullArg(testCallbackInterfaceArg.release());
+    impl->voidMethodTestCallbackInterfaceOrNullArg(testCallbackInterfaceArg);
 }
 
 static void voidMethodTestCallbackInterfaceOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9312,7 +9314,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceArg = nullptr;;
+    TestCallbackInterface* testCallbackInterfaceArg;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
@@ -9321,7 +9323,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         }
         testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
+    impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -9339,18 +9341,20 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg = nullptr;;
+    TestCallbackInterface* optionalTestCallbackInterfaceArg;
     {
-        if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
+        if (!isUndefinedOrNull(info[0])) {
             if (!info[0]->IsFunction()) {
                 exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
                 exceptionState.throwIfNeeded();
                 return;
             }
             optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+        } else {
+            optionalTestCallbackInterfaceArg = nullptr;
         }
     }
-    impl->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
+    impl->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;

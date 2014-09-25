@@ -65,7 +65,7 @@ static WebMediaConstraints parseOptions(const Dictionary& options, const String&
     return constraints;
 }
 
-UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassOwnPtrWillBeRawPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtrWillBeRawPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
+UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, NavigatorUserMediaSuccessCallback* successCallback, NavigatorUserMediaErrorCallback* errorCallback, ExceptionState& exceptionState)
 {
     WebMediaConstraints audio = parseOptions(options, "audio", exceptionState);
     if (exceptionState.hadException())
@@ -83,7 +83,7 @@ UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaC
     return new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback);
 }
 
-UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, WebMediaConstraints audio, WebMediaConstraints video, PassOwnPtrWillBeRawPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtrWillBeRawPtr<NavigatorUserMediaErrorCallback> errorCallback)
+UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, WebMediaConstraints audio, WebMediaConstraints video, NavigatorUserMediaSuccessCallback* successCallback, NavigatorUserMediaErrorCallback* errorCallback)
     : ContextLifecycleObserver(context)
     , m_audio(audio)
     , m_video(video)

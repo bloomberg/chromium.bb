@@ -35,7 +35,7 @@ namespace blink {
 
 class SQLError;
 
-class SQLTransactionErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<SQLTransactionErrorCallback> {
+class SQLTransactionErrorCallback : public GarbageCollectedFinalized<SQLTransactionErrorCallback> {
 public:
     virtual ~SQLTransactionErrorCallback() { }
     virtual void trace(Visitor*) { }

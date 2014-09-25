@@ -137,7 +137,7 @@ Geoposition* Geolocation::lastPosition()
     return m_lastPosition.get();
 }
 
-void Geolocation::getCurrentPosition(PassOwnPtrWillBeRawPtr<PositionCallback> successCallback, PassOwnPtrWillBeRawPtr<PositionErrorCallback> errorCallback, const Dictionary& options)
+void Geolocation::getCurrentPosition(PositionCallback* successCallback, PositionErrorCallback* errorCallback, const Dictionary& options)
 {
     if (!frame())
         return;
@@ -148,7 +148,7 @@ void Geolocation::getCurrentPosition(PassOwnPtrWillBeRawPtr<PositionCallback> su
     m_oneShots.add(notifier);
 }
 
-int Geolocation::watchPosition(PassOwnPtrWillBeRawPtr<PositionCallback> successCallback, PassOwnPtrWillBeRawPtr<PositionErrorCallback> errorCallback, const Dictionary& options)
+int Geolocation::watchPosition(PositionCallback* successCallback, PositionErrorCallback* errorCallback, const Dictionary& options)
 {
     if (!frame())
         return 0;

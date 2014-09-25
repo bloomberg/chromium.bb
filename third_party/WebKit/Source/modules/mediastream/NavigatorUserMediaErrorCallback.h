@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class NavigatorUserMediaErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<NavigatorUserMediaErrorCallback> {
+class NavigatorUserMediaErrorCallback : public GarbageCollectedFinalized<NavigatorUserMediaErrorCallback> {
 public:
     virtual ~NavigatorUserMediaErrorCallback() { }
     virtual void trace(Visitor*) { }

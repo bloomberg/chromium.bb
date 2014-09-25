@@ -21,7 +21,7 @@ public:
     // Requests user permission to show platform notifications from the origin
     // of the current frame. The provided callback will be ran when the user
     // has made a decision.
-    virtual void requestPermission(ExecutionContext*, PassOwnPtrWillBeRawPtr<NotificationPermissionCallback>) = 0;
+    virtual void requestPermission(ExecutionContext*, NotificationPermissionCallback*) = 0;
 
     // WillBeHeapSupplement requirements.
     static const char* supplementName();

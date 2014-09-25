@@ -48,27 +48,27 @@ Entry::Entry(DOMFileSystemBase* fileSystem, const String& fullPath)
 {
 }
 
-void Entry::getMetadata(PassOwnPtrWillBeRawPtr<MetadataCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void Entry::getMetadata(MetadataCallback* successCallback, ErrorCallback* errorCallback)
 {
     m_fileSystem->getMetadata(this, successCallback, errorCallback);
 }
 
-void Entry::moveTo(DirectoryEntry* parent, const String& name, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback) const
+void Entry::moveTo(DirectoryEntry* parent, const String& name, EntryCallback* successCallback, ErrorCallback* errorCallback) const
 {
     m_fileSystem->move(this, parent, name, successCallback, errorCallback);
 }
 
-void Entry::copyTo(DirectoryEntry* parent, const String& name, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback) const
+void Entry::copyTo(DirectoryEntry* parent, const String& name, EntryCallback* successCallback, ErrorCallback* errorCallback) const
 {
     m_fileSystem->copy(this, parent, name, successCallback, errorCallback);
 }
 
-void Entry::remove(PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback) const
+void Entry::remove(VoidCallback* successCallback, ErrorCallback* errorCallback) const
 {
     m_fileSystem->remove(this, successCallback, errorCallback);
 }
 
-void Entry::getParent(PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback) const
+void Entry::getParent(EntryCallback* successCallback, ErrorCallback* errorCallback) const
 {
     m_fileSystem->getParent(this, successCallback, errorCallback);
 }

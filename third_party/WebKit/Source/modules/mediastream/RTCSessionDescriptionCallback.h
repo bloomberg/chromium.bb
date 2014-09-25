@@ -37,7 +37,7 @@ namespace blink {
 
 class RTCSessionDescription;
 
-class RTCSessionDescriptionCallback : public NoBaseWillBeGarbageCollectedFinalized<RTCSessionDescriptionCallback> {
+class RTCSessionDescriptionCallback : public GarbageCollectedFinalized<RTCSessionDescriptionCallback> {
 public:
     virtual ~RTCSessionDescriptionCallback() { }
     virtual void trace(Visitor*) { }

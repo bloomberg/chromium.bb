@@ -36,7 +36,7 @@
 
 namespace blink {
 
-StorageErrorCallback::CallbackTask::CallbackTask(PassOwnPtrWillBeRawPtr<StorageErrorCallback> callback, ExceptionCode ec)
+StorageErrorCallback::CallbackTask::CallbackTask(StorageErrorCallback* callback, ExceptionCode ec)
     : m_callback(callback)
     , m_ec(ec)
 {

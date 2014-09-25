@@ -31,7 +31,7 @@ namespace blink {
 
 class RTCStatsResponse;
 
-class RTCStatsCallback : public NoBaseWillBeGarbageCollectedFinalized<RTCStatsCallback> {
+class RTCStatsCallback : public GarbageCollectedFinalized<RTCStatsCallback> {
 public:
     virtual ~RTCStatsCallback() { }
     virtual void trace(Visitor*) { }

@@ -84,16 +84,12 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
 {######################################}
 {% macro generate_argument_var_declaration(argument) %}
-{% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case #}
 {% if argument.idl_type == 'EventListener' %}
 RefPtr<{{argument.idl_type}}> {{argument.name}}
 {%- else %}
-OwnPtrWillBeRawPtr<{{argument.idl_type}}> {{argument.name}} = nullptr;
-{%- endif %}{# argument.idl_type == 'EventListener' #}
-{%- else %}
 {{argument.cpp_type}} {{argument.name}}
-{%- endif %}
+{%- endif %}{# argument.idl_type == 'EventListener' #}
 {% endmacro %}
 
 
@@ -140,7 +136,7 @@ if (info.Length() > {{argument.index}} && {% if argument.is_nullable %}!isUndefi
 {# Callback functions must be functions:
    http://www.w3.org/TR/WebIDL/#es-callback-function #}
 {% if argument.is_optional %}
-if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}])) {
+if (!isUndefinedOrNull(info[{{argument.index}}])) {
     if (!info[{{argument.index}}]->IsFunction()) {
         {{throw_type_error(method,
               '"The callback provided as parameter %s is not a function."' %
@@ -148,6 +144,8 @@ if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.ind
         return;
     }
     {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
+} else {
+    {{argument.name}} = nullptr;
 }
 {% else %}{# argument.is_optional #}
 if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {

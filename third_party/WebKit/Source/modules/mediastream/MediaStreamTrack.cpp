@@ -128,7 +128,7 @@ String MediaStreamTrack::readyState() const
     return String();
 }
 
-void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
+void MediaStreamTrack::getSources(ExecutionContext* context, MediaStreamTrackSourcesCallback* callback, ExceptionState& exceptionState)
 {
     LocalFrame* frame = toDocument(context)->frame();
     UserMediaController* userMedia = UserMediaController::from(frame);

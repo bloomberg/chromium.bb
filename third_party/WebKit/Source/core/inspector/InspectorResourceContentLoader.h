@@ -21,7 +21,7 @@ class InspectorResourceContentLoader FINAL : public NoBaseWillBeGarbageCollected
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     explicit InspectorResourceContentLoader(Page*);
-    void ensureResourcesContentLoaded(PassOwnPtrWillBeRawPtr<VoidCallback>);
+    void ensureResourcesContentLoaded(VoidCallback*);
     ~InspectorResourceContentLoader();
     void trace(Visitor*);
     void dispose();
@@ -35,7 +35,7 @@ private:
     void checkDone();
     void start();
 
-    WillBeHeapVector<OwnPtrWillBeMember<VoidCallback> > m_callbacks;
+    PersistentHeapVectorWillBeHeapVector<Member<VoidCallback> > m_callbacks;
     bool m_allRequestsStarted;
     bool m_started;
     RawPtrWillBeMember<Page> m_page;

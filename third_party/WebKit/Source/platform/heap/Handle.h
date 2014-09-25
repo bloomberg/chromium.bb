@@ -1013,6 +1013,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
 #define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected blink::ThreadSafeRefCountedGarbageCollected
 #define PersistentWillBeMember blink::Member
+#define CrossThreadPersistentWillBeMember blink::Member
 #define RefPtrWillBePersistent blink::Persistent
 #define RefPtrWillBeRawPtr WTF::RawPtr
 #define RefPtrWillBeMember blink::Member
@@ -1130,6 +1131,7 @@ public:
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected WTF::ThreadSafeRefCounted
 #define PersistentWillBeMember blink::Persistent
+#define CrossThreadPersistentWillBeMember blink::CrossThreadPersistent
 #define RefPtrWillBePersistent WTF::RefPtr
 #define RefPtrWillBeRawPtr WTF::RefPtr
 #define RefPtrWillBeMember WTF::RefPtr

@@ -56,8 +56,8 @@ class SQLTransaction FINAL
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SQLTransaction> create(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+    static PassRefPtrWillBeRawPtr<SQLTransaction> create(Database*, SQLTransactionCallback*,
+        VoidCallback* successCallback, SQLTransactionErrorCallback*,
         bool readOnly);
     ~SQLTransaction();
     void trace(Visitor*);
@@ -65,11 +65,11 @@ public:
     void performPendingCallback();
 
     void executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments,
-        PassOwnPtrWillBeRawPtr<SQLStatementCallback>, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback>, ExceptionState&);
+        SQLStatementCallback*, SQLStatementErrorCallback*, ExceptionState&);
 
     Database* database() { return m_database.get(); }
 
-    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> releaseErrorCallback();
+    SQLTransactionErrorCallback* releaseErrorCallback();
 
     // APIs called from the backend published:
     void requestTransitToState(SQLTransactionState);
@@ -79,8 +79,8 @@ public:
     void setBackend(SQLTransactionBackend*);
 
 private:
-    SQLTransaction(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+    SQLTransaction(Database*, SQLTransactionCallback*,
+        VoidCallback* successCallback, SQLTransactionErrorCallback*,
         bool readOnly);
 
     void clearCallbackWrappers();

@@ -41,7 +41,7 @@ class UserMediaController;
 
 class MediaDevicesRequest FINAL : public GarbageCollectedFinalized<MediaDevicesRequest>, public ActiveDOMObject {
 public:
-    static MediaDevicesRequest* create(ExecutionContext*, UserMediaController*, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback>, ExceptionState&);
+    static MediaDevicesRequest* create(ExecutionContext*, UserMediaController*, MediaDeviceInfoCallback*, ExceptionState&);
     virtual ~MediaDevicesRequest();
 
     MediaDeviceInfoCallback* callback() const { return m_callback.get(); }
@@ -57,11 +57,11 @@ public:
     void trace(Visitor*);
 
 private:
-    MediaDevicesRequest(ExecutionContext*, UserMediaController*, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback>);
+    MediaDevicesRequest(ExecutionContext*, UserMediaController*, MediaDeviceInfoCallback*);
 
     UserMediaController* m_controller;
 
-    OwnPtrWillBeMember<MediaDeviceInfoCallback> m_callback;
+    Member<MediaDeviceInfoCallback> m_callback;
 };
 
 } // namespace blink

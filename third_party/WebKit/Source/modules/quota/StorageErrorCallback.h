@@ -42,7 +42,7 @@ class DOMError;
 
 typedef int ExceptionCode;
 
-class StorageErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<StorageErrorCallback> {
+class StorageErrorCallback : public GarbageCollectedFinalized<StorageErrorCallback> {
 public:
     virtual ~StorageErrorCallback() { }
     virtual void trace(Visitor*) { }
@@ -50,7 +50,7 @@ public:
 
     class CallbackTask FINAL : public ExecutionContextTask {
     public:
-        static PassOwnPtr<CallbackTask> create(PassOwnPtrWillBeRawPtr<StorageErrorCallback> callback, ExceptionCode ec)
+        static PassOwnPtr<CallbackTask> create(StorageErrorCallback* callback, ExceptionCode ec)
         {
             return adoptPtr(new CallbackTask(callback, ec));
         }
@@ -58,9 +58,9 @@ public:
         virtual void performTask(ExecutionContext*) OVERRIDE;
 
     private:
-        CallbackTask(PassOwnPtrWillBeRawPtr<StorageErrorCallback>, ExceptionCode);
+        CallbackTask(StorageErrorCallback*, ExceptionCode);
 
-        OwnPtrWillBePersistent<StorageErrorCallback> m_callback;
+        Persistent<StorageErrorCallback> m_callback;
         ExceptionCode m_ec;
     };
 };

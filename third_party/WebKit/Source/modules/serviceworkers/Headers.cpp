@@ -208,12 +208,12 @@ void Headers::set(const String& name, const String& value, ExceptionState& excep
     m_headerList->set(name, value);
 }
 
-void Headers::forEach(PassOwnPtrWillBeRawPtr<HeadersForEachCallback> callback, const ScriptValue& thisArg)
+void Headers::forEach(HeadersForEachCallback* callback, const ScriptValue& thisArg)
 {
     forEachInternal(callback, &thisArg);
 }
 
-void Headers::forEach(PassOwnPtrWillBeRawPtr<HeadersForEachCallback> callback)
+void Headers::forEach(HeadersForEachCallback* callback)
 {
     forEachInternal(callback, 0);
 }
@@ -305,7 +305,7 @@ Headers::Headers(FetchHeaderList* headerList)
 {
 }
 
-void Headers::forEachInternal(PassOwnPtrWillBeRawPtr<HeadersForEachCallback> callback, const ScriptValue* thisArg)
+void Headers::forEachInternal(HeadersForEachCallback* callback, const ScriptValue* thisArg)
 {
     TrackExceptionState exceptionState;
     for (size_t i = 0; i < m_headerList->size(); ++i) {

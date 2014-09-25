@@ -51,7 +51,7 @@ DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
 {
 }
 
-void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtrWillBeRawPtr<StorageUsageCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, StorageUsageCallback* successCallback, StorageErrorCallback* errorCallback)
 {
     ASSERT(executionContext);
 
@@ -73,7 +73,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionConte
     Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks.release());
 }
 
-void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtrWillBeRawPtr<StorageQuotaCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, StorageQuotaCallback* successCallback, StorageErrorCallback* errorCallback)
 {
     ASSERT(executionContext);
 

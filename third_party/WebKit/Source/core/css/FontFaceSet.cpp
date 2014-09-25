@@ -356,17 +356,17 @@ bool FontFaceSet::isCSSConnectedFontFace(FontFace* fontFace) const
     return cssConnectedFontFaceList().contains(fontFace);
 }
 
-void FontFaceSet::forEach(PassOwnPtrWillBeRawPtr<FontFaceSetForEachCallback> callback, const ScriptValue& thisArg) const
+void FontFaceSet::forEach(FontFaceSetForEachCallback* callback, const ScriptValue& thisArg) const
 {
     forEachInternal(callback, &thisArg);
 }
 
-void FontFaceSet::forEach(PassOwnPtrWillBeRawPtr<FontFaceSetForEachCallback> callback) const
+void FontFaceSet::forEach(FontFaceSetForEachCallback* callback) const
 {
     forEachInternal(callback, 0);
 }
 
-void FontFaceSet::forEachInternal(PassOwnPtrWillBeRawPtr<FontFaceSetForEachCallback> callback, const ScriptValue* thisArg) const
+void FontFaceSet::forEachInternal(FontFaceSetForEachCallback* callback, const ScriptValue* thisArg) const
 {
     if (!inActiveDocumentContext())
         return;

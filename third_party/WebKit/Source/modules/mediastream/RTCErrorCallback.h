@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class RTCErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<RTCErrorCallback> {
+class RTCErrorCallback : public GarbageCollectedFinalized<RTCErrorCallback> {
 public:
     virtual ~RTCErrorCallback() { }
     virtual void trace(Visitor*) { }

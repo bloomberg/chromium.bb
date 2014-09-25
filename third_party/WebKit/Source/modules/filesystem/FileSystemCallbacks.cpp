@@ -56,7 +56,7 @@
 
 namespace blink {
 
-FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem, ExecutionContext* context)
+FileSystemCallbacksBase::FileSystemCallbacksBase(ErrorCallback* errorCallback, DOMFileSystemBase* fileSystem, ExecutionContext* context)
     : m_errorCallback(errorCallback)
     , m_fileSystem(fileSystem)
     , m_executionContext(context)
@@ -89,19 +89,19 @@ bool FileSystemCallbacksBase::shouldScheduleCallback() const
 
 #if !ENABLE(OILPAN)
 template <typename CB, typename CBArg>
-void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB> callback, RawPtr<CBArg> arg)
+void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback, RawPtr<CBArg> arg)
 {
     handleEventOrScheduleCallback(callback, arg.get());
 }
 #endif
 
 template <typename CB, typename CBArg>
-void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB> callback, CBArg* arg)
+void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback, CBArg* arg)
 {
-    ASSERT(callback.get());
+    ASSERT(callback);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (shouldScheduleCallback())
-        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
+        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback.get(), arg);
     else if (callback)
         callback->handleEvent(arg);
     m_executionContext.clear();
@@ -109,12 +109,12 @@ void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawP
 }
 
 template <typename CB, typename CBArg>
-void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
+void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
 {
-    ASSERT(callback.get());
+    ASSERT(callback);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (shouldScheduleCallback())
-        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
+        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback.get(), arg);
     else if (callback)
         callback->handleEvent(arg.get());
     m_executionContext.clear();
@@ -122,12 +122,12 @@ void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawP
 }
 
 template <typename CB>
-void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawPtr<CB> callback)
+void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback)
 {
-    ASSERT(callback.get());
+    ASSERT(callback);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (shouldScheduleCallback())
-        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback);
+        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback.get());
     else if (callback)
         callback->handleEvent();
     m_executionContext.clear();
@@ -136,12 +136,12 @@ void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtrWillBeRawP
 
 // EntryCallbacks -------------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> EntryCallbacks::create(PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
+PassOwnPtr<AsyncFileSystemCallbacks> EntryCallbacks::create(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
 {
     return adoptPtr(new EntryCallbacks(successCallback, errorCallback, context, fileSystem, expectedPath, isDirectory));
 }
 
-EntryCallbacks::EntryCallbacks(PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
+EntryCallbacks::EntryCallbacks(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem, const String& expectedPath, bool isDirectory)
     : FileSystemCallbacksBase(errorCallback, fileSystem, context)
     , m_successCallback(successCallback)
     , m_expectedPath(expectedPath)
@@ -161,12 +161,12 @@ void EntryCallbacks::didSucceed()
 
 // EntriesCallbacks -----------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> EntriesCallbacks::create(PassOwnPtrWillBeRawPtr<EntriesCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
+PassOwnPtr<AsyncFileSystemCallbacks> EntriesCallbacks::create(EntriesCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
 {
     return adoptPtr(new EntriesCallbacks(successCallback, errorCallback, context, directoryReader, basePath));
 }
 
-EntriesCallbacks::EntriesCallbacks(PassOwnPtrWillBeRawPtr<EntriesCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
+EntriesCallbacks::EntriesCallbacks(EntriesCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DirectoryReaderBase* directoryReader, const String& basePath)
     : FileSystemCallbacksBase(errorCallback, directoryReader->filesystem(), context)
     , m_successCallback(successCallback)
     , m_directoryReader(directoryReader)
@@ -199,12 +199,12 @@ void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
 
 // FileSystemCallbacks --------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> FileSystemCallbacks::create(PassOwnPtrWillBeRawPtr<FileSystemCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, FileSystemType type)
+PassOwnPtr<AsyncFileSystemCallbacks> FileSystemCallbacks::create(FileSystemCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, FileSystemType type)
 {
     return adoptPtr(new FileSystemCallbacks(successCallback, errorCallback, context, type));
 }
 
-FileSystemCallbacks::FileSystemCallbacks(PassOwnPtrWillBeRawPtr<FileSystemCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, FileSystemType type)
+FileSystemCallbacks::FileSystemCallbacks(FileSystemCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, FileSystemType type)
     : FileSystemCallbacksBase(errorCallback, nullptr, context)
     , m_successCallback(successCallback)
     , m_type(type)
@@ -219,12 +219,12 @@ void FileSystemCallbacks::didOpenFileSystem(const String& name, const KURL& root
 
 // ResolveURICallbacks --------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
     return adoptPtr(new ResolveURICallbacks(successCallback, errorCallback, context));
 }
 
-ResolveURICallbacks::ResolveURICallbacks(PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+ResolveURICallbacks::ResolveURICallbacks(EntryCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
     : FileSystemCallbacksBase(errorCallback, nullptr, context)
     , m_successCallback(successCallback)
 {
@@ -249,12 +249,12 @@ void ResolveURICallbacks::didResolveURL(const String& name, const KURL& rootURL,
 
 // MetadataCallbacks ----------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> MetadataCallbacks::create(PassOwnPtrWillBeRawPtr<MetadataCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> MetadataCallbacks::create(MetadataCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
 {
     return adoptPtr(new MetadataCallbacks(successCallback, errorCallback, context, fileSystem));
 }
 
-MetadataCallbacks::MetadataCallbacks(PassOwnPtrWillBeRawPtr<MetadataCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
+MetadataCallbacks::MetadataCallbacks(MetadataCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
     : FileSystemCallbacksBase(errorCallback, fileSystem, context)
     , m_successCallback(successCallback)
 {
@@ -268,12 +268,12 @@ void MetadataCallbacks::didReadMetadata(const FileMetadata& metadata)
 
 // FileWriterBaseCallbacks ----------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtrWillBeRawPtr<FileWriterBaseCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
     return adoptPtr(new FileWriterBaseCallbacks(fileWriter, successCallback, errorCallback, context));
 }
 
-FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtrWillBeRawPtr<FileWriterBaseCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
     : FileSystemCallbacksBase(errorCallback, nullptr, context)
     , m_fileWriter(fileWriter.get())
     , m_successCallback(successCallback)
@@ -289,12 +289,12 @@ void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebFileWriter> file
 
 // SnapshotFileCallback -------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, PassOwnPtrWillBeRawPtr<FileCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, FileCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
     return adoptPtr(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context));
 }
 
-SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem, const String& name, const KURL& url, PassOwnPtrWillBeRawPtr<FileCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem, const String& name, const KURL& url, FileCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
     : FileSystemCallbacksBase(errorCallback, filesystem, context)
     , m_name(name)
     , m_url(url)
@@ -317,12 +317,12 @@ void SnapshotFileCallback::didCreateSnapshotFile(const FileMetadata& metadata, P
 
 // VoidCallbacks --------------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(VoidCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
 {
     return adoptPtr(new VoidCallbacks(successCallback, errorCallback, context, fileSystem));
 }
 
-VoidCallbacks::VoidCallbacks(PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
+VoidCallbacks::VoidCallbacks(VoidCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context, DOMFileSystemBase* fileSystem)
     : FileSystemCallbacksBase(errorCallback, fileSystem, context)
     , m_successCallback(successCallback)
 {

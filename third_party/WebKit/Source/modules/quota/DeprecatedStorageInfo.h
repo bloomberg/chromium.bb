@@ -56,9 +56,9 @@ public:
         return new DeprecatedStorageInfo();
     }
 
-    void queryUsageAndQuota(ExecutionContext*, int storageType, PassOwnPtrWillBeRawPtr<StorageUsageCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>);
+    void queryUsageAndQuota(ExecutionContext*, int storageType, StorageUsageCallback*, StorageErrorCallback*);
 
-    void requestQuota(ExecutionContext*, int storageType, unsigned long long newQuotaInBytes, PassOwnPtrWillBeRawPtr<StorageQuotaCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>);
+    void requestQuota(ExecutionContext*, int storageType, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*);
 
     void trace(Visitor*);
 

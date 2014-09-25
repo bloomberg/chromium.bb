@@ -461,7 +461,7 @@ void InspectorCSSAgent::enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallba
         prpCallback->sendSuccess();
         return;
     }
-    m_pageAgent->resourceContentLoader()->ensureResourcesContentLoaded(adoptPtrWillBeNoop(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback)));
+    m_pageAgent->resourceContentLoader()->ensureResourcesContentLoaded(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback));
 }
 
 void InspectorCSSAgent::wasEnabled()

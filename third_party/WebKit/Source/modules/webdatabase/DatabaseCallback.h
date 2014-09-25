@@ -37,7 +37,7 @@ namespace blink {
 
 class Database;
 
-class DatabaseCallback : public NoBaseWillBeGarbageCollectedFinalized<DatabaseCallback> {
+class DatabaseCallback : public GarbageCollectedFinalized<DatabaseCallback> {
 public:
     virtual ~DatabaseCallback() { }
     virtual void trace(Visitor*) { }

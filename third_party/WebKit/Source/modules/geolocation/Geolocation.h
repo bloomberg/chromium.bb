@@ -65,11 +65,11 @@ public:
 
     // Creates a oneshot and attempts to obtain a position that meets the
     // constraints of the options.
-    void getCurrentPosition(PassOwnPtrWillBeRawPtr<PositionCallback>, PassOwnPtrWillBeRawPtr<PositionErrorCallback>, const Dictionary&);
+    void getCurrentPosition(PositionCallback*, PositionErrorCallback*, const Dictionary&);
 
     // Creates a watcher that will be notified whenever a new position is
     // available that meets the constraints of the options.
-    int watchPosition(PassOwnPtrWillBeRawPtr<PositionCallback>, PassOwnPtrWillBeRawPtr<PositionErrorCallback>, const Dictionary&);
+    int watchPosition(PositionCallback*, PositionErrorCallback*, const Dictionary&);
 
     // Removes all references to the watcher, it will not be updated again.
     void clearWatch(int watchID);

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class NotificationPermissionCallback : public NoBaseWillBeGarbageCollectedFinalized<NotificationPermissionCallback> {
+class NotificationPermissionCallback : public GarbageCollectedFinalized<NotificationPermissionCallback> {
 public:
     virtual ~NotificationPermissionCallback() { }
     virtual void trace(Visitor*) { }

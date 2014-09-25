@@ -37,7 +37,7 @@ namespace blink {
 
 class FileError;
 
-class ErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<ErrorCallback> {
+class ErrorCallback : public GarbageCollectedFinalized<ErrorCallback> {
 public:
     virtual ~ErrorCallback() { }
     virtual void trace(Visitor*) { }

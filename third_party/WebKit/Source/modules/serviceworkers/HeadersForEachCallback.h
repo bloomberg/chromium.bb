@@ -12,7 +12,7 @@ namespace blink {
 
 class Headers;
 
-class HeadersForEachCallback : public NoBaseWillBeGarbageCollectedFinalized<HeadersForEachCallback> {
+class HeadersForEachCallback : public GarbageCollectedFinalized<HeadersForEachCallback> {
 public:
     virtual ~HeadersForEachCallback() { }
     virtual void trace(Visitor*) { }

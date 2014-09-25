@@ -32,7 +32,7 @@ namespace blink {
 
     class PositionError;
 
-    class PositionErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<PositionErrorCallback> {
+    class PositionErrorCallback : public GarbageCollectedFinalized<PositionErrorCallback> {
     public:
         virtual ~PositionErrorCallback() { }
         virtual void trace(Visitor*) { }

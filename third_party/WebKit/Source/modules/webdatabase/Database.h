@@ -70,17 +70,17 @@ public:
     void changeVersion(
         const String& oldVersion,
         const String& newVersion,
-        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
-        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+        SQLTransactionCallback*,
+        SQLTransactionErrorCallback*,
+        VoidCallback* successCallback);
     void transaction(
-        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
-        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+        SQLTransactionCallback*,
+        SQLTransactionErrorCallback*,
+        VoidCallback* successCallback);
     void readTransaction(
-        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
-        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+        SQLTransactionCallback*,
+        SQLTransactionErrorCallback*,
+        VoidCallback* successCallback);
 
     bool opened() const { return m_opened; }
     bool isNew() const { return m_new; }
@@ -132,9 +132,9 @@ private:
     bool getActualVersionForTransaction(String& version);
 
     void runTransaction(
-        PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
-        PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
-        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback,
+        SQLTransactionCallback*,
+        SQLTransactionErrorCallback*,
+        VoidCallback* successCallback,
         bool readOnly,
         const ChangeVersionData* = 0);
     Vector<String> performGetTableNames();

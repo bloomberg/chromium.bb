@@ -46,7 +46,7 @@ class SQLTransaction;
 class SQLStatement FINAL : public NoBaseWillBeGarbageCollectedFinalized<SQLStatement> {
 public:
     static PassOwnPtrWillBeRawPtr<SQLStatement> create(Database*,
-        PassOwnPtrWillBeRawPtr<SQLStatementCallback>, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback>);
+        SQLStatementCallback*, SQLStatementErrorCallback*);
     ~SQLStatement();
     void trace(Visitor*);
 
@@ -58,7 +58,7 @@ public:
     bool hasErrorCallback();
 
 private:
-    SQLStatement(Database*, PassOwnPtrWillBeRawPtr<SQLStatementCallback>, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback>);
+    SQLStatement(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
 
     // The SQLStatementBackend owns the SQLStatement. Hence, the backend is
     // guaranteed to be outlive the SQLStatement, and it is safe for us to refer

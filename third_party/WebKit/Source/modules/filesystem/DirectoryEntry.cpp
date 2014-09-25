@@ -49,19 +49,19 @@ DirectoryReader* DirectoryEntry::createReader()
     return DirectoryReader::create(m_fileSystem, m_fullPath);
 }
 
-void DirectoryEntry::getFile(const String& path, const Dictionary& options, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void DirectoryEntry::getFile(const String& path, const Dictionary& options, EntryCallback* successCallback, ErrorCallback* errorCallback)
 {
     FileSystemFlags flags(options);
     m_fileSystem->getFile(this, path, flags, successCallback, errorCallback);
 }
 
-void DirectoryEntry::getDirectory(const String& path, const Dictionary& options, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
+void DirectoryEntry::getDirectory(const String& path, const Dictionary& options, EntryCallback* successCallback, ErrorCallback* errorCallback)
 {
     FileSystemFlags flags(options);
     m_fileSystem->getDirectory(this, path, flags, successCallback, errorCallback);
 }
 
-void DirectoryEntry::removeRecursively(PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback) const
+void DirectoryEntry::removeRecursively(VoidCallback* successCallback, ErrorCallback* errorCallback) const
 {
     m_fileSystem->removeRecursively(this, successCallback, errorCallback);
 }

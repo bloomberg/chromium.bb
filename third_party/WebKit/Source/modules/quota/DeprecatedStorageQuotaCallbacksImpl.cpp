@@ -36,13 +36,13 @@
 
 namespace blink {
 
-DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(PassOwnPtrWillBeRawPtr<StorageUsageCallback> usageCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
+DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback* usageCallback, StorageErrorCallback* errorCallback)
     : m_usageCallback(usageCallback)
     , m_errorCallback(errorCallback)
 {
 }
 
-DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(PassOwnPtrWillBeRawPtr<StorageQuotaCallback> quotaCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
+DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(StorageQuotaCallback* quotaCallback, StorageErrorCallback* errorCallback)
     : m_quotaCallback(quotaCallback)
     , m_errorCallback(errorCallback)
 {

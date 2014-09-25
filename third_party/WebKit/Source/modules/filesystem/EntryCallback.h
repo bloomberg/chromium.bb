@@ -37,7 +37,7 @@ namespace blink {
 
 class Entry;
 
-class EntryCallback : public NoBaseWillBeGarbageCollectedFinalized<EntryCallback> {
+class EntryCallback : public GarbageCollectedFinalized<EntryCallback> {
 public:
     virtual ~EntryCallback() { }
     virtual void trace(Visitor*) { }

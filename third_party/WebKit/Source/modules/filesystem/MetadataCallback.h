@@ -37,7 +37,7 @@ namespace blink {
 
 class Metadata;
 
-class MetadataCallback : public NoBaseWillBeGarbageCollectedFinalized<MetadataCallback> {
+class MetadataCallback : public GarbageCollectedFinalized<MetadataCallback> {
 public:
     virtual ~MetadataCallback() { }
     virtual void trace(Visitor*) { }

@@ -48,8 +48,8 @@ public:
         return new FileEntry(fileSystem, fullPath);
     }
 
-    void createWriter(PassOwnPtrWillBeRawPtr<FileWriterCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback> = nullptr);
-    void file(PassOwnPtrWillBeRawPtr<FileCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback> = nullptr);
+    void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
+    void file(FileCallback*, ErrorCallback* = nullptr);
 
     virtual bool isFile() const OVERRIDE { return true; }
 

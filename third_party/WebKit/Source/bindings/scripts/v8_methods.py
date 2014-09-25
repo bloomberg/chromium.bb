@@ -296,8 +296,7 @@ def cpp_value(interface, method, number_of_arguments):
             return argument.name
         if idl_type.is_dictionary:
             return '*%s' % argument.name
-        if (idl_type.is_callback_interface or
-            idl_type.name in ['NodeFilter', 'NodeFilterOrNull',
+        if (idl_type.name in ['NodeFilter', 'NodeFilterOrNull',
                               'XPathNSResolver', 'XPathNSResolverOrNull']):
             # FIXME: remove this special case
             return '%s.release()' % argument.name

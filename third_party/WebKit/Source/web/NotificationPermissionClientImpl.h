@@ -17,7 +17,7 @@ public:
     virtual ~NotificationPermissionClientImpl();
 
     // NotificationPermissionClient implementation.
-    virtual void requestPermission(ExecutionContext*, PassOwnPtrWillBeRawPtr<NotificationPermissionCallback>) OVERRIDE;
+    virtual void requestPermission(ExecutionContext*, NotificationPermissionCallback*) OVERRIDE;
 
     // NoBaseWillBeGarbageCollectedFinalized implementation.
     virtual void trace(Visitor* visitor) OVERRIDE { NotificationPermissionClient::trace(visitor); }

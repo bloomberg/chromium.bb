@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class StorageQuotaCallback : public NoBaseWillBeGarbageCollectedFinalized<StorageQuotaCallback> {
+class StorageQuotaCallback : public GarbageCollectedFinalized<StorageQuotaCallback> {
 public:
     virtual ~StorageQuotaCallback() { }
     virtual void trace(Visitor*) { }

@@ -90,27 +90,31 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     }
 
     SQLTransaction* transaction = V8SQLTransaction::toImpl(info.Holder());
-    OwnPtrWillBeRawPtr<SQLStatementCallback> callback = nullptr;
-    if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {
+    SQLStatementCallback* callback;
+    if (!isUndefinedOrNull(info[2])) {
         if (!info[2]->IsFunction()) {
             exceptionState.throwDOMException(TypeMismatchError, "The 'callback' (2nd) argument provided is not a function.");
             exceptionState.throwIfNeeded();
             return;
         }
         callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), ScriptState::current(info.GetIsolate()));
+    } else {
+        callback = nullptr;
     }
 
-    OwnPtrWillBeRawPtr<SQLStatementErrorCallback> errorCallback = nullptr;
-    if (info.Length() > 3 && !isUndefinedOrNull(info[3])) {
+    SQLStatementErrorCallback* errorCallback;
+    if (!isUndefinedOrNull(info[3])) {
         if (!info[3]->IsFunction()) {
             exceptionState.throwDOMException(TypeMismatchError, "The 'errorCallback' (3rd) argument provided is not a function.");
             exceptionState.throwIfNeeded();
             return;
         }
         errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Function>::Cast(info[3]), ScriptState::current(info.GetIsolate()));
+    } else {
+        errorCallback = nullptr;
     }
 
-    transaction->executeSQL(statement, sqlValues, callback.release(), errorCallback.release(), exceptionState);
+    transaction->executeSQL(statement, sqlValues, callback, errorCallback, exceptionState);
     exceptionState.throwIfNeeded();
 }
 

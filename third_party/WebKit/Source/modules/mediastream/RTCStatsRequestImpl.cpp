@@ -31,14 +31,14 @@
 
 namespace blink {
 
-RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
+RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCStatsCallback* callback, MediaStreamTrack* selector)
 {
     RTCStatsRequestImpl* request = new RTCStatsRequestImpl(context, requester, callback, selector);
     request->suspendIfNeeded();
     return request;
 }
 
-RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
+RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCStatsCallback* callback, MediaStreamTrack* selector)
     : ActiveDOMObject(context)
     , m_successCallback(callback)
     , m_component(selector ? selector->component() : 0)

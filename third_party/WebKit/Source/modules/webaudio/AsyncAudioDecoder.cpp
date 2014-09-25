@@ -49,7 +49,7 @@ AsyncAudioDecoder::~AsyncAudioDecoder()
 {
 }
 
-void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, PassOwnPtrWillBeRawPtr<AudioBufferCallback> successCallback, PassOwnPtrWillBeRawPtr<AudioBufferCallback> errorCallback)
+void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
 {
     ASSERT(isMainThread());
     ASSERT(audioData);
@@ -60,7 +60,7 @@ void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, Pa
     RefPtr<ArrayBuffer> audioDataRef(audioData);
 
     // The leak references to successCallback and errorCallback are picked up on notifyComplete.
-    m_thread->postTask(new Task(WTF::bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback.leakPtr(), errorCallback.leakPtr())));
+    m_thread->postTask(new Task(WTF::bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback, errorCallback)));
 }
 
 void AsyncAudioDecoder::decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
@@ -76,10 +76,6 @@ void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallba
 {
     // Adopt references, so everything gets correctly dereffed.
     RefPtr<ArrayBuffer> audioDataRef = adoptRef(audioData);
-#if !ENABLE(OILPAN)
-    OwnPtr<AudioBufferCallback> successCallbackPtr = adoptPtr(successCallback);
-    OwnPtr<AudioBufferCallback> errorCallbackPtr = adoptPtr(errorCallback);
-#endif
     RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);

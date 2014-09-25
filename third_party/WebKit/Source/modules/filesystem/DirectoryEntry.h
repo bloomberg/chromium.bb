@@ -54,9 +54,9 @@ public:
     virtual bool isDirectory() const OVERRIDE { return true; }
 
     DirectoryReader* createReader();
-    void getFile(const String& path, const Dictionary&, PassOwnPtrWillBeRawPtr<EntryCallback> = nullptr, PassOwnPtrWillBeRawPtr<ErrorCallback> = nullptr);
-    void getDirectory(const String& path, const Dictionary&, PassOwnPtrWillBeRawPtr<EntryCallback> = nullptr, PassOwnPtrWillBeRawPtr<ErrorCallback> = nullptr);
-    void removeRecursively(PassOwnPtrWillBeRawPtr<VoidCallback> successCallback = nullptr, PassOwnPtrWillBeRawPtr<ErrorCallback> = nullptr) const;
+    void getFile(const String& path, const Dictionary&, EntryCallback* = nullptr, ErrorCallback* = nullptr);
+    void getDirectory(const String& path, const Dictionary&, EntryCallback* = nullptr, ErrorCallback* = nullptr);
+    void removeRecursively(VoidCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
 
     virtual void trace(Visitor*) OVERRIDE;
 
