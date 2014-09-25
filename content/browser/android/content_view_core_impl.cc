@@ -355,13 +355,6 @@ jint ContentViewCoreImpl::GetBackgroundColor(JNIEnv* env, jobject obj) {
   return rwhva->GetCachedBackgroundColor();
 }
 
-void ContentViewCoreImpl::PauseVideo() {
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  if (rvhi)
-    rvhi->media_web_contents_observer()->PauseVideo();
-}
-
 void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {
   web_contents_->geolocation_dispatcher_host()->PauseOrResume(should_pause);
 }

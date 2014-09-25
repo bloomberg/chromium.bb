@@ -60,7 +60,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback)
       OVERRIDE;
   virtual float GetDpiScale() const OVERRIDE;
-  virtual void PauseVideo() OVERRIDE;
   virtual void PauseOrResumeGeolocation(bool should_pause) OVERRIDE;
   virtual void RequestTextSurroundingSelection(
       int max_length,

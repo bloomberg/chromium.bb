@@ -259,10 +259,6 @@ void BrowserMediaPlayerManager::OnSeekRequest(
   Send(new MediaPlayerMsg_SeekRequest(RoutingID(), player_id, time_to_seek));
 }
 
-void BrowserMediaPlayerManager::PauseVideo() {
-  Send(new MediaPlayerMsg_PauseVideo(RoutingID()));
-}
-
 void BrowserMediaPlayerManager::ReleaseAllMediaPlayers() {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {

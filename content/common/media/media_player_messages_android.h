@@ -207,9 +207,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerMsg_RemoteRouteAvailabilityChanged,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_RequestFullscreen,
                     int /*player_id */)
 
-// Pauses all video playback.
-IPC_MESSAGE_ROUTED0(MediaPlayerMsg_PauseVideo)
-
 // Messages for controlling the media playback in browser process ----------
 
 // Destroy the media player object.

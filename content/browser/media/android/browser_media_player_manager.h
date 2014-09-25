@@ -67,9 +67,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Any actual seek started by renderer will be handled by browser in OnSeek().
   void OnSeekRequest(int player_id, const base::TimeDelta& time_to_seek);
 
-  // Pauses all video players manages by this class.
-  void PauseVideo();
-
   // Stops and releases every media managed by this class.
   void ReleaseAllMediaPlayers();
 

@@ -49,6 +49,9 @@ class AwContentRendererClient : public content::ContentRendererClient {
                                 blink::WebNavigationType type,
                                 blink::WebNavigationPolicy default_policy,
                                 bool is_redirect) OVERRIDE;
+  virtual bool ShouldOverridePageVisibilityState(
+      const content::RenderFrame* render_frame,
+      blink::WebPageVisibilityState* override_state) OVERRIDE;
 
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;

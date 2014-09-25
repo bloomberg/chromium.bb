@@ -178,7 +178,6 @@ void WebContentsAndroid::BeginExitTransition(JNIEnv* env,
 
 void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
   web_contents_->WasHidden();
-  PauseVideo();
 }
 
 void WebContentsAndroid::OnShow(JNIEnv* env, jobject obj) {
@@ -198,13 +197,6 @@ void WebContentsAndroid::ReleaseMediaPlayers(JNIEnv* env, jobject jobj) {
   if (manager)
     manager->ReleaseAllMediaPlayers();
 #endif // defined(ENABLE_BROWSER_CDMS)
-}
-
-void WebContentsAndroid::PauseVideo() {
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  if (rvhi)
-    rvhi->media_web_contents_observer()->PauseVideo();
 }
 
 void WebContentsAndroid::AddStyleSheetByURL(

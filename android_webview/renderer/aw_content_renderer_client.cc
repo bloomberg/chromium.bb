@@ -201,4 +201,12 @@ void AwContentRendererClient::AddKeySystems(
   AwAddKeySystems(key_systems);
 }
 
+bool AwContentRendererClient::ShouldOverridePageVisibilityState(
+    const content::RenderFrame* render_frame,
+    blink::WebPageVisibilityState* override_state) {
+  // webview is always visible due to rendering requirements.
+  *override_state = blink::WebPageVisibilityStateVisible;
+  return true;
+}
+
 }  // namespace android_webview

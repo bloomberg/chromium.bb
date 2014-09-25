@@ -46,9 +46,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
 
   void OnSetCdm(RenderFrameHost* render_frame_host, int player_id, int cdm_id);
 
-  // Pauses all media player.
-  void PauseVideo();
-
 #if defined(VIDEO_HOLE)
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)

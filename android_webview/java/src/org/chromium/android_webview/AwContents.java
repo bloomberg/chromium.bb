@@ -785,8 +785,6 @@ public class AwContents {
         installWebContentsObserver();
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
-
-        // The only call to onShow. onHide should never be called.
         mContentViewCore.onShow();
     }
 
@@ -1435,6 +1433,7 @@ public class AwContents {
         if (mIsPaused || isDestroyed()) return;
         mIsPaused = true;
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
+        mContentViewCore.onHide();
     }
 
     /**
@@ -1444,6 +1443,7 @@ public class AwContents {
         if (!mIsPaused || isDestroyed()) return;
         mIsPaused = false;
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
+        mContentViewCore.onShow();
     }
 
     /**

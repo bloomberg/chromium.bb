@@ -38,6 +38,7 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
 
   // RenderFrameObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
 
   // Initializes a MediaPlayerAndroid object in browser process.
   void Initialize(MediaPlayerHostMsg_Initialize_Type type,
@@ -154,7 +155,6 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   void OnPlayerPause(int player_id);
   void OnRequestFullscreen(int player_id);
   void OnRemoteRouteAvailabilityChanged(int player_id, bool routes_available);
-  void OnPauseVideo();
 
   // Release all video player resources.
   // If something is in progress the resource will not be freed. It will

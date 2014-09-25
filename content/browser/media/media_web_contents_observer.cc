@@ -166,14 +166,6 @@ BrowserMediaPlayerManager* MediaWebContentsObserver::GetMediaPlayerManager(
   return media_player_managers_.get(key);
 }
 
-void MediaWebContentsObserver::PauseVideo() {
-  for (MediaPlayerManagerMap::iterator iter = media_player_managers_.begin();
-      iter != media_player_managers_.end(); ++iter) {
-    BrowserMediaPlayerManager* manager = iter->second;
-    manager->PauseVideo();
-  }
-}
-
 #if defined(VIDEO_HOLE)
 void MediaWebContentsObserver::OnFrameInfoUpdated() {
   for (MediaPlayerManagerMap::iterator iter = media_player_managers_.begin();

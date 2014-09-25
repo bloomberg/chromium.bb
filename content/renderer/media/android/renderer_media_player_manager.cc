@@ -55,12 +55,15 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_PauseVideo, OnPauseVideo)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_RemoteRouteAvailabilityChanged,
                         OnRemoteRouteAvailabilityChanged)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void RendererMediaPlayerManager::WasHidden() {
+  ReleaseVideoResources();
 }
 
 void RendererMediaPlayerManager::Initialize(
@@ -237,10 +240,6 @@ void RendererMediaPlayerManager::OnRequestFullscreen(int player_id) {
     player->OnRequestFullscreen();
 }
 
-void RendererMediaPlayerManager::OnPauseVideo() {
-  ReleaseVideoResources();
-}
-
 void RendererMediaPlayerManager::OnRemoteRouteAvailabilityChanged(
     int player_id,
     bool routes_available) {
@@ -248,6 +247,7 @@ void RendererMediaPlayerManager::OnRemoteRouteAvailabilityChanged(
   if (player)
     player->OnRemoteRouteAvailabilityChanged(routes_available);
 }
+
 void RendererMediaPlayerManager::EnterFullscreen(int player_id,
                                                  blink::WebFrame* frame) {
   pending_fullscreen_frame_ = frame;

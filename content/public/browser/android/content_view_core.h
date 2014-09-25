@@ -59,7 +59,6 @@ class CONTENT_EXPORT ContentViewCore {
       gfx::Rect src_rect,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback) = 0;
   virtual float GetDpiScale() const = 0;
-  virtual void PauseVideo() = 0;
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 
   // Observer callback for frame metadata updates.
