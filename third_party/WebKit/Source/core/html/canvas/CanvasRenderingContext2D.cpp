@@ -2089,32 +2089,6 @@ void CanvasRenderingContext2D::strokeText(const String& text, float x, float y, 
     drawTextInternal(text, x, y, false, maxWidth, true);
 }
 
-static inline bool isSpaceCharacter(UChar c)
-{
-    // According to specification all space characters should be replaced with 0x0020 space character.
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#text-preparation-algorithm
-    // The space characters according to specification are : U+0020, U+0009, U+000A, U+000C, and U+000D.
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#space-character
-    // This function returns true for 0x000B also, so that this is backward compatible.
-    // Otherwise, the test LayoutTests/canvas/philip/tests/2d.text.draw.space.collapse.space.html will fail
-    return c == 0x0009 || c == 0x000A || c == 0x000B || c == 0x000C || c == 0x000D;
-}
-
-static String normalizeSpaces(const String& text)
-{
-    unsigned textLength = text.length();
-    Vector<UChar> charVector(textLength);
-
-    for (unsigned i = 0; i < textLength; i++) {
-        if (isSpaceCharacter(text[i]))
-            charVector[i] = ' ';
-        else
-            charVector[i] = text[i];
-    }
-
-    return String(charVector);
-}
-
 PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
 {
     RefPtrWillBeRawPtr<TextMetrics> metrics = TextMetrics::create();
@@ -2126,8 +2100,7 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     FontCachePurgePreventer fontCachePurgePreventer;
     canvas()->document().updateRenderTreeIfNeeded();
     const Font& font = accessFont();
-    String normalizedText = normalizeSpaces(text);
-    const TextRun textRun(normalizedText);
+    const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, LTR, false, true, true);
     FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
 
     // x direction
@@ -2191,7 +2164,6 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 
     const Font& font = accessFont();
     const FontMetrics& fontMetrics = font.fontMetrics();
-    String normalizedText = normalizeSpaces(text);
 
     // FIXME: Need to turn off font smoothing.
 
@@ -2200,11 +2172,10 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;
 
-    TextRun textRun(normalizedText, 0, 0, TextRun::AllowTrailingExpansion, direction, override, true);
+    TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion, direction, override, true, true);
     // Draw the item text at the correct point.
     FloatPoint location(x, y + getFontBaseline(fontMetrics));
-
-    float fontWidth = font.width(TextRun(normalizedText, 0, 0, TextRun::AllowTrailingExpansion, direction, override));
+    float fontWidth = font.width(textRun);
 
     useMaxWidth = (useMaxWidth && maxWidth < fontWidth);
     float width = useMaxWidth ? maxWidth : fontWidth;

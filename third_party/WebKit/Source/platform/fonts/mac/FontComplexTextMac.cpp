@@ -158,7 +158,7 @@ const SimpleFontData* Font::fontDataForCombiningCharacterSequence(const UChar* c
     size_t baseCharacterLength = 0;
     U16_NEXT(characters, baseCharacterLength, length, baseCharacter);
 
-    GlyphData baseCharacterGlyphData = glyphDataForCharacter(baseCharacter, false, variant);
+    GlyphData baseCharacterGlyphData = glyphDataForCharacter(baseCharacter, false, false, variant);
 
     if (!baseCharacterGlyphData.glyph)
         return 0;

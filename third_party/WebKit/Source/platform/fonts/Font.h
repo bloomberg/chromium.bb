@@ -123,14 +123,14 @@ public:
 
     const SimpleFontData* primaryFont() const;
     const FontData* fontDataAt(unsigned) const;
-    inline GlyphData glyphDataForCharacter(UChar32 c, bool mirror, FontDataVariant variant = AutoVariant) const
+    inline GlyphData glyphDataForCharacter(UChar32& c, bool mirror, bool spaceNormalize = false, FontDataVariant variant = AutoVariant) const
     {
-        return glyphDataAndPageForCharacter(c, mirror, variant).first;
+        return glyphDataAndPageForCharacter(c, mirror, spaceNormalize, variant).first;
     }
 #if OS(MACOSX)
     const SimpleFontData* fontDataForCombiningCharacterSequence(const UChar*, size_t length, FontDataVariant) const;
 #endif
-    std::pair<GlyphData, GlyphPage*> glyphDataAndPageForCharacter(UChar32, bool mirror, FontDataVariant = AutoVariant) const;
+    std::pair<GlyphData, GlyphPage*> glyphDataAndPageForCharacter(UChar32&, bool mirror, bool normalizeSpace = false, FontDataVariant = AutoVariant) const;
     bool primaryFontHasGlyphForCharacter(UChar32) const;
 
     CodePath codePath(const TextRun&) const;

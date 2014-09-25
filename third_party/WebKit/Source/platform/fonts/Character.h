@@ -51,7 +51,7 @@ public:
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion);
     static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion);
 
-    static bool treatAsSpace(UChar c) { return c == ' ' || c == '\t' || c == '\n' || c == noBreakSpace; }
+    static bool treatAsSpace(UChar c) { return c == space || c == characterTabulation || c == newlineCharacter || c == noBreakSpace; }
     static bool treatAsZeroWidthSpace(UChar c) { return treatAsZeroWidthSpaceInComplexScript(c) || c == 0x200c || c == 0x200d; }
     static bool treatAsZeroWidthSpaceInComplexScript(UChar c) { return c < 0x20 || (c >= 0x7F && c < 0xA0) || c == softHyphen || c == zeroWidthSpace || (c >= 0x200e && c <= 0x200f) || (c >= 0x202a && c <= 0x202e) || c == zeroWidthNoBreakSpace || c == objectReplacementCharacter; }
     static bool canReceiveTextEmphasis(UChar32);
@@ -65,6 +65,17 @@ public:
             return zeroWidthSpace;
 
         return character;
+    }
+
+    static inline bool isNormalizedCanvasSpaceCharacter(UChar c)
+    {
+        // According to specification all space characters should be replaced with 0x0020 space character.
+        // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#text-preparation-algorithm
+        // The space characters according to specification are : U+0020, U+0009, U+000A, U+000C, and U+000D.
+        // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#space-character
+        // This function returns true for 0x000B also, so that this is backward compatible.
+        // Otherwise, the test LayoutTests/canvas/philip/tests/2d.text.draw.space.collapse.space.html will fail
+        return c == 0x0009 || (c >= 0x000A && c <= 0x000D);
     }
 
     static String normalizeSpaces(const LChar*, unsigned length);

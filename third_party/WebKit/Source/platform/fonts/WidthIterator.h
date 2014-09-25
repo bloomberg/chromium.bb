@@ -79,9 +79,9 @@ private:
         int characterOffset;
     };
 
-    GlyphData glyphDataForCharacter(CharacterData&);
+    GlyphData glyphDataForCharacter(CharacterData&, bool normalizeSpace = false);
     float characterWidth(UChar32, const GlyphData&) const;
-    void cacheFallbackFont(UChar32, const SimpleFontData*, const SimpleFontData* primaryFont);
+    void cacheFallbackFont(const SimpleFontData*, const SimpleFontData* primaryFont);
     float adjustSpacing(float, const CharacterData&, const SimpleFontData&, GlyphBuffer*);
     void updateGlyphBounds(const GlyphData&, float width, bool firstCharacter);
 

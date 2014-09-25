@@ -69,7 +69,7 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     }
 }
 
-GlyphData WidthIterator::glyphDataForCharacter(CharacterData& charData)
+GlyphData WidthIterator::glyphDataForCharacter(CharacterData& charData, bool normalizeSpace)
 {
     ASSERT(m_font);
 
@@ -80,7 +80,7 @@ GlyphData WidthIterator::glyphDataForCharacter(CharacterData& charData)
     }
 #endif
 
-    return m_font->glyphDataForCharacter(charData.character, m_run.rtl());
+    return m_font->glyphDataForCharacter(charData.character, m_run.rtl(), normalizeSpace);
 }
 
 float WidthIterator::characterWidth(UChar32 character, const GlyphData& glyphData) const
@@ -100,23 +100,13 @@ float WidthIterator::characterWidth(UChar32 character, const GlyphData& glyphDat
     return width;
 }
 
-void WidthIterator::cacheFallbackFont(UChar32 character, const SimpleFontData* fontData,
+void WidthIterator::cacheFallbackFont(const SimpleFontData* fontData,
     const SimpleFontData* primaryFont)
 {
     if (fontData == primaryFont)
         return;
 
-    // FIXME: This does a little extra work that could be avoided if
-    // glyphDataForCharacter() returned whether it chose to use a small caps font.
-    if (m_font->fontDescription().variant() == FontVariantNormal || character == toUpper(character)) {
-        m_fallbackFonts->add(fontData);
-    } else {
-        ASSERT(m_font->fontDescription().variant() == FontVariantSmallCaps);
-        const GlyphData uppercaseGlyphData = m_font->glyphDataForCharacter(toUpper(character),
-            m_run.rtl());
-        if (uppercaseGlyphData.fontData != primaryFont)
-            m_fallbackFonts->add(uppercaseGlyphData.fontData);
-    }
+    m_fallbackFonts->add(fontData);
 }
 
 float WidthIterator::adjustSpacing(float width, const CharacterData& charData,
@@ -192,12 +182,13 @@ unsigned WidthIterator::advanceInternal(TextIterator& textIterator, GlyphBuffer*
 
     const SimpleFontData* primaryFont = m_font->primaryFont();
     const SimpleFontData* lastFontData = primaryFont;
+    bool normalizeSpace = m_run.normalizeSpace();
 
     CharacterData charData;
     while (textIterator.consume(charData.character, charData.clusterLength)) {
         charData.characterOffset = textIterator.currentCharacter();
 
-        const GlyphData glyphData = glyphDataForCharacter(charData);
+        const GlyphData glyphData = glyphDataForCharacter(charData, normalizeSpace);
         Glyph glyph = glyphData.glyph;
         const SimpleFontData* fontData = glyphData.fontData;
         ASSERT(fontData);
@@ -207,7 +198,7 @@ unsigned WidthIterator::advanceInternal(TextIterator& textIterator, GlyphBuffer*
 
         if (m_fallbackFonts && lastFontData != fontData && width) {
             lastFontData = fontData;
-            cacheFallbackFont(charData.character, fontData, primaryFont);
+            cacheFallbackFont(fontData, primaryFont);
         }
 
         if (hasExtraSpacing)

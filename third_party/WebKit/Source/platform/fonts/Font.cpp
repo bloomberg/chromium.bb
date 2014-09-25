@@ -427,7 +427,7 @@ static inline std::pair<GlyphData, GlyphPage*> glyphDataAndPageForNonCJKCharacte
     return std::make_pair(data, page);
 }
 
-std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, bool mirror, FontDataVariant variant) const
+std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, bool mirror, bool normalizeSpace, FontDataVariant variant) const
 {
     ASSERT(isMainThread());
 
@@ -444,6 +444,9 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
             variant = NormalVariant;
         }
     }
+
+    if (normalizeSpace && Character::isNormalizedCanvasSpaceCharacter(c))
+        c = space;
 
     if (mirror)
         c = mirroredChar(c);
@@ -602,7 +605,8 @@ bool Font::getEmphasisMarkGlyphData(const AtomicString& mark, GlyphData& glyphDa
         character = U16_GET_SUPPLEMENTARY(character, low);
     }
 
-    glyphData = glyphDataForCharacter(character, false, EmphasisMarkVariant);
+    bool normalizeSpace = false;
+    glyphData = glyphDataForCharacter(character, false, normalizeSpace, EmphasisMarkVariant);
     return true;
 }
 

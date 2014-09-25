@@ -1321,6 +1321,10 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 
 crbug.com/417619 http/tests/inspector/websocket/websocket-handshake.html [ Failure ]
 
+# Need to rebased after https://codereview.chromium.org/567543002/
+crbug.com/413225 [ Mac ] fast/canvas/canvas-normalize-string.html [ NeedsRebaseline ]
+crbug.com/413225 [ Mac ] virtual/gpu/fast/canvas/canvas-normalize-string.html [ NeedsRebaseline ]
+
 crbug.com/417625 [ Win Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ ImageOnlyFailure ]
 crbug.com/417625 [ Win Linux ] fast/forms/select/listbox-appearance-basic.html [ ImageOnlyFailure ]
 crbug.com/417625 [ Win Linux ] fast/forms/select/menulist-appearance-basic.html [ ImageOnlyFailure ]

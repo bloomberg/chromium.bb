@@ -357,10 +357,13 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
         UChar32 character;
         U16_NEXT(source, position, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end.
-        if (Character::treatAsSpace(character) && character != characterTabulation)
+        if (run.normalizeSpace() && Character::isNormalizedCanvasSpaceCharacter(character))
+            character = space;
+        else if (Character::treatAsSpace(character) && character != characterTabulation)
             character = space;
         else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
             character = zeroWidthSpace;
+
         U16_APPEND(destination, *destinationLength, length, character, error);
         ASSERT_UNUSED(error, !error);
     }
@@ -612,17 +615,18 @@ struct CandidateRun {
 };
 
 static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
-    size_t bufferLength, const Font* font, Vector<CandidateRun>* runs)
+    size_t bufferLength, const Font* font, Vector<CandidateRun>* runs, bool isSpaceNormalize)
 {
     const UChar* normalizedBufferEnd = normalizedBuffer + bufferLength;
     SurrogatePairAwareTextIterator iterator(normalizedBuffer, 0, bufferLength, bufferLength);
     UChar32 character;
     unsigned clusterLength = 0;
     unsigned startIndexOfCurrentRun = 0;
+
     if (!iterator.consume(character, clusterLength))
         return false;
 
-    const SimpleFontData* nextFontData = font->glyphDataForCharacter(character, false).fontData;
+    const SimpleFontData* nextFontData = font->glyphDataForCharacter(character, false, isSpaceNormalize).fontData;
     UErrorCode errorCode = U_ZERO_ERROR;
     UScriptCode nextScript = uscript_getScript(character, &errorCode);
     if (U_FAILURE(errorCode))
@@ -644,7 +648,7 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
                 continue;
             }
 
-            nextFontData = font->glyphDataForCharacter(character, false).fontData;
+            nextFontData = font->glyphDataForCharacter(character, false, isSpaceNormalize).fontData;
             nextScript = uscript_getScript(character, &errorCode);
             if (U_FAILURE(errorCode))
                 return false;
@@ -753,7 +757,7 @@ bool HarfBuzzShaper::createHarfBuzzRuns()
 {
     Vector<CandidateRun> candidateRuns;
     if (!collectCandidateRuns(m_normalizedBuffer.get(),
-        m_normalizedBufferLength, m_font, &candidateRuns))
+        m_normalizedBufferLength, m_font, &candidateRuns, m_run.normalizeSpace()))
         return false;
 
     if (!resolveCandidateRuns(candidateRuns))
@@ -859,7 +863,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 
         // Add a space as pre-context to the buffer. This prevents showing dotted-circle
         // for combining marks at the beginning of runs.
-        static const uint16_t preContext = ' ';
+        static const uint16_t preContext = space;
         hb_buffer_add_utf16(harfBuzzBuffer.get(), &preContext, 1, 1, 0);
 
         if (fontDescription.variant() == FontVariantSmallCaps && u_islower(m_normalizedBuffer[currentRun->startIndex()])) {
