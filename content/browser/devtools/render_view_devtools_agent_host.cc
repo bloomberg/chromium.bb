@@ -13,6 +13,7 @@
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 #include "content/browser/devtools/renderer_overrides_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -109,15 +110,21 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
+      input_handler_(new devtools::input::InputHandler()),
+      page_handler_(new devtools::page::PageHandler()),
+      handler_impl_(new DevToolsProtocolHandlerImpl()),
       overrides_handler_(new RendererOverridesHandler()),
       tracing_handler_(
           new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
       power_handler_(new DevToolsPowerHandler()),
       reattaching_(false) {
+  handler_impl_->SetInputHandler(input_handler_.get());
+  handler_impl_->SetPageHandler(page_handler_.get());
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
       &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend,
       base::Unretained(this)));
+  handler_impl_->SetNotifier(notifier);
   overrides_handler_->SetNotifier(notifier);
   tracing_handler_->SetNotifier(notifier);
   power_handler_->SetNotifier(notifier);
@@ -156,6 +163,8 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
       overridden_response = tracing_handler_->HandleCommand(command);
     if (!overridden_response.get())
       overridden_response = power_handler_->HandleCommand(command);
+    if (!overridden_response.get())
+      overridden_response = handler_impl_->HandleCommand(command);
     if (overridden_response.get()) {
       if (!overridden_response->is_async_promise())
         OnDispatchOnInspectorFrontend(overridden_response->Serialize());
@@ -354,6 +363,8 @@ void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
 
   WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
   overrides_handler_->SetRenderViewHost(render_view_host_);
+  input_handler_->SetRenderViewHost(render_view_host_);
+  page_handler_->SetRenderViewHost(render_view_host_);
 
   registrar_.Add(
       this,
@@ -369,6 +380,8 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
       content::Source<RenderWidgetHost>(render_view_host_));
   render_view_host_ = NULL;
   overrides_handler_->ClearRenderViewHost();
+  input_handler_->SetRenderViewHost(NULL);
+  page_handler_->SetRenderViewHost(NULL);
 }
 
 void RenderViewDevToolsAgentHost::DisconnectWebContents() {

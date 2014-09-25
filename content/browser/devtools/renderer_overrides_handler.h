@@ -82,8 +82,6 @@ class CONTENT_EXPORT RendererOverridesHandler
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageSetTouchEmulationEnabled(
       scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageCaptureScreenshot(
-      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageCanEmulate(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageCanScreencast(
@@ -96,11 +94,6 @@ class CONTENT_EXPORT RendererOverridesHandler
       scoped_refptr<DevToolsProtocol::Command>);
   scoped_refptr<DevToolsProtocol::Response> PageSetColorPickerEnabled(
       scoped_refptr<DevToolsProtocol::Command>);
-
-  void ScreenshotCaptured(
-      scoped_refptr<DevToolsProtocol::Command> command,
-      const unsigned char* png_data,
-      size_t png_size);
 
   void ScreencastFrameCaptured(
       const std::string& format,
@@ -120,10 +113,6 @@ class CONTENT_EXPORT RendererOverridesHandler
   void ColorPickerFrameUpdated(bool succeeded, const SkBitmap& bitmap);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
   void UpdateColorPickerCursor();
-
-  // Input domain.
-  scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
-      scoped_refptr<DevToolsProtocol::Command> command);
 
   void UpdateTouchEventEmulationState();
 
