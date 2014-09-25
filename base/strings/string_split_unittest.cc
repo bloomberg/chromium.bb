@@ -31,7 +31,7 @@ void SplitString(const std::wstring& str,
 
 class SplitStringIntoKeyValuePairsTest : public testing::Test {
  protected:
-  std::vector<std::pair<std::string, std::string> > kv_pairs;
+  base::StringPairs kv_pairs;
 };
 
 TEST_F(SplitStringIntoKeyValuePairsTest, EmptyString) {
