@@ -98,12 +98,7 @@ void Scrollbar::removeFromParent()
 
 ScrollView* Scrollbar::parentScrollView() const
 {
-    return toScrollView(parent());
-}
-
-ScrollView* Scrollbar::rootScrollView() const
-{
-    return toScrollView(root());
+    return parent() && parent()->isScrollView() ? toScrollView(parent()) : 0;
 }
 
 ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const

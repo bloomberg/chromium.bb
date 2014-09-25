@@ -64,7 +64,6 @@ public:
 
     void removeFromParent();
     ScrollView* parentScrollView() const;
-    ScrollView* rootScrollView() const;
 
     virtual void setFrameRect(const IntRect&) OVERRIDE;
     virtual IntRect frameRect() const OVERRIDE { return Widget::frameRect(); }
