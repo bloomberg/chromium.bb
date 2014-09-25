@@ -36,8 +36,6 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       bool alt,
       bool command,
       const base::Closure& closure) OVERRIDE {
-    DCHECK(!command);  // No command key on Aura
-
     int flags = button_down_mask_;
 
     if (control) {
@@ -53,6 +51,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     if (alt) {
       flags |= ui::EF_ALT_DOWN;
       PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_MENU, flags);
+    }
+
+    if (command) {
+      flags |= ui::EF_COMMAND_DOWN;
+      PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_LWIN, flags);
     }
 
     PostKeyEvent(ui::ET_KEY_PRESSED, key, flags);
@@ -71,6 +74,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     if (control) {
       flags &= ~ui::EF_CONTROL_DOWN;
       PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL, flags);
+    }
+
+    if (command) {
+      flags &= ~ui::EF_COMMAND_DOWN;
+      PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_LWIN, flags);
     }
 
     RunClosureAfterAllPendingUIEvents(closure);
