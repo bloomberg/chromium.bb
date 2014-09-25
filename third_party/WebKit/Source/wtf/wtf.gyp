@@ -115,7 +115,6 @@
         }],
         ['OS=="win"', {
           'sources/': [
-            ['exclude', 'ThreadIdentifierDataPthreads\\.(h|cpp)$'],
             ['exclude', 'ThreadingPthreads\\.cpp$'],
           ],
           'include_dirs!': [

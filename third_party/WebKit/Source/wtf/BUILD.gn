@@ -63,8 +63,6 @@ component("wtf") {
 
   if (is_win) {
     sources -= [
-      "ThreadIdentifierDataPthreads.cpp",
-      "ThreadIdentifierDataPthreads.h",
       "ThreadingPthreads.cpp",
     ]
 

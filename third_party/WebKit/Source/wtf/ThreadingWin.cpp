@@ -119,20 +119,6 @@ typedef struct tagTHREADNAME_INFO {
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-void initializeCurrentThreadInternal(const char* szThreadName)
-{
-    THREADNAME_INFO info;
-    info.dwType = 0x1000;
-    info.szName = szThreadName;
-    info.dwThreadID = GetCurrentThreadId();
-    info.dwFlags = 0;
-
-    __try {
-        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR*>(&info));
-    } __except (EXCEPTION_CONTINUE_EXECUTION) {
-    }
-}
-
 static Mutex* atomicallyInitializedStaticMutex;
 
 void lockAtomicallyInitializedStaticMutex()
@@ -146,12 +132,6 @@ void unlockAtomicallyInitializedStaticMutex()
     atomicallyInitializedStaticMutex->unlock();
 }
 
-static Mutex& threadMapMutex()
-{
-    static Mutex mutex;
-    return mutex;
-}
-
 void initializeThreading()
 {
     // This should only be called once.
@@ -161,97 +141,9 @@ void initializeThreading()
     // so ensure it has been initialized from here.
     StringImpl::empty();
     atomicallyInitializedStaticMutex = new Mutex;
-    threadMapMutex();
     wtfThreadData();
     s_dtoaP5Mutex = new Mutex;
     initializeDates();
-}
-
-static HashMap<DWORD, HANDLE>& threadMap()
-{
-    static HashMap<DWORD, HANDLE>* gMap;
-    if (!gMap)
-        gMap = new HashMap<DWORD, HANDLE>();
-    return *gMap;
-}
-
-static void storeThreadHandleByIdentifier(DWORD threadID, HANDLE threadHandle)
-{
-    MutexLocker locker(threadMapMutex());
-    ASSERT(!threadMap().contains(threadID));
-    threadMap().add(threadID, threadHandle);
-}
-
-static HANDLE threadHandleForIdentifier(ThreadIdentifier id)
-{
-    MutexLocker locker(threadMapMutex());
-    return threadMap().get(id);
-}
-
-static void clearThreadHandleForIdentifier(ThreadIdentifier id)
-{
-    MutexLocker locker(threadMapMutex());
-    ASSERT(threadMap().contains(id));
-    threadMap().remove(id);
-}
-
-static unsigned __stdcall wtfThreadEntryPoint(void* param)
-{
-    OwnPtr<ThreadFunctionInvocation> invocation = adoptPtr(static_cast<ThreadFunctionInvocation*>(param));
-    invocation->function(invocation->data);
-
-    // Do the TLS cleanup.
-    ThreadSpecificThreadExit();
-
-    return 0;
-}
-
-ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, const char* threadName)
-{
-    unsigned threadIdentifier = 0;
-    ThreadIdentifier threadID = 0;
-    OwnPtr<ThreadFunctionInvocation> invocation = adoptPtr(new ThreadFunctionInvocation(entryPoint, data));
-    HANDLE threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, wtfThreadEntryPoint, invocation.get(), 0, &threadIdentifier));
-    if (!threadHandle) {
-        WTF_LOG_ERROR("Failed to create thread at entry point %p with data %p: %ld", entryPoint, data, errno);
-        return 0;
-    }
-
-    // The thread will take ownership of invocation.
-    ThreadFunctionInvocation* leakedInvocation ALLOW_UNUSED = invocation.leakPtr();
-
-    threadID = static_cast<ThreadIdentifier>(threadIdentifier);
-    storeThreadHandleByIdentifier(threadIdentifier, threadHandle);
-
-    return threadID;
-}
-
-int waitForThreadCompletion(ThreadIdentifier threadID)
-{
-    ASSERT(threadID);
-
-    HANDLE threadHandle = threadHandleForIdentifier(threadID);
-    if (!threadHandle)
-        WTF_LOG_ERROR("ThreadIdentifier %u did not correspond to an active thread when trying to quit", threadID);
-
-    DWORD joinResult = WaitForSingleObject(threadHandle, INFINITE);
-    if (joinResult == WAIT_FAILED)
-        WTF_LOG_ERROR("ThreadIdentifier %u was found to be deadlocked trying to quit", threadID);
-
-    CloseHandle(threadHandle);
-    clearThreadHandleForIdentifier(threadID);
-
-    return joinResult;
-}
-
-void detachThread(ThreadIdentifier threadID)
-{
-    ASSERT(threadID);
-
-    HANDLE threadHandle = threadHandleForIdentifier(threadID);
-    if (threadHandle)
-        CloseHandle(threadHandle);
-    clearThreadHandleForIdentifier(threadID);
 }
 
 ThreadIdentifier currentThread()

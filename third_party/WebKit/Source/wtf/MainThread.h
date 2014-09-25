@@ -36,7 +36,6 @@
 
 namespace WTF {
 
-typedef uint32_t ThreadIdentifier;
 typedef void MainThreadFunction(void*);
 
 // Must be called from the main thread.

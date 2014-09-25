@@ -41,23 +41,13 @@
 
 namespace WTF {
 
+#if OS(WIN)
 typedef uint32_t ThreadIdentifier;
-typedef void (*ThreadFunction)(void* argument);
-
-// Returns 0 if thread creation failed.
-// The thread name must be a literal since on some platforms it's passed in to the thread.
-WTF_EXPORT ThreadIdentifier createThread(ThreadFunction, void*, const char* threadName);
-
-// Internal platform-specific createThread implementation.
-WTF_EXPORT ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char* threadName);
-
-// Called in the thread during initialization.
-// Helpful for platforms where the thread name must be set from within the thread.
-WTF_EXPORT void initializeCurrentThreadInternal(const char* threadName);
+#else
+typedef intptr_t ThreadIdentifier;
+#endif
 
 WTF_EXPORT ThreadIdentifier currentThread();
-WTF_EXPORT int waitForThreadCompletion(ThreadIdentifier);
-WTF_EXPORT void detachThread(ThreadIdentifier);
 
 WTF_EXPORT void lockAtomicallyInitializedStaticMutex();
 WTF_EXPORT void unlockAtomicallyInitializedStaticMutex();
@@ -65,9 +55,6 @@ WTF_EXPORT void unlockAtomicallyInitializedStaticMutex();
 } // namespace WTF
 
 using WTF::ThreadIdentifier;
-using WTF::createThread;
 using WTF::currentThread;
-using WTF::detachThread;
-using WTF::waitForThreadCompletion;
 
 #endif // Threading_h
