@@ -3683,8 +3683,8 @@ bool RenderViewImpl::SetDeviceColorProfile(
     const std::vector<char>& profile) {
   bool changed = RenderWidget::SetDeviceColorProfile(profile);
   if (changed && webview()) {
-    // TODO(noel): notify the webview() of the color profile change so it
-    // can update and repaint all color profiled page elements.
+    WebVector<char> colorProfile = profile;
+    webview()->setDeviceColorProfile(colorProfile);
   }
   return changed;
 }
