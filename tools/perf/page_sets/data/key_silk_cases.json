@@ -8,6 +8,9 @@
             "http://jsfiddle.net/3yDKh/4/embedded/result", 
             "http://jsfiddle.net/3yDKh/6/embedded/result"
         ], 
+        "key_silk_cases_018.wpr": [
+            "http://jsbin.com/gikex/2/quiet"
+        ], 
         "key_silk_cases_015.wpr": [
             "http://jsfiddle.net/bNp2h/3/show/"
         ], 
@@ -43,8 +46,19 @@
             "http://jsfiddle.net/FtR7p/42/embedded/result/", 
             "http://jsfiddle.net/ugkd4/9/embedded/result/"
         ], 
-        "key_silk_cases_007.wpr": [
-            "http://jsfiddle.net/jx5De/12/embedded/result"
+        "key_silk_cases_014.wpr": [
+            "http://jsfiddle.net/3yDKh/15/show/", 
+            "http://jsfiddle.net/jx5De/14/show/", 
+            "http://jsfiddle.net/3yDKh/16/show/", 
+            "http://jsfiddle.net/R8DX9/4/show/", 
+            "http://jsfiddle.net/rF9Gh/7/show/", 
+            "http://jsfiddle.net/TLXLu/3/show/", 
+            "http://jsfiddle.net/cKB9D/7/show/", 
+            "http://jsfiddle.net/vBQHH/11/show/", 
+            "http://jsfiddle.net/ugkd4/10/show/", 
+            "http://jsfiddle.net/xLuvC/1/show/", 
+            "http://jsfiddle.net/bNp2h/2/show/", 
+            "http://jsbin.com/UVIgUTa/38/quiet"
         ], 
         "key_silk_cases_013.wpr": [
             "http://jsfiddle.net/bNp2h/1/embedded/result/"
@@ -76,19 +90,8 @@
         "key_silk_cases_008.wpr": [
             "http://jsfiddle.net/jx5De/13/embedded/result"
         ], 
-        "key_silk_cases_014.wpr": [
-            "http://jsfiddle.net/3yDKh/15/show/", 
-            "http://jsfiddle.net/jx5De/14/show/", 
-            "http://jsfiddle.net/3yDKh/16/show/", 
-            "http://jsfiddle.net/R8DX9/4/show/", 
-            "http://jsfiddle.net/rF9Gh/7/show/", 
-            "http://jsfiddle.net/TLXLu/3/show/", 
-            "http://jsfiddle.net/cKB9D/7/show/", 
-            "http://jsfiddle.net/vBQHH/11/show/", 
-            "http://jsfiddle.net/ugkd4/10/show/", 
-            "http://jsfiddle.net/xLuvC/1/show/", 
-            "http://jsfiddle.net/bNp2h/2/show/", 
-            "http://jsbin.com/UVIgUTa/38/quiet"
+        "key_silk_cases_007.wpr": [
+            "http://jsfiddle.net/jx5De/12/embedded/result"
         ], 
         "key_silk_cases_017.wpr": [
             "https://www.google.com/search?hl=en&q=define%3Aboogie"
