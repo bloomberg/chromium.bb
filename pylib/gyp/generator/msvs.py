@@ -83,6 +83,9 @@ generator_additional_non_configuration_keys = [
     'msvs_external_builder_build_cmd',
     'msvs_external_builder_clean_cmd',
     'msvs_external_builder_clcompile_cmd',
+    'msvs_enable_winrt',
+    'msvs_requires_importlibrary',
+    'msvs_enable_winphone',
 ]
 
 
@@ -2595,15 +2598,26 @@ def _GetMSBuildProjectConfigurations(configurations):
 
 def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
   namespace = os.path.splitext(gyp_file_name)[0]
-  return [
+  properties = [
       ['PropertyGroup', {'Label': 'Globals'},
-       ['ProjectGuid', guid],
-       ['Keyword', 'Win32Proj'],
-       ['RootNamespace', namespace],
-       ['IgnoreWarnCompileDuplicatedFilename', 'true'],
+        ['ProjectGuid', guid],
+        ['Keyword', 'Win32Proj'],
+        ['RootNamespace', namespace],
+        ['IgnoreWarnCompileDuplicatedFilename', 'true'],
       ]
-  ]
+    ]
 
+  if spec.get('msvs_enable_winrt'):
+    properties[0].append(['DefaultLanguage', 'en-US'])
+    properties[0].append(['AppContainerApplication', 'true'])
+    properties[0].append(['ApplicationTypeRevision', '8.1'])
+
+    if spec.get('msvs_enable_winphone'):
+      properties[0].append(['ApplicationType', 'Windows Phone'])
+    else:
+      properties[0].append(['ApplicationType', 'Windows Store'])
+
+  return properties
 
 def _GetMSBuildConfigurationDetails(spec, build_file):
   properties = {}
@@ -2614,8 +2628,9 @@ def _GetMSBuildConfigurationDetails(spec, build_file):
     _AddConditionalProperty(properties, condition, 'ConfigurationType',
                             msbuild_attributes['ConfigurationType'])
     if character_set:
-      _AddConditionalProperty(properties, condition, 'CharacterSet',
-                              character_set)
+      if 'msvs_enable_winrt' not in spec :
+        _AddConditionalProperty(properties, condition, 'CharacterSet',
+                                character_set)
   return _GetMSBuildPropertyGroup(spec, 'Configuration', properties)
 
 
@@ -2974,6 +2989,13 @@ def _FinalizeMSBuildSettings(spec, configuration):
                 'PrecompiledHeaderFile', precompiled_header)
     _ToolAppend(msbuild_settings, 'ClCompile',
                 'ForcedIncludeFiles', [precompiled_header])
+  else:
+    _ToolAppend(msbuild_settings, 'ClCompile', 'PrecompiledHeader', 'NotUsing')
+  # Turn off WinRT compilation
+  _ToolAppend(msbuild_settings, 'ClCompile', 'CompileAsWinRT', 'false')
+  # Turn on import libraries if appropriate
+  if spec.get('msvs_requires_importlibrary'):
+   _ToolAppend(msbuild_settings, '', 'IgnoreImportLibrary', 'false')
   # Loadable modules don't generate import libraries;
   # tell dependent projects to not expect one.
   if spec['type'] == 'loadable_module':
@@ -3214,7 +3236,10 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   content += _GetMSBuildGlobalProperties(spec, project.guid, project_file_name)
   content += import_default_section
   content += _GetMSBuildConfigurationDetails(spec, project.build_file)
-  content += _GetMSBuildLocalProperties(project.msbuild_toolset)
+  if spec.get('msvs_enable_winphone'):
+   content += _GetMSBuildLocalProperties('v120_wp81')
+  else:
+   content += _GetMSBuildLocalProperties(project.msbuild_toolset)
   content += import_cpp_props_section
   content += _GetMSBuildExtensions(props_files_of_rules)
   content += _GetMSBuildPropertySheets(configurations)

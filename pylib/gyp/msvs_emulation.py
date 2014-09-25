@@ -478,7 +478,8 @@ class MsvsSettings(object):
     libflags.extend(self._GetAdditionalLibraryDirectories(
         'VCLibrarianTool', config, gyp_to_build_path))
     lib('LinkTimeCodeGeneration', map={'true': '/LTCG'})
-    lib('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
+    lib('TargetMachine', map={'1': 'X86', '17': 'X64', '3': 'ARM'},
+        prefix='/MACHINE:')
     lib('AdditionalOptions')
     return libflags
 
@@ -521,7 +522,8 @@ class MsvsSettings(object):
                           'VCLinkerTool', append=ldflags)
     self._GetDefFileAsLdflags(ldflags, gyp_to_build_path)
     ld('GenerateDebugInformation', map={'true': '/DEBUG'})
-    ld('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
+    ld('TargetMachine', map={'1': 'X86', '17': 'X64', '3': 'ARM'},
+       prefix='/MACHINE:')
     ldflags.extend(self._GetAdditionalLibraryDirectories(
         'VCLinkerTool', config, gyp_to_build_path))
     ld('DelayLoadDLLs', prefix='/DELAYLOAD:')
