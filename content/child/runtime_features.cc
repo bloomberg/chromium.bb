@@ -42,9 +42,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
        (cpu_family == ANDROID_CPU_FAMILY_X86) ||
        (cpu_family == ANDROID_CPU_FAMILY_MIPS)));
 
-  // Android supports gamepad API for JellyBean and beyond
-  WebRuntimeFeatures::enableGamepad(
-      base::android::BuildInfo::GetInstance()->sdk_int() >= 16);
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
   // Android does not yet support the Web Notification API. crbug.com/115320
