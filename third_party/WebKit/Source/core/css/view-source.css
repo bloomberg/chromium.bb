@@ -132,36 +132,3 @@ tbody:last-child .line-content:empty:before {
     color: rgb(255, 0, 0);
     font-weight: bold;
 }
-
-.html-message-bubble {
-    box-shadow: black 0px 2px 5px;
-    border-radius: 9px;
-    -webkit-border-fit: lines;
-    min-height: 13px;
-    font-size: 9px;
-    font-family: Lucida Grande, sans-serif;
-    font-weight: bold;
-    margin: 6px 25px;
-    padding: 0 7px 1px;
-}
-
-.html-warning-message {
-    background-color: rgb(100%, 62%, 42%);
-    border: 2px solid rgb(100%, 52%, 21%);
-}
-
-.html-error-message {
-    background-color: rgb(100%, 42%, 42%);
-    border: 2px solid rgb(100%, 31%, 31%);
-}
-
-.html-message-line {
-    padding-left: 23px;
-    text-indent: -20px;
-}
-
-.html-message-icon {
-    position: relative;
-    top: 2px;
-    margin: 0 4px;
-}
