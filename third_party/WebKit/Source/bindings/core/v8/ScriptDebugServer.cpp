@@ -496,14 +496,12 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
     ScriptDebugListener* listener = getDebugListenerForContext(eventContext);
     if (listener) {
         v8::HandleScope scope(m_isolate);
-        v8::Handle<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
         if (event == v8::BeforeCompile) {
             preprocessBeforeCompile(eventDetails);
         } else if (event == v8::AfterCompile || event == v8::CompileError) {
             v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
-            v8::Handle<v8::Function> getAfterCompileScript = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getAfterCompileScript")));
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getAfterCompileScript, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
+            v8::Handle<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv);
             ASSERT(value->IsObject());
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
             dispatchDidParseSource(listener, object, event != v8::AfterCompile ? CompileError : CompileSuccess);
@@ -512,9 +510,8 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             v8::Handle<v8::Value> exception = callInternalGetterFunction(eventData, "exception", m_isolate);
             handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>());
         } else if (event == v8::Break) {
-            v8::Handle<v8::Function> getBreakpointNumbersFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getBreakpointNumbers")));
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> hitBreakpoints = V8ScriptRunner::callInternalFunction(getBreakpointNumbersFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
+            v8::Handle<v8::Value> hitBreakpoints = callDebuggerMethod("getBreakpointNumbers", 1, argv);
             ASSERT(hitBreakpoints->IsArray());
             handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         } else if (event == v8::AsyncTaskEvent) {
@@ -543,7 +540,9 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
 void ScriptDebugServer::handleV8PromiseEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData)
 {
     v8::Handle<v8::Value> argv[] = { eventData };
-    v8::Local<v8::Object> promiseDetails = callDebuggerMethod("getPromiseDetails", 1, argv)->ToObject();
+    v8::Handle<v8::Value> value = callDebuggerMethod("getPromiseDetails", 1, argv);
+    ASSERT(value->IsObject());
+    v8::Handle<v8::Object> promiseDetails = v8::Handle<v8::Object>::Cast(value);
     v8::Handle<v8::Object> promise = promiseDetails->Get(v8AtomicString(m_isolate, "promise"))->ToObject();
     int status = promiseDetails->Get(v8AtomicString(m_isolate, "status"))->ToInteger()->Value();
     v8::Handle<v8::Value> parentPromise = promiseDetails->Get(v8AtomicString(m_isolate, "parentPromise"));
