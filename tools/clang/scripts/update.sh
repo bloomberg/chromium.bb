@@ -351,19 +351,26 @@ fi
 CFLAGS=""
 CXXFLAGS=""
 LDFLAGS=""
+
 # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
 # needed, on OS X it requires libc++. clang only automatically links to libc++
 # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run on
 # OS X versions as old as 10.7.
 # TODO(thakis): Some bots are still on 10.6, so for now bundle libc++.dylib.
 # Remove this once all bots are on 10.7+, then use --enable-libcpp=yes and
-# change all MACOSX_DEPLOYMENT_TARGET values to 10.7.
+# change deployment_target to 10.7.
+deployment_target=""
+
 if [ "${OS}" = "Darwin" ]; then
   # When building on 10.9, /usr/include usually doesn't exist, and while
   # Xcode's clang automatically sets a sysroot, self-built clangs don't.
   CFLAGS="-isysroot $(xcrun --show-sdk-path)"
   CPPFLAGS="${CFLAGS}"
   CXXFLAGS="-stdlib=libc++ -nostdinc++ -I${ABS_LIBCXX_DIR}/include ${CFLAGS}"
+
+  if [[ -n "${bootstrap}" ]]; then
+    deployment_target=10.6
+  fi
 fi
 
 # Build bootstrap clang if requested.
@@ -447,21 +454,20 @@ if [ "${OS}" = "Darwin" ]; then
   LDFLAGS+="-stdlib=libc++ -L${PWD}/libcxxbuild"
 fi
 
-if [[ ! -f ./CMakeCache.txt ]]; then
-  MACOSX_DEPLOYMENT_TARGET=10.6 cmake -GNinja \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_ENABLE_ASSERTIONS=ON \
-      -DLLVM_ENABLE_THREADS=OFF \
-      -DCMAKE_C_COMPILER="${CC}" \
-      -DCMAKE_CXX_COMPILER="${CXX}" \
-      -DCMAKE_C_FLAGS="${CFLAGS}" \
-      -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-      -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
-      -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
-      -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
-      "${ABS_LLVM_DIR}"
-  env
-fi
+rm -fv CMakeCache.txt
+MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_ASSERTIONS=ON \
+    -DLLVM_ENABLE_THREADS=OFF \
+    -DCMAKE_C_COMPILER="${CC}" \
+    -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
+    "${ABS_LLVM_DIR}"
+env
 
 if [[ -n "${gcc_toolchain}" ]]; then
   # Copy in the right stdlibc++.so.6 so clang can start.
@@ -485,7 +491,8 @@ popd
 mkdir -p "${COMPILER_RT_BUILD_DIR}"
 pushd "${COMPILER_RT_BUILD_DIR}"
 
-MACOSX_DEPLOYMENT_TARGET=10.6 cmake -GNinja \
+rm -fv CMakeCache.txt
+MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_ENABLE_THREADS=OFF \
@@ -526,7 +533,8 @@ if [[ -n "${with_android}" ]]; then
   # Build ASan runtime for Android in a separate build tree.
   mkdir -p ${LLVM_BUILD_DIR}/android
   pushd ${LLVM_BUILD_DIR}/android
-  MACOSX_DEPLOYMENT_TARGET=10.6 cmake -GNinja \
+  rm -fv CMakeCache.txt
+  MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_ASSERTIONS=ON \
       -DLLVM_ENABLE_THREADS=OFF \
@@ -552,7 +560,8 @@ TOOL_BUILD_DIR="${ABS_LLVM_BUILD_DIR}/tools/clang/tools/chrome-extras"
 rm -rf "${TOOL_BUILD_DIR}"
 mkdir -p "${TOOL_BUILD_DIR}"
 pushd "${TOOL_BUILD_DIR}"
-MACOSX_DEPLOYMENT_TARGET=10.6 cmake -GNinja  \
+rm -fv CMakeCache.txt
+MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja  \
     -DLLVM_BUILD_DIR="${ABS_LLVM_BUILD_DIR}" \
     -DLLVM_SRC_DIR="${ABS_LLVM_DIR}" \
     -DCMAKE_C_COMPILER="${CC}" \
