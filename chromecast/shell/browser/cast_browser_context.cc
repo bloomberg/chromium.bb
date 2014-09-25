@@ -59,11 +59,19 @@ CastBrowserContext::~CastBrowserContext() {
 }
 
 void CastBrowserContext::InitWhileIOAllowed() {
+#if defined(OS_ANDROID)
+  CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
+  path_ = path_.Append(FILE_PATH_LITERAL("cast_shell"));
+
+  if (!base::PathExists(path_))
+    base::CreateDirectory(path_);
+#else
   // Chromecast doesn't support user profiles nor does it have
   // incognito mode.  This means that all of the persistent
   // data (currently only cookies and local storage) will be
   // shared in a single location as defined here.
   CHECK(PathService::Get(DIR_CAST_HOME, &path_));
+#endif  // defined(OS_ANDROID)
 }
 
 base::FilePath CastBrowserContext::GetPath() const {
