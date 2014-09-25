@@ -21,7 +21,7 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<BrowserContextKeyedAPIFactory<CopresenceService> >
+base::LazyInstance<BrowserContextKeyedAPIFactory<CopresenceService>>
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 const char kInvalidOperationsMessage[] =
@@ -81,7 +81,7 @@ void CopresenceService::HandleMessages(
   }
 
   int message_count = messages.size();
-  std::vector<linked_ptr<api::copresence::Message> > api_messages(
+  std::vector<linked_ptr<api::copresence::Message>> api_messages(
       message_count);
 
   for (int m = 0; m < message_count; ++m) {

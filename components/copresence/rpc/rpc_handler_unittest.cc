@@ -188,7 +188,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
 
   std::string rpc_name_;
   scoped_ptr<MessageLite> request_proto_;
-  std::map<std::string, std::vector<Message> > messages_by_subscription_;
+  std::map<std::string, std::vector<Message>> messages_by_subscription_;
 };
 
 TEST_F(RpcHandlerTest, Initialize) {

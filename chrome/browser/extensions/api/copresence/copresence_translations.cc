@@ -185,7 +185,7 @@ bool AddUnsubscribeToRequest(const std::string& app_id,
 }
 
 bool PrepareReportRequestProto(
-    const std::vector<linked_ptr<Operation> >& operations,
+    const std::vector<linked_ptr<Operation>>& operations,
     const std::string& app_id,
     SubscriptionToAppMap* apps_by_subscription_id,
     ReportRequest* request) {

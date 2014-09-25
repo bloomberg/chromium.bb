@@ -83,7 +83,7 @@ class AudioDirectiveHandler {
  private:
   FRIEND_TEST_ALL_PREFIXES(AudioDirectiveHandlerTest, Basic);
 
-  typedef TimedMap<std::string, scoped_refptr<media::AudioBusRefCounted> >
+  typedef TimedMap<std::string, scoped_refptr<media::AudioBusRefCounted>>
       SamplesMap;
 
   // Processes the next active transmit instruction.

@@ -488,7 +488,7 @@ void RpcHandler::DispatchMessages(
     return;
 
   // Index the messages by subscription id.
-  std::map<std::string, std::vector<Message> > messages_by_subscription;
+  std::map<std::string, std::vector<Message>> messages_by_subscription;
   DVLOG(3) << "Dispatching " << messages.size() << " messages";
   for (int m = 0; m < messages.size(); ++m) {
     const RepeatedPtrField<std::string>& subscription_ids =
@@ -500,7 +500,7 @@ void RpcHandler::DispatchMessages(
   }
 
   // Send the messages for each subscription.
-  for (std::map<std::string, std::vector<Message> >::const_iterator
+  for (std::map<std::string, std::vector<Message>>::const_iterator
            subscription = messages_by_subscription.begin();
        subscription != messages_by_subscription.end();
        ++subscription) {
