@@ -125,7 +125,8 @@ namespace automation_util {
 
 void DispatchAccessibilityEventsToAutomation(
     const std::vector<content::AXEventNotificationDetails>& details,
-    content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context,
+    const gfx::Vector2d& location_offset) {
   using api::automation_internal::AXEventParams;
   using api::automation_internal::AXTreeUpdate;
 
@@ -143,9 +144,11 @@ void DispatchAccessibilityEventsToAutomation(
     AXTreeUpdate& ax_tree_update = ax_event_params.update;
     ax_tree_update.node_id_to_clear = event.node_id_to_clear;
     for (size_t i = 0; i < event.nodes.size(); ++i) {
+      ui::AXNodeData src = event.nodes[i];
+      src.location.Offset(location_offset);
       linked_ptr<api::automation_internal::AXNodeData> out_node(
           new api::automation_internal::AXNodeData());
-      PopulateNodeData(event.nodes[i], out_node);
+      PopulateNodeData(src, out_node);
       ax_tree_update.nodes.push_back(out_node);
     }
 

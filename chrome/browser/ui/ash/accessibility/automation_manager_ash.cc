@@ -112,5 +112,5 @@ void AutomationManagerAsh::SendEvent(BrowserContext* context,
   std::vector<content::AXEventNotificationDetails> details;
   details.push_back(detail);
   extensions::automation_util::DispatchAccessibilityEventsToAutomation(
-      details, context);
+      details, context, gfx::Vector2d());
 }

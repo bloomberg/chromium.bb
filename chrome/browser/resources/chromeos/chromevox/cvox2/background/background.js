@@ -95,6 +95,7 @@ cvox2.Background.prototype = {
     var output = evt.target.attributes.name + ' ' + evt.target.role;
     cvox.ChromeVox.tts.speak(output, cvox.AbstractTts.QUEUE_MODE_FLUSH);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
+    chrome.accessibilityPrivate.setFocusRing([evt.target.location]);
   },
 
   /**

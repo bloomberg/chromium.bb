@@ -237,8 +237,8 @@ class TreeSerializationState {
                                                routing_id);
     std::vector<content::AXEventNotificationDetails> details;
     details.push_back(detail);
-    automation_util::DispatchAccessibilityEventsToAutomation(details,
-                                                             browser_context);
+    automation_util::DispatchAccessibilityEventsToAutomation(
+        details, browser_context, gfx::Vector2d());
   }
 
   // Notify the extension bindings to destroy the tree for the given tab

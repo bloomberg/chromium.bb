@@ -76,7 +76,8 @@ class AutomationWebContentsObserver
       const std::vector<content::AXEventNotificationDetails>& details)
       OVERRIDE {
     automation_util::DispatchAccessibilityEventsToAutomation(
-        details, browser_context_);
+        details, browser_context_,
+        web_contents()->GetContainerBounds().OffsetFromOrigin());
   }
 
   virtual void RenderFrameDeleted(

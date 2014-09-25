@@ -27,7 +27,8 @@ namespace automation_util {
 // from accessibility to Automation types.
 void DispatchAccessibilityEventsToAutomation(
     const std::vector<content::AXEventNotificationDetails>& details,
-    content::BrowserContext* browser_context);
+    content::BrowserContext* browser_context,
+    const gfx::Vector2d& location_offset);
 
 void DispatchTreeDestroyedEventToAutomation(
     int process_id,

@@ -7,8 +7,12 @@ var allTests = [
     function assertOkButtonLocation(event) {
       var okButton = rootNode.firstChild().firstChild();
       assertTrue('location' in okButton);
-      assertEq({left:100, top: 200, width: 300, height: 400},
-               okButton.location);
+
+      // We can't assert the left and top positions because they're
+      // returned in global screen coordinates. Just check the width and
+      // height.
+      assertEq(300, okButton.location.width);
+      assertEq(400, okButton.location.height);
       chrome.test.succeed();
     };
 
