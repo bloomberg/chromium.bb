@@ -484,7 +484,8 @@ TRIVIAL_CONVERSIONS = frozenset([
     'Date',
     'Dictionary',
     'NodeFilter',
-    'XPathNSResolver'
+    'XPathNSResolver',
+    'Promise'
 ])
 
 
