@@ -1,14 +1,11 @@
 var audioCodecs = [
     ["audio/wav", "wav"],
     ["audio/aac", "m4a"],
-    ["audio/mpeg", "mp3"],
     ["audio/ogg", "oga"]
 ];
 
 var videoCodecs = [
     ["video/mp4", "mp4"],
-    ["video/mpeg", "mpg"],
-    ["video/quicktime", "mov"],
     ["video/ogg", "ogv"]
 ];
 
