@@ -286,7 +286,8 @@ class WifiOptionSetter : public ScopedWifiOptions {
       return;
 
     WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
-    result = wlanapi.enum_interfaces_func(client_, NULL, &interface_list_ptr);
+    result = wlanapi.enum_interfaces_func(client_.Get(), NULL,
+                                          &interface_list_ptr);
     if (result != ERROR_SUCCESS)
       return;
     scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter>
@@ -296,7 +297,7 @@ class WifiOptionSetter : public ScopedWifiOptions {
       WLAN_INTERFACE_INFO* info = &interface_list->InterfaceInfo[i];
       if (options & WIFI_OPTIONS_DISABLE_SCAN) {
         BOOL data = false;
-        wlanapi.set_interface_func(client_,
+        wlanapi.set_interface_func(client_.Get(),
                                    &info->InterfaceGuid,
                                    wlan_intf_opcode_background_scan_enabled,
                                    sizeof(data),
@@ -305,7 +306,7 @@ class WifiOptionSetter : public ScopedWifiOptions {
       }
       if (options & WIFI_OPTIONS_MEDIA_STREAMING_MODE) {
         BOOL data = true;
-        wlanapi.set_interface_func(client_,
+        wlanapi.set_interface_func(client_.Get(),
                                    &info->InterfaceGuid,
                                    wlan_intf_opcode_media_streaming_mode,
                                    sizeof(data),

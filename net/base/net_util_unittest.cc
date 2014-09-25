@@ -834,7 +834,8 @@ int GetWifiOptions() {
     return -1;
 
   WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
-  result = wlanapi.enum_interfaces_func(client, NULL, &interface_list_ptr);
+  result = wlanapi.enum_interfaces_func(client.Get(), NULL,
+                                        &interface_list_ptr);
   if (result != ERROR_SUCCESS)
     return -1;
   scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
@@ -846,7 +847,7 @@ int GetWifiOptions() {
     PVOID data;
     int options = 0;
     result = wlanapi.query_interface_func(
-        client,
+        client.Get(),
         &info->InterfaceGuid,
         wlan_intf_opcode_background_scan_enabled,
         NULL,
@@ -861,7 +862,7 @@ int GetWifiOptions() {
     internal::WlanApi::GetInstance().free_memory_func(data);
 
     result = wlanapi.query_interface_func(
-        client,
+        client.Get(),
         &info->InterfaceGuid,
         wlan_intf_opcode_media_streaming_mode,
         NULL,
