@@ -457,7 +457,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   base::win::ScopedProcessInformation process_info;
   TargetProcess* target = new TargetProcess(initial_token.Take(),
                                             lockdown_token.Take(),
-                                            job,
+                                            job.Get(),
                                             thread_pool_);
 
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
@@ -534,8 +534,8 @@ ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
     return SBOX_ERROR_BAD_PARAMS;
 
   if (!::RegisterWaitForSingleObject(
-          &peer->wait_object, peer->process, RemovePeer, peer.get(), INFINITE,
-          WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD)) {
+          &peer->wait_object, peer->process.Get(), RemovePeer, peer.get(),
+          INFINITE, WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD)) {
     peer_map_.erase(peer->id);
     return SBOX_ERROR_GENERIC;
   }

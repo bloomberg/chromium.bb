@@ -132,7 +132,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   }
 
   PROCESS_INFORMATION temp_process_info = {};
-  if (!::CreateProcessAsUserW(lockdown_token_,
+  if (!::CreateProcessAsUserW(lockdown_token_.Get(),
                               exe_path,
                               cmd_line.get(),
                               NULL,   // No security attribute.
@@ -164,7 +164,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     // impersonation token with more rights. This allows the target to start;
     // otherwise it will crash too early for us to help.
     HANDLE temp_thread = process_info.thread_handle();
-    if (!::SetThreadToken(&temp_thread, initial_token_)) {
+    if (!::SetThreadToken(&temp_thread, initial_token_.Get())) {
       win_result = ::GetLastError();
       // It might be a security breach if we let the target run outside the job
       // so kill it before it causes damage.
@@ -261,13 +261,13 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
 
   DWORD access = FILE_MAP_READ | FILE_MAP_WRITE;
   HANDLE target_shared_section;
-  if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_,
+  if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_.Get(),
                          sandbox_process_info_.process_handle(),
                          &target_shared_section, access, FALSE, 0)) {
     return ::GetLastError();
   }
 
-  void* shared_memory = ::MapViewOfFile(shared_section_,
+  void* shared_memory = ::MapViewOfFile(shared_section_.Get(),
                                         FILE_MAP_WRITE|FILE_MAP_READ,
                                         0, 0, 0);
   if (NULL == shared_memory) {

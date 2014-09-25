@@ -29,9 +29,9 @@ HANDLE GetMarkerFile(const wchar_t *extension) {
                                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
   CHECK(module.IsValid());
   FILETIME timestamp;
-  CHECK(::GetFileTime(module, &timestamp, NULL, NULL));
+  CHECK(::GetFileTime(module.Get(), &timestamp, NULL, NULL));
   marker_path += base::StringPrintf(L"%08x%08x%08x",
-                                    ::GetFileSize(module, NULL),
+                                    ::GetFileSize(module.Get(), NULL),
                                     timestamp.dwLowDateTime,
                                     timestamp.dwHighDateTime);
   marker_path += extension;
@@ -115,7 +115,7 @@ TEST(HandleCloserTest, CheckForMarkerFiles) {
     base::string16 handle_name;
     base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
     CHECK(marker.IsValid());
-    CHECK(sandbox::GetHandleName(marker, &handle_name));
+    CHECK(sandbox::GetHandleName(marker.Get(), &handle_name));
     command += (L" ");
     command += handle_name;
   }
@@ -135,7 +135,7 @@ TEST(HandleCloserTest, CloseMarkerFiles) {
     base::string16 handle_name;
     base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
     CHECK(marker.IsValid());
-    CHECK(sandbox::GetHandleName(marker, &handle_name));
+    CHECK(sandbox::GetHandleName(marker.Get(), &handle_name));
     CHECK_EQ(policy->AddKernelObjectToClose(L"File", handle_name.c_str()),
               SBOX_ALL_OK);
     command += (L" ");

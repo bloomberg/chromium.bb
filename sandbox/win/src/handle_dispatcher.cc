@@ -65,7 +65,7 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
       reinterpret_cast<OBJECT_TYPE_INFORMATION*>(buffer);
   ULONG size = sizeof(buffer) - sizeof(wchar_t);
   NTSTATUS error =
-      QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
+      QueryObject(handle.Get(), ObjectTypeInformation, type_info, size, &size);
   if (!NT_SUCCESS(error)) {
     ipc->return_info.nt_status = error;
     return false;
@@ -79,7 +79,7 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
   EvalResult eval = policy_base_->EvalPolicy(IPC_DUPLICATEHANDLEPROXY_TAG,
                                              params.GetBase());
   ipc->return_info.win32_result =
-      HandlePolicy::DuplicateHandleProxyAction(eval, handle,
+      HandlePolicy::DuplicateHandleProxyAction(eval, handle.Get(),
                                                target_process_id,
                                                &ipc->return_info.handle,
                                                desired_access, options);
