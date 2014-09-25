@@ -263,8 +263,17 @@ enum {
 + (BOOL)screensHaveSeparateSpaces;
 @end
 
+// NSAppearance is a new class in the 10.9 SDK. New classes cannot be
+// forward-declared because they also require an @implementation, which would
+// produce conflicting linkage. Instead, just declare the necessary pieces of
+// the interface as a protocol, and treat objects of this type as id.
+@protocol CrNSAppearance<NSObject>
++ (id<NSObject>)appearanceNamed:(NSString*)name;
+@end
+
 @interface NSView (MavericksSDK)
 - (void)setCanDrawSubviewsIntoLayer:(BOOL)flag;
+- (id<CrNSAppearance>)effectiveAppearance;
 @end
 
 enum {
@@ -309,6 +318,8 @@ BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
 @end
 
 BASE_EXPORT extern "C" NSString* const NSUserActivityTypeBrowsingWeb;
+
+BASE_EXPORT extern "C" NSString* const NSAppearanceNameVibrantDark;
 
 #endif  // MAC_OS_X_VERSION_10_10
 

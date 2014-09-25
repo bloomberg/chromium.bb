@@ -20,4 +20,6 @@ NSString* const NSWindowWillEnterFullScreenNotification =
 NSString* const NSUserActivityTypeBrowsingWeb =
     @"NSUserActivityTypeBrowsingWeb";
 
+NSString* const NSAppearanceNameVibrantDark = @"NSAppearanceNameVibrantDark";
+
 #endif  // MAC_OS_X_VERSION_10_10

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/format_macros.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -148,19 +149,46 @@ const CGFloat kMargin = 5;
 - (int)getTrayResourceId {
   BOOL highlight = [self shouldHighlight];
   BOOL hasUnreadItems = unreadCount_ > 0;
-  int kResourceIds[2][2][2] = {
+  BOOL dark = NO;
+
+  Class nsAppearanceClass = NSClassFromString(@"NSAppearance");
+  if ([self respondsToSelector:@selector(effectiveAppearance)] &&
+      [nsAppearanceClass respondsToSelector:@selector(appearanceNamed:)]) {
+    id<NSObject> darkAppearance =
+        [nsAppearanceClass appearanceNamed:NSAppearanceNameVibrantDark];
+    dark = [[self effectiveAppearance] isEqual:darkAppearance];
+  }
+
+  int kResourceIds[2][2][2][2] = {
     {
-      { IDR_TRAY_EMPTY, IDR_TRAY_EMPTY_PRESSED },
-      { IDR_TRAY_ATTENTION, IDR_TRAY_ATTENTION_PRESSED },
+      {
+        { IDR_TRAY_EMPTY, IDR_TRAY_EMPTY_PRESSED },
+        { IDR_TRAY_ATTENTION, IDR_TRAY_ATTENTION_PRESSED },
+      },
+      {
+        { IDR_TRAY_DO_NOT_DISTURB_EMPTY,
+          IDR_TRAY_DO_NOT_DISTURB_EMPTY_PRESSED },
+        { IDR_TRAY_DO_NOT_DISTURB_ATTENTION,
+          IDR_TRAY_DO_NOT_DISTURB_ATTENTION_PRESSED },
+      },
     },
     {
-      { IDR_TRAY_DO_NOT_DISTURB_EMPTY,
-        IDR_TRAY_DO_NOT_DISTURB_EMPTY_PRESSED },
-      { IDR_TRAY_DO_NOT_DISTURB_ATTENTION,
-        IDR_TRAY_DO_NOT_DISTURB_ATTENTION_PRESSED },
-    },
+      {
+        // We chose not to support the empty version of the pressed
+        // resource for the dark theme, so we use the same resource
+        // for both "pressed" options.
+        { IDR_DARK_TRAY_EMPTY, IDR_DARK_TRAY_PRESSED },
+        { IDR_DARK_TRAY_ATTENTION, IDR_DARK_TRAY_PRESSED },
+      },
+      {
+        { IDR_DARK_TRAY_DO_NOT_DISTURB_EMPTY,
+          IDR_DARK_TRAY_DO_NOT_DISTURB_PRESSED },
+        { IDR_DARK_TRAY_DO_NOT_DISTURB_ATTENTION,
+          IDR_DARK_TRAY_DO_NOT_DISTURB_PRESSED },
+      },
+    }
   };
-  return kResourceIds[quietMode_][hasUnreadItems][highlight];
+  return kResourceIds[dark][quietMode_][hasUnreadItems][highlight];
 }
 
 @end
