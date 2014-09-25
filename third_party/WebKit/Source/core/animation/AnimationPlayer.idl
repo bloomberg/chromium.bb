@@ -39,11 +39,11 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     [RuntimeEnabled=WebAnimationsPlaybackControl]          attribute double?    startTime;
     [RuntimeEnabled=WebAnimationsPlaybackControl]          attribute double?    currentTime;
     [RuntimeEnabled=WebAnimationsPlaybackControl]          attribute double     playbackRate;
-    [RuntimeEnabled=WebAnimationsPlaybackControl] readonly attribute AnimationPlayState playState;
-    [RuntimeEnabled=WebAnimationsPlaybackControl, RaisesException] void finish();
-    [RuntimeEnabled=WebAnimationsPlaybackControl] void play();
-    [RuntimeEnabled=WebAnimationsPlaybackControl] void pause();
-    [RuntimeEnabled=WebAnimationsPlaybackControl] void reverse();
+    [RuntimeEnabled=WebAnimationsPlaybackControl, MeasureAs=AnimationPlayerGetPlayState] readonly attribute AnimationPlayState playState;
+    [RuntimeEnabled=WebAnimationsPlaybackControl, MeasureAs=AnimationPlayerFinish, RaisesException] void finish();
+    [RuntimeEnabled=WebAnimationsPlaybackControl, MeasureAs=AnimationPlayerPlay] void play();
+    [RuntimeEnabled=WebAnimationsPlaybackControl, MeasureAs=AnimationPlayerPause] void pause();
+    [RuntimeEnabled=WebAnimationsPlaybackControl, MeasureAs=AnimationPlayerReverse] void reverse();
 
     void cancel();
     [MeasureAs=AnimationPlayerFinishEvent] attribute EventHandler onfinish;

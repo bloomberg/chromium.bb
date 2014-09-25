@@ -157,6 +157,7 @@ double AnimationPlayer::startTime(bool& isNull) const
 
 double AnimationPlayer::startTime() const
 {
+    UseCounter::count(executionContext(), UseCounter::AnimationPlayerGetStartTime);
     return m_startTime * 1000;
 }
 
@@ -169,6 +170,7 @@ double AnimationPlayer::currentTime(bool& isNull)
 
 double AnimationPlayer::currentTime()
 {
+    UseCounter::count(executionContext(), UseCounter::AnimationPlayerGetCurrentTime);
     if (m_currentTimePending || m_idle)
         return std::numeric_limits<double>::quiet_NaN();
     return currentTimeInternal() * 1000;
@@ -304,6 +306,7 @@ double AnimationPlayer::calculateCurrentTime() const
 
 void AnimationPlayer::setCurrentTime(double newCurrentTime)
 {
+    UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetCurrentTime);
     if (!std::isfinite(newCurrentTime))
         return;
 
@@ -314,6 +317,7 @@ void AnimationPlayer::setCurrentTime(double newCurrentTime)
 
 void AnimationPlayer::setStartTime(double startTime)
 {
+    UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetStartTime);
     if (m_paused || m_idle)
         return;
     if (!std::isfinite(startTime))
@@ -467,7 +471,7 @@ void AnimationPlayer::reverse()
     }
 
     uncancel();
-    setPlaybackRate(-m_playbackRate);
+    setPlaybackRateInternal(-m_playbackRate);
     play();
 }
 
@@ -524,12 +528,27 @@ bool AnimationPlayer::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     return EventTargetWithInlineData::dispatchEvent(event);
 }
 
+double AnimationPlayer::playbackRate() const
+{
+    UseCounter::count(executionContext(), UseCounter::AnimationPlayerGetPlaybackRate);
+    return m_playbackRate;
+}
+
 void AnimationPlayer::setPlaybackRate(double playbackRate)
 {
+    UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetPlaybackRate);
     if (!std::isfinite(playbackRate))
         return;
     if (playbackRate == m_playbackRate)
         return;
+
+    setPlaybackRateInternal(playbackRate);
+}
+
+void AnimationPlayer::setPlaybackRateInternal(double playbackRate)
+{
+    ASSERT(std::isfinite(playbackRate));
+    ASSERT(playbackRate != m_playbackRate);
 
     setCompositorPending();
     if (!finished() && !paused() && hasStartTime())
@@ -553,7 +572,7 @@ void AnimationPlayer::setOutdated()
 
 bool AnimationPlayer::canStartAnimationOnCompositor()
 {
-    if (playbackRate() == 0)
+    if (m_playbackRate == 0)
         return false;
 
     return m_timeline && m_content && m_content->isAnimation() && playing();

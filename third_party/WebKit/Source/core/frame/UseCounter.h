@@ -511,6 +511,17 @@ public:
         SRIElementWithUnparsableIntegrityAttribute = 542,
         SRIElementWithIntegrityAttributeAndInsecureOrigin = 543,
         SRIElementWithIntegrityAttributeAndInsecureResource = 544,
+        AnimationPlayerGetStartTime = 545,
+        AnimationPlayerSetStartTime = 546,
+        AnimationPlayerGetCurrentTime = 547,
+        AnimationPlayerSetCurrentTime = 548,
+        AnimationPlayerGetPlaybackRate = 549,
+        AnimationPlayerSetPlaybackRate = 550,
+        AnimationPlayerGetPlayState = 551,
+        AnimationPlayerFinish = 552,
+        AnimationPlayerPlay = 553,
+        AnimationPlayerPause = 554,
+        AnimationPlayerReverse = 555,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

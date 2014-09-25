@@ -100,7 +100,7 @@ public:
     virtual void stop() OVERRIDE;
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
 
-    double playbackRate() const { return m_playbackRate; }
+    double playbackRate() const;
     void setPlaybackRate(double);
     const AnimationTimeline* timeline() const { return m_timeline; }
     AnimationTimeline* timeline() { return m_timeline; }
@@ -162,6 +162,7 @@ private:
     AnimationPlayer(ExecutionContext*, AnimationTimeline&, AnimationNode*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
+    void setPlaybackRateInternal(double);
     void updateCurrentTimingState(TimingUpdateReason);
     void unpauseInternal();
     void uncancel();
