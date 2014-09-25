@@ -252,7 +252,7 @@ namespace blink {
             return static_cast<PseudoType>(m_pseudoType);
         }
 
-        static PseudoType parsePseudoType(const AtomicString&);
+        static PseudoType parsePseudoType(const AtomicString&, bool hasArguments);
         static PseudoId pseudoId(PseudoType);
 
         // Selectors are kept in an array by CSSSelectorList. The next component of the selector is

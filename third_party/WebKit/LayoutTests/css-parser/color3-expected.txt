@@ -34,8 +34,8 @@ PASS colorTest.parseColor("#fffffffff") is "parse error"
 PASS colorTest.parseColor("#FFCc99") is "rgb(255, 204, 153)"
 PASS colorTest.parseColor("#369") is "rgb(51, 102, 153)"
 PASS colorTest.parseColor("rgb(00, 51, 102)") is "rgb(0, 51, 102)"
-FAIL colorTest.parseColor("r\\gb(00, 51, 102)") should be rgb(0, 51, 102). Was parse error.
-FAIL colorTest.parseColor("r\\67 b(00, 51, 102)") should be rgb(0, 51, 102). Was parse error.
+PASS colorTest.parseColor("r\\gb(00, 51, 102)") is "rgb(0, 51, 102)"
+PASS colorTest.parseColor("r\\67 b(00, 51, 102)") is "rgb(0, 51, 102)"
 PASS colorTest.parseColor("RGB(153, 204, 255)") is "rgb(153, 204, 255)"
 PASS colorTest.parseColor("rgB(0, 0, 0)") is "rgb(0, 0, 0)"
 PASS colorTest.parseColor("rgB(0, 51, 255)") is "rgb(0, 51, 255)"

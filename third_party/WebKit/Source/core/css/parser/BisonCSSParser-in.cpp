@@ -1147,7 +1147,7 @@ public:
         const UChar* characters;
         unsigned nameLength = name.length();
 
-        const unsigned longestNameLength = 12;
+        const unsigned longestNameLength = 11;
         UChar characterBuffer[longestNameLength];
         if (name.is8Bit()) {
             unsigned length = std::min(longestNameLength, nameLength);
@@ -1159,97 +1159,97 @@ public:
             characters = name.characters16();
 
         SWITCH(characters, nameLength) {
-            CASE("skew(") {
+            CASE("skew") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::SkewTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
-            CASE("scale(") {
+            CASE("scale") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::ScaleTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
-            CASE("skewx(") {
+            CASE("skewx") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::SkewXTransformOperation;
             }
-            CASE("skewy(") {
+            CASE("skewy") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::SkewYTransformOperation;
             }
-            CASE("matrix(") {
+            CASE("matrix") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::MatrixTransformOperation;
                 m_argCount = 11;
             }
-            CASE("rotate(") {
+            CASE("rotate") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::RotateTransformOperation;
             }
-            CASE("scalex(") {
+            CASE("scalex") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::ScaleXTransformOperation;
             }
-            CASE("scaley(") {
+            CASE("scaley") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::ScaleYTransformOperation;
             }
-            CASE("scalez(") {
+            CASE("scalez") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::ScaleZTransformOperation;
             }
-            CASE("scale3d(") {
+            CASE("scale3d") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::Scale3DTransformOperation;
                 m_argCount = 5;
             }
-            CASE("rotatex(") {
+            CASE("rotatex") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::RotateXTransformOperation;
             }
-            CASE("rotatey(") {
+            CASE("rotatey") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::RotateYTransformOperation;
             }
-            CASE("rotatez(") {
+            CASE("rotatez") {
                 m_unit = CSSPropertyParser::FAngle;
                 m_type = CSSTransformValue::RotateZTransformOperation;
             }
-            CASE("matrix3d(") {
+            CASE("matrix3d") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::Matrix3DTransformOperation;
                 m_argCount = 31;
             }
-            CASE("rotate3d(") {
+            CASE("rotate3d") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::Rotate3DTransformOperation;
                 m_argCount = 7;
             }
-            CASE("translate(") {
+            CASE("translate") {
                 m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
                 m_type = CSSTransformValue::TranslateTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
-            CASE("translatex(") {
+            CASE("translatex") {
                 m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
                 m_type = CSSTransformValue::TranslateXTransformOperation;
             }
-            CASE("translatey(") {
+            CASE("translatey") {
                 m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
                 m_type = CSSTransformValue::TranslateYTransformOperation;
             }
-            CASE("translatez(") {
+            CASE("translatez") {
                 m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
                 m_type = CSSTransformValue::TranslateZTransformOperation;
             }
-            CASE("perspective(") {
+            CASE("perspective") {
                 m_unit = CSSPropertyParser::FNumber;
                 m_type = CSSTransformValue::PerspectiveTransformOperation;
             }
-            CASE("translate3d(") {
+            CASE("translate3d") {
                 m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
                 m_type = CSSTransformValue::Translate3DTransformOperation;
                 m_argCount = 5;

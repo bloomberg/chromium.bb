@@ -277,13 +277,12 @@ struct NameToPseudoStruct {
     unsigned type:8;
 };
 
-// This table should be kept sorted.
-const static NameToPseudoStruct pseudoTypeMap[] = {
+// These tables should be kept sorted.
+const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
 {"-internal-list-box",            CSSSelector::PseudoListBox},
 {"-internal-media-controls-cast-button", CSSSelector::PseudoWebKitCustomElement},
 {"-internal-media-controls-overlay-cast-button", CSSSelector::PseudoWebKitCustomElement},
 {"-internal-spatial-navigation-focus", CSSSelector::PseudoSpatialNavigationFocus},
-{"-webkit-any(",                  CSSSelector::PseudoAny},
 {"-webkit-any-link",              CSSSelector::PseudoAnyLink},
 {"-webkit-autofill",              CSSSelector::PseudoAutofill},
 {"-webkit-drag",                  CSSSelector::PseudoDrag},
@@ -306,7 +305,6 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"content",                       CSSSelector::PseudoContent},
 {"corner-present",                CSSSelector::PseudoCornerPresent},
 {"cue",                           CSSSelector::PseudoWebKitCustomElement},
-{"cue(",                          CSSSelector::PseudoCue},
 {"decrement",                     CSSSelector::PseudoDecrement},
 {"default",                       CSSSelector::PseudoDefault},
 {"disabled",                      CSSSelector::PseudoDisabled},
@@ -323,24 +321,16 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"future",                        CSSSelector::PseudoFutureCue},
 {"horizontal",                    CSSSelector::PseudoHorizontal},
 {"host",                          CSSSelector::PseudoHost},
-{"host(",                         CSSSelector::PseudoHost},
-{"host-context(",                 CSSSelector::PseudoHostContext},
 {"hover",                         CSSSelector::PseudoHover},
 {"in-range",                      CSSSelector::PseudoInRange},
 {"increment",                     CSSSelector::PseudoIncrement},
 {"indeterminate",                 CSSSelector::PseudoIndeterminate},
 {"invalid",                       CSSSelector::PseudoInvalid},
-{"lang(",                         CSSSelector::PseudoLang},
 {"last-child",                    CSSSelector::PseudoLastChild},
 {"last-of-type",                  CSSSelector::PseudoLastOfType},
 {"left",                          CSSSelector::PseudoLeftPage},
 {"link",                          CSSSelector::PseudoLink},
 {"no-button",                     CSSSelector::PseudoNoButton},
-{"not(",                          CSSSelector::PseudoNot},
-{"nth-child(",                    CSSSelector::PseudoNthChild},
-{"nth-last-child(",               CSSSelector::PseudoNthLastChild},
-{"nth-last-of-type(",             CSSSelector::PseudoNthLastOfType},
-{"nth-of-type(",                  CSSSelector::PseudoNthOfType},
 {"only-child",                    CSSSelector::PseudoOnlyChild},
 {"only-of-type",                  CSSSelector::PseudoOnlyOfType},
 {"optional",                      CSSSelector::PseudoOptional},
@@ -364,6 +354,19 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"window-inactive",               CSSSelector::PseudoWindowInactive},
 };
 
+const static NameToPseudoStruct pseudoTypeWithArgumentsMap[] = {
+{"-webkit-any",      CSSSelector::PseudoAny},
+{"cue",              CSSSelector::PseudoCue},
+{"host",             CSSSelector::PseudoHost},
+{"host-context",     CSSSelector::PseudoHostContext},
+{"lang",             CSSSelector::PseudoLang},
+{"not",              CSSSelector::PseudoNot},
+{"nth-child",        CSSSelector::PseudoNthChild},
+{"nth-last-child",   CSSSelector::PseudoNthLastChild},
+{"nth-last-of-type", CSSSelector::PseudoNthLastOfType},
+{"nth-of-type",      CSSSelector::PseudoNthOfType},
+};
+
 class NameToPseudoCompare {
 public:
     NameToPseudoCompare(const AtomicString& key) : m_key(key) { ASSERT(m_key.is8Bit()); }
@@ -380,12 +383,20 @@ private:
     const AtomicString& m_key;
 };
 
-static CSSSelector::PseudoType nameToPseudoType(const AtomicString& name)
+static CSSSelector::PseudoType nameToPseudoType(const AtomicString& name, bool hasArguments)
 {
     if (name.isNull() || !name.is8Bit())
         return CSSSelector::PseudoUnknown;
 
-    const NameToPseudoStruct* pseudoTypeMapEnd = pseudoTypeMap + WTF_ARRAY_LENGTH(pseudoTypeMap);
+    const NameToPseudoStruct* pseudoTypeMap;
+    const NameToPseudoStruct* pseudoTypeMapEnd;
+    if (hasArguments) {
+        pseudoTypeMap = pseudoTypeWithArgumentsMap;
+        pseudoTypeMapEnd = pseudoTypeWithArgumentsMap + WTF_ARRAY_LENGTH(pseudoTypeWithArgumentsMap);
+    } else {
+        pseudoTypeMap = pseudoTypeWithoutArgumentsMap;
+        pseudoTypeMapEnd = pseudoTypeWithoutArgumentsMap + WTF_ARRAY_LENGTH(pseudoTypeWithoutArgumentsMap);
+    }
     NameToPseudoStruct dummyKey = { 0, CSSSelector::PseudoUnknown };
     const NameToPseudoStruct* match = std::lower_bound(pseudoTypeMap, pseudoTypeMapEnd, dummyKey, NameToPseudoCompare(name));
     if (match == pseudoTypeMapEnd || match->string != name.string())
@@ -426,9 +437,9 @@ void CSSSelector::show() const
 }
 #endif
 
-CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name)
+CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name, bool hasArguments)
 {
-    CSSSelector::PseudoType pseudoType = nameToPseudoType(name);
+    CSSSelector::PseudoType pseudoType = nameToPseudoType(name, hasArguments);
     if (pseudoType != PseudoUnknown)
         return pseudoType;
 
@@ -445,7 +456,7 @@ void CSSSelector::extractPseudoType() const
     if (m_match != PseudoClass && m_match != PseudoElement && m_match != PagePseudoClass)
         return;
 
-    m_pseudoType = parsePseudoType(value());
+    m_pseudoType = parsePseudoType(value(), !argument().isNull() || selectorList());
 
     bool element = false; // pseudo-element
     bool compat = false; // single colon compatbility mode
@@ -614,6 +625,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             switch (cs->pseudoType()) {
             case PseudoNot:
                 ASSERT(cs->selectorList());
+                str.append('(');
                 str.append(cs->selectorList()->first()->selectorText());
                 str.append(')');
                 break;
@@ -622,10 +634,12 @@ String CSSSelector::selectorText(const String& rightSide) const
             case PseudoNthLastChild:
             case PseudoNthOfType:
             case PseudoNthLastOfType:
+                str.append('(');
                 str.append(cs->argument());
                 str.append(')');
                 break;
             case PseudoAny: {
+                str.append('(');
                 const CSSSelector* firstSubSelector = cs->selectorList()->first();
                 for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
                     if (subSelector != firstSubSelector)
@@ -638,6 +652,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             case PseudoHost:
             case PseudoHostContext: {
                 if (cs->selectorList()) {
+                    str.append('(');
                     const CSSSelector* firstSubSelector = cs->selectorList()->first();
                     for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
                         if (subSelector != firstSubSelector)

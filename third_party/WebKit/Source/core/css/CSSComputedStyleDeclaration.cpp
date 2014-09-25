@@ -1132,7 +1132,7 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(PassRefPtrWillBeRawPtr<
 {
     unsigned nameWithoutColonsStart = pseudoElementName[0] == ':' ? (pseudoElementName[1] == ':' ? 2 : 1) : 0;
     m_pseudoElementSpecifier = CSSSelector::pseudoId(CSSSelector::parsePseudoType(
-        AtomicString(pseudoElementName.substring(nameWithoutColonsStart))));
+        AtomicString(pseudoElementName.substring(nameWithoutColonsStart)), false));
 }
 
 CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration()

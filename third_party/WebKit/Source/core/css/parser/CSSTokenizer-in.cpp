@@ -1166,7 +1166,6 @@ restartAfterComment:
             // Skip parenthesis
             ++currentCharacter<SrcCharacterType>();
             ++result;
-            ++yylval->string.m_length;
 
             if (m_token == URI) {
                 m_token = FUNCTION;
@@ -1310,8 +1309,8 @@ restartAfterComment:
                         currentCharacter<SrcCharacterType>() = nextCharacter;
                     }
                 }
+                resultString.setLength(result - tokenStart<SrcCharacterType>());
             }
-            resultString.setLength(result - tokenStart<SrcCharacterType>());
             yylval->string = resultString;
         } else if (currentCharacter<SrcCharacterType>()[0] == '-' && currentCharacter<SrcCharacterType>()[1] == '>') {
             currentCharacter<SrcCharacterType>() += 2;

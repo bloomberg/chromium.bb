@@ -368,17 +368,17 @@ static bool isGeneratedImageValue(CSSParserValue* val)
     if (val->unit != CSSParserValue::Function)
         return false;
 
-    return equalIgnoringCase(val->function->name, "-webkit-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-linear-gradient(")
-        || equalIgnoringCase(val->function->name, "linear-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient(")
-        || equalIgnoringCase(val->function->name, "repeating-linear-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-radial-gradient(")
-        || equalIgnoringCase(val->function->name, "radial-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient(")
-        || equalIgnoringCase(val->function->name, "repeating-radial-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-canvas(")
-        || equalIgnoringCase(val->function->name, "-webkit-cross-fade(");
+    return equalIgnoringCase(val->function->name, "-webkit-gradient")
+        || equalIgnoringCase(val->function->name, "-webkit-linear-gradient")
+        || equalIgnoringCase(val->function->name, "linear-gradient")
+        || equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient")
+        || equalIgnoringCase(val->function->name, "repeating-linear-gradient")
+        || equalIgnoringCase(val->function->name, "-webkit-radial-gradient")
+        || equalIgnoringCase(val->function->name, "radial-gradient")
+        || equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient")
+        || equalIgnoringCase(val->function->name, "repeating-radial-gradient")
+        || equalIgnoringCase(val->function->name, "-webkit-canvas")
+        || equalIgnoringCase(val->function->name, "-webkit-cross-fade");
 }
 
 bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value)
@@ -636,7 +636,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
                 String uri = value->string;
                 if (!uri.isNull())
                     image = createCSSImageValueWithReferrer(uri, completeURL(uri));
-            } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
+            } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set")) {
                 image = parseImageSet(m_valueList);
                 if (!image)
                     break;
@@ -767,7 +767,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             else
                 return false;
         }
-        else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
+        else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set")) {
             parsedValue = parseImageSet(m_valueList);
             if (!parsedValue)
                 return false;
@@ -2157,19 +2157,19 @@ bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
             CSSParserValueList* args = val->function->args.get();
             if (!args)
                 return false;
-            if (equalIgnoringCase(val->function->name, "attr(")) {
+            if (equalIgnoringCase(val->function->name, "attr")) {
                 parsedValue = parseAttr(args);
                 if (!parsedValue)
                     return false;
-            } else if (equalIgnoringCase(val->function->name, "counter(")) {
+            } else if (equalIgnoringCase(val->function->name, "counter")) {
                 parsedValue = parseCounterContent(args, false);
                 if (!parsedValue)
                     return false;
-            } else if (equalIgnoringCase(val->function->name, "counters(")) {
+            } else if (equalIgnoringCase(val->function->name, "counters")) {
                 parsedValue = parseCounterContent(args, true);
                 if (!parsedValue)
                     return false;
-            } else if (equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
+            } else if (equalIgnoringCase(val->function->name, "-webkit-image-set")) {
                 parsedValue = parseImageSet(m_valueList);
                 if (!parsedValue)
                     return false;
@@ -2254,7 +2254,7 @@ bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWill
     if (isGeneratedImageValue(valueList->current()))
         return parseGeneratedImage(valueList, value);
 
-    if (valueList->current()->unit == CSSParserValue::Function && equalIgnoringCase(valueList->current()->function->name, "-webkit-image-set(")) {
+    if (valueList->current()->unit == CSSParserValue::Function && equalIgnoringCase(valueList->current()->function->name, "-webkit-image-set")) {
         value = parseImageSet(m_valueList);
         if (value)
             return true;
@@ -3021,7 +3021,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
 
     CSSParserValueList* args = value->function->args.get();
 
-    if (equalIgnoringCase(value->function->name, "steps(")) {
+    if (equalIgnoringCase(value->function->name, "steps")) {
         // For steps, 1 or 2 params must be specified (comma-separated)
         if (!args || (args->size() != 1 && args->size() != 3))
             return nullptr;
@@ -3061,7 +3061,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
         return CSSStepsTimingFunctionValue::create(numSteps, stepAtPosition);
     }
 
-    if (equalIgnoringCase(value->function->name, "cubic-bezier(")) {
+    if (equalIgnoringCase(value->function->name, "cubic-bezier")) {
         // For cubic bezier, 4 values must be specified.
         if (!args || args->size() != 7)
             return nullptr;
@@ -3575,7 +3575,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
     while (CSSParserValue* currentValue = m_valueList->current()) {
         if (isForwardSlashOperator(currentValue))
             break;
-        if (currentValue->unit == CSSParserValue::Function && equalIgnoringCase(currentValue->function->name, "repeat(")) {
+        if (currentValue->unit == CSSParserValue::Function && equalIgnoringCase(currentValue->function->name, "repeat")) {
             if (!parseGridTrackRepeatFunction(*values))
                 return nullptr;
             seenTrackSizeOrRepeatFunction = true;
@@ -3661,7 +3661,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParser
     if (currentValue->id == CSSValueAuto)
         return cssValuePool().createIdentifierValue(CSSValueAuto);
 
-    if (currentValue->unit == CSSParserValue::Function && equalIgnoringCase(currentValue->function->name, "minmax(")) {
+    if (currentValue->unit == CSSParserValue::Function && equalIgnoringCase(currentValue->function->name, "minmax")) {
         // The spec defines the following grammar: minmax( <track-breadth> , <track-breadth> )
         CSSParserValueList* arguments = currentValue->function->args.get();
         if (!arguments || arguments->size() != 3 || !isComma(arguments->valueAt(1)))
@@ -3887,7 +3887,7 @@ bool CSSPropertyParser::parseClipShape(CSSPropertyID propId, bool important)
     CSSParserValue* value = m_valueList->current();
     CSSParserValueList* args = value->function->args.get();
 
-    if (!equalIgnoringCase(value->function->name, "rect(") || !args)
+    if (!equalIgnoringCase(value->function->name, "rect") || !args)
         return false;
 
     // rect(t, r, b, l) || rect(t r b l)
@@ -4378,13 +4378,13 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBasicShape()
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSBasicShape> shape = nullptr;
-    if (equalIgnoringCase(value->function->name, "circle("))
+    if (equalIgnoringCase(value->function->name, "circle"))
         shape = parseBasicShapeCircle(args);
-    else if (equalIgnoringCase(value->function->name, "ellipse("))
+    else if (equalIgnoringCase(value->function->name, "ellipse"))
         shape = parseBasicShapeEllipse(args);
-    else if (equalIgnoringCase(value->function->name, "polygon("))
+    else if (equalIgnoringCase(value->function->name, "polygon"))
         shape = parseBasicShapePolygon(args);
-    else if (equalIgnoringCase(value->function->name, "inset("))
+    else if (equalIgnoringCase(value->function->name, "inset"))
         shape = parseBasicShapeInset(args);
 
     if (!shape)
@@ -4695,7 +4695,7 @@ bool CSSPropertyParser::parseFontFaceSrcURI(CSSValueList* valueList)
         return true;
     }
 
-    if (value->unit != CSSParserValue::Function || !equalIgnoringCase(value->function->name, "format("))
+    if (value->unit != CSSParserValue::Function || !equalIgnoringCase(value->function->name, "format"))
         return false;
 
     // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20111004/ says that format() contains a comma-separated list of strings,
@@ -4747,7 +4747,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceSrc()
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
             if (!parseFontFaceSrcURI(values.get()))
                 return nullptr;
-        } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "local(")) {
+        } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "local")) {
             if (!parseFontFaceSrcLocal(values.get()))
                 return nullptr;
         } else {
@@ -5146,8 +5146,8 @@ template bool CSSPropertyParser::fastParseColor(RGBA32&, const String&, bool str
 bool CSSPropertyParser::isCalculation(CSSParserValue* value)
 {
     return (value->unit == CSSParserValue::Function)
-        && (equalIgnoringCase(value->function->name, "calc(")
-            || equalIgnoringCase(value->function->name, "-webkit-calc("));
+        && (equalIgnoringCase(value->function->name, "calc")
+            || equalIgnoringCase(value->function->name, "-webkit-calc"));
 }
 
 inline int CSSPropertyParser::colorIntFromValue(CSSParserValue* v)
@@ -5276,7 +5276,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
     } else if (value->unit == CSSParserValue::Function &&
                 value->function->args != 0 &&
                 value->function->args->size() == 5 /* rgb + two commas */ &&
-                equalIgnoringCase(value->function->name, "rgb(")) {
+                equalIgnoringCase(value->function->name, "rgb")) {
         int colorValues[3];
         if (!parseColorParameters(value, colorValues, false))
             return false;
@@ -5285,7 +5285,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         if (value->unit == CSSParserValue::Function &&
                 value->function->args != 0 &&
                 value->function->args->size() == 7 /* rgba + three commas */ &&
-                equalIgnoringCase(value->function->name, "rgba(")) {
+                equalIgnoringCase(value->function->name, "rgba")) {
             int colorValues[4];
             if (!parseColorParameters(value, colorValues, true))
                 return false;
@@ -5293,7 +5293,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         } else if (value->unit == CSSParserValue::Function &&
                     value->function->args != 0 &&
                     value->function->args->size() == 5 /* hsl + two commas */ &&
-                    equalIgnoringCase(value->function->name, "hsl(")) {
+                    equalIgnoringCase(value->function->name, "hsl")) {
             double colorValues[3];
             if (!parseHSLParameters(value, colorValues, false))
                 return false;
@@ -5301,7 +5301,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         } else if (value->unit == CSSParserValue::Function &&
                     value->function->args != 0 &&
                     value->function->args->size() == 7 /* hsla + three commas */ &&
-                    equalIgnoringCase(value->function->name, "hsla(")) {
+                    equalIgnoringCase(value->function->name, "hsla")) {
             double colorValues[4];
             if (!parseHSLParameters(value, colorValues, true))
                 return false;
@@ -5752,7 +5752,7 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
                     context.commitImage(value.release());
                 else
                     return false;
-            } else if (val->unit == CSSParserValue::Function && equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
+            } else if (val->unit == CSSParserValue::Function && equalIgnoringCase(val->function->name, "-webkit-image-set")) {
                 RefPtrWillBeRawPtr<CSSValue> value = parser.parseImageSet(parser.m_valueList);
                 if (value)
                     context.commitImage(value.release());
@@ -6226,22 +6226,22 @@ bool parseDeprecatedGradientColorStop(CSSPropertyParser* p, CSSParserValue* a, C
     if (a->unit != CSSParserValue::Function)
         return false;
 
-    if (!equalIgnoringCase(a->function->name, "from(") &&
-        !equalIgnoringCase(a->function->name, "to(") &&
-        !equalIgnoringCase(a->function->name, "color-stop("))
+    if (!equalIgnoringCase(a->function->name, "from") &&
+        !equalIgnoringCase(a->function->name, "to") &&
+        !equalIgnoringCase(a->function->name, "color-stop"))
         return false;
 
     CSSParserValueList* args = a->function->args.get();
     if (!args)
         return false;
 
-    if (equalIgnoringCase(a->function->name, "from(")
-        || equalIgnoringCase(a->function->name, "to(")) {
+    if (equalIgnoringCase(a->function->name, "from")
+        || equalIgnoringCase(a->function->name, "to")) {
         // The "from" and "to" stops expect 1 argument.
         if (args->size() != 1)
             return false;
 
-        if (equalIgnoringCase(a->function->name, "from("))
+        if (equalIgnoringCase(a->function->name, "from"))
             stop.m_position = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_NUMBER);
         else
             stop.m_position = cssValuePool().createValue(1, CSSPrimitiveValue::CSS_NUMBER);
@@ -6256,7 +6256,7 @@ bool parseDeprecatedGradientColorStop(CSSPropertyParser* p, CSSParserValue* a, C
     }
 
     // The "color-stop" function expects 3 arguments.
-    if (equalIgnoringCase(a->function->name, "color-stop(")) {
+    if (equalIgnoringCase(a->function->name, "color-stop")) {
         if (args->size() != 3)
             return false;
 
@@ -6870,56 +6870,56 @@ bool CSSPropertyParser::parseGeneratedImage(CSSParserValueList* valueList, RefPt
     if (val->unit != CSSParserValue::Function)
         return false;
 
-    if (equalIgnoringCase(val->function->name, "-webkit-gradient(")) {
+    if (equalIgnoringCase(val->function->name, "-webkit-gradient")) {
         // FIXME: This should send a deprecation message.
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::DeprecatedWebKitGradient);
         return parseDeprecatedGradient(valueList, value);
     }
 
-    if (equalIgnoringCase(val->function->name, "-webkit-linear-gradient(")) {
+    if (equalIgnoringCase(val->function->name, "-webkit-linear-gradient")) {
         // FIXME: This should send a deprecation message.
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::DeprecatedWebKitLinearGradient);
         return parseDeprecatedLinearGradient(valueList, value, NonRepeating);
     }
 
-    if (equalIgnoringCase(val->function->name, "linear-gradient("))
+    if (equalIgnoringCase(val->function->name, "linear-gradient"))
         return parseLinearGradient(valueList, value, NonRepeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient(")) {
+    if (equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient")) {
         // FIXME: This should send a deprecation message.
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingLinearGradient);
         return parseDeprecatedLinearGradient(valueList, value, Repeating);
     }
 
-    if (equalIgnoringCase(val->function->name, "repeating-linear-gradient("))
+    if (equalIgnoringCase(val->function->name, "repeating-linear-gradient"))
         return parseLinearGradient(valueList, value, Repeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-radial-gradient(")) {
+    if (equalIgnoringCase(val->function->name, "-webkit-radial-gradient")) {
         // FIXME: This should send a deprecation message.
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::DeprecatedWebKitRadialGradient);
         return parseDeprecatedRadialGradient(valueList, value, NonRepeating);
     }
 
-    if (equalIgnoringCase(val->function->name, "radial-gradient("))
+    if (equalIgnoringCase(val->function->name, "radial-gradient"))
         return parseRadialGradient(valueList, value, NonRepeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient(")) {
+    if (equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient")) {
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingRadialGradient);
         return parseDeprecatedRadialGradient(valueList, value, Repeating);
     }
 
-    if (equalIgnoringCase(val->function->name, "repeating-radial-gradient("))
+    if (equalIgnoringCase(val->function->name, "repeating-radial-gradient"))
         return parseRadialGradient(valueList, value, Repeating);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-canvas("))
+    if (equalIgnoringCase(val->function->name, "-webkit-canvas"))
         return parseCanvas(valueList, value);
 
-    if (equalIgnoringCase(val->function->name, "-webkit-cross-fade("))
+    if (equalIgnoringCase(val->function->name, "-webkit-cross-fade"))
         return parseCrossfade(valueList, value);
 
     return false;
@@ -7093,25 +7093,25 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseWillChange()
 
 static void filterInfoForName(const CSSParserString& name, CSSFilterValue::FilterOperationType& filterType, unsigned& maximumArgumentCount)
 {
-    if (equalIgnoringCase(name, "grayscale("))
+    if (equalIgnoringCase(name, "grayscale"))
         filterType = CSSFilterValue::GrayscaleFilterOperation;
-    else if (equalIgnoringCase(name, "sepia("))
+    else if (equalIgnoringCase(name, "sepia"))
         filterType = CSSFilterValue::SepiaFilterOperation;
-    else if (equalIgnoringCase(name, "saturate("))
+    else if (equalIgnoringCase(name, "saturate"))
         filterType = CSSFilterValue::SaturateFilterOperation;
-    else if (equalIgnoringCase(name, "hue-rotate("))
+    else if (equalIgnoringCase(name, "hue-rotate"))
         filterType = CSSFilterValue::HueRotateFilterOperation;
-    else if (equalIgnoringCase(name, "invert("))
+    else if (equalIgnoringCase(name, "invert"))
         filterType = CSSFilterValue::InvertFilterOperation;
-    else if (equalIgnoringCase(name, "opacity("))
+    else if (equalIgnoringCase(name, "opacity"))
         filterType = CSSFilterValue::OpacityFilterOperation;
-    else if (equalIgnoringCase(name, "brightness("))
+    else if (equalIgnoringCase(name, "brightness"))
         filterType = CSSFilterValue::BrightnessFilterOperation;
-    else if (equalIgnoringCase(name, "contrast("))
+    else if (equalIgnoringCase(name, "contrast"))
         filterType = CSSFilterValue::ContrastFilterOperation;
-    else if (equalIgnoringCase(name, "blur("))
+    else if (equalIgnoringCase(name, "blur"))
         filterType = CSSFilterValue::BlurFilterOperation;
-    else if (equalIgnoringCase(name, "drop-shadow(")) {
+    else if (equalIgnoringCase(name, "drop-shadow")) {
         filterType = CSSFilterValue::DropShadowFilterOperation;
         maximumArgumentCount = 4;  // x-offset, y-offset, blur-radius, color -- spread and inset style not allowed.
     }
