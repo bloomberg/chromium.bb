@@ -70,7 +70,7 @@ Geofencing status=test
 GeometryInterfaces status=test
 IMEAPI status=experimental
 ImageDataConstructor status=experimental
-ImageRenderingPixelated status=stable
+ImageRenderingPixelated status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
 LangAttributeAwareFormControlUI
