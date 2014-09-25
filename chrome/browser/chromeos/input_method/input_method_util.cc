@@ -42,10 +42,12 @@ const struct {
   { "zh-t-i0-pinyin", "\xe6\x8b\xbc" },  // U+62FC
   { "zh-t-i0-wubi-1986", "\xe4\xba\x94" }, // U+4E94
   // For traditional Chinese input methods
+  { "zh-hant-t-i0-pinyin", "\xe6\x8b\xbc" },  // U+62FC
   { "zh-hant-t-i0-und", "\xE6\xB3\xA8" },  // U+9177
   { "zh-hant-t-i0-cangjie-1987", "\xe5\x80\x89" },  // U+5009
   { "zh-hant-t-i0-cangjie-1987-x-m0-simplified", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
+  { "hangul_ahnmatae", "\xed\x95\x9c" },  // U+D55C
   { "hangul_2set", "\xed\x95\x9c" },  // U+D55C
   { "hangul_3set390", "\xed\x95\x9c" },  // U+D55C
   { "hangul_3setfinal", "\xed\x95\x9c" },  // U+D55C
