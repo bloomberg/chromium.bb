@@ -89,6 +89,15 @@ const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
   return kSansSerifCssClass;
 }
 
+void EnsureNonEmptyTitleAndContent(std::string* title, std::string* content) {
+  if (title->empty())
+    *title = l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE);
+  if (content->empty()) {
+    *content = l10n_util::GetStringUTF8(
+        IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
+  }
+}
+
 std::string ReplaceHtmlTemplateValues(
     const std::string& title,
     const std::string& content,
@@ -146,6 +155,7 @@ const std::string GetUnsafePartialArticleHtml(
   std::ostringstream unsafe_output_stream;
   unsafe_output_stream << page_proto->html();
   std::string unsafe_article_html = unsafe_output_stream.str();
+  EnsureNonEmptyTitleAndContent(&title, &unsafe_article_html);
   std::string original_url = page_proto->url();
   return ReplaceHtmlTemplateValues(
       title, unsafe_article_html, "visible", original_url, theme, font_family);
@@ -166,11 +176,9 @@ const std::string GetUnsafeArticleHtml(
       unsafe_output_stream << article_proto->pages(page_num).html();
     }
     unsafe_article_html = unsafe_output_stream.str();
-  } else {
-    title = l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE);
-    unsafe_article_html =
-        l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
   }
+
+  EnsureNonEmptyTitleAndContent(&title, &unsafe_article_html);
 
   std::string original_url;
   if (article_proto->pages_size() > 0 && article_proto->pages(0).has_url()) {

@@ -3,8 +3,8 @@
   <include name="IDR_ABOUT_DOM_DISTILLER_HTML" file="../dom_distiller/webui/resources/about_dom_distiller.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
   <include name="IDR_ABOUT_DOM_DISTILLER_CSS" file="../dom_distiller/webui/resources/about_dom_distiller.css" type="BINDATA" />
   <include name="IDR_ABOUT_DOM_DISTILLER_JS" file="../dom_distiller/webui/resources/about_dom_distiller.js" type="BINDATA" />
-  <include name="IDR_DOM_DISTILLER_VIEWER_HTML" file="../dom_distiller/content/resources/dom_distiller_viewer.html" type="BINDATA" />
-  <include name="IDR_DOM_DISTILLER_VIEWER_JS" file="../dom_distiller/content/resources/dom_distiller_viewer.js" type="BINDATA" />
+  <include name="IDR_DOM_DISTILLER_VIEWER_HTML" file="../dom_distiller/core/html/dom_distiller_viewer.html" type="BINDATA" />
+  <include name="IDR_DOM_DISTILLER_VIEWER_JS" file="../dom_distiller/core/javascript/dom_distiller_viewer.js" type="BINDATA" />
   <include name="IDR_DISTILLER_JS" file="../dom_distiller/core/javascript/domdistiller.js" flattenhtml="true" type="BINDATA" />
   <include name="IDR_DISTILLER_CSS" file="../dom_distiller/core/css/distilledpage.css" type="BINDATA" />
   <include name="IDR_IS_DISTILLABLE_JS" file="../dom_distiller/core/javascript/is_distillable_trigger.js" type="BINDATA" />

@@ -860,8 +860,6 @@
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
             'components.gyp:autofill_content_browser',
-            'components.gyp:dom_distiller_content',
-            'components.gyp:dom_distiller_core',
             'components.gyp:password_manager_content_renderer',
             'components.gyp:pref_registry_test_support',
             'components_resources.gyp:components_resources',
@@ -876,6 +874,11 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+
+            # Dependencies of dom_distiller
+            'components.gyp:dom_distiller_content',
+            'components.gyp:dom_distiller_core',
+            'components_strings.gyp:components_strings',
           ],
           'include_dirs': [
             '..',
