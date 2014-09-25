@@ -156,6 +156,24 @@ bool WebRtcAudioCapturer::Initialize() {
 
   media::ChannelLayout channel_layout = static_cast<media::ChannelLayout>(
       device_info_.device.input.channel_layout);
+
+  // If KEYBOARD_MIC effect is set, change the layout to the corresponding
+  // layout that includes the keyboard mic.
+  if ((device_info_.device.input.effects &
+          media::AudioParameters::KEYBOARD_MIC) &&
+      MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() &&
+      audio_constraints.GetProperty(
+          MediaAudioConstraints::kGoogExperimentalNoiseSuppression)) {
+    if (channel_layout == media::CHANNEL_LAYOUT_STEREO) {
+      channel_layout = media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC;
+      DVLOG(1) << "Changed stereo layout to stereo + keyboard mic layout due "
+               << "to KEYBOARD_MIC effect.";
+    } else {
+      DVLOG(1) << "KEYBOARD_MIC effect ignored, not compatible with layout "
+               << channel_layout;
+    }
+  }
+
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
                             channel_layout, media::CHANNEL_LAYOUT_MAX + 1);
