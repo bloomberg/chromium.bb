@@ -1629,8 +1629,8 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
 
     RootInlineBox& root = inlineBoxWrapper()->root();
     LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
-
-    return localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
+    return rect;
 }
 
 } // namespace blink

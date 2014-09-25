@@ -498,7 +498,8 @@ LayoutRect RenderReplaced::selectionRectForPaintInvalidation(const RenderLayerMo
         return LayoutRect();
 
     LayoutRect rect = localSelectionRect();
-    return localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
+    return rect;
 }
 
 LayoutRect RenderReplaced::localSelectionRect(bool checkWhetherSelected) const

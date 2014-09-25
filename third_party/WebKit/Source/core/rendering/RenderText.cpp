@@ -1621,10 +1621,8 @@ LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelO
         rect.unite(ellipsisRectForBox(box, startPos, endPos));
     }
 
-    if (cb->hasColumns())
-        cb->adjustRectForColumns(rect);
-
-    return localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
+    return rect;
 }
 
 int RenderText::caretMinOffset() const
