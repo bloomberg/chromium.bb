@@ -11,11 +11,6 @@
       'gio.c',
       'gio_mem.c',
       'gprintf.c',
-      'gio_mem_snapshot.c',
-    ],
-    'trusted_sources': [
-      '<@(common_sources)',
-      'gio_pio.c',
     ],
   },
   'targets': [
@@ -25,7 +20,7 @@
       # tls_edit relies on gio which is always built for the host platform.
       'toolsets': ['host', 'target'],
       'sources': [
-        '<@(trusted_sources)',
+        '<@(common_sources)',
       ],
     },
     {
@@ -52,7 +47,7 @@
           'target_name': 'gio64',
           'type': 'static_library',
             'sources': [
-              '<@(trusted_sources)',
+              '<@(common_sources)',
             ],
           'variables': {
             'win_target': 'x64',

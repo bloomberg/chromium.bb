@@ -161,34 +161,6 @@ int GioMemoryFileClose(struct Gio *vself);
 
 void  GioMemoryFileDtor(struct Gio  *vself);
 
-struct GioMemoryFileSnapshot {
-  struct GioMemoryFile  base;
-};
-
-int GioMemoryFileSnapshotCtor(struct GioMemoryFileSnapshot  *self,
-                              const char                    *filename);
-
-void  GioMemoryFileSnapshotDtor(struct Gio                    *vself);
-
-
-struct GioPio {
-  struct Gio  base;
-  int         fd;
-  off_t       pos;
-};
-
-int GioPioCtor(struct GioPio *self, int fd);
-ssize_t GioPioRead(struct Gio *vself, void *buf, size_t count);
-ssize_t GioPioWrite(struct Gio *vself, const void *buf, size_t count);
-off_t GioPioSeek(struct Gio *vself, off_t offset, int whence);
-int GioPioFlush(struct Gio *vself);
-int GioPioClose(struct Gio *vself);
-void GioPioDtor(struct Gio *vself);
-
-
-#define ggetc(gp) ({ char ch; (*gp->vtbl->Read)(gp, &ch, 1) == 1 ? ch : EOF;})
-
-int fggetc(struct Gio   *gp);
 
 size_t gprintf(struct Gio  *gp,
                char const  *fmt,

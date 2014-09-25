@@ -112,10 +112,3 @@ void  GioFileDtor(struct Gio  *vself) {
     (void) fclose(self->iop);
   }
 }
-
-
-int fggetc(struct Gio   *gp) {
-  char    ch;
-
-  return (*gp->vtbl->Read)(gp, &ch, 1) == 1 ? ch : EOF;
-}

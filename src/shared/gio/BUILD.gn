@@ -8,11 +8,6 @@ static_library("gio") {
   sources = [
     "gio.c",
     "gio_mem.c",
-    "gio_mem_snapshot.c",
     "gprintf.c",
   ]
-
-  if (!is_nacl) {
-    sources += ["gio_pio.c"]
-  }
 }
