@@ -328,7 +328,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 
 void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
 {
-    if (ended())
+    if (m_stopped)
         return;
 
     MediaStreamTrackVector* tracks = 0;
