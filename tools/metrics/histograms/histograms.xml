@@ -29834,18 +29834,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Signin.Reconciler.AddedToChrome">
+  <obsolete>
+    Deprecated 2014-09 because chrome no longer tries to reconcile from the
+    cookie jar to the browser.
+  </obsolete>
   <owner>mlerman@chromium.org</owner>
   <summary>
-    After the first execution of the account reconciler, how many accounts were
-    added to the browser's token service because they were in the cookie jar.
+    How many accounts were added to the browser's token service because they
+    were in the cookie jar.
   </summary>
 </histogram>
 
 <histogram name="Signin.Reconciler.AddedToCookieJar">
   <owner>mlerman@chromium.org</owner>
   <summary>
-    After the first execution of the account reconciler, how many accounts were
-    added to the cookie jar because they were in the browser's token service.
+    How many accounts were added to the cookie jar because they were in the
+    browser's token service.
   </summary>
 </histogram>
 
@@ -29865,6 +29869,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     After execution of the account reconcilor, compares the primary account in
     the token service to the primary GAIA account of the cookie jar.
+  </summary>
+</histogram>
+
+<histogram name="Signin.Reconciler.RemovedFromCookieJar">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    How many accounts were removed from the cookie jar because they were not in
+    the browser's token service.
   </summary>
 </histogram>
 
@@ -55986,6 +55998,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Signin.Reconciler.AddedToChrome"/>
   <affected-histogram name="Signin.Reconciler.AddedToCookieJar"/>
   <affected-histogram name="Signin.Reconciler.DifferentPrimaryAccounts"/>
+  <affected-histogram name="Signin.Reconciler.RemovedFromCookieJar"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SocketType">

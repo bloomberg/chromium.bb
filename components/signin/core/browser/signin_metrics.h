@@ -53,9 +53,9 @@ enum ProfileSignout {
 // |total_number_accounts| - How many accounts are in the browser for this
 //                           profile.
 // |count_added_to_cookie_jar| - How many accounts were in the browser but not
-//                               the cookie jar.
-// |count_added_to_token| - How may accounts were in the cookie jar but not in
-//                          the browser.
+//                               in the cookie jar.
+// |count_removed_from_cookie_jar| - How many accounts were in the cookie jar
+//                                   but not in the browser.
 // |primary_accounts_same| - False if the primary account for the cookie jar
 //                           and the token service were different; else true.
 // |is_first_reconcile| - True if these stats are from the first execution of
@@ -64,7 +64,7 @@ enum ProfileSignout {
 //                            the AccountReconcilor began modifying the state.
 void LogSigninAccountReconciliation(int total_number_accounts,
                                     int count_added_to_cookie_jar,
-                                    int count_added_to_token,
+                                    int count_removed_from_cookie_jar,
                                     bool primary_accounts_same,
                                     bool is_first_reconcile,
                                     int pre_count_gaia_cookies);
