@@ -12,6 +12,12 @@ function HelpPageWebUITest() {}
 HelpPageWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
   browsePreload: 'chrome://help-frame/',
 };
 
