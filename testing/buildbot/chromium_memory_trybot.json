@@ -1,145 +1,81 @@
 {
   "gtest_tests": [
-    {
-      "test": "accessibility_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
+    "accessibility_unittests",
     {
       "test": "base_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"],
       "swarming": {
         "can_use_on_swarming_builders": true
       }
     },
     {
       "test": "browser_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_asan"],
       "swarming": {
         "can_use_on_swarming_builders": true,
         "shards": 10
       }
     },
-    {
-      "test": "cacheinvalidation_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "cc_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "components_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
+    "cacheinvalidation_unittests",
+    "cc_unittests",
+    "components_unittests",
     {
       "test": "content_browsertests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_asan"]
-    },
-    {
-      "test": "content_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "crypto_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "device_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "display_unittests",
-      "platforms": ["linux"],
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "extensions_unittests",
-      "platforms": ["linux", "win", "mac"],
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "gcm_unit_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "gfx_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "google_apis_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "gpu_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "interactive_ui_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_asan"],
-      "swarming": {
-        "can_use_on_swarming_builders": true,
-        "shards": 3
-      }
-    },
-    {
-      "test": "ipc_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "jingle_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "media_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "net_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"],
       "swarming": {
         "can_use_on_swarming_builders": true
       }
     },
     {
-      "test": "ppapi_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "test": "content_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
+    "crypto_unittests",
+    "device_unittests",
+    {
+      "test": "display_unittests",
+      "platforms": ["linux"]
     },
     {
-      "test": "printing_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "test": "extensions_unittests",
+      "platforms": ["linux", "win", "mac"]
     },
+    "gcm_unit_tests",
+    "gfx_unittests",
+    "google_apis_unittests",
+    "gpu_unittests",
     {
-      "test": "remoting_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "test": "interactive_ui_tests",
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 3
+      }
     },
+    "ipc_tests",
+    "jingle_unittests",
+    "media_unittests",
+    {
+      "test": "net_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
+    "ppapi_unittests",
+    "printing_unittests",
+    "remoting_unittests",
     {
       "test": "sandbox_linux_unittests",
-      "platforms": ["linux"],
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+      "platforms": ["linux"]
     },
-    {
-      "test": "sql_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "sync_unit_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
-    {
-      "test": "ui_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    },
+    "sql_unittests",
+    "sync_unit_tests",
+    "ui_unittests",
     {
       "test": "unit_tests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"],
       "swarming": {
         "can_use_on_swarming_builders": true,
         "shards": 2
       }
     },
-    {
-      "test": "url_unittests",
-      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
-    }
+    "url_unittests"
   ]
 }
