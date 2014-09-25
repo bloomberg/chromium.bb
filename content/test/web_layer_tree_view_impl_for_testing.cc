@@ -142,10 +142,10 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
     float page_scale,
     float top_controls_delta) {}
 
-scoped_ptr<cc::OutputSurface>
-WebLayerTreeViewImplForTesting::CreateOutputSurface(bool fallback) {
-  return make_scoped_ptr(
-      new cc::OutputSurface(cc::TestContextProvider::Create()));
+void WebLayerTreeViewImplForTesting::RequestNewOutputSurface(
+    bool fallback) {
+  layer_tree_host_->SetOutputSurface(make_scoped_ptr(
+      new cc::OutputSurface(cc::TestContextProvider::Create())));
 }
 
 void WebLayerTreeViewImplForTesting::registerViewportLayers(

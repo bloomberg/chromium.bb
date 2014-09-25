@@ -18,13 +18,16 @@ namespace {
 
 class MicroBenchmarkControllerTest : public testing::Test {
  public:
+  MicroBenchmarkControllerTest()
+      : layer_tree_host_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+
   virtual void SetUp() OVERRIDE {
     impl_proxy_ = make_scoped_ptr(new FakeImplProxy);
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     layer_tree_host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(
         impl_proxy_.get(), shared_bitmap_manager_.get()));
 
-    layer_tree_host_ = FakeLayerTreeHost::Create();
+    layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_);
     layer_tree_host_->SetRootLayer(Layer::Create());
     layer_tree_host_->InitializeForTesting(scoped_ptr<Proxy>(new FakeProxy));
   }
@@ -35,6 +38,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
     impl_proxy_.reset();
   }
 
+  FakeLayerTreeHostClient layer_tree_host_client_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;

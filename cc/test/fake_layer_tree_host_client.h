@@ -26,6 +26,9 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   explicit FakeLayerTreeHostClient(RendererOptions options);
   virtual ~FakeLayerTreeHostClient();
 
+  // Caller responsible for unsetting this and maintaining the host's lifetime.
+  void SetLayerTreeHost(LayerTreeHost* host) { host_ = host; }
+
   // LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
   virtual void DidBeginMainFrame() OVERRIDE {}
@@ -35,7 +38,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
                                    float page_scale,
                                    float top_controls_delta) OVERRIDE {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
+  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE;
   virtual void DidInitializeOutputSurface() OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE {}
@@ -49,6 +52,8 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
  private:
   bool use_software_rendering_;
   bool use_delegating_renderer_;
+
+  LayerTreeHost* host_;
 };
 
 }  // namespace cc

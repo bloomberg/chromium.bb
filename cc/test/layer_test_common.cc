@@ -101,7 +101,8 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
 }
 
 LayerTestCommon::LayerImplTest::LayerImplTest()
-    : host_(FakeLayerTreeHost::Create()),
+    : client_(FakeLayerTreeHostClient::DIRECT_3D),
+      host_(FakeLayerTreeHost::Create(&client_)),
       root_layer_impl_(LayerImpl::Create(host_->host_impl()->active_tree(), 1)),
       render_pass_(RenderPass::Create()) {
   scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();

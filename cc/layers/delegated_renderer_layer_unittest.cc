@@ -18,16 +18,18 @@ namespace {
 
 class DelegatedRendererLayerTest : public testing::Test {
  public:
-  DelegatedRendererLayerTest() : proxy_() {
+  DelegatedRendererLayerTest()
+      : proxy_(), host_client_(FakeLayerTreeHostClient::DIRECT_3D) {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
-    host_impl_ = FakeLayerTreeHost::Create(settings);
+    host_impl_ = FakeLayerTreeHost::Create(&host_client_, settings);
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
  protected:
   FakeProxy proxy_;
+  FakeLayerTreeHostClient host_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
   scoped_ptr<LayerTreeHost> host_impl_;
 };

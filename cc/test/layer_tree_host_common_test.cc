@@ -6,12 +6,14 @@
 
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 
 namespace cc {
 
 LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase()
-    : render_surface_layer_list_count_(0) {
+    : client_(FakeLayerTreeHostClient::DIRECT_3D),
+      render_surface_layer_list_count_(0) {
 }
 
 LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
@@ -108,6 +110,11 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       render_surface_layer_list_count_;
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
+scoped_ptr<FakeLayerTreeHost>
+LayerTreeHostCommonTestBase::CreateFakeLayerTreeHost() {
+  return FakeLayerTreeHost::Create(&client_);
 }
 
 }  // namespace cc

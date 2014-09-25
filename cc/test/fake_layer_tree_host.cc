@@ -5,22 +5,29 @@
 #include "cc/test/fake_layer_tree_host.h"
 
 namespace cc {
-FakeLayerTreeHost::FakeLayerTreeHost(LayerTreeHostClient* client,
+FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                                      const LayerTreeSettings& settings)
     : LayerTreeHost(client, NULL, settings),
+      client_(client),
       host_impl_(settings, &proxy_, &manager_),
-      needs_commit_(false) {}
-
-scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create() {
-  static FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-  static LayerTreeSettings settings;
-  return make_scoped_ptr(new FakeLayerTreeHost(&client, settings));
+      needs_commit_(false) {
+  client_->SetLayerTreeHost(this);
 }
 
 scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+    FakeLayerTreeHostClient* client) {
+  LayerTreeSettings settings;
+  return make_scoped_ptr(new FakeLayerTreeHost(client, settings));
+}
+
+scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+    FakeLayerTreeHostClient* client,
     const LayerTreeSettings& settings) {
-  static FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-  return make_scoped_ptr(new FakeLayerTreeHost(&client, settings));
+  return make_scoped_ptr(new FakeLayerTreeHost(client, settings));
+}
+
+FakeLayerTreeHost::~FakeLayerTreeHost() {
+  client_->SetLayerTreeHost(NULL);
 }
 
 void FakeLayerTreeHost::SetNeedsCommit() { needs_commit_ = true; }

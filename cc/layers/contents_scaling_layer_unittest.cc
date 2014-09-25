@@ -42,7 +42,8 @@ static void CalcDrawProps(FakeLayerTreeHost* host, float device_scale_factor) {
 }
 
 TEST(ContentsScalingLayerTest, CheckContentsBounds) {
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
 
   scoped_refptr<MockContentsScalingLayer> test_layer =
       make_scoped_refptr(new MockContentsScalingLayer());

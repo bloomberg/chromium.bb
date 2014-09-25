@@ -79,8 +79,7 @@ class CONTENT_EXPORT CompositorImpl
       const gfx::Vector2d& scroll_delta,
       float page_scale,
       float top_controls_delta) OVERRIDE {}
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback)
-      OVERRIDE;
+  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE;
   virtual void DidInitializeOutputSurface() OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE;
@@ -112,6 +111,7 @@ class CONTENT_EXPORT CompositorImpl
   };
   void PostComposite(CompositingTrigger trigger);
   void Composite(CompositingTrigger trigger);
+  void CreateOutputSurface(bool fallback);
 
   bool WillCompositeThisFrame() const {
     return current_composite_task_ &&

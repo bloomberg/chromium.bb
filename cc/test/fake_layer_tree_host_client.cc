@@ -7,6 +7,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 
@@ -14,25 +15,31 @@ FakeLayerTreeHostClient::FakeLayerTreeHostClient(RendererOptions options)
     : use_software_rendering_(options == DIRECT_SOFTWARE ||
                               options == DELEGATED_SOFTWARE),
       use_delegating_renderer_(options == DELEGATED_3D ||
-                               options == DELEGATED_SOFTWARE) {}
+                               options == DELEGATED_SOFTWARE),
+      host_(NULL) {
+}
 
 FakeLayerTreeHostClient::~FakeLayerTreeHostClient() {}
 
-scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface(
-    bool fallback) {
+void FakeLayerTreeHostClient::RequestNewOutputSurface(bool fallback) {
+  DCHECK(host_);
+  scoped_ptr<OutputSurface> surface;
   if (use_software_rendering_) {
     if (use_delegating_renderer_) {
-      return FakeOutputSurface::CreateDelegatingSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
+      surface = FakeOutputSurface::CreateDelegatingSoftware(
+                    make_scoped_ptr(new SoftwareOutputDevice))
+                    .PassAs<OutputSurface>();
+    } else {
+      surface = FakeOutputSurface::CreateSoftware(
+                    make_scoped_ptr(new SoftwareOutputDevice))
+                    .PassAs<OutputSurface>();
     }
-
-    return FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
+  } else if (use_delegating_renderer_) {
+    surface = FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
+  } else {
+    surface = FakeOutputSurface::Create3d().PassAs<OutputSurface>();
   }
-
-  if (use_delegating_renderer_)
-    return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
-  return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
+  host_->SetOutputSurface(surface.Pass());
 }
 
 }  // namespace cc

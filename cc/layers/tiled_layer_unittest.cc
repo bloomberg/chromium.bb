@@ -112,6 +112,7 @@ class TiledLayerTest : public testing::Test {
         shared_bitmap_manager_.get(),
         settings_,
         impl_thread_.message_loop_proxy());
+    fake_layer_tree_host_client_.SetLayerTreeHost(layer_tree_host_.get());
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
     layer_tree_host_->SetLayerTreeHostClientReady();

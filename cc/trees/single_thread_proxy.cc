@@ -107,15 +107,16 @@ void SingleThreadProxy::SetVisible(bool visible) {
   UpdateBackgroundAnimateTicking();
 }
 
-void SingleThreadProxy::CreateAndInitializeOutputSurface() {
-  TRACE_EVENT0(
-      "cc", "SingleThreadProxy::CreateAndInitializeOutputSurface");
+void SingleThreadProxy::RequestNewOutputSurface() {
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());
+  layer_tree_host_->RequestNewOutputSurface();
+}
 
-  scoped_ptr<OutputSurface> output_surface =
-      layer_tree_host_->CreateOutputSurface();
-
+void SingleThreadProxy::SetOutputSurface(
+    scoped_ptr<OutputSurface> output_surface) {
+  DCHECK(Proxy::IsMainThread());
+  DCHECK(layer_tree_host_->output_surface_lost());
   renderer_capabilities_for_main_thread_ = RendererCapabilities();
 
   bool success = !!output_surface;
@@ -135,7 +136,7 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
   } else if (Proxy::MainThreadTaskRunner()) {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&SingleThreadProxy::CreateAndInitializeOutputSurface,
+        base::Bind(&SingleThreadProxy::RequestNewOutputSurface,
                    weak_factory_.GetWeakPtr()));
   }
 }
@@ -664,10 +665,10 @@ void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
   if (Proxy::MainThreadTaskRunner()) {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&SingleThreadProxy::CreateAndInitializeOutputSurface,
+        base::Bind(&SingleThreadProxy::RequestNewOutputSurface,
                    weak_factory_.GetWeakPtr()));
   } else {
-    CreateAndInitializeOutputSurface();
+    RequestNewOutputSurface();
   }
 }
 

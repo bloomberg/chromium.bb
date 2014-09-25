@@ -244,8 +244,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   gl_surface_->ResetBackingFrameBufferObject();
 }
 
-scoped_ptr<cc::OutputSurface> HardwareRenderer::CreateOutputSurface(
-    bool fallback) {
+void HardwareRenderer::RequestNewOutputSurface(bool fallback) {
   // Android webview does not support losing output surface.
   DCHECK(!fallback);
   scoped_refptr<cc::ContextProvider> context_provider =
@@ -254,7 +253,8 @@ scoped_ptr<cc::OutputSurface> HardwareRenderer::CreateOutputSurface(
   scoped_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(context_provider));
   output_surface_ = output_surface_holder.get();
-  return output_surface_holder.PassAs<cc::OutputSurface>();
+  layer_tree_host_->SetOutputSurface(
+      output_surface_holder.PassAs<cc::OutputSurface>());
 }
 
 void HardwareRenderer::UnusedResourcesAreAvailable() {

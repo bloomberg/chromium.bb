@@ -63,7 +63,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         times_create_failed_(0),
         committed_at_least_once_(false),
         context_should_support_io_surface_(false),
-        fallback_context_works_(false) {
+        fallback_context_works_(false),
+        async_output_surface_creation_(false) {
     media::InitializeMediaLibraryForTesting();
   }
 
@@ -153,6 +154,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   bool committed_at_least_once_;
   bool context_should_support_io_surface_;
   bool fallback_context_works_;
+  bool async_output_surface_creation_;
 };
 
 class LayerTreeHostContextTestLostContextSucceeds
@@ -168,6 +170,24 @@ class LayerTreeHostContextTestLostContextSucceeds
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
+  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE {
+    if (async_output_surface_creation_) {
+      MainThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&LayerTreeHostContextTestLostContextSucceeds::
+                         CreateAndSetOutputSurface,
+                     base::Unretained(this),
+                     fallback));
+    } else {
+      CreateAndSetOutputSurface(fallback);
+    }
+  }
+
+  void CreateAndSetOutputSurface(bool fallback) {
+    layer_tree_host()->SetOutputSurface(
+        LayerTreeHostContextTest::CreateOutputSurface(fallback));
+  }
+
   virtual void DidInitializeOutputSurface() OVERRIDE {
     if (first_initialized_)
       ++num_losses_;
@@ -177,7 +197,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     recovered_context_ = true;
   }
 
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(7u, test_case_); }
+  virtual void AfterTest() OVERRIDE { EXPECT_EQ(11u, test_case_); }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     // If the last frame had a context loss, then we'll commit again to
@@ -211,24 +231,35 @@ class LayerTreeHostContextTestLostContextSucceeds
          0,      // times_to_lose_during_draw
          0,      // times_to_fail_recreate
          false,  // fallback_context_works
+         false,  // async_output_surface_creation
         },
         {
          0,      // times_to_lose_during_commit
          1,      // times_to_lose_during_draw
          0,      // times_to_fail_recreate
          false,  // fallback_context_works
+         false,  // async_output_surface_creation
         },
         {
          1,      // times_to_lose_during_commit
          0,      // times_to_lose_during_draw
          3,      // times_to_fail_recreate
          false,  // fallback_context_works
+         false,  // async_output_surface_creation
         },
         {
          0,      // times_to_lose_during_commit
          1,      // times_to_lose_during_draw
          3,      // times_to_fail_recreate
          false,  // fallback_context_works
+         false,  // async_output_surface_creation
+        },
+        {
+         0,      // times_to_lose_during_commit
+         1,      // times_to_lose_during_draw
+         3,      // times_to_fail_recreate
+         false,  // fallback_context_works
+         true,   // async_output_surface_creation
         },
         // Losing the context and recreating it any number of times should
         // succeed.
@@ -237,20 +268,44 @@ class LayerTreeHostContextTestLostContextSucceeds
          0,      // times_to_lose_during_draw
          0,      // times_to_fail_recreate
          false,  // fallback_context_works
+         false,  // async_output_surface_creation
         },
         {
          0,      // times_to_lose_during_commit
          10,     // times_to_lose_during_draw
          0,      // times_to_fail_recreate
          false,  // fallback_context_works
+         false,  // async_output_surface_creation
+        },
+        {
+         10,     // times_to_lose_during_commit
+         0,      // times_to_lose_during_draw
+         0,      // times_to_fail_recreate
+         false,  // fallback_context_works
+         true,   // async_output_surface_creation
+        },
+        {
+         0,      // times_to_lose_during_commit
+         10,     // times_to_lose_during_draw
+         0,      // times_to_fail_recreate
+         false,  // fallback_context_works
+         true,   // async_output_surface_creation
         },
         // Losing the context, failing to reinitialize it, and making a fallback
         // context should work.
+        {
+         0,      // times_to_lose_during_commit
+         1,      // times_to_lose_during_draw
+         0,      // times_to_fail_recreate
+         true,   // fallback_context_works
+         false,  // async_output_surface_creation
+        },
         {
          0,     // times_to_lose_during_commit
          1,     // times_to_lose_during_draw
          0,     // times_to_fail_recreate
          true,  // fallback_context_works
+         true,  // async_output_surface_creation
         },
     };
 
@@ -266,6 +321,8 @@ class LayerTreeHostContextTestLostContextSucceeds
     times_to_lose_during_draw_ = kTests[test_case_].times_to_lose_during_draw;
     times_to_fail_recreate_ = kTests[test_case_].times_to_fail_recreate;
     fallback_context_works_ = kTests[test_case_].fallback_context_works;
+    async_output_surface_creation_ =
+        kTests[test_case_].async_output_surface_creation;
     ++test_case_;
     return true;
   }
@@ -275,6 +332,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     int times_to_lose_during_draw;
     int times_to_fail_recreate;
     bool fallback_context_works;
+    bool async_output_surface_creation;
   };
 
  protected:

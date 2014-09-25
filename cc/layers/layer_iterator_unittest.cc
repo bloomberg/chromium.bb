@@ -111,7 +111,8 @@ TEST(LayerIteratorTest, SimpleTree) {
   root_layer->AddChild(third);
   root_layer->AddChild(fourth);
 
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
   host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
@@ -147,7 +148,8 @@ TEST(LayerIteratorTest, ComplexTree) {
   root22->AddChild(root221);
   root23->AddChild(root231);
 
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
   host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
@@ -192,7 +194,8 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   root23->SetOpacity(0.5f);
   root23->AddChild(root231);
 
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
   host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;

@@ -290,9 +290,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
                                      top_controls_delta);
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
-      OVERRIDE {
-    return test_hooks_->CreateOutputSurface(fallback);
+  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE {
+    test_hooks_->RequestNewOutputSurface(fallback);
   }
 
   virtual void DidInitializeOutputSurface() OVERRIDE {
@@ -665,6 +664,10 @@ void LayerTreeTest::RunTest(bool threaded,
 
 void LayerTreeTest::RunTestWithImplSidePainting() {
   RunTest(true, false, true);
+}
+
+void LayerTreeTest::RequestNewOutputSurface(bool fallback) {
+  layer_tree_host_->SetOutputSurface(CreateOutputSurface(fallback));
 }
 
 scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {

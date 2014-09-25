@@ -189,9 +189,12 @@ void ExpectTreesAreIdentical(Layer* layer,
 
 class TreeSynchronizerTest : public testing::Test {
  public:
-  TreeSynchronizerTest() : host_(FakeLayerTreeHost::Create()) {}
+  TreeSynchronizerTest()
+      : client_(FakeLayerTreeHostClient::DIRECT_3D),
+        host_(FakeLayerTreeHost::Create(&client_)) {}
 
  protected:
+  FakeLayerTreeHostClient client_;
   scoped_ptr<FakeLayerTreeHost> host_;
 };
 

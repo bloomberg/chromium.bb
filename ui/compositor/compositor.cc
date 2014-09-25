@@ -341,8 +341,9 @@ void Compositor::Layout() {
   disable_schedule_composite_ = false;
 }
 
-scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface(bool fallback) {
-  return context_factory_->CreateOutputSurface(this, fallback);
+void Compositor::RequestNewOutputSurface(bool fallback) {
+  host_->SetOutputSurface(
+      context_factory_->CreateOutputSurface(this, fallback));
 }
 
 void Compositor::DidCommit() {

@@ -115,7 +115,8 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   scoped_refptr<Layer> root = Layer::Create();
   root->AddChild(layer);
 
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
   host->SetRootLayer(root);
 
   RenderSurfaceLayerList render_surface_layer_list;
