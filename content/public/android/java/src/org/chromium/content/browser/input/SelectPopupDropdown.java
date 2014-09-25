@@ -25,10 +25,10 @@ public class SelectPopupDropdown implements SelectPopup {
 
     private final ContentViewCore mContentViewCore;
     private final Context mContext;
+    private final DropdownPopupWindow mDropdownPopupWindow;
 
-    private DropdownPopupWindow mDropdownPopupWindow;
     private int mInitialSelection = -1;
-    private boolean mAlreadySelectedItems = false;
+    private boolean mSelectionNotified;
 
     public SelectPopupDropdown(ContentViewCore contentViewCore, List<SelectPopupItem> items,
             Rect bounds, int[] selected) {
@@ -39,9 +39,7 @@ public class SelectPopupDropdown implements SelectPopup {
         mDropdownPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int[] selectedIndices = {position};
-                mContentViewCore.selectPopupMenuItems(selectedIndices);
-                mAlreadySelectedItems = true;
+                notifySelection(new int[] {position});
                 hide();
             }
         });
@@ -64,11 +62,15 @@ public class SelectPopupDropdown implements SelectPopup {
             new PopupWindow.OnDismissListener() {
                 @Override
                 public void onDismiss() {
-                    if (!mAlreadySelectedItems) {
-                        mContentViewCore.selectPopupMenuItems(null);
-                    }
+                    notifySelection(null);
                 }
             });
+    }
+
+    private void notifySelection(int[] indicies) {
+        if (mSelectionNotified) return;
+        mContentViewCore.selectPopupMenuItems(indicies);
+        mSelectionNotified = true;
     }
 
     @Override
@@ -82,5 +84,6 @@ public class SelectPopupDropdown implements SelectPopup {
     @Override
     public void hide() {
         mDropdownPopupWindow.dismiss();
+        notifySelection(null);
     }
 }

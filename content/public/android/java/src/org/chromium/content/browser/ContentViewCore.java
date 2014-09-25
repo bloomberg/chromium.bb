@@ -2171,12 +2171,14 @@ public class ContentViewCore
             return;
         }
 
+        hidePopupsAndClearSelection();
+        assert mNativeSelectPopupSourceFrame == 0 : "Zombie popup did not clear the frame source";
+
         assert items.length == enabled.length;
         List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
         for (int i = 0; i < items.length; i++) {
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
-        hidePopupsAndClearSelection();
         if (DeviceFormFactor.isTablet(mContext) && !multiple) {
             mSelectPopup = new SelectPopupDropdown(this, popupItems, bounds, selectedIndices);
         } else {

@@ -29,10 +29,11 @@ public class SelectPopupDialog implements SelectPopup {
     };
 
     // The dialog hosting the popup list view.
-    private AlertDialog mListBoxPopup = null;
-
+    private final AlertDialog mListBoxPopup;
     private final ContentViewCore mContentViewCore;
     private final Context mContext;
+
+    private boolean mSelectionNotified;
 
     public SelectPopupDialog(ContentViewCore contentViewCore, List<SelectPopupItem> items,
             boolean multiple, int[] selected) {
@@ -50,14 +51,14 @@ public class SelectPopupDialog implements SelectPopup {
             b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mContentViewCore.selectPopupMenuItems(getSelectedIndices(listView));
+                    notifySelection(getSelectedIndices(listView));
                 }
             });
             b.setNegativeButton(android.R.string.cancel,
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            mContentViewCore.selectPopupMenuItems(null);
+                            notifySelection(null);
                         }
                     });
         }
@@ -78,7 +79,7 @@ public class SelectPopupDialog implements SelectPopup {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View v,
                         int position, long id) {
-                    mContentViewCore.selectPopupMenuItems(getSelectedIndices(listView));
+                    notifySelection(getSelectedIndices(listView));
                     mListBoxPopup.dismiss();
                 }
             });
@@ -90,7 +91,7 @@ public class SelectPopupDialog implements SelectPopup {
         mListBoxPopup.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                mContentViewCore.selectPopupMenuItems(null);
+                notifySelection(null);
             }
         });
     }
@@ -104,7 +105,7 @@ public class SelectPopupDialog implements SelectPopup {
         return resourceId;
     }
 
-    private int[] getSelectedIndices(ListView listView) {
+    private static int[] getSelectedIndices(ListView listView) {
         SparseBooleanArray sparseArray = listView.getCheckedItemPositions();
         int selectedCount = 0;
         for (int i = 0; i < sparseArray.size(); ++i) {
@@ -121,6 +122,12 @@ public class SelectPopupDialog implements SelectPopup {
         return indices;
     }
 
+    private void notifySelection(int[] indicies) {
+        if (mSelectionNotified) return;
+        mContentViewCore.selectPopupMenuItems(indicies);
+        mSelectionNotified = true;
+    }
+
     @Override
     public void show() {
         mListBoxPopup.show();
@@ -129,5 +136,6 @@ public class SelectPopupDialog implements SelectPopup {
     @Override
     public void hide() {
         mListBoxPopup.cancel();
+        notifySelection(null);
     }
 }
