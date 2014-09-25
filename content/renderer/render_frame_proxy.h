@@ -99,6 +99,9 @@ class CONTENT_EXPORT RenderFrameProxy
       blink::WebRemoteFrame* targetFrame,
       blink::WebSecurityOrigin target,
       blink::WebDOMMessageEvent event);
+  virtual void initializeChildFrame(
+      const blink::WebRect& frame_rect,
+      float scale_factor);
 
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);

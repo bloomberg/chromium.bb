@@ -1063,19 +1063,10 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // frame?
     OnStop();
 
-    // Let subframes know that the frame is now rendered remotely, for the
-    // purposes of compositing and input events.
-    if (!is_main_frame) {
-      // TODO(creis): Remove setIsRemote and send initializeChildFrame from the
-      // RenderFrameProxy, since the RenderFrameHost may be deleted first.  In
-      // the meantime, temporarily set this frame's proxy so that the message
-      // is sent via RenderFrameProxy.
-      // See http://crbug.com/416102.
-      DCHECK(!render_frame_proxy_);
-      set_render_frame_proxy(proxy);
-      frame_->setIsRemote(true);
-      set_render_frame_proxy(NULL);
-    }
+    // Transfer settings such as initial drawing parameters to the remote frame
+    // that will replace this frame.
+    if (!is_main_frame)
+      proxy->web_frame()->initializeFromFrame(frame_);
 
     // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
@@ -3178,12 +3169,6 @@ void RenderFrameImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::forwardInputEvent(const blink::WebInputEvent* event) {
   Send(new FrameHostMsg_ForwardInputEvent(routing_id_, event));
-}
-
-void RenderFrameImpl::initializeChildFrame(const blink::WebRect& frame_rect,
-                                           float scale_factor) {
-  render_frame_proxy_->Send(new FrameHostMsg_InitializeChildFrame(
-      routing_id_, frame_rect, scale_factor));
 }
 
 blink::WebScreenOrientationClient*
