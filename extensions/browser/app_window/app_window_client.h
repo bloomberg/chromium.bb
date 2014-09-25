@@ -40,11 +40,6 @@ class AppWindowClient {
       AppWindow* window,
       const AppWindow::CreateParams& params) = 0;
 
-  // A positive keep-alive count is a request for the embedding application to
-  // keep running after all windows are closed. The count starts at zero.
-  virtual void IncrementKeepAliveCount() = 0;
-  virtual void DecrementKeepAliveCount() = 0;
-
   // Opens DevTools window and runs the callback.
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
                                   const base::Closure& callback) = 0;

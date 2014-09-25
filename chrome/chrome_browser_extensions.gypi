@@ -58,6 +58,8 @@
       'browser/apps/per_app_settings_service.h',
       'browser/apps/per_app_settings_service_factory.cc',
       'browser/apps/per_app_settings_service_factory.h',
+      'browser/apps/scoped_keep_alive.cc',
+      'browser/apps/scoped_keep_alive.h',
       'browser/apps/shortcut_manager.cc',
       'browser/apps/shortcut_manager.h',
       'browser/apps/shortcut_manager_factory.cc',

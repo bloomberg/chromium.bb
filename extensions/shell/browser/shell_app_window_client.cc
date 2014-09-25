@@ -40,15 +40,6 @@ NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
   return native_app_window;
 }
 
-void ShellAppWindowClient::IncrementKeepAliveCount() {
-  // app_shell runs until the system powers off, so it doesn't need to track
-  // open apps or windows to keep itself alive.
-}
-
-void ShellAppWindowClient::DecrementKeepAliveCount() {
-  // See IncrementKeepAliveCount().
-}
-
 void ShellAppWindowClient::OpenDevToolsWindow(
     content::WebContents* web_contents,
     const base::Closure& callback) {

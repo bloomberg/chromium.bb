@@ -25,8 +25,6 @@ class ShellAppWindowClient : public AppWindowClient {
   virtual NativeAppWindow* CreateNativeAppWindow(
       AppWindow* window,
       const AppWindow::CreateParams& params) OVERRIDE;
-  virtual void IncrementKeepAliveCount() OVERRIDE;
-  virtual void DecrementKeepAliveCount() OVERRIDE;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
                                   const base::Closure& callback) OVERRIDE;
   virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,7 +16,6 @@
 // TODO(jamescook): We probably shouldn't compile this class at all on Android.
 // See http://crbug.com/343612
 #if !defined(OS_ANDROID)
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #endif
 
@@ -45,7 +45,10 @@ extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  return new extensions::AppWindow(context, new ChromeAppDelegate, extension);
+  return new extensions::AppWindow(
+      context,
+      new ChromeAppDelegate(make_scoped_ptr(new ScopedKeepAlive)),
+      extension);
 #endif
 }
 
@@ -56,18 +59,6 @@ extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindow(
   return NULL;
 #else
   return CreateNativeAppWindowImpl(window, params);
-#endif
-}
-
-void ChromeAppWindowClient::IncrementKeepAliveCount() {
-#if !defined(OS_ANDROID)
-  chrome::IncrementKeepAliveCount();
-#endif
-}
-
-void ChromeAppWindowClient::DecrementKeepAliveCount() {
-#if !defined(OS_ANDROID)
-  chrome::DecrementKeepAliveCount();
 #endif
 }
 

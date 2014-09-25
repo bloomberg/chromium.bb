@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
-#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 
 ProfileLoader::ProfileLoader(ProfileStore* profile_store)
     : profile_store_(profile_store),

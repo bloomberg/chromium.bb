@@ -285,8 +285,6 @@ void AppWindow::Init(const GURL& url,
       new web_modal::PopupManager(GetWebContentsModalDialogHost()));
   popup_manager_->RegisterWith(web_contents);
 
-  // Prevent the browser process from shutting down while this window exists.
-  app_window_client->IncrementKeepAliveCount();
   UpdateExtensionAppIcon();
   AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 
@@ -331,13 +329,7 @@ void AppWindow::Init(const GURL& url,
 }
 
 AppWindow::~AppWindow() {
-  // Unregister now to prevent getting notified if we're the last window open.
-  app_delegate_->SetTerminatingCallback(base::Closure());
-
   ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
-
-  // Remove shutdown prevention.
-  AppWindowClient::Get()->DecrementKeepAliveCount();
 }
 
 void AppWindow::RequestMediaAccessPermission(

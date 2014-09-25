@@ -18,10 +18,14 @@ class BrowserContext;
 class WebContents;
 }
 
+class ScopedKeepAlive;
+
 class ChromeAppDelegate : public extensions::AppDelegate,
                           public content::NotificationObserver {
  public:
-  ChromeAppDelegate();
+  // Pass a ScopedKeepAlive to prevent the browser process from shutting down
+  // while this object exists.
+  explicit ChromeAppDelegate(scoped_ptr<ScopedKeepAlive> keep_alive);
   virtual ~ChromeAppDelegate();
 
   static void DisableExternalOpenForTesting();
@@ -71,6 +75,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
   scoped_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;
   base::Closure terminating_callback_;
   content::NotificationRegistrar registrar_;

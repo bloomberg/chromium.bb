@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -148,14 +149,17 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
   return NULL;
 }
 
-ChromeAppDelegate::ChromeAppDelegate()
-    : new_window_contents_delegate_(new NewWindowContentsDelegate()) {
+ChromeAppDelegate::ChromeAppDelegate(scoped_ptr<ScopedKeepAlive> keep_alive)
+    : keep_alive_(keep_alive.Pass()),
+      new_window_contents_delegate_(new NewWindowContentsDelegate()) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 }
 
 ChromeAppDelegate::~ChromeAppDelegate() {
+  // Unregister now to prevent getting notified if |keep_alive_| is the last.
+  terminating_callback_.Reset();
 }
 
 void ChromeAppDelegate::DisableExternalOpenForTesting() {

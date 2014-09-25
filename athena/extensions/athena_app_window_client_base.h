@@ -21,8 +21,6 @@ class AthenaAppWindowClientBase : public extensions::AppWindowClient {
   virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
       const extensions::AppWindow::CreateParams& params) OVERRIDE;
-  virtual void IncrementKeepAliveCount() OVERRIDE;
-  virtual void DecrementKeepAliveCount() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaAppWindowClientBase);
 };

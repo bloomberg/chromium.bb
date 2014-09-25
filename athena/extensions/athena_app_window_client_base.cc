@@ -27,12 +27,4 @@ extensions::NativeAppWindow* AthenaAppWindowClientBase::CreateNativeAppWindow(
   return native_window;
 }
 
-void AthenaAppWindowClientBase::IncrementKeepAliveCount() {
-  // No need to keep track of KeepAlive count on ChromeOS.
-}
-
-void AthenaAppWindowClientBase::DecrementKeepAliveCount() {
-  // No need to keep track of KeepAlive count on ChromeOS.
-}
-
 }  // namespace athena

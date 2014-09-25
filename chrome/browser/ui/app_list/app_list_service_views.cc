@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
 
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 #include "ui/app_list/views/app_list_view.h"
 
 AppListServiceViews::AppListServiceViews(

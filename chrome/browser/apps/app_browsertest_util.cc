@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
@@ -201,7 +202,9 @@ AppWindow* PlatformAppBrowserTest::CreateAppWindowFromParams(
     const Extension* extension,
     const AppWindow::CreateParams& params) {
   AppWindow* window =
-      new AppWindow(browser()->profile(), new ChromeAppDelegate(), extension);
+      new AppWindow(browser()->profile(),
+                    new ChromeAppDelegate(make_scoped_ptr(new ScopedKeepAlive)),
+                    extension);
   window->Init(GURL(std::string()), new AppWindowContentsImpl(window), params);
   return window;
 }

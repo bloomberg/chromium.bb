@@ -33,8 +33,6 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
       const extensions::AppWindow::CreateParams& params) OVERRIDE;
-  virtual void IncrementKeepAliveCount() OVERRIDE;
-  virtual void DecrementKeepAliveCount() OVERRIDE;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
                                   const base::Closure& callback) OVERRIDE;
   virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;

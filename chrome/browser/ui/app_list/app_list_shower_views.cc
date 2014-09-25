@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/screen.h"

@@ -49,6 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
@@ -742,8 +743,10 @@ class V1App : public TestBrowserWindow {
 class V2App {
  public:
   V2App(Profile* profile, const extensions::Extension* extension) {
-    window_ = new extensions::AppWindow(profile, new ChromeAppDelegate(),
-                                        extension);
+    window_ = new extensions::AppWindow(
+        profile,
+        new ChromeAppDelegate(make_scoped_ptr(new ScopedKeepAlive)),
+        extension);
     extensions::AppWindow::CreateParams params =
         extensions::AppWindow::CreateParams();
     window_->Init(GURL(std::string()),

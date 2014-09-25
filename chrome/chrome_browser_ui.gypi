@@ -1184,8 +1184,6 @@
       'browser/ui/app_list/recommended_apps.cc',
       'browser/ui/app_list/recommended_apps.h',
       'browser/ui/app_list/recommended_apps_observer.h',
-      'browser/ui/app_list/scoped_keep_alive.cc',
-      'browser/ui/app_list/scoped_keep_alive.h',
       'browser/ui/app_list/search/app_result.cc',
       'browser/ui/app_list/search/app_result.h',
       'browser/ui/app_list/search/app_search_provider.cc',
