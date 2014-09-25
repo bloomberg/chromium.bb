@@ -125,7 +125,7 @@ public:
 
     // Called by the embedder when it needs to detach the subtree rooted at this
     // frame.
-    void detach();
+    BLINK_EXPORT void detach();
 
     // Basic properties ---------------------------------------------------
 
