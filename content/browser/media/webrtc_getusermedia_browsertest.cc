@@ -458,8 +458,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on Webkit Win7 Debug bot: http://crbug.com/417756
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
+    DISABLED_TwoGetUserMediaWithFirstHdSecondVga
+#else
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
+    TwoGetUserMediaWithFirstHdSecondVga
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithFirstHdSecondVga) {
+                       MAYBE_TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
       "{video: {mandatory: {minWidth:1280 , minHeight: 720}}}";
   std::string constraints2 =
