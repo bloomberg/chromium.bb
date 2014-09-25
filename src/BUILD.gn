@@ -18,7 +18,6 @@ group("trusted_targets") {
     "//native_client/src/trusted/desc_cacheability:desc_cacheability",
     "//native_client/src/trusted/manifest_name_service_proxy:manifest_proxy",
     "//native_client/src/trusted/threading:thread_interface",
-    "//native_client/src/trusted/gio:gio_wrapped_desc",
     "//native_client/src/shared/srpc/:nonnacl_srpc",
     "//native_client/src/trusted/desc:nrd_xfer",
     "//native_client/src/trusted/perf_counter:nacl_perf_counter",

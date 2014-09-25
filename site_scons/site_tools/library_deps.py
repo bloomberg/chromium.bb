@@ -51,7 +51,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'manifest_proxy',
         'simple_service',
         'thread_interface',
-        'gio_wrapped_desc',
         'nonnacl_srpc',
         'nrd_xfer',
         'nacl_perf_counter',
