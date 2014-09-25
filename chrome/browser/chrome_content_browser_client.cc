@@ -1289,9 +1289,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             switches::kDisableClientSidePhishingDetection);
       }
 
-      if (prefs->GetBoolean(prefs::kPrintPreviewDisabled))
-        command_line->AppendSwitch(switches::kDisablePrintPreview);
-
       InstantService* instant_service =
           InstantServiceFactory::GetForProfile(profile);
       if (instant_service &&
