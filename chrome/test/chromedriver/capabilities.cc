@@ -389,6 +389,7 @@ Status ParseChromeOptions(
     parser_map["androidUseRunningApp"] =
         base::Bind(&ParseBoolean, &capabilities->android_use_running_app);
     parser_map["args"] = base::Bind(&ParseSwitches);
+    parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
   } else if (is_remote) {
     parser_map["debuggerAddress"] = base::Bind(&ParseUseRemoteBrowser);
@@ -396,7 +397,6 @@ Status ParseChromeOptions(
     parser_map["args"] = base::Bind(&ParseSwitches);
     parser_map["binary"] = base::Bind(&ParseFilePath, &capabilities->binary);
     parser_map["detach"] = base::Bind(&ParseBoolean, &capabilities->detach);
-    parser_map["mobileEmulation"] = base::Bind(&ParseMobileEmulation);
     parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["extensions"] = base::Bind(&ParseExtensions);
     parser_map["forceDevToolsScreenshot"] = base::Bind(
@@ -407,6 +407,7 @@ Status ParseChromeOptions(
     parser_map["logPath"] = base::Bind(&ParseLogPath);
     parser_map["minidumpPath"] =
         base::Bind(&ParseString, &capabilities->minidump_path);
+    parser_map["mobileEmulation"] = base::Bind(&ParseMobileEmulation);
     parser_map["prefs"] = base::Bind(&ParseDict, &capabilities->prefs);
   }
 
