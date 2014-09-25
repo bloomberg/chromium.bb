@@ -117,14 +117,50 @@ class TestGetosWithTempdir(TestCaseExtended):
 
   def testGetSDKVersion(self):
     """correctly parses README to find SDK version."""
-    expected_version = (16, '196', 'f00baacabba6e-refs/heads/master@{#100}')
+    expected_version = (16, 100, 'f00baacabba6e-refs/heads/master@{#100}')
     with open(os.path.join(self.tempdir, 'README'), 'w') as out:
-      out.write('Version: %s\n' % expected_version[0])
-      out.write('Chrome Revision: %s\n' % expected_version[1])
+      out.write('Version: %d\n' % expected_version[0])
+      out.write('Chrome Revision: %d\n' % expected_version[1])
       out.write('Chrome Commit Position: %s\n' % expected_version[2])
 
     version = getos.GetSDKVersion()
     self.assertEqual(version, expected_version)
+
+  def testParseVersion(self):
+    """correctly parses a version given to --check-version."""
+    check_version_string = '15.100'
+    self.assertEquals((15, 100), getos.ParseVersion(check_version_string))
+
+  def testCheckVersion(self):
+    """correctly rejects SDK versions earlier than the required one."""
+    actual_version = (16, 100, 'f00baacabba6e-refs/heads/master@{#100}')
+    with open(os.path.join(self.tempdir, 'README'), 'w') as out:
+      out.write('Version: %d\n' % actual_version[0])
+      out.write('Chrome Revision: %d\n' % actual_version[1])
+      out.write('Chrome Commit Position: %s\n' % actual_version[2])
+
+    required_version = (15, 150)
+    getos.CheckVersion(required_version)
+
+    required_version = (16, 99)
+    getos.CheckVersion(required_version)
+
+    required_version = (16, 100)
+    getos.CheckVersion(required_version)
+
+    required_version = (16, 101)
+    self.assertRaisesRegexp(
+        getos.Error,
+        r'SDK version too old \(current: 16.100, required: 16.101\)',
+        getos.CheckVersion,
+        required_version)
+
+    required_version = (17, 50)
+    self.assertRaisesRegexp(
+        getos.Error,
+        r'SDK version too old \(current: 16.100, required: 17.50\)',
+        getos.CheckVersion,
+        required_version)
 
 
 if __name__ == '__main__':
