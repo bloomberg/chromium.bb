@@ -323,7 +323,7 @@ void WebPagePopupImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 {
     // FIXME: This should use frameTime.lastFrameTimeMonotonic but doing so
     // breaks tests.
-    PageWidgetDelegate::animate(m_page.get(), monotonicallyIncreasingTime(), m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::animate(m_page.get(), monotonicallyIncreasingTime());
 }
 
 void WebPagePopupImpl::willCloseLayerTreeView()
@@ -334,13 +334,13 @@ void WebPagePopupImpl::willCloseLayerTreeView()
 
 void WebPagePopupImpl::layout()
 {
-    PageWidgetDelegate::layout(m_page.get(), m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::layout(m_page.get());
 }
 
 void WebPagePopupImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
     if (!m_closing)
-        PageWidgetDelegate::paint(m_page.get(), 0, canvas, rect, PageWidgetDelegate::Opaque, m_page->deprecatedLocalMainFrame());
+        PageWidgetDelegate::paint(m_page.get(), 0, canvas, rect, PageWidgetDelegate::Opaque);
 }
 
 void WebPagePopupImpl::resize(const WebSize& newSize)
@@ -379,7 +379,7 @@ bool WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
 {
     if (m_closing)
         return false;
-    return PageWidgetDelegate::handleInputEvent(m_page.get(), *this, event, m_page->deprecatedLocalMainFrame());
+    return PageWidgetDelegate::handleInputEvent(m_page.get(), *this, event);
 }
 
 bool WebPagePopupImpl::handleKeyEvent(const PlatformKeyboardEvent& event)
