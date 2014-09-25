@@ -1265,8 +1265,12 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
 internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
   disk_layout='2gb-rootfs',
   boards=['amd64-generic_freon'],
-  important=False,
   vm_tests=[],
+)
+
+internal_chromium_pfq.add_config('arm-generic-chromium-pfq',
+  non_testable_builder,
+  boards=['arm-generic'],
 )
 
 chrome_pfq = internal_chromium_pfq.derive(
@@ -1296,7 +1300,6 @@ chrome_pfq.add_config('daisy_spring-chrome-pfq',
 chrome_pfq.add_config('falco-chrome-pfq',
   boards=['falco'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
-  important=True,
 )
 
 chrome_pfq.add_config('link_freon-chrome-pfq',
@@ -1304,7 +1307,6 @@ chrome_pfq.add_config('link_freon-chrome-pfq',
   hw_tests=[],
   # This build can't run vm_tests, bug 387507
   vm_tests=[],
-  important=False,
   usepkg_toolchain=False,
   usepkg_build_packages=False,
 )
@@ -1312,7 +1314,6 @@ chrome_pfq.add_config('link_freon-chrome-pfq',
 chrome_pfq.add_config('rush-chrome-pfq',
   non_testable_builder,
   boards=['rush'],
-  important=False,
   usepkg_toolchain=False,
   usepkg_build_packages=False,
 )
