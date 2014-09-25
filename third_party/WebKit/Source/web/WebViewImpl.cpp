@@ -376,7 +376,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backForwardClientImpl(this)
     , m_spellCheckerClientImpl(this)
     , m_storageClientImpl(this)
-    , m_fixedLayoutSizeLock(false)
     , m_shouldAutoResize(false)
     , m_zoomLevel(0)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
@@ -1754,7 +1753,7 @@ void WebViewImpl::resize(const WebSize& newSize)
         performResize();
     }
 
-    if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
+    if (settings()->viewportEnabled()) {
         // Relayout immediately to recalculate the minimum scale limit.
         if (view->needsLayout())
             view->layout();
@@ -3125,7 +3124,7 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     m_pageScaleConstraintsSet.computeFinalConstraints();
 
-    if (settings()->shrinksViewportContentToFit() && !m_fixedLayoutSizeLock) {
+    if (settings()->shrinksViewportContentToFit()) {
         int verticalScrollbarWidth = 0;
         if (view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
             verticalScrollbarWidth = view->verticalScrollbar()->width();
@@ -3207,7 +3206,7 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
 
 void WebViewImpl::updateMainFrameLayoutSize()
 {
-    if (m_fixedLayoutSizeLock || m_shouldAutoResize || !mainFrameImpl())
+    if (m_shouldAutoResize || !mainFrameImpl())
         return;
 
     RefPtr<FrameView> view = mainFrameImpl()->frameView();
@@ -3277,27 +3276,6 @@ void WebViewImpl::resetScrollAndScaleState()
     // Clobber saved scales and scroll offsets.
     if (FrameView* view = page()->deprecatedLocalMainFrame()->document()->view())
         view->cacheCurrentScrollPosition();
-}
-
-void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
-{
-    if (!page() || !page()->mainFrame()->isLocalFrame())
-        return;
-
-    LocalFrame* frame = page()->deprecatedLocalMainFrame();
-    if (!frame)
-        return;
-
-    RefPtr<FrameView> view = frame->view();
-    if (!view)
-        return;
-
-    m_fixedLayoutSizeLock = layoutSize.width || layoutSize.height;
-
-    if (m_fixedLayoutSizeLock)
-        view->setLayoutSize(layoutSize);
-    else
-        updateMainFrameLayoutSize();
 }
 
 void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,

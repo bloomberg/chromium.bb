@@ -292,13 +292,6 @@ public:
     virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
     virtual void resetDeviceColorProfile() = 0;
 
-    // Fixed Layout --------------------------------------------------------
-
-    // Locks main frame's layout size to specified size. Passing WebSize(0, 0)
-    // removes the lock.
-    virtual void setFixedLayoutSize(const WebSize&) = 0;
-
-
     // Auto-Resize -----------------------------------------------------------
 
     // In auto-resize mode, the view is automatically adjusted to fit the html

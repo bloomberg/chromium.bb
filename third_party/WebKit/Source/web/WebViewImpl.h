@@ -209,8 +209,6 @@ public:
     virtual void setDeviceColorProfile(const WebVector<char>&) OVERRIDE;
     virtual void resetDeviceColorProfile() OVERRIDE;
 
-    virtual void setFixedLayoutSize(const WebSize&) OVERRIDE;
-
     virtual void enableAutoResizeMode(
         const WebSize& minSize,
         const WebSize& maxSize) OVERRIDE;
@@ -609,7 +607,6 @@ private:
     StorageClientImpl m_storageClientImpl;
 
     WebSize m_size;
-    bool m_fixedLayoutSizeLock;
     // If true, automatically resize the render view around its content.
     bool m_shouldAutoResize;
     // The lower bound on the size when auto-resizing.
