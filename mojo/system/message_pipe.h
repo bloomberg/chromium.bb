@@ -96,8 +96,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
                             scoped_ptr<MessageInTransit> message);
 
   // These are used by |Channel|.
-  // TODO(vtl): Remove |Attach()|.
-  bool Attach(unsigned port, ChannelEndpoint* channel_endpoint);
   void Run(unsigned port);
   void OnRemove(unsigned port);
 

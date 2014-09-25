@@ -187,18 +187,6 @@ MojoResult MessagePipe::EnqueueMessage(unsigned port,
   return EnqueueMessageInternal(port, message.Pass(), nullptr);
 }
 
-bool MessagePipe::Attach(unsigned port, ChannelEndpoint* channel_endpoint) {
-  DCHECK(port == 0 || port == 1);
-  DCHECK(channel_endpoint);
-
-  base::AutoLock locker(lock_);
-  if (!endpoints_[port])
-    return false;
-
-  DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeProxy);
-  return true;
-}
-
 void MessagePipe::Run(unsigned port) {
   DCHECK(port == 0 || port == 1);
 

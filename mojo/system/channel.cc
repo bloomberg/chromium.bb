@@ -118,32 +118,7 @@ MessageInTransit::EndpointId Channel::AttachEndpoint(
   }
 
   endpoint->AttachToChannel(this, local_id);
-  // This might fail if that port got an |OnPeerClose()| before attaching.
-  if (endpoint->message_pipe_->Attach(endpoint->port_, endpoint.get()))
-    return local_id;
-
-  // Note: If it failed, quite possibly the endpoint info was removed from that
-  // map (there's a race between us adding it to the map above and calling
-  // |Attach()|). And even if an entry exists for |local_id|, we need to check
-  // that it's the one we added (and not some other one that was added since).
-  {
-    base::AutoLock locker(lock_);
-    IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
-    if (it != local_id_to_endpoint_map_.end() &&
-        it->second->message_pipe_.get() == endpoint->message_pipe_.get() &&
-        it->second->port_ == endpoint->port_) {
-      DCHECK_EQ(it->second->state_, ChannelEndpoint::STATE_NORMAL);
-      // TODO(vtl): FIXME -- This is wrong. We need to specify (to
-      // |AttachEndpoint()| who's going to be responsible for calling
-      // |RunMessagePipeEndpoint()| ("us", or the remote by sending us a
-      // |kSubtypeChannelRunMessagePipeEndpoint|). If the remote is going to
-      // run, then we'll get messages to an "invalid" local ID (for running, for
-      // removal).
-      local_id_to_endpoint_map_.erase(it);
-    }
-  }
-  endpoint->DetachFromChannel();
-  return MessageInTransit::kInvalidEndpointId;
+  return local_id;
 }
 
 bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
