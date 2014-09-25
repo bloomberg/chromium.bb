@@ -1312,7 +1312,7 @@ class DeviceUtilsSetJavaAssertsTest(DeviceUtilsOldImplTest):
            ('adb -s 0123456789abcdef shell '
                 'setprop dalvik.vm.enableassertions "all"',
             '')]):
-        self.device.SetJavaAsserts(True)
+        self.assertTrue(self.device.SetJavaAsserts(True))
 
   def testSetJavaAsserts_disable(self):
     mock_file = self.mockNamedTemporary(
@@ -1336,7 +1336,7 @@ class DeviceUtilsSetJavaAssertsTest(DeviceUtilsOldImplTest):
            ('adb -s 0123456789abcdef shell '
                 'setprop dalvik.vm.enableassertions ""',
             '')]):
-        self.device.SetJavaAsserts(False)
+        self.assertTrue(self.device.SetJavaAsserts(False))
 
   def testSetJavaAsserts_alreadyEnabled(self):
     mock_file = self.mockNamedTemporary(

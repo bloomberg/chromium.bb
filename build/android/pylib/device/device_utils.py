@@ -689,10 +689,14 @@ class DeviceUtils(object):
       timeout: timeout in seconds
       retries: number of retries
 
+    Returns:
+      True if the device-side property changed and a restart is required as a
+      result, False otherwise.
+
     Raises:
       CommandTimeoutError on timeout.
     """
-    self.old_interface.SetJavaAssertsEnabled(enabled)
+    return self.old_interface.SetJavaAssertsEnabled(enabled)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetProp(self, property_name, timeout=None, retries=None):
