@@ -3712,7 +3712,7 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
         return false;
 
     String gridRowNames = currentValue->string;
-    if (!gridRowNames.length())
+    if (gridRowNames.isEmpty() || gridRowNames.containsOnlyWhitespace())
         return false;
 
     Vector<String> columnNames;
