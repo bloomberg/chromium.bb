@@ -41,6 +41,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/component_updater/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -154,9 +155,9 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-   13, prefs::kProfileResetPromptMementoInProfilePrefs,
-   PrefHashFilter::ENFORCE_ON_LOAD,
-   PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    13, prefs::kProfileResetPromptMementoInProfilePrefs,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #endif
   {
@@ -194,6 +195,18 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
+#if defined(OS_WIN)
+  {
+    19, prefs::kSwReporterPromptVersion,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    20, prefs::kSwReporterPromptReason,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+#endif
 };
 
 // One more than the last tracked preferences ID above.

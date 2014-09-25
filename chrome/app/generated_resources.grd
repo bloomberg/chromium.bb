@@ -8065,6 +8065,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Help make Google Chrome better by reporting the current settings
       </message>
 
+      <!-- SRT bubble messages -->
+      <message name="IDS_SRT_BUBBLE_DOWNLOAD_BUTTON_TEXT" desc="Download button of the software removal tool bubble">
+        Get the Software Removal Tool
+      </message>
+
       <!-- Upgrade bubble messages -->
       <message name="IDS_REENABLE_UPDATES" desc="Text for the button the user clicks to re-enable automatic updates.">
         Enable autoupdate

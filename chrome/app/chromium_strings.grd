@@ -905,6 +905,25 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
+      <!-- SRT bubble messages -->
+      <if expr="is_win">
+        <if expr="use_titlecase">
+          <message name="IDS_SRT_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
+            Chromium Behaving Strangely?
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_SRT_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
+            Chromium behaving strangely?
+          </message>
+        </if>
+        <message name="IDS_SRT_BUBBLE_TITLE" desc="Text for the title of the software removal tool bubble view.">
+            Chromium behaving strangely?
+        </message>
+        <message name="IDS_SRT_BUBBLE_TEXT" desc="Text for the software removal tool bubble view full description.">
+          Chromium detected that your browser settings may have been changed by a program on your computer without your knowledge. You can use  Google's Software Removal Tool to remove that program.
+        </message>
+      </if>
       <!-- Sync/sign-in error messages -->
       <if expr="not chromeos">
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">

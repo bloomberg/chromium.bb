@@ -12,7 +12,13 @@ namespace prefs {
 extern const char kRecoveryComponentVersion[];
 
 #if defined(OS_WIN)
+// Local state prefs.
+extern const char kSwReporterLastExitCode[];
 extern const char kSwReporterLastTimeTriggered[];
+
+// Profile prefs.
+extern const char kSwReporterPromptReason[];
+extern const char kSwReporterPromptVersion[];
 #endif
 
 }  // namespace prefs

@@ -8,6 +8,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace component_updater {
 
 class ComponentUpdateService;
@@ -17,8 +21,12 @@ class ComponentUpdateService;
 void RegisterSwReporterComponent(ComponentUpdateService* cus,
                                  PrefService* prefs);
 
-// Register user preferences related to the SwReporter.
+// Register local state preferences related to the SwReporter.
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry);
+
+// Register profile preferences related to the SwReporter.
+void RegisterProfilePrefsForSwReporter(
+    user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace component_updater
 
