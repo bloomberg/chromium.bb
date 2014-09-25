@@ -888,6 +888,10 @@ const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";
 
+// Enable the PowerSaveBlocker in ContentVideoView. Android only.
+const char kEnableContentVideoViewPowerSaveBlocker[] =
+    "enable-content-video-view-power-save-blocker";
+
 // Enable the recognition part of the Web Speech API.
 const char kEnableSpeechRecognition[]       = "enable-speech-recognition";
 

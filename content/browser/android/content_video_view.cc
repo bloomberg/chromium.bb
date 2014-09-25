@@ -262,18 +262,19 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
 }
 
 void ContentVideoView::CreatePowerSaveBlocker() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableOverlayFullscreenVideoSubtitle)) {
-    return;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableContentVideoViewPowerSaveBlocker)) {
+    // In fullscreen Clank reuses the power save blocker attached to the
+    // container view that was created for embedded video. The WebView cannot
+    // reuse that so we create a new blocker instead.
+    if (power_save_blocker_) return;
+
+    power_save_blocker_ = PowerSaveBlocker::Create(
+        PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+        "Playing video").Pass();
+    static_cast<PowerSaveBlockerImpl*>(power_save_blocker_.get())->
+        InitDisplaySleepBlocker(GetNativeView());
   }
-
-  if (power_save_blocker_) return;
-
-  power_save_blocker_ = PowerSaveBlocker::Create(
-      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-      "Playing video").Pass();
-  static_cast<PowerSaveBlockerImpl*>(power_save_blocker_.get())->
-      InitDisplaySleepBlocker(GetNativeView());
 }
 
 }  // namespace content
