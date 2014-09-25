@@ -107,6 +107,6 @@
     }],
   ],
   'includes': [
-    '../third_party/icu/icu.isolate',
+    '../base/base.isolate',
   ],
 }
