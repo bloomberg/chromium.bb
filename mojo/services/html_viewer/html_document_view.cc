@@ -180,6 +180,14 @@ blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
   return web_media_player_factory_->CreateMediaPlayer(frame, url, client);
 }
 
+blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
+    blink::WebLocalFrame* frame,
+    const blink::WebURL& url,
+    blink::WebMediaPlayerClient* client,
+    blink::WebContentDecryptionModule* initial_cdm) {
+  return createMediaPlayer(frame, url, client);
+}
+
 blink::WebFrame* HTMLDocumentView::createChildFrame(
     blink::WebLocalFrame* parent,
     const blink::WebString& frameName) {

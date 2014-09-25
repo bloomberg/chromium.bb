@@ -62,6 +62,11 @@ class HTMLDocumentView : public blink::WebViewClient,
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
+  virtual blink::WebMediaPlayer* createMediaPlayer(
+      blink::WebLocalFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client,
+      blink::WebContentDecryptionModule* initial_cdm);
   virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
                                             const blink::WebString& frameName);
   virtual void frameDetached(blink::WebFrame*);
