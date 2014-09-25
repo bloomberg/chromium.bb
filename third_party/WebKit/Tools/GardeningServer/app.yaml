@@ -8,39 +8,52 @@ handlers:
 - url: /
   static_files: sheriff-o-matic.html
   upload: sheriff-o-matic.html
+  secure: always
+  http_headers:
+      Strict-Transport-Security: max-age=10886400; includeSubDomains
 
 - url: /alerts
   script: alerts.app
+  secure: always
 
 - url: /internal-alerts
   script: internal_alerts.app
+  secure: always
 
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
+  secure: always
 
 - url: /images
   static_dir: images
+  secure: always
 
 - url: /lib
   static_dir: lib
+  secure: always
 
 - url: /model
   static_dir: model
+  secure: always
 
 - url: /scripts
   static_dir: scripts
+  secure: always
 
 - url: /styles
   static_dir: styles
+  secure: always
 
 - url: /ui
   static_dir: ui
+  secure: always
 
 # FIXME: Write a script to do the appcfg update so that we can error out
 # if there is no bower_components, or, even better just run "bower update".
 - url: /bower_components
   static_dir: bower_components
+  secure: always
 
 skip_files:
 - ^(.*/)?#.*#$
