@@ -431,13 +431,15 @@ class Generator(generator.Generator):
           # Ignore errors on directory creation.
           pass
 
+    # Keep this above the others as .GetStructs() changes the state of the
+    # module, annotating structs with required information.
+    for struct in self.GetStructs():
+      self.Write(self.GenerateStructSource(struct),
+                 '%s.java' % GetNameForElement(struct))
+
     for enum in self.module.enums:
       self.Write(self.GenerateEnumSource(enum),
                  '%s.java' % GetNameForElement(enum))
-
-    for struct in self.module.structs:
-      self.Write(self.GenerateStructSource(struct),
-                 '%s.java' % GetNameForElement(struct))
 
     for interface in self.module.interfaces:
       self.Write(self.GenerateInterfaceSource(interface),
