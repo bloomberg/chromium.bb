@@ -95,33 +95,33 @@ class RasterBitmap {
   explicit RasterBitmap(const gfx::Size& raster_size)
       : saved_object_(NULL) {
     context_.Set(::CreateCompatibleDC(NULL));
-    if (!context_) {
+    if (!context_.IsValid()) {
       NOTREACHED() << "Bitmap DC creation failed";
       return;
     }
-    ::SetGraphicsMode(context_, GM_ADVANCED);
+    ::SetGraphicsMode(context_.Get(), GM_ADVANCED);
     void* bits = NULL;
     gfx::Rect bitmap_rect(raster_size);
     gfx::CreateBitmapHeader(raster_size.width(), raster_size.height(),
                             &header_.bmiHeader);
-    bitmap_.Set(::CreateDIBSection(context_, &header_, DIB_RGB_COLORS, &bits,
-                                   NULL, 0));
+    bitmap_.Set(::CreateDIBSection(context_.Get(), &header_, DIB_RGB_COLORS,
+                                   &bits, NULL, 0));
     if (!bitmap_)
       NOTREACHED() << "Raster bitmap creation for printing failed";
 
-    saved_object_ = ::SelectObject(context_, bitmap_);
+    saved_object_ = ::SelectObject(context_.Get(), bitmap_);
     RECT rect = bitmap_rect.ToRECT();
-    ::FillRect(context_, &rect,
+    ::FillRect(context_.Get(), &rect,
                static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH)));
 
   }
 
   ~RasterBitmap() {
-    ::SelectObject(context_, saved_object_);
+    ::SelectObject(context_.Get(), saved_object_);
   }
 
   HDC context() const {
-    return context_;
+    return context_.Get();
   }
 
   base::win::ScopedCreateDC context_;

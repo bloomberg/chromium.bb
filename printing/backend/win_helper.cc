@@ -420,7 +420,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     if (SUCCEEDED(hr)) {
       // Correct DEVMODE using DocumentProperties. See documentation for
       // PTConvertPrintTicketToDevMode.
-      dev_mode = CreateDevMode(printer, dm);
+      dev_mode = CreateDevMode(printer.Get(), dm);
       printing::XPSModule::ReleaseMemory(dm);
     }
     printing::XPSModule::CloseProvider(provider);

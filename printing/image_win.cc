@@ -68,14 +68,14 @@ bool Image::LoadMetafile(const Metafile& metafile) {
   gfx::CreateBitmapV4Header(rect.width(), rect.height(), &hdr);
   unsigned char* bits = NULL;
   base::win::ScopedBitmap bitmap(
-      ::CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&hdr), 0,
+      ::CreateDIBSection(hdc.Get(), reinterpret_cast<BITMAPINFO*>(&hdr), 0,
                          reinterpret_cast<void**>(&bits), NULL, 0));
   DCHECK(bitmap);
-  base::win::ScopedSelectObject select_object(hdc, bitmap);
+  base::win::ScopedSelectObject select_object(hdc.Get(), bitmap);
 
-  skia::InitializeDC(hdc);
+  skia::InitializeDC(hdc.Get());
 
-  bool success = metafile.Playback(hdc, NULL);
+  bool success = metafile.Playback(hdc.Get(), NULL);
 
   row_length_ = size_.width() * sizeof(uint32);
   size_t bytes = row_length_ * size_.height();

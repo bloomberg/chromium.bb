@@ -66,7 +66,7 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
     lppd->hDevNames = NULL;
 
     PrinterInfo2 info_2;
-    if (info_2.Init(printer)) {
+    if (info_2.Init(printer.Get())) {
       dev_mode = info_2.get()->pDevMode;
     }
     if (!dev_mode) {
