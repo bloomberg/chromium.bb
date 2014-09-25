@@ -51,6 +51,14 @@ void nacl_io_init();
  */
 void nacl_io_init_ppapi(PP_Instance instance, PPB_GetInterface get_interface);
 
+/**
+ * Uninitialize nacl_io.
+ *
+ * This removes interception for POSIX C-library function and releases
+ * any associated resources.
+ */
+void nacl_io_uninit();
+
 void nacl_io_set_exit_callback(nacl_io_exit_callback_t exit_callback,
                                void* user_data);
 

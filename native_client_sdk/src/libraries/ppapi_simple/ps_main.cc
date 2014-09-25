@@ -43,5 +43,7 @@ int main(int argc, char* argv[]) {
   // By default, or if not running in the browser we simply run the main
   // entry point directly, on the main thread.
   nacl_io_init();
-  return PSUserMainGet()(argc, argv);
+  int rtn = PSUserMainGet()(argc, argv);
+  nacl_io_uninit();
+  return rtn;
 }
