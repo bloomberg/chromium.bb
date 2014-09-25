@@ -8,7 +8,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
-#include "content/shell/renderer/test_runner/WebTestInterfaces.h"
+#include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -19,8 +19,10 @@ ShellRenderFrameObserver::ShellRenderFrameObserver(RenderFrame* render_frame)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   render_frame->GetWebFrame()->setPermissionClient(
-      ShellRenderProcessObserver::GetInstance()->test_interfaces()->
-          testRunner()->GetWebPermissions());
+      ShellRenderProcessObserver::GetInstance()
+          ->test_interfaces()
+          ->TestRunner()
+          ->GetWebPermissions());
 }
 
 }  // namespace content

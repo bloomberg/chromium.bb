@@ -12,7 +12,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
-#include "content/shell/renderer/test_runner/WebTestInterfaces.h"
+#include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -49,13 +49,13 @@ ShellRenderProcessObserver::~ShellRenderProcessObserver() {
 }
 
 void ShellRenderProcessObserver::SetTestDelegate(WebTestDelegate* delegate) {
-  test_interfaces_->setDelegate(delegate);
+  test_interfaces_->SetDelegate(delegate);
   test_delegate_ = delegate;
 }
 
 void ShellRenderProcessObserver::SetMainWindow(RenderView* view) {
   WebKitTestRunner* test_runner = WebKitTestRunner::Get(view);
-  test_interfaces_->setWebView(view->GetWebView(), test_runner->proxy());
+  test_interfaces_->SetWebView(view->GetWebView(), test_runner->proxy());
   main_test_runner_ = test_runner;
 }
 
@@ -73,7 +73,7 @@ void ShellRenderProcessObserver::WebKitInitialized() {
   }
 
   test_interfaces_.reset(new WebTestInterfaces);
-  test_interfaces_->resetAll();
+  test_interfaces_->ResetAll();
 }
 
 void ShellRenderProcessObserver::OnRenderProcessShutdown() {

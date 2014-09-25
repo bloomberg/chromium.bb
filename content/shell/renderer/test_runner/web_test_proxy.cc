@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/mock_color_chooser.h"
@@ -28,6 +27,7 @@
 #include "content/shell/renderer/test_runner/test_plugin.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
+#include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
@@ -357,7 +357,7 @@ WebTestProxyBase::~WebTestProxyBase() {
 }
 
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
-  test_interfaces_ = interfaces->testInterfaces();
+  test_interfaces_ = interfaces->GetTestInterfaces();
   test_interfaces_->WindowOpened(this);
 }
 

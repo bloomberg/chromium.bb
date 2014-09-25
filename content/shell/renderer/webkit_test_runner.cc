@@ -34,9 +34,9 @@
 #include "content/shell/renderer/gc_controller.h"
 #include "content/shell/renderer/leak_detector.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
-#include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/web_task.h"
+#include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "net/base/filename_util.h"
@@ -500,8 +500,8 @@ void WebKitTestRunner::TestFinished() {
   }
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  interfaces->setTestIsRunning(false);
-  if (interfaces->testRunner()->ShouldDumpBackForwardList()) {
+  interfaces->SetTestIsRunning(false);
+  if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
     SyncNavigationStateVisitor visitor;
     RenderView::ForEach(&visitor);
     Send(new ShellViewHostMsg_CaptureSessionHistory(routing_id()));
@@ -567,7 +567,7 @@ std::string WebKitTestRunner::DumpHistoryForWindow(WebTestProxyBase* proxy) {
 
 void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
+  ShellRenderProcessObserver::GetInstance()->test_interfaces()->BindTo(frame);
   GCController::Install(frame);
 }
 
@@ -592,8 +592,8 @@ void WebKitTestRunner::Navigate(const GURL& url) {
       ShellRenderProcessObserver::GetInstance()->main_test_runner() == this) {
     WebTestInterfaces* interfaces =
         ShellRenderProcessObserver::GetInstance()->test_interfaces();
-    interfaces->setTestIsRunning(true);
-    interfaces->configureForTestWithURL(GURL(), false);
+    interfaces->SetTestIsRunning(true);
+    interfaces->ConfigureForTestWithURL(GURL(), false);
     ForceResizeRenderView(render_view(), WebSize(800, 600));
   }
 }
@@ -642,16 +642,16 @@ void WebKitTestRunner::CaptureDump() {
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   TRACE_EVENT0("shell", "WebKitTestRunner::CaptureDump");
 
-  if (interfaces->testRunner()->ShouldDumpAsAudio()) {
+  if (interfaces->TestRunner()->ShouldDumpAsAudio()) {
     std::vector<unsigned char> vector_data;
-    interfaces->testRunner()->GetAudioData(&vector_data);
+    interfaces->TestRunner()->GetAudioData(&vector_data);
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
   } else {
     Send(new ShellViewHostMsg_TextDump(routing_id(),
                                        proxy()->CaptureTree(false)));
 
     if (test_config_.enable_pixel_dumping &&
-        interfaces->testRunner()->ShouldGeneratePixelResults()) {
+        interfaces->TestRunner()->ShouldGeneratePixelResults()) {
       CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
       proxy()->CapturePixelsAsync(base::Bind(
           &WebKitTestRunner::CaptureDumpPixels, base::Unretained(this)));
@@ -709,8 +709,8 @@ void WebKitTestRunner::OnSetTestConfiguration(
 
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  interfaces->setTestIsRunning(true);
-  interfaces->configureForTestWithURL(params.test_url,
+  interfaces->SetTestIsRunning(true);
+  interfaces->ConfigureForTestWithURL(params.test_url,
                                       params.enable_pixel_dumping);
 }
 
@@ -725,7 +725,7 @@ void WebKitTestRunner::OnSessionHistory(
 }
 
 void WebKitTestRunner::OnReset() {
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->resetAll();
+  ShellRenderProcessObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset();
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.

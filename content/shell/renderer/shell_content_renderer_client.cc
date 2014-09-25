@@ -19,8 +19,8 @@
 #include "content/shell/renderer/shell_render_frame_observer.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
-#include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
+#include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "content/test/mock_webclipboard_impl.h"
@@ -136,7 +136,7 @@ ShellContentRendererClient::OverrideCreateWebMediaStreamCenter(
 #if defined(ENABLE_WEBRTC)
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  return interfaces->createMediaStreamCenter(client);
+  return interfaces->CreateMediaStreamCenter(client);
 #else
   return NULL;
 #endif
@@ -150,7 +150,7 @@ ShellContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
 #if defined(ENABLE_WEBRTC)
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  return interfaces->createWebRTCPeerConnectionHandler(client);
+  return interfaces->CreateWebRTCPeerConnectionHandler(client);
 #else
   return NULL;
 #endif
@@ -161,7 +161,7 @@ ShellContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  return interfaces->createMIDIAccessor(client);
+  return interfaces->CreateMIDIAccessor(client);
 }
 
 WebAudioDevice*
@@ -171,7 +171,7 @@ ShellContentRendererClient::OverrideCreateAudioDevice(
     return NULL;
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  return interfaces->createAudioDevice(sample_rate);
+  return interfaces->CreateAudioDevice(sample_rate);
 }
 
 WebClipboard* ShellContentRendererClient::OverrideWebClipboard() {
@@ -185,8 +185,9 @@ WebClipboard* ShellContentRendererClient::OverrideWebClipboard() {
 WebThemeEngine* ShellContentRendererClient::OverrideThemeEngine() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return NULL;
-  return ShellRenderProcessObserver::GetInstance()->test_interfaces()
-      ->themeEngine();
+  return ShellRenderProcessObserver::GetInstance()
+      ->test_interfaces()
+      ->ThemeEngine();
 }
 
 void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
