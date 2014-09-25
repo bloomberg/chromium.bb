@@ -1321,6 +1321,6 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 
 crbug.com/417619 http/tests/inspector/websocket/websocket-handshake.html [ Failure ]
 
-crbug.com/417625 fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ ImageOnlyFailure ]
-crbug.com/417625 fast/forms/select/listbox-appearance-basic.html [ ImageOnlyFailure ]
-crbug.com/417625 fast/forms/select/menulist-appearance-basic.html [ ImageOnlyFailure ]
+crbug.com/417625 [ Win Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ ImageOnlyFailure ]
+crbug.com/417625 [ Win Linux ] fast/forms/select/listbox-appearance-basic.html [ ImageOnlyFailure ]
+crbug.com/417625 [ Win Linux ] fast/forms/select/menulist-appearance-basic.html [ ImageOnlyFailure ]
