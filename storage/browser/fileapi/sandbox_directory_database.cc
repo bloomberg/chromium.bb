@@ -701,14 +701,15 @@ bool SandboxDirectoryDatabase::GetNextInteger(int64* next) {
   return GetNextInteger(next);
 }
 
-// static
-bool SandboxDirectoryDatabase::DestroyDatabase(const base::FilePath& path,
-                                               leveldb::Env* env_override) {
-  std::string name  = FilePathToString(path.Append(kDirectoryDatabaseName));
+bool SandboxDirectoryDatabase::DestroyDatabase() {
+  db_.reset();
+  const std::string path =
+      FilePathToString(filesystem_data_directory_.Append(
+          kDirectoryDatabaseName));
   leveldb::Options options;
-  if (env_override)
-    options.env = env_override;
-  leveldb::Status status = leveldb::DestroyDB(name, options);
+  if (env_override_)
+    options.env = env_override_;
+  leveldb::Status status = leveldb::DestroyDB(path, options);
   if (status.ok())
     return true;
   LOG(WARNING) << "Failed to destroy a database with status " <<

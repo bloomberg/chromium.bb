@@ -922,18 +922,11 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
   if (key.empty())
     return true;
   DirectoryMap::iterator iter = directories_.find(key);
-  if (iter != directories_.end()) {
-    SandboxDirectoryDatabase* database = iter->second;
-    directories_.erase(iter);
-    delete database;
-  }
-
-  base::File::Error error = base::File::FILE_OK;
-  base::FilePath path = GetDirectoryForOriginAndType(
-      origin, type_string, false, &error);
-  if (path.empty() || error == base::File::FILE_ERROR_NOT_FOUND)
+  if (iter == directories_.end())
     return true;
-  return SandboxDirectoryDatabase::DestroyDatabase(path, env_override_);
+  scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
+  directories_.erase(iter);
+  return database->DestroyDatabase();
 }
 
 // static

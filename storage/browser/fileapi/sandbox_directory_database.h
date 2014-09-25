@@ -99,8 +99,8 @@ class STORAGE_EXPORT_PRIVATE SandboxDirectoryDatabase {
   // Returns true if the database looks consistent with local filesystem.
   bool IsFileSystemConsistent();
 
-  static bool DestroyDatabase(const base::FilePath& path,
-                              leveldb::Env* env_override);
+  // Completely deletes contents of the database.
+  bool DestroyDatabase();
 
  private:
   enum RecoveryOption {
