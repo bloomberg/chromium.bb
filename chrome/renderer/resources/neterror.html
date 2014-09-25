@@ -18,17 +18,17 @@
       <h1 i18n-content="heading"></h1>
       <p i18n-values=".innerHTML:primaryParagraph"></p>
       <div id="buttons" class="nav-wrapper">
-        <div id="control-buttons">
+        <div id="control-buttons" hidden>
           <button id="reload-button"
               class="blue-button text-button"
               onclick="trackClick(this.trackingId);
-                       reloadButtonClick(this.url);" 
+                       reloadButtonClick(this.url);"
               jsselect="reloadButton"
               jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
               jscontent="msg"></button>
           <button id="stale-load-button"
               class="blue-button text-button"
-              onclick="loadStaleButtonClick()" 
+              onclick="loadStaleButtonClick()"
               jsselect="staleLoadButton"
               jscontent="msg" jsvalues="title:title"></button>
         </div>

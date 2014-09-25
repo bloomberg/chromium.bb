@@ -56,6 +56,10 @@ a {
   content: -webkit-image-set(
       url('default_100_percent/offline/100-error-offline.png') 1x,
       url('default_200_percent/offline/200-error-offline.png') 2x);
+  height: 47px;
+  margin: 0 0 40px;
+  position: relative;
+  width: 44px;
 }
 
 #content-top {
@@ -263,13 +267,6 @@ html[subframe] body {
 }
 
 /* Offline page */
-.offline .icon {
-  height: 47px;
-  margin: 0 0 40px;
-  position: relative;
-  width: 44px;
-}
-
 .offline .interstitial-wrapper {
   color: #2b2b2b;
   font-size: 1em;

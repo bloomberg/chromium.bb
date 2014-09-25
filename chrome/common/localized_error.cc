@@ -559,7 +559,8 @@ void LocalizedError::GetStrings(int error_code,
   base::DictionaryValue* summary = new base::DictionaryValue;
 
   // For offline show a summary message underneath the heading.
-  if (error_code == net::ERR_INTERNET_DISCONNECTED) {
+  if (error_code == net::ERR_INTERNET_DISCONNECTED ||
+      error_code == chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET) {
     error_strings->SetString("primaryParagraph",
         l10n_util::GetStringUTF16(options.summary_resource_id));
   } else {

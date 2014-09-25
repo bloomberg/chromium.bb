@@ -55,7 +55,7 @@ function Runner(outerContainerId, opt_config) {
   this.soundFx = {};
 
   // Global web audio context for playing sounds.
-  this.audioContext = new AudioContext();
+  this.audioContext = null;
 
   // Images.
   this.images = {};
@@ -250,6 +250,7 @@ Runner.prototype = {
    * Load and decode base 64 encoded sounds.
    */
   loadSounds: function() {
+    this.audioContext = new AudioContext();
     var resourceTemplate =
         document.getElementById(this.config.RESOURCE_TEMPLATE_ID).content;
 
@@ -324,10 +325,9 @@ Runner.prototype = {
 
     this.startListening();
     this.update();
-    this.loadSounds();
 
     window.addEventListener(Runner.events.RESIZE,
-        this.debounceResize.bind(this), false);
+        this.debounceResize.bind(this));
   },
 
   /**
@@ -436,13 +436,13 @@ Runner.prototype = {
 
     // Handle tabbing off the page. Pause the current game.
     window.addEventListener(Runner.events.VISIBILITY,
-          this.onVisibilityChange.bind(this), false);
+          this.onVisibilityChange.bind(this));
 
     window.addEventListener(Runner.events.BLUR,
-          this.onVisibilityChange.bind(this), false);
+          this.onVisibilityChange.bind(this));
 
     window.addEventListener(Runner.events.FOCUS,
-          this.onVisibilityChange.bind(this), false);
+          this.onVisibilityChange.bind(this));
   },
 
   clearCanvas: function() {
@@ -581,6 +581,7 @@ Runner.prototype = {
     if (!this.crashed && (Runner.keycodes.JUMP[String(e.keyCode)] ||
          e.type == Runner.events.TOUCHSTART)) {
       if (!this.activated) {
+        this.loadSounds();
         this.activated = true;
       }
 

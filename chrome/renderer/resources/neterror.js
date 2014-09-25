@@ -50,6 +50,11 @@ function updateIconClass(classList, newClass) {
     classList.remove(oldClass);
 
   classList['last_icon_class'] = newClass;
+
+  if (newClass == 'icon-offline') {
+    document.body.classList.add('offline');
+    new Runner('.interstitial-wrapper');
+  }
 }
 
 // Does a search using |baseSearchUrl| and the text in the search box.
@@ -127,17 +132,19 @@ function setButtonLayout() {
     detailsButton.classList.add('singular');
   }
 
-  // Hide the details button if there are no details to show.
-  if (templateData && templateData.summary && !templateData.summary.msg) {
-    document.getElementById('details-button').hidden = true;
-    document.getElementById('help-box-outer').style.display = 'block';
+  if (templateData) {
+    // Hide the details button if there are no details to show.
+    if (templateData.summary && !templateData.summary.msg) {
+      detailsButton.hidden = true;
+      document.getElementById('help-box-outer').style.display = 'block';
+    }
+
+    // Show control buttons.
+    if (templateData.reloadButton && templateData.reloadButton.msg ||
+        templateData.staleLoadButton && templateData.staleLoadButton.msg) {
+      controlButtonDiv.hidden = false;
+    }
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  setButtonLayout();
-  if (document.querySelector('.icon-offline')) {
-    document.body.classList.add('offline');
-    new Runner('.interstitial-wrapper');
-  }
-});
+document.addEventListener('DOMContentLoaded', setButtonLayout);
