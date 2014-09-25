@@ -13,6 +13,7 @@
 #include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace chromecast {
@@ -42,6 +43,7 @@ void CastContentRendererClient::RenderViewCreated(
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
     webview->setBaseBackgroundColor(kColorBlack);
+    webview->settings()->setShrinksViewportContentToFit(false);
   }
 }
 
