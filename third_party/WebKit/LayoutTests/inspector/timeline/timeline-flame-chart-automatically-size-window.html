@@ -8,7 +8,7 @@
 function test()
 {
     WebInspector.inspectorView.showPanel("network");
-    WebInspector.experimentsSettings.timelineOnTraceEvents.enableForTest();
+    Runtime.experiments.enableForTest("timelineOnTraceEvents");
     var timelineData = InspectorTest.timelineData();
 
     var timeline = WebInspector.inspectorView.showPanel("timeline");
