@@ -146,9 +146,6 @@ void FakeFileSystem::GetResourceEntry(
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Now, we only support files under my drive.
-  DCHECK(!util::IsUnderDriveMountPoint(file_path));
-
   if (file_path == util::GetDriveMyDriveRootPath()) {
     // Specialized for the root entry.
     drive_service_->GetAboutResource(
@@ -158,6 +155,8 @@ void FakeFileSystem::GetResourceEntry(
     return;
   }
 
+  // Now, we only support files under my drive.
+  DCHECK(util::GetDriveMyDriveRootPath().IsParent(file_path));
   GetResourceEntry(
       file_path.DirName(),
       base::Bind(
