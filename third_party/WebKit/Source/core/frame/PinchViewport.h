@@ -80,6 +80,7 @@ public:
     // coordinates are in partial CSS pixels.
     void setLocation(const FloatPoint&);
     void move(const FloatPoint&);
+    FloatPoint location() const { return m_offset; }
 
     // Sets the size of the inner viewport when unscaled in CSS pixels.
     // This will be clamped to the size of the outer viewport (the main frame).
