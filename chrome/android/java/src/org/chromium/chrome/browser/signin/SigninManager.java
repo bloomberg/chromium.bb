@@ -218,7 +218,8 @@ public class SigninManager {
             return;
         }
 
-        if (ApplicationStatus.getStateForActivity(mSignInActivity) == ActivityState.DESTROYED) {
+        if (mSignInActivity != null &&
+            ApplicationStatus.getStateForActivity(mSignInActivity) == ActivityState.DESTROYED) {
             // The activity is no longer running, cancel sign in.
             cancelSignIn();
             return;
