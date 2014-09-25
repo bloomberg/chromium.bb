@@ -72,6 +72,16 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
                         OnCacheStorageDelete)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageKeys,
                         OnCacheStorageKeys)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheMatch,
+                        OnCacheMatch)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheMatchAll,
+                        OnCacheMatchAll)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheKeys,
+                        OnCacheKeys)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheBatch,
+                        OnCacheBatch)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheClosed,
+                        OnCacheClosed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -138,6 +148,49 @@ void ServiceWorkerCacheListener::OnCacheStorageKeys(int request_id) {
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageKeysCallback,
                  weak_factory_.GetWeakPtr(),
                  request_id));
+}
+
+void ServiceWorkerCacheListener::OnCacheMatch(
+    int request_id,
+    int cache_id,
+    const ServiceWorkerFetchRequest& request,
+    const ServiceWorkerCacheQueryParams& match_params) {
+  // TODO(gavinp,jkarlin): Implement this method.
+  Send(ServiceWorkerMsg_CacheMatchError(
+      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+}
+
+void ServiceWorkerCacheListener::OnCacheMatchAll(
+    int request_id,
+    int cache_id,
+    const ServiceWorkerFetchRequest& request,
+    const ServiceWorkerCacheQueryParams& match_params) {
+  // TODO(gavinp,jkarlin): Implement this method.
+  Send(ServiceWorkerMsg_CacheMatchAllError(
+      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+}
+
+void ServiceWorkerCacheListener::OnCacheKeys(
+    int request_id,
+    int cache_id,
+    const ServiceWorkerFetchRequest& request,
+    const ServiceWorkerCacheQueryParams& match_params) {
+  // TODO(gavinp,jkarlin): Implement this method.
+  Send(ServiceWorkerMsg_CacheKeysError(
+      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+}
+
+void ServiceWorkerCacheListener::OnCacheBatch(
+    int request_id,
+    int cache_id,
+    const std::vector<ServiceWorkerBatchOperation>& operations) {
+  // TODO(gavinp,jkarlin): Implement this method.
+  Send(ServiceWorkerMsg_CacheBatchError(
+      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+}
+
+void ServiceWorkerCacheListener::OnCacheClosed(int cache_id) {
+  // TODO(gavinp,jkarlin): Implement this method.
 }
 
 void ServiceWorkerCacheListener::Send(const IPC::Message& message) {

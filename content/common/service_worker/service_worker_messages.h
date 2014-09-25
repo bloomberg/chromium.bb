@@ -52,6 +52,23 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(blob_uuid)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerCacheQueryParams)
+  IPC_STRUCT_TRAITS_MEMBER(ignore_search)
+  IPC_STRUCT_TRAITS_MEMBER(ignore_method)
+  IPC_STRUCT_TRAITS_MEMBER(ignore_vary)
+  IPC_STRUCT_TRAITS_MEMBER(prefix_match)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerCacheOperationType,
+                          content::SERVICE_WORKER_CACHE_OPERATION_TYPE_LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerBatchOperation)
+  IPC_STRUCT_TRAITS_MEMBER(operation_type)
+  IPC_STRUCT_TRAITS_MEMBER(request)
+  IPC_STRUCT_TRAITS_MEMBER(response)
+  IPC_STRUCT_TRAITS_MEMBER(match_params)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(handle_id)
   IPC_STRUCT_TRAITS_MEMBER(scope)
@@ -181,6 +198,33 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageDelete,
 
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheStorageKeys,
                     int /* request_id */)
+
+// Cache operations in the browser.
+IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheMatch,
+                    int /* request_id */,
+                    int /* cache_id */,
+                    content::ServiceWorkerFetchRequest,
+                    content::ServiceWorkerCacheQueryParams)
+
+IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheMatchAll,
+                    int /* request_id */,
+                    int /* cache_id */,
+                    content::ServiceWorkerFetchRequest,
+                    content::ServiceWorkerCacheQueryParams)
+
+IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheKeys,
+                    int /* request_id */,
+                    int /* cache_id */,
+                    content::ServiceWorkerFetchRequest,
+                    content::ServiceWorkerCacheQueryParams);
+
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_CacheBatch,
+                    int /* request_id */,
+                    int /* cache_id */,
+                    std::vector<content::ServiceWorkerBatchOperation>);
+
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheClosed,
+                    int /* cache_id */);
 
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
@@ -335,3 +379,31 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageDeleteError,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysError,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
+
+// Sent via EmbeddedWorker at successful completion of Cache operations.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchSuccess,
+                     int /* request_id */,
+                     content::ServiceWorkerResponse)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchAllSuccess,
+                     int /* request_id */,
+                     std::vector<content::ServiceWorkerResponse>)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheKeysSuccess,
+                     int /* request_id */,
+                     std::vector<content::ServiceWorkerFetchRequest>)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheBatchSuccess,
+                     int /* request_id */,
+                     std::vector<content::ServiceWorkerResponse>)
+
+// Sent via EmbeddedWorker at erroneous completion of CacheStorage operations.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerCacheError)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchAllError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerCacheError)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheKeysError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerCacheError)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheBatchError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerCacheError)

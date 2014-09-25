@@ -12,6 +12,9 @@
 
 namespace content {
 
+struct ServiceWorkerBatchOperation;
+struct ServiceWorkerCacheQueryParams;
+struct ServiceWorkerFetchRequest;
 class ServiceWorkerVersion;
 
 // This class listens for requests on the Cache APIs, and sends response
@@ -26,7 +29,8 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   // From EmbeddedWorkerInstance::Listener:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Message receiver functions for CacheStorage API.
+ private:
+  // The message receiver functions for the CacheStorage API:
   void OnCacheStorageGet(int request_id, const base::string16& cache_name);
   void OnCacheStorageHas(int request_id, const base::string16& cache_name);
   void OnCacheStorageCreate(int request_id,
@@ -35,8 +39,23 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
                            const base::string16& cache_name);
   void OnCacheStorageKeys(int request_id);
 
-  // TODO(gavinp,jkarlin): Plumb a message up from the renderer saying that the
-  // renderer is done with a cache id.
+  // The message receiver functions for the Cache API:
+  void OnCacheMatch(int request_id,
+                    int cache_id,
+                    const ServiceWorkerFetchRequest& request,
+                    const ServiceWorkerCacheQueryParams& match_params);
+  void OnCacheMatchAll(int request_id,
+                       int cache_id,
+                       const ServiceWorkerFetchRequest& request,
+                       const ServiceWorkerCacheQueryParams& match_params);
+  void OnCacheKeys(int request_id,
+                   int cache_id,
+                   const ServiceWorkerFetchRequest& request,
+                   const ServiceWorkerCacheQueryParams& match_params);
+  void OnCacheBatch(int request_id,
+                    int cache_id,
+                    const std::vector<ServiceWorkerBatchOperation>& operations);
+  void OnCacheClosed(int cache_id);
 
  private:
   typedef int32_t CacheID;  // TODO(jkarlin): Bump to 64 bit.

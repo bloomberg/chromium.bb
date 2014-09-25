@@ -88,6 +88,35 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   std::string blob_uuid;
 };
 
+// Controls how requests are matched in the Cache API.
+struct CONTENT_EXPORT ServiceWorkerCacheQueryParams {
+  ServiceWorkerCacheQueryParams();
+
+  bool ignore_search;
+  bool ignore_method;
+  bool ignore_vary;
+  bool prefix_match;
+};
+
+// The type of a single batch operation in the Cache API.
+enum ServiceWorkerCacheOperationType {
+  SERVICE_WORKER_CACHE_OPERATION_TYPE_UNDEFINED,
+  SERVICE_WORKER_CACHE_OPERATION_TYPE_PUT,
+  SERVICE_WORKER_CACHE_OPERATION_TYPE_DELETE,
+  SERVICE_WORKER_CACHE_OPERATION_TYPE_LAST =
+      SERVICE_WORKER_CACHE_OPERATION_TYPE_DELETE
+};
+
+// A single batch operation for the Cache API.
+struct CONTENT_EXPORT ServiceWorkerBatchOperation {
+  ServiceWorkerBatchOperation();
+
+  ServiceWorkerCacheOperationType operation_type;
+  ServiceWorkerFetchRequest request;
+  ServiceWorkerResponse response;
+  ServiceWorkerCacheQueryParams match_params;
+};
+
 // Represents initialization info for a WebServiceWorker object.
 struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   ServiceWorkerObjectInfo();

@@ -6,9 +6,8 @@
 
 namespace content {
 
-ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
-    : blob_size(0), is_reload(false) {
-}
+ServiceWorkerFetchRequest::ServiceWorkerFetchRequest() : blob_size(0),
+                                                         is_reload(false) {}
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const GURL& url,
@@ -21,8 +20,7 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
       headers(headers),
       blob_size(0),
       referrer(referrer),
-      is_reload(is_reload) {
-}
+      is_reload(is_reload) {}
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
@@ -38,10 +36,17 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       status_code(status_code),
       status_text(status_text),
       headers(headers),
-      blob_uuid(blob_uuid) {
-}
+      blob_uuid(blob_uuid) {}
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}
+
+ServiceWorkerCacheQueryParams::ServiceWorkerCacheQueryParams()
+    : ignore_search(false),
+      ignore_method(false),
+      ignore_vary(false),
+      prefix_match(false) {}
+
+ServiceWorkerBatchOperation::ServiceWorkerBatchOperation() {}
 
 ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
     : handle_id(kInvalidServiceWorkerHandleId),
