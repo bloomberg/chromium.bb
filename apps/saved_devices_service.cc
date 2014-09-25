@@ -158,11 +158,7 @@ bool SavedDevicesService::SavedDevices::IsRegistered(
       continue;
     }
     if (!have_serial_number) {
-      scoped_refptr<UsbDeviceHandle> device_handle = device->Open();
-      if (!device_handle.get()) {
-        break;
-      }
-      if (!device_handle->GetSerial(&serial_number)) {
+      if (!device->GetSerialNumber(&serial_number)) {
         break;
       }
       have_serial_number = true;

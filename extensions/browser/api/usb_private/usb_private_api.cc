@@ -33,7 +33,6 @@ namespace {
 
 const char kErrorInitService[] = "Failed to initialize USB service.";
 const char kErrorNoDevice[] = "No such device.";
-const char kErrorOpen[] = "Failed to open device.";
 
 }  // namespace
 
@@ -120,23 +119,17 @@ void UsbPrivateGetDeviceInfoFunction::AsyncWorkStart() {
     device_info.product_name.reset(new std::string(name));
   }
 
-  scoped_refptr<UsbDeviceHandle> device_handle = device->Open();
-  if (!device_handle.get()) {
-    CompleteWithError(kErrorOpen);
-    return;
-  }
-
   base::string16 utf16;
-  if (device_handle->GetManufacturer(&utf16)) {
+  if (device->GetManufacturer(&utf16)) {
     device_info.manufacturer_string.reset(
         new std::string(base::UTF16ToUTF8(utf16)));
   }
 
-  if (device_handle->GetProduct(&utf16)) {
+  if (device->GetProduct(&utf16)) {
     device_info.product_string.reset(new std::string(base::UTF16ToUTF8(utf16)));
   }
 
-  if (device_handle->GetSerial(&utf16)) {
+  if (device->GetSerialNumber(&utf16)) {
     device_info.serial_string.reset(new std::string(base::UTF16ToUTF8(utf16)));
   }
 

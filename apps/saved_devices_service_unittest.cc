@@ -25,88 +25,27 @@ using device::UsbEndpointDirection;
 using device::UsbTransferCallback;
 using testing::Return;
 
-class MockUsbDeviceHandle : public UsbDeviceHandle {
+class MockUsbDevice : public UsbDevice {
  public:
-  MockUsbDeviceHandle(const std::string& serial_number)
-      : UsbDeviceHandle(), serial_number_(serial_number) {}
+  MockUsbDevice(const std::string& serial_number, uint32 unique_id)
+      : UsbDevice(0, 0, unique_id), serial_number_(serial_number) {}
 
-  MOCK_CONST_METHOD0(GetDevice, scoped_refptr<UsbDevice>());
-  MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
+  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
+#if defined(OS_CHROMEOS)
+  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
+#endif
+  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor&());
+  MOCK_METHOD1(GetManufacturer, bool(base::string16*));
+  MOCK_METHOD1(GetProduct, bool(base::string16*));
 
-  MOCK_METHOD10(ControlTransfer,
-                void(UsbEndpointDirection direction,
-                     TransferRequestType request_type,
-                     TransferRecipient recipient,
-                     uint8 request,
-                     uint16 value,
-                     uint16 index,
-                     net::IOBuffer* buffer,
-                     size_t length,
-                     unsigned int timeout,
-                     const UsbTransferCallback& callback));
-
-  MOCK_METHOD6(BulkTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    net::IOBuffer* buffer,
-                    size_t length,
-                    unsigned int timeout,
-                    const UsbTransferCallback& callback));
-
-  MOCK_METHOD6(InterruptTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    net::IOBuffer* buffer,
-                    size_t length,
-                    unsigned int timeout,
-                    const UsbTransferCallback& callback));
-
-  MOCK_METHOD8(IsochronousTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    net::IOBuffer* buffer,
-                    size_t length,
-                    unsigned int packets,
-                    unsigned int packet_length,
-                    unsigned int timeout,
-                    const UsbTransferCallback& callback));
-
-  MOCK_METHOD0(ResetDevice, bool());
-  MOCK_METHOD1(ClaimInterface, bool(int interface_number));
-  MOCK_METHOD1(ReleaseInterface, bool(int interface_number));
-  MOCK_METHOD2(SetInterfaceAlternateSetting,
-               bool(int interface_number, int alternate_setting));
-  MOCK_METHOD1(GetManufacturer, bool(base::string16* manufacturer));
-  MOCK_METHOD1(GetProduct, bool(base::string16* product));
-
-  bool GetSerial(base::string16* serial) OVERRIDE {
+  bool GetSerialNumber(base::string16* serial) OVERRIDE {
     if (serial_number_.empty()) {
       return false;
     }
 
     *serial = base::UTF8ToUTF16(serial_number_);
     return true;
-  }
-
- private:
-  virtual ~MockUsbDeviceHandle() {}
-
-  const std::string serial_number_;
-};
-
-class MockUsbDevice : public UsbDevice {
- public:
-  MockUsbDevice(const std::string& serial_number, uint32 unique_id)
-      : UsbDevice(0, 0, unique_id), serial_number_(serial_number) {}
-
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-#if defined(OS_CHROMEOS)
-  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
-#endif
-  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor&());
-
-  scoped_refptr<UsbDeviceHandle> Open() OVERRIDE {
-    return new MockUsbDeviceHandle(serial_number_);
   }
 
   void NotifyDisconnect() { UsbDevice::NotifyDisconnect(); }

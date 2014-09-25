@@ -100,7 +100,7 @@ class HidConnectionTest : public testing::Test {
     for (std::vector<HidDeviceInfo>::iterator it = devices.begin();
          it != devices.end();
          ++it) {
-      if (it->serial_number == test_gadget_->GetSerial()) {
+      if (it->serial_number == test_gadget_->GetSerialNumber()) {
         device_id_ = it->device_id;
         break;
       }

@@ -71,7 +71,7 @@ class UsbTestGadgetImpl : public UsbTestGadget {
   virtual bool Reconnect() OVERRIDE;
   virtual bool SetType(Type type) OVERRIDE;
   virtual UsbDevice* GetDevice() const OVERRIDE;
-  virtual std::string GetSerial() const OVERRIDE;
+  virtual std::string GetSerialNumber() const OVERRIDE;
 
  protected:
   UsbTestGadgetImpl();
@@ -166,7 +166,7 @@ UsbDevice* UsbTestGadgetImpl::GetDevice() const {
   return device_.get();
 }
 
-std::string UsbTestGadgetImpl::GetSerial() const {
+std::string UsbTestGadgetImpl::GetSerialNumber() const {
   return device_address_;
 }
 
@@ -205,13 +205,8 @@ bool UsbTestGadgetImpl::FindUnclaimed() {
          devices.begin(); iter != devices.end(); ++iter) {
     const scoped_refptr<UsbDevice> &device = *iter;
     if (device->vendor_id() == 0x18D1 && device->product_id() == 0x58F0) {
-      scoped_refptr<UsbDeviceHandle> handle = device->Open();
-      if (handle.get() == NULL) {
-        continue;
-      }
-
       base::string16 serial_utf16;
-      if (!handle->GetSerial(&serial_utf16)) {
+      if (!device->GetSerialNumber(&serial_utf16)) {
         continue;
       }
 
@@ -340,7 +335,7 @@ bool UsbTestGadgetImpl::Update() {
 bool UsbTestGadgetImpl::FindClaimed() {
   CHECK(!device_.get());
 
-  std::string expected_serial = GetSerial();
+  std::string expected_serial = GetSerialNumber();
 
   std::vector<scoped_refptr<UsbDevice> > devices;
   usb_service_->GetDevices(&devices);
@@ -362,13 +357,8 @@ bool UsbTestGadgetImpl::FindClaimed() {
         continue;
       }
 
-      scoped_refptr<UsbDeviceHandle> handle(device->Open());
-      if (handle.get() == NULL) {
-        continue;
-      }
-
       base::string16 serial_utf16;
-      if (!handle->GetSerial(&serial_utf16)) {
+      if (!device->GetSerialNumber(&serial_utf16)) {
         continue;
       }
 

@@ -40,9 +40,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   virtual bool SetInterfaceAlternateSetting(int interface_number,
                                             int alternate_setting) OVERRIDE;
   virtual bool ResetDevice() OVERRIDE;
-  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE;
-  virtual bool GetProduct(base::string16* product) OVERRIDE;
-  virtual bool GetSerial(base::string16* serial) OVERRIDE;
+  virtual bool GetStringDescriptor(uint8 string_id,
+                                   base::string16* string) OVERRIDE;
+
   virtual void ControlTransfer(UsbEndpointDirection direction,
                                TransferRequestType request_type,
                                TransferRecipient recipient,
@@ -132,7 +132,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void CompleteTransfer(PlatformUsbTransferHandle transfer);
 
   bool GetSupportedLanguages();
-  bool GetStringDescriptor(uint8 string_id, base::string16* string);
 
   // Informs the object to drop internal references.
   void InternalClose();

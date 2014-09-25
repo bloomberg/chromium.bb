@@ -39,6 +39,9 @@ class UsbDeviceImpl : public UsbDevice {
   virtual scoped_refptr<UsbDeviceHandle> Open() OVERRIDE;
   virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) OVERRIDE;
   virtual const UsbConfigDescriptor& GetConfiguration() OVERRIDE;
+  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE;
+  virtual bool GetProduct(base::string16* product) OVERRIDE;
+  virtual bool GetSerialNumber(base::string16* serial_number) OVERRIDE;
 
  protected:
   friend class UsbServiceImpl;
@@ -59,6 +62,15 @@ class UsbDeviceImpl : public UsbDevice {
  private:
   base::ThreadChecker thread_checker_;
   PlatformUsbDevice platform_device_;
+
+#if defined(OS_LINUX)
+  // On Linux these properties are read from sysfs when the device is enumerated
+  // to avoid hitting the permission broker on Chrome OS for a real string
+  // descriptor request.
+  std::string manufacturer_;
+  std::string product_;
+  std::string serial_number_;
+#endif
 
   // The active configuration descriptor is not read immediately but cached for
   // later use.

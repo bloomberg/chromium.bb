@@ -30,6 +30,9 @@ class MockUsbDevice : public UsbDevice {
   MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
 #endif
   MOCK_METHOD0(GetConfiguration, const UsbConfigDescriptor&());
+  MOCK_METHOD1(GetManufacturer, bool(base::string16*));
+  MOCK_METHOD1(GetProduct, bool(base::string16*));
+  MOCK_METHOD1(GetSerialNumber, bool(base::string16*));
 
  private:
   virtual ~MockUsbDevice() {}

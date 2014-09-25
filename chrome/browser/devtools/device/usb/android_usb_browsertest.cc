@@ -144,20 +144,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   virtual bool ResetDevice() OVERRIDE { return true; }
-
-  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE {
-    *manufacturer = base::UTF8ToUTF16(kDeviceManufacturer);
-    return true;
-  }
-
-  virtual bool GetProduct(base::string16* product) OVERRIDE {
-    *product = base::UTF8ToUTF16(kDeviceModel);
-    return true;
-  }
-
-  virtual bool GetSerial(base::string16* serial) OVERRIDE {
-    *serial = base::UTF8ToUTF16(kDeviceSerial);
-    return true;
+  virtual bool GetStringDescriptor(uint8_t string_id, base::string16* content) {
+    return false;
   }
 
   // Async IO. Can be called on any thread.
@@ -377,6 +365,21 @@ class MockUsbDevice : public UsbDevice {
 
   virtual const UsbConfigDescriptor& GetConfiguration() OVERRIDE {
     return config_desc_;
+  }
+
+  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE {
+    *manufacturer = base::UTF8ToUTF16(kDeviceManufacturer);
+    return true;
+  }
+
+  virtual bool GetProduct(base::string16* product) OVERRIDE {
+    *product = base::UTF8ToUTF16(kDeviceModel);
+    return true;
+  }
+
+  virtual bool GetSerialNumber(base::string16* serial) OVERRIDE {
+    *serial = base::UTF8ToUTF16(kDeviceSerial);
+    return true;
   }
 
   virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) OVERRIDE {

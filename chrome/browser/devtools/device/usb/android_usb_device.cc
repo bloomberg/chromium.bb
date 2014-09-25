@@ -96,7 +96,7 @@ scoped_refptr<AndroidUsbDevice> ClaimInterface(
     return NULL;
 
   base::string16 serial;
-  if (!usb_handle->GetSerial(&serial) || serial.empty())
+  if (!usb_handle->GetDevice()->GetSerialNumber(&serial) || serial.empty())
     return NULL;
 
   return new AndroidUsbDevice(rsa_key,

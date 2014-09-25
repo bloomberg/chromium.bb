@@ -10,6 +10,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"
@@ -22,6 +24,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX)
+#include "device/udev_linux/udev.h"
+#endif  // defined(OS_LINUX)
 
 namespace device {
 
@@ -123,6 +129,44 @@ UsbDeviceImpl::UsbDeviceImpl(
       ui_task_runner_(ui_task_runner) {
   CHECK(platform_device) << "platform_device cannot be NULL";
   libusb_ref_device(platform_device);
+
+#if defined(OS_LINUX)
+  ScopedUdevPtr udev(udev_new());
+  ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev.get()));
+
+  udev_enumerate_add_match_subsystem(enumerate.get(), "usb");
+  if (udev_enumerate_scan_devices(enumerate.get()) != 0) {
+    return;
+  }
+  std::string bus_number =
+      base::IntToString(libusb_get_bus_number(platform_device));
+  std::string device_address =
+      base::IntToString(libusb_get_device_address(platform_device));
+  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
+  for (udev_list_entry* i = devices; i != NULL;
+       i = udev_list_entry_get_next(i)) {
+    ScopedUdevDevicePtr device(
+        udev_device_new_from_syspath(udev.get(), udev_list_entry_get_name(i)));
+    if (device) {
+      const char* value = udev_device_get_sysattr_value(device.get(), "busnum");
+      if (!value || bus_number != value) {
+        continue;
+      }
+      value = udev_device_get_sysattr_value(device.get(), "devnum");
+      if (!value || device_address != value) {
+        continue;
+      }
+
+      value = udev_device_get_sysattr_value(device.get(), "manufacturer");
+      manufacturer_ = value ? value : "";
+      value = udev_device_get_sysattr_value(device.get(), "product");
+      product_ = value ? value : "";
+      value = udev_device_get_sysattr_value(device.get(), "serial");
+      serial_number_ = value ? value : "";
+      break;
+    }
+  }
+#endif
 }
 
 UsbDeviceImpl::~UsbDeviceImpl() {
@@ -273,6 +317,100 @@ const UsbConfigDescriptor& UsbDeviceImpl::GetConfiguration() {
   }
 
   return current_configuration_;
+}
+
+bool UsbDeviceImpl::GetManufacturer(base::string16* manufacturer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_LINUX)
+  if (manufacturer_.empty()) {
+    return false;
+  }
+  *manufacturer = base::UTF8ToUTF16(manufacturer_);
+  return true;
+#else
+  // This is a non-blocking call as libusb has the descriptor in memory.
+  libusb_device_descriptor desc;
+  const int rv = libusb_get_device_descriptor(platform_device_, &desc);
+  if (rv != LIBUSB_SUCCESS) {
+    VLOG(1) << "Failed to read device descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
+    return false;
+  }
+
+  if (desc.iManufacturer == 0) {
+    return false;
+  }
+
+  scoped_refptr<UsbDeviceHandle> device_handle = Open();
+  if (device_handle.get()) {
+    return device_handle->GetStringDescriptor(desc.iManufacturer, manufacturer);
+  }
+  return false;
+#endif
+}
+
+bool UsbDeviceImpl::GetProduct(base::string16* product) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_LINUX)
+  if (product_.empty()) {
+    return false;
+  }
+  *product = base::UTF8ToUTF16(product_);
+  return true;
+#else
+  // This is a non-blocking call as libusb has the descriptor in memory.
+  libusb_device_descriptor desc;
+  const int rv = libusb_get_device_descriptor(platform_device_, &desc);
+  if (rv != LIBUSB_SUCCESS) {
+    VLOG(1) << "Failed to read device descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
+    return false;
+  }
+
+  if (desc.iProduct == 0) {
+    return false;
+  }
+
+  scoped_refptr<UsbDeviceHandle> device_handle = Open();
+  if (device_handle.get()) {
+    return device_handle->GetStringDescriptor(desc.iProduct, product);
+  }
+  return false;
+#endif
+}
+
+bool UsbDeviceImpl::GetSerialNumber(base::string16* serial_number) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_LINUX)
+  if (serial_number_.empty()) {
+    return false;
+  }
+  *serial_number = base::UTF8ToUTF16(serial_number_);
+  return true;
+#else
+  // This is a non-blocking call as libusb has the descriptor in memory.
+  libusb_device_descriptor desc;
+  const int rv = libusb_get_device_descriptor(platform_device_, &desc);
+  if (rv != LIBUSB_SUCCESS) {
+    VLOG(1) << "Failed to read device descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
+    return false;
+  }
+
+  if (desc.iSerialNumber == 0) {
+    return false;
+  }
+
+  scoped_refptr<UsbDeviceHandle> device_handle = Open();
+  if (device_handle.get()) {
+    return device_handle->GetStringDescriptor(desc.iSerialNumber,
+                                              serial_number);
+  }
+  return false;
+#endif
 }
 
 void UsbDeviceImpl::OnDisconnect() {

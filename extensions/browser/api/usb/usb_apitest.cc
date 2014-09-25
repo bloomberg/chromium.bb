@@ -87,13 +87,11 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     const UsbTransferCallback& callback));
 
   MOCK_METHOD0(ResetDevice, bool());
+  MOCK_METHOD2(GetStringDescriptor, bool(uint8_t, base::string16*));
   MOCK_METHOD1(ClaimInterface, bool(const int interface_number));
   MOCK_METHOD1(ReleaseInterface, bool(const int interface_number));
   MOCK_METHOD2(SetInterfaceAlternateSetting,
                bool(const int interface_number, const int alternate_setting));
-  MOCK_METHOD1(GetManufacturer, bool(base::string16* manufacturer));
-  MOCK_METHOD1(GetProduct, bool(base::string16* product));
-  MOCK_METHOD1(GetSerial, bool(base::string16* serial));
 
   virtual scoped_refptr<UsbDevice> GetDevice() const OVERRIDE {
     return device_;
@@ -133,6 +131,9 @@ class MockUsbDevice : public UsbDevice {
 #endif  // OS_CHROMEOS
 
   MOCK_METHOD0(GetConfiguration, const UsbConfigDescriptor&());
+  MOCK_METHOD1(GetManufacturer, bool(base::string16* manufacturer));
+  MOCK_METHOD1(GetProduct, bool(base::string16* product));
+  MOCK_METHOD1(GetSerialNumber, bool(base::string16* serial_number));
 
  private:
   MockUsbDeviceHandle* mock_handle_;

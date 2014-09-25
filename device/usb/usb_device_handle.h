@@ -56,9 +56,10 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   virtual bool SetInterfaceAlternateSetting(int interface_number,
                                             int alternate_setting) = 0;
   virtual bool ResetDevice() = 0;
-  virtual bool GetManufacturer(base::string16* manufacturer) = 0;
-  virtual bool GetProduct(base::string16* product) = 0;
-  virtual bool GetSerial(base::string16* serial) = 0;
+
+  // Gets the string descriptor with the given index from the device, or returns
+  // false. This method is blocking and must be called on the FILE thread.
+  virtual bool GetStringDescriptor(uint8 string_id, base::string16* string) = 0;
 
   // Async IO. Can be called on any thread.
   virtual void ControlTransfer(UsbEndpointDirection direction,

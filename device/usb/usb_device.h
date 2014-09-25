@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 
 namespace device {
 
@@ -53,6 +54,18 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Gets the UsbConfigDescriptor for the active device configuration.
   // Blocking method. Must be called on FILE thread.
   virtual const UsbConfigDescriptor& GetConfiguration() = 0;
+
+  // Gets the manufacturer string of the device, or returns false.
+  // Blocking method. Must be called on FILE thread.
+  virtual bool GetManufacturer(base::string16* manufacturer) = 0;
+
+  // Gets the product string of the device, or returns false.
+  // Blocking method. Must be called on FILE thread.
+  virtual bool GetProduct(base::string16* product) = 0;
+
+  // Gets the serial number string of the device, or returns false.
+  // Blocking method. Must be called on FILE thread.
+  virtual bool GetSerialNumber(base::string16* serial) = 0;
 
   void AddObserver(Observer* obs) { observer_list_.AddObserver(obs); }
   void RemoveObserver(Observer* obs) { observer_list_.RemoveObserver(obs); }
