@@ -242,8 +242,9 @@ class ChromeCreateFileTest : public PlatformTest {
     }
 
 
-    EXPECT_FALSE(file_handle == INVALID_HANDLE_VALUE);
-    ::WriteFile(file_handle, kTestData, buffer_size, &bytes_written, NULL);
+    EXPECT_TRUE(file_handle.IsValid());
+    ::WriteFile(file_handle.Get(), kTestData, buffer_size, &bytes_written,
+                NULL);
     EXPECT_EQ(buffer_size, bytes_written);
   }
 
@@ -272,8 +273,8 @@ class ChromeCreateFileTest : public PlatformTest {
                                       NULL));
     }
 
-    EXPECT_FALSE(file_handle == INVALID_HANDLE_VALUE);
-    ::ReadFile(file_handle, read_buffer, buffer_size, &bytes_read, NULL);
+    EXPECT_TRUE(file_handle.IsValid());
+    ::ReadFile(file_handle.Get(), read_buffer, buffer_size, &bytes_read, NULL);
     EXPECT_EQ(buffer_size, bytes_read);
     EXPECT_EQ(0, memcmp(kTestData, read_buffer, bytes_read));
   }
