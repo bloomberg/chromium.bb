@@ -481,6 +481,7 @@ IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
 TRIVIAL_CONVERSIONS = frozenset([
     'any',
     'boolean',
+    'Date',
     'Dictionary',
     'NodeFilter',
     'XPathNSResolver'
