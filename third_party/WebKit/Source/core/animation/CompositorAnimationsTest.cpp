@@ -332,7 +332,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorStartDelay)
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationStart)
 {
     m_timing.iterationStart = 2.2;
-    EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCount)

@@ -263,10 +263,6 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 
     // All fill modes are supported (the calling code handles them).
 
-    // FIXME: Support non-zero iteration start.
-    if (timing.iterationStart)
-        return false;
-
     if (timing.iterationCount <= 0)
         return false;
 
@@ -294,9 +290,9 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 
     // Compositor's time offset is positive for seeking into the animation.
     out.scaledTimeOffset = -scaledStartDelay + timeOffset;
-
     out.playbackRate = timing.playbackRate * playerPlaybackRate;
     out.fillMode = timing.fillMode == Timing::FillModeAuto ? Timing::FillModeNone : timing.fillMode;
+    out.iterationStart = timing.iterationStart;
 
     return true;
 }
@@ -458,6 +454,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
             animation->setStartTime(startTime);
 
         animation->setIterations(compositorTiming.adjustedIterationCount);
+        animation->setIterationStart(compositorTiming.iterationStart);
         animation->setTimeOffset(compositorTiming.scaledTimeOffset);
 
         switch (compositorTiming.direction) {

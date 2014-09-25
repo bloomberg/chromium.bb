@@ -47,6 +47,7 @@ private:
         double adjustedIterationCount;
         double playbackRate;
         Timing::FillMode fillMode;
+        double iterationStart;
     };
 
     static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double playerPlaybackRate);

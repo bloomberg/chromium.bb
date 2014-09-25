@@ -60,6 +60,9 @@ public:
 
     virtual FillMode fillMode() const = 0;
     virtual void setFillMode(FillMode)  = 0;
+
+    virtual double iterationStart() const = 0;
+    virtual void setIterationStart(double) = 0;
 };
 
 } // namespace blink
