@@ -118,7 +118,7 @@ class BaseSearchProviderTest : public testing::Test {
 TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   TemplateURLData data;
   data.SetURL("http://foo.com/url?bar={searchTerms}");
-  TemplateURL* template_url = new TemplateURL(data);
+  scoped_ptr<TemplateURL> template_url(new TemplateURL(data));
 
   TestBaseSearchProvider::MatchMap map;
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
@@ -128,7 +128,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   EXPECT_CALL(*provider_, GetInput(_))
       .WillRepeatedly(Return(AutocompleteInput()));
   EXPECT_CALL(*provider_, GetTemplateURL(_))
-      .WillRepeatedly(Return(template_url));
+      .WillRepeatedly(Return(template_url.get()));
 
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
