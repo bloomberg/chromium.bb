@@ -187,7 +187,9 @@ function isVideoPlaying(pixels, previousPixels) {
 function isVideoBlack(pixels) {
   for (var i = 0; i < pixels.length; i++) {
     // |pixels| is in RGBA. Ignore the alpha channel.
-    if (pixels[i] != 0 && (i + 1) % 4 != 0) {
+    // We allow it to be off by 1, to account for rounding errors in YUV
+    // conversion.
+    if (pixels[i] != 0 && pixels[i] != 1 && (i + 1) % 4 != 0) {
       return false;
     }
   }
