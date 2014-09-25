@@ -127,10 +127,10 @@ describe('bot revisions', function() {
       revisions.parseBuildInfo(REVISION_JSON).then(function(parsedData) {
         var bot1A = parsedData.groups[0].builders[0];
         assert.equal(bot1A.uri,
-          'http://build.chromium.org/p/Group 1/builders/Bot A');
+          'https://build.chromium.org/p/Group 1/builders/Bot A');
         var bot2B = parsedData.groups[1].builders[1];
         assert.equal(bot2B.uri,
-          'http://build.chromium.org/p/Group 2/builders/Bot B');
+          'https://build.chromium.org/p/Group 2/builders/Bot B');
       }).then(done, done);
     });
     it('Should construct proper revision URIs.', function(done) {
@@ -139,7 +139,7 @@ describe('bot revisions', function() {
         assert.equal(bot1A.repositories[0].uri,
           'https://chromium.googlesource.com/chromium/src/+/200');
         assert.equal(bot1A.repositories[1].uri,
-          'http://src.chromium.org/viewvc/blink/?pathrev=400');
+          'https://src.chromium.org/viewvc/blink/?pathrev=400');
       }).then(done, done);
     });
   });

@@ -114,11 +114,11 @@ describe('ct-results-detail', function() {
           "dummy builder": {
             actual: "UNKNOWN",
             lastFailingBuild: 124,
-            masterUrl: 'http://masterurl/'
+            masterUrl: 'https://masterurl/'
           },
         };
         result.failure = new CTStepFailure('foo_step', 'test.html', resultsByBuilder, 123, 124);
-        expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/stdio';
+        expectedUrl = 'https://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/stdio';
 
         setTimeout(done);
       });
@@ -134,11 +134,11 @@ describe('ct-results-detail', function() {
           "dummy builder": {
             actual: "FAIL",
             lastFailingBuild: 124,
-            masterUrl: 'http://masterurl/'
+            masterUrl: 'https://masterurl/'
           },
         };
         result.failure = new CTStepFailure('foo_step', 'TestSuite.TestName', resultsByBuilder, 123, 124);
-        expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/TestName';
+        expectedUrl = 'https://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/TestName';
 
         setTimeout(done);
       });

@@ -34,33 +34,33 @@ describe('results script', function() {
   });
 
   it('should get result kind', function() {
-    assert.equal(results.resultKind('http://example.com/foo-actual.txt'), 'actual');
-    assert.equal(results.resultKind('http://example.com/foo-expected.txt'), 'expected');
-    assert.equal(results.resultKind('http://example.com/foo-diff.txt'), 'diff');
-    assert.equal(results.resultKind('http://example.com/foo.bar-actual.txt'), 'actual');
-    assert.equal(results.resultKind('http://example.com/foo.bar-expected.txt'), 'expected');
-    assert.equal(results.resultKind('http://example.com/foo.bar-diff.txt'), 'diff');
-    assert.equal(results.resultKind('http://example.com/foo-actual.png'), 'actual');
-    assert.equal(results.resultKind('http://example.com/foo-expected.png'), 'expected');
-    assert.equal(results.resultKind('http://example.com/foo-diff.png'), 'diff');
-    assert.equal(results.resultKind('http://example.com/foo-pretty-diff.html'), 'diff');
-    assert.equal(results.resultKind('http://example.com/foo-wdiff.html'), 'diff');
-    assert.equal(results.resultKind('http://example.com/foo-xyz.html'), 'unknown');
+    assert.equal(results.resultKind('https://example.com/foo-actual.txt'), 'actual');
+    assert.equal(results.resultKind('https://example.com/foo-expected.txt'), 'expected');
+    assert.equal(results.resultKind('https://example.com/foo-diff.txt'), 'diff');
+    assert.equal(results.resultKind('https://example.com/foo.bar-actual.txt'), 'actual');
+    assert.equal(results.resultKind('https://example.com/foo.bar-expected.txt'), 'expected');
+    assert.equal(results.resultKind('https://example.com/foo.bar-diff.txt'), 'diff');
+    assert.equal(results.resultKind('https://example.com/foo-actual.png'), 'actual');
+    assert.equal(results.resultKind('https://example.com/foo-expected.png'), 'expected');
+    assert.equal(results.resultKind('https://example.com/foo-diff.png'), 'diff');
+    assert.equal(results.resultKind('https://example.com/foo-pretty-diff.html'), 'diff');
+    assert.equal(results.resultKind('https://example.com/foo-wdiff.html'), 'diff');
+    assert.equal(results.resultKind('https://example.com/foo-xyz.html'), 'unknown');
   });
 
   it('should get result type', function() {
-    assert.equal(results.resultType('http://example.com/foo-actual.txt'), 'text');
-    assert.equal(results.resultType('http://example.com/foo-expected.txt'), 'text');
-    assert.equal(results.resultType('http://example.com/foo-diff.txt'), 'text');
-    assert.equal(results.resultType('http://example.com/foo.bar-actual.txt'), 'text');
-    assert.equal(results.resultType('http://example.com/foo.bar-expected.txt'), 'text');
-    assert.equal(results.resultType('http://example.com/foo.bar-diff.txt'), 'text');
-    assert.equal(results.resultType('http://example.com/foo-actual.png'), 'image');
-    assert.equal(results.resultType('http://example.com/foo-expected.png'), 'image');
-    assert.equal(results.resultType('http://example.com/foo-diff.png'), 'image');
-    assert.equal(results.resultType('http://example.com/foo-pretty-diff.html'), 'text');
-    assert.equal(results.resultType('http://example.com/foo-wdiff.html'), 'text');
-    assert.equal(results.resultType('http://example.com/foo.xyz'), 'text');
+    assert.equal(results.resultType('https://example.com/foo-actual.txt'), 'text');
+    assert.equal(results.resultType('https://example.com/foo-expected.txt'), 'text');
+    assert.equal(results.resultType('https://example.com/foo-diff.txt'), 'text');
+    assert.equal(results.resultType('https://example.com/foo.bar-actual.txt'), 'text');
+    assert.equal(results.resultType('https://example.com/foo.bar-expected.txt'), 'text');
+    assert.equal(results.resultType('https://example.com/foo.bar-diff.txt'), 'text');
+    assert.equal(results.resultType('https://example.com/foo-actual.png'), 'image');
+    assert.equal(results.resultType('https://example.com/foo-expected.png'), 'image');
+    assert.equal(results.resultType('https://example.com/foo-diff.png'), 'image');
+    assert.equal(results.resultType('https://example.com/foo-pretty-diff.html'), 'text');
+    assert.equal(results.resultType('https://example.com/foo-wdiff.html'), 'text');
+    assert.equal(results.resultType('https://example.com/foo.xyz'), 'text');
   });
 
   it('fetchResultsURLS', function(done) {

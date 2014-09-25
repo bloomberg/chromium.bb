@@ -29,7 +29,7 @@ CTFailureGroup.prototype.unsnooze = function() {
 
 CTFailureGroup.prototype.setBug = function(bug) {
   if (/^[0-9]+$/.test(bug))
-    bug = 'http://crbug.com/' + bug;
+    bug = 'https://crbug.com/' + bug;
   return this._annotate({
     bug: bug,
   });

@@ -87,8 +87,8 @@ CTFailures.prototype._mungeAlerts = function(alerts) {
 
 CTFailures.prototype.update = function() {
   var annotationPromise = CTFailureGroup.fetchAnnotations();
-  return Promise.all([annotationPromise, net.json('http://sheriff-o-matic.appspot.com/alerts'),
-      net.json('http://trooper-o-matic.appspot.com/alerts')]).then(function(data_array) {
+  return Promise.all([annotationPromise, net.json('https://sheriff-o-matic.appspot.com/alerts'),
+      net.json('https://trooper-o-matic.appspot.com/alerts')]).then(function(data_array) {
     var annotations = data_array[0];
     var sheriff_data = data_array[1];
     var trooper_data = data_array[2];

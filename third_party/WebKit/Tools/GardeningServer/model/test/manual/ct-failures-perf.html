@@ -24,11 +24,11 @@ document.querySelector('#report').model = model;
 var analyzer = new CTFailures(CTCommitLogMock());
 var big_alerts = net.json('big-alerts.json');
 net.json = function(url) {
-  if (url === 'http://sheriff-o-matic.appspot.com/alerts') {
+  if (url === 'https://sheriff-o-matic.appspot.com/alerts') {
     return big_alerts.then(function(alerts) {
       return Object.clone(alerts, /*deep=*/true);
     });
-  } else if (url === 'http://trooper-o-matic.appspot.com/alerts') {
+  } else if (url === 'https://trooper-o-matic.appspot.com/alerts') {
     return Promise.resolve({});
   } else {
     return Promise.reject(new Error('Unexpected URL: ' + url));

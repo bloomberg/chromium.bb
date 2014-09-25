@@ -92,8 +92,8 @@ describe('ct-sheriff-failure-group', function() {
     it('should store the bug', function(done) {
       var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation()]));
       group.setBug('123').then(function() {
-        assert.equal(group.bug, 'http://crbug.com/123');
-        assert.equal(group._annotation.bug, 'http://crbug.com/123');
+        assert.equal(group.bug, 'https://crbug.com/123');
+        assert.equal(group._annotation.bug, 'https://crbug.com/123');
         assert.equal(group.bugLabel, 'Bug 123');
         done();
       });
@@ -101,9 +101,9 @@ describe('ct-sheriff-failure-group', function() {
 
     it('should support URLs', function(done) {
       var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation()]));
-      group.setBug('http://foobar.com/?id=876&x=y').then(function() {
-        assert.equal(group.bug, 'http://foobar.com/?id=876&x=y');
-        assert.equal(group._annotation.bug, 'http://foobar.com/?id=876&x=y');
+      group.setBug('https://foobar.com/?id=876&x=y').then(function() {
+        assert.equal(group.bug, 'https://foobar.com/?id=876&x=y');
+        assert.equal(group._annotation.bug, 'https://foobar.com/?id=876&x=y');
         assert.equal(group.bugLabel, 'Bug 876');
         done();
       });
@@ -135,9 +135,9 @@ describe('ct-sheriff-failure-group', function() {
 
     it('should compute properties', function() {
       var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation(
-          {snoozeTime: Date.now() + 1000 * 1000, bug: 'http://crbug.com/123'})]));
+          {snoozeTime: Date.now() + 1000 * 1000, bug: 'https://crbug.com/123'})]));
       assert.isTrue(group.isSnoozed);
-      assert.equal(group.bug, 'http://crbug.com/123');
+      assert.equal(group.bug, 'https://crbug.com/123');
     });
 
     it('should ignore snoozeTime unless it is present on all alerts', function() {
@@ -195,8 +195,8 @@ describe('ct-sheriff-failure-group', function() {
       group.snoozeUntil(123).then(function() {
         group.setBug('456').then(function() {
           CTFailureGroup.fetchAnnotations().then(function(annotations) {
-            assert.deepEqual(annotations[group.data.failures[0].keys()[0]], {snoozeTime: 123, bug: 'http://crbug.com/456'});
-            assert.deepEqual(annotations[group.data.failures[1].keys()[0]], {snoozeTime: 123, bug: 'http://crbug.com/456'});
+            assert.deepEqual(annotations[group.data.failures[0].keys()[0]], {snoozeTime: 123, bug: 'https://crbug.com/456'});
+            assert.deepEqual(annotations[group.data.failures[1].keys()[0]], {snoozeTime: 123, bug: 'https://crbug.com/456'});
             done();
           });
         });

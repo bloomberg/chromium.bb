@@ -12,7 +12,7 @@ function TreeStatus(project) {
   this.message = '';
   this.status = 'unknown';
 
-  this.url = "http://{1}-status.appspot.com/".assign(project);
+  this.url = "https://{1}-status.appspot.com/".assign(project);
 }
 
 TreeStatus.prototype.update = function() {

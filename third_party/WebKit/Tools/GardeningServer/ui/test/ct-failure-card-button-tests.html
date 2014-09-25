@@ -51,9 +51,9 @@ describe('ct-failure-card-buttons', function() {
         bugField.value = '999';
         card.shadowRoot.getElementById('dialogOk').dispatchEvent(new CustomEvent('tap'));
         setTimeout(function() {
-          assert.equal(group.bug, 'http://crbug.com/999');
+          assert.equal(group.bug, 'https://crbug.com/999');
           assert.equal(group.bugLabel, 'Bug 999');
-          assert.equal(group._annotation.bug, 'http://crbug.com/999');
+          assert.equal(group._annotation.bug, 'https://crbug.com/999');
           done();
         });
       });
@@ -65,12 +65,12 @@ describe('ct-failure-card-buttons', function() {
         var dialog = card.shadowRoot.getElementById('bugDialog');
         assert.isTrue(dialog.opened);
         var bugField = card.shadowRoot.getElementById('bug');
-        bugField.value = 'http://foo.com/?id=888';
+        bugField.value = 'https://foo.com/?id=888';
         card.shadowRoot.getElementById('dialogOk').dispatchEvent(new CustomEvent('tap'));
         setTimeout(function() {
-          assert.equal(group.bug, 'http://foo.com/?id=888');
+          assert.equal(group.bug, 'https://foo.com/?id=888');
           assert.equal(group.bugLabel, 'Bug 888');
-          assert.equal(group._annotation.bug, 'http://foo.com/?id=888');
+          assert.equal(group._annotation.bug, 'https://foo.com/?id=888');
           done();
         });
       });
