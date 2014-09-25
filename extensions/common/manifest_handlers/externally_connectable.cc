@@ -63,11 +63,13 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
   const base::Value* externally_connectable = NULL;
   CHECK(extension->manifest()->Get(keys::kExternallyConnectable,
                                    &externally_connectable));
+  bool allow_all_urls = PermissionsParser::HasAPIPermission(
+      extension, APIPermission::kExternallyConnectableAllUrls);
+
   std::vector<InstallWarning> install_warnings;
   scoped_ptr<ExternallyConnectableInfo> info =
-      ExternallyConnectableInfo::FromValue(*externally_connectable,
-                                           &install_warnings,
-                                           error);
+      ExternallyConnectableInfo::FromValue(
+          *externally_connectable, allow_all_urls, &install_warnings, error);
   if (!info)
     return false;
   if (!info->matches.is_empty()) {
@@ -93,6 +95,7 @@ ExternallyConnectableInfo* ExternallyConnectableInfo::Get(
 // static
 scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
     const base::Value& value,
+    bool allow_all_urls,
     std::vector<InstallWarning>* install_warnings,
     base::string16* error) {
   scoped_ptr<ExternallyConnectable> externally_connectable =
@@ -114,6 +117,11 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kErrorInvalidMatchPattern, *it);
         return scoped_ptr<ExternallyConnectableInfo>();
+      }
+
+      if (allow_all_urls && pattern.match_all_urls()) {
+        matches.AddPattern(pattern);
+        continue;
       }
 
       // Wildcard hosts are not allowed.

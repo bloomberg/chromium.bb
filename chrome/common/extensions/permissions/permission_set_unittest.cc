@@ -769,6 +769,9 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kSocket);
   skip.insert(APIPermission::kUsbDevice);
 
+  // We already have a generic message for declaring externally_connectable.
+  skip.insert(APIPermission::kExternallyConnectableAllUrls);
+
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();
   for (APIPermissionSet::const_iterator i = permissions.begin();

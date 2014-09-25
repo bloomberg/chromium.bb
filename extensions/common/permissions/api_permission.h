@@ -88,6 +88,7 @@ class APIPermission {
     kEnterprisePlatformKeysPrivate,
     kExperienceSamplingPrivate,
     kExperimental,
+    kExternallyConnectableAllUrls,
     kFeedbackPrivate,
     kFileBrowserHandler,
     kFileBrowserHandlerInternal,

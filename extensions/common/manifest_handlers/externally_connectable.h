@@ -57,6 +57,7 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
   static scoped_ptr<ExternallyConnectableInfo> FromValue(
       const base::Value& value,
+      bool allow_all_urls,
       std::vector<InstallWarning>* install_warnings,
       base::string16* error);
 

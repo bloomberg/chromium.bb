@@ -36,6 +36,8 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
        PermissionMessage::kAudioCapture},
       {APIPermission::kDns, "dns"},
+      {APIPermission::kExternallyConnectableAllUrls,
+       "externally_connectable.all_urls"},
       {APIPermission::kFullscreen, "app.window.fullscreen"},
       {APIPermission::kHid, "hid", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_HID, PermissionMessage::kHid},
