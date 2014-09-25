@@ -66,6 +66,16 @@ C++ Templates Angle Brackets Pitfall</a></td>
 </tr>
 
 <tr>
+<td>Automatic Types</td>
+<td><code>auto</code></td>
+<td>Automatic type deduction</td>
+<td>TODO: documentation link</td>
+<td>Use according to the <a
+href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#auto">Google
+Style Guide on <code>auto</code></a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Final Specifier</td>
 <td><code>final</code></td>
 <td> Indicates that a class or function is final and cannot be overridden</td>
@@ -103,6 +113,15 @@ Note: <code>std::nullptr_t</code> is a library feature and not available.
 </tr>
 
 <tr>
+<td>Range-Based For Loops</td>
+<td><code>for (<i>type</i> <i>var</i> : <i>range</i>)</code></td>
+<td>Facilitates a more concise syntax for iterating over the elements
+of a container (or a range of iterators) in a <code>for</code> loop</td>
+<td>TODO: documentation link</td>
+<td>As a rule of thumb, use <code>for (const auto& ...)</code>, <code>for (auto& ...)</code>, or <code>for (<i>concrete type</i> ...)</code>. For pointers, use <code>for (auto* ...)</code> to make clear that the copy of the loop variable is intended, and only a pointer is copied. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/hpzz4EqbVmc">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Standard Integers</td>
 <td>Typedefs within <code>&lt;stdint.h&gt;</code>
 and <code>&lt;inttypes&gt;</code></td>
@@ -110,6 +129,31 @@ and <code>&lt;inttypes&gt;</code></td>
 <td><a href="http://www.cplusplus.com/reference/cstdint/">
 &lt;stdint.h&gt; (cstdint)</a></td>
 <td>Already in common use in the codebase. Approved without discussion.</td>
+</tr>
+
+<tr>
+<td>Static Assertions</td>
+<td><code>static_assert(<i>bool</i>, <i>string</i>)</code></td>
+<td>Tests compile-time conditions</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/static_assert">Static Assertion</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/POISBQEhGzU">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Variadic Macros</td>
+<td><code>#define <i>MACRO</i>(...) <i>Impl</i>(<i>args</i>, __VA_ARGS__)</code></td>
+<td>Allows macros that accept a variable number of arguments</td>
+<td><a href="http://stackoverflow.com/questions/4786649/are-variadic-macros-nonstandard">
+Are Variadic macros nonstandard?</a></td>
+<td>Usage should be rare. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/sRx9j3CQqyA">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Variadic Templates</td>
+<td><code>template &lt;<i>typename</i> ... <i>arg</i>&gt;</code></td>
+<td>Allows templates that accept a variable number of arguments</td>
+<td>TODO: documentation link</td>
+<td>Usage should be rare. Use instead of .pump files.<a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
 </tr>
 
 </tbody>
@@ -232,16 +276,6 @@ C++11 generalized attributes</a></td>
 </tr>
 
 <tr>
-<td>Automatic Types</td>
-<td><code>auto</code></td>
-<td>Automatic type deduction</td>
-<td>TODO: documentation link</td>
-<td><a
-href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#auto">Google
-Style Guide on <code>auto</code></a></td>
-</tr>
-
-<tr>
 <td>Declared Type Accessor</td>
 <td><code>decltype(<i>expression</i>)</code></td>
 <td>Provides a means to determine the type of an expression at compile-time,
@@ -319,7 +353,7 @@ explicit specifier</a></td>
 <td>Suppresses the implementation of a function, especially a
 synthetic function such as a copy constructor</td>
 <td>TODO: documentation link</td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/i1o7-RNRnMs">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -336,8 +370,7 @@ type to be initialized using brace syntax</td>
 <td><code>inline</code></td>
 <td>Allows better versioning of namespaces</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/namespace">Namespaces</a></td>
-<td>Under investigation, unclear how it will work with
-components</td>
+<td>Unclear how it will work with components</td>
 </tr>
 
 <tr>
@@ -368,16 +401,7 @@ class C {<br />
 <td>Allows non-static class members to be initialized at their definitions (outside constructors)</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/data_members">
 Non-static data members</a></td>
-<td></td>
-</tr>
-
-<tr>
-<td>Range-Based For Loops</td>
-<td><code>for (<i>type</i> <i>var</i> : <i>range</i>)</code></td>
-<td>Facilitates a more concise syntax for iterating over the elements
-of a container (or a range of iterators) in a <code>for</code> loop</td>
-<td>TODO: documentation link</td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/hpzz4EqbVmc">Discussion thread</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/zqB-DySA4V0">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -386,7 +410,7 @@ of a container (or a range of iterators) in a <code>for</code> loop</td>
 <td>Allows a string to be encoded without any escape
 sequences, easing parsing in regex expressions, for example</td>
 <td>TODO: documentation link</td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -395,14 +419,6 @@ sequences, easing parsing in regex expressions, for example</td>
 <td>Reference that only binds to a temporary object</td>
 <td>TODO: documentation link</td>
 <td></td>
-</tr>
-
-<tr>
-<td>Static Assertions</td>
-<td><code>static_assert(<i>bool</i>, <i>string</i>)</code></td>
-<td>Tests compile-time conditions</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/static_assert">Static Assertion</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/POISBQEhGzU">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -420,23 +436,6 @@ Union declarations</a></td>
 <td>Allows user-defined literal expressions</td>
 <td>TODO: documentation link</td>
 <td></td>
-</tr>
-
-<tr>
-<td>Variadic Macros</td>
-<td><code>#define <i>MACRO</i>(...) <i>Impl</i>(<i>args</i>, __VA_ARGS__)</code></td>
-<td>Allows macros that accept a variable number of arguments</td>
-<td><a href="http://stackoverflow.com/questions/4786649/are-variadic-macros-nonstandard">
-Are Variadic macros nonstandard?</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/sRx9j3CQqyA">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Variadic Templates</td>
-<td><code>template &lt;<i>typename</i> ... <i>arg</i>&gt;</code></td>
-<td>Allows templates that accept a variable number of arguments</td>
-<td>TODO: documentation link</td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
 </tr>
 
 </tbody>
