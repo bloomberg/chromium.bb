@@ -70,7 +70,7 @@ C++ Templates Angle Brackets Pitfall</a></td>
 <td><code>final</code></td>
 <td> Indicates that a class or function is final and cannot be overridden</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/final">final Language Reference</a></td>
-<td>Recommended for new code. Existing uses of the <code>FINAL</code> macro will be <a href="https://crbug.com/417463">replaced throughout the codebase</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/VTNZzizN0zo">Discussion</a></td>
+<td>Recommended for new code. Existing uses of the <code>FINAL</code> macro will be <a href="https://crbug.com/417463">replaced throughout the codebase</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/VTNZzizN0zo">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -121,11 +121,10 @@ and <code>&lt;inttypes&gt;</code></td>
 
 <h3 id="blacklist_banned">C++11 Banned Features</h3>
 
-<p>None yet! This section will list C++11 features that are not allowed in the
-Chromium codebase.
+<p>This section will list C++11 features that are not allowed in the Chromium
+codebase.
 </p>
 
-<!--
 <table id="banned_list" class="unlined striped">
 <tbody>
 
@@ -134,12 +133,55 @@ Chromium codebase.
 <th style='width:240px;'>Snippet</th>
 <th style='width:240px;'>Description</th>
 <th style='width:240px;'>Documentation Link</th>
-<th style='width:240px;'>Status</th>
+<th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td>Constant Expressions</td>
+<td><code>constexpr</code></td>
+<td>Compile-time constant expressions</td>
+<td>TODO: documentation link</td>
+<td>Doesn't work in MSVS2013. Reevalute once it does.<a
+href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#constexpr">Google
+Style Guide on <code>constexpr</code></a></td>
+</tr>
+
+<tr>
+<td>Function Local Variable</td>
+<td><code>__func__</code></td>
+<td>Provides a local variable of the name of the enclosing
+function for logging purposes</td>
+<td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=338">
+The __func__ Predeclared Identifier is Coming to C++</a></td>
+<td>Doesn't work in MSVS2013. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ojGfcgSDzHM">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>UTF-16 and UTF-32 Support (16-Bit and 32-Bit Character Types)</td>
+<td><code>char16_t</code> and <code>char32_t</code></td>
+<td>Provides character types for handling 16-bit
+and 32-bit code units (useful for encoding
+UTF-16 and UTF-32 string data)</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/types">
+Fundamental types</a></td>
+<td>Doesn't work in MSVS2013. Reevaluate once it does.  Non-UTF-8 text is
+banned by the
+<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Non-ASCII_Characters">
+C++ Style Guide</a>. However, may be useful for
+consuming non-ASCII data. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ME2kL7_Kvyk">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>UTF-8, UTF-16, UTF-32 String Literals</td>
+<td><code>u8&quot;<i>string</i>&quot;, u&quot;<i>string</i>&quot;, U&quot;<i>string</i>&quot;</code></td>
+<td>Enforces UTF-8, UTF-16, UTF-32 encoding on all string literals</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">
+string literal</a></td>
+<td>Does not yet work in MSVS2013. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/gcoUbcjfsII">Discussion thread</a></td>
 </tr>
 
 </tbody>
 </table>
--->
 
 <h3 id="blacklist_review">C++11 Features To Be Discussed</h3>
 
@@ -164,7 +206,7 @@ work in all our compilers yet.</p>
 <td><code>using <i>new_alias</i> = <i>typename</i></code></td>
 <td>Allow parameterized typedefs</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/type_alias">Type alias (using syntax)</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8dOAMzgR4ao">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -200,23 +242,13 @@ Style Guide on <code>auto</code></a></td>
 </tr>
 
 <tr>
-<td>Constant Expressions</td>
-<td><code>constexpr</code></td>
-<td>Compile-time constant expressions</td>
-<td>TODO: documentation link</td>
-<td>Not supported in MSVS2013. <a
-href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#constexpr">Google
-Style Guide on <code>constexpr</code></a></td>
-</tr>
-
-<tr>
 <td>Declared Type Accessor</td>
 <td><code>decltype(<i>expression</i>)</code></td>
 <td>Provides a means to determine the type of an expression at compile-time,
 useful most often in templates.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/decltype">
 decltype specifier</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/_zoNvZd_dSo">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -226,7 +258,7 @@ decltype specifier</a></td>
 of the indicated function</td>
 <td><a href="http://stackoverflow.com/questions/823935/whats-the-point-in-defaulting-functions-in-c11">
 What's the point in defaulting functions in C++11?</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/qgU4mh_MpGA">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -246,7 +278,7 @@ Default Template Arguments for Function Templates</a></td>
 <td>Allow overloaded constructors to use common initialization code</td>
 <td><a href="https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/introduction_to_the_c_11_feature_delegating_constructors?lang=en">
 Introduction to the C++11 feature: delegating constructors</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/0zVA8Ctx3Xo">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -256,7 +288,7 @@ Introduction to the C++11 feature: delegating constructors</a></td>
 conversion to booleans or integers</td>
 <td><a href="http://stackoverflow.com/questions/6936030/do-we-really-need-enum-class-in-c11">
 enum-class</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/Q5WmkAImanc">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -268,8 +300,7 @@ and <code>nested_exception</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/error/exception">
 std::exception</a></td>
 <td>Exceptions are banned by the
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Exceptions">
-C++ Style Guide</a>.</td>
+<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Exceptions"> C++ Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -279,16 +310,6 @@ C++ Style Guide</a>.</td>
 <td>Allows conversion operators that cannot be implicitly invoked</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/explicit">
 explicit specifier</a></td>
-<td></td>
-</tr>
-
-<tr>
-<td>Function Local Variable</td>
-<td><code>__func__</code></td>
-<td>Provides a local variable of the name of the enclosing
-function for logging purposes</td>
-<td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=338">
-The __func__ Predeclared Identifier is Coming to C++</a></td>
 <td></td>
 </tr>
 
@@ -307,7 +328,7 @@ synthetic function such as a copy constructor</td>
 <td>Allows any object of primitive, aggregate or class
 type to be initialized using brace syntax</td>
 <td>TODO: documentation link</td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/GF96FshwHLw">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -324,7 +345,7 @@ components</td>
 <td><code>[<i>captures</i>](<i>params</i>) -&gt; <i>ret</i> { <i>body</i> }</code></td>
 <td>Anonymous functions</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/lambda">Lambda functions</a></td>
-<td>No default captures (<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Lambda_expressions">Google Style Guide</a>).</td>
+<td>No default captures (<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Lambda_expressions">Google Style Guide</a>). <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/D9UnnxBnciQ">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -333,7 +354,7 @@ components</td>
 <td>An integer of at least 64 bits</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/types">
 Fundamental types</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/RxugZ-pIDxk">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -356,7 +377,7 @@ Non-static data members</a></td>
 <td>Facilitates a more concise syntax for iterating over the elements
 of a container (or a range of iterators) in a <code>for</code> loop</td>
 <td>TODO: documentation link</td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/hpzz4EqbVmc">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -381,7 +402,7 @@ sequences, easing parsing in regex expressions, for example</td>
 <td><code>static_assert(<i>bool</i>, <i>string</i>)</code></td>
 <td>Tests compile-time conditions</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/static_assert">Static Assertion</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/POISBQEhGzU">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -402,36 +423,12 @@ Union declarations</a></td>
 </tr>
 
 <tr>
-<td>UTF-8 String Literals</td>
-<td><code>u8&quot;<i>string</i>&quot;</code></td>
-<td>Enforces UTF-8 encoding on all string literals</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">
-string literal</a></td>
-<td></td>
-</tr>
-
-<tr>
-<td>UTF-16 and UTF-32 Support (16-Bit and 32-Bit Character Types)</td>
-<td><code>char16_t</code> and <code>char32_t</code></td>
-<td>Provides character types for handling 16-bit
-and 32-bit code units (useful for encoding
-UTF-16 and UTF-32 string data)</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/types">
-Fundamental types</a></td>
-<td>Non-UTF-8 text is banned by the
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Non-ASCII_Characters">
-C++ Style Guide</a>. However, may be useful for
-consuming non-ASCII data.</td>
-</tr>
-
-
-<tr>
 <td>Variadic Macros</td>
 <td><code>#define <i>MACRO</i>(...) <i>Impl</i>(<i>args</i>, __VA_ARGS__)</code></td>
 <td>Allows macros that accept a variable number of arguments</td>
 <td><a href="http://stackoverflow.com/questions/4786649/are-variadic-macros-nonstandard">
 Are Variadic macros nonstandard?</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/sRx9j3CQqyA">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -439,7 +436,7 @@ Are Variadic macros nonstandard?</a></td>
 <td><code>template &lt;<i>typename</i> ... <i>arg</i>&gt;</code></td>
 <td>Allows templates that accept a variable number of arguments</td>
 <td>TODO: documentation link</td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
 </tr>
 
 </tbody>
@@ -829,7 +826,7 @@ Algorithms library</a> for a complete list.</td>
 <td>Allows trailing function return value syntax</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/function">
 Declaring functions</a></td>
-<td></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a></td>
 </tr>
 
 <tr>
