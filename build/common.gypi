@@ -3569,6 +3569,11 @@
               '-gdwarf-4',
             ],
             'conditions' : [
+              ['fastbuild==0', {
+                'cflags': [
+                  '-fvar-tracking-assignments', '-fvar-tracking',
+                ],
+              }],
               ['OS=="android"', {
                 'ldflags': [
                   # Warn in case of text relocations.
