@@ -204,11 +204,13 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     if (focusless)
       checkbox.tabIndex = -1;
 
-    // Clicking anywhere in the entryBox will check/uncheck the checkbox.
-    entryBox.setAttribute('for', checkbox.id);
-    entryBox.addEventListener('mousedown', entryBoxMousedown);
-    entryBox.addEventListener('click', entryBoxClick);
-    entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
+    if (!isMobileVersion()) {
+      // Clicking anywhere in the entryBox will check/uncheck the checkbox.
+      entryBox.setAttribute('for', checkbox.id);
+      entryBox.addEventListener('mousedown', entryBoxMousedown);
+      entryBox.addEventListener('click', entryBoxClick);
+      entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
+    }
   }
 
   // Keep track of the drop down that triggered the menu, so we know
