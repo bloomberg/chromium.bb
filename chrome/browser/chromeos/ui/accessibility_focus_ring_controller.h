@@ -8,14 +8,22 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/gfx/rect.h"
+
+namespace ui {
+class Compositor;
+}
 
 namespace chromeos {
 
 // AccessibilityFocusRingController manages a custom focus ring (or multiple
 // rings) for accessibility.
-class AccessibilityFocusRingController : public FocusRingLayerDelegate {
+class AccessibilityFocusRingController
+    : public FocusRingLayerDelegate,
+      public ui::CompositorAnimationObserver {
  public:
   // Get the single instance of this class.
   static AccessibilityFocusRingController* GetInstance();
@@ -42,6 +50,9 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   // FocusRingLayerDelegate.
   virtual void OnDeviceScaleFactorChanged() OVERRIDE;
 
+  // CompositorAnimationObserver.
+  virtual void OnAnimationStep(base::TimeTicks timestamp) OVERRIDE;
+
   void Update();
 
   AccessibilityFocusRing RingFromSortedRects(
@@ -54,9 +65,11 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   bool Intersects(const gfx::Rect& r1, const gfx::Rect& r2) const;
 
   std::vector<gfx::Rect> rects_;
+  std::vector<AccessibilityFocusRing> previous_rings_;
   std::vector<AccessibilityFocusRing> rings_;
-  scoped_ptr<AccessibilityFocusRingLayer> main_focus_ring_layer_;
-  std::vector<scoped_ptr<AccessibilityFocusRingLayer> > extra_layers_;
+  std::vector<scoped_ptr<AccessibilityFocusRingLayer> > layers_;
+  base::TimeTicks focus_change_time_;
+  ui::Compositor* compositor_;
 
   friend struct DefaultSingletonTraits<AccessibilityFocusRingController>;
 

@@ -72,6 +72,13 @@ struct AccessibilityFocusRing {
   static AccessibilityFocusRing CreateWithRect(
       const gfx::Rect& bounds, int margin);
 
+  // Returns a ring where 0.0 returns r1, 1.0 returns r2, and any number
+  // in-between interpolates linearly between them.
+  static AccessibilityFocusRing Interpolate(
+      const AccessibilityFocusRing& r1,
+      const AccessibilityFocusRing& r2,
+      double fraction);
+
   // Construct an AccessibilityFocusRing that outlines a paragraph-shaped
   // object.
   static AccessibilityFocusRing CreateWithParagraphShape(
@@ -80,8 +87,9 @@ struct AccessibilityFocusRing {
       const gfx::Rect& bottom_line,
       int margin);
 
-  gfx::Point points[36];
   gfx::Rect GetBounds() const;
+
+  gfx::Point points[36];
 };
 
 }  // namespace chromeos

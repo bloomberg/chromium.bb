@@ -40,6 +40,7 @@ class FocusRingLayer : public ui::LayerDelegate {
   void Set(aura::Window* root_window, const gfx::Rect& bounds);
 
   ui::Layer* layer() { return layer_.get(); }
+  aura::Window* root_window() { return root_window_; }
 
  protected:
   // Updates |root_window_| and creates |layer_| if it doesn't exist,

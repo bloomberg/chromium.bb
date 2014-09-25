@@ -16,7 +16,7 @@ namespace chromeos {
 namespace {
 
 // The number of pixels in the color gradient that fades to transparent.
-const int kGradientWidth = 10;
+const int kGradientWidth = 6;
 
 // The color of the focus ring. In the future this might be a parameter.
 const int kFocusRingColorRed = 247;
@@ -118,10 +118,11 @@ void AccessibilityFocusRingLayer::OnPaintLayer(gfx::Canvas* canvas) {
   paint.setStrokeWidth(2);
 
   SkPath path;
-  for (int i = 0; i < kGradientWidth; i++) {
+  const int w = kGradientWidth;
+  for (int i = 0; i < w; ++i) {
     paint.setColor(
         SkColorSetARGBMacro(
-            255 - (255 * i / kGradientWidth),
+            255 * (w - i) * (w - i) / (w * w),
             kFocusRingColorRed, kFocusRingColorGreen, kFocusRingColorBlue));
     path = MakePath(ring_, i, offset);
     canvas->DrawPath(path, paint);

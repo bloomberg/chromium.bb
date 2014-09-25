@@ -4,7 +4,11 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 
+#include "ash/display/display_controller.h"
+#include "ash/shell.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
+#include "ui/gfx/screen.h"
 
 namespace chromeos {
 
@@ -13,7 +17,10 @@ namespace {
 // The number of pixels the focus ring is outset from the object it outlines,
 // which also determines the border radius of the rounded corners.
 // TODO(dmazzoni): take display resolution into account.
-const int kAccessibilityFocusRingMargin = 16;
+const int kAccessibilityFocusRingMargin = 7;
+
+// Time to transition between one location and the next.
+const int kTransitionTimeMilliseconds = 300;
 
 // A Region is an unordered collection of Rects that maintains its
 // bounding box. Used in the middle of an algorithm that groups
@@ -35,7 +42,8 @@ AccessibilityFocusRingController*
   return Singleton<AccessibilityFocusRingController>::get();
 }
 
-AccessibilityFocusRingController::AccessibilityFocusRingController() {
+AccessibilityFocusRingController::AccessibilityFocusRingController()
+    : compositor_(NULL) {
 }
 
 AccessibilityFocusRingController::~AccessibilityFocusRingController() {
@@ -48,21 +56,56 @@ void AccessibilityFocusRingController::SetFocusRing(
 }
 
 void AccessibilityFocusRingController::Update() {
+  previous_rings_.swap(rings_);
   rings_.clear();
   RectsToRings(rects_, &rings_);
+  layers_.resize(rings_.size());
+  for (size_t i = 0; i < rings_.size(); ++i) {
+    if (!layers_[i])
+      layers_[i].reset(new AccessibilityFocusRingLayer(this));
 
-  if (!main_focus_ring_layer_)
-    main_focus_ring_layer_.reset(new AccessibilityFocusRingLayer(this));
+    if (i > 0) {
+      // Focus rings other than the first one don't animate.
+      layers_[i]->Set(rings_[i]);
+      continue;
+    }
 
-  if (!rings_.empty())
-    main_focus_ring_layer_->Set(rings_[0]);
+    gfx::Rect bounds = rings_[0].GetBounds();
+    gfx::Display display =
+      gfx::Screen::GetNativeScreen()->GetDisplayMatching(bounds);
+    aura::Window* root_window = ash::Shell::GetInstance()->display_controller()
+        ->GetRootWindowForDisplayId(display.id());
+    ui::Compositor* compositor = root_window->layer()->GetCompositor();
+    if (!compositor || root_window != layers_[0]->root_window()) {
+      layers_[0]->Set(rings_[0]);
+      if (compositor_ && compositor_->HasAnimationObserver(this)) {
+        compositor_->RemoveAnimationObserver(this);
+        compositor_ = NULL;
+      }
+      continue;
+    }
+
+    focus_change_time_ = base::TimeTicks::Now();
+    if (!compositor->HasAnimationObserver(this)) {
+      compositor_ = compositor;
+      compositor_->AddAnimationObserver(this);
+    }
+  }
 }
 
 void AccessibilityFocusRingController::RectsToRings(
-    const std::vector<gfx::Rect>& rects,
+    const std::vector<gfx::Rect>& src_rects,
     std::vector<AccessibilityFocusRing>* rings) const {
-  if (rects.empty())
+  if (src_rects.empty())
     return;
+
+  // Give all of the rects a margin.
+  std::vector<gfx::Rect> rects;
+  rects.resize(src_rects.size());
+  for (size_t i = 0; i < src_rects.size(); ++i) {
+    rects[i] = src_rects[i];
+    rects[i].Inset(-GetMargin(), -GetMargin());
+  }
 
   // Split the rects into contiguous regions.
   std::vector<Region> regions;
@@ -242,6 +285,35 @@ bool AccessibilityFocusRingController::Intersects(
 
 void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
   Update();
+}
+
+void AccessibilityFocusRingController::OnAnimationStep(
+    base::TimeTicks timestamp) {
+  if (rings_.empty())
+    return;
+
+  CHECK(compositor_);
+  CHECK(!rings_.empty());
+  CHECK(!layers_.empty());
+  CHECK(layers_[0]);
+
+  base::TimeDelta delta = timestamp - focus_change_time_;
+  base::TimeDelta transition_time =
+      base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
+  if (delta >= transition_time) {
+    layers_[0]->Set(rings_[0]);
+    compositor_->RemoveAnimationObserver(this);
+    compositor_ = NULL;
+    return;
+  }
+
+  double fraction = delta.InSecondsF() / transition_time.InSecondsF();
+
+  // Ease-in effect.
+  fraction = pow(fraction, 0.3);
+
+  layers_[0]->Set(AccessibilityFocusRing::Interpolate(
+      previous_rings_[0], rings_[0], fraction));
 }
 
 }  // namespace chromeos

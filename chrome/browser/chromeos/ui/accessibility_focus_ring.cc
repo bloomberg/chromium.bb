@@ -4,18 +4,38 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring.h"
 
+#include "base/logging.h"
+
 namespace chromeos {
 
 // static
 AccessibilityFocusRing AccessibilityFocusRing::CreateWithRect(
     const gfx::Rect& bounds, int margin) {
+  // Compute the height of the top and bottom cap.
+  int cap_height = std::min(bounds.height() / 2, margin * 2);
+
   gfx::Rect top(bounds.x(), bounds.y(),
-                bounds.width(), bounds.height() / 4);
+                bounds.width(), cap_height);
+  gfx::Rect bottom(bounds.x(), bounds.bottom() - cap_height,
+                   bounds.width(), cap_height);
   gfx::Rect body(bounds.x(), top.bottom(),
-                 bounds.width(), bounds.height() / 2);
-  gfx::Rect bottom(bounds.x(), body.bottom(),
-                   bounds.width(), bounds.bottom() - body.bottom());
+                 bounds.width(), bottom.y() - top.bottom());
+
   return CreateWithParagraphShape(top, body, bottom, margin);
+}
+
+// static
+AccessibilityFocusRing AccessibilityFocusRing::Interpolate(
+    const AccessibilityFocusRing& r1,
+    const AccessibilityFocusRing& r2,
+    double fraction) {
+  AccessibilityFocusRing dst;
+  for (int i = 0; i < 36; ++i) {
+    dst.points[i] = gfx::Point(
+        r1.points[i].x() * (1 - fraction) + r2.points[i].x() * fraction,
+        r1.points[i].y() * (1 - fraction) + r2.points[i].y() * fraction);
+  }
+  return dst;
 }
 
 // static
@@ -27,6 +47,9 @@ AccessibilityFocusRing AccessibilityFocusRing::CreateWithParagraphShape(
   gfx::Rect top = orig_top_line;
   gfx::Rect middle = orig_body;
   gfx::Rect bottom = orig_bottom_line;
+
+  int min_height = std::min(top.height(), bottom.height());
+  margin = std::min(margin, min_height / 2);
 
   if (top.x() <= middle.x() + 2 * margin) {
     top.set_width(top.width() + top.x() - middle.x());
@@ -108,7 +131,7 @@ AccessibilityFocusRing AccessibilityFocusRing::CreateWithParagraphShape(
 gfx::Rect AccessibilityFocusRing::GetBounds() const {
   gfx::Point top_left = points[0];
   gfx::Point bottom_right = points[0];
-  for (size_t i = 1; i < 36; i++) {
+  for (size_t i = 1; i < 36; ++i) {
     top_left.SetToMin(points[i]);
     bottom_right.SetToMax(points[i]);
   }
