@@ -39,6 +39,15 @@
 
 namespace blink {
 
+PassRefPtr<BitmapImage> BitmapImage::create(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer)
+{
+    if (!nativeImage) {
+        return BitmapImage::create(observer);
+    }
+
+    return adoptRef(new BitmapImage(nativeImage, observer));
+}
+
 BitmapImage::BitmapImage(ImageObserver* observer)
     : Image(observer)
     , m_currentFrame(0)
