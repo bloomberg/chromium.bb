@@ -3878,38 +3878,6 @@ double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
   return ZoomFactorToZoomLevel(factor);
 }
 
-// TODO(sanjoy.pal): Remove once blink patch lands. http://crbug.com/406236.
-void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
-                                             const WebURL& base_url,
-                                             const WebURL& url,
-                                             const WebString& title) {
-  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  GURL base(base_url);
-  GURL absolute_url = base.Resolve(base::UTF16ToUTF8(url.string()));
-  if (base.GetOrigin() != absolute_url.GetOrigin()) {
-    return;
-  }
-  Send(new ViewHostMsg_RegisterProtocolHandler(routing_id_,
-                                               base::UTF16ToUTF8(scheme),
-                                               absolute_url,
-                                               title,
-                                               user_gesture));
-}
-
-void RenderViewImpl::unregisterProtocolHandler(const WebString& scheme,
-                                               const WebURL& base_url,
-                                               const WebURL& url) {
-  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  GURL base(base_url);
-  GURL absolute_url = base.Resolve(base::UTF16ToUTF8(url.string()));
-  if (base.GetOrigin() != absolute_url.GetOrigin())
-    return;
-  Send(new ViewHostMsg_UnregisterProtocolHandler(routing_id_,
-                                                 base::UTF16ToUTF8(scheme),
-                                                 absolute_url,
-                                                 user_gesture));
-}
-
 void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                              const WebURL& url,
                                              const WebString& title) {
