@@ -251,18 +251,14 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     self.assertEqual(base_test_result.ResultType.CRASH, result.GetType())
     self.assertEqual('\nfoo/bar.py (27)\nhello/world.py (42)', result.GetLog())
 
-  def testRunInstrumentationTest_verifyAdbShellCommand(self):
+  def test_RunTest_verifyAdbShellCommand(self):
     self.instance.options.test_runner = 'MyTestRunner'
     self.instance.device.RunShellCommand = mock.Mock()
-    self.instance._GenerateTestResult = mock.Mock()
-    with mock.patch('pylib.instrumentation.test_runner.'
-                        'TestRunner._ParseAmInstrumentRawOutput',
-                    return_value=(mock.Mock(), mock.Mock(), mock.Mock())):
-      self.instance.RunInstrumentationTest(
-          'test.package.TestClass#testMethod',
-          'test.package',
-          {'test_arg_key': 'test_arg_value'},
-          100)
+    self.instance.test_pkg.GetPackageName = mock.Mock(
+        return_value='test.package')
+    self.instance._GetInstrumentationArgs = mock.Mock(
+        return_value={'test_arg_key': 'test_arg_value'})
+    self.instance._RunTest('test.package.TestClass#testMethod', 100)
     self.instance.device.RunShellCommand.assert_called_with(
         ['am', 'instrument', '-r',
          '-e', 'test_arg_key', "'test_arg_value'",

@@ -339,44 +339,26 @@ class TestRunner(base_test_runner.BaseTestRunner):
                   "1 minute for timeout.").format(test))
     return 1 * 60
 
-  def RunInstrumentationTest(self, test, test_package, instr_args, timeout):
+  def _RunTest(self, test, timeout):
     """Runs a single instrumentation test.
 
     Args:
       test: Test class/method.
-      test_package: Package name of test apk.
-      instr_args: Extra key/value to pass to am instrument.
       timeout: Timeout time in seconds.
 
     Returns:
-      An instance of InstrumentationTestResult
+      The raw output of am instrument as a list of lines.
     """
     # Build the 'am instrument' command
     instrumentation_path = (
-        '%s/%s' % (test_package, self.options.test_runner))
+        '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner))
 
     cmd = ['am', 'instrument', '-r']
-    for k, v in instr_args.iteritems():
+    for k, v in self._GetInstrumentationArgs().iteritems():
       cmd.extend(['-e', k, "'%s'" % v])
     cmd.extend(['-e', 'class', "'%s'" % test])
     cmd.extend(['-w', instrumentation_path])
-
-    time_ms = lambda: int(time.time() * 1000)
-
-    # Run the test.
-    start_ms = time_ms()
-    try:
-      instr_output = self.device.RunShellCommand(
-          cmd, timeout=timeout, retries=0)
-    except device_errors.CommandTimeoutError:
-      return test_result.InstrumentationTestResult(
-          test, base_test_result.ResultType.TIMEOUT, start_ms,
-          time_ms() - start_ms)
-    duration_ms = time_ms() - start_ms
-
-    # Parse the test output
-    _, _, statuses = self._ParseAmInstrumentRawOutput(instr_output)
-    return self._GenerateTestResult(test, statuses, start_ms, duration_ms)
+    return self.device.RunShellCommand(cmd, timeout=timeout, retries=0)
 
   @staticmethod
   def _ParseAmInstrumentRawOutput(raw_output):
@@ -502,19 +484,28 @@ class TestRunner(base_test_runner.BaseTestRunner):
     timeout = (self._GetIndividualTestTimeoutSecs(test) *
                self._GetIndividualTestTimeoutScale(test) *
                self.tool.GetTimeoutScale())
+
+    start_ms = 0
+    duration_ms = 0
     try:
       self.TestSetup(test)
-      result = self.RunInstrumentationTest(
-          test, self.test_pkg.GetPackageName(), self._GetInstrumentationArgs(),
-          timeout)
+
+      time_ms = lambda: int(time.time() * 1000)
+      start_ms = time_ms()
+      raw_output = self._RunTest(test, timeout)
+      duration_ms = time_ms() - start_ms
+
+      # Parse the test output
+      _, _, statuses = self._ParseAmInstrumentRawOutput(raw_output)
+      result = self._GenerateTestResult(test, statuses, start_ms, duration_ms)
       results.AddResult(result)
-    except (device_errors.CommandTimeoutError,
-            device_errors.DeviceUnreachableError) as e:
-      message = str(e)
-      if not message:
-        message = 'No information.'
+    except device_errors.CommandTimeoutError as e:
       results.AddResult(test_result.InstrumentationTestResult(
-          test, base_test_result.ResultType.CRASH, int(time.time() * 1000), 0,
-          log=message))
+          test, base_test_result.ResultType.TIMEOUT, start_ms, duration_ms,
+          log=str(e) or 'No information'))
+    except device_errors.DeviceUnreachableError as e:
+      results.AddResult(test_result.InstrumentationTestResult(
+          test, base_test_result.ResultType.CRASH, start_ms, duration_ms,
+          log=str(e) or 'No information'))
     self.TestTeardown(test, results)
     return (results, None if results.DidRunPass() else test)
