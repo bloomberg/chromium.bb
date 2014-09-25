@@ -21,6 +21,7 @@ DEFINE_GLOBAL({{namespace}}QualifiedName, {{tag|symbol}}Tag)
 {% endfor %}
 
 
+{% if namespace != 'HTML' %}
 PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
 {
     OwnPtr<const {{namespace}}QualifiedName*[]> tags = adoptArrayPtr(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
@@ -29,6 +30,7 @@ PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
     {% endfor %}
     return tags.release();
 }
+{% endif %}
 
 {% endif %}
 // Attributes
@@ -36,6 +38,7 @@ PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
 DEFINE_GLOBAL(QualifiedName, {{attr|symbol}}Attr)
 {% endfor %}
 
+{% if namespace != 'HTML' %}
 PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs()
 {
     OwnPtr<const QualifiedName*[]> attrs = adoptArrayPtr(new const QualifiedName*[{{namespace}}AttrsCount]);
@@ -44,6 +47,8 @@ PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs()
     {% endfor %}
     return attrs.release();
 }
+{% endif %}
+
 
 void init()
 {
