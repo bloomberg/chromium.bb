@@ -56,9 +56,12 @@ class ATHENA_EXPORT ActivityViewModel {
 
   // Returns an image which can be used to represent the activity in e.g. the
   // overview mode. The returned image can have no size if either a view exists
-  // or the activity has not yet been loaded. In that case
-  // GetRepresentativeColor() should be used to clear the preview area.
-  // Note: We intentionally do not use a layer / view for this.
+  // or the activity has not yet been loaded or ever been presented. In that
+  // case GetRepresentativeColor() should be used to clear the preview area.
+  // Note that since the image gets created upon request, and the
+  // ActivityViewModel will hold no reference to the returned image data. As
+  // such it is advisable to hold on to the image as long as needed instead of
+  // calling this function frequently since it will cause time to generate.
   virtual gfx::ImageSkia GetOverviewModeImage() = 0;
 
   // Prepares the contents view for overview.

@@ -11,7 +11,6 @@
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/content/content_proxy.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace athena {
 
@@ -19,7 +18,7 @@ class AppActivity;
 class AppActivityRegistry;
 
 // This activity object is a proxy placeholder for the application while it is
-// unloaded. When selected it will launch the applciation again and destroy
+// unloaded. When selected it will launch the application again and destroy
 // itself indirectly.
 class AppActivityProxy : public Activity,
                          public ActivityViewModel {

@@ -4,6 +4,7 @@
 
 #include "athena/test/sample_activity.h"
 
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

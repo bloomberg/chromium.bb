@@ -10,7 +10,6 @@
 #include "athena/content/app_activity_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace extensions {
 class AppWindow;
@@ -33,8 +32,8 @@ class AppActivity : public Activity,
  public:
   AppActivity(extensions::AppWindow* app_window, views::WebView* web_view);
 
-  // Gets the content proxy so that the AppProxy can take it over.
-  scoped_ptr<ContentProxy> GetContentProxy(aura::Window* window);
+  // Gets the content proxy so that the AppActivityProxy can take it over.
+  scoped_ptr<ContentProxy> GetContentProxy();
 
   // Activity:
   virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;

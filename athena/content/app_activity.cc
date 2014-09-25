@@ -29,9 +29,11 @@ AppActivity::AppActivity(extensions::AppWindow* app_window,
   Observe(app_window->web_contents());
 }
 
-scoped_ptr<ContentProxy> AppActivity::GetContentProxy(aura::Window* window) {
+scoped_ptr<ContentProxy> AppActivity::GetContentProxy() {
+  // Note: After this call, the content is still valid because the contents
+  // destruction will destroy this |AppActivity| object.
   if (content_proxy_.get())
-    content_proxy_->Reparent(window);
+    content_proxy_->OnPreContentDestroyed();
   return content_proxy_.Pass();
 }
 

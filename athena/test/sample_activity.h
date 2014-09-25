@@ -7,7 +7,10 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
-#include "ui/gfx/image/image_skia.h"
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace athena {
 namespace test {

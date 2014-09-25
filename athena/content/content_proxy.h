@@ -6,35 +6,27 @@
 #define ATHENA_CONTENT_CONTENT_PROXY_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace aura {
-class Window;
-}
-
 namespace views {
-class View;
 class WebView;
 }
-
-typedef unsigned int SkColor;
 
 namespace athena {
 
 class Activity;
-class AppActivity;
-class AppActivityProxy;
-class WebActivity;
+class ProxyImageData;
 
 // This object creates and holds proxy content which gets shown instead of the
 // actual web content, generated from the passed |web_view|.
 // The created |proxy_content_| will be destroyed with the destruction of this
 // object.
-// Calling EvictContent() will release the rendered content and replaces it with
-// a solid color to save memory.
-// Calling Reparent() will transfer the |proxy_content_| to an ActivityProxy,
-// allowing the destruction of the original activity / content.
+// Calling EvictContent() will release the rendered content.
+// When ContentGetsDestroyed() gets called, the old view will be made visible
+// and then the link to the |web_view_| will get severed.
 class ContentProxy {
  public:
   // Creates the object by creating a sized down |web_view| layer and making it
@@ -60,11 +52,9 @@ class ContentProxy {
   // will be returned.
   gfx::ImageSkia GetContentImage();
 
-  // Transfer the owned |proxy_content_| to the |new_parent_window|.
-  // Once called, the |web_view_| will be made visible again and the connection
-  // to it will be removed since the old activity might go away.
+  // The content is about to get destroyed by its creator.
   // Note: This function should only be used by AppActivity.
-  void Reparent(aura::Window* new_parent_window);
+  void OnPreContentDestroyed();
 
  private:
   // Make the original (web)content visible. This call should only be paired
@@ -75,40 +65,47 @@ class ContentProxy {
   // MakeVisible.
   void HideOriginalContent();
 
-  // Creates proxy content from |web_view_|. If there is no |web_view_|,
-  // a solid |proxy_content_| with |background_color_| will be created.
+  // Creates proxy content from |web_view_|.
   void CreateProxyContent();
 
-  // Creates a solid |proxy_content_| with |background_color_|.
-  void CreateSolidProxyContent();
+  // Creates an image from the current content.
+  bool CreateContentImage();
 
-  // Show the |proxy_content_| in the current |window_|.
-  void ShowProxyContent();
+  // Called once the content was read back.
+  void OnContentImageRead(bool success, const SkBitmap& bitmap);
 
-  // Removes the |proxy_content_| from the window again.
-  void HideProxyContent();
+  // Called once the image content has been converted to PNG.
+  void OnContentImageEncodeComplete(scoped_refptr<ProxyImageData> image);
 
-  // The web view which is associated with this object. It will be NULL after
-  // the object got called with Reparent(), since the Activity which owns it
-  // will be destroyed shortly after.
+  // The web view which was passed on creation and is associated with this
+  // object. It will be shown when OnPreContentDestroyed() gets called and then
+  // set to NULL. The ownership remains with the creator.
   views::WebView* web_view_;
 
-  // The window which shows our |proxy_content_|,
-  aura::Window* window_;
+  // While we are doing our PNG encode, we keep the read back image to have
+  // something which we can pass back to the overview mode. (It would make no
+  // sense to the user to see that more recent windows get painted later than
+  // older ones).
+  gfx::ImageSkia raw_image_;
 
-  // The background color to use when evicted.
-  SkColor background_color_;
+  // True if the content is visible.
+  bool content_visible_;
 
-  // If we have an image (e.g. from session restore) it is stored here.
-  gfx::ImageSkia image_;
-
-  // True if the content is loaded.
+  // True if the content is loaded and needs a re-layout when it gets shown
+  // again.
   bool content_loaded_;
 
-  // The content representation which which will be presented to the user. It
-  // will either contain a shrunken down image of the |web_view| content or a
-  // solid |background_color_|.
-  scoped_ptr<views::View> proxy_content_;
+  // True if a content creation was kicked off once. This ensures that the
+  // function is never called twice.
+  bool content_creation_called_;
+
+  // The PNG image data.
+  scoped_refptr<base::RefCountedBytes> png_data_;
+
+  // Creating an encoded image from the content will be asynchronous. Use a
+  // weakptr for the callback to make sure that the read back / encoding image
+  // completion callback does not trigger on a destroyed ContentProxy.
+  base::WeakPtrFactory<ContentProxy> proxy_content_to_image_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentProxy);
 };

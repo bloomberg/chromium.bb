@@ -9,6 +9,7 @@
 
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/content/app_activity_proxy.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace aura {
 class Window;

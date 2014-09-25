@@ -64,7 +64,7 @@ content::WebContents* AppActivityProxy::GetWebContents() {
 void AppActivityProxy::Init() {
   DCHECK(replaced_activity_);
   // Get the content proxy to present the content.
-  content_proxy_ = replaced_activity_->GetContentProxy(GetWindow());
+  content_proxy_ = replaced_activity_->GetContentProxy();
   WindowListProvider* window_list_provider =
       WindowManager::Get()->GetWindowListProvider();
   window_list_provider->StackWindowBehindTo(GetWindow(),
