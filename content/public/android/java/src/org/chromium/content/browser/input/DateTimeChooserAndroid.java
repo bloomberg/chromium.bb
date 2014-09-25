@@ -9,6 +9,8 @@ import android.content.Context;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.picker.DateTimeSuggestion;
+import org.chromium.ui.picker.InputDialogContainer;
 
 /**
  * Plumbing for the different date/time dialog adapters.

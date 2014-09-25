@@ -57,10 +57,6 @@ public final class R {
     }
     /** layouts */
     public static final class layout {
-        public static int date_time_picker_dialog;
-        public static int date_time_suggestion;
-        public static int two_field_date_picker;
-        public static int multi_field_time_picker_dialog;
         public static int validation_message_bubble;
     }
     /** menus */
@@ -70,24 +66,16 @@ public final class R {
     /** strings */
     public static final class string {
         public static int accessibility_content_view;
-        public static int accessibility_date_picker_month;
-        public static int accessibility_date_picker_week;
-        public static int accessibility_date_picker_year;
         public static int accessibility_datetime_picker_date;
         public static int accessibility_datetime_picker_time;
         public static int actionbar_share;
         public static int actionbar_web_search;
-        public static int date_picker_dialog_clear;
-        public static int date_picker_dialog_set;
-        public static int date_picker_dialog_title;
-        public static int date_picker_dialog_other_button_label;
         public static int date_time_picker_dialog_title;
         public static int media_player_error_button;
         public static int media_player_error_text_invalid_progressive_playback;
         public static int media_player_error_text_unknown;
         public static int media_player_error_title;
         public static int media_player_loading_video;
-        public static int month_picker_dialog_title;
         public static int profiler_error_toast;
         public static int profiler_no_storage_toast;
         public static int profiler_started_toast;
@@ -97,8 +85,6 @@ public final class R {
         public static int time_picker_dialog_minute_second_separator;
         public static int time_picker_dialog_second_subsecond_separator;
         public static int time_picker_dialog_pm;
-        public static int time_picker_dialog_title;
-        public static int week_picker_dialog_title;
     }
     /** styles */
     public static final class style {

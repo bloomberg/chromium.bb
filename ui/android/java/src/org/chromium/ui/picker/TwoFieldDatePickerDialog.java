@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.ui.picker;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 
-import org.chromium.content.R;
-import org.chromium.content.browser.input.TwoFieldDatePicker.OnMonthOrWeekChangedListener;
+import org.chromium.ui.R;
+import org.chromium.ui.picker.TwoFieldDatePicker.OnMonthOrWeekChangedListener;
 
 public abstract class TwoFieldDatePickerDialog extends AlertDialog implements OnClickListener,
         OnMonthOrWeekChangedListener {
@@ -19,7 +19,7 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
     private static final String POSITION_IN_YEAR = "position_in_year";
 
     protected final TwoFieldDatePicker mPicker;
-    protected final  OnValueSetListener mCallBack;
+    protected final OnValueSetListener mCallBack;
 
     /**
      * The callback used to indicate the user is done filling in the date.

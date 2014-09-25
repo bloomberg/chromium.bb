@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.ui.picker;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -16,9 +16,9 @@ import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker;
 import android.widget.TimePicker.OnTimeChangedListener;
 
-import org.chromium.content.R;
+import org.chromium.ui.R;
 
-class DateTimePickerDialog extends AlertDialog implements OnClickListener,
+public class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
     private final DatePicker mDatePicker;
     private final TimePicker mTimePicker;

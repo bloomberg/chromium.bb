@@ -16,6 +16,9 @@ package org.chromium.ui;
  */
 public final class R {
     public static final class string {
+        public static int accessibility_date_picker_month;
+        public static int accessibility_date_picker_year;
+        public static int accessibility_date_picker_week;
         public static int copy_to_clipboard_failure_message;
         public static int low_memory_error;
         public static int opening_file_error;
@@ -34,6 +37,13 @@ public final class R {
         public static int color_picker_button_yellow;
         public static int color_picker_button_black;
         public static int color_picker_button_white;
+        public static int date_picker_dialog_set;
+        public static int date_picker_dialog_other_button_label;
+        public static int date_picker_dialog_clear;
+        public static int date_picker_dialog_title;
+        public static int month_picker_dialog_title;
+        public static int time_picker_dialog_title;
+        public static int week_picker_dialog_title;
     }
     public static final class id {
         public static int dropdown_label;

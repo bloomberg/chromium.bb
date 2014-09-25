@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.ui.picker;
 
 /**
  * Date/time suggestion container used to store information for each suggestion that will be shown
  * in the suggestion list dialog. Keep in sync with date_time_suggestion.h.
  */
-class DateTimeSuggestion {
+public class DateTimeSuggestion {
     private final double mValue;
     private final String mLocalizedValue;
     private final String mLabel;
@@ -19,7 +19,7 @@ class DateTimeSuggestion {
      * @param localizedValue The suggested value localized.
      * @param label The label for the suggestion.
      */
-    DateTimeSuggestion(double value, String localizedValue, String label) {
+    public DateTimeSuggestion(double value, String localizedValue, String label) {
         mValue = value;
         mLocalizedValue = localizedValue;
         mLabel = label;

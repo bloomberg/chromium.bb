@@ -9,6 +9,7 @@ import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.ui.picker.InputDialogContainer;
 
 public class InputDialogContainerTest extends AndroidTestCase {
     private static final int TEXT_INPUT_TYPE_DATE = 0;
@@ -373,7 +374,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
         }
 
         @Override
-        void showPickerDialog(final int dialogType,
+        protected void showPickerDialog(final int dialogType,
                 int year, int month, int monthDay,
                 int hourOfDay, int minute, int second, int millis, int week,
                 double min, double max, double step) {

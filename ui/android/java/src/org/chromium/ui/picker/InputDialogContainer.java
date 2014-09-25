@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.ui.picker;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
@@ -16,9 +16,9 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TimePicker;
 
-import org.chromium.content.R;
-import org.chromium.content.browser.input.DateTimePickerDialog.OnDateTimeSetListener;
-import org.chromium.content.browser.input.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
+import org.chromium.ui.R;
+import org.chromium.ui.picker.DateTimePickerDialog.OnDateTimeSetListener;
+import org.chromium.ui.picker.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -28,11 +28,11 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Opens the approprate date/time picker dialog for the given dialog type.
+ * Opens the appropriate date/time picker dialog for the given dialog type.
  */
 public class InputDialogContainer {
 
-    interface InputActionDelegate {
+    public interface InputActionDelegate {
         void cancelDateTimeDialog();
         void replaceDateTime(double value);
     }
@@ -52,7 +52,7 @@ public class InputDialogContainer {
     private AlertDialog mDialog;
     private final InputActionDelegate mInputActionDelegate;
 
-    static void initializeInputTypes(int textInputTypeDate,
+    public static void initializeInputTypes(int textInputTypeDate,
             int textInputTypeDateTime, int textInputTypeDateTimeLocal,
             int textInputTypeMonth, int textInputTypeTime,
             int textInputTypeWeek) {
@@ -64,18 +64,18 @@ public class InputDialogContainer {
         sTextInputTypeWeek = textInputTypeWeek;
     }
 
-    static boolean isDialogInputType(int type) {
+    public static boolean isDialogInputType(int type) {
         return type == sTextInputTypeDate || type == sTextInputTypeTime
                 || type == sTextInputTypeDateTime || type == sTextInputTypeDateTimeLocal
                 || type == sTextInputTypeMonth || type == sTextInputTypeWeek;
     }
 
-    InputDialogContainer(Context context, InputActionDelegate inputActionDelegate) {
+    public InputDialogContainer(Context context, InputActionDelegate inputActionDelegate) {
         mContext = context;
         mInputActionDelegate = inputActionDelegate;
     }
 
-    void showPickerDialog(final int dialogType, double dialogValue,
+    public void showPickerDialog(final int dialogType, double dialogValue,
         double min, double max, double step) {
         Calendar cal;
         // |dialogValue|, |min|, |max| mean different things depending on the |dialogType|.
@@ -193,7 +193,7 @@ public class InputDialogContainer {
         mDialog.show();
     }
 
-    void showDialog(final int type, final double value,
+    public void showDialog(final int type, final double value,
                     double min, double max, double step,
                     DateTimeSuggestion[] suggestions) {
         // When the web page asks to show a dialog while there is one already open,
@@ -206,7 +206,7 @@ public class InputDialogContainer {
         }
     }
 
-    void showPickerDialog(final int dialogType,
+    protected void showPickerDialog(final int dialogType,
             int year, int month, int monthDay,
             int hourOfDay, int minute, int second, int millis, int week,
             double min, double max, double step) {
@@ -249,8 +249,7 @@ public class InputDialogContainer {
 
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
                 mContext.getText(R.string.date_picker_dialog_set),
-                (DialogInterface.OnClickListener) mDialog);
-
+                (DialogInterface.OnClickListener)mDialog);
 
         mDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
                 mContext.getText(android.R.string.cancel),

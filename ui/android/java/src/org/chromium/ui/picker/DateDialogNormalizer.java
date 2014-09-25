@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.ui.picker;
 
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
@@ -13,7 +13,7 @@ import java.util.TimeZone;
 /**
  * Normalize a date dialog so that it respect min and max.
  */
-class DateDialogNormalizer {
+public class DateDialogNormalizer {
 
     private static void setLimits(DatePicker picker, long minMillis, long maxMillis) {
         // DatePicker intervals are non inclusive, the DatePicker will throw an
@@ -56,7 +56,7 @@ class DateDialogNormalizer {
      * Normalizes an existing DateDialogPicker changing the default date if
      * needed to comply with the {@code min} and {@code max} attributes.
      */
-    static void normalize(DatePicker picker, OnDateChangedListener listener,
+    public static void normalize(DatePicker picker, OnDateChangedListener listener,
             int year, int month, int day, int hour, int minute, long minMillis, long maxMillis) {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         calendar.clear();
