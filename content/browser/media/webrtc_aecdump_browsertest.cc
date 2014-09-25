@@ -11,6 +11,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/webrtc_content_browsertest_base.h"
+#include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
@@ -66,6 +67,11 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
 // the dialog callback FileSelected() is invoked directly. In fact, there's
 // never a webrtc-internals page opened at all since that's not needed.
 IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
+  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+    LOG(INFO) << "Missing output devices: skipping test...";
+    return;
+  }
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // We must navigate somewhere first so that the render process is created.
@@ -119,6 +125,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
 // be created, but should be empty.
 IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
                        MAYBE_CallWithAecDumpEnabledThenDisabled) {
+  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+    LOG(INFO) << "Missing output devices: skipping test...";
+    return;
+  }
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // We must navigate somewhere first so that the render process is created.
@@ -160,6 +171,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_TwoCallsWithAecDump) {
+  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+    LOG(INFO) << "Missing output devices: skipping test...";
+    return;
+  }
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // We must navigate somewhere first so that the render process is created.
