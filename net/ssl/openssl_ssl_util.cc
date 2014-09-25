@@ -143,7 +143,7 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       return ERR_SSL_INAPPROPRIATE_FALLBACK;
     default:
       LOG(WARNING) << "Unmapped error reason: " << ERR_GET_REASON(error_code);
-      return ERR_FAILED;
+      return ERR_SSL_PROTOCOL_ERROR;
   }
 }
 
@@ -197,7 +197,7 @@ int MapOpenSSLErrorWithDetails(int err,
       LOG(ERROR) << "OpenSSL SYSCALL error, earliest error code in "
                     "error queue: " << ERR_peek_error() << ", errno: "
                  << errno;
-      return ERR_SSL_PROTOCOL_ERROR;
+      return ERR_FAILED;
     case SSL_ERROR_SSL:
       // Walk down the error stack to find an SSL or net error.
       uint32_t error_code;
@@ -219,7 +219,7 @@ int MapOpenSSLErrorWithDetails(int err,
           return -ERR_GET_REASON(error_code);
         }
       } while (error_code != 0);
-      return ERR_SSL_PROTOCOL_ERROR;
+      return ERR_FAILED;
     default:
       // TODO(joth): Implement full mapping.
       LOG(WARNING) << "Unknown OpenSSL error " << err;
