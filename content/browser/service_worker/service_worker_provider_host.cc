@@ -154,7 +154,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
             context_, AsWeakPtr(), blob_storage_context, resource_type));
   }
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
-      active_version()) {
+      controlling_version()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerControlleeRequestHandler(
             context_, AsWeakPtr(), blob_storage_context, resource_type, body));
