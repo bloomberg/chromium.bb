@@ -200,6 +200,8 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     return base::ASCIIToUTF16("range underflow");
   if (name == blink::WebLocalizedString::ValidationRangeOverflow)
     return base::ASCIIToUTF16("range overflow");
+  if (name == blink::WebLocalizedString::SelectMenuListText)
+    return base::ASCIIToUTF16("$1 selected");
   return BlinkPlatformImpl::queryLocalizedString(name, value);
 }
 
