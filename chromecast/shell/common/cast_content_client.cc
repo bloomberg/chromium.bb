@@ -14,7 +14,8 @@ namespace shell {
 
 std::string GetUserAgent() {
   std::string product = "Chrome/" PRODUCT_VERSION;
-  return content::BuildUserAgentFromProduct(product) + " CrKey";
+  return content::BuildUserAgentFromProduct(product) +
+      " CrKey" CAST_BUILD_REVISION;
 }
 
 CastContentClient::~CastContentClient() {
