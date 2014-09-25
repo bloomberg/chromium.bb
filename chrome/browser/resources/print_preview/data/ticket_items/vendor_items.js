@@ -60,12 +60,17 @@ cr.define('print_preview.ticket_items', function() {
       return false;
     },
 
-    /** @return {Object} Media size capability of the selected destination. */
+    /** @return {Object} Vendor capabilities of the selected destination. */
     get capability() {
       var destination = this.destinationStore_ ?
           this.destinationStore_.selectedDestination : null;
-      return (destination &&
-              destination.capabilities &&
+      if (!destination)
+        return null;
+      if (destination.id == print_preview.Destination.GooglePromotedId.FEDEX ||
+          destination.type == print_preview.Destination.Type.MOBILE) {
+        return null;
+      }
+      return (destination.capabilities &&
               destination.capabilities.printer &&
               destination.capabilities.printer.vendor_capability) ||
              null;

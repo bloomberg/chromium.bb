@@ -7,13 +7,21 @@ cr.define('print_preview', function() {
 
   /**
    * Print options section to control printer advanced options.
+   * @param {!print_preview.ticket_item.VendorItems} ticketItem Ticket item to
+   *     check settings availability.
    * @param {!print_preview.DestinationStore} destinationStore Used to determine
    *     the selected destination.
    * @constructor
    * @extends {print_preview.SettingsSection}
    */
-  function AdvancedOptionsSettings(destinationStore) {
+  function AdvancedOptionsSettings(ticketItem, destinationStore) {
     print_preview.SettingsSection.call(this);
+
+    /**
+     * Ticket item to check settings availability.
+     * @private {!print_preview.ticket_items.VendorItems}
+     */
+    this.ticketItem_ = ticketItem;
 
     /**
      * Used to determine the selected destination.
@@ -35,13 +43,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     isAvailable: function() {
-      var destination = this.destinationStore_.selectedDestination;
-      var vendorCapabilities =
-          destination &&
-          destination.capabilities &&
-          destination.capabilities.printer &&
-          destination.capabilities.printer.vendor_capability;
-      return !!vendorCapabilities;
+      return this.ticketItem_.isCapabilityAvailable();
     },
 
     /** @override */

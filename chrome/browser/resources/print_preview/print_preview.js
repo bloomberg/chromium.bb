@@ -169,7 +169,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.advancedOptionsSettings_ = new print_preview.AdvancedOptionsSettings(
-        this.destinationStore_);
+        this.printTicketStore_.vendorItems, this.destinationStore_);
     this.addChild(this.advancedOptionsSettings_);
 
     /**
