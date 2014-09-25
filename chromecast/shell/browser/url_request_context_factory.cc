@@ -303,6 +303,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   PopulateNetworkSessionParams(false, &system_params);
   system_transaction_factory_.reset(new net::HttpNetworkLayer(
       new net::HttpNetworkSession(system_params)));
+  system_job_factory_.reset(new net::URLRequestJobFactoryImpl());
 
   net::URLRequestContext* system_context = new net::URLRequestContext();
   system_context->set_host_resolver(host_resolver_.get());
@@ -320,6 +321,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
       system_transaction_factory_.get());
   system_context->set_http_user_agent_settings(
       http_user_agent_settings_.get());
+  system_context->set_job_factory(system_job_factory_.get());
   system_context->set_cookie_store(
       content::CreateCookieStore(content::CookieStoreConfig()));
   return system_context;

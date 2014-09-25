@@ -10,6 +10,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
@@ -69,7 +70,9 @@ class FillLayout : public aura::LayoutManager {
 }  // namespace
 
 // static
-CastService* CastService::Create(content::BrowserContext* browser_context) {
+CastService* CastService::Create(
+    content::BrowserContext* browser_context,
+    net::URLRequestContextGetter* request_context_getter) {
   return new CastServiceSimple(browser_context);
 }
 

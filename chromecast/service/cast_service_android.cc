@@ -6,11 +6,14 @@
 
 #include "base/callback.h"
 #include "chromecast/android/chromecast_config_android.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace chromecast {
 
 // static
-CastService* CastService::Create(content::BrowserContext* browser_context) {
+CastService* CastService::Create(
+    content::BrowserContext* browser_context,
+    net::URLRequestContextGetter* request_context_getter) {
   return new CastServiceAndroid(browser_context);
 }
 

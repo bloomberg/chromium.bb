@@ -102,7 +102,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   InitializeWebUI();
 
   cast_browser_process_->SetCastService(
-      CastService::Create(cast_browser_process_->browser_context()));
+      CastService::Create(cast_browser_process_->browser_context(),
+                          url_request_context_factory_->GetSystemGetter()));
   cast_browser_process_->cast_service()->Start();
 }
 

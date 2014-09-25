@@ -16,11 +16,23 @@ namespace content{
 class BrowserContext;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace chromecast {
 
 class CastService {
  public:
-  static CastService* Create(content::BrowserContext* browser_context);
+  // Create() takes a separate url request context getter because the request
+  // context getter obtained through the browser context might not be
+  // appropriate for the url requests made by the cast service/reciever.
+  // For example, on Chromecast, it is needed to pass in a system url request
+  // context getter that would set the request context for NSS, which the main
+  // getter doesn't do.
+  static CastService* Create(
+      content::BrowserContext* browser_context,
+      net::URLRequestContextGetter* request_context_getter);
 
   virtual ~CastService();
 
