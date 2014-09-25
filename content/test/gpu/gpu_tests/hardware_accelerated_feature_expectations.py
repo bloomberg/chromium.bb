@@ -8,7 +8,7 @@ from telemetry.page import test_expectations as expectations
 #
 # Operating systems:
 #     win, xp, vista, win7, mac, leopard, snowleopard, lion, mountainlion,
-#     linux, chromeos, android
+#     mavericks, yosemite, linux, chromeos, android
 #
 # GPU vendors:
 #     amd, arm, broadcom, hisilicon, intel, imagination, nvidia, qualcomm,
