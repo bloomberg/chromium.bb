@@ -618,12 +618,6 @@ const AtomicString& Internals::shadowPseudoId(Element* element)
     return element->shadowPseudoId();
 }
 
-void Internals::setShadowPseudoId(Element* element, const AtomicString& id)
-{
-    ASSERT(element);
-    return element->setShadowPseudoId(id);
-}
-
 String Internals::visiblePlaceholder(Element* element)
 {
     if (element && isHTMLTextFormControlElement(*element)) {

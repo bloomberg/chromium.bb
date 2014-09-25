@@ -104,7 +104,6 @@ public:
     bool hasContentElement(const Node*, ExceptionState&) const;
     size_t countElementShadow(const Node*, ExceptionState&) const;
     const AtomicString& shadowPseudoId(Element*);
-    void setShadowPseudoId(Element*, const AtomicString&);
 
     // CSS Animation / Transition testing.
     void pauseAnimations(double pauseTime, ExceptionState&);

@@ -51,7 +51,6 @@
     [RaisesException] boolean hasContentElement(Node root);
     [RaisesException, TypeChecking=Interface] unsigned long countElementShadow(Node Root);
     [TypeChecking=Interface] DOMString shadowPseudoId(Element element);
-    [TypeChecking=Interface] void setShadowPseudoId(Element element, DOMString id);
     [RaisesException, TypeChecking=Interface] boolean isValidContentSelect(Element contentElement);
     [TypeChecking=Interface] Node treeScopeRootNode(Node node);
     [TypeChecking=Interface] Node parentTreeScope(Node node);
