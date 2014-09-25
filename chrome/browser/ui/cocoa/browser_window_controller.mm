@@ -2097,10 +2097,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
          enteringAppKitFullscreen_;
 }
 
-- (BOOL)isInFullscreenWithOmniboxSliding {
-  return presentationModeController_.get() != nil;
-}
-
 - (void)enterPresentationMode {
   if (!chrome::mac::SupportsSystemFullscreen()) {
     [self enterImmersiveFullscreen];

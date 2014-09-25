@@ -515,10 +515,6 @@ class Command;
 // the AppKit Fullscreen API.
 - (BOOL)isInAppKitFullscreen;
 
-// Returns YES if the PresentationModeController exists and hence the omnibox
-// and other UI is expected to slide.
-- (BOOL)isInFullscreenWithOmniboxSliding;
-
 // Enters presentation mode.
 - (void)enterPresentationMode;
 

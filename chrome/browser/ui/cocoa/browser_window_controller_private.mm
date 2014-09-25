@@ -831,7 +831,7 @@ willPositionSheet:(NSWindow*)sheet
   [layout setContentViewSize:[[[self window] contentView] bounds].size];
   [layout setWindowSize:[[self window] frame].size];
 
-  [layout setInAnyFullscreen:[self isInFullscreenWithOmniboxSliding]];
+  [layout setInAnyFullscreen:[self isInAnyFullscreenMode]];
   [layout setFullscreenSlidingStyle:
       presentationModeController_.get().slidingStyle];
   [layout setFullscreenMenubarOffset:
@@ -911,7 +911,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)updateSubviewZOrder {
-  if ([self isInFullscreenWithOmniboxSliding])
+  if ([self isInAnyFullscreenMode])
     [self updateSubviewZOrderFullscreen];
   else
     [self updateSubviewZOrderNormal];
@@ -941,8 +941,6 @@ willPositionSheet:(NSWindow*)sheet
   base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
   if ([downloadShelfController_ view])
     [subviews addObject:[downloadShelfController_ view]];
-  if ([infoBarContainerController_ view])
-    [subviews addObject:[infoBarContainerController_ view]];
   if ([self tabContentArea])
     [subviews addObject:[self tabContentArea]];
   if ([self placeBookmarkBarBelowInfoBar]) {
@@ -956,9 +954,10 @@ willPositionSheet:(NSWindow*)sheet
     if ([bookmarkBarController_ view])
       [subviews addObject:[bookmarkBarController_ view]];
   }
-
   if ([toolbarController_ view])
     [subviews addObject:[toolbarController_ view]];
+  if ([infoBarContainerController_ view])
+    [subviews addObject:[infoBarContainerController_ view]];
   if ([findBarCocoaController_ view])
     [subviews addObject:[findBarCocoaController_ view]];
 

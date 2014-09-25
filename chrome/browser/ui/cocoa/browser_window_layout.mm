@@ -195,18 +195,12 @@ const CGFloat kLocBarBottomInset = 1;
   output_.findBarMaxY = maxY;
   output_.fullscreenExitButtonMaxY = maxY;
 
-  if (parameters_.inAnyFullscreen) {
-    switch (parameters_.slidingStyle) {
-      case fullscreen_mac::OMNIBOX_TABS_PRESENT:
-        // Do nothing in Canonical Fullscreen. All content slides.
-        break;
-      case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
-        // If in presentation mode, reset |maxY| to top of screen, so that the
-        // floating bar slides over the things which appear to be in the content
-        // area.
-        maxY = parameters_.contentViewSize.height;
-        break;
-    }
+  if (parameters_.inAnyFullscreen &&
+      parameters_.slidingStyle == fullscreen_mac::OMNIBOX_TABS_HIDDEN) {
+    // If in presentation mode, reset |maxY| to top of screen, so that the
+    // floating bar slides over the things which appear to be in the content
+    // area.
+    maxY = parameters_.windowSize.height;
   }
 
   // Lay out the info bar. It is never hidden. The frame needs to be high
@@ -243,6 +237,17 @@ const CGFloat kLocBarBottomInset = 1;
     output_.downloadShelfFrame =
         NSMakeRect(0, 0, width, parameters.downloadShelfHeight);
     minY = NSMaxY(output_.downloadShelfFrame);
+  }
+
+  if (parameters_.inAnyFullscreen &&
+      parameters_.slidingStyle == fullscreen_mac::OMNIBOX_TABS_PRESENT) {
+    // If in Canonical Fullscreen, content should be shifted down by an amount
+    // equal to all the widgets and views at the top of the window. It should
+    // not be further shifted by the appearance/disappearance of the AppKit
+    // menu bar.
+    maxY = parameters_.windowSize.height;
+    maxY -= NSHeight(output_.toolbarFrame) + NSHeight(output_.tabStripFrame) +
+            NSHeight(output_.bookmarkFrame) + parameters.infoBarHeight;
   }
 
   // All the remaining space becomes the frame of the content area.

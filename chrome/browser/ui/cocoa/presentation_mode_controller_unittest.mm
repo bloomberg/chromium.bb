@@ -152,19 +152,27 @@ TEST_F(PresentationModeControllerTest, CanonicalFullscreenAppKitLayout) {
   CheckLayoutNoOverlap(controller_);
 
   // The menu bar is starting to animate in. All views should slide down by a
-  // small amount.
+  // small amount. The content area doesn't change size.
   [controller_->presentationController_ setMenuBarRevealProgress:0.3];
   EXPECT_LT(MaxYInWindow([controller_ tabStripView]), windowHeight - 1);
   EXPECT_GT(MaxYInWindow([controller_ tabStripView]),
             windowHeight - kMenuBarHeight + 1);
-  CheckLayoutNoOverlap(controller_);
+  CheckToolbarLayoutNoOverlap(controller_);
+  EXPECT_EQ(MinYInWindow([[controller_ bookmarkBarController] view]),
+            MaxYInWindow([[controller_ infoBarContainerController] view]));
+  EXPECT_LT(MinYInWindow([[controller_ infoBarContainerController] view]),
+            MaxYInWindow([controller_ tabContentArea]));
 
   // The menu bar is fully visible. All views should slide down by the size of
-  // the menu bar.
+  // the menu bar. The content area doesn't change size.
   [controller_->presentationController_ setMenuBarRevealProgress:1];
   EXPECT_FLOAT_EQ(windowHeight - kMenuBarHeight,
                   MaxYInWindow([controller_ tabStripView]));
-  CheckLayoutNoOverlap(controller_);
+  CheckToolbarLayoutNoOverlap(controller_);
+  EXPECT_EQ(MinYInWindow([[controller_ bookmarkBarController] view]),
+            MaxYInWindow([[controller_ infoBarContainerController] view]));
+  EXPECT_LT(MinYInWindow([[controller_ infoBarContainerController] view]),
+            MaxYInWindow([controller_ tabContentArea]));
 
   // The menu bar has disappeared. All views should return to normal.
   [controller_->presentationController_ setMenuBarRevealProgress:0];
@@ -192,7 +200,7 @@ TEST_F(PresentationModeControllerTest, PresentationModeAppKitLayout) {
   CGFloat contentHeight = NSHeight([[[controller_ window] contentView] bounds]);
   CheckToolbarLayoutNoOverlap(controller_);
   EXPECT_EQ(windowHeight, MinYInWindow(LowestViewInToolbarArea(controller_)));
-  EXPECT_EQ(contentHeight, MaxYInWindow([controller_ tabContentArea]));
+  EXPECT_EQ(windowHeight, MaxYInWindow([controller_ tabContentArea]));
 
   // The menu bar is starting to animate in. All views except the content view
   // should slide down by a small amount.
@@ -201,7 +209,7 @@ TEST_F(PresentationModeControllerTest, PresentationModeAppKitLayout) {
   CheckToolbarLayoutNoOverlap(controller_);
   EXPECT_LT(MinYInWindow(LowestViewInToolbarArea(controller_)), contentHeight);
   EXPECT_GT(MaxYInWindow(HighestViewInToolbarArea(controller_)), contentHeight);
-  EXPECT_EQ(contentHeight, MaxYInWindow([controller_ tabContentArea]));
+  EXPECT_EQ(windowHeight, MaxYInWindow([controller_ tabContentArea]));
 
   // The menu bar is fully visible. All views should slide down by the size of
   // the menu bar.
@@ -209,12 +217,12 @@ TEST_F(PresentationModeControllerTest, PresentationModeAppKitLayout) {
   [controller_->presentationController_ changeToolbarFraction:1];
   CheckToolbarLayoutNoOverlap(controller_);
   EXPECT_EQ(contentHeight, MaxYInWindow(HighestViewInToolbarArea(controller_)));
-  EXPECT_EQ(contentHeight, MaxYInWindow([controller_ tabContentArea]));
+  EXPECT_EQ(windowHeight, MaxYInWindow([controller_ tabContentArea]));
 
   // The menu bar has disappeared. All views should return to normal.
   [controller_->presentationController_ setMenuBarRevealProgress:0];
   [controller_->presentationController_ changeToolbarFraction:0];
   CheckToolbarLayoutNoOverlap(controller_);
   EXPECT_EQ(windowHeight, MinYInWindow(LowestViewInToolbarArea(controller_)));
-  EXPECT_EQ(contentHeight, MaxYInWindow([controller_ tabContentArea]));
+  EXPECT_EQ(windowHeight, MaxYInWindow([controller_ tabContentArea]));
 }

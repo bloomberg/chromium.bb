@@ -74,6 +74,30 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
       NSEqualRects(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame));
 }
 
+TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
+  // Content view has same size as window in AppKit Fullscreen.
+  [layout setContentViewSize:NSMakeSize(600, 622)];
+  [layout setInAnyFullscreen:YES];
+  [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
+  [layout setFullscreenMenubarOffset:-10];
+  [layout setFullscreenToolbarFraction:0];
+
+  chrome::LayoutOutput output = [layout computeLayout];
+
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 575, 600, 37), output.tabStripFrame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 543, 600, 32), output.toolbarFrame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 95),
+                           output.fullscreenBackingBarFrame));
+  EXPECT_EQ(517, output.findBarMaxY);
+  EXPECT_EQ(517, output.fullscreenExitButtonMaxY);
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 445, 600, 111), output.infoBarFrame));
+  EXPECT_TRUE(
+      NSEqualRects(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame));
+  EXPECT_TRUE(
+      NSEqualRects(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame));
+}
+
 TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
   [layout setHasTabStrip:NO];
   [layout setHasToolbar:NO];
