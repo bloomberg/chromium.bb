@@ -111,6 +111,7 @@ void ShellContentRendererClient::RenderFrameCreated(
 void ShellContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new ExtensionHelper(render_view, extension_dispatcher_.get());
+  extension_dispatcher_->OnRenderViewCreated(render_view);
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
