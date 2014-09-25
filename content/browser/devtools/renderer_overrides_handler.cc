@@ -615,7 +615,8 @@ RendererOverridesHandler::PageStartScreencast(
     else
       host_->Send(new ViewMsg_ForceRedraw(host_->GetRoutingID(), 0));
   }
-  return command->SuccessResponse(NULL);
+  // Pass through to the renderer.
+  return NULL;
 }
 
 scoped_refptr<DevToolsProtocol::Response>
@@ -624,7 +625,8 @@ RendererOverridesHandler::PageStopScreencast(
   last_frame_time_ = base::TimeTicks();
   screencast_command_ = NULL;
   UpdateTouchEventEmulationState();
-  return command->SuccessResponse(NULL);
+  // Pass through to the renderer.
+  return NULL;
 }
 
 void RendererOverridesHandler::ScreencastFrameCaptured(
