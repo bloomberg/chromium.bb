@@ -480,7 +480,7 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
 
     'src/third_party/findbugs':
-     Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '81ec534e79de4494c1ad98ad025a56c8f3361fd1',
+     Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '7f69fa78a6db6dc31866d09572a0e356e921bf12',
 
     'src/third_party/freetype':
      Var('chromium_git') + '/chromium/src/third_party/freetype.git' + '@' + 'a2b9955b49034a51dfbc8bf9f4e9d312149cecac',
