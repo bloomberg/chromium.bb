@@ -26,6 +26,7 @@ LayerTreeSettings::LayerTreeSettings()
       partial_swap_enabled(false),
       accelerated_animation_enabled(true),
       can_use_lcd_text(true),
+      use_distance_field_text(false),
       should_clear_root_render_pass(true),
       gpu_rasterization_enabled(false),
       gpu_rasterization_forced(false),
