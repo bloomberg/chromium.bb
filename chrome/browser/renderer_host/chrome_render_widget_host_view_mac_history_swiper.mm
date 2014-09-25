@@ -94,7 +94,7 @@ BOOL forceMagicMouse = NO;
   // History swiping is possible. By default, disallow rubberbanding.  If the
   // user has both started, and then cancelled history swiping for this
   // gesture, allow rubberbanding.
-  return inGesture_ && recognitionState_ == history_swiper::kCancelled;
+  return receivingTouches_ && recognitionState_ == history_swiper::kCancelled;
 }
 
 - (BOOL)canRubberbandRight:(NSView*)view {
@@ -107,23 +107,11 @@ BOOL forceMagicMouse = NO;
   // History swiping is possible. By default, disallow rubberbanding.  If the
   // user has both started, and then cancelled history swiping for this
   // gesture, allow rubberbanding.
-  return inGesture_ && recognitionState_ == history_swiper::kCancelled;
+  return receivingTouches_ && recognitionState_ == history_swiper::kCancelled;
 }
 
-// Is is theoretically possible for multiple simultaneous gestures to occur, if
-// the user has multiple input devices. There will be 2 beginGesture events, but
-// only 1 endGesture event. The unfinished gesture will continue to send
-// touchesMoved events, but when the gesture finishes there is not endGesture
-// callback. We ignore this case, because it is sufficiently unlikely to occur.
 - (void)beginGestureWithEvent:(NSEvent*)event {
   inGesture_ = YES;
-  ++currentGestureId_;
-  // Reset state pertaining to previous gestures.
-  gestureStartPointValid_ = NO;
-  receivedTouch_ = NO;
-  mouseScrollDelta_ = NSZeroSize;
-  beganEventUnconsumed_ = NO;
-  recognitionState_ = history_swiper::kPending;
 }
 
 - (void)endGestureWithEvent:(NSEvent*)event {
@@ -152,17 +140,13 @@ BOOL forceMagicMouse = NO;
 }
 
 - (void)updateGestureCurrentPointFromEvent:(NSEvent*)event {
-  // The points in an event are not valid unless the event is part of
-  // a gesture.
-  if (inGesture_) {
-    // Update the current point of the gesture.
-    gestureCurrentPoint_ = [self averagePositionInEvent:event];
+  // Update the current point of the gesture.
+  gestureCurrentPoint_ = [self averagePositionInEvent:event];
 
-    // If the gesture doesn't have a start point, set one.
-    if (!gestureStartPointValid_) {
-      gestureStartPointValid_ = YES;
-      gestureStartPoint_ = gestureCurrentPoint_;
-    }
+  // If the gesture doesn't have a start point, set one.
+  if (!gestureStartPointValid_) {
+    gestureStartPointValid_ = YES;
+    gestureStartPoint_ = gestureCurrentPoint_;
   }
 }
 
@@ -170,8 +154,14 @@ BOOL forceMagicMouse = NO;
 // called before the gesture begins, and the touches in an event are only
 // available after the gesture begins.
 - (void)touchesBeganWithEvent:(NSEvent*)event {
-  receivedTouch_ = YES;
-  // Do nothing.
+  receivingTouches_ = YES;
+  ++currentGestureId_;
+
+  // Reset state pertaining to previous gestures.
+  gestureStartPointValid_ = NO;
+  mouseScrollDelta_ = NSZeroSize;
+  beganEventUnconsumed_ = NO;
+  recognitionState_ = history_swiper::kPending;
 }
 
 - (void)touchesMovedWithEvent:(NSEvent*)event {
@@ -179,6 +169,8 @@ BOOL forceMagicMouse = NO;
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent*)event {
+  receivingTouches_ = NO;
+
   if (![self processTouchEventForHistorySwiping:event])
     return;
 
@@ -186,6 +178,8 @@ BOOL forceMagicMouse = NO;
 }
 
 - (void)touchesEndedWithEvent:(NSEvent*)event {
+  receivingTouches_ = NO;
+
   if (![self processTouchEventForHistorySwiping:event])
     return;
 
@@ -204,8 +198,6 @@ BOOL forceMagicMouse = NO;
 }
 
 - (BOOL)processTouchEventForHistorySwiping:(NSEvent*)event {
-  receivedTouch_ = YES;
-
   NSEventType type = [event type];
   if (type != NSEventTypeBeginGesture && type != NSEventTypeEndGesture &&
       type != NSEventTypeGesture) {
@@ -293,6 +285,7 @@ BOOL forceMagicMouse = NO;
   // If the swipe is a backwards gesture, we need to invert progress.
   if (historySwipeDirection_ == history_swiper::kBackwards)
     progress *= -1;
+
   // If the user has directions reversed, we need to invert progress.
   if (historySwipeDirectionInverted_)
     progress *= -1;
@@ -533,13 +526,25 @@ BOOL forceMagicMouse = NO;
   if (!beganEventUnconsumed_)
     return NO;
 
-  if (!inGesture_)
-    return NO;
-
-  if (!receivedTouch_ || forceMagicMouse)
+  // Magic mouse and touchpad swipe events are identical except magic mouse
+  // events do not generate NSTouch callbacks. Since we rely on NSTouch
+  // callbacks to perform history swiping, magic mouse swipe events use an
+  // entirely different set of logic.
+  if ((inGesture_ && !receivingTouches_) || forceMagicMouse)
     return [self maybeHandleMagicMouseHistorySwiping:theEvent];
 
+  // The scrollWheel: callback is only relevant if it happens while the user is
+  // still actively using the touchpad.
+  if (!receivingTouches_)
+    return NO;
+
+  // TODO(erikchen): Ideally, the direction of history swiping should not be
+  // determined this early in a gesture, when it's unclear what the user is
+  // intending to do. Since it is determined this early, make sure that there
+  // is at least a minimal amount of horizontal motion.
   CGFloat xDelta = gestureCurrentPoint_.x - gestureStartPoint_.x;
+  if (fabs(xDelta) < 0.001)
+    return NO;
 
   BOOL isRightScroll = xDelta > 0;
   BOOL inverted = [self isEventDirectionInverted:theEvent];

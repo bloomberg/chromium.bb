@@ -120,10 +120,11 @@ enum RecognitionState {
   NSPoint gestureStartPoint_;
   // The current location of the fingers in the gesture.
   NSPoint gestureCurrentPoint_;
-  // A flag that indicates that there is an ongoing gesture.
-  // The method [NSEvent touchesMatchingPhase:inView:] is only valid for events
-  // that are part of a gesture.
+  // A flag that indicates that there is an ongoing gesture. Only used to
+  // determine whether swipe events are coming from a Magic Mouse.
   BOOL inGesture_;
+  // A flag that indicates that Chrome is receiving a series of touch events.
+  BOOL receivingTouches_;
   // Each time a new gesture begins, we must get a new start point.
   // This ivar determines whether the start point is valid.
   int gestureStartPointValid_;
@@ -141,16 +142,6 @@ enum RecognitionState {
 
   id<HistorySwiperDelegate> delegate_;
 
-  // Magic mouse and touchpad swipe events are identical except magic mouse
-  // events do not generate NSTouch callbacks. Since we rely on NSTouch
-  // callbacks to determine vertical scrolling, magic mouse swipe events use an
-  // entirely different set of logic.
-  //
-  // The two event types do not play well together. Just calling the API
-  // `[NSEvent trackSwipeEventWithOptions:]` will block touches{Began, Moved, *}
-  // callbacks for a non-deterministic period of time (even after the swipe has
-  // completed).
-  BOOL receivedTouch_;
   // Cumulative scroll delta since scroll gesture start. Only valid during
   // scroll gesture handling. Used for history swiping.
   NSSize mouseScrollDelta_;
