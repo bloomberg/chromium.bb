@@ -481,7 +481,7 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
                                         PROCESS_QUERY_INFORMATION,
                                         FALSE, 0));
       base::win::ScopedHandle process(temp_handle);
-      CHECK(::IsProcessInJob(process, NULL, &is_in_job));
+      CHECK(::IsProcessInJob(process.Get(), NULL, &is_in_job));
     }
   }
 
@@ -497,7 +497,7 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
     base::win::ScopedHandle handle(temp_handle);
 
     // Callers use CHECK macro to make sure we get the right stack.
-    CheckDuplicateHandle(handle);
+    CheckDuplicateHandle(handle.Get());
   }
 
   return TRUE;
@@ -784,7 +784,7 @@ bool BrokerDuplicateHandle(HANDLE source_handle,
                                     target_process_id));
   if (target_process.IsValid()) {
     return !!::DuplicateHandle(::GetCurrentProcess(), source_handle,
-                                target_process, target_handle,
+                                target_process.Get(), target_handle,
                                 desired_access, FALSE, options);
   }
 

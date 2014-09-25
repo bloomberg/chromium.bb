@@ -124,10 +124,10 @@ int32_t PepperTrueTypeFontWin::Initialize(
   // To get the face name, select the font and query for the name. GetObject
   // doesn't fill in the name field of the LOGFONT structure.
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
-  if (hdc) {
-    base::win::ScopedSelectObject select_object(hdc, font_.Get());
+  if (hdc.IsValid()) {
+    base::win::ScopedSelectObject select_object(hdc.Get(), font_.Get());
     WCHAR name[LF_FACESIZE];
-    GetTextFace(hdc, LF_FACESIZE, name);
+    GetTextFace(hdc.Get(), LF_FACESIZE, name);
     desc->family = base::UTF16ToUTF8(name);
   }
 
@@ -139,15 +139,15 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
     return PP_ERROR_FAILED;
 
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
-  if (!hdc)
+  if (!hdc.IsValid())
     return PP_ERROR_FAILED;
 
-  base::win::ScopedSelectObject select_object(hdc, font_.Get());
+  base::win::ScopedSelectObject select_object(hdc.Get(), font_.Get());
 
   // Get the whole font header.
   static const DWORD kFontHeaderSize = 12;
   uint8_t header_buf[kFontHeaderSize];
-  if (GetFontData(hdc, 0, 0, header_buf, kFontHeaderSize) == GDI_ERROR)
+  if (GetFontData(hdc.Get(), 0, 0, header_buf, kFontHeaderSize) == GDI_ERROR)
     return PP_ERROR_FAILED;
 
   // The numTables follows a 4 byte scalerType tag. Font data is stored in
@@ -159,8 +159,8 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
   DWORD directory_size = num_tables * kDirectoryEntrySize;
   scoped_ptr<uint8_t[]> directory(new uint8_t[directory_size]);
   // Get the table directory entries after the font header.
-  if (GetFontData(
-          hdc, 0 /* tag */, kFontHeaderSize, directory.get(), directory_size) ==
+  if (GetFontData(hdc.Get(), 0 /* tag */, kFontHeaderSize, directory.get(),
+                  directory_size) ==
       GDI_ERROR)
     return PP_ERROR_FAILED;
 
@@ -185,15 +185,15 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
     return PP_ERROR_FAILED;
 
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
-  if (!hdc)
+  if (!hdc.IsValid())
     return PP_ERROR_FAILED;
 
-  base::win::ScopedSelectObject select_object(hdc, font_.Get());
+  base::win::ScopedSelectObject select_object(hdc.Get(), font_.Get());
 
   // Tags are byte swapped on Windows.
   table_tag = base::ByteSwap(table_tag);
   // Get the size of the font table first.
-  DWORD table_size = GetFontData(hdc, table_tag, 0, NULL, 0);
+  DWORD table_size = GetFontData(hdc.Get(), table_tag, 0, NULL, 0);
   if (table_size == GDI_ERROR)
     return PP_ERROR_FAILED;
 
@@ -204,7 +204,7 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
   if (safe_length == 0) {
     table_size = 0;
   } else {
-    table_size = GetFontData(hdc,
+    table_size = GetFontData(hdc.Get(),
                              table_tag,
                              safe_offset,
                              reinterpret_cast<uint8_t*>(&(*data)[0]),

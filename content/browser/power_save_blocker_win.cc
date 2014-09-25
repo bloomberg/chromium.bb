@@ -49,7 +49,7 @@ HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type, const std::string& reason) {
   if (!handle.IsValid())
     return INVALID_HANDLE_VALUE;
 
-  if (PowerSetRequestFn(handle, type))
+  if (PowerSetRequestFn(handle.Get(), type))
     return handle.Take();
 
   // Something went wrong.
@@ -76,7 +76,7 @@ void DeletePowerRequest(POWER_REQUEST_TYPE type, HANDLE handle) {
   if (!PowerClearRequestFn)
     return;
 
-  BOOL success = PowerClearRequestFn(request_handle, type);
+  BOOL success = PowerClearRequestFn(request_handle.Get(), type);
   DCHECK(success);
 }
 
