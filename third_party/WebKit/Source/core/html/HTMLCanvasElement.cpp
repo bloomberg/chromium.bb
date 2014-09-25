@@ -206,6 +206,14 @@ void HTMLCanvasElement::didFinalizeFrame()
     if (m_dirtyRect.isEmpty())
         return;
 
+    // Fix for crbug.com/417201 just for Chrome 38: invalidate the content layer
+    // if accelerated. This code (four lines below) should be removed from trunk
+    // after merging to the M-38 branch.
+    if (RenderBox* ro = renderBox()) {
+        if (ro->hasAcceleratedCompositing())
+            ro->contentChanged(CanvasChanged);
+    }
+
     // Propagate the m_dirtyRect accumulated so far to the compositor
     // before restarting with a blank dirty rect.
     FloatRect srcRect(0, 0, size().width(), size().height());
