@@ -183,10 +183,9 @@ void DatabaseContext::stopDatabases()
     // DatabaseThread.
 
     if (databaseThreadAvailable()) {
-        TaskSynchronizer sync;
-        m_databaseThread->requestTermination(&sync);
         m_hasRequestedTermination = true;
-        sync.waitForTaskCompletion();
+        // This blocks until the database thread finishes the cleanup task.
+        m_databaseThread->terminate();
     }
 }
 

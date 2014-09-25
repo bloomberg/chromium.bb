@@ -58,7 +58,7 @@ public:
     void trace(Visitor*);
 
     void start();
-    void requestTermination(TaskSynchronizer* cleanupSync);
+    void terminate();
     bool terminationRequested() const;
 
     void scheduleTask(PassOwnPtr<DatabaseTask>);

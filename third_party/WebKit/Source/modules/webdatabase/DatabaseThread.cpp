@@ -51,13 +51,7 @@ DatabaseThread::DatabaseThread()
 DatabaseThread::~DatabaseThread()
 {
     ASSERT(m_openDatabaseSet.isEmpty());
-    // Oilpan: The database thread must have finished its cleanup tasks before
-    // the following clear(). Otherwise, WebThread destructor blocks the caller
-    // thread, and causes a deadlock with ThreadState cleanup.
-    // DatabaseContext::stop() asks the database thread to close all of
-    // databases, and wait until GC heap cleanup of the database thread. So we
-    // can safely destruct WebThread here.
-    m_thread.clear();
+    ASSERT(!m_thread);
 }
 
 void DatabaseThread::trace(Visitor* visitor)
@@ -81,14 +75,22 @@ void DatabaseThread::setupDatabaseThread()
     m_thread->attachGC();
 }
 
-void DatabaseThread::requestTermination(TaskSynchronizer *cleanupSync)
+void DatabaseThread::terminate()
 {
-    MutexLocker lock(m_terminationRequestedMutex);
-    ASSERT(!m_terminationRequested);
-    m_terminationRequested = true;
-    m_cleanupSync = cleanupSync;
-    WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
-    m_thread->postTask(new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThread, this)));
+    TaskSynchronizer sync;
+    {
+        MutexLocker lock(m_terminationRequestedMutex);
+        ASSERT(!m_terminationRequested);
+        m_terminationRequested = true;
+        m_cleanupSync = &sync;
+        WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
+        m_thread->postTask(new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThread, this)));
+    }
+    sync.waitForTaskCompletion();
+    // The WebThread destructor blocks until all the tasks of the database
+    // thread are processed. However, it shouldn't block at all because
+    // the database thread has already finished processing the cleanup task.
+    m_thread.clear();
 }
 
 bool DatabaseThread::terminationRequested() const
