@@ -24,18 +24,27 @@ namespace {
 
 const char* kCurveName = "TouchFlingGestureCurve";
 
-inline double position(double t, float* p) {
-  return p[0] * exp(-p[2] * t) - p[1] * t - p[0];
+// The touchpad / touchscreen fling profiles are a matched set
+// determined via UX experimentation. Do not modify without
+// first discussing with rjkroege@chromium.org or
+// wjmaclean@chromium.org.
+const float kDefaultAlpha = -5.70762e+03f;
+const float kDefaultBeta = 1.72e+02f;
+const float kDefaultGamma = 3.7e+00f;
+
+inline double position(double t) {
+  return kDefaultAlpha * exp(-kDefaultGamma * t) - kDefaultBeta * t -
+         kDefaultAlpha;
 }
 
-inline double velocity(double t, float* p) {
-  return -p[0] * p[2] * exp(-p[2] * t) - p[1];
+inline double velocity(double t) {
+  return -kDefaultAlpha * kDefaultGamma * exp(-kDefaultGamma * t) -
+         kDefaultBeta;
 }
 
-inline double timeAtVelocity(double v, float* p) {
-    DCHECK(p[0]);
-    DCHECK(p[2]);
-    return -log((v + p[1]) / (-p[0] * p[2])) / p[2];
+inline double timeAtVelocity(double v) {
+  return -log((v + kDefaultBeta) / (-kDefaultAlpha * kDefaultGamma)) /
+         kDefaultGamma;
 }
 
 } // namespace
@@ -68,30 +77,19 @@ namespace content {
 
 WebGestureCurve* TouchFlingGestureCurve::Create(
     const WebFloatPoint& initial_velocity,
-    float p0,
-    float p1,
-    float p2,
     const WebSize& cumulative_scroll) {
-  return new TouchFlingGestureCurve(initial_velocity, p0, p1, p2,
-                                    cumulative_scroll);
+  return new TouchFlingGestureCurve(initial_velocity, cumulative_scroll);
 }
 
 TouchFlingGestureCurve::TouchFlingGestureCurve(
     const WebFloatPoint& initial_velocity,
-    float alpha,
-    float beta,
-    float gamma,
     const WebSize& cumulative_scroll)
     : cumulative_scroll_(WebFloatSize(cumulative_scroll.width,
                                       cumulative_scroll.height)) {
   DCHECK(initial_velocity != WebFloatPoint());
 
-  coefficients_[0] = alpha;
-  coefficients_[1] = beta;
-  coefficients_[2] = gamma;
-
   // Curve ends when velocity reaches zero.
-  curve_duration_ = timeAtVelocity(0, coefficients_);
+  curve_duration_ = timeAtVelocity(0);
   DCHECK(curve_duration_ > 0);
 
   float max_start_velocity = std::max(fabs(initial_velocity.x),
@@ -100,8 +98,8 @@ TouchFlingGestureCurve::TouchFlingGestureCurve(
   // Force max_start_velocity to lie in the range v(0) to v(curve_duration),
   // and assume that the curve parameters define a monotonically decreasing
   // velocity, or else bisection search may fail.
-  if (max_start_velocity > velocity(0, coefficients_))
-    max_start_velocity = velocity(0, coefficients_);
+  if (max_start_velocity > velocity(0))
+    max_start_velocity = velocity(0);
 
   if (max_start_velocity < 0)
     max_start_velocity = 0;
@@ -112,10 +110,10 @@ TouchFlingGestureCurve::TouchFlingGestureCurve(
                                       initial_velocity.y / max_start_velocity);
 
   // Compute time-offset for start velocity.
-  time_offset_ = timeAtVelocity(max_start_velocity, coefficients_);
+  time_offset_ = timeAtVelocity(max_start_velocity);
 
   // Compute curve position at offset time
-  position_offset_ = position(time_offset_, coefficients_);
+  position_offset_ = position(time_offset_);
   TRACE_EVENT_ASYNC_BEGIN1("input", "GestureAnimation", this, "curve",
       kCurveName);
 }
@@ -133,11 +131,10 @@ bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
   float displacement;
   float speed;
   if (time + time_offset_ < curve_duration_) {
-    displacement =
-        position(time + time_offset_, coefficients_) - position_offset_;
-    speed = velocity(time + time_offset_, coefficients_);
+    displacement = position(time + time_offset_) - position_offset_;
+    speed = velocity(time + time_offset_);
   } else {
-    displacement = position(curve_duration_, coefficients_) - position_offset_;
+    displacement = position(curve_duration_) - position_offset_;
     speed = 0.f;
   }
 

@@ -1622,13 +1622,6 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
   return media_thread_->message_loop_proxy();
 }
 
-void RenderThreadImpl::SetFlingCurveParameters(
-    const std::vector<float>& new_touchpad,
-    const std::vector<float>& new_touchscreen) {
-  webkit_platform_support_->SetFlingCurveParameters(new_touchpad,
-                                                    new_touchscreen);
-}
-
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
   webkit_platform_support_->sampleGamepads(*data);
 }

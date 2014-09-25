@@ -2201,20 +2201,6 @@ const char kSemiLongPressTimeInSeconds[] =
     "gesture.semi_long_press_time_in_seconds";
 const char kTabScrubActivationDelayInMS[] =
     "gesture.tab_scrub_activation_delay_in_ms";
-const char kFlingAccelerationCurveCoefficient0[] =
-    "gesture.fling_acceleration_curve_coefficient_0";
-const char kFlingAccelerationCurveCoefficient1[] =
-    "gesture.fling_acceleration_curve_coefficient_1";
-const char kFlingAccelerationCurveCoefficient2[] =
-    "gesture.fling_acceleration_curve_coefficient_2";
-const char kFlingAccelerationCurveCoefficient3[] =
-    "gesture.fling_acceleration_curve_coefficient_3";
-const char kFlingCurveTouchpadAlpha[] = "flingcurve.touchpad_alpha";
-const char kFlingCurveTouchpadBeta[] = "flingcurve.touchpad_beta";
-const char kFlingCurveTouchpadGamma[] = "flingcurve.touchpad_gamma";
-const char kFlingCurveTouchscreenAlpha[] = "flingcurve.touchscreen_alpha";
-const char kFlingCurveTouchscreenBeta[] = "flingcurve.touchscreen_beta";
-const char kFlingCurveTouchscreenGamma[] = "flingcurve.touchscreen_gamma";
 const char kFlingMaxCancelToDownTimeInMs[] =
     "gesture.fling_max_cancel_to_down_time_in_ms";
 const char kFlingMaxTapGapTimeInMs[] =

@@ -16,10 +16,6 @@ namespace ui {
 
 class EVENTS_BASE_EXPORT GestureConfiguration {
  public:
-  // Number of parameters in the array of parameters for the fling acceleration
-  // curve.
-  static const int NumAccelParams = 4;
-
   // Ordered alphabetically ignoring underscores, to align with the
   // associated list of prefs in gesture_prefs_aura.cc.
   static int default_radius() {
@@ -134,12 +130,6 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static int set_scroll_debounce_interval_in_ms(int val) {
     return scroll_debounce_interval_in_ms_ = val;
   }
-  static void set_fling_acceleration_curve_coefficients(int i, float val) {
-    fling_acceleration_curve_coefficients_[i] = val;
-  }
-  static float fling_acceleration_curve_coefficients(int i) {
-    return fling_acceleration_curve_coefficients_[i];
-  }
   static float fling_velocity_cap() {
     return fling_velocity_cap_;
   }
@@ -192,7 +182,6 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static int min_scaling_span_in_pixels_;
   static int show_press_delay_in_ms_;
   static int scroll_debounce_interval_in_ms_;
-  static float fling_acceleration_curve_coefficients_[NumAccelParams];
   static float fling_velocity_cap_;
   // TODO(davemoore): Move into chrome/browser/ui.
   static int tab_scrub_activation_delay_in_ms_;

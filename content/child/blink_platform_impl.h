@@ -154,9 +154,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual blink::WebCrypto* crypto() OVERRIDE;
 
-  void SetFlingCurveParameters(const std::vector<float>& new_touchpad,
-                               const std::vector<float>& new_touchscreen);
-
   void SuspendSharedTimer();
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
@@ -177,7 +174,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   double shared_timer_fire_time_;
   bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
-  scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   WebCryptoImpl web_crypto_;
 };

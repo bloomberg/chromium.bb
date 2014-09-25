@@ -50,8 +50,7 @@ TEST(TouchFlingGestureCurve, flingCurveTouch)
   MockGestureCurveTarget target;
 
   scoped_ptr<WebGestureCurve> curve(content::TouchFlingGestureCurve::Create(
-      WebFloatPoint(initialVelocity, 0),
-      -5.70762e+03f, 1.72e+02f, 3.7e+00f, WebSize()));
+      WebFloatPoint(initialVelocity, 0), WebSize()));
 
   // Note: the expectations below are dependent on the curve parameters hard
   // coded into the create call above.

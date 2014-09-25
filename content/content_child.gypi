@@ -70,8 +70,6 @@
       'child/fileapi/webfilewriter_impl.h',
       'child/fling_animator_impl_android.cc',
       'child/fling_animator_impl_android.h',
-      'child/fling_curve_configuration.cc',
-      'child/fling_curve_configuration.h',
       'child/ftp_directory_listing_response_delegate.cc',
       'child/ftp_directory_listing_response_delegate.h',
       'child/image_decoder.cc',

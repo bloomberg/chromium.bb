@@ -91,10 +91,6 @@ class GesturePrefsObserver : public KeyedService {
 // Note that this collection of settings should correspond to the settings used
 // in ui/events/gestures/gesture_configuration.h
 const char* kPrefsToObserve[] = {
-  prefs::kFlingAccelerationCurveCoefficient0,
-  prefs::kFlingAccelerationCurveCoefficient1,
-  prefs::kFlingAccelerationCurveCoefficient2,
-  prefs::kFlingAccelerationCurveCoefficient3,
   prefs::kFlingMaxCancelToDownTimeInMs,
   prefs::kFlingMaxTapGapTimeInMs,
   prefs::kTabScrubActivationDelayInMS,
@@ -102,20 +98,26 @@ const char* kPrefsToObserve[] = {
   prefs::kSemiLongPressTimeInSeconds,
 };
 
-const char* kFlingTouchpadPrefs[] = {
-  prefs::kFlingCurveTouchpadAlpha,
-  prefs::kFlingCurveTouchpadBeta,
-  prefs::kFlingCurveTouchpadGamma
-};
-
-const char* kFlingTouchscreenPrefs[] = {
-  prefs::kFlingCurveTouchscreenAlpha,
-  prefs::kFlingCurveTouchscreenBeta,
-  prefs::kFlingCurveTouchscreenGamma,
+const char* kPrefsToRemove[] = {
+    "gesture.fling_acceleration_curve_coefficient_0",
+    "gesture.fling_acceleration_curve_coefficient_1",
+    "gesture.fling_acceleration_curve_coefficient_2",
+    "gesture.fling_acceleration_curve_coefficient_3",
+    "flingcurve.touchpad_alpha",
+    "flingcurve.touchpad_beta",
+    "flingcurve.touchpad_gamma",
+    "flingcurve.touchscreen_alpha",
+    "flingcurve.touchscreen_beta",
+    "flingcurve.touchscreen_gamma",
 };
 
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
+  for (size_t i = 0; i < arraysize(kPrefsToRemove); ++i) {
+    if (prefs->FindPreference(kPrefsToRemove[i]))
+      prefs->ClearPref(kPrefsToRemove[i]);
+  }
+
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
@@ -131,11 +133,6 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
   for (size_t i = 0; i < overscroll_prefs.size(); ++i)
     registrar_.Add(overscroll_prefs[i].pref_name, callback);
 
-  for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); ++i)
-    registrar_.Add(kFlingTouchpadPrefs[i], notify_callback);
-  for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); ++i)
-    registrar_.Add(kFlingTouchscreenPrefs[i], notify_callback);
-
   Update();
 }
 
@@ -146,14 +143,6 @@ void GesturePrefsObserver::Shutdown() {
 }
 
 void GesturePrefsObserver::Update() {
-  GestureConfiguration::set_fling_acceleration_curve_coefficients(0,
-      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient0));
-  GestureConfiguration::set_fling_acceleration_curve_coefficients(1,
-      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient1));
-  GestureConfiguration::set_fling_acceleration_curve_coefficients(2,
-      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient2));
-  GestureConfiguration::set_fling_acceleration_curve_coefficients(3,
-      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient3));
   GestureConfiguration::set_fling_max_cancel_to_down_time_in_ms(
       prefs_->GetInteger(prefs::kFlingMaxCancelToDownTimeInMs));
   GestureConfiguration::set_fling_max_tap_gap_time_in_ms(
@@ -161,11 +150,9 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_tab_scrub_activation_delay_in_ms(
       prefs_->GetInteger(prefs::kTabScrubActivationDelayInMS));
   GestureConfiguration::set_semi_long_press_time_in_seconds(
-      prefs_->GetDouble(
-          prefs::kSemiLongPressTimeInSeconds));
+      prefs_->GetDouble(prefs::kSemiLongPressTimeInSeconds));
   GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(
-      prefs_->GetDouble(
-          prefs::kMaxSeparationForGestureTouchesInPixels));
+      prefs_->GetDouble(prefs::kMaxSeparationForGestureTouchesInPixels));
 
   UpdateOverscrollPrefs();
 }
@@ -219,41 +206,8 @@ void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
   }
 }
 
-void GesturePrefsObserverFactoryAura::RegisterFlingCurveParameters(
-    user_prefs::PrefRegistrySyncable* registry) {
-  content::RendererPreferences def_prefs;
-
-  for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); i++)
-    registry->RegisterDoublePref(
-        kFlingTouchpadPrefs[i],
-        def_prefs.touchpad_fling_profile[i],
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); i++)
-    registry->RegisterDoublePref(
-        kFlingTouchscreenPrefs[i],
-        def_prefs.touchscreen_fling_profile[i],
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
 void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDoublePref(
-      prefs::kFlingAccelerationCurveCoefficient0,
-      GestureConfiguration::fling_acceleration_curve_coefficients(0),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kFlingAccelerationCurveCoefficient1,
-      GestureConfiguration::fling_acceleration_curve_coefficients(1),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kFlingAccelerationCurveCoefficient2,
-      GestureConfiguration::fling_acceleration_curve_coefficients(2),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kFlingAccelerationCurveCoefficient3,
-      GestureConfiguration::fling_acceleration_curve_coefficients(3),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kFlingMaxCancelToDownTimeInMs,
       GestureConfiguration::fling_max_cancel_to_down_time_in_ms(),
@@ -275,7 +229,6 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   RegisterOverscrollPrefs(registry);
-  RegisterFlingCurveParameters(registry);
 }
 
 bool

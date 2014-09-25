@@ -3092,11 +3092,6 @@ void RenderViewImpl::OnSetRendererPrefs(
   }
 #endif  // defined(USE_DEFAULT_RENDER_THEME)
 
-  if (RenderThreadImpl::current())  // Will be NULL during unit tests.
-    RenderThreadImpl::current()->SetFlingCurveParameters(
-        renderer_prefs.touchpad_fling_profile,
-        renderer_prefs.touchscreen_fling_profile);
-
   // If the zoom level for this page matches the old zoom default, and this
   // is not a plugin, update the zoom level to match the new default.
   if (webview() && webview()->mainFrame()->isWebLocalFrame() &&

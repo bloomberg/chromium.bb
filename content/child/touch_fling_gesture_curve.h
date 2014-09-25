@@ -26,7 +26,6 @@ class TouchFlingGestureCurve : public blink::WebGestureCurve {
 
   static CONTENT_EXPORT WebGestureCurve* Create(
       const blink::WebFloatPoint& initial_velocity,
-      float p0, float p1, float p2,
       const blink::WebSize& cumulativeScroll);
 
  virtual bool apply(double monotonicTime,
@@ -34,15 +33,11 @@ class TouchFlingGestureCurve : public blink::WebGestureCurve {
 
  private:
   TouchFlingGestureCurve(const blink::WebFloatPoint& initial_velocity,
-                         float p0,
-                         float p1,
-                         float p2,
                          const blink::WebSize& cumulativeScroll);
   virtual ~TouchFlingGestureCurve();
 
   blink::WebFloatPoint displacement_ratio_;
   blink::WebFloatSize cumulative_scroll_;
-  float coefficients_[3];
   float time_offset_;
   float curve_duration_;
   float position_offset_;

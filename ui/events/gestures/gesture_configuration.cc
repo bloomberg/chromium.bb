@@ -40,15 +40,4 @@ int GestureConfiguration::scroll_debounce_interval_in_ms_ = 30;
 int GestureConfiguration::scroll_debounce_interval_in_ms_ = 0;
 #endif
 
-// Coefficients for a function that computes fling acceleration.
-// These are empirically determined defaults. Do not adjust without
-// additional empirical validation.
-float GestureConfiguration::fling_acceleration_curve_coefficients_[
-    NumAccelParams] = {
-  0.0166667f,
-  -0.0238095f,
-  0.0452381f,
-  0.8f
-};
-
 }  // namespace ui

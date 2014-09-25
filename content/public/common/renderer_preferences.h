@@ -113,12 +113,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // information.
   bool report_frame_name_changes;
 
-  // Controls deacceleration of touchpad-initiated flings.
-  std::vector<float> touchpad_fling_profile;
-
-  // Controls deacceleration of touchscreen-initiated flings.
-  std::vector<float> touchscreen_fling_profile;
-
   // How to handle a tap gesture touching multiple targets
   TapMultipleTargetsStrategy tap_multiple_targets_strategy;
 

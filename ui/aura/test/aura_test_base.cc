@@ -51,14 +51,6 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(20);
   ui::GestureConfiguration::set_min_pinch_update_distance_in_pixels(5);
   ui::GestureConfiguration::set_default_radius(0);
-  ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
-      0, 0.0166667f);
-  ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
-      1, -0.0238095f);
-  ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
-      2, 0.0452381f);
-  ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
-      3, 0.8f);
   ui::GestureConfiguration::set_fling_velocity_cap(15000.0f);
   ui::GestureConfiguration::set_min_swipe_speed(10);
 

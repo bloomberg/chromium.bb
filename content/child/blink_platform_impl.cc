@@ -32,7 +32,7 @@
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
-#include "content/child/fling_curve_configuration.h"
+#include "content/child/touch_fling_gesture_curve.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
@@ -422,7 +422,6 @@ BlinkPlatformImpl::BlinkPlatformImpl()
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
-      fling_curve_configuration_(new FlingCurveConfiguration),
       current_thread_slot_(&DestroyCurrentThread) {}
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -998,12 +997,7 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
       cumulative_scroll);
 #endif
 
-  if (device_source == blink::WebGestureDeviceTouchscreen)
-    return fling_curve_configuration_->CreateForTouchScreen(velocity,
-                                                            cumulative_scroll);
-
-  return fling_curve_configuration_->CreateForTouchPad(velocity,
-                                                       cumulative_scroll);
+  return TouchFlingGestureCurve::Create(velocity, cumulative_scroll);
 }
 
 void BlinkPlatformImpl::didStartWorkerRunLoop(
@@ -1182,12 +1176,6 @@ size_t BlinkPlatformImpl::maxDecodedImageBytes() {
 #else
   return noDecodedImageByteLimit;
 #endif
-}
-
-void BlinkPlatformImpl::SetFlingCurveParameters(
-    const std::vector<float>& new_touchpad,
-    const std::vector<float>& new_touchscreen) {
-  fling_curve_configuration_->SetCurveParameters(new_touchpad, new_touchscreen);
 }
 
 void BlinkPlatformImpl::SuspendSharedTimer() {
