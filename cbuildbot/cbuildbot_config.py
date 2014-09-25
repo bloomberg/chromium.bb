@@ -1268,9 +1268,9 @@ internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
   vm_tests=[],
 )
 
-internal_chromium_pfq.add_config('arm-generic-chromium-pfq',
+internal_chromium_pfq.add_config('arm-generic_freon-chromium-pfq',
   non_testable_builder,
-  boards=['arm-generic'],
+  boards=['arm-generic_freon'],
 )
 
 chrome_pfq = internal_chromium_pfq.derive(
