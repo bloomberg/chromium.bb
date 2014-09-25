@@ -517,7 +517,7 @@ ibm-923_P100-1998 { UTR22* }
 # encoding standard (HTML5) for Shift_JIS. Keep all the aliases (even though
 not all of them not required by the encoding spec) for now.
 
-shift_jis-html5 { UTR22* }
+shift_jis-html
                         ibm-943 # Leave untagged because this isn't the default
                         Shift_JIS { IANA* MIME* WINDOWS JAVA }
                         MS_Kanji { IANA WINDOWS JAVA }
@@ -540,7 +540,7 @@ shift_jis-html5 { UTR22* }
 # Chrome: Instead of ibm-33722_P*, we use what's specified in the WHATWG
 # encoding standard (HTML5). All the
 # 3-byte seqeunces in the normative EUC-JP are now decode-only.
-euc-jp-html5 { UTR22* }
+euc-jp-html
                         EUC-JP { MIME* IANA JAVA* WINDOWS*}
                         Extended_UNIX_Code_Packed_Format_for_Japanese { IANA* JAVA WINDOWS }
                         csEUCPkdFmtJapanese { IANA JAVA WINDOWS }
@@ -557,14 +557,14 @@ windows-950-2000 { UTR22* }
                         x-windows-950 { JAVA }
                         x-big5
                         ms950
+# Chrome: HTML5 has big5-hkscs as an alias for big5
+#         TODO(jshin): Decide if Chrome should follow spec. crbug.com/277040
 ibm-1375_P100-2007 { UTR22* }   # Big5-HKSCS-2004 with Unicode 3.1 mappings. This uses supplementary characters.
                         ibm-1375 { IBM* }
                         Big5-HKSCS { IANA* JAVA* }
                         big5hk { JAVA }
                         HKSCS-BIG5  # From http://www.openi18n.org/localenameguide/
 
-# Chrome: HTML5 has big5-hkscs as an alias for big5
-#         TODO(jshin): Decide if Chrome should follow spec. crbug.com/277040
 ibm-5471_P100-2006 { UTR22* }   # Big5-HKSCS-2001 with Unicode 3.0 mappings. This uses many PUA characters.
                         ibm-5471 { IBM* }
                         Big5-HKSCS
@@ -634,7 +634,7 @@ windows-874-2000 { UTR22* }   # Thai (w/ euro update)
 # Chrome: only keep ibm-878 for KOI8-R, ibm-1168 for KOI8-RU and ibm-866
 ibm-878_P100-1996 { UTR22* }    ibm-878 { IBM* } KOI8-R { IANA* MIME* WINDOWS JAVA* } koi8 { WINDOWS JAVA } csKOI8R { IANA WINDOWS JAVA } windows-20866 { WINDOWS* } cp878   # Russian internet
 # Chrome: Use the table from the WHATWG encoding standard (HTML5).
-ibm-866_html5-2012 { UTR22* }    ibm-866 { IBM* } IBM866 { IANA* MIME* JAVA } cp866 { IANA MIME WINDOWS JAVA* } 866 { IANA JAVA } csIBM866 { IANA JAVA } # PC Russian (w/o euro update)
+ibm866-html   ibm-866 { IBM* } IBM866 { IANA* MIME* JAVA } cp866 { IANA MIME WINDOWS JAVA* } 866 { IANA JAVA } csIBM866 { IANA JAVA } # PC Russian (w/o euro update)
 ibm-1168_P100-2002 { UTR22* }   ibm-1168 { IBM* } KOI8-U { IANA* WINDOWS } windows-21866 { WINDOWS* } # Ukrainian KOI8. koi8-ru != KOI8-U and Microsoft is wrong for aliasing them as the same.
 
 # The cp aliases in this section aren't really windows aliases, but it was used by ICU for Windows.
@@ -672,15 +672,11 @@ macos-7_3-10.2 { UTR22* }       x-mac-cyrillic { MIME* WINDOWS } windows-10007 {
 # Language-specific variants of ISO-2022 continue to be available as listed below.
 # ISO_2022                         ISO-2022
 
-# Chrome: The encoding standard only supports ISO-2022-JP and HZ-GB. 
-# Keep ISO-2022-{KR,CN,CN-Ext} until we're sure what to do about
-# replacement encodings. See crbug.com/277037
-# TODO(jshin): Remove them when the bug is resolved.
+# Chrome: The encoding standard only supports ISO-2022-JP.
+# Remove ISO-2022-{KR,CN,CN-Ext} and HZ-GB from the alias table.
+# See crbug.com/277037 and https://www.w3.org/Bugs/Public/show_bug.cgi?id=25339
+# about HZ-GB.
 ISO_2022,locale=ja,version=0    ISO-2022-JP { IANA* MIME* JAVA* } csISO2022JP { IANA JAVA } x-windows-iso2022jp { JAVA } x-windows-50220 { JAVA }
-ISO_2022,locale=ko,version=0    ISO-2022-KR { IANA* MIME* JAVA* } csISO2022KR { IANA JAVA } # This uses ibm-949
-ISO_2022,locale=zh,version=0    ISO-2022-CN { IANA* JAVA* } csISO2022CN { JAVA } x-ISO-2022-CN-GB { JAVA }
-ISO_2022,locale=zh,version=1    ISO-2022-CN-EXT { IANA* }
-HZ                              HZ-GB-2312 { IANA* }
 
 # Chrome: HTML5 does not need ISCII.
 #         Remove all Lotus entries as well.

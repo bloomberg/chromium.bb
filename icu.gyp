@@ -25,6 +25,8 @@
     'defines': [
       'U_USING_ICU_NAMESPACE=0',
       'HAVE_DLOPEN=0',
+      # Only build encoding coverters and detectors necessary for HTML5.
+      'UCONFIG_NO_NON_HTML5_CONVERSION=1',
     ],
     'conditions': [
       ['component=="static_library"', {

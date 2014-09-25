@@ -1,17 +1,17 @@
 # ***************************************************************************
 # *
 # *   Generated from index-ibm866.txt (
-# *   http://encoding.spec.whatwg.org/index-ibm866.txt )
+# *   https://encoding.spec.whatwg.org/index-ibm866.txt )
 # *   following the algorithm for the single byte legacy encoding
 # *   described at http://encoding.spec.whatwg.org/#single-byte-decoder
 # *
 # ***************************************************************************
-<code_set_name>               "ibm-866_html5-2012"
+<code_set_name>               "ibm866-html"
 <char_name_mask>              "AXXXX"
 <mb_cur_max>                  1
 <mb_cur_min>                  1
 <uconv_class>                 "SBCS"
-<subchar>                     \x7F
+<subchar>                     \x3F
 <icu:charsetFamily>           "ASCII"
 
 CHARMAP

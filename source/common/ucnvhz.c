@@ -16,7 +16,7 @@
 
 #include "unicode/utypes.h"
 
-#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION
+#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
 
 #include "cmemory.h"
 #include "unicode/ucnv.h"
@@ -637,4 +637,4 @@ const UConverterSharedData _HZData={
         0
 };
 
-#endif /* #if !UCONFIG_NO_LEGACY_CONVERSION */
+#endif /* #if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION */

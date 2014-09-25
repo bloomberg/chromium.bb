@@ -2,7 +2,19 @@ Index: source/common/ucnv2022.cpp
 ===================================================================
 --- source/common/ucnv2022.cpp	(revision 259715)
 +++ source/common/ucnv2022.cpp	(working copy)
-@@ -167,13 +167,19 @@
+@@ -154,7 +154,11 @@
+ } StateEnum;
+ 
+ /* is the StateEnum charset value for a DBCS charset? */
++#if UCONFIG_NO_NON_HTML5_CONVERSION
++#define IS_JP_DBCS(cs) (JISX208==(cs))
++#else
+ #define IS_JP_DBCS(cs) (JISX208<=(cs) && (cs)<=KSC5601)
++#endif
+ 
+ #define CSM(cs) ((uint16_t)1<<(cs))
+ 
+@@ -167,13 +171,23 @@
   *   all versions, not just JIS7 and JIS8.
   * - ICU does not distinguish between different versions of JIS X 0208.
   */
@@ -12,6 +24,10 @@ Index: source/common/ucnv2022.cpp
  enum { MAX_JA_VERSION=4 };
 +#endif
  static const uint16_t jpCharsetMasks[MAX_JA_VERSION+1]={
++/* 
++ * TODO(jshin): The encoding spec has JISX212, but we don't support it.
++ * See https://www.w3.org/Bugs/Public/show_bug.cgi?id=26885
++ */
      CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT),
 +#if !UCONFIG_NO_NON_HTML5_CONVERSION
      CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT)|CSM(JISX212),
@@ -22,33 +38,27 @@ Index: source/common/ucnv2022.cpp
  };
  
  typedef enum {
-@@ -361,14 +367,25 @@
+@@ -360,15 +374,18 @@
+     ,VALID_TERMINAL_2022        ,VALID_TERMINAL_2022        ,VALID_TERMINAL_2022        ,VALID_TERMINAL_2022
  };
  
- 
-+/* Enable ISO-2022-{KR,CN,CN-Ext} for now.
-+ * TODO(jshin): Disable it when we know what to do about 'replacement'
-+ * encodings. See http://crbug.com/277037 and
-+ * https://codereview.chromium.org/145973021/
-+ */
-+#ifndef U_ENABLE_ISO_2022_KR_CN
-+#define U_ENABLE_ISO_2022_KR_CN 1
-+#endif
-+
+-
  /* Type def for refactoring changeState_2022 code*/
  typedef enum{
  #ifdef U_ENABLE_GENERIC_ISO_2022
      ISO_2022=0,
  #endif
++#if UCONFIG_NO_NON_HTML5_CONVERSION
++    ISO_2022_JP=1
++#else
      ISO_2022_JP=1,
-+#ifdef U_ENABLE_ISO_2022_KR_CN
      ISO_2022_KR=2,
      ISO_2022_CN=3
 +#endif
  } Variant2022;
  
  /*********** ISO 2022 Converter Protos ***********/
-@@ -485,24 +502,28 @@
+@@ -485,12 +502,15 @@
                  /* prevent indexing beyond jpCharsetMasks[] */
                  myConverterData->version = version = 0;
              }
@@ -64,13 +74,7 @@ Index: source/common/ucnv2022.cpp
              if(jpCharsetMasks[version]&CSM(JISX212)) {
                  myConverterData->myConverterArray[JISX212] =
                      ucnv_loadSharedData("jisx-212", &stackPieces, &stackArgs, errorCode);
-             }
-             if(jpCharsetMasks[version]&CSM(GB2312)) {
-                 myConverterData->myConverterArray[GB2312] =
--                    ucnv_loadSharedData("ibm-5478", &stackPieces, &stackArgs, errorCode);   /* gb_2312_80-1 */
-+                    ucnv_loadSharedData("noop-gb2312_gl", &stackPieces, &stackArgs, errorCode);   /* gb_2312_80-1 */
-             }
-             if(jpCharsetMasks[version]&CSM(KSC5601)) {
+@@ -503,6 +523,7 @@
                  myConverterData->myConverterArray[KSC5601] =
                      ucnv_loadSharedData("ksc_5601", &stackPieces, &stackArgs, errorCode);
              }
@@ -82,35 +86,265 @@ Index: source/common/ucnv2022.cpp
              myConverterData->name[len]=(char)(myConverterData->version+(int)'0');
              myConverterData->name[len+1]='\0';
          }
-+#ifdef U_ENABLE_ISO_2022_KR_CN
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
          else if(myLocale[0]=='k' && (myLocale[1]=='o'|| myLocale[1]=='r') &&
              (myLocale[2]=='_' || myLocale[2]=='\0'))
          {
-@@ -558,13 +580,13 @@
- 
-             /* open the required converters and cache them */
-             myConverterData->myConverterArray[GB2312_1] =
--                ucnv_loadSharedData("ibm-5478", &stackPieces, &stackArgs, errorCode);
-+                ucnv_loadSharedData("noop-gb2312_gl", &stackPieces, &stackArgs, errorCode);
-             if(version==1) {
-                 myConverterData->myConverterArray[ISO_IR_165] =
--                    ucnv_loadSharedData("iso-ir-165", &stackPieces, &stackArgs, errorCode);
-+                    ucnv_loadSharedData("noop-iso-ir-165", &stackPieces, &stackArgs, errorCode);
-             }
-             myConverterData->myConverterArray[CNS_11643] =
--                ucnv_loadSharedData("cns-11643-1992", &stackPieces, &stackArgs, errorCode);
-+                ucnv_loadSharedData("noop-cns-11643", &stackPieces, &stackArgs, errorCode);
- 
- 
-             /* set the function pointers to appropriate funtions */
 @@ -582,6 +604,7 @@
                  (void)uprv_strcpy(myConverterData->name,"ISO_2022,locale=zh,version=2");
              }
          }
-+#endif // U_ENABLE_ISO_2022_KR_CN
++#endif // !UCONFIG_NO_NON_HTML5_CONVERSION
          else{
  #ifdef U_ENABLE_GENERIC_ISO_2022
              myConverterData->isFirstBuffer = TRUE;
+@@ -716,6 +739,7 @@
+     ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE
+ };
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ /*************** to unicode *******************/
+ static const int8_t nextStateToUnicodeCN[MAX_STATES_2022]= {
+ /*      0                1               2               3               4               5               6               7               8               9    */
+@@ -728,6 +752,7 @@
+     ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE
+     ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE  ,INVALID_STATE
+ };
++#endif
+ 
+ 
+ static UCNV_TableStates_2022
+@@ -880,6 +905,7 @@
+                     }
+                     break;
+                 /* case SS3_STATE: not used in ISO-2022-JP-x */
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+                 case ISO8859_1:
+                 case ISO8859_7:
+                     if((jpCharsetMasks[myData2022->version] & CSM(tempState)) == 0) {
+@@ -889,6 +915,7 @@
+                         myData2022->toU2022State.cs[2]=(int8_t)tempState;
+                     }
+                     break;
++#endif
+                 default:
+                     if((jpCharsetMasks[myData2022->version] & CSM(tempState)) == 0) {
+                         *err = U_UNSUPPORTED_ESCAPE_SEQUENCE;
+@@ -900,6 +927,7 @@
+                 }
+             }
+             break;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+         case ISO_2022_CN:
+             {
+                 StateEnum tempState=(StateEnum)nextStateToUnicodeCN[offset];
+@@ -961,6 +989,7 @@
+                 *err = U_UNSUPPORTED_ESCAPE_SEQUENCE;
+             }
+             break;
++#endif /* #if !UCONFIG_NO_NON_HTML5_CONVERSION */
+ 
+         default:
+             *err = U_ILLEGAL_ESCAPE_SEQUENCE;
+@@ -1381,12 +1410,16 @@
+ static const StateEnum jpCharsetPref[]={
+     ASCII,
+     JISX201,
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+     ISO8859_1,
+     ISO8859_7,
++#endif
+     JISX208,
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+     JISX212,
+     GB2312,
+     KSC5601,
++#endif
+     HWKANA_7BIT
+ };
+ 
+@@ -1756,6 +1789,7 @@
+                         g = 0;
+                     }
+                     break;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+                 case ISO8859_1:
+                     if(GR96_START <= sourceChar && sourceChar <= GR96_END) {
+                         targetValue = (uint32_t)sourceChar - 0x80;
+@@ -1764,6 +1798,7 @@
+                         g = 2;
+                     }
+                     break;
++#endif
+                 case HWKANA_7BIT:
+                     if((uint32_t)(sourceChar - HWKANA_START) <= (HWKANA_END - HWKANA_START)) {
+                         if(converterData->version==3) {
+@@ -1825,6 +1860,7 @@
+                         useFallback = FALSE;
+                     }
+                     break;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+                 case ISO8859_7:
+                     /* G0 SBCS forced to 7-bit output */
+                     len2 = MBCS_SINGLE_FROM_UCHAR32(
+@@ -1839,6 +1875,7 @@
+                         useFallback = FALSE;
+                     }
+                     break;
++#endif
+                 default:
+                     /* G0 DBCS */
+                     len2 = MBCS_FROM_UCHAR32_ISO2022(
+@@ -1846,6 +1883,7 @@
+                                 sourceChar, &value,
+                                 useFallback, MBCS_OUTPUT_2);
+                     if(len2 == 2 || (len2 == -2 && len == 0)) {  /* only accept DBCS: abs(len)==2 */
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+                         if(cs0 == KSC5601) {
+                             /*
+                              * Check for valid bytes for the encoding scheme.
+@@ -1857,6 +1895,7 @@
+                                 break;
+                             }
+                         }
++#endif
+                         targetValue = value;
+                         len = len2;
+                         cs = cs0;
+@@ -2150,6 +2189,7 @@
+                         targetUniChar = mySourceChar;
+                     }
+                     break;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+                 case ISO8859_1:
+                     if(mySourceChar <= 0x7f) {
+                         targetUniChar = mySourceChar + 0x80;
+@@ -2168,6 +2208,7 @@
+                     /* return from a single-shift state to the previous one */
+                     pToU2022State->g=pToU2022State->prevG;
+                     break;
++#endif
+                 case JISX201:
+                     if(mySourceChar <= 0x7f) {
+                         targetUniChar = jisx201ToU(mySourceChar);
+@@ -2207,9 +2248,11 @@
+                             } else {
+                                 /* Copy before we modify tmpSourceChar so toUnicodeCallback() sees the correct bytes. */
+                                 mySourceChar = tmpSourceChar;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+                                 if (cs == KSC5601) {
+                                     tmpSourceChar += 0x8080;  /* = _2022ToGR94DBCS(tmpSourceChar) */
+                                 }
++#endif
+                                 tempBuf[0] = (char)(tmpSourceChar >> 8);
+                                 tempBuf[1] = (char)(tmpSourceChar);
+                             }
+@@ -2271,6 +2314,7 @@
+ }
+ 
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ /***************************************************************
+ *   Rules for ISO-2022-KR encoding
+ *   i) The KSC5601 designator sequence should appear only once in a file,
+@@ -3414,6 +3458,7 @@
+     args->target = myTarget;
+     args->source = mySource;
+ }
++#endif /* #if !UCONFIG_NO_NON_HTML5_CONVERSION */
+ 
+ static void
+ _ISO_2022_WriteSub(UConverterFromUnicodeArgs *args, int32_t offsetIndex, UErrorCode *err) {
+@@ -3615,6 +3660,7 @@
+         /* include JIS X 0201 which is hardcoded */
+         sa->add(sa->set, 0xa5);
+         sa->add(sa->set, 0x203e);
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+         if(jpCharsetMasks[cnvData->version]&CSM(ISO8859_1)) {
+             /* include Latin-1 for some variants of JP */
+             sa->addRange(sa->set, 0, 0xff);
+@@ -3622,6 +3668,10 @@
+             /* include ASCII for JP */
+             sa->addRange(sa->set, 0, 0x7f);
+         }
++#else
++        /* include ASCII for JP */
++        sa->addRange(sa->set, 0, 0x7f);
++#endif
+         if(cnvData->version==3 || cnvData->version==4 || which==UCNV_ROUNDTRIP_AND_FALLBACK_SET) {
+             /*
+              * Do not test (jpCharsetMasks[cnvData->version]&CSM(HWKANA_7BIT))!=0
+@@ -3640,6 +3690,7 @@
+             sa->addRange(sa->set, HWKANA_START, HWKANA_END);
+         }
+         break;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+     case 'c':
+     case 'z':
+         /* include ASCII for CN */
+@@ -3651,6 +3702,7 @@
+                 cnvData->currentConverter, sa, which, pErrorCode);
+         /* the loop over myConverterArray[] will simply not find another converter */
+         break;
++#endif
+     default:
+         break;
+     }
+@@ -3671,10 +3723,16 @@
+     for (i=0; i<UCNV_2022_MAX_CONVERTERS; i++) {
+         UConverterSetFilter filter;
+         if(cnvData->myConverterArray[i]!=NULL) {
+-            if( (cnvData->locale[0]=='c' || cnvData->locale[0]=='z') &&
+-                cnvData->version==0 && i==CNS_11643
+-            ) {
++            if(cnvData->locale[0]=='j' && i==JISX208) {
+                 /*
++                 * Only add code points that map to Shift-JIS codes
++                 * corresponding to JIS X 0208.
++                 */
++                filter=UCNV_SET_FILTER_SJIS;
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
++            } else if( (cnvData->locale[0]=='c' || cnvData->locale[0]=='z') &&
++                       cnvData->version==0 && i==CNS_11643) {
++                /*
+                  * Version-specific for CN:
+                  * CN version 0 does not map CNS planes 3..7 although
+                  * they are all available in the CNS conversion table;
+@@ -3682,18 +3740,13 @@
+                  * The two versions create different Unicode sets.
+                  */
+                 filter=UCNV_SET_FILTER_2022_CN;
+-            } else if(cnvData->locale[0]=='j' && i==JISX208) {
+-                /*
+-                 * Only add code points that map to Shift-JIS codes
+-                 * corresponding to JIS X 0208.
+-                 */
+-                filter=UCNV_SET_FILTER_SJIS;
+             } else if(i==KSC5601) {
+                 /*
+                  * Some of the KSC 5601 tables (convrtrs.txt has this aliases on multiple tables)
+                  * are broader than GR94.
+                  */
+                 filter=UCNV_SET_FILTER_GR94DBCS;
++#endif
+             } else {
+                 filter=UCNV_SET_FILTER_NONE;
+             }
+@@ -3831,6 +3884,7 @@
+ 
+ }  // namespace
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ /************* KR ***************/
+ static const UConverterImpl _ISO2022KRImpl={
+     UCNV_ISO_2022,
+@@ -3947,5 +4001,6 @@
+ };
+ 
+ }  // namespace
++#endif /* #if !UCONFIG_NO_NON_HTML5_CONVERSION */
+ 
+ #endif /* #if !UCONFIG_NO_LEGACY_CONVERSION */
 Index: source/common/ucnvbocu.cpp
 ===================================================================
 --- source/common/ucnvbocu.cpp	(revision 259715)
@@ -186,7 +420,22 @@ Index: source/common/ucnv_bld.cpp
 ===================================================================
 --- source/common/ucnv_bld.cpp	(revision 259715)
 +++ source/common/ucnv_bld.cpp	(working copy)
-@@ -79,16 +79,25 @@
+@@ -69,28 +69,41 @@
+ 
+ #if UCONFIG_NO_LEGACY_CONVERSION
+     NULL,
++#else
++    &_ISO2022Data,
++#endif
++
++#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_NO_NON_HTML5_CONVERSION
+     NULL, NULL, NULL, NULL, NULL, NULL,
+     NULL, NULL, NULL, NULL, NULL, NULL,
+     NULL,
+ #else
+-    &_ISO2022Data,
+     &_LMBCSData1,&_LMBCSData2, &_LMBCSData3, &_LMBCSData4, &_LMBCSData5, &_LMBCSData6,
+     &_LMBCSData8,&_LMBCSData11,&_LMBCSData16,&_LMBCSData17,&_LMBCSData18,&_LMBCSData19,
      &_HZData,
  #endif
  
@@ -211,8 +460,63 @@ Index: source/common/ucnv_bld.cpp
      &_UTF7Data, &_Bocu1Data, &_UTF16Data, &_UTF32Data, &_CESU8Data, &_IMAPData,
 +#endif
  
- #if UCONFIG_NO_LEGACY_CONVERSION
+-#if UCONFIG_NO_LEGACY_CONVERSION
++#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_NO_NON_HTML5_CONVERSION
      NULL,
+ #else
+     &_CompoundTextData
+@@ -105,18 +118,24 @@
+   const char *name;
+   const UConverterType type;
+ } const cnvNameType[] = {
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "bocu1", UCNV_BOCU1 },
+   { "cesu8", UCNV_CESU8 },
+-#if !UCONFIG_NO_LEGACY_CONVERSION
++#endif
++#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "hz",UCNV_HZ },
+ #endif
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "imapmailboxname", UCNV_IMAP_MAILBOX },
++#endif
++#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
++  { "iscii", UCNV_ISCII },
++#endif
+ #if !UCONFIG_NO_LEGACY_CONVERSION
+-  { "iscii", UCNV_ISCII },
+   { "iso2022", UCNV_ISO_2022 },
+ #endif
+   { "iso88591", UCNV_LATIN_1 },
+-#if !UCONFIG_NO_LEGACY_CONVERSION
++#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "lmbcs1", UCNV_LMBCS_1 },
+   { "lmbcs11",UCNV_LMBCS_11 },
+   { "lmbcs16",UCNV_LMBCS_16 },
+@@ -130,7 +149,9 @@
+   { "lmbcs6", UCNV_LMBCS_6 },
+   { "lmbcs8", UCNV_LMBCS_8 },
+ #endif
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "scsu", UCNV_SCSU },
++#endif
+   { "usascii", UCNV_US_ASCII },
+   { "utf16", UCNV_UTF16 },
+   { "utf16be", UCNV_UTF16_BigEndian },
+@@ -152,9 +173,13 @@
+   { "utf32oppositeendian", UCNV_UTF32_BigEndian },
+   { "utf32platformendian", UCNV_UTF32_LittleEndian },
+ #endif
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "utf7", UCNV_UTF7 },
++#endif
+   { "utf8", UCNV_UTF8 },
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+   { "x11compoundtext", UCNV_COMPOUND_TEXT}
++#endif
+ };
+ 
+ 
 Index: source/common/ucnv_u8.c
 ===================================================================
 --- source/common/ucnv_u8.c	(revision 259715)
@@ -277,24 +581,22 @@ Index: source/common/unicode/urename.h
 ===================================================================
 --- source/common/unicode/urename.h	(revision 259715)
 +++ source/common/unicode/urename.h	(working copy)
-@@ -73,12 +73,16 @@
+@@ -73,12 +73,14 @@
  #define UDataMemory_setData U_ICU_ENTRY_POINT_RENAME(UDataMemory_setData)
  #define UDatamemory_assign U_ICU_ENTRY_POINT_RENAME(UDatamemory_assign)
  #define _ASCIIData U_ICU_ENTRY_POINT_RENAME(_ASCIIData)
 +#if !UCONFIG_NO_NON_HTML5_CONVERSION
  #define _Bocu1Data U_ICU_ENTRY_POINT_RENAME(_Bocu1Data)
  #define _CESU8Data U_ICU_ENTRY_POINT_RENAME(_CESU8Data)
-+#endif
  #define _CompoundTextData U_ICU_ENTRY_POINT_RENAME(_CompoundTextData)
  #define _HZData U_ICU_ENTRY_POINT_RENAME(_HZData)
-+#if !UCONFIG_NO_NON_HTML5_CONVERSION
  #define _IMAPData U_ICU_ENTRY_POINT_RENAME(_IMAPData)
  #define _ISCIIData U_ICU_ENTRY_POINT_RENAME(_ISCIIData)
 +#endif
  #define _ISO2022Data U_ICU_ENTRY_POINT_RENAME(_ISO2022Data)
  #define _LMBCSData1 U_ICU_ENTRY_POINT_RENAME(_LMBCSData1)
  #define _LMBCSData11 U_ICU_ENTRY_POINT_RENAME(_LMBCSData11)
-@@ -94,14 +98,18 @@
+@@ -94,14 +96,18 @@
  #define _LMBCSData8 U_ICU_ENTRY_POINT_RENAME(_LMBCSData8)
  #define _Latin1Data U_ICU_ENTRY_POINT_RENAME(_Latin1Data)
  #define _MBCSData U_ICU_ENTRY_POINT_RENAME(_MBCSData)
@@ -317,17 +619,229 @@ Index: source/common/ucnv_cnv.h
 ===================================================================
 --- source/common/ucnv_cnv.h	(revision 259715)
 +++ source/common/ucnv_cnv.h	(working copy)
-@@ -259,8 +259,13 @@
-     _ISO2022Data, 
+@@ -256,11 +256,15 @@
+ extern const UConverterSharedData
+     _MBCSData, _Latin1Data,
+     _UTF8Data, _UTF16BEData, _UTF16LEData, _UTF32BEData, _UTF32LEData,
+-    _ISO2022Data, 
++    _ISO2022Data,
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
      _LMBCSData1,_LMBCSData2, _LMBCSData3, _LMBCSData4, _LMBCSData5, _LMBCSData6,
      _LMBCSData8,_LMBCSData11,_LMBCSData16,_LMBCSData17,_LMBCSData18,_LMBCSData19,
-+#if !UCONFIG_NO_NON_HTML5_CONVERSION
      _HZData,_ISCIIData, _SCSUData, _ASCIIData,
      _UTF7Data, _Bocu1Data, _UTF16Data, _UTF32Data, _CESU8Data, _IMAPData, _CompoundTextData;
 +#else
-+    _HZData, _ASCIIData,
-+    _UTF16Data, _UTF32Data, _CompoundTextData;
++    _ASCIIData, _UTF16Data, _UTF32Data;
 +#endif
  
  U_CDECL_END
  
+Index: source/common/ucnv_lmb.c
+===================================================================
+--- source/common/ucnv_lmb.c	(revision 291619)
++++ source/common/ucnv_lmb.c	(working copy)
+@@ -25,7 +25,7 @@
+ 
+ #include "unicode/utypes.h"
+ 
+-#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION
++#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+ 
+ #include "unicode/ucnv_err.h"
+ #include "unicode/ucnv.h"
+Index: source/common/ucnvhz.c
+===================================================================
+--- source/common/ucnvhz.c	(revision 291619)
++++ source/common/ucnvhz.c	(working copy)
+@@ -16,7 +16,7 @@
+ 
+ #include "unicode/utypes.h"
+ 
+-#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION
++#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+ 
+ #include "cmemory.h"
+ #include "unicode/ucnv.h"
+@@ -637,4 +637,4 @@
+         0
+ };
+ 
+-#endif /* #if !UCONFIG_NO_LEGACY_CONVERSION */
++#endif /* #if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION */
+Index: source/common/ucnv_ct.c
+===================================================================
+--- source/common/ucnv_ct.c	(revision 291619)
++++ source/common/ucnv_ct.c	(working copy)
+@@ -14,7 +14,7 @@
+ 
+ #include "unicode/utypes.h"
+ 
+-#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION
++#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+ 
+ #include "unicode/ucnv.h"
+ #include "unicode/uset.h"
+Index: source/i18n/csrsbcs.h
+===================================================================
+--- source/i18n/csrsbcs.h	(revision 291619)
++++ source/i18n/csrsbcs.h	(working copy)
+@@ -50,6 +50,7 @@
+ 
+ };
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ class NGramParser_IBM420 : public NGramParser
+ {
+ private:
+@@ -61,6 +62,7 @@
+ public:
+     NGramParser_IBM420(const int32_t *theNgramList, const uint8_t *theCharMap);
+ };
++#endif
+ 
+ 
+ class CharsetRecog_sbcs : public CharsetRecognizer
+@@ -229,6 +231,7 @@
+     virtual UBool match(InputText *det, CharsetMatch *results) const;
+ };
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ class CharsetRecog_IBM424_he : public CharsetRecog_sbcs
+ {
+ public:
+@@ -280,6 +283,7 @@
+     
+     virtual UBool match(InputText *det, CharsetMatch *results) const;
+ };
++#endif
+ 
+ U_NAMESPACE_END
+ 
+Index: source/i18n/csr2022.h
+===================================================================
+--- source/i18n/csr2022.h	(revision 291619)
++++ source/i18n/csr2022.h	(working copy)
+@@ -65,6 +65,7 @@
+     UBool match(InputText *textIn, CharsetMatch *results) const;
+ };
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ class CharsetRecog_2022KR :public CharsetRecog_2022 {
+ public:
+     virtual ~CharsetRecog_2022KR();
+@@ -84,6 +85,7 @@
+ 
+     UBool match(InputText *textIn, CharsetMatch *results) const;
+ };
++#endif
+ 
+ U_NAMESPACE_END
+ 
+Index: source/i18n/csr2022.cpp
+===================================================================
+--- source/i18n/csr2022.cpp	(revision 291619)
++++ source/i18n/csr2022.cpp	(working copy)
+@@ -119,6 +119,7 @@
+     {0x1b, 0x2e, 0x46, 0x00, 0x00}    // ISO 8859-7
+ };
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ static const uint8_t escapeSequences_2022KR[][5] = {
+     {0x1b, 0x24, 0x29, 0x43, 0x00}   
+ };
+@@ -136,6 +137,7 @@
+     {0x1b, 0x4e, 0x00, 0x00, 0x00},   // SS2
+     {0x1b, 0x4f, 0x00, 0x00, 0x00},   // SS3
+ };
++#endif
+ 
+ CharsetRecog_2022JP::~CharsetRecog_2022JP() {}
+ 
+@@ -152,6 +154,7 @@
+     return (confidence > 0);
+ }
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ CharsetRecog_2022KR::~CharsetRecog_2022KR() {}
+ 
+ const char *CharsetRecog_2022KR::getName() const {
+@@ -181,6 +184,7 @@
+     results->set(textIn, this, confidence);
+     return (confidence > 0);
+ }
++#endif
+ 
+ CharsetRecog_2022::~CharsetRecog_2022() {
+     // nothing to do
+Index: source/i18n/csdetect.cpp
+===================================================================
+--- source/i18n/csdetect.cpp	(revision 291619)
++++ source/i18n/csdetect.cpp	(working copy)
+@@ -110,6 +110,7 @@
+         new CSRecognizerInfo(new CharsetRecog_big5(), TRUE),
+ 
+         new CSRecognizerInfo(new CharsetRecog_2022JP(), TRUE),
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+         new CSRecognizerInfo(new CharsetRecog_2022KR(), TRUE),
+         new CSRecognizerInfo(new CharsetRecog_2022CN(), TRUE),
+ 
+@@ -117,6 +118,7 @@
+         new CSRecognizerInfo(new CharsetRecog_IBM424_he_ltr(), FALSE),
+         new CSRecognizerInfo(new CharsetRecog_IBM420_ar_rtl(), FALSE),
+         new CSRecognizerInfo(new CharsetRecog_IBM420_ar_ltr(), FALSE)
++#endif
+     };
+     int32_t rCount = ARRAY_SIZE(tempArray);
+ 
+Index: source/i18n/csrsbcs.cpp
+===================================================================
+--- source/i18n/csrsbcs.cpp	(revision 291619)
++++ source/i18n/csrsbcs.cpp	(working copy)
+@@ -137,6 +137,7 @@
+     return (int32_t) (rawPercent * 300.0);
+ }
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ static const uint8_t unshapeMap_IBM420[] = {
+ /*           -0    -1    -2    -3    -4    -5    -6    -7    -8    -9    -A    -B    -C    -D    -E    -F   */
+ /* 0- */    0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 
+@@ -232,6 +233,7 @@
+         }
+     }
+ }
++#endif
+ 
+ CharsetRecog_sbcs::CharsetRecog_sbcs()
+ {
+@@ -624,6 +626,7 @@
+     0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 
+ };
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ static const int32_t ngrams_IBM424_he_rtl[] = {
+     0x404146, 0x404148, 0x404151, 0x404171, 0x404251, 0x404256, 0x404541, 0x404546, 0x404551, 0x404556, 0x404562, 0x404569, 0x404571, 0x405441, 0x405445, 0x405641, 
+     0x406254, 0x406954, 0x417140, 0x454041, 0x454042, 0x454045, 0x454054, 0x454056, 0x454069, 0x454641, 0x464140, 0x465540, 0x465740, 0x466840, 0x467140, 0x514045, 
+@@ -691,6 +694,7 @@
+ /* E- */    0x40, 0x40, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xEA, 0xEB, 0x40, 0xED, 0xEE, 0xEF, 
+ /* F- */    0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0xFB, 0xFC, 0xFD, 0xFE, 0x40, 
+ };
++#endif
+ 
+ //ISO-8859-1,2,5,6,7,8,9 Ngrams
+ 
+@@ -1155,6 +1159,7 @@
+     return (confidence > 0);
+ }
+ 
++#if !UCONFIG_NO_NON_HTML5_CONVERSION
+ CharsetRecog_IBM424_he::~CharsetRecog_IBM424_he()
+ {
+     // nothing to do
+@@ -1253,6 +1258,7 @@
+     results->set(textIn, this, confidence);
+     return (confidence > 0);
+ }
++#endif
+ 
+ U_NAMESPACE_END
+ #endif

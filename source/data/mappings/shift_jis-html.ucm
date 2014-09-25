@@ -7,7 +7,7 @@
 # *   described at http://encoding.spec.whatwg.org/#shift_jis
 # *
 # ***************************************************************************
-<code_set_name>               "shift_jis-html5"
+<code_set_name>               "shift_jis_html"
 <char_name_mask>              "AXXXX"
 <mb_cur_max>                  2
 <mb_cur_min>                  1

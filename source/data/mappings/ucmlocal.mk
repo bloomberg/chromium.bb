@@ -4,7 +4,7 @@
 
 # Listed here:
 
-# * ISO 8859-2..9,10,13,14,15,16
+# * ISO 8859-2..8,10,13,14,15,16
 #   - 8859-11 table is not included. It's rather treated as a synonym of
 #     Windows-874
 # * Windows-125[0-8]
@@ -25,8 +25,6 @@
 #     although they're not the same.
 # * Mac encodings : MacRoman, MacCyrillic
 # * Cyrillic : KOI8-R, KOI8-U, IBM-866
-# * Three 'fake' tables to prevent Webkit from falling back to the default
-#   encoding when coming across ISO-2022-CN-(Ext).
 #
 # * Missing
 #  - Armenian, Georgian  : extremly rare
@@ -37,7 +35,7 @@ UCM_SOURCE_FILES=
 UCM_SOURCE_CORE=ibm-912_P100-1995.ucm ibm-913_P100-2000.ucm\
 ibm-914_P100-1995.ucm ibm-915_P100-1995.ucm\
 ibm-1089_P100-1995.ucm ibm-9005_X110-2007.ucm\
-ibm-5012_P100-1999.ucm ibm-920_P100-1995.ucm\
+ibm-5012_P100-1999.ucm\
 iso-8859_10-1998.ucm\
 ibm-921_P100-1995.ucm iso-8859_14-1998.ucm ibm-923_P100-1998.ucm\
 iso-8859_16-2001.ucm\
@@ -46,12 +44,11 @@ ibm-5349_P100-1998.ucm ibm-5350_P100-1998.ucm ibm-9447_P100-2002.ucm\
 ibm-9448_X100-2005.ucm ibm-9449_P100-2002.ucm ibm-5354_P100-1998.ucm\
 windows-936-2000.ucm gb18030.ucm\
 windows-950-2000.ucm ibm-1375_P100-2007.ucm\
-shift_jis-html5.ucm euc-jp-html5.ucm\
+shift_jis-html.ucm euc-jp-html.ucm\
 windows-949-2000.ucm\
-windows-874-2000.ucm ibm-874_P100-1995.ucm\
+windows-874-2000.ucm\
 macos-0_2-10.2.ucm macos-7_3-10.2.ucm\
-ibm-878_P100-1996.ucm ibm-1168_P100-2002.ucm ibm-866_html5-2012.ucm\
-noop-cns-11643.ucm noop-gb2312_gl.ucm noop-iso-ir-165.ucm
+ibm-878_P100-1996.ucm ibm-1168_P100-2002.ucm ibm866-html.ucm
 
 
 # Do not build EBCDIC converters.
