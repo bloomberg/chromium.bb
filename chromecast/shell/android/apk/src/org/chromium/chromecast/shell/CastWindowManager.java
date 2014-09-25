@@ -98,10 +98,11 @@ public class CastWindowManager extends FrameLayout {
      * Stops a native cast shell instance created by {@link #launchCastWindow(String)}.
      * @param nativeCastWindow Pointer of native cast shell instance returned
      *        by {@link #launchCastWindow(String)}.
+     * @param gracefully Whether or not to call RVH::ClosePage to deliver unload event.
      * @see #launchCastWindow(String)
      */
-    public void stopCastWindow(long nativeCastWindow) {
-        nativeStopCastWindow(nativeCastWindow);
+    public void stopCastWindow(long nativeCastWindow, boolean gracefully) {
+        nativeStopCastWindow(nativeCastWindow, gracefully);
     }
 
     @SuppressWarnings("unused")
@@ -150,6 +151,7 @@ public class CastWindowManager extends FrameLayout {
 
     private static native void nativeInit(Object shellManagerInstance);
     private static native long nativeLaunchCastWindow(String url);
-    private static native void nativeStopCastWindow(long pointerOfNativeCastWindow);
+    private static native void nativeStopCastWindow(long pointerOfNativeCastWindow,
+            boolean gracefully);
     public static native void nativeEnableDevTools(boolean enable);
 }

@@ -65,11 +65,15 @@ jlong LaunchCastWindow(JNIEnv* env, jclass clazz, jstring jurl) {
           url));
 }
 
-void StopCastWindow(JNIEnv* env, jclass clazz, jlong nativeCastWindow) {
+void StopCastWindow(JNIEnv* env, jclass clazz,
+                    jlong nativeCastWindow, jboolean gracefully) {
   CastWindowAndroid* window =
       reinterpret_cast<CastWindowAndroid*>(nativeCastWindow);
   DCHECK(window);
-  window->Close();
+  if (gracefully)
+    window->Close();
+  else
+    window->Destroy();
 }
 
 void EnableDevTools(JNIEnv* env, jclass clazz, jboolean enable) {

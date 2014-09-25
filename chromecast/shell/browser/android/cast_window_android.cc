@@ -4,7 +4,7 @@
 
 #include "chromecast/shell/browser/android/cast_window_android.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "chromecast/shell/browser/android/cast_window_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -17,13 +17,22 @@
 namespace chromecast {
 namespace shell {
 
+namespace {
+
+// The time (in milliseconds) we wait for after a page is closed (i.e.
+// after an app is stopped) before we delete the corresponding WebContents.
+const int kWebContentsDestructionDelayInMs = 50;
+
+}  // namespace
+
 // static
 bool CastWindowAndroid::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
 CastWindowAndroid::CastWindowAndroid(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      weak_factory_(this) {
 }
 
 CastWindowAndroid::~CastWindowAndroid() {
@@ -71,6 +80,13 @@ CastWindowAndroid* CastWindowAndroid::CreateCastWindowAndroid(
 }
 
 void CastWindowAndroid::Close() {
+  // Close page first, which fires the window.unload event. The WebContents
+  // itself will be destroyed after browser-process has received renderer
+  // notification that the page is closed.
+  web_contents_->GetRenderViewHost()->ClosePage();
+}
+
+void CastWindowAndroid::Destroy() {
   // Note: if multiple windows becomes supported, this may close other devtools
   // sessions.
   content::DevToolsAgentHost::DetachAllClients();
@@ -101,7 +117,29 @@ void CastWindowAndroid::AddNewContents(content::WebContents* source,
 
 void CastWindowAndroid::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
-  Close();
+
+  // We need to delay the deletion of web_contents_ (currently for 50ms) to
+  // give (and guarantee) the renderer enough time to finish 'onunload'
+  // handler (but we don't want to wait any longer than that to delay the
+  // starting of next app).
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    // When shutting down in a test context, the last remaining WebContents
+    // is torn down at browser-thread shutdown time. Call Destroy directly to
+    // avoid losing the last posted task to delete this object.
+    // TODO(gunsch): This could probably be avoided by using a
+    // CompletionCallback in StopCurrentApp to wait until the app is completely
+    // stopped. This might require a separate message loop and might only be
+    // appropriate for test contexts or during shutdown, since it triggers a
+    // wait on the main thread.
+    Destroy();
+    return;
+  }
+
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CastWindowAndroid::Destroy, weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kWebContentsDestructionDelayInMs));
 }
 
 bool CastWindowAndroid::CanOverscrollContent() const {
@@ -128,7 +166,7 @@ void CastWindowAndroid::DeactivateContents(content::WebContents* contents) {
 
 void CastWindowAndroid::RenderProcessGone(base::TerminationStatus status) {
   LOG(ERROR) << "Render process gone: status=" << status;
-  Close();
+  Destroy();
 }
 
 }  // namespace shell

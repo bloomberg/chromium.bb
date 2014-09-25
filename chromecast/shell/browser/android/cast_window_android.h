@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -45,7 +46,11 @@ class CastWindowAndroid : public content::WebContentsDelegate,
   virtual ~CastWindowAndroid();
 
   void LoadURL(const GURL& url);
+  // Calls RVH::ClosePage() and waits for acknowledgement before closing/
+  // deleting the window.
   void Close();
+  // Destroys this window immediately.
+  void Destroy();
 
   // Registers the JNI methods for CastWindowAndroid.
   static bool RegisterJni(JNIEnv* env);
@@ -80,6 +85,8 @@ class CastWindowAndroid : public content::WebContentsDelegate,
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   scoped_ptr<content::WebContents> web_contents_;
+
+  base::WeakPtrFactory<CastWindowAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWindowAndroid);
 };

@@ -5,6 +5,7 @@
 #include "chromecast/shell/browser/cast_browser_context.h"
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "chromecast/common/cast_paths.h"

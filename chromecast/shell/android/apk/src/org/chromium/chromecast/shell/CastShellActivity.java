@@ -120,7 +120,7 @@ public class CastShellActivity extends Activity {
         unregisterBroadcastReceiver();
 
         if (mNativeCastWindow != 0) {
-            mCastWindowManager.stopCastWindow(mNativeCastWindow);
+            mCastWindowManager.stopCastWindow(mNativeCastWindow, false /* gracefully */);
             mNativeCastWindow = 0;
         }
     }
@@ -176,7 +176,7 @@ public class CastShellActivity extends Activity {
 
     protected void finishGracefully() {
         if (mNativeCastWindow != 0) {
-            mCastWindowManager.stopCastWindow(mNativeCastWindow);
+            mCastWindowManager.stopCastWindow(mNativeCastWindow, true /* gracefully */);
             mNativeCastWindow = 0;
         }
     }
