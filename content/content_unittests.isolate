@@ -56,6 +56,13 @@
         ],
       },
     }],
+    ['OS=="linux" and libpeer_target_type=="loadable_module"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/lib/libpeerconnection.so',
+        ],
+      },
+    }],
     ['OS=="mac"', {
       'variables': {
         'command': [
@@ -88,6 +95,13 @@
       'variables': {
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/content_unittests.exe.pdb',
+        ],
+      },
+    }],
+    ['OS=="win" and libpeer_target_type=="loadable_module"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/libpeerconnection.dll',
         ],
       },
     }],

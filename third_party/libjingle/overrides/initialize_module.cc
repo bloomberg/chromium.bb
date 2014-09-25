@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "init_webrtc.h"
 #include "talk/media/webrtc/webrtcmediaengine.h"
+#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "webrtc/base/basictypes.h"
 #include "webrtc/base/logging.h"
 
@@ -71,7 +72,9 @@ bool InitializeModule(const CommandLine& command_line,
                       CreateWebRtcMediaEngineFunction* create_media_engine,
                       DestroyWebRtcMediaEngineFunction* destroy_media_engine,
                       InitDiagnosticLoggingDelegateFunctionFunction*
-                          init_diagnostic_logging) {
+                          init_diagnostic_logging,
+                      CreateWebRtcAudioProcessingFunction*
+                          create_audio_processing) {
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   g_alloc = alloc;
   g_dealloc = dealloc;
@@ -82,6 +85,7 @@ bool InitializeModule(const CommandLine& command_line,
   *create_media_engine = &CreateWebRtcMediaEngine;
   *destroy_media_engine = &DestroyWebRtcMediaEngine;
   *init_diagnostic_logging = &rtc::InitDiagnosticLoggingDelegateFunction;
+  *create_audio_processing = &webrtc::AudioProcessing::Create;
 
   if (CommandLine::Init(0, NULL)) {
 #if !defined(OS_WIN)
