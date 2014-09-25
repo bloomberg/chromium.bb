@@ -2636,10 +2636,9 @@ class BisectPerformanceMetrics(object):
       warning = ''
     return confidence_status % {'level': level, 'warning': warning}
 
-  def _GetViewVCLinkFromDepotAndHash(self, revision_id, depot):
-    """Gets link to the repository browser."""
-    info = self.source_control.QueryRevisionInfo(
-        revision_id, self._GetDepotDirectory(depot))
+  def _GetViewVCLinkFromDepotAndHash(self, cl, depot):
+    info = self.source_control.QueryRevisionInfo(cl,
+        self._GetDepotDirectory(depot))
     if depot and DEPOT_DEPS_NAME[depot].has_key('viewvc'):
       try:
         # Format is "git-svn-id: svn://....@123456 <other data>"
@@ -2673,41 +2672,37 @@ class BisectPerformanceMetrics(object):
   def _PrintTestedCommitsHeader(self):
     if self.opts.bisect_mode == BISECT_MODE_MEAN:
       _PrintTableRow(
-          [20, 12, 70, 14, 12, 13],
-          ['Depot', 'Position', 'SHA', 'Mean', 'Std. Error', 'State'])
+          [20, 70, 14, 12, 13],
+          ['Depot', 'Commit SHA', 'Mean', 'Std. Error', 'State'])
     elif self.opts.bisect_mode == BISECT_MODE_STD_DEV:
       _PrintTableRow(
-          [20, 12, 70, 14, 12, 13],
-          ['Depot', 'Position', 'SHA', 'Std. Error', 'Mean', 'State'])
+          [20, 70, 14, 12, 13],
+          ['Depot', 'Commit SHA', 'Std. Error', 'Mean', 'State'])
     elif self.opts.bisect_mode == BISECT_MODE_RETURN_CODE:
       _PrintTableRow(
-          [20, 12, 70, 14, 13],
-          ['Depot', 'Position', 'SHA', 'Return Code', 'State'])
+          [20, 70, 14, 13],
+          ['Depot', 'Commit SHA', 'Return Code', 'State'])
     else:
       assert False, 'Invalid bisect_mode specified.'
 
-  def _PrintTestedCommitsEntry(self, current_data, commit_position, cl_link,
-                               state_str):
+  def _PrintTestedCommitsEntry(self, current_data, cl_link, state_str):
     if self.opts.bisect_mode == BISECT_MODE_MEAN:
       std_error = '+-%.02f' % current_data['value']['std_err']
       mean = '%.02f' % current_data['value']['mean']
       _PrintTableRow(
-          [20, 12, 70, 12, 14, 13],
-          [current_data['depot'], commit_position, cl_link, mean, std_error,
-           state_str])
+          [20, 70, 12, 14, 13],
+          [current_data['depot'], cl_link, mean, std_error, state_str])
     elif self.opts.bisect_mode == BISECT_MODE_STD_DEV:
       std_error = '+-%.02f' % current_data['value']['std_err']
       mean = '%.02f' % current_data['value']['mean']
       _PrintTableRow(
-          [20, 12, 70, 12, 14, 13],
-          [current_data['depot'], commit_position, cl_link, std_error, mean,
-           state_str])
+          [20, 70, 12, 14, 13],
+          [current_data['depot'], cl_link, std_error, mean, state_str])
     elif self.opts.bisect_mode == BISECT_MODE_RETURN_CODE:
       mean = '%d' % current_data['value']['mean']
       _PrintTableRow(
-          [20, 12, 70, 14, 13],
-          [current_data['depot'], commit_position, cl_link, mean,
-           state_str])
+          [20, 70, 14, 13],
+          [current_data['depot'], cl_link, mean, state_str])
 
   def _PrintTestedCommitsTable(
       self, revision_data_sorted, first_working_revision, last_broken_revision,
@@ -2747,9 +2742,7 @@ class BisectPerformanceMetrics(object):
             current_data['depot'])
         if not cl_link:
           cl_link = current_id
-        commit_position = self.source_control.GetCommitPosition(current_id)
-        self._PrintTestedCommitsEntry(current_data, commit_position, cl_link,
-                                      state_str)
+        self._PrintTestedCommitsEntry(current_data, cl_link, state_str)
 
   def _PrintReproSteps(self):
     """Prints out a section of the results explaining how to run the test.
