@@ -21,7 +21,7 @@ class Core;
 class Dispatcher;
 class DispatcherTransport;
 
-typedef std::vector<scoped_refptr<Dispatcher> > DispatcherVector;
+typedef std::vector<scoped_refptr<Dispatcher>> DispatcherVector;
 
 // Test-only function (defined/used in embedder/test_embedder.cc). Declared here
 // so it can be friended.

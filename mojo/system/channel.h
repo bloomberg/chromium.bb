@@ -179,7 +179,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   bool is_shutting_down_;
 
   typedef base::hash_map<MessageInTransit::EndpointId,
-                         scoped_refptr<ChannelEndpoint> > IdToEndpointMap;
+                         scoped_refptr<ChannelEndpoint>> IdToEndpointMap;
   IdToEndpointMap local_id_to_endpoint_map_;
   // The next local ID to try (when allocating new local IDs). Note: It should
   // be checked for existence before use.

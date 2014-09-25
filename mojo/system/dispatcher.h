@@ -42,7 +42,7 @@ class ProxyMessagePipeEndpoint;
 class TransportData;
 class Waiter;
 
-typedef std::vector<scoped_refptr<Dispatcher> > DispatcherVector;
+typedef std::vector<scoped_refptr<Dispatcher>> DispatcherVector;
 
 namespace test {
 
