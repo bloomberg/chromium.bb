@@ -626,7 +626,7 @@ void RenderFrameHostManager::CommitNavigation(
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   // TODO(clamy): Replace the default values by the right ones. This may require
   // some storing in RequestNavigation.
-  SiteInstance* new_instance = GetSiteInstanceForNavigation(
+  scoped_refptr<SiteInstance> new_instance = GetSiteInstanceForNavigation(
       info.navigation_url,
       NULL,
       navigation_request_->info().navigation_params.transition_type,
@@ -635,9 +635,9 @@ void RenderFrameHostManager::CommitNavigation(
   DCHECK(!pending_render_frame_host_.get());
 
   // TODO(clamy): Update how pending WebUI objects are handled.
-  if (current_instance != new_instance) {
+  if (current_instance != new_instance.get()) {
     CreateRenderFrameHostForNewSiteInstance(
-        current_instance, new_instance, frame_tree_node_->IsMainFrame());
+        current_instance, new_instance.get(), frame_tree_node_->IsMainFrame());
     DCHECK(pending_render_frame_host_.get());
     // TODO(clamy): Wait until the navigation has committed before swapping
     // renderers.
