@@ -24,6 +24,7 @@ class WebNotificationPresenter;
 class WebPermissionClient;
 class WebString;
 class WebView;
+class WebURLResponse;
 }
 
 namespace gin {
@@ -565,9 +566,14 @@ class TestRunner : public WebTestRunner,
                                 const std::string& registration_id);
   void SetMockPushClientError(const std::string& message);
 
+  void GetManifestThen(v8::Handle<v8::Function> callback);
+
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
 
+  void GetManifestCallback(scoped_ptr<InvokeCallbackTask> task,
+                           const blink::WebURLResponse& response,
+                           const std::string& data);
   void CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
                              const SkBitmap& snapshot);
 

@@ -11,6 +11,7 @@
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
+#include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/render_frame_impl.h"
@@ -25,6 +26,7 @@
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
@@ -80,6 +82,25 @@ void EnableWebTestProxyCreation(
   g_callback.Get() = callback;
   RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
+}
+
+void FetchManifestDoneCallback(
+    scoped_ptr<ManifestFetcher> fetcher,
+    const FetchManifestCallback& callback,
+    const blink::WebURLResponse& response,
+    const std::string& data) {
+  // |fetcher| will be autodeleted here as it is going out of scope.
+  callback.Run(response, data);
+}
+
+void FetchManifest(blink::WebView* view, const GURL& url,
+                   const FetchManifestCallback& callback) {
+  scoped_ptr<ManifestFetcher> fetcher(new ManifestFetcher(url));
+
+  fetcher->Start(view->mainFrame(),
+    base::Bind(&FetchManifestDoneCallback,
+               base::Passed(&fetcher),
+               callback));
 }
 
 void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider) {

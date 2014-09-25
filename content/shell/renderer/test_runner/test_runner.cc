@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/binding_helpers.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
@@ -286,6 +287,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void RemoveWebPageOverlay();
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
+  void GetManifestThen(v8::Handle<v8::Function> callback);
   void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
                                             int y,
@@ -526,6 +528,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
       .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
+      .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
       .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::CapturePixelsAsyncThen)
       .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
@@ -1356,6 +1359,11 @@ void TestRunnerBindings::DisplayAsync() {
 void TestRunnerBindings::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
   if (runner_)
     runner_->DisplayAsyncThen(callback);
+}
+
+void TestRunnerBindings::GetManifestThen(v8::Handle<v8::Function> callback) {
+  if (runner_)
+    runner_->GetManifestThen(callback);
 }
 
 void TestRunnerBindings::CapturePixelsAsyncThen(
@@ -2806,6 +2814,16 @@ void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
                                       base::Passed(&task)));
 }
 
+void TestRunner::GetManifestThen(v8::Handle<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(
+      new InvokeCallbackTask(this, callback));
+
+  FetchManifest(web_view_, web_view_->mainFrame()->document().manifestURL(),
+      base::Bind(&TestRunner::GetManifestCallback,
+                 base::Unretained(this),
+                 base::Passed(&task)));
+}
+
 void TestRunner::CapturePixelsAsyncThen(v8::Handle<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
@@ -2822,6 +2840,12 @@ void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
       x, y, base::Bind(&TestRunner::CapturePixelsCallback,
                        base::Unretained(this),
                        base::Passed(&task)));
+}
+
+void TestRunner::GetManifestCallback(scoped_ptr<InvokeCallbackTask> task,
+                                     const blink::WebURLResponse& response,
+                                     const std::string& data) {
+  InvokeCallback(task.Pass());
 }
 
 void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
