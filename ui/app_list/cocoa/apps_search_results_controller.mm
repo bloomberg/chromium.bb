@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
@@ -399,6 +400,15 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 - (AppsSearchResultsController*)controller {
   return base::mac::ObjCCastStrict<AppsSearchResultsController>(
       [self delegate]);
+}
+
+- (BOOL)canDraw {
+  // AppKit doesn't call -[NSView canDrawConcurrently] which would have told it
+  // that this is unsafe. Returning true from canDraw only if there is a message
+  // loop ensures that no drawing occurs on a background thread. Without this,
+  // ImageSkia can assert when trying to get bitmaps. http://crbug.com/417148.
+  // This means unit tests will always return 'NO', but that's OK.
+  return !!base::MessageLoop::current() && [super canDraw];
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {

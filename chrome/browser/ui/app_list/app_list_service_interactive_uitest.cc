@@ -49,25 +49,18 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 #if defined(OS_CHROMEOS)
 #define MAYBE_ShowAndDismiss DISABLED_ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles DISABLED_SwitchAppListProfiles
+#define MAYBE_SwitchAppListProfilesDuringSearch \
+    DISABLED_SwitchAppListProfilesDuringSearch
 #define MAYBE_ShowAppListNonDefaultProfile \
     DISABLED_ShowAppListNonDefaultProfile
 #define MAYBE_DeleteShowingAppList DISABLED_DeleteShowingAppList
 #else
 #define MAYBE_ShowAndDismiss ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
-#define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
-#define MAYBE_DeleteShowingAppList DeleteShowingAppList
-#endif
-
-// SwitchAppListProfilesDuringSearch disabled on ChromeOS for reasons above.
-// Disabled on Mac due to an AppKit bug which makes it flaky in rare cases.
-// http://crbug.com/417148.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_SwitchAppListProfilesDuringSearch \
-    DISABLED_SwitchAppListProfilesDuringSearch
-#else
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     SwitchAppListProfilesDuringSearch
+#define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
+#define MAYBE_DeleteShowingAppList DeleteShowingAppList
 #endif
 
 // Show the app list, then dismiss it.
