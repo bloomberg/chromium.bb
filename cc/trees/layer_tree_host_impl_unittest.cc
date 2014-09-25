@@ -2178,8 +2178,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     // Set a viewport size that is large enough to contain both the top controls
     // and some content.
     host_impl_->SetViewportSize(viewport_size_);
-    host_impl_->active_tree()->set_top_controls_content_offset(
-        settings_.top_controls_height);
     host_impl_->SetTopControlsLayoutHeight(
         settings_.top_controls_height);
     LayerImpl* root_clip_ptr = host_impl_->active_tree()->root_layer();
@@ -2280,6 +2278,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
+  host_impl_->active_tree()->set_top_controls_delta(0.f);
   host_impl_->active_tree()->set_top_controls_content_offset(30.f);
   EXPECT_EQ(30.f, host_impl_->top_controls_manager()->ContentTopOffset());
   EXPECT_EQ(-20.f, host_impl_->top_controls_manager()->ControlsTopOffset());

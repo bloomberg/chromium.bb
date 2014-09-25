@@ -281,6 +281,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                                    settings.top_controls_height,
                                    settings.top_controls_show_threshold,
                                    settings.top_controls_hide_threshold);
+
+    // TODO(bokan): This is a quick fix. The browser should lock the top
+    // controls to shown on creation but this appears not to work. Tracked
+    // in crbug.com/417680.
+    // Initialize with top controls showing.
+    SetControlsTopOffset(0.f);
   }
 }
 
