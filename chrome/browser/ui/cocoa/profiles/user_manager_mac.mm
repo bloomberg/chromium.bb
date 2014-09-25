@@ -21,12 +21,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-// Default window size. Taken from the views implementation in
-// chrome/browser/ui/views/user_manager_view.cc.
-// TODO(noms): Figure out if this size can be computed dynamically or adjusted
-// for smaller screens.
-const int kWindowWidth = 900;
-const int kWindowHeight = 700;
 
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
@@ -89,9 +83,10 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
   CGFloat screenHeight = [mainScreen frame].size.height;
   CGFloat screenWidth = [mainScreen frame].size.width;
 
-  NSRect contentRect = NSMakeRect((screenWidth - kWindowWidth) / 2,
-                                  (screenHeight - kWindowHeight) / 2,
-                                  kWindowWidth, kWindowHeight);
+  NSRect contentRect =
+      NSMakeRect((screenWidth - UserManager::kWindowWidth) / 2,
+                 (screenHeight - UserManager::kWindowHeight) / 2,
+                 UserManager::kWindowWidth, UserManager::kWindowHeight);
   ChromeEventProcessingWindow* window = [[ChromeEventProcessingWindow alloc]
       initWithContentRect:contentRect
                 styleMask:NSTitledWindowMask |
@@ -101,7 +96,8 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
                     defer:NO
                    screen:mainScreen];
   [window setTitle:l10n_util::GetNSString(IDS_PRODUCT_NAME)];
-  [window setMinSize:NSMakeSize(kWindowWidth, kWindowHeight)];
+  [window setMinSize:NSMakeSize(UserManager::kWindowWidth,
+                                UserManager::kWindowHeight)];
 
   if ((self = [super initWithWindow:window])) {
     userManagerObserver_ = userManagerObserver;

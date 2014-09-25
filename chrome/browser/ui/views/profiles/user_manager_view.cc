@@ -34,10 +34,6 @@
 
 namespace {
 
-// Default window size.
-const int kWindowWidth = 900;
-const int kWindowHeight = 700;
-
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
 UserManagerView* instance_ = NULL;
@@ -139,7 +135,8 @@ void UserManagerView::Init(
                 browser->window()->GetNativeWindow())->GetNativeView();
         bounds = gfx::Screen::GetScreenFor(native_view)->
             GetDisplayNearestWindow(native_view).work_area();
-        bounds.ClampToCenteredSize(gfx::Size(kWindowWidth, kWindowHeight));
+        bounds.ClampToCenteredSize(gfx::Size(UserManager::kWindowWidth,
+                                             UserManager::kWindowHeight));
       }
     }
   }
@@ -173,7 +170,7 @@ bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 gfx::Size UserManagerView::GetPreferredSize() const {
-  return gfx::Size(kWindowWidth, kWindowHeight);
+  return gfx::Size(UserManager::kWindowWidth, UserManager::kWindowHeight);
 }
 
 bool UserManagerView::CanResize() const {

@@ -29,6 +29,11 @@ class UserManager {
   // Returns whether the User Manager is showing.
   static bool IsShowing();
 
+  // TODO(noms): Figure out if this size can be computed dynamically or adjusted
+  // for smaller screens.
+  static const int kWindowWidth = 800;
+  static const int kWindowHeight = 600;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };
