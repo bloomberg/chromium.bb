@@ -46263,6 +46263,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="Capture Failure"/>
   <int value="9" label="Constraint Not Satisfied"/>
   <int value="10" label="Track Start Failure"/>
+  <int value="11" label="Not Supported"/>
 </enum>
 
 <enum name="MediaStreamRequestState" type="int">

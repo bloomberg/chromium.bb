@@ -164,8 +164,10 @@ void WebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
+  LOG(ERROR) << "WebContentsDelegate::RequestMediaAccessPermission: "
+             << "Not supported.";
   callback.Run(MediaStreamDevices(),
-               MEDIA_DEVICE_INVALID_STATE,
+               MEDIA_DEVICE_NOT_SUPPORTED,
                scoped_ptr<MediaStreamUI>());
 }
 
@@ -173,8 +175,8 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
     WebContents* web_contents,
     const GURL& security_origin,
     MediaStreamType type) {
-  DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == MEDIA_DEVICE_VIDEO_CAPTURE);
+  LOG(ERROR) << "WebContentsDelegate::CheckMediaAccessPermission: "
+             << "Not supported.";
   return false;
 }
 
