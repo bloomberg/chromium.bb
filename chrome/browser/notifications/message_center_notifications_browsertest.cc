@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -19,9 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_source.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 
@@ -343,29 +339,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   EXPECT_EQ("update-n", observer.log("n"));
 
   delegate->Release();
-}
-
-#if !defined(OS_CHROMEOS)
-#define MAYBE_HideWhenFullscreenEnabled HideWhenFullscreenEnabled
-#else
-#define MAYBE_HideWhenFullscreenEnabled DISABLED_HideWhenFullscreenEnabled
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_HideWhenFullscreenEnabled) {
-  TestDelegate* delegate;
-  manager()->Add(CreateTestNotification("n", &delegate), profile());
-
-  EXPECT_EQ("Display_", delegate->log());
-  EXPECT_TRUE(message_center()->HasPopupNotifications());
-  bool is_fullscreen = true;
-  // Cast so that Observe() is public.
-  content::NotificationObserver* observer =
-      static_cast<content::NotificationObserver*>(manager());
-  observer->Observe(chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-                    content::Source<Profile>(profile()),
-                    content::Details<bool>(&is_fullscreen));
-  EXPECT_FALSE(message_center()->HasPopupNotifications());
 }
 
 #endif  // !defined(OS_MACOSX)
