@@ -400,6 +400,8 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::CapsLockOn;
   if (flags & ui::EF_IS_REPEAT)
     modifiers |= blink::WebInputEvent::IsAutoRepeat;
+  if (flags & ui::EF_NUMPAD_KEY)
+    modifiers |= blink::WebInputEvent::IsKeyPad;
 
   return modifiers;
 }
@@ -426,6 +428,8 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= ui::EF_CAPS_LOCK_DOWN;
   if (modifiers & blink::WebInputEvent::IsAutoRepeat)
     flags |= ui::EF_IS_REPEAT;
+  if (modifiers & blink::WebInputEvent::IsKeyPad)
+    flags |= ui::EF_NUMPAD_KEY;
 
   return flags;
 }
