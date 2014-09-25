@@ -315,6 +315,9 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 const char kDisablePrerenderLocalPredictor[] =
     "disable-prerender-local-predictor";
 
+// Disables print preview (For testing, and for users who don't like us. :[ )
+const char kDisablePrintPreview[]           = "disable-print-preview";
+
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.

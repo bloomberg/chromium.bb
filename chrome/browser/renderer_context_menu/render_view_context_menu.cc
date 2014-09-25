@@ -1478,32 +1478,36 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
     }
 
-    case IDC_PRINT:
+    case IDC_PRINT: {
 #if defined(ENABLE_PRINTING)
-      if (params_.media_type == WebContextMenuData::MediaTypeNone) {
-#if defined(ENABLE_FULL_PRINTING)
-        printing::PrintViewManager* print_view_manager =
-            printing::PrintViewManager::FromWebContents(source_web_contents_);
-
-        if (!print_view_manager)
-          break;
-        print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
-#else
-        printing::PrintViewManagerBasic* print_view_manager =
-            printing::PrintViewManagerBasic::FromWebContents(
-                source_web_contents_);
-        if (!print_view_manager)
-          break;
-        print_view_manager->PrintNow();
-#endif  // defined(ENABLE_FULL_PRINTING)
-      } else {
+      if (params_.media_type != WebContextMenuData::MediaTypeNone) {
         if (render_frame_host) {
           render_frame_host->Send(new PrintMsg_PrintNodeUnderContextMenu(
               render_frame_host->GetRoutingID()));
         }
+        return;
       }
-#endif  // defined(ENABLE_PRINTING)
+
+      printing::PrintViewManager* print_view_manager =
+          printing::PrintViewManager::FromWebContents(source_web_contents_);
+      if (!print_view_manager)
+        break;
+
+#if defined(ENABLE_FULL_PRINTING)
+      if (!GetPrefs(browser_context_)
+               ->GetBoolean(prefs::kPrintPreviewDisabled)) {
+        print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
+        break;
+      }
+#endif  // ENABLE_FULL_PRINTING
+
+#if !defined(DISABLE_BASIC_PRINTING)
+      print_view_manager->PrintNow();
+#endif  // !DISABLE_BASIC_PRINTING
+
+#endif  // ENABLE_PRINTING
       break;
+    }
 
     case IDC_VIEW_SOURCE:
       source_web_contents_->ViewSource();
