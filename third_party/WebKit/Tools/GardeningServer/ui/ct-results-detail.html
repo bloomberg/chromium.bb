@@ -99,6 +99,8 @@ found in the LICENSE file.
         // FIXME: We only store build logs by the test name, not the testsuite.testname,
         // which means that two failing tests from different test suites conflict!
         var testPart = this._isStdioStep(result, this.failure.step) ? 'stdio' : this.failure.testName.split('.')[1];
+        // Fix url for parameterized gtests, e.g.: /2 -> _2.
+        testPart = testPart.replace(/\/(\d+)$/, "_$1");
         var url = result.masterUrl +
             '/builders/' + encodeURIComponent(this.builder);
 

@@ -143,6 +143,26 @@ describe('ct-results-detail', function() {
         setTimeout(done);
       });
     });
+
+    describe('parameterized gtest failure', function() {
+      it('should have a munged url', function(done) {
+        result = document.createElement('ct-results-detail');
+
+        result.builder = 'dummy builder';
+
+        var resultsByBuilder = {
+          "dummy builder": {
+            actual: "FAIL",
+            lastFailingBuild: 124,
+            masterUrl: 'http://masterurl/'
+          },
+        };
+        result.failure = new CTStepFailure('foo_step', 'TestSuite.TestName/98', resultsByBuilder, 123, 124);
+        expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/TestName_98';
+
+        setTimeout(done);
+      });
+    });
   });
 });
 
