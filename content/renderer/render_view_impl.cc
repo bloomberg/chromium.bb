@@ -4012,7 +4012,8 @@ void RenderViewImpl::OnEnableViewSourceMode() {
 
 #if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 bool RenderViewImpl::didTapMultipleTargets(
-    const blink::WebGestureEvent& event,
+    const WebSize& inner_viewport_offset,
+    const WebRect& touch_rect,
     const WebVector<WebRect>& target_rects) {
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
@@ -4024,13 +4025,12 @@ bool RenderViewImpl::didTapMultipleTargets(
   if (matches_accessibility_mode_complete)
     return false;
 
-  gfx::Rect finger_rect(
-      event.x - event.data.tap.width / 2, event.y - event.data.tap.height / 2,
-      event.data.tap.width, event.data.tap.height);
+  // The touch_rect, target_rects and zoom_rect are in the outer viewport
+  // reference frame.
   gfx::Rect zoom_rect;
   float new_total_scale =
       DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
-          finger_rect, target_rects, GetSize(),
+          touch_rect, target_rects, GetSize(),
           gfx::Rect(webview()->mainFrame()->visibleContentRect()).size(),
           device_scale_factor_ * webview()->pageScaleFactor(), &zoom_rect);
   if (!new_total_scale)
@@ -4070,8 +4070,13 @@ bool RenderViewImpl::didTapMultipleTargets(
         webwidget_->paintCompositedDeprecated(&canvas, zoom_rect);
       }
 
+      gfx::Rect zoom_rect_in_screen =
+          zoom_rect - gfx::Vector2d(inner_viewport_offset.width,
+                                    inner_viewport_offset.height);
+
       gfx::Rect physical_window_zoom_rect = gfx::ToEnclosingRect(
-          ClientRectToPhysicalWindowRect(gfx::RectF(zoom_rect)));
+          ClientRectToPhysicalWindowRect(gfx::RectF(zoom_rect_in_screen)));
+
       Send(new ViewHostMsg_ShowDisambiguationPopup(routing_id_,
                                                    physical_window_zoom_rect,
                                                    canvas_size,

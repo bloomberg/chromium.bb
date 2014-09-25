@@ -409,7 +409,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didUpdateLayout();
 #if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
   virtual bool didTapMultipleTargets(
-      const blink::WebGestureEvent& event,
+      const blink::WebSize& inner_viewport_offset,
+      const blink::WebRect& touch_rect,
       const blink::WebVector<blink::WebRect>& target_rects);
 #endif
   virtual blink::WebString acceptLanguages();
