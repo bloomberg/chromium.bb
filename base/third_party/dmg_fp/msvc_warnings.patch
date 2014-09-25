@@ -1,6 +1,7 @@
-Index: dtoa.cc
---- dtoa.cc    (old copy)
-+++ dtoa.cc    (working copy)
+diff --git a/base/third_party/dmg_fp/dtoa.cc b/base/third_party/dmg_fp/dtoa.cc
+index 3312fa4..502c16c 100644
+--- a/base/third_party/dmg_fp/dtoa.cc
++++ b/base/third_party/dmg_fp/dtoa.cc
 @@ -548,8 +548,10 @@ Balloc
  	ACQUIRE_DTOA_LOCK(0);
  	/* The k > Kmax case does not need ACQUIRE_DTOA_LOCK(0), */
@@ -13,6 +14,15 @@ Index: dtoa.cc
  	else {
  		x = 1 << k;
  #ifdef Omit_Private_Memory
+@@ -650,7 +652,7 @@ multadd
+ 			Bfree(b);
+ 			b = b1;
+ 			}
+-		b->x[wds++] = carry;
++		b->x[wds++] = (ULong)carry;
+ 		b->wds = wds;
+ 		}
+ 	return b;
 @@ -834,7 +836,8 @@ mult
  	xc0 = c->x;
  #ifdef ULLong
@@ -23,6 +33,15 @@ Index: dtoa.cc
  			x = xa;
  			xc = xc0;
  			carry = 0;
+@@ -844,7 +847,7 @@ mult
+ 				*xc++ = z & FFFFFFFF;
+ 				}
+ 				while(x < xae);
+-			*xc = carry;
++			*xc = (ULong)carry;
+ 			}
+ 		}
+ #else
 @@ -916,16 +919,19 @@ pow5mult
  	int i;
  	static int p05[3] = { 5, 25, 125 };
@@ -102,6 +121,15 @@ Index: dtoa.cc
  		}
  	else {
  		k = lo0bits(&z);
+@@ -1498,7 +1511,7 @@ htinit(unsigned char *h, unsigned char *s, int inc)
+ {
+ 	int i, j;
+ 	for(i = 0; (j = s[i]) !=0; i++)
+-		h[j] = i + inc;
++		h[j] = (unsigned char)(i + inc);
+ 	}
+ 
+  static void
 @@ -1536,7 +1549,7 @@ match
  	int c, d;
  	CONST char *s = *sp;
@@ -188,7 +216,16 @@ Index: dtoa.cc
  			dval(&rv) /= tens[i];
  		if (e1 >>= 4) {
  			if (e1 >= 1 << n_bigtens)
-@@ -3456,7 +3476,7 @@ nrv_alloc(CONST char *s, char **rve, int
+@@ -3283,7 +3303,7 @@ strtod
+ #ifdef Avoid_Underflow
+ 			if (bc.scale && y <= 2*P*Exp_msk1) {
+ 				if (aadj <= 0x7fffffff) {
+-					if ((z = aadj) <= 0)
++					if ((z = (ULong)aadj) <= 0)
+ 						z = 1;
+ 					aadj = z;
+ 					aadj1 = bc.dsign ? aadj : -aadj;
+@@ -3456,7 +3476,7 @@ nrv_alloc(CONST char *s, char **rve, int n)
  	char *rv, *t;
  
  	t = rv = rv_alloc(n);
@@ -243,6 +280,36 @@ Index: dtoa.cc
  			}
  		if (k_check && dval(&u) < 1. && ilim > 0) {
  			if (ilim1 <= 0)
+@@ -3837,9 +3859,9 @@ dtoa
+ 			 */
+ 			dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
+ 			for(i = 0;;) {
+-				L = dval(&u);
++				L = (long)dval(&u);
+ 				dval(&u) -= L;
+-				*s++ = '0' + (int)L;
++				*s++ = '0' + (char)L;
+ 				if (dval(&u) < dval(&eps))
+ 					goto ret1;
+ 				if (1. - dval(&u) < dval(&eps))
+@@ -3858,7 +3880,7 @@ dtoa
+ 				L = (Long)(dval(&u));
+ 				if (!(dval(&u) -= L))
+ 					ilim = i;
+-				*s++ = '0' + (int)L;
++				*s++ = '0' + (char)L;
+ 				if (i == ilim) {
+ 					if (dval(&u) > 0.5 + dval(&eps))
+ 						goto bump_up;
+@@ -3901,7 +3923,7 @@ dtoa
+ 				dval(&u) += ds;
+ 				}
+ #endif
+-			*s++ = '0' + (int)L;
++			*s++ = '0' + (char)L;
+ 			if (!dval(&u)) {
+ #ifdef SET_INEXACT
+ 				inexact = 0;
 @@ -3964,7 +3986,8 @@ dtoa
  				Bfree(b);
  				b = b1;
@@ -263,9 +330,54 @@ Index: dtoa.cc
  		i = 32 - i;
  #define iInc 28
  #else
-Index: g_fmt.cc
---- g_fmt.cc    (old copy)
-+++ g_fmt.cc    (working copy)
+@@ -4077,7 +4101,7 @@ dtoa
+ 				else if (!b->x[0] && b->wds <= 1)
+ 					inexact = 0;
+ #endif
+-				*s++ = dig;
++				*s++ = (char)dig;
+ 				goto ret;
+ 				}
+ #endif
+@@ -4107,7 +4131,7 @@ dtoa
+ 						goto round_9_up;
+ 					}
+  accept_dig:
+-				*s++ = dig;
++				*s++ = (char)dig;
+ 				goto ret;
+ 				}
+ 			if (j1 > 0) {
+@@ -4120,13 +4144,13 @@ dtoa
+ 					*s++ = '9';
+ 					goto roundoff;
+ 					}
+-				*s++ = dig + 1;
++				*s++ = (char)dig + 1;
+ 				goto ret;
+ 				}
+ #ifdef Honor_FLT_ROUNDS
+  keep_dig:
+ #endif
+-			*s++ = dig;
++			*s++ = (char)dig;
+ 			if (i == ilim)
+ 				break;
+ 			b = multadd(b, 10, 0);
+@@ -4140,7 +4164,8 @@ dtoa
+ 		}
+ 	else
+ 		for(i = 1;; i++) {
+-			*s++ = dig = quorem(b,S) + '0';
++			dig = quorem(b,S) + '0';
++			*s++ = (char)dig;
+ 			if (!b->x[0] && b->wds <= 1) {
+ #ifdef SET_INEXACT
+ 				inexact = 0;
+diff --git a/base/third_party/dmg_fp/g_fmt.cc b/base/third_party/dmg_fp/g_fmt.cc
+index d864eb7..bfa358d 100644
+--- a/base/third_party/dmg_fp/g_fmt.cc
++++ b/base/third_party/dmg_fp/g_fmt.cc
 @@ -46,14 +46,14 @@ g_fmt(register char *b, double x)
  	if (sign)
  		*b++ = '-';
@@ -283,6 +395,15 @@ Index: g_fmt.cc
  				b++;
  			}
  		*b++ = 'e';
+@@ -67,7 +67,7 @@ g_fmt(register char *b, double x)
+ 		for(j = 2, k = 10; 10*k <= decpt; j++, k *= 10) {}
+ 		for(;;) {
+ 			i = decpt / k;
+-			*b++ = i + '0';
++			*b++ = (char)i + '0';
+ 			if (--j <= 0)
+ 				break;
+ 			decpt -= i*k;
 @@ -79,10 +79,10 @@ g_fmt(register char *b, double x)
  		*b++ = '.';
  		for(; decpt < 0; decpt++)
