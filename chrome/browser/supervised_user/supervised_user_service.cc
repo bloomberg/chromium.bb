@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service_factory.h"
+#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist_downloader.h"
 #include "chrome/browser/supervised_user/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/permission_request_creator_sync.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -557,11 +558,37 @@ void SupervisedUserService::UpdateSiteLists() {
 #endif
 }
 
-void SupervisedUserService::LoadBlacklist(const base::FilePath& path) {
+void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
+                                          const GURL& url) {
+  if (!url.is_valid()) {
+    LoadBlacklistFromFile(path);
+    return;
+  }
+
+  DCHECK(!blacklist_downloader_.get());
+  blacklist_downloader_.reset(new SupervisedUserBlacklistDownloader(
+      url,
+      path,
+      profile_->GetRequestContext(),
+      base::Bind(&SupervisedUserService::OnBlacklistDownloadDone,
+                 base::Unretained(this), path)));
+}
+
+void SupervisedUserService::LoadBlacklistFromFile(const base::FilePath& path) {
   url_filter_context_.LoadBlacklist(path);
 
   FOR_EACH_OBSERVER(
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+}
+
+void SupervisedUserService::OnBlacklistDownloadDone(const base::FilePath& path,
+                                                    bool success) {
+  if (success) {
+    LoadBlacklistFromFile(path);
+  } else {
+    LOG(WARNING) << "Blacklist download failed";
+  }
+  blacklist_downloader_.reset();
 }
 
 bool SupervisedUserService::AccessRequestsEnabled() {
@@ -735,7 +762,7 @@ void SupervisedUserService::SetActive(bool active) {
     if (delegate_ && use_blacklist) {
       base::FilePath blacklist_path = delegate_->GetBlacklistPath();
       if (!blacklist_path.empty())
-        LoadBlacklist(blacklist_path);
+        LoadBlacklist(blacklist_path, delegate_->GetBlacklistURL());
     }
 
 #if !defined(OS_ANDROID)

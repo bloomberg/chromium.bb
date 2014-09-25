@@ -35,6 +35,7 @@ class Browser;
 class GoogleServiceAuthError;
 class PermissionRequestCreator;
 class Profile;
+class SupervisedUserBlacklistDownloader;
 class SupervisedUserRegistrationUtility;
 class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
@@ -84,6 +85,9 @@ class SupervisedUserService : public KeyedService,
     // Returns the path to a blacklist file to load, or an empty path to
     // indicate "none".
     virtual base::FilePath GetBlacklistPath() const = 0;
+    // Returns the URL from which to download a blacklist if no local one exists
+    // yet. The blacklist file will be stored at |GetBlacklistPath()|.
+    virtual GURL GetBlacklistURL() const = 0;
   };
 
   virtual ~SupervisedUserService();
@@ -281,9 +285,16 @@ class SupervisedUserService : public KeyedService,
 
   void UpdateSiteLists();
 
+  // Asynchronously downloads a static blacklist file from |url|, stores it at
+  // |path|, loads it, and applies it to the URL filters. If |url| is not valid
+  // (e.g. empty), directly tries to load from |path|.
+  void LoadBlacklist(const base::FilePath& path, const GURL& url);
+
   // Asynchronously loads a static blacklist from a binary file at |path| and
   // applies it to the URL filters.
-  void LoadBlacklist(const base::FilePath& path);
+  void LoadBlacklistFromFile(const base::FilePath& path);
+
+  void OnBlacklistDownloadDone(const base::FilePath& path, bool success);
 
   // Updates the manual overrides for hosts in the URL filters when the
   // corresponding preference is changed.
@@ -327,6 +338,7 @@ class SupervisedUserService : public KeyedService,
   bool did_shutdown_;
 
   URLFilterContext url_filter_context_;
+  scoped_ptr<SupervisedUserBlacklistDownloader> blacklist_downloader_;
 
   // Used to create permission requests.
   scoped_ptr<PermissionRequestCreator> permissions_creator_;

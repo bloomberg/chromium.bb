@@ -2260,6 +2260,8 @@
       'browser/supervised_user/custodian_profile_downloader_service_factory.h',
       'browser/supervised_user/experimental/supervised_user_blacklist.cc',
       'browser/supervised_user/experimental/supervised_user_blacklist.h',
+      'browser/supervised_user/experimental/supervised_user_blacklist_downloader.cc',
+      'browser/supervised_user/experimental/supervised_user_blacklist_downloader.h',
       'browser/supervised_user/permission_request_creator.h',
       'browser/supervised_user/permission_request_creator_apiary.cc',
       'browser/supervised_user/permission_request_creator_apiary.h',
