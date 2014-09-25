@@ -67,6 +67,12 @@
     static void setAudioLoggingEnabled(boolean state,
                                        optional GenericDoneCallback callback);
 
+    // Sets the current enabled state of hotword-always-on-search pref.
+    // True: enable hotword always on search.
+    // False: disable hotword always on search.
+    static void setHotwordAlwaysOnSearchEnabled(boolean state,
+        optional GenericDoneCallback callback);
+
     // Sets the current state of the browser-requested hotword session.
     static void setHotwordSessionState(boolean started,
                                        optional GenericDoneCallback callback);

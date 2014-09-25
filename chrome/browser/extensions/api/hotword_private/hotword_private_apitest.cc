@@ -156,6 +156,25 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetAudioLoggingEnabled) {
   EXPECT_FALSE(service()->IsOptedIntoAudioLogging());
 }
 
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetHotwordAlwaysOnSearchEnabled) {
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kHotwordAlwaysOnSearchEnabled));
+
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(RunComponentExtensionTest("setHotwordAlwaysOnSearchEnableTrue"))
+      << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kHotwordAlwaysOnSearchEnabled));
+
+  listener.Reset();
+  ASSERT_TRUE(RunComponentExtensionTest("setHotwordAlwaysOnSearchEnableFalse"))
+      << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kHotwordAlwaysOnSearchEnabled));
+}
+
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, GetStatus) {
   ASSERT_TRUE(RunComponentExtensionTest("getEnabled")) << message_;
 }

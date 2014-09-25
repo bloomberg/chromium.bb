@@ -232,6 +232,18 @@ cr.define('options', function() {
         };
       }
 
+      // Control the hotword-always-on pref with the Hotword Audio
+      // Verification app.
+      $('hotword-always-on-search-checkbox').customChangeHandler =
+          function(event) {
+        if (!$('hotword-always-on-search-checkbox').checked)
+          return false;
+
+        $('hotword-always-on-search-checkbox').checked = false;
+        chrome.send('launchHotwordAudioVerificationApp', [false]);
+        return true;
+      };
+
       $('themes-gallery').onclick = function(event) {
         window.open(loadTimeData.getString('themesGalleryURL'));
         chrome.send('coreOptionsUserMetricsAction',

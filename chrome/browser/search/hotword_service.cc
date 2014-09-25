@@ -215,14 +215,6 @@ HotwordService::HotwordService(Profile* profile)
       base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
                  base::Unretained(this)));
 
-  // TODO(kcarattini): Control the enabling of the pref with the Hotword
-  // Audio Verification app, rather than listening for a change in the
-  // enabled state.
-  pref_registrar_.Add(
-      prefs::kHotwordAlwaysOnSearchEnabled,
-      base::Bind(&HotwordService::OnHotwordAlwaysOnSearchEnabledChanged,
-                 base::Unretained(this)));
-
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
@@ -451,14 +443,6 @@ void HotwordService::DisableHotwordExtension(
         extension_misc::kHotwordExtensionId,
         extensions::Extension::DISABLE_USER_ACTION);
   }
-}
-
-void HotwordService::OnHotwordAlwaysOnSearchEnabledChanged(
-    const std::string& pref_name) {
-  DCHECK_EQ(pref_name, std::string(prefs::kHotwordAlwaysOnSearchEnabled));
-  // TODO(kcarattini): Launch in the appropriate mode given the state of
-  // the account-level Audio History setting.
-  LaunchHotwordAudioVerificationApp(HOTWORD_AND_AUDIO_HISTORY);
 }
 
 void HotwordService::LaunchHotwordAudioVerificationApp(

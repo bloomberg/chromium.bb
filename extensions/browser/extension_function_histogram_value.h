@@ -956,6 +956,7 @@ enum HistogramValue {
   WEBVIEWINTERNAL_SETALLOWTRANSPARENCY,
   EASYUNLOCKPRIVATE_GETUSERINFO,
   HOTWORDPRIVATE_GETLAUNCHSTATE,
+  HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

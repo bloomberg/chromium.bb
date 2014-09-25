@@ -18,9 +18,12 @@
    * @const
    */
   var FLOWS = [
+    // TODO(kcarattini): Remove the first flow, since we will not be
+    // managing the Audio History Setting in Chrome anymore.
     [AUDIO_HISTORY_START],
     [HOTWORD_ONLY_START, SPEECH_TRAINING, FINISHED],
-    [HOTWORD_AUDIO_HISTORY, SPEECH_TRAINING, FINISHED]
+    [HOTWORD_AUDIO_HISTORY, SPEECH_TRAINING, FINISHED],
+    [SPEECH_TRAINING, FINISHED]
   ];
 
   /**

@@ -76,10 +76,6 @@ class HotwordService : public content::NotificationObserver,
   void EnableHotwordExtension(ExtensionService* extension_service);
   void DisableHotwordExtension(ExtensionService* extension_service);
 
-  // Handles launching the Hotword Audio Verification extension when the user
-  // turns it on via the settings menu.
-  void OnHotwordAlwaysOnSearchEnabledChanged(const std::string& pref_name);
-
   // Handles enabling/disabling the hotword extension when the user
   // turns it off via the settings menu.
   void OnHotwordSearchEnabledChanged(const std::string& pref_name);
@@ -120,7 +116,8 @@ class HotwordService : public content::NotificationObserver,
   enum LaunchMode {
     AUDIO_HISTORY_ONLY,
     HOTWORD_ONLY,
-    HOTWORD_AND_AUDIO_HISTORY
+    HOTWORD_AND_AUDIO_HISTORY,
+    SPEECH_TRAINING
   };
   void LaunchHotwordAudioVerificationApp(const LaunchMode& launch_mode);
   virtual LaunchMode GetHotwordAudioVerificationLaunchMode();

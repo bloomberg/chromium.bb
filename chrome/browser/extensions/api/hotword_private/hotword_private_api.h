@@ -69,6 +69,19 @@ class HotwordPrivateSetAudioLoggingEnabledFunction
   virtual bool RunSync() OVERRIDE;
 };
 
+class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.setHotwordAlwaysOnSearchEnabled",
+                             HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED)
+
+ protected:
+  virtual ~HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+};
+
 class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.getStatus",

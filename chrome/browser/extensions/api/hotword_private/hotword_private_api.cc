@@ -94,12 +94,25 @@ bool HotwordPrivateSetEnabledFunction::RunSync() {
 }
 
 bool HotwordPrivateSetAudioLoggingEnabledFunction::RunSync() {
-  scoped_ptr<api::hotword_private::SetEnabled::Params> params(
-      api::hotword_private::SetEnabled::Params::Create(*args_));
+  scoped_ptr<api::hotword_private::SetAudioLoggingEnabled::Params> params(
+      api::hotword_private::SetAudioLoggingEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // TODO(kcarattini): Sync the chrome pref with the account-level
+  // Audio History setting.
+  PrefService* prefs = GetProfile()->GetPrefs();
+  prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, params->state);
+  return true;
+}
+
+bool HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction::RunSync() {
+  scoped_ptr<api::hotword_private::SetHotwordAlwaysOnSearchEnabled::Params>
+      params(api::hotword_private::SetHotwordAlwaysOnSearchEnabled::Params::
+      Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   PrefService* prefs = GetProfile()->GetPrefs();
-  prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, params->state);
+  prefs->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, params->state);
   return true;
 }
 

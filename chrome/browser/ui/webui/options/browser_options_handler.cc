@@ -751,6 +751,12 @@ void BrowserOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "launchHotwordAudioVerificationApp",
+      base::Bind(
+          &BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp,
+          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "launchEasyUnlockSetup",
       base::Bind(&BrowserOptionsHandler::HandleLaunchEasyUnlockSetup,
                base::Unretained(this)));
@@ -1638,6 +1644,44 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
           "BrowserOptions.showHotwordAlwaysOnSection");
     }
   }
+}
+
+void BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp(
+    const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  bool retrain = false;
+  bool success = args->GetBoolean(0, &retrain);
+  DCHECK(success);
+  HotwordService::LaunchMode launch_mode =
+      HotwordService::HOTWORD_AND_AUDIO_HISTORY;
+
+  if (retrain) {
+    DCHECK(profile->GetPrefs()->GetBoolean(
+        prefs::kHotwordAlwaysOnSearchEnabled));
+    DCHECK(profile->GetPrefs()->GetBoolean(
+        prefs::kHotwordAudioLoggingEnabled));
+
+    launch_mode = HotwordService::SPEECH_TRAINING;
+  } else if (profile->GetPrefs()->GetBoolean(
+      prefs::kHotwordAudioLoggingEnabled)) {
+    DCHECK(!profile->GetPrefs()->GetBoolean(
+        prefs::kHotwordAlwaysOnSearchEnabled));
+
+    // TODO(kcarattini): Make sure the Chrome Audio Logging pref is synced
+    // to the account-level Audio History setting from footprints.
+    launch_mode = HotwordService::HOTWORD_ONLY;
+  } else {
+    DCHECK(!profile->GetPrefs()->GetBoolean(
+        prefs::kHotwordAlwaysOnSearchEnabled));
+  }
+
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(profile);
+  if (!hotword_service)
+    return;
+
+  hotword_service->LaunchHotwordAudioVerificationApp(launch_mode);
 }
 
 void BrowserOptionsHandler::HandleLaunchEasyUnlockSetup(

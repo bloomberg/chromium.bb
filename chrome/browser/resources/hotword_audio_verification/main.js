@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   $('hw-agree-button').addEventListener('click', function(e) {
-    // TODO(kcarattini): Set the Audio History setting.
     flow.advanceStep();
     e.stopPropagation();
   });
@@ -48,8 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // TODO(kcarattini): Remove this once speech training is implemented. The
   // way to get to the next page will be to complete the speech training.
   $('training').addEventListener('click', function(e) {
-    // TODO(kcarattini): Set the always-on-hotword setting.
-    flow.advanceStep();
+    if (chrome.hotwordPrivate.setAudioLoggingEnabled)
+      chrome.hotwordPrivate.setAudioLoggingEnabled(true, function() {});
+
+    if (chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled) {
+      chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled(true,
+          flow.advanceStep.bind(flow));
+    }
     e.stopPropagation();
   });
 
