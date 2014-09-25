@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -83,6 +84,10 @@ const wchar_t kSoftwareRemovalToolRegistryKey[] =
     L"Software\\Google\\Software Removal Tool";
 const wchar_t kExitCodeRegistryValueName[] = L"ExitCode";
 
+// Field trial strings.
+const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
+const char kSRTPromptOnGroup[] = "On";
+
 // Exit codes that identify that a cleanup is needed.
 const int kCleanupNeeded = 0;
 const int kPostRebootCleanupNeeded = 4;
@@ -125,7 +130,9 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
                                                  exit_code);
   }
 
-  if (exit_code == kPostRebootCleanupNeeded || exit_code == kCleanupNeeded) {
+  if ((exit_code == kPostRebootCleanupNeeded || exit_code == kCleanupNeeded) &&
+      base::FieldTrialList::FindFullName(kSRTPromptTrialName) ==
+          kSRTPromptOnGroup) {
     // Find the last active browser, which may be NULL, in which case we won't
     // show the prompt this time and will wait until the next run of the
     // reporter. We can't use other ways of finding a browser because we don't
@@ -314,6 +321,14 @@ wchar_t SwReporterInstallerTraits::version_dir_[] = {};
 
 void RegisterSwReporterComponent(ComponentUpdateService* cus,
                                  PrefService* prefs) {
+  // The Sw reporter doesn't need to run if the user isn't reporting metrics and
+  // isn't in the SRTPrompt field trial "On" group.
+  if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() &&
+      base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
+          kSRTPromptOnGroup) {
+    return;
+  }
+
   // Install the component.
   scoped_ptr<ComponentInstallerTraits> traits(
       new SwReporterInstallerTraits(prefs));
