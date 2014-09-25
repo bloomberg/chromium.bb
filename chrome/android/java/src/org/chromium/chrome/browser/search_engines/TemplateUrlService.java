@@ -223,27 +223,35 @@ public class TemplateUrlService {
         return nativeReplaceSearchTermsInUrl(mNativeTemplateUrlServiceAndroid, query, url);
     }
 
-    // TODO(jeremycho): Delete once Clank no longer references it.
+    // TODO(donnd): Delete once the client no longer references it.
     /**
      * Finds the default search engine for the default provider and returns the url query
      * {@link String} for {@code query} with the contextual search version param set.
+     * @param query The search term to use as the main query in the returned search url.
+     * @param alternateTerm The alternate search term to use as an alternate suggestion.
      * @return      A {@link String} that contains the url of the default search engine with
-     *              {@code query} inserted as the search parameter and contextual search param set.
+     *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
+     *              search and prefetch parameters set.
      */
-    public String getUrlForContextualSearchQuery(String query) {
-        return nativeGetUrlForContextualSearchQuery(mNativeTemplateUrlServiceAndroid, query, null);
+     public String getUrlForContextualSearchQuery(String query, String alternateTerm) {
+        return nativeGetUrlForContextualSearchQuery(
+            mNativeTemplateUrlServiceAndroid, query, alternateTerm, true);
     }
 
     /**
      * Finds the default search engine for the default provider and returns the url query
      * {@link String} for {@code query} with the contextual search version param set.
+     * @param query The search term to use as the main query in the returned search url.
+     * @param alternateTerm The alternate search term to use as an alternate suggestion.
+     * @param shouldPrefetch Whether the returned url should include a prefetch parameter.
      * @return      A {@link String} that contains the url of the default search engine with
      *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
-     *              search param set.
+     *              search and prefetch parameters conditionally set.
      */
-    public String getUrlForContextualSearchQuery(String query, String alternateTerm) {
+     public String getUrlForContextualSearchQuery(String query, String alternateTerm,
+            boolean shouldPrefetch) {
         return nativeGetUrlForContextualSearchQuery(
-            mNativeTemplateUrlServiceAndroid, query, alternateTerm);
+            mNativeTemplateUrlServiceAndroid, query, alternateTerm, shouldPrefetch);
     }
 
     private native long nativeInit();
@@ -265,5 +273,5 @@ public class TemplateUrlService {
     private native String nativeReplaceSearchTermsInUrl(long nativeTemplateUrlServiceAndroid,
             String query, String currentUrl);
     private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
-            String query, String alternateTerm);
+            String query, String alternateTerm, boolean shouldPrefetch);
 }

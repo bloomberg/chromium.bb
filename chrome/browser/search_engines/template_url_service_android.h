@@ -49,7 +49,8 @@ class TemplateUrlServiceAndroid {
       JNIEnv* env,
       jobject obj,
       jstring jquery,
-      jstring jalternate_term);
+      jstring jalternate_term,
+      jboolean jshould_prefetch);
 
   static bool Register(JNIEnv* env);
 
