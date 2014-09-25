@@ -492,20 +492,17 @@ SandboxBPF::SandboxStatus
 SandboxBPF::SupportsSeccompThreadFilterSynchronization() {
   // Applying NO_NEW_PRIVS, a BPF filter, and synchronizing the filter across
   // the thread group are all handled atomically by this syscall.
-  int rv = syscall(__NR_seccomp);
+  const int rv = syscall(
+      __NR_seccomp, SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, NULL);
 
-  // The system call should have failed with EINVAL.
-  if (rv != -1) {
-    NOTREACHED();
-    return STATUS_UNKNOWN;
-  }
-
-  if (errno == EINVAL || errno == EFAULT)
+  if (rv == -1 && errno == EFAULT) {
     return STATUS_AVAILABLE;
-
-  // errno is probably ENOSYS, indicating the system call is not available.
-  DCHECK_EQ(errno, ENOSYS);
-  return STATUS_UNSUPPORTED;
+  } else {
+    // TODO(jln): turn these into DCHECK after 417888 is considered fixed.
+    CHECK_EQ(-1, rv);
+    CHECK(ENOSYS == errno || EINVAL == errno);
+    return STATUS_UNSUPPORTED;
+  }
 }
 
 void SandboxBPF::set_proc_fd(int proc_fd) { proc_fd_ = proc_fd; }
