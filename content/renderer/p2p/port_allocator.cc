@@ -202,7 +202,7 @@ void P2PPortAllocatorSession::AllocateLegacyRelaySession() {
 }
 
 void P2PPortAllocatorSession::ParseRelayResponse() {
-  std::vector<std::pair<std::string, std::string> > value_pairs;
+  base::StringPairs value_pairs;
   if (!base::SplitStringIntoKeyValuePairs(relay_session_response_, '=', '\n',
                                           &value_pairs)) {
     LOG(ERROR) << "Received invalid response from relay server";
@@ -214,8 +214,7 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
   relay_tcp_port_ = 0;
   relay_ssltcp_port_ = 0;
 
-  for (std::vector<std::pair<std::string, std::string> >::iterator
-           it = value_pairs.begin();
+  for (base::StringPairs::iterator it = value_pairs.begin();
        it != value_pairs.end(); ++it) {
     std::string key;
     std::string value;

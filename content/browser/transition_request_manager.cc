@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -23,7 +24,7 @@ bool EnumerateLinkHeaders(
     void** iter,
     const std::string& rel,
     std::string* url,
-    std::vector<std::pair<std::string, std::string> >* attributes) {
+    base::StringPairs* attributes) {
   std::string header_body;
   bool rel_matched = false;
   while (!rel_matched && headers->EnumerateHeader(iter, "link", &header_body)) {
@@ -89,7 +90,7 @@ void TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
     return;
 
   std::string transition_stylesheet;
-  std::vector<std::pair<std::string, std::string> > attributes;
+  base::StringPairs attributes;
   void* header_iter = NULL;
   while (EnumerateLinkHeaders(headers,
                               &header_iter,

@@ -173,7 +173,7 @@ int32 BrowserAccessibility::GetState() const {
   return GetData().state;
 }
 
-const std::vector<std::pair<std::string, std::string> >&
+const BrowserAccessibility::HtmlAttributes&
 BrowserAccessibility::GetHtmlAttributes() const {
   return GetData().html_attributes;
 }

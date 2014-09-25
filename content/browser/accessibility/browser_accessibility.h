@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
@@ -160,7 +161,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   int32 GetRole() const;
   int32 GetState() const;
 
-  typedef std::vector<std::pair<std::string, std::string> > HtmlAttributes;
+  typedef base::StringPairs HtmlAttributes;
   const HtmlAttributes& GetHtmlAttributes() const;
 
 #if defined(OS_MACOSX) && __OBJC__

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -31,7 +32,7 @@ struct WebSocketHandshakeRequest {
   // The request URL
   GURL url;
   // Additional HTTP request headers
-  std::vector<std::pair<std::string, std::string> > headers;
+  base::StringPairs headers;
   // HTTP request headers raw string
   std::string headers_text;
   // The time that this request is sent
