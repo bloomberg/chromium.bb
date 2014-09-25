@@ -884,6 +884,14 @@ class NinjaWriter:
         [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
          for i in include_dirs])
 
+    if self.flavor == 'win':
+      midl_include_dirs = config.get('midl_include_dirs', [])
+      midl_include_dirs = self.msvs_settings.AdjustMidlIncludeDirs(
+          midl_include_dirs, config_name)
+      self.WriteVariableList(ninja_file, 'midl_includes',
+          [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
+           for i in midl_include_dirs])
+
     pch_commands = precompiled_header.GetPchBuildCommands(arch)
     if self.flavor == 'mac':
       # Most targets use no precompiled headers, so only write these if needed.
@@ -1930,7 +1938,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='IDL $in',
       command=('%s gyp-win-tool midl-wrapper $arch $outdir '
                '$tlb $h $dlldata $iid $proxy $in '
-               '$idlflags' % sys.executable))
+               '$midl_includes $idlflags' % sys.executable))
     master_ninja.rule(
       'rc',
       description='RC $in',

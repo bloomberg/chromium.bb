@@ -318,6 +318,15 @@ class MsvsSettings(object):
       ('VCCLCompilerTool', 'AdditionalIncludeDirectories'), config, default=[]))
     return [self.ConvertVSMacros(p, config=config) for p in includes]
 
+  def AdjustMidlIncludeDirs(self, midl_include_dirs, config):
+    """Updates midl_include_dirs to expand VS specific paths, and adds the
+    system include dirs used for platform SDK and similar."""
+    config = self._TargetConfig(config)
+    includes = midl_include_dirs + self.msvs_system_include_dirs[config]
+    includes.extend(self._Setting(
+      ('VCMIDLTool', 'AdditionalIncludeDirectories'), config, default=[]))
+    return [self.ConvertVSMacros(p, config=config) for p in includes]
+
   def GetComputedDefines(self, config):
     """Returns the set of defines that are injected to the defines list based
     on other VS settings."""
