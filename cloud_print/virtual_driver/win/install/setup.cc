@@ -147,7 +147,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
 
   DWORD exit_code = S_OK;
   if (install) {
-    if (!GetExitCodeProcess(regsvr32_handle, &exit_code)) {
+    if (!GetExitCodeProcess(regsvr32_handle.Get(), &exit_code)) {
       LOG(ERROR) << "Unable to get regsvr32.exe exit code.";
       return GetLastHResult();
     }

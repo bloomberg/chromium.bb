@@ -117,7 +117,7 @@ void SetupListener::Connect(const base::string16& user) {
                       IPC::Channel::kReadBufferSize,
                       IPC::Channel::kReadBufferSize, 5000, &attribs));
   if (pipe.IsValid()) {
-    channel_ = IPC::Channel::CreateServer(IPC::ChannelHandle(pipe),
+    channel_ = IPC::Channel::CreateServer(IPC::ChannelHandle(pipe.Get()),
                                           this);
     channel_->Connect();
   }

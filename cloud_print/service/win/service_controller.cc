@@ -71,7 +71,7 @@ HRESULT OpenService(const base::string16& name, DWORD access,
   if (FAILED(hr))
     return hr;
 
-  service->Set(::OpenService(scm, name.c_str(), access));
+  service->Set(::OpenService(scm.Get(), name.c_str(), access));
 
   if (!service->IsValid())
     return cloud_print::GetLastHResult();
@@ -95,10 +95,10 @@ HRESULT ServiceController::StartService() {
                            &service);
   if (FAILED(hr))
     return hr;
-  if (!::StartService(service, 0, NULL))
+  if (!::StartService(service.Get(), 0, NULL))
     return cloud_print::GetLastHResult();
   SERVICE_STATUS status = {0};
-  while (::QueryServiceStatus(service, &status) &&
+  while (::QueryServiceStatus(service.Get(), &status) &&
           status.dwCurrentState == SERVICE_START_PENDING) {
     Sleep(100);
   }
@@ -112,12 +112,12 @@ HRESULT ServiceController::StopService() {
   if (FAILED(hr))
     return hr;
   SERVICE_STATUS status = {0};
-  if (!::ControlService(service, SERVICE_CONTROL_STOP, &status))
+  if (!::ControlService(service.Get(), SERVICE_CONTROL_STOP, &status))
     return cloud_print::GetLastHResult();
-  while (::QueryServiceStatus(service, &status) &&
+  while (::QueryServiceStatus(service.Get(), &status) &&
           status.dwCurrentState > SERVICE_STOPPED) {
     Sleep(500);
-    ::ControlService(service, SERVICE_CONTROL_STOP, &status);
+    ::ControlService(service.Get(), SERVICE_CONTROL_STOP, &status);
   }
   return S_OK;
 }
@@ -197,7 +197,7 @@ HRESULT ServiceController::InstallService(const base::string16& user,
       cloud_print::LoadLocalString(IDS_SERVICE_DISPLAY_NAME);
   ServiceHandle service(
       ::CreateService(
-          scm, name_.c_str(), display_name.c_str(), SERVICE_ALL_ACCESS,
+          scm.Get(), name_.c_str(), display_name.c_str(), SERVICE_ALL_ACCESS,
           SERVICE_WIN32_OWN_PROCESS,
           auto_start ? SERVICE_AUTO_START : SERVICE_DEMAND_START,
           SERVICE_ERROR_NORMAL, command_line.GetCommandLineString().c_str(),
@@ -213,7 +213,8 @@ HRESULT ServiceController::InstallService(const base::string16& user,
       cloud_print::LoadLocalString(IDS_SERVICE_DESCRIPTION);
   SERVICE_DESCRIPTION description = {0};
   description.lpDescription = const_cast<wchar_t*>(description_string.c_str());
-  ::ChangeServiceConfig2(service, SERVICE_CONFIG_DESCRIPTION, &description);
+  ::ChangeServiceConfig2(service.Get(), SERVICE_CONFIG_DESCRIPTION,
+                         &description);
 
   return S_OK;
 }
@@ -224,8 +225,8 @@ HRESULT ServiceController::UninstallService() {
   ServiceHandle service;
   OpenService(name_, SERVICE_STOP | DELETE, &service);
   HRESULT hr = S_FALSE;
-  if (service) {
-    if (!::DeleteService(service)) {
+  if (service.IsValid()) {
+    if (!::DeleteService(service.Get())) {
       LOG(ERROR) << "Failed to uninstall service";
       hr = cloud_print::GetLastHResult();
     }
@@ -250,8 +251,8 @@ HRESULT ServiceController::UpdateBinaryPath() {
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 
   command_line_.SetProgram(service_path);
-  if (!::ChangeServiceConfig(service, SERVICE_NO_CHANGE, SERVICE_NO_CHANGE,
-                             SERVICE_NO_CHANGE,
+  if (!::ChangeServiceConfig(service.Get(), SERVICE_NO_CHANGE,
+                             SERVICE_NO_CHANGE, SERVICE_NO_CHANGE,
                              command_line_.GetCommandLineString().c_str(), NULL,
                              NULL, NULL, NULL, NULL, NULL)) {
     return cloud_print::GetLastHResult();
@@ -284,20 +285,21 @@ void ServiceController::UpdateState() {
 
   state_ = STATE_STOPPED;
   SERVICE_STATUS status = {0};
-  if (::QueryServiceStatus(service, &status) &&
+  if (::QueryServiceStatus(service.Get(), &status) &&
       status.dwCurrentState == SERVICE_RUNNING) {
     state_ = STATE_RUNNING;
   }
 
   DWORD config_size = 0;
-  ::QueryServiceConfig(service, NULL, 0, &config_size);
+  ::QueryServiceConfig(service.Get(), NULL, 0, &config_size);
   if (!config_size)
     return;
 
   std::vector<uint8> buffer(config_size, 0);
   QUERY_SERVICE_CONFIG* config =
       reinterpret_cast<QUERY_SERVICE_CONFIG*>(&buffer[0]);
-  if (!::QueryServiceConfig(service, config, buffer.size(), &config_size) ||
+  if (!::QueryServiceConfig(service.Get(), config, buffer.size(),
+                            &config_size) ||
       config_size != buffer.size()) {
     return;
   }

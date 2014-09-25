@@ -220,7 +220,7 @@ bool LaunchPrintDialog(const base::FilePath& xps_path,
   command_line.AppendSwitchNative(switches::kCloudPrintFileType, kXpsMimeType);
   command_line.AppendSwitchNative(switches::kCloudPrintJobTitle, job_title);
   base::LaunchOptions options;
-  options.as_user = primary_token_scoped;
+  options.as_user = primary_token_scoped.Get();
   base::LaunchProcess(command_line, options, NULL);
   return true;
 }
@@ -246,7 +246,7 @@ void LaunchChromeDownloadPage() {
   command_line.AppendArg(kChromeInstallUrl);
 
   base::LaunchOptions options;
-  options.as_user = token_scoped;
+  options.as_user = token_scoped.Get();
   base::LaunchProcess(command_line, options, NULL);
 }
 
@@ -264,7 +264,7 @@ bool ValidateCurrentUser() {
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     DWORD session_id = 0;
     DWORD dummy;
-    if (!GetTokenInformation(token_scoped,
+    if (!GetTokenInformation(token_scoped.Get(),
                              TokenSessionId,
                              reinterpret_cast<void *>(&session_id),
                              sizeof(DWORD),

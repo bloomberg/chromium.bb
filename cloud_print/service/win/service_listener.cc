@@ -91,7 +91,7 @@ void ServiceListener::Connect() {
                    SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
                    FILE_FLAG_OVERLAPPED, NULL));
   if (handle.IsValid()) {
-    channel_ = IPC::Channel::CreateClient(IPC::ChannelHandle(handle),
+    channel_ = IPC::Channel::CreateClient(IPC::ChannelHandle(handle.Get()),
                                           this);
     channel_->Connect();
   } else {
