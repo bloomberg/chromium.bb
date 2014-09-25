@@ -252,7 +252,6 @@ component("net") {
   } else {
     sources -= [
       "base/crypto_module_openssl.cc",
-      "base/keygen_handler_openssl.cc",
       "cert/ct_log_verifier_openssl.cc",
       "cert/ct_objects_extractor_openssl.cc",
       "cert/jwk_serializer_openssl.cc",
@@ -292,6 +291,7 @@ component("net") {
 
   if (!use_openssl_certs) {
     sources -= [
+      "base/keygen_handler_openssl.cc",
       "base/openssl_private_key_store.h",
       "base/openssl_private_key_store_memory.cc",
       "cert/cert_database_openssl.cc",
@@ -474,10 +474,12 @@ component("net") {
   }
 
   if (is_mac) {
-    deps += [
-      "//third_party/nss:nspr",
-      "//third_party/nss",
-    ]
+    if (!use_openssl) {
+      deps += [
+        "//third_party/nss:nspr",
+        "//third_party/nss",
+      ]
+    }
     libs = [
       "Foundation.framework",
       "Security.framework",
