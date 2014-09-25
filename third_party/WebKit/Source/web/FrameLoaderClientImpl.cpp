@@ -257,8 +257,7 @@ Frame* FrameLoaderClientImpl::opener() const
 
 void FrameLoaderClientImpl::setOpener(Frame* opener)
 {
-    // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    m_webFrame->setOpener(WebLocalFrameImpl::fromFrame(toLocalFrame(opener)));
+    m_webFrame->setOpener(WebFrame::fromFrame(opener));
 }
 
 Frame* FrameLoaderClientImpl::parent() const
