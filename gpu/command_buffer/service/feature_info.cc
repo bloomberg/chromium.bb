@@ -860,7 +860,8 @@ void FeatureInfo::InitializeFeatures() {
   }
 }
 
-void FeatureInfo::AddExtensionString(const std::string& str) {
+void FeatureInfo::AddExtensionString(const char* s) {
+  std::string str(s);
   size_t pos = extensions_.find(str);
   while (pos != std::string::npos &&
          pos + str.length() < extensions_.length() &&
