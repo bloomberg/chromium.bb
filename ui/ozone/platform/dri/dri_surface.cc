@@ -93,7 +93,7 @@ void DriSurface::UpdateNativeSurface(const gfx::Rect& damage) {
 
   // Copy damage region.
   skia::RefPtr<SkImage> image = skia::AdoptRef(surface_->newImageSnapshot());
-  image->draw(canvas, &real_damage, real_damage, NULL);
+  canvas->drawImageRect(image.get(), &real_damage, real_damage, NULL);
 
   last_damage_ = damage;
 }
