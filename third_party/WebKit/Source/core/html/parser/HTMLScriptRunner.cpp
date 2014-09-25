@@ -118,10 +118,10 @@ void HTMLScriptRunner::executeParsingBlockingScript()
     ASSERT(isPendingScriptReady(m_parserBlockingScript));
 
     InsertionPointRecord insertionPointRecord(m_host->inputStream());
-    executePendingScriptAndDispatchEvent(m_parserBlockingScript, PendingScriptBlockingParser);
+    executePendingScriptAndDispatchEvent(m_parserBlockingScript, PendingScript::ParsingBlocking);
 }
 
-void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendingScript, PendingScriptType pendingScriptType)
+void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendingScript, PendingScript::Type pendingScriptType)
 {
     bool errorOccurred = false;
     double loadFinishTime = pendingScript.resource() && pendingScript.resource()->url().protocolIsInHTTPFamily() ? pendingScript.resource()->loadFinishTime() : 0;
@@ -132,7 +132,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 
     if (!isExecutingScript()) {
         Microtask::performCheckpoint();
-        if (pendingScriptType == PendingScriptBlockingParser) {
+        if (pendingScriptType == PendingScript::ParsingBlocking) {
             m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
             // The parser cannot be unblocked as a microtask requested another resource
             if (m_hasScriptsWaitingForResources)
@@ -156,7 +156,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     }
     // The exact value doesn't matter; valid time stamps are much bigger than this value.
     const double epsilon = 1;
-    if (pendingScriptType == PendingScriptBlockingParser && !m_parserBlockingScriptAlreadyLoaded && compilationFinishTime > epsilon && loadFinishTime > epsilon) {
+    if (pendingScriptType == PendingScript::ParsingBlocking && !m_parserBlockingScriptAlreadyLoaded && compilationFinishTime > epsilon && loadFinishTime > epsilon) {
         blink::Platform::current()->histogramCustomCounts("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", (compilationFinishTime - loadFinishTime) * 1000, 0, 10000, 50);
     }
 
@@ -233,7 +233,7 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
             return false;
         }
         PendingScript first = m_scriptsToExecuteAfterParsing.takeFirst();
-        executePendingScriptAndDispatchEvent(first, PendingScriptDeferred);
+        executePendingScriptAndDispatchEvent(first, PendingScript::Deferred);
         // FIXME: What is this m_document check for?
         if (!m_document)
             return false;
@@ -259,10 +259,8 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
     if (!m_parserBlockingScript.isReady()) {
-        bool startedStreaming = false;
         if (m_document->frame())
-            startedStreaming = ScriptStreamer::startStreaming(m_parserBlockingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
-        blink::Platform::current()->histogramEnumeration("WebCore.Scripts.ParsingBlocking.StartedStreaming", startedStreaming ? 1 : 0, 2);
+            ScriptStreamer::startStreaming(m_parserBlockingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()), PendingScript::ParsingBlocking);
         m_parserBlockingScript.watchForLoad(this);
     }
 }
@@ -275,7 +273,7 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
 
     ASSERT(pendingScript.resource());
     if (m_document->frame() && !pendingScript.isReady())
-        ScriptStreamer::startStreaming(pendingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
+        ScriptStreamer::startStreaming(pendingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()), PendingScript::Deferred);
 
     m_scriptsToExecuteAfterParsing.append(pendingScript);
 }

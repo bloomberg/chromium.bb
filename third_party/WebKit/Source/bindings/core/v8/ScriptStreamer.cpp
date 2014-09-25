@@ -13,6 +13,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/Settings.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
@@ -213,68 +214,14 @@ private:
 
 size_t ScriptStreamer::kSmallScriptThreshold = 30 * 1024;
 
-bool ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, ScriptState* scriptState)
+void ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, ScriptState* scriptState, PendingScript::Type scriptType)
 {
-    ASSERT(isMainThread());
-    if (!settings || !settings->v8ScriptStreamingEnabled())
-        return false;
-    ScriptResource* resource = script.resource();
-    ASSERT(!resource->isLoaded());
-    if (!resource->url().protocolIsInHTTPFamily())
-        return false;
-    if (resource->resourceToRevalidate()) {
-        // This happens e.g., during reloads. We're actually not going to load
-        // the current Resource of the PendingScript but switch to another
-        // Resource -> don't stream.
-        return false;
-    }
-    // We cannot filter out short scripts, even if we wait for the HTTP headers
-    // to arrive. In general, the web servers don't seem to send the
-    // Content-Length HTTP header for scripts.
-
-    WTF::TextEncoding textEncoding(resource->encoding());
-    const char* encodingName = textEncoding.name();
-
-    // Here's a list of encodings we can use for streaming. These are
-    // the canonical names.
-    v8::ScriptCompiler::StreamedSource::Encoding encoding;
-    if (strcmp(encodingName, "windows-1252") == 0
-        || strcmp(encodingName, "ISO-8859-1") == 0
-        || strcmp(encodingName, "US-ASCII") == 0) {
-        encoding = v8::ScriptCompiler::StreamedSource::ONE_BYTE;
-    } else if (strcmp(encodingName, "UTF-8") == 0) {
-        encoding = v8::ScriptCompiler::StreamedSource::UTF8;
-    } else {
-        // We don't stream other encodings; especially we don't stream two byte
-        // scripts to avoid the handling of byte order marks. Most scripts are
-        // Latin1 or UTF-8 anyway, so this should be enough for most real world
-        // purposes.
-        return false;
-    }
-
-    if (scriptState->contextIsValid())
-        return false;
-    ScriptState::Scope scope(scriptState);
-
-    // The Resource might go out of scope if the script is no longer needed. We
-    // will soon call PendingScript::setStreamer, which makes the PendingScript
-    // notify the ScriptStreamer when it is destroyed.
-    RefPtr<ScriptStreamer> streamer = adoptRef(new ScriptStreamer(resource, encoding));
-
-    // Decide what kind of cached data we should produce while streaming. By
-    // default, we generate the parser cache for streamed scripts, to emulate
-    // the non-streaming behavior (see V8ScriptRunner::compileScript).
-    v8::ScriptCompiler::CompileOptions compileOption = v8::ScriptCompiler::kProduceParserCache;
-    if (settings->v8CacheOptions() == V8CacheOptionsCode)
-        compileOption = v8::ScriptCompiler::kProduceCodeCache;
-    v8::ScriptCompiler::ScriptStreamingTask* scriptStreamingTask = v8::ScriptCompiler::StartStreamingScript(scriptState->isolate(), &(streamer->m_source), compileOption);
-    if (scriptStreamingTask) {
-        streamer->m_task = scriptStreamingTask;
-        script.setStreamer(streamer.release());
-        return true;
-    }
-    // Otherwise, V8 cannot stream the script.
-    return false;
+    // We don't yet know whether the script will really be streamed. E.g.,
+    // suppressing streaming for short scripts is done later. Record only the
+    // sure negative cases here.
+    bool startedStreaming = startStreamingInternal(script, settings, scriptState, scriptType);
+    if (!startedStreaming)
+        blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(scriptType), 0, 2);
 }
 
 void ScriptStreamer::streamingComplete()
@@ -328,11 +275,13 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         return;
     if (!m_firstDataChunkReceived) {
         m_firstDataChunkReceived = true;
+        const char* histogramName = startedStreamingHistogramName(m_scriptType);
         // Check the size of the first data chunk. The expectation is that if
         // the first chunk is small, there won't be a second one. In those
         // cases, it doesn't make sense to stream at all.
         if (resource->resourceBuffer()->size() < kSmallScriptThreshold) {
             suppressStreaming();
+            blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
             return;
         }
         if (ScriptStreamerThread::shared()->isRunningTask()) {
@@ -343,6 +292,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             // scripts, but this code can still be hit when multiple frames are
             // loading simultaneously.
             suppressStreaming();
+            blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
             return;
         }
         ASSERT(m_task);
@@ -353,6 +303,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         ScriptStreamingTask* task = new ScriptStreamingTask(m_task, this);
         ScriptStreamerThread::shared()->postTask(task);
         m_task = 0;
+        blink::Platform::current()->histogramEnumeration(histogramName, 1, 2);
     }
     m_stream->didReceiveData();
 }
@@ -371,7 +322,7 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     notifyFinishedToClient();
 }
 
-ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::StreamedSource::Encoding encoding)
+ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::StreamedSource::Encoding encoding, PendingScript::Type scriptType)
     : m_resource(resource)
     , m_detached(false)
     , m_stream(new SourceStream(this))
@@ -382,6 +333,7 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::Str
     , m_parsingFinished(false)
     , m_firstDataChunkReceived(false)
     , m_streamingSuppressed(false)
+    , m_scriptType(scriptType)
 {
 }
 
@@ -398,6 +350,89 @@ void ScriptStreamer::notifyFinishedToClient()
     // and called removeClient.
     if (isFinished() && m_client)
         m_client->notifyFinished(m_resource);
+}
+
+const char* ScriptStreamer::startedStreamingHistogramName(PendingScript::Type scriptType)
+{
+    switch (scriptType) {
+    case PendingScript::ParsingBlocking:
+        return "WebCore.Scripts.ParsingBlocking.StartedStreaming";
+        break;
+    case PendingScript::Deferred:
+        return "WebCore.Scripts.Deferred.StartedStreaming";
+        break;
+    case PendingScript::Async:
+        return "WebCore.Scripts.Async.StartedStreaming";
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return 0;
+}
+
+bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* settings, ScriptState* scriptState, PendingScript::Type scriptType)
+{
+    ASSERT(isMainThread());
+    if (!settings || !settings->v8ScriptStreamingEnabled())
+        return false;
+    ScriptResource* resource = script.resource();
+    ASSERT(!resource->isLoaded());
+    if (!resource->url().protocolIsInHTTPFamily())
+        return false;
+    if (resource->resourceToRevalidate()) {
+        // This happens e.g., during reloads. We're actually not going to load
+        // the current Resource of the PendingScript but switch to another
+        // Resource -> don't stream.
+        return false;
+    }
+    // We cannot filter out short scripts, even if we wait for the HTTP headers
+    // to arrive. In general, the web servers don't seem to send the
+    // Content-Length HTTP header for scripts.
+
+    WTF::TextEncoding textEncoding(resource->encoding());
+    const char* encodingName = textEncoding.name();
+
+    // Here's a list of encodings we can use for streaming. These are
+    // the canonical names.
+    v8::ScriptCompiler::StreamedSource::Encoding encoding;
+    if (strcmp(encodingName, "windows-1252") == 0
+        || strcmp(encodingName, "ISO-8859-1") == 0
+        || strcmp(encodingName, "US-ASCII") == 0) {
+        encoding = v8::ScriptCompiler::StreamedSource::ONE_BYTE;
+    } else if (strcmp(encodingName, "UTF-8") == 0) {
+        encoding = v8::ScriptCompiler::StreamedSource::UTF8;
+    } else {
+        // We don't stream other encodings; especially we don't stream two byte
+        // scripts to avoid the handling of byte order marks. Most scripts are
+        // Latin1 or UTF-8 anyway, so this should be enough for most real world
+        // purposes.
+        return false;
+    }
+
+    if (scriptState->contextIsValid())
+        return false;
+    ScriptState::Scope scope(scriptState);
+
+    // The Resource might go out of scope if the script is no longer needed. We
+    // will soon call PendingScript::setStreamer, which makes the PendingScript
+    // notify the ScriptStreamer when it is destroyed.
+    RefPtr<ScriptStreamer> streamer = adoptRef(new ScriptStreamer(resource, encoding, scriptType));
+
+    // Decide what kind of cached data we should produce while streaming. By
+    // default, we generate the parser cache for streamed scripts, to emulate
+    // the non-streaming behavior (see V8ScriptRunner::compileScript).
+    v8::ScriptCompiler::CompileOptions compileOption = v8::ScriptCompiler::kProduceParserCache;
+    if (settings->v8CacheOptions() == V8CacheOptionsCode)
+        compileOption = v8::ScriptCompiler::kProduceCodeCache;
+    v8::ScriptCompiler::ScriptStreamingTask* scriptStreamingTask = v8::ScriptCompiler::StartStreamingScript(scriptState->isolate(), &(streamer->m_source), compileOption);
+    if (scriptStreamingTask) {
+        streamer->m_task = scriptStreamingTask;
+        script.setStreamer(streamer.release());
+        return true;
+    }
+    // Otherwise, V8 cannot stream the script.
+    return false;
 }
 
 } // namespace blink

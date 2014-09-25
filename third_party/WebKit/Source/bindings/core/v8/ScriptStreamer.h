@@ -5,6 +5,7 @@
 #ifndef ScriptStreamer_h
 #define ScriptStreamer_h
 
+#include "core/dom/PendingScript.h"
 #include "wtf/RefCounted.h"
 
 #include <v8.h>
@@ -35,7 +36,7 @@ public:
     // false. Internally, this constructs a ScriptStreamer and attaches it to
     // the PendingScript. Use ScriptStreamer::addClient to get notified when the
     // streaming finishes.
-    static bool startStreaming(PendingScript&, Settings*, ScriptState*);
+    static void startStreaming(PendingScript&, Settings*, ScriptState*, PendingScript::Type);
 
     bool isFinished() const
     {
@@ -95,9 +96,13 @@ private:
     // streamed. Non-const for testing.
     static size_t kSmallScriptThreshold;
 
-    ScriptStreamer(ScriptResource*, v8::ScriptCompiler::StreamedSource::Encoding);
+    ScriptStreamer(ScriptResource*, v8::ScriptCompiler::StreamedSource::Encoding, PendingScript::Type);
 
     void notifyFinishedToClient();
+
+    static const char* startedStreamingHistogramName(PendingScript::Type);
+
+    static bool startStreamingInternal(PendingScript&, Settings*, ScriptState*, PendingScript::Type);
 
     // This pointer is weak. If PendingScript and its Resource are deleted
     // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
@@ -122,6 +127,9 @@ private:
 
     // What kind of cached data V8 produces during streaming.
     unsigned m_cachedDataType;
+
+    // For recording metrics for different types of scripts separately.
+    PendingScript::Type m_scriptType;
 };
 
 } // namespace blink

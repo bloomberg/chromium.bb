@@ -26,7 +26,6 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
-#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
@@ -38,6 +37,7 @@
 
 namespace blink {
 
+class ScriptSourceCode;
 class ScriptStreamer;
 
 // A container for an external script which may be loaded and executed.
@@ -48,6 +48,12 @@ class ScriptStreamer;
 class PendingScript FINAL : public ResourceOwner<ScriptResource> {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
+    enum Type {
+        ParsingBlocking,
+        Deferred,
+        Async
+    };
+
     PendingScript()
         : m_watchingForLoad(false)
         , m_startingPosition(TextPosition::belowRangePosition())

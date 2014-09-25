@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "platform/Task.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
@@ -62,6 +63,7 @@ ScriptStreamingTask::ScriptStreamingTask(v8::ScriptCompiler::ScriptStreamingTask
 
 void ScriptStreamingTask::run()
 {
+    TRACE_EVENT0("v8", "v8.parseOnBackground");
     // Running the task can and will block: SourceStream::GetSomeData will get
     // called and it will block and wait for data from the network.
     m_v8Task->Run();

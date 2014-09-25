@@ -73,13 +73,8 @@ public:
 private:
     HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);
 
-    enum PendingScriptType {
-        PendingScriptBlockingParser,
-        PendingScriptDeferred
-    };
-
     void executeParsingBlockingScript();
-    void executePendingScriptAndDispatchEvent(PendingScript&, PendingScriptType);
+    void executePendingScriptAndDispatchEvent(PendingScript&, PendingScript::Type);
     void executeParsingBlockingScripts();
 
     void requestParsingBlockingScript(Element*);

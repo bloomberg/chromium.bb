@@ -6,6 +6,7 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptStreamerThread.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -142,10 +143,9 @@ private:
 TEST_F(ScriptStreamingTest, CompilingStreamedScript)
 {
     // Test that we can successfully compile a streamed script.
-    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
-    EXPECT_TRUE(started);
 
     appendData("function foo() {");
     appendPadding();
@@ -174,10 +174,9 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
     // Test that scripts with parse errors are handled properly. In those cases,
     // the V8 side typically finished before loading finishes: make sure we
     // handle it gracefully.
-    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
-    EXPECT_TRUE(started);
     appendData("function foo() {");
     appendData("this is the part which will be a parse error");
     // V8 won't realize the parse error until it actually starts parsing the
@@ -207,10 +206,9 @@ TEST_F(ScriptStreamingTest, CancellingStreaming)
 {
     // Test that the upper layers (PendingScript and up) can be ramped down
     // while streaming is ongoing, and ScriptStreamer handles it gracefully.
-    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
-    EXPECT_TRUE(started);
     appendData("function foo() {");
 
     // In general, we cannot control what the background thread is doing
@@ -236,10 +234,9 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming)
     // is suppressed (V8 doesn't parse while the script is loading), and the
     // upper layer (ScriptResourceClient) should get a notification when the
     // script is loaded.
-    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
-    EXPECT_TRUE(started);
     appendData("function foo() {");
     appendPadding();
 
@@ -264,10 +261,9 @@ TEST_F(ScriptStreamingTest, EmptyScripts)
     // Empty scripts should also be streamed properly, that is, the upper layer
     // (ScriptResourceClient) should be notified when an empty script has been
     // loaded.
-    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
+    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
     TestScriptResourceClient client;
     pendingScript().watchForLoad(&client);
-    EXPECT_TRUE(started);
 
     // Finish the script without sending any data.
     finish();
