@@ -83,11 +83,9 @@ class SendingTestReporter : public TestReporter {
   // Passes if invoked with a good SSLInfo and for a hostname that is a Google
   // pinned property.
   virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info,
-                          bool sni_available) OVERRIDE {
+                          const SSLInfo& ssl_info) OVERRIDE {
     EXPECT_TRUE(IsGoodSSLInfo(ssl_info));
-    EXPECT_TRUE(net::TransportSecurityState::IsGooglePinnedProperty(
-        hostname, sni_available));
+    EXPECT_TRUE(net::TransportSecurityState::IsGooglePinnedProperty(hostname));
     passed_ = true;
   }
 
@@ -108,11 +106,9 @@ class NotSendingTestReporter : public TestReporter {
   // Passes if invoked with a bad SSLInfo and for a hostname that is not a
   // Google pinned property.
   virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info,
-                          bool sni_available) OVERRIDE {
+                          const SSLInfo& ssl_info) OVERRIDE {
     EXPECT_FALSE(IsGoodSSLInfo(ssl_info));
-    EXPECT_FALSE(net::TransportSecurityState::IsGooglePinnedProperty(
-        hostname, sni_available));
+    EXPECT_FALSE(net::TransportSecurityState::IsGooglePinnedProperty(hostname));
   }
 };
 
@@ -133,12 +129,10 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 
   virtual void SendReport(
       const std::string& hostname,
-      const net::SSLInfo& ssl_info,
-      bool sni_available) OVERRIDE {
+      const net::SSLInfo& ssl_info) OVERRIDE {
     DCHECK(!hostname.empty());
     DCHECK(ssl_info.is_valid());
-    ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info,
-                                                    sni_available);
+    ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info);
   }
 };
 
@@ -146,21 +140,21 @@ static void DoReportIsSent() {
   net::TestURLRequestContext context;
   SendingTestReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
-  reporter.SendReport("mail.google.com", info, true);
+  reporter.SendReport("mail.google.com", info);
 }
 
 static void DoReportIsNotSent() {
   net::TestURLRequestContext context;
   NotSendingTestReporter reporter(&context);
   SSLInfo info = GetBadSSLInfo();
-  reporter.SendReport("www.example.com", info, true);
+  reporter.SendReport("www.example.com", info);
 }
 
 static void DoMockReportIsSent() {
   net::TestURLRequestContext context;
   MockReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
-  reporter.SendReport("mail.google.com", info, true);
+  reporter.SendReport("mail.google.com", info);
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, GoodBadInfo) {

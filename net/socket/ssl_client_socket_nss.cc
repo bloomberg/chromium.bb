@@ -3411,15 +3411,12 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
   if (result == OK)
     LogConnectionTypeMetrics();
 
-  bool sni_available = ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1 ||
-                       ssl_config_.version_fallback;
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
   if (transport_security_state_ &&
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
           host_and_port_.host(),
-          sni_available,
           server_cert_verify_result_.is_issued_by_known_root,
           server_cert_verify_result_.public_key_hashes,
           &pinning_failure_log_)) {

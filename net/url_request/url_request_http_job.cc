@@ -807,11 +807,9 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       context->fraudulent_certificate_reporter();
     if (reporter != NULL) {
       const SSLInfo& ssl_info = transaction_->GetResponseInfo()->ssl_info;
-      bool sni_available = SSLConfigService::IsSNIAvailable(
-          context->ssl_config_service());
       const std::string& host = request_->url().host();
 
-      reporter->SendReport(host, ssl_info, sni_available);
+      reporter->SendReport(host, ssl_info);
     }
   }
 
@@ -862,10 +860,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       const URLRequestContext* context = request_->context();
       TransportSecurityState* state = context->transport_security_state();
       const bool fatal =
-          state &&
-          state->ShouldSSLErrorsBeFatal(
-              request_info_.url.host(),
-              SSLConfigService::IsSNIAvailable(context->ssl_config_service()));
+          state && state->ShouldSSLErrorsBeFatal(request_info_.url.host());
       NotifySSLCertificateError(
           transaction_->GetResponseInfo()->ssl_info, fatal);
     }

@@ -578,7 +578,6 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   std::string pinning_failure_log;
   if (!transport_security_state->CheckPublicKeyPins(
           new_hostname,
-          true, /* sni_available */
           ssl_info.is_issued_by_known_root,
           ssl_info.public_key_hashes,
           &pinning_failure_log)) {

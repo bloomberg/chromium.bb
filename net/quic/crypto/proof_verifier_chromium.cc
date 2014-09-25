@@ -244,7 +244,6 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
           hostname_,
-          true, /* sni_available */
           cert_verify_result.is_issued_by_known_root,
           cert_verify_result.public_key_hashes,
           &verify_details_->pinning_failure_log)) {

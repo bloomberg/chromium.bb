@@ -1048,10 +1048,7 @@ bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {
   if (!url.SchemeIs("http"))
     return false;
   TransportSecurityState* state = context()->transport_security_state();
-  if (state &&
-      state->ShouldUpgradeToSSL(
-          url.host(),
-          SSLConfigService::IsSNIAvailable(context()->ssl_config_service()))) {
+  if (state && state->ShouldUpgradeToSSL(url.host())) {
     url::Replacements<char> replacements;
     const char kNewScheme[] = "https";
     replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));

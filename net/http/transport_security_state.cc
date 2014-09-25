@@ -100,22 +100,20 @@ TransportSecurityState::Iterator::Iterator(const TransportSecurityState& state)
 
 TransportSecurityState::Iterator::~Iterator() {}
 
-bool TransportSecurityState::ShouldSSLErrorsBeFatal(const std::string& host,
-                                                    bool sni_enabled) {
+bool TransportSecurityState::ShouldSSLErrorsBeFatal(const std::string& host) {
   DomainState state;
-  if (GetStaticDomainState(host, sni_enabled, &state))
+  if (GetStaticDomainState(host, &state))
     return true;
   return GetDynamicDomainState(host, &state);
 }
 
-bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host,
-                                                bool sni_enabled) {
+bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host) {
   DomainState dynamic_state;
   if (GetDynamicDomainState(host, &dynamic_state))
     return dynamic_state.ShouldUpgradeToSSL();
 
   DomainState static_state;
-  if (GetStaticDomainState(host, sni_enabled, &static_state) &&
+  if (GetStaticDomainState(host, &static_state) &&
       static_state.ShouldUpgradeToSSL()) {
       return true;
   }
@@ -125,7 +123,6 @@ bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host,
 
 bool TransportSecurityState::CheckPublicKeyPins(
     const std::string& host,
-    bool sni_available,
     bool is_issued_by_known_root,
     const HashValueVector& public_key_hashes,
     std::string* pinning_failure_log) {
@@ -134,12 +131,12 @@ bool TransportSecurityState::CheckPublicKeyPins(
   // * the server's certificate chain chains up to a known root (i.e. not a
   //   user-installed trust anchor); and
   // * the server actually has public key pins.
-  if (!is_issued_by_known_root || !HasPublicKeyPins(host, sni_available)) {
+  if (!is_issued_by_known_root || !HasPublicKeyPins(host)) {
     return true;
   }
 
   bool pins_are_valid = CheckPublicKeyPinsImpl(
-      host, sni_available, public_key_hashes, pinning_failure_log);
+      host, public_key_hashes, pinning_failure_log);
   if (!pins_are_valid) {
     LOG(ERROR) << *pinning_failure_log;
     ReportUMAOnPinFailure(host);
@@ -149,14 +146,13 @@ bool TransportSecurityState::CheckPublicKeyPins(
   return pins_are_valid;
 }
 
-bool TransportSecurityState::HasPublicKeyPins(const std::string& host,
-                                              bool sni_enabled) {
+bool TransportSecurityState::HasPublicKeyPins(const std::string& host) {
   DomainState dynamic_state;
   if (GetDynamicDomainState(host, &dynamic_state))
     return dynamic_state.HasPublicKeyPins();
 
   DomainState static_state;
-  if (GetStaticDomainState(host, sni_enabled, &static_state)) {
+  if (GetStaticDomainState(host, &static_state)) {
     if (static_state.HasPublicKeyPins())
       return true;
   }
@@ -735,23 +731,12 @@ bool TransportSecurityState::AddHPKP(const std::string& host,
 }
 
 // static
-bool TransportSecurityState::IsGooglePinnedProperty(const std::string& host,
-                                                    bool sni_enabled) {
+bool TransportSecurityState::IsGooglePinnedProperty(const std::string& host) {
   std::string canonicalized_host = CanonicalizeHost(host);
   const struct HSTSPreload* entry =
       GetHSTSPreload(canonicalized_host, kPreloadedSTS, kNumPreloadedSTS);
 
-  if (entry && entry->pins.required_hashes == kGoogleAcceptableCerts)
-    return true;
-
-  if (sni_enabled) {
-    entry = GetHSTSPreload(canonicalized_host, kPreloadedSNISTS,
-                           kNumPreloadedSNISTS);
-    if (entry && entry->pins.required_hashes == kGoogleAcceptableCerts)
-      return true;
-  }
-
-  return false;
+  return entry && entry->pins.required_hashes == kGoogleAcceptableCerts;
 }
 
 // static
@@ -760,11 +745,6 @@ void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
 
   const struct HSTSPreload* entry =
       GetHSTSPreload(canonicalized_host, kPreloadedSTS, kNumPreloadedSTS);
-
-  if (!entry) {
-    entry = GetHSTSPreload(canonicalized_host, kPreloadedSNISTS,
-                           kNumPreloadedSNISTS);
-  }
 
   if (!entry) {
     // We don't care to report pin failures for dynamic pins.
@@ -788,7 +768,6 @@ bool TransportSecurityState::IsBuildTimely() {
 
 bool TransportSecurityState::CheckPublicKeyPinsImpl(
     const std::string& host,
-    bool sni_enabled,
     const HashValueVector& hashes,
     std::string* failure_log) {
   DomainState dynamic_state;
@@ -796,7 +775,7 @@ bool TransportSecurityState::CheckPublicKeyPinsImpl(
     return dynamic_state.CheckPublicKeyPins(hashes, failure_log);
 
   DomainState static_state;
-  if (GetStaticDomainState(host, sni_enabled, &static_state))
+  if (GetStaticDomainState(host, &static_state))
     return static_state.CheckPublicKeyPins(hashes, failure_log);
 
   // HasPublicKeyPins should have returned true in order for this method
@@ -805,7 +784,6 @@ bool TransportSecurityState::CheckPublicKeyPinsImpl(
 }
 
 bool TransportSecurityState::GetStaticDomainState(const std::string& host,
-                                                  bool sni_enabled,
                                                   DomainState* out) const {
   DCHECK(CalledOnValidThread());
 
@@ -829,15 +807,6 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
                                       enable_static_pins_,
                                       out,
                                       &ret)) {
-      return ret;
-    }
-    if (sni_enabled && is_build_timely && HasPreload(kPreloadedSNISTS,
-                                                     kNumPreloadedSNISTS,
-                                                     canonicalized_host,
-                                                     i,
-                                                     enable_static_pins_,
-                                                     out,
-                                                     &ret)) {
       return ret;
     }
   }

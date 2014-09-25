@@ -159,14 +159,13 @@ class NET_EXPORT TransportSecurityState
   // These functions search for static and dynamic DomainStates, and invoke the
   // functions of the same name on them. These functions are the primary public
   // interface; direct access to DomainStates is best left to tests.
-  bool ShouldSSLErrorsBeFatal(const std::string& host, bool sni_enabled);
-  bool ShouldUpgradeToSSL(const std::string& host, bool sni_enabled);
+  bool ShouldSSLErrorsBeFatal(const std::string& host);
+  bool ShouldUpgradeToSSL(const std::string& host);
   bool CheckPublicKeyPins(const std::string& host,
-                          bool sni_enabled,
                           bool is_issued_by_known_root,
                           const HashValueVector& hashes,
                           std::string* failure_log);
-  bool HasPublicKeyPins(const std::string& host, bool sni_enabled);
+  bool HasPublicKeyPins(const std::string& host);
 
   // Assign a |Delegate| for persisting the transport security state. If
   // |NULL|, state will not be persisted. The caller retains
@@ -210,17 +209,12 @@ class NET_EXPORT TransportSecurityState
   // Returns true and updates |*result| iff there is a static (built-in)
   // DomainState for |host|.
   //
-  // If |sni_enabled| is true, searches the static pins defined for SNI-using
-  // hosts as well as the rest of the pins.
-  //
   // If |host| matches both an exact entry and is a subdomain of another entry,
   // the exact match determines the return value.
   //
   // Note that this method is not const because it opportunistically removes
   // entries that have expired.
-  bool GetStaticDomainState(const std::string& host,
-                            bool sni_enabled,
-                            DomainState* result) const;
+  bool GetStaticDomainState(const std::string& host, DomainState* result) const;
 
   // Returns true and updates |*result| iff there is a dynamic DomainState
   // (learned from HSTS or HPKP headers, or set by the user, or other means) for
@@ -257,13 +251,9 @@ class NET_EXPORT TransportSecurityState
   // iff its set of required pins is the set we expect for Google
   // properties.
   //
-  // If |sni_enabled| is true, searches the static pins defined for
-  // SNI-using hosts as well as the rest of the pins.
-  //
   // If |host| matches both an exact entry and is a subdomain of another
   // entry, the exact match determines the return value.
-  static bool IsGooglePinnedProperty(const std::string& host,
-                                     bool sni_enabled);
+  static bool IsGooglePinnedProperty(const std::string& host);
 
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;
@@ -293,7 +283,6 @@ class NET_EXPORT TransportSecurityState
 
   // Helper method for actually checking pins.
   bool CheckPublicKeyPinsImpl(const std::string& host,
-                              bool sni_enabled,
                               const HashValueVector& hashes,
                               std::string* failure_log);
 

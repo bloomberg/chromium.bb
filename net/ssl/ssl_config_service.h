@@ -50,9 +50,6 @@ class NET_EXPORT SSLConfigService
   static void SetCRLSet(scoped_refptr<CRLSet> crl_set);
   static scoped_refptr<CRLSet> GetCRLSet();
 
-  // Is SNI available in this configuration?
-  static bool IsSNIAvailable(SSLConfigService* service);
-
   // Add an observer of this service.
   void AddObserver(Observer* observer);
 

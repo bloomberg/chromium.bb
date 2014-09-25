@@ -1182,9 +1182,7 @@ GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
     return url;
   if (!url.SchemeIs("http"))
     return url;
-  bool sni_available =
-      net::SSLConfigService::IsSNIAvailable(ssl_config_service_);
-  if (!transport_security_state_->ShouldUpgradeToSSL(url.host(), sni_available))
+  if (!transport_security_state_->ShouldUpgradeToSSL(url.host()))
     return url;
 
   url::Replacements<char> replacements;

@@ -81,14 +81,4 @@ void SSLConfigService::ProcessConfigUpdate(const SSLConfig& orig_config,
     NotifySSLConfigChange();
 }
 
-// static
-bool SSLConfigService::IsSNIAvailable(SSLConfigService* service) {
-  if (!service)
-    return false;
-
-  SSLConfig ssl_config;
-  service->GetSSLConfig(&ssl_config);
-  return ssl_config.version_max >= SSL_PROTOCOL_VERSION_TLS1;
-}
-
 }  // namespace net

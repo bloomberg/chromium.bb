@@ -1095,7 +1095,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     } else {
       net::TransportSecurityState::DomainState static_state;
       const bool found_static = transport_security_state->GetStaticDomainState(
-          domain, true, &static_state);
+          domain, &static_state);
       if (found_static) {
         result->SetBoolean("has_static_sts",
                            found_static && static_state.ShouldUpgradeToSSL());

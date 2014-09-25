@@ -6632,7 +6632,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
 
   TransportSecurityState::DomainState static_domain_state;
   EXPECT_TRUE(transport_security_state.GetStaticDomainState(
-      "www.google.com", true, &static_domain_state));
+      "www.google.com", &static_domain_state));
   context.set_transport_security_state(&transport_security_state);
   context.Init();
 
@@ -6659,7 +6659,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   // Get a fresh copy of the states, and check that they haven't changed.
   TransportSecurityState::DomainState new_static_domain_state;
   EXPECT_TRUE(transport_security_state.GetStaticDomainState(
-      "www.google.com", true, &new_static_domain_state));
+      "www.google.com", &new_static_domain_state));
   TransportSecurityState::DomainState new_dynamic_domain_state;
   EXPECT_FALSE(transport_security_state.GetDynamicDomainState(
       "www.google.com", &new_dynamic_domain_state));

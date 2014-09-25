@@ -468,6 +468,10 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {23, true, "\005" "login" "\004" "corp" "\006" "google" "\003" "com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {17, false, "\004" "play" "\006" "google" "\003" "com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {22, true, "\011" "passwords" "\006" "google" "\003" "com", true, kGooglePins, DOMAIN_GOOGLE_COM },
+  {11, false, "\005" "gmail" "\003" "com", true, kGooglePins, DOMAIN_GMAIL_COM },
+  {16, false, "\012" "googlemail" "\003" "com", true, kGooglePins, DOMAIN_GOOGLEMAIL_COM },
+  {15, false, "\003" "www" "\005" "gmail" "\003" "com", true, kGooglePins, DOMAIN_GMAIL_COM },
+  {20, false, "\003" "www" "\012" "googlemail" "\003" "com", true, kGooglePins, DOMAIN_GOOGLEMAIL_COM },
   {20, true, "\006" "market" "\007" "android" "\003" "com", true, kGooglePins, DOMAIN_ANDROID_COM },
   {26, true, "\003" "ssl" "\020" "google-analytics" "\003" "com", true, kGooglePins, DOMAIN_GOOGLE_ANALYTICS_COM },
   {18, true, "\005" "drive" "\006" "google" "\003" "com", true, kGooglePins, DOMAIN_GOOGLE_COM },
@@ -498,6 +502,8 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {32, true, "\022" "wf-training-master" "\007" "appspot" "\003" "com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {28, true, "\016" "wf-dogfood-hrd" "\007" "appspot" "\003" "com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {23, true, "\005" "chart" "\004" "apis" "\006" "google" "\003" "com", false, kGooglePins, DOMAIN_GOOGLE_COM },
+  {22, true, "\020" "google-analytics" "\003" "com", false, kGooglePins, DOMAIN_GOOGLE_ANALYTICS_COM },
+  {18, true, "\014" "googlegroups" "\003" "com", false, kGooglePins, DOMAIN_GOOGLEGROUPS_COM },
   {11, true, "\005" "ytimg" "\003" "com", false, kGooglePins, DOMAIN_YTIMG_COM },
   {23, true, "\021" "googleusercontent" "\003" "com", false, kGooglePins, DOMAIN_GOOGLEUSERCONTENT_COM },
   {13, true, "\007" "youtube" "\003" "com", false, kGooglePins, DOMAIN_YOUTUBE_COM },
@@ -1417,6 +1423,10 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, true, "\014" "tobias-kluge" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {19, true, "\015" "vortexhobbies" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {16, true, "\012" "willnorris" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\007" "mykolab" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {17, true, "\013" "semenkovich" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {8, false, "\003" "rme" "\002" "li", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, false, "\003" "www" "\003" "rme" "\002" "li", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\007" "aiticon" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {12, true, "\007" "aiticon" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\010" "anetaben" "\002" "nl", true, kNoPins, DOMAIN_NOT_PINNED },
@@ -1459,19 +1469,5 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {13, false, "\007" "viasinc" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
-
-static const struct HSTSPreload kPreloadedSNISTS[] = {
-  {11, false, "\005" "gmail" "\003" "com", true, kGooglePins, DOMAIN_GMAIL_COM },
-  {16, false, "\012" "googlemail" "\003" "com", true, kGooglePins, DOMAIN_GOOGLEMAIL_COM },
-  {15, false, "\003" "www" "\005" "gmail" "\003" "com", true, kGooglePins, DOMAIN_GMAIL_COM },
-  {20, false, "\003" "www" "\012" "googlemail" "\003" "com", true, kGooglePins, DOMAIN_GOOGLEMAIL_COM },
-  {22, true, "\020" "google-analytics" "\003" "com", false, kGooglePins, DOMAIN_GOOGLE_ANALYTICS_COM },
-  {18, true, "\014" "googlegroups" "\003" "com", false, kGooglePins, DOMAIN_GOOGLEGROUPS_COM },
-  {13, true, "\007" "mykolab" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
-  {17, true, "\013" "semenkovich" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
-  {8, false, "\003" "rme" "\002" "li", true, kNoPins, DOMAIN_NOT_PINNED },
-  {12, false, "\003" "www" "\003" "rme" "\002" "li", true, kNoPins, DOMAIN_NOT_PINNED },
-};
-static const size_t kNumPreloadedSNISTS = ARRAYSIZE_UNSAFE(kPreloadedSNISTS);
 
 #endif // NET_HTTP_TRANSPORT_SECURITY_STATE_STATIC_H_

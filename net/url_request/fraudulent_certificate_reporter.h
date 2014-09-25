@@ -19,12 +19,9 @@ class FraudulentCertificateReporter {
   virtual ~FraudulentCertificateReporter() {}
 
   // Sends a report to the report collection server containing the |ssl_info|
-  // associated with a connection to |hostname|. If |sni_available| is true,
-  // searches the SNI transport security metadata as well as the usual
-  // transport security metadata when determining policy for sending the report.
+  // associated with a connection to |hostname|.
   virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info,
-                          bool sni_available) = 0;
+                          const SSLInfo& ssl_info) = 0;
 };
 
 }  // namespace net

@@ -29,8 +29,7 @@ SocketStreamJob* SocketStreamJob::CreateSocketStreamJob(
     CookieStore* cookie_store) {
   GURL socket_url(url);
   if (url.scheme() == "ws" && sts &&
-      sts->ShouldUpgradeToSSL(url.host(),
-                              SSLConfigService::IsSNIAvailable(ssl))) {
+      sts->ShouldUpgradeToSSL(url.host())) {
     url::Replacements<char> replacements;
     static const char kNewScheme[] = "wss";
     replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));

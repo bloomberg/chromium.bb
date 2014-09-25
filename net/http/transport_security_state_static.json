@@ -218,6 +218,10 @@
     { "name": "passwords.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // Other Google-related domains that must use HTTPS.
+    { "name": "gmail.com", "mode": "force-https", "pins": "google" },
+    { "name": "googlemail.com", "mode": "force-https", "pins": "google" },
+    { "name": "www.gmail.com", "mode": "force-https", "pins": "google" },
+    { "name": "www.googlemail.com", "mode": "force-https", "pins": "google" },
     { "name": "market.android.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "ssl.google-analytics.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "drive.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
@@ -256,6 +260,8 @@
 
     // Other Google-related domains that must use an acceptable certificate
     // iff using SSL.
+    { "name": "google-analytics.com", "include_subdomains": true, "pins": "google" },
+    { "name": "googlegroups.com", "include_subdomains": true, "pins": "google" },
     { "name": "ytimg.com", "include_subdomains": true, "pins": "google" },
     { "name": "googleusercontent.com", "include_subdomains": true, "pins": "google" },
     { "name": "youtube.com", "include_subdomains": true, "pins": "google" },
@@ -1179,6 +1185,10 @@
     { "name": "tobias-kluge.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "vortexhobbies.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "willnorris.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "mykolab.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "semenkovich.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "rme.li", "mode": "force-https" },
+    { "name": "www.rme.li", "mode": "force-https" },
     { "name": "aiticon.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "aiticon.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "anetaben.nl", "include_subdomains": true, "mode": "force-https" },
@@ -1218,18 +1228,6 @@
     { "name": "mqas.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "dlc.viasinc.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "www.viasinc.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "viasinc.com", "mode": "force-https" },
-
-    // Entries that are only valid if the client supports SNI.
-    { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
-    { "name": "googlemail.com", "mode": "force-https", "pins": "google", "snionly": true },
-    { "name": "www.gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
-    { "name": "www.googlemail.com", "mode": "force-https", "pins": "google", "snionly": true },
-    { "name": "google-analytics.com", "include_subdomains": true, "pins": "google", "snionly": true },
-    { "name": "googlegroups.com", "include_subdomains": true, "pins": "google", "snionly": true },
-    { "name": "mykolab.com", "include_subdomains": true, "mode": "force-https", "snionly": true },
-    { "name": "semenkovich.com", "include_subdomains": true, "mode": "force-https", "snionly": true },
-    { "name": "rme.li", "mode": "force-https", "snionly": true },
-    { "name": "www.rme.li", "mode": "force-https", "snionly": true }
+    { "name": "viasinc.com", "mode": "force-https" }
   ]
 }
