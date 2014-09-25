@@ -114,7 +114,7 @@ HRESULT ReadConfig(const base::FilePath& filename,
 
   scoped_ptr<char[]> buffer(new char[kMaxConfigFileSize]);
   DWORD size = kMaxConfigFileSize;
-  if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
+  if (!::ReadFile(file.Get(), &buffer[0], size, &size, NULL)) {
     DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to read '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
@@ -177,7 +177,8 @@ HRESULT WriteConfigFileToTemp(const base::FilePath& filename,
   }
 
   DWORD written;
-  if (!WriteFile(file, content, static_cast<DWORD>(length), &written, NULL)) {
+  if (!WriteFile(file.Get(), content, static_cast<DWORD>(length), &written,
+                 NULL)) {
     DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to write to '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
@@ -372,7 +373,7 @@ STDMETHODIMP ElevatedController::StartDaemon() {
   }
 
   // Change the service start type to 'auto'.
-  if (!::ChangeServiceConfigW(service,
+  if (!::ChangeServiceConfigW(service.Get(),
                               SERVICE_NO_CHANGE,
                               SERVICE_AUTO_START,
                               SERVICE_NO_CHANGE,
@@ -390,7 +391,7 @@ STDMETHODIMP ElevatedController::StartDaemon() {
   }
 
   // Start the service.
-  if (!StartService(service, 0, NULL)) {
+  if (!StartService(service.Get(), 0, NULL)) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_ALREADY_RUNNING) {
       PLOG(ERROR) << "Failed to start the '" << kWindowsServiceName
@@ -411,7 +412,7 @@ STDMETHODIMP ElevatedController::StopDaemon() {
   }
 
   // Change the service start type to 'manual'.
-  if (!::ChangeServiceConfigW(service,
+  if (!::ChangeServiceConfigW(service.Get(),
                               SERVICE_NO_CHANGE,
                               SERVICE_DEMAND_START,
                               SERVICE_NO_CHANGE,
@@ -430,7 +431,7 @@ STDMETHODIMP ElevatedController::StopDaemon() {
 
   // Stop the service.
   SERVICE_STATUS status;
-  if (!ControlService(service, SERVICE_CONTROL_STOP, &status)) {
+  if (!ControlService(service.Get(), SERVICE_CONTROL_STOP, &status)) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_NOT_ACTIVE) {
       PLOG(ERROR) << "Failed to stop the '" << kWindowsServiceName
@@ -513,7 +514,7 @@ HRESULT ElevatedController::OpenService(ScopedScHandle* service_out) {
   DWORD desired_access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS |
                          SERVICE_START | SERVICE_STOP;
   ScopedScHandle service(
-      ::OpenServiceW(scmanager, kWindowsServiceName, desired_access));
+      ::OpenServiceW(scmanager.Get(), kWindowsServiceName, desired_access));
   if (!service.IsValid()) {
     error = GetLastError();
     PLOG(ERROR) << "Failed to open to the '" << kWindowsServiceName

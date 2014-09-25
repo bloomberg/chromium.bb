@@ -188,7 +188,7 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
     info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_ACTIVE_PROCESS |
         JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
     info.BasicLimitInformation.ActiveProcessLimit = 2;
-    if (!SetInformationJobObject(job,
+    if (!SetInformationJobObject(job.Get(),
                                  JobObjectExtendedLimitInformation,
                                  &info,
                                  sizeof(info))) {
@@ -261,10 +261,10 @@ void WtsSessionProcessDelegate::Core::KillProcess() {
 
   if (launch_elevated_) {
     if (job_.IsValid())
-      TerminateJobObject(job_, CONTROL_C_EXIT);
+      TerminateJobObject(job_.Get(), CONTROL_C_EXIT);
   } else {
     if (worker_process_.IsValid())
-      TerminateProcess(worker_process_, CONTROL_C_EXIT);
+      TerminateProcess(worker_process_.Get(), CONTROL_C_EXIT);
   }
 
   worker_process_.Close();
@@ -306,7 +306,7 @@ void WtsSessionProcessDelegate::Core::OnChannelConnected(int32 peer_pid) {
   // protection against a malicious processed connecting to the pipe.
   if (launch_elevated_) {
     DWORD pid;
-    if (!get_named_pipe_client_pid_(pipe_, &pid)) {
+    if (!get_named_pipe_client_pid_(pipe_.Get(), &pid)) {
       PLOG(ERROR) << "Failed to retrive PID of the client";
       ReportFatalError();
       return;
@@ -380,7 +380,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
 
   // Wrap the pipe into an IPC channel.
   scoped_ptr<IPC::ChannelProxy> channel(
-      IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe),
+      IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe.Get()),
                                 IPC::Channel::MODE_SERVER,
                                 this,
                                 io_task_runner_));
@@ -394,7 +394,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   ScopedHandle worker_thread;
   if (!LaunchProcessWithToken(command_line.GetProgram(),
                               command_line.GetCommandLineString(),
-                              session_token_,
+                              session_token_.Get(),
                               NULL,
                               NULL,
                               false,
@@ -407,14 +407,14 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   }
 
   if (launch_elevated_) {
-    if (!AssignProcessToJobObject(job_, worker_process)) {
+    if (!AssignProcessToJobObject(job_.Get(), worker_process.Get())) {
       PLOG(ERROR) << "Failed to assign the worker to the job object";
       ReportFatalError();
       return;
     }
   }
 
-  if (!ResumeThread(worker_thread)) {
+  if (!ResumeThread(worker_thread.Get())) {
     PLOG(ERROR) << "Failed to resume the worker thread";
     ReportFatalError();
     return;
@@ -513,7 +513,7 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
       SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
   HANDLE temp_handle;
   if (!DuplicateHandle(GetCurrentProcess(),
-                       worker_process_,
+                       worker_process_.Get(),
                        GetCurrentProcess(),
                        &temp_handle,
                        desired_access,

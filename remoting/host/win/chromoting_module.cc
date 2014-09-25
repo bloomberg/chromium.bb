@@ -54,7 +54,7 @@ bool LowerProcessIntegrityLevel(DWORD max_level) {
   DWORD length = 0;
 
   // Get the size of the buffer needed to hold the mandatory label.
-  BOOL result = GetTokenInformation(token, TokenIntegrityLevel,
+  BOOL result = GetTokenInformation(token.Get(), TokenIntegrityLevel,
                                     mandatory_label.get(), length, &length);
   if (!result && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
     // Allocate a buffer that is large enough.
@@ -62,7 +62,7 @@ bool LowerProcessIntegrityLevel(DWORD max_level) {
     mandatory_label.Swap(buffer);
 
     // Get the the mandatory label.
-    result = GetTokenInformation(token, TokenIntegrityLevel,
+    result = GetTokenInformation(token.Get(), TokenIntegrityLevel,
                                  mandatory_label.get(), length, &length);
   }
   if (!result) {
@@ -79,8 +79,8 @@ bool LowerProcessIntegrityLevel(DWORD max_level) {
   // Set the integrity level to |max_level| if needed.
   if (*current_level > max_level) {
     *current_level = max_level;
-    if (!SetTokenInformation(token, TokenIntegrityLevel, mandatory_label.get(),
-                             length)) {
+    if (!SetTokenInformation(token.Get(), TokenIntegrityLevel,
+                             mandatory_label.get(), length)) {
       PLOG(ERROR) << "Failed to set the mandatory label";
       return false;
     }

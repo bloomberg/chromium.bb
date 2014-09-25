@@ -248,7 +248,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   }
   base::win::ScopedHandle pipe(temp_handle);
 
-  IPC::ChannelHandle desktop_channel_handle(pipe);
+  IPC::ChannelHandle desktop_channel_handle(pipe.Get());
 
 #elif defined(OS_POSIX)
   // On posix: |desktop_pipe| is a valid file descriptor.

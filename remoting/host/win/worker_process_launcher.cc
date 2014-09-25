@@ -113,7 +113,7 @@ void WorkerProcessLauncher::OnProcessLaunched(
   DCHECK(!process_watcher_.GetWatchedObject());
   DCHECK(!worker_process_.IsValid());
 
-  if (!process_watcher_.StartWatching(worker_process, this)) {
+  if (!process_watcher_.StartWatching(worker_process.Get(), this)) {
     StopWorker();
     return;
   }
@@ -167,10 +167,10 @@ void WorkerProcessLauncher::OnObjectSignaled(HANDLE object) {
   DCHECK(CalledOnValidThread());
   DCHECK(!process_watcher_.GetWatchedObject());
   DCHECK_EQ(exit_code_, CONTROL_C_EXIT);
-  DCHECK_EQ(worker_process_, object);
+  DCHECK_EQ(worker_process_.Get(), object);
 
   // Get exit code of the worker process if it is available.
-  if (!::GetExitCodeProcess(worker_process_, &exit_code_)) {
+  if (!::GetExitCodeProcess(worker_process_.Get(), &exit_code_)) {
     PLOG(INFO) << "Failed to query the exit code of the worker process";
     exit_code_ = CONTROL_C_EXIT;
   }

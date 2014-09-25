@@ -53,7 +53,7 @@ bool CreateConnectedIpcChannel(
 
   // Wrap the pipe into an IPC channel.
   scoped_ptr<IPC::ChannelProxy> server =
-      IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe),
+      IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe.Get()),
                                 IPC::Channel::MODE_SERVER,
                                 listener,
                                 io_task_runner);

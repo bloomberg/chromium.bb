@@ -98,8 +98,8 @@ DWORD OpenService(ScopedScHandle* service_out) {
     return error;
   }
 
-  ScopedScHandle service(
-      ::OpenServiceW(scmanager, kWindowsServiceName, SERVICE_QUERY_STATUS));
+  ScopedScHandle service(::OpenServiceW(scmanager.Get(), kWindowsServiceName,
+                                        SERVICE_QUERY_STATUS));
   if (!service.IsValid()) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_DOES_NOT_EXIST) {
@@ -153,7 +153,7 @@ DaemonController::State DaemonControllerDelegateWin::GetState() {
   switch (error) {
     case ERROR_SUCCESS: {
       SERVICE_STATUS status;
-      if (::QueryServiceStatus(service, &status)) {
+      if (::QueryServiceStatus(service.Get(), &status)) {
         return ConvertToDaemonState(status.dwCurrentState);
       } else {
         PLOG(ERROR) << "Failed to query the state of the '"

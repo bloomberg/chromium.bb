@@ -402,7 +402,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 
 #if defined(OS_WIN)
   base::win::ScopedHandle pipe(reinterpret_cast<HANDLE>(pipe_handle));
-  IPC::ChannelHandle channel_handle(pipe);
+  IPC::ChannelHandle channel_handle(pipe.Get());
 #elif defined(OS_POSIX)
   base::FileDescriptor pipe(pipe_handle, true);
   IPC::ChannelHandle channel_handle(channel_name, pipe);

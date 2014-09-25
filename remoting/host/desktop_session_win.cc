@@ -573,7 +573,7 @@ void DesktopSessionWin::OnSessionDetached() {
 void DesktopSessionWin::OnDesktopSessionAgentAttached(
       IPC::PlatformFileForTransit desktop_pipe) {
   if (!daemon_process()->OnDesktopSessionAgentAttached(id(),
-                                                       desktop_process_,
+                                                       desktop_process_.Get(),
                                                        desktop_pipe)) {
     CrashDesktopProcess(FROM_HERE);
   }

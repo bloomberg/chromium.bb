@@ -83,7 +83,7 @@ bool CreateRestrictedToken(ScopedHandle* token_out) {
   ScopedHandle token(temp_handle);
 
   sandbox::RestrictedToken restricted_token;
-  if (restricted_token.Init(token) != ERROR_SUCCESS)
+  if (restricted_token.Init(token.Get()) != ERROR_SUCCESS)
     return false;
 
   // Remove all privileges in the token.
@@ -245,7 +245,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 
   // Determine our logon SID, so we can grant it access to our window station
   // and desktop.
-  ScopedSid logon_sid = GetLogonSid(token);
+  ScopedSid logon_sid = GetLogonSid(token.Get());
   if (!logon_sid) {
     PLOG(ERROR) << "Failed to retrieve the logon SID";
     ReportFatalError();
@@ -306,7 +306,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     ScopedHandle worker_thread;
     if (!LaunchProcessWithToken(command_line.GetProgram(),
                                 command_line.GetCommandLineString(),
-                                token,
+                                token.Get(),
                                 &process_attributes,
                                 &thread_attributes,
                                 true,
@@ -346,7 +346,7 @@ void UnprivilegedProcessDelegate::KillProcess() {
   event_handler_ = NULL;
 
   if (worker_process_.IsValid()) {
-    TerminateProcess(worker_process_, CONTROL_C_EXIT);
+    TerminateProcess(worker_process_.Get(), CONTROL_C_EXIT);
     worker_process_.Close();
   }
 }
@@ -361,7 +361,7 @@ bool UnprivilegedProcessDelegate::OnMessageReceived(
 void UnprivilegedProcessDelegate::OnChannelConnected(int32 peer_pid) {
   DCHECK(CalledOnValidThread());
 
-  DWORD pid = GetProcessId(worker_process_);
+  DWORD pid = GetProcessId(worker_process_.Get());
   if (pid != static_cast<DWORD>(peer_pid)) {
     LOG(ERROR) << "The actual client PID " << pid
                << " does not match the one reported by the client: "
@@ -402,7 +402,7 @@ void UnprivilegedProcessDelegate::ReportProcessLaunched(
       SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
   HANDLE temp_handle;
   if (!DuplicateHandle(GetCurrentProcess(),
-                       worker_process_,
+                       worker_process_.Get(),
                        GetCurrentProcess(),
                        &temp_handle,
                        desired_access,

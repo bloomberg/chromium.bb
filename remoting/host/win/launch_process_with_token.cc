@@ -132,7 +132,7 @@ bool CopyProcessToken(DWORD desired_access, ScopedHandle* token_out) {
   }
   ScopedHandle process_token(temp_handle);
 
-  if (!DuplicateTokenEx(process_token,
+  if (!DuplicateTokenEx(process_token.Get(),
                         desired_access,
                         NULL,
                         SecurityImpersonation,
@@ -165,7 +165,8 @@ bool CreatePrivilegedToken(ScopedHandle* token_out) {
   }
 
   // Enable the SE_TCB_NAME privilege.
-  if (!AdjustTokenPrivileges(privileged_token, FALSE, &state, 0, NULL, 0)) {
+  if (!AdjustTokenPrivileges(privileged_token.Get(), FALSE, &state, 0, NULL,
+                             0)) {
     PLOG(ERROR) << "Failed to enable SE_TCB_NAME privilege in a token";
     return false;
   }
@@ -380,13 +381,13 @@ bool CreateRemoteSessionProcess(
   if (!ConnectToExecutionServer(session_id, &pipe))
     return false;
 
-  if (!SendCreateProcessRequest(pipe, application_name, command_line,
+  if (!SendCreateProcessRequest(pipe.Get(), application_name, command_line,
                                 creation_flags, desktop_name)) {
     return false;
   }
 
   PROCESS_INFORMATION process_information;
-  if (!ReceiveCreateProcessResponse(pipe, &process_information))
+  if (!ReceiveCreateProcessResponse(pipe.Get(), &process_information))
     return false;
 
   if (!ProcessCreateProcessResponse(creation_flags, &process_information)) {
@@ -421,14 +422,14 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
   if (!CreatePrivilegedToken(&privileged_token)) {
     return false;
   }
-  if (!ImpersonateLoggedOnUser(privileged_token)) {
+  if (!ImpersonateLoggedOnUser(privileged_token.Get())) {
     PLOG(ERROR) << "Failed to impersonate the privileged token";
     return false;
   }
 
   // Change the session ID of the token.
   DWORD new_session_id = session_id;
-  if (!SetTokenInformation(session_token,
+  if (!SetTokenInformation(session_token.Get(),
                            TokenSessionId,
                            &new_session_id,
                            sizeof(new_session_id))) {

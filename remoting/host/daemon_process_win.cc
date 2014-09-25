@@ -164,7 +164,7 @@ bool DaemonProcessWin::OnDesktopSessionAgentAttached(
   base::ProcessHandle desktop_process_for_transit;
   if (!DuplicateHandle(GetCurrentProcess(),
                        desktop_process,
-                       network_process_,
+                       network_process_.Get(),
                        &desktop_process_for_transit,
                        0,
                        FALSE,
@@ -247,7 +247,7 @@ void DaemonProcessWin::DisableAutoStart() {
 
   DWORD desired_access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS;
   ScopedScHandle service(
-      OpenService(scmanager, kWindowsServiceName, desired_access));
+      OpenService(scmanager.Get(), kWindowsServiceName, desired_access));
   if (!service.IsValid()) {
     PLOG(INFO) << "Failed to open to the '" << kWindowsServiceName
                << "' service";
@@ -256,7 +256,7 @@ void DaemonProcessWin::DisableAutoStart() {
 
   // Change the service start type to 'manual'. All |NULL| parameters below mean
   // that there is no change to the corresponding service parameter.
-  if (!ChangeServiceConfig(service,
+  if (!ChangeServiceConfig(service.Get(),
                            SERVICE_NO_CHANGE,
                            SERVICE_DEMAND_START,
                            SERVICE_NO_CHANGE,
@@ -280,9 +280,9 @@ bool DaemonProcessWin::InitializePairingRegistry() {
 
   // Duplicate handles to the network process.
   IPC::PlatformFileForTransit privileged_key = GetRegistryKeyForTransit(
-      network_process_, pairing_registry_privileged_key_);
+      network_process_.Get(), pairing_registry_privileged_key_);
   IPC::PlatformFileForTransit unprivileged_key = GetRegistryKeyForTransit(
-      network_process_, pairing_registry_unprivileged_key_);
+      network_process_.Get(), pairing_registry_unprivileged_key_);
   if (!(privileged_key && unprivileged_key))
     return false;
 
