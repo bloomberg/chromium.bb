@@ -887,7 +887,7 @@ const Experiment kExperiments[] = {
     "disable-touch-adjustment",
     IDS_DISABLE_TOUCH_ADJUSTMENT_NAME,
     IDS_DISABLE_TOUCH_ADJUSTMENT_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kDisableTouchAdjustment)
   },
 #if defined(OS_CHROMEOS)
