@@ -1326,3 +1326,5 @@ crbug.com/417625 [ Win Linux ] fast/forms/select/listbox-appearance-basic.html [
 crbug.com/417625 [ Win Linux ] fast/forms/select/menulist-appearance-basic.html [ ImageOnlyFailure ]
 
 crbug.com/416580 [ Win ] svg/custom/external-paintserver-reference.svg [ NeedsRebaseline ]
+crbug.com/416580 [ Win ] svg/custom/linking-base-external-reference.xhtml [ NeedsRebaseline ]
+
