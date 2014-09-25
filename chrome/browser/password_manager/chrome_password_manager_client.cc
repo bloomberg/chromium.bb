@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
@@ -150,6 +151,13 @@ void ChromePasswordManagerClient::AutofillResultsComputed() {
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
     scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
+  // Save password infobar and the password bubble prompts in case of
+  // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
+  if (!BrowsingDataHelper::IsWebScheme(
+      web_contents()->GetLastCommittedURL().scheme())) {
+    return;
+  }
+
   if (IsTheHotNewBubbleUIEnabled()) {
     ManagePasswordsUIController* manage_passwords_ui_controller =
         ManagePasswordsUIController::FromWebContents(web_contents());
