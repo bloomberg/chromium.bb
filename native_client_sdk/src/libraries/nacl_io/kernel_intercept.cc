@@ -110,8 +110,12 @@ int ki_is_initialized() {
   return s_state.kp != NULL;
 }
 
-void ki_uninit() {
+int ki_uninit() {
   LOG_TRACE("ki_uninit");
+  assert(s_state.kp);
+  if (s_state.kp == NULL)
+    return 1;
+
   if (s_saved_state.kp == NULL)
     kernel_wrap_uninit();
 
@@ -125,6 +129,7 @@ void ki_uninit() {
     delete state_to_delete.kp;
 
   delete state_to_delete.ppapi;
+  return 0;
 }
 
 nacl_io::KernelProxy* ki_get_proxy() {

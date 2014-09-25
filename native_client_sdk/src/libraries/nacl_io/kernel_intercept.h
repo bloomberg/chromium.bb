@@ -65,7 +65,7 @@ nacl_io::KernelProxy* ki_get_proxy();
 #endif
 
 int ki_is_initialized(void);
-void ki_uninit(void);
+int ki_uninit(void);
 
 int ki_chdir(const char* path);
 void ki_exit(int status);
