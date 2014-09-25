@@ -1,17 +1,15 @@
 {
-  "name": "File System Provider API Example",
+  "name": "File System Provider API Extension Example",
   "version": "0.1",
   "manifest_version": 2,
   "description":
-      "Demonstrate features of the API like mounting, listing directories, etc",
+      "Demonstrate features of the API like mounting, listing directories, etc for extensions.",
   "permissions": [
     "fileSystemProvider"
   ],
-  "app": {
-    "background": {
-      "scripts": [
-        "background.js"
-      ]
-    }
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
   }
 }

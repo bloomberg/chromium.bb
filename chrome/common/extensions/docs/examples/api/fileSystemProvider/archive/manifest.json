@@ -1,8 +1,8 @@
 {
-  "name": "Fake Archive Handler",
+  "name": "Fake Archive Handler App",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Demonstrate File System Provider API usage for archives.",
+  "description": "Demonstrate File System Provider API usage for apps.",
   "permissions": [
     "fileSystemProvider",
     {"fileSystem": ["retainEntries"]},
