@@ -26,6 +26,7 @@ class ActivityManagerImpl : public ActivityManager,
   virtual void AddActivity(Activity* activity) OVERRIDE;
   virtual void RemoveActivity(Activity* activity) OVERRIDE;
   virtual void UpdateActivity(Activity* activity) OVERRIDE;
+  virtual Activity* GetActivityForWindow(aura::Window* window) OVERRIDE;
   virtual void AddObserver(ActivityManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ActivityManagerObserver* observer) OVERRIDE;
 

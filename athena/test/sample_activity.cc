@@ -45,8 +45,12 @@ Activity::ActivityMediaState SampleActivity::GetMediaState() {
 }
 
 aura::Window* SampleActivity::GetWindow() {
-   return
-       !contents_view_ ? NULL : contents_view_->GetWidget()->GetNativeWindow();
+  return !contents_view_ ? NULL
+                         : contents_view_->GetWidget()->GetNativeWindow();
+}
+
+content::WebContents* SampleActivity::GetWebContents() {
+  return NULL;
 }
 
 void SampleActivity::Init() {

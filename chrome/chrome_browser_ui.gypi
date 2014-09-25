@@ -2461,6 +2461,8 @@
     ],
     # Used when athena is enabled.
     'chrome_browser_ui_athena_sources': [
+      'browser/ui/views/athena/athena_util.cc',
+      'browser/ui/views/athena/athena_util.h',
       'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.cc',
       'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h',
     ],

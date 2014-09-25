@@ -16,8 +16,10 @@ typedef test::AthenaTestBase ActivityManagerTest;
 TEST_F(ActivityManagerTest, Basic) {
   ActivityManagerImpl* activity_manager =
       static_cast<ActivityManagerImpl*>(ActivityManager::Get());
-  Activity* activity1 = athena::ActivityFactory::Get()->CreateWebActivity(
-      NULL, base::string16(), GURL());
+  ActivityFactory* factory = ActivityFactory::Get();
+
+  Activity* activity1 =
+      factory->CreateWebActivity(NULL, base::string16(), GURL());
   EXPECT_EQ(1, activity_manager->num_activities());
 
   // Activity is not visible when created.
@@ -25,8 +27,8 @@ TEST_F(ActivityManagerTest, Basic) {
   Activity::Show(activity1);
   EXPECT_TRUE(activity1->GetWindow()->TargetVisibility());
 
-  Activity* activity2 = athena::ActivityFactory::Get()->CreateWebActivity(
-      NULL, base::string16(), GURL());
+  Activity* activity2 =
+      factory->CreateWebActivity(NULL, base::string16(), GURL());
   EXPECT_EQ(2, activity_manager->num_activities());
 
   Activity::Delete(activity1);
@@ -35,6 +37,24 @@ TEST_F(ActivityManagerTest, Basic) {
   // Deleting the activity's window should delete the activity itself.
   delete activity2->GetWindow();
   EXPECT_EQ(0, activity_manager->num_activities());
+}
+
+TEST_F(ActivityManagerTest, GetActivityForWindow) {
+  ActivityManager* manager = ActivityManager::Get();
+  ActivityFactory* factory = ActivityFactory::Get();
+
+  Activity* activity1 =
+      factory->CreateWebActivity(NULL, base::string16(), GURL());
+  Activity* activity2 =
+      factory->CreateWebActivity(NULL, base::string16(), GURL());
+
+  EXPECT_EQ(activity1, manager->GetActivityForWindow(activity1->GetWindow()));
+  EXPECT_EQ(activity2, manager->GetActivityForWindow(activity2->GetWindow()));
+
+  EXPECT_EQ(NULL, manager->GetActivityForWindow(NULL));
+
+  scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
+  EXPECT_EQ(NULL, manager->GetActivityForWindow(window.get()));
 }
 
 }  // namespace athena

@@ -500,6 +500,10 @@ aura::Window* WebActivity::GetWindow() {
   return !web_view_ ? NULL : web_view_->GetWidget()->GetNativeWindow();
 }
 
+content::WebContents* WebActivity::GetWebContents() {
+  return !web_view_ ? NULL : web_view_->GetWebContents();
+}
+
 void WebActivity::Init() {
   DCHECK(web_view_);
   web_view_->InstallAccelerators();

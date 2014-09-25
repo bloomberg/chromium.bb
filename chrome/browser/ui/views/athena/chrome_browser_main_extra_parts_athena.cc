@@ -15,6 +15,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +42,8 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
     athena::StartAthenaEnv(content::BrowserThread::GetBlockingPool()->
         GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+    ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
   }
   virtual void PostProfileInit() OVERRIDE {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(

@@ -13,6 +13,10 @@ namespace aura {
 class Window;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace athena {
 
 class ActivityViewModel;
@@ -88,6 +92,10 @@ class ATHENA_EXPORT Activity {
   // TODO(oshima): Consider returning base::Window window instead,
   // which has Show/ShowInactive and other control methods.
   virtual aura::Window* GetWindow() = 0;
+
+  // Returns the web contents used to draw the content of the activity.
+  // This may return NULL if the web content is not available.
+  virtual content::WebContents* GetWebContents() = 0;
 
  protected:
   virtual ~Activity() {}

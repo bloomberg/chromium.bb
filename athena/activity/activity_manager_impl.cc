@@ -85,6 +85,19 @@ void ActivityManagerImpl::UpdateActivity(Activity* activity) {
   widget->UpdateWindowTitle();
 }
 
+Activity* ActivityManagerImpl::GetActivityForWindow(aura::Window* window) {
+  struct Matcher {
+    Matcher(aura::Window* w) : window(w) {}
+    bool operator()(Activity* activity) {
+      return activity->GetWindow() == window;
+    }
+    aura::Window* window;
+  };
+  std::vector<Activity*>::iterator iter =
+      std::find_if(activities_.begin(), activities_.end(), Matcher(window));
+  return iter != activities_.end() ? *iter : NULL;
+}
+
 void ActivityManagerImpl::AddObserver(ActivityManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -94,22 +107,10 @@ void ActivityManagerImpl::RemoveObserver(ActivityManagerObserver* observer) {
 }
 
 void ActivityManagerImpl::OnWidgetDestroying(views::Widget* widget) {
-  struct Matcher {
-    Matcher(aura::Window* w) : window(w) {}
-
-    bool operator()(Activity* activity) {
-      return activity->GetWindow() == window;
-    }
-    aura::Window* window;
-  };
-  std::vector<Activity*>::iterator iter =
-      std::find_if(activities_.begin(),
-                   activities_.end(),
-                   Matcher(widget->GetNativeWindow()));
-  DCHECK(iter != activities_.end());
-  if (iter != activities_.end()) {
+  Activity* activity = GetActivityForWindow(widget->GetNativeWindow());
+  if (activity) {
     widget->RemoveObserver(this);
-    Activity::Delete(*iter);
+    Activity::Delete(activity);
   }
 }
 

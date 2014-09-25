@@ -96,6 +96,10 @@ aura::Window* AppActivity::GetWindow() {
   return !web_view_ ? NULL : web_view_->GetWidget()->GetNativeWindow();
 }
 
+content::WebContents* AppActivity::GetWebContents() {
+  return !web_view_ ? NULL : web_view_->GetWebContents();
+}
+
 void AppActivity::Init() {
   DCHECK(app_activity_registry_);
   Activity* app_proxy = app_activity_registry_->unloaded_activity_proxy();

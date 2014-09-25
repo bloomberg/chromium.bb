@@ -27,6 +27,7 @@ class SampleActivity : public Activity,
   virtual bool IsVisible() OVERRIDE;
   virtual ActivityMediaState GetMediaState() OVERRIDE;
   virtual aura::Window* GetWindow() OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // athena::ActivityViewModel:
   virtual void Init() OVERRIDE;

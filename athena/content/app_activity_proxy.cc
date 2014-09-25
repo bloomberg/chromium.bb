@@ -57,6 +57,10 @@ aura::Window* AppActivityProxy::GetWindow() {
   return view_->GetWidget()->GetNativeWindow();
 }
 
+content::WebContents* AppActivityProxy::GetWebContents() {
+  return NULL;
+}
+
 void AppActivityProxy::Init() {
   DCHECK(replaced_activity_);
   // Get the content proxy to present the content.
