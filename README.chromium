@@ -69,8 +69,11 @@ This directory contains the source code of ICU 52.1 for C/C++
 
 
    - android/brkitr.patch (to be applied for Android build only) :
-       Reverts some changes about Chinese/Japanese segmentation rules in
-       patches/brkitr.patch to reduce binary size for Android.
+       Do not use the C+J dictionary for Chinese/Japanese segmentation
+       to reduce the data size. Adjust word.txt and a few other files.
+
+   - source/data/brkitr/word_ja.txt (used only on Android)
+       Added for Japanese-specific word-breaking without the C+J dictionary.
 
 4. Converter changes :
 
