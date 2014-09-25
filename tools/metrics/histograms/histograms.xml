@@ -45226,6 +45226,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
+  <int value="-1125133283" label="disable-threaded-scrolling"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
   <int value="-1077752943" label="enable-password-generation"/>

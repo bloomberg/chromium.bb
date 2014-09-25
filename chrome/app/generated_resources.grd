@@ -6468,6 +6468,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE" desc="Name for the sync-touchmove scrolling mode">
         sync-touchmove
       </message>
+      <message name="IDS_FLAGS_DISABLE_THREADED_SCROLLING_NAME" desc="Title for the flag to disable threaded scrolling.">
+        Disable threaded scrolling.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_THREADED_SCROLLING_DESCRIPTION" desc="Description for the flag to disable threaded scrolling.">
+        Disabled threaded handling of scroll-related input events, forcing all such scroll events to be handled on the main thread. Note that this can dramatically hurt scrolling performance of most websites and is intended for testing purposes only.
+      </message>
       <message name="IDS_FLAGS_BLEEDING_RENDERER_NAME" desc="Name of the 'Stacked Tabs' lab.">
         Bleeding Edge Renderer Paths - LIKELY TO CRASH YOUR BROWSER
       </message>

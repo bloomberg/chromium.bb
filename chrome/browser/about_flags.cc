@@ -1716,6 +1716,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kTouchScrollingModeChoices)
   },
   {
+    "disable-threaded-scrolling",
+    IDS_FLAGS_DISABLE_THREADED_SCROLLING_NAME,
+    IDS_FLAGS_DISABLE_THREADED_SCROLLING_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kDisableThreadedScrolling)
+  },
+  {
     "bleeding-edge-renderer-mode",
     IDS_FLAGS_BLEEDING_RENDERER_NAME,
     IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION,

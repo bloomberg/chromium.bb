@@ -759,6 +759,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       PreferCompositingToLCDText(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
       ShouldUseTransitionCompositing(device_scale_factor_));
+  webview()->settings()->setThreadedScrollingEnabled(
+      !command_line.HasSwitch(switches::kDisableThreadedScrolling));
 
   ApplyWebPreferences(webkit_preferences_, webview());
 

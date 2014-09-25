@@ -250,6 +250,9 @@ const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
+// Disable multithreaded, compositor scrolling of web content.
+const char kDisableThreadedScrolling[]      = "disable-threaded-scrolling";
+
 // Disable V8 idle notification after commit.
 // Overrides kEnableV8IdleNotificationAfterCommit.
 const char kDisableV8IdleNotificationAfterCommit[] =
