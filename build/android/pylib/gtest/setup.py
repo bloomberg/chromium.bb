@@ -121,6 +121,7 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
       # TODO(maruel): This may not be always true.
       '--config-variable', 'target_arch', 'arm',
       '--config-variable', 'use_openssl', '0',
+      '--config-variable', 'use_ozone', '0',
   ]
   assert not cmd_helper.RunCmd(isolate_cmd)
 
