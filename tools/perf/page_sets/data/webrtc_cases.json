@@ -1,0 +1,10 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "webrtc_cases_000.wpr": [
+            "third_party/webrtc/samples/js/demos/html/pc1.html", 
+            "webrtc/local-video.html", 
+            "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-resolution/"
+        ]
+    }
+}

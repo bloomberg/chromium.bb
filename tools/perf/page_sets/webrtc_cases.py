@@ -35,19 +35,26 @@ class Page2(WebrtcCasesPage):
       url='file://third_party/webrtc/samples/js/demos/html/pc1.html',
       page_set=page_set)
 
-  def RunEndure(self, action_runner):
-    action_runner.ClickElement('button[id="btn1"]')
-    action_runner.Wait(2)
-    action_runner.ClickElement('button[id="btn2"]')
-    action_runner.Wait(10)
-    action_runner.ClickElement('button[id="btn3"]')
-
   def RunWebrtc(self, action_runner):
     action_runner.ClickElement('button[id="btn1"]')
     action_runner.Wait(2)
     action_runner.ClickElement('button[id="btn2"]')
     action_runner.Wait(10)
     action_runner.ClickElement('button[id="btn3"]')
+
+class Page3(WebrtcCasesPage):
+
+  """ Why: Acquires a high definition local stream. """
+
+  def __init__(self, page_set):
+    super(Page3, self).__init__(
+      url=('http://googlechrome.github.io/webrtc/samples/web/content/'
+           'getusermedia-resolution/'),
+      page_set=page_set)
+
+  def RunWebrtc(self, action_runner):
+    action_runner.ClickElement('button[id="hd"]')
+    action_runner.Wait(10)
 
 
 class WebrtcCasesPageSet(page_set_module.PageSet):
@@ -56,7 +63,10 @@ class WebrtcCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(WebrtcCasesPageSet, self).__init__(
+      archive_data_file='data/webrtc_cases.json',
+      bucket=page_set_module.PUBLIC_BUCKET,
       serving_dirs=['third_party/webrtc/samples/js'])
 
     self.AddPage(Page1(self))
     self.AddPage(Page2(self))
+    self.AddPage(Page3(self))
