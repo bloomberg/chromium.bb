@@ -49,7 +49,8 @@ void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
         }
     }
 
-    SVGRenderingContext renderingContext(&renderer(), paintInfo, SVGRenderingContext::SaveGraphicsContext);
+    GraphicsContextStateSaver stateSaver(*paintInfo.context);
+    SVGRenderingContext renderingContext(&renderer(), paintInfo);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
             child->paint(paintInfo, paintOffset, 0, 0);

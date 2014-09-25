@@ -88,7 +88,7 @@ SVGRenderingContext::~SVGRenderingContext()
         m_paintInfo->context->restore();
 }
 
-void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintInfo& paintInfo, NeedsGraphicsContextSave needsGraphicsContextSave)
+void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintInfo& paintInfo)
 {
     ASSERT(object);
 
@@ -101,12 +101,6 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     m_object = object;
     m_paintInfo = &paintInfo;
     m_filter = 0;
-
-    // We need to save / restore the context even if the initialization failed.
-    if (needsGraphicsContextSave == SaveGraphicsContext) {
-        m_paintInfo->context->save();
-        m_renderingFlags |= RestoreGraphicsContext;
-    }
 
     RenderStyle* style = m_object->style();
     ASSERT(style);

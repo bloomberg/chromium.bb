@@ -31,6 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -84,10 +85,14 @@ struct PaintInfo {
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return paintBehavior & PaintBehaviorRootBackgroundOnly; }
 
-    void applyTransform(const AffineTransform& localToAncestorTransform, bool identityStatusUnknown = true)
+    void applyTransform(const AffineTransform& localToAncestorTransform,
+        GraphicsContextStateSaver* stateSaver = 0)
     {
-        if (identityStatusUnknown && localToAncestorTransform.isIdentity())
+        if (localToAncestorTransform.isIdentity())
             return;
+
+        if (stateSaver)
+            stateSaver->saveIfNeeded();
 
         context->concatCTM(localToAncestorTransform);
 

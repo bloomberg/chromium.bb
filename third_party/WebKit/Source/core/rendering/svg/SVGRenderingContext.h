@@ -40,11 +40,6 @@ class RenderSVGResourceMasker;
 // SVGRenderingContext
 class SVGRenderingContext {
 public:
-    enum NeedsGraphicsContextSave {
-        SaveGraphicsContext,
-        DontSaveGraphicsContext,
-    };
-
     // Does not start rendering.
     SVGRenderingContext()
         : m_renderingFlags(0)
@@ -58,7 +53,7 @@ public:
     {
     }
 
-    SVGRenderingContext(RenderObject* object, PaintInfo& paintinfo, NeedsGraphicsContextSave needsGraphicsContextSave = DontSaveGraphicsContext)
+    SVGRenderingContext(RenderObject* object, PaintInfo& paintinfo)
         : m_renderingFlags(0)
         , m_object(0)
         , m_paintInfo(0)
@@ -68,14 +63,14 @@ public:
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
         , m_masker(0)
     {
-        prepareToRenderSVGContent(object, paintinfo, needsGraphicsContextSave);
+        prepareToRenderSVGContent(object, paintinfo);
     }
 
     // Automatically finishes context rendering.
     ~SVGRenderingContext();
 
     // Used by all SVG renderers who apply clip/filter/etc. resources to the renderer content.
-    void prepareToRenderSVGContent(RenderObject*, PaintInfo&, NeedsGraphicsContextSave = DontSaveGraphicsContext);
+    void prepareToRenderSVGContent(RenderObject*, PaintInfo&);
     bool isRenderingPrepared() const { return m_renderingFlags & RenderingPrepared; }
 
     static void renderSubtree(GraphicsContext*, RenderObject*, const AffineTransform&);

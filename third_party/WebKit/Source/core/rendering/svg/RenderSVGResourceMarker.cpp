@@ -142,10 +142,7 @@ void RenderSVGResourceMarker::draw(PaintInfo& paintInfo, const AffineTransform& 
 
     PaintInfo info(paintInfo);
     GraphicsContextStateSaver stateSaver(*info.context, false);
-    if (!transform.isIdentity()) {
-        stateSaver.save();
-        info.applyTransform(transform, false);
-    }
+    info.applyTransform(transform, &stateSaver);
     RenderSVGContainer::paint(info, IntPoint());
 }
 

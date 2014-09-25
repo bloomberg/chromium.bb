@@ -46,7 +46,8 @@ void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    SVGRenderingContext renderingContext(&renderer(), paintInfo, SVGRenderingContext::SaveGraphicsContext);
+    GraphicsContextStateSaver stateSaver(*paintInfo.context);
+    SVGRenderingContext renderingContext(&renderer(), paintInfo);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
             child->paint(paintInfo, paintOffset, 0, 0);

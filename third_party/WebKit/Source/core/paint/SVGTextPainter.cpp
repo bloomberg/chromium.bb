@@ -19,11 +19,9 @@ void SVGTextPainter::paint(PaintInfo& paintInfo)
 
     PaintInfo blockInfo(paintInfo);
     GraphicsContextStateSaver stateSaver(*blockInfo.context, false);
-    const AffineTransform& localTransform = m_renderSVGText.localToParentTransform();
-    if (!localTransform.isIdentity()) {
-        stateSaver.save();
-        blockInfo.applyTransform(localTransform, false);
-    }
+
+    blockInfo.applyTransform(m_renderSVGText.localToParentTransform(), &stateSaver);
+
     BlockPainter(m_renderSVGText).paint(blockInfo, LayoutPoint());
 
     // Paint the outlines, if any

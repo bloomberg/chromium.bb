@@ -58,6 +58,13 @@ public:
         m_saveAndRestore = true;
     }
 
+    void saveIfNeeded()
+    {
+        if (saved())
+            return;
+        save();
+    }
+
     void restore()
     {
         ASSERT(m_saveAndRestore);

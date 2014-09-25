@@ -34,15 +34,13 @@ void SVGImagePainter::paint(PaintInfo& paintInfo)
     PaintInfo childPaintInfo(paintInfo);
     GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
 
-    if (!m_renderSVGImage.localToParentTransform().isIdentity()) {
-        stateSaver.save();
-        childPaintInfo.applyTransform(m_renderSVGImage.localToParentTransform(), false);
-    }
+    childPaintInfo.applyTransform(m_renderSVGImage.localToParentTransform(), &stateSaver);
+
     if (!m_renderSVGImage.objectBoundingBox().isEmpty()) {
         // SVGRenderingContext may taint the state - make sure we're always saving.
-        SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo, stateSaver.saved() ?
-            SVGRenderingContext::DontSaveGraphicsContext : SVGRenderingContext::SaveGraphicsContext);
+        stateSaver.saveIfNeeded();
 
+        SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
         if (renderingContext.isRenderingPrepared()) {
             if (m_renderSVGImage.style()->svgStyle().bufferedRendering() == BR_STATIC && renderingContext.bufferForeground(m_renderSVGImage.bufferedForeground()))
                 return;
