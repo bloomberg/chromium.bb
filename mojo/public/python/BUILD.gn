@@ -46,6 +46,7 @@ copy("bindings") {
   sources = [
     "mojo/bindings/__init__.py",
     "mojo/bindings/descriptor.py",
+    "mojo/bindings/messaging.py",
     "mojo/bindings/reflection.py",
     "mojo/bindings/serialization.py",
   ]
