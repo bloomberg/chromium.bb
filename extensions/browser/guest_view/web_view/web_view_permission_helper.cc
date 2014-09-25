@@ -196,6 +196,10 @@ bool WebViewPermissionHelper::CheckMediaAccessPermission(
     content::WebContents* source,
     const GURL& security_origin,
     content::MediaStreamType type) {
+  if (!web_view_guest()->attached() ||
+      !web_view_guest()->embedder_web_contents()->GetDelegate()) {
+    return false;
+  }
   return web_view_guest()
       ->embedder_web_contents()
       ->GetDelegate()
@@ -208,15 +212,19 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
     const content::MediaResponseCallback& callback,
     bool allow,
     const std::string& user_input) {
-  if (!allow || !web_view_guest()->attached()) {
-    // Deny the request.
+  if (!allow) {
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_PERMISSION_DENIED,
+                 scoped_ptr<content::MediaStreamUI>());
+    return;
+  }
+  if (!web_view_guest()->attached() ||
+      !web_view_guest()->embedder_web_contents()->GetDelegate()) {
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_INVALID_STATE,
                  scoped_ptr<content::MediaStreamUI>());
     return;
   }
-  if (!web_view_guest()->embedder_web_contents()->GetDelegate())
-    return;
 
   web_view_guest()
       ->embedder_web_contents()

@@ -455,6 +455,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioOnly) {
   EXPECT_EQ(host_->video_devices_.size(), 0u);
 }
 
+// This test simulates a shutdown scenario: we don't setup a fake UI proxy for
+// MediaStreamManager, so it will create an ordinary one which will not find
+// a RenderFrameHostDelegate. This normally should only be the case at shutdown.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithNothing) {
   StreamOptions options(false, false);
 
@@ -462,7 +465,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithNothing) {
       kRenderId,
       kPageRequestId,
       options,
-      MEDIA_DEVICE_INVALID_STATE);
+      MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {

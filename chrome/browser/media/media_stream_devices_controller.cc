@@ -153,7 +153,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
     callback_.Run(content::MediaStreamDevices(),
-                  content::MEDIA_DEVICE_INVALID_STATE,
+                  content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                   scoped_ptr<content::MediaStreamUI>());
   }
 }

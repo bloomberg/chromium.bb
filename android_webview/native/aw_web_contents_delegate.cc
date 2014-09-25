@@ -199,7 +199,7 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (!aw_contents) {
     callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_INVALID_STATE,
+                 content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                  scoped_ptr<content::MediaStreamUI>().Pass());
     return;
   }

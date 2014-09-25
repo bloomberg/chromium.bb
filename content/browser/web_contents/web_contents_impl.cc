@@ -1799,7 +1799,7 @@ void WebContentsImpl::RequestMediaAccessPermission(
     delegate_->RequestMediaAccessPermission(this, request, callback);
   } else {
     callback.Run(MediaStreamDevices(),
-                 MEDIA_DEVICE_INVALID_STATE,
+                 MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                  scoped_ptr<MediaStreamUI>());
   }
 }

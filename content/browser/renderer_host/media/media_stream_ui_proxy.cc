@@ -66,10 +66,9 @@ void MediaStreamUIProxy::Core::RequestAccess(
 
   // Tab may have gone away, or has no delegate from which to request access.
   if (!render_delegate) {
-    ProcessAccessRequestResponse(
-        MediaStreamDevices(),
-        MEDIA_DEVICE_INVALID_STATE,
-        scoped_ptr<MediaStreamUI>());
+    ProcessAccessRequestResponse(MediaStreamDevices(),
+                                 MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                                 scoped_ptr<MediaStreamUI>());
     return;
   }
 
