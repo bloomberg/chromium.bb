@@ -216,11 +216,10 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
       draw_info->is_layer, transform, gfx::Rect(viewport_));
-  if (!draw_constraints_.Equals(draw_constraints)) {
-    draw_constraints_ = draw_constraints;
-    shared_renderer_state_->PostExternalDrawConstraintsToChildCompositor(
-        draw_constraints);
-  }
+
+  draw_constraints_ = draw_constraints;
+  shared_renderer_state_->PostExternalDrawConstraintsToChildCompositor(
+      draw_constraints);
 
   if (!delegated_layer_.get())
     return;

@@ -58,12 +58,17 @@ class SharedRendererState {
   scoped_ptr<DrawGLInput> PassDrawGLInput();
 
   bool IsInsideHardwareRelease() const;
-  void UpdateDrawConstraints(
+  // Returns true if the draw constraints are updated.
+  bool UpdateDrawConstraints(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void PostExternalDrawConstraintsToChildCompositor(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
 
   const ParentCompositorDrawConstraints ParentDrawConstraints() const;
+
+  void SetForceInvalidateOnNextDrawGL(
+      bool needs_force_invalidate_on_next_draw_gl);
+  bool NeedsForceInvalidateOnNextDrawGL() const;
 
   void InsertReturnedResources(const cc::ReturnedResourceArray& resources);
   void SwapReturnedResources(cc::ReturnedResourceArray* resources);
@@ -87,6 +92,7 @@ class SharedRendererState {
   mutable base::Lock lock_;
   scoped_ptr<DrawGLInput> draw_gl_input_;
   bool inside_hardware_release_;
+  bool needs_force_invalidate_on_next_draw_gl_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
   cc::ReturnedResourceArray returned_resources_;
   base::Closure request_draw_gl_closure_;

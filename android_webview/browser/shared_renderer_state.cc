@@ -79,7 +79,8 @@ SharedRendererState::SharedRendererState(
     : ui_loop_(ui_loop),
       client_on_ui_(client),
       inside_hardware_release_(false),
-      weak_factory_on_ui_thread_(this){
+      needs_force_invalidate_on_next_draw_gl_(false),
+      weak_factory_on_ui_thread_(this) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(client_on_ui_);
   ui_thread_weak_ptr_ = weak_factory_on_ui_thread_.GetWeakPtr();
@@ -150,27 +151,45 @@ scoped_ptr<DrawGLInput> SharedRendererState::PassDrawGLInput() {
   return draw_gl_input_.Pass();
 }
 
-void SharedRendererState::UpdateDrawConstraints(
+bool SharedRendererState::UpdateDrawConstraints(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
   base::AutoLock lock(lock_);
-  parent_draw_constraints_ = parent_draw_constraints;
+  if (needs_force_invalidate_on_next_draw_gl_ ||
+      !parent_draw_constraints_.Equals(parent_draw_constraints)) {
+    parent_draw_constraints_ = parent_draw_constraints;
+    return true;
+  }
+
+  return false;
 }
 
 void SharedRendererState::PostExternalDrawConstraintsToChildCompositor(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
-  UpdateDrawConstraints(parent_draw_constraints);
-
-  // No need to hold the lock_ during the post task.
-  ui_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUIThread,
-                 ui_thread_weak_ptr_));
+  if (UpdateDrawConstraints(parent_draw_constraints)) {
+    // No need to hold the lock_ during the post task.
+    ui_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUIThread,
+                   ui_thread_weak_ptr_));
+  }
 }
 
 const ParentCompositorDrawConstraints
 SharedRendererState::ParentDrawConstraints() const {
   base::AutoLock lock(lock_);
   return parent_draw_constraints_;
+}
+
+void SharedRendererState::SetForceInvalidateOnNextDrawGL(
+    bool needs_force_invalidate_on_next_draw_gl) {
+  base::AutoLock lock(lock_);
+  needs_force_invalidate_on_next_draw_gl_ =
+      needs_force_invalidate_on_next_draw_gl;
+}
+
+bool SharedRendererState::NeedsForceInvalidateOnNextDrawGL() const {
+  base::AutoLock lock(lock_);
+  return needs_force_invalidate_on_next_draw_gl_;
 }
 
 void SharedRendererState::SetInsideHardwareRelease(bool inside) {

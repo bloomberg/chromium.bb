@@ -258,6 +258,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_EmptyVisibleRect",
                          TRACE_EVENT_SCOPE_THREAD);
+    shared_renderer_state_->SetForceInvalidateOnNextDrawGL(true);
     return client_->RequestDrawGL(java_canvas, false);
   }
 
@@ -326,9 +327,12 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
 void BrowserViewRenderer::UpdateParentDrawConstraints() {
   // Post an invalidate if the parent draw constraints are stale and there is
   // no pending invalidate.
-  if (!parent_draw_constraints_.Equals(
-          shared_renderer_state_->ParentDrawConstraints()))
+  if (shared_renderer_state_->NeedsForceInvalidateOnNextDrawGL() ||
+      !parent_draw_constraints_.Equals(
+        shared_renderer_state_->ParentDrawConstraints())) {
+    shared_renderer_state_->SetForceInvalidateOnNextDrawGL(false);
     EnsureContinuousInvalidation(true);
+  }
 }
 
 void BrowserViewRenderer::ReturnUnusedResource(scoped_ptr<DrawGLInput> input) {
