@@ -76,7 +76,7 @@ TOOLCHAIN_PACKAGE_MAP = {
 def GetToolchainNaClInclude(tcname, tcpath, arch):
   if arch == 'x86':
     if tcname == 'pnacl':
-      return os.path.join(tcpath, 'sdk', 'include')
+      return os.path.join(tcpath, 'le32-nacl', 'include')
     return os.path.join(tcpath, 'x86_64-nacl', 'include')
   elif arch == 'arm':
     return os.path.join(tcpath, 'arm-nacl', 'include')
@@ -102,7 +102,7 @@ def GetGypBuiltLib(tcname, xarch=None):
 
 def GetToolchainNaClLib(tcname, tcpath, xarch):
   if tcname == 'pnacl':
-    return os.path.join(tcpath, 'sdk', 'lib')
+    return os.path.join(tcpath, 'le32-nacl', 'lib')
   elif xarch == '32':
     return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
   elif xarch == '64':

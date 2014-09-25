@@ -54,13 +54,6 @@ ARCHES = ['x86-32', 'x86-64', 'arm', 'mips32']
 def IsValidArch(arch):
   return arch in ARCHES
 
-# The version of the arch used by configure and pnacl's build.sh.
-def StandardArch(arch):
-  return {'x86-32': 'i686',
-          'x86-64': 'x86_64',
-          'arm'   : 'armv7',
-          'mips32': 'mips'}[arch]
-
 
 ######################################################################
 
@@ -170,11 +163,11 @@ class PnaclDirs(object):
 
   @staticmethod
   def LibDir(target_arch):
-    return J(PnaclDirs.TranslatorRoot(), 'lib-%s' % target_arch)
+    return J(PnaclDirs.TranslatorRoot(), 'translator', '%s' % target_arch)
 
   @staticmethod
   def SandboxedCompilerDir(target_arch):
-    return J(PnaclDirs.TranslatorRoot(), StandardArch(target_arch), 'bin')
+    return J(PnaclDirs.TranslatorRoot(), 'translator', target_arch, 'bin')
 
   @staticmethod
   def SetOutputDir(d):
