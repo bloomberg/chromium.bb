@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/model_associator.h"
 #include "sync/protocol/typed_url_specifics.pb.h"

@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "components/history/core/browser/history_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 

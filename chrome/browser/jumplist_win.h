@@ -15,11 +15,11 @@
 #include "base/synchronization/lock.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/jumplist_updater_win.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "components/history/core/browser/history_types.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {

@@ -12,6 +12,32 @@
 
 namespace history {
 
+// VisitRow --------------------------------------------------------------------
+
+VisitRow::VisitRow()
+    : visit_id(0),
+      url_id(0),
+      referring_visit(0),
+      transition(ui::PAGE_TRANSITION_LINK),
+      segment_id(0) {
+}
+
+VisitRow::VisitRow(URLID arg_url_id,
+                   base::Time arg_visit_time,
+                   VisitID arg_referring_visit,
+                   ui::PageTransition arg_transition,
+                   SegmentID arg_segment_id)
+    : visit_id(0),
+      url_id(arg_url_id),
+      visit_time(arg_visit_time),
+      referring_visit(arg_referring_visit),
+      transition(arg_transition),
+      segment_id(arg_segment_id) {
+}
+
+VisitRow::~VisitRow() {
+}
+
 // QueryResults ----------------------------------------------------------------
 
 QueryResults::QueryResults() : reached_beginning_(false) {
@@ -151,6 +177,14 @@ int QueryOptions::EffectiveMaxCount() const {
   return max_count ? max_count : std::numeric_limits<int>::max();
 }
 
+// QueryURLResult -------------------------------------------------------------
+
+QueryURLResult::QueryURLResult() : success(false) {
+}
+
+QueryURLResult::~QueryURLResult() {
+}
+
 // MostVisitedURL --------------------------------------------------------------
 
 MostVisitedURL::MostVisitedURL() {}
@@ -203,6 +237,38 @@ TopSitesDelta::TopSitesDelta() {}
 
 TopSitesDelta::~TopSitesDelta() {}
 
+// HistoryAddPageArgs ---------------------------------------------------------
+
+HistoryAddPageArgs::HistoryAddPageArgs()
+    : context_id(NULL),
+      page_id(0),
+      transition(ui::PAGE_TRANSITION_LINK),
+      visit_source(SOURCE_BROWSED),
+      did_replace_entry(false) {}
+
+HistoryAddPageArgs::HistoryAddPageArgs(
+    const GURL& url,
+    base::Time time,
+    ContextID context_id,
+    int32 page_id,
+    const GURL& referrer,
+    const history::RedirectList& redirects,
+    ui::PageTransition transition,
+    VisitSource source,
+    bool did_replace_entry)
+      : url(url),
+        time(time),
+        context_id(context_id),
+        page_id(page_id),
+        referrer(referrer),
+        redirects(redirects),
+        transition(transition),
+        visit_source(source),
+        did_replace_entry(did_replace_entry) {
+}
+
+HistoryAddPageArgs::~HistoryAddPageArgs() {}
+
 // ThumbnailMigration ---------------------------------------------------------
 
 ThumbnailMigration::ThumbnailMigration() {}
@@ -240,6 +306,10 @@ FaviconBitmap::FaviconBitmap()
 
 FaviconBitmap::~FaviconBitmap() {
 }
+
+// VisitDatabaseObserver -------------------------------------------------------
+
+VisitDatabaseObserver::~VisitDatabaseObserver() {}
 
 // ExpireHistoryArgs ----------------------------------------------------------
 

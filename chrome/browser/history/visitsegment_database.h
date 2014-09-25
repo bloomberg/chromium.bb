@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 
 class PageUsageData;
 

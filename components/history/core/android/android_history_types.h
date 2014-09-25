@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_TYPES_H_
-#define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_TYPES_H_
+#ifndef COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_HISTORY_TYPES_H_
+#define COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_HISTORY_TYPES_H_
 
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "sql/statement.h"
 
@@ -329,4 +329,4 @@ class AndroidStatement {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_TYPES_H_
+#endif  // COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_HISTORY_TYPES_H_

@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/history/android/android_history_types.h"
+#include "components/history/core/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SQLiteCursor_jni.h"
 #include "sql/statement.h"

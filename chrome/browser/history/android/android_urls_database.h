@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_URLS_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_URLS_DATABASE_H_
 
-#include "chrome/browser/history/android/android_history_types.h"
+#include "components/history/core/android/android_history_types.h"
 
 namespace history {
 

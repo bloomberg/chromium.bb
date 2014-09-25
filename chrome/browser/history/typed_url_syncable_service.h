@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"

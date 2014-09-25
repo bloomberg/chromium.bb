@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_utils.h"
+#include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
 class GURL;

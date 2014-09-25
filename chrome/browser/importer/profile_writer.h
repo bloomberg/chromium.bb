@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
 struct ImportedBookmarkEntry;

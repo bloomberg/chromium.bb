@@ -133,6 +133,8 @@
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
             'google/core/browser/google_url_tracker_unittest.cc',
             'google/core/browser/google_util_unittest.cc',
+            'history/core/android/android_history_types_unittest.cc',
+            'history/core/browser/history_types_unittest.cc',
             'history/core/browser/url_database_unittest.cc',
             'history/core/common/thumbnail_score_unittest.cc',
             'invalidation/invalidation_logger_unittest.cc',
@@ -616,6 +618,7 @@
               ],
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
+                'components.gyp:history_core_android',
               ],
               'dependencies!': [
                 'components.gyp:feedback_component',

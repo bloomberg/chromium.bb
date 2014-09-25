@@ -7,8 +7,8 @@
 #include <list>
 
 #include "base/bind.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
+#include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
 using history::MostVisitedURLList;

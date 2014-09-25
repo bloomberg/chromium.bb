@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
+#include "components/history/core/browser/history_types.h"
 
 class SuggestionsCombiner;
 class Profile;

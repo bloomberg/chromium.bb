@@ -10,7 +10,7 @@
 #include <set>
 
 #include "chrome/browser/history/history_details.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "url/gurl.h"
 

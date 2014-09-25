@@ -15,6 +15,7 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
+        '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
         'favicon_base',
@@ -77,5 +78,28 @@
         'history/core/test/history_client_fake_bookmarks.h',
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          # GN version: //components/history/code/android
+          'target_name': 'history_core_android',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../sql/sql.gyp:sql',
+            'history_core_browser',
+          ],
+          'sources': [
+            'history/core/android/android_history_types.cc',
+            'history/core/android/android_history_types.h',
+          ],
+        },
+      ],
+    }],
   ],
 }

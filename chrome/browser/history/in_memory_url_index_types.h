@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
 namespace history {

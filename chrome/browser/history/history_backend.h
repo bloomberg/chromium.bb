@@ -19,15 +19,15 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "sql/init_status.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/history/android/android_history_types.h"
+#include "components/history/core/android/android_history_types.h"
 #endif
 
 class HistoryURLProvider;

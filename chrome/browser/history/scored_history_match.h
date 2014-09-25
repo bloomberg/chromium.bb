@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "components/history/core/browser/history_match.h"
+#include "components/history/core/browser/history_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace history {

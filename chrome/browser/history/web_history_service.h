@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {

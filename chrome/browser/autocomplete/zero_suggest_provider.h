@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/base_search_provider.h"
 #include "components/omnibox/search_provider.h"

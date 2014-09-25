@@ -1,0 +1,16 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("android") {
+  sources = [
+    "android_history_types.cc",
+    "android_history_types.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/history/core/browser",
+    "//sql",
+  ]
+}

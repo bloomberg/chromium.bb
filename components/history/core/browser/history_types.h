@@ -20,10 +20,16 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/common/thumbnail_score.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 class PageUsageData;
+
+// TODO(sdefresne): remove, http://crbug.com/371816
+namespace content {
+class WebContents;
+}
 
 namespace history {
 
@@ -37,6 +43,12 @@ typedef std::vector<GURL> RedirectList;
 typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
+
+// Identifier for a context to scope page ids. (ContextIDs are used in
+// comparisons only and are never dereferenced.)
+// NB: The use of WebContents here is temporary; when the dependency on content
+// is broken, some other type will take its place.
+typedef content::WebContents* ContextID;
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item
@@ -57,6 +69,60 @@ enum VisitSource {
 typedef int64 VisitID;
 // Structure to hold the mapping between each visit's id and its source.
 typedef std::map<VisitID, VisitSource> VisitSourceMap;
+
+// VisitRow -------------------------------------------------------------------
+
+// Holds all information associated with a specific visit. A visit holds time
+// and referrer information for one time a URL is visited.
+class VisitRow {
+ public:
+  VisitRow();
+  VisitRow(URLID arg_url_id,
+           base::Time arg_visit_time,
+           VisitID arg_referring_visit,
+           ui::PageTransition arg_transition,
+           SegmentID arg_segment_id);
+  ~VisitRow();
+
+  // ID of this row (visit ID, used a a referrer for other visits).
+  VisitID visit_id;
+
+  // Row ID into the URL table of the URL that this page is.
+  URLID url_id;
+
+  base::Time visit_time;
+
+  // Indicates another visit that was the referring page for this one.
+  // 0 indicates no referrer.
+  VisitID referring_visit;
+
+  // A combination of bits from PageTransition.
+  ui::PageTransition transition;
+
+  // The segment id (see visitsegment_database.*).
+  // If 0, the segment id is null in the table.
+  SegmentID segment_id;
+
+  // Record how much time a user has this visit starting from the user
+  // opened this visit to the user closed or ended this visit.
+  // This includes both active and inactive time as long as
+  // the visit was present.
+  base::TimeDelta visit_duration;
+
+  // Compares two visits based on dates, for sorting.
+  bool operator<(const VisitRow& other) {
+    return visit_time < other.visit_time;
+  }
+
+  // We allow the implicit copy constuctor and operator=.
+};
+
+// We pass around vectors of visits a lot
+typedef std::vector<VisitRow> VisitVector;
+
+// The basic information associated with a visit (timestamp, type of visit),
+// used by HistoryBackend::AddVisits() to create new visits for a URL.
+typedef std::pair<base::Time, ui::PageTransition> VisitInfo;
 
 // PageVisit ------------------------------------------------------------------
 
@@ -220,6 +286,20 @@ struct QueryOptions {
   int64 EffectiveEndTime() const;
 };
 
+// QueryURLResult -------------------------------------------------------------
+
+// QueryURLResult encapsulates the result of a call to HistoryBackend::QueryURL.
+struct QueryURLResult {
+  QueryURLResult();
+  ~QueryURLResult();
+
+  // Indicates whether the call to HistoryBackend::QueryURL was successfull
+  // or not. If false, then both |row| and |visits| fields are undefined.
+  bool success;
+  URLRow row;
+  VisitVector visits;
+};
+
 // VisibleVisitCountToHostResult ----------------------------------------------
 
 // VisibleVisitCountToHostResult encapsulates the result of a call to
@@ -283,6 +363,41 @@ struct FilteredURL {
   base::string16 title;
   double score;
   ExtendedInfo extended_info;
+};
+
+// Navigation -----------------------------------------------------------------
+
+// Marshalling structure for AddPage.
+struct HistoryAddPageArgs {
+  // The default constructor is equivalent to:
+  //
+  //   HistoryAddPageArgs(
+  //       GURL(), base::Time(), NULL, 0, GURL(),
+  //       history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+  //       SOURCE_BROWSED, false)
+  HistoryAddPageArgs();
+  HistoryAddPageArgs(const GURL& url,
+                     base::Time time,
+                     ContextID context_id,
+                     int32 page_id,
+                     const GURL& referrer,
+                     const history::RedirectList& redirects,
+                     ui::PageTransition transition,
+                     VisitSource source,
+                     bool did_replace_entry);
+  ~HistoryAddPageArgs();
+
+  GURL url;
+  base::Time time;
+
+  ContextID context_id;
+  int32 page_id;
+
+  GURL referrer;
+  history::RedirectList redirects;
+  ui::PageTransition transition;
+  VisitSource visit_source;
+  bool did_replace_entry;
 };
 
 // TopSites -------------------------------------------------------------------
@@ -400,6 +515,20 @@ struct FaviconBitmap {
 
   // The pixel dimensions of bitmap_data.
   gfx::Size pixel_size;
+};
+
+// Abbreviated information about a visit.
+struct BriefVisitInfo {
+  URLID url_id;
+  base::Time time;
+  ui::PageTransition transition;
+};
+
+// An observer of VisitDatabase.
+class VisitDatabaseObserver {
+ public:
+  virtual ~VisitDatabaseObserver();
+  virtual void OnAddVisit(const BriefVisitInfo& info) = 0;
 };
 
 struct ExpireHistoryArgs {

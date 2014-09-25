@@ -22,9 +22,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/history/core/browser/history_types.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 

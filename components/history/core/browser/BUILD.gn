@@ -31,6 +31,7 @@ static_library("browser") {
     "//components/query_parser",
     "//net",
     "//sql",
+    "//ui/base",
     "//ui/gfx",
   ]
 }
