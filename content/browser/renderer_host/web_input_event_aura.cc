@@ -295,11 +295,20 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
 
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
-  if (event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
+  int button_flags = event->flags();
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_RELEASED) {
+    // We want to use changed_button_flags() for mouse pressed & released.
+    // These flags can be used only if they are set which is not always the case
+    // (see e.g. GetChangedMouseButtonFlagsFromNative() in events_win.cc).
+    if (event->changed_button_flags())
+      button_flags = event->changed_button_flags();
+  }
+  if (button_flags & ui::EF_LEFT_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::ButtonLeft;
-  if (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
+  if (button_flags & ui::EF_MIDDLE_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::ButtonMiddle;
-  if (event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)
+  if (button_flags & ui::EF_RIGHT_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::ButtonRight;
 
   switch (event->type()) {
