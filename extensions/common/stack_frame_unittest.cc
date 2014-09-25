@@ -25,10 +25,10 @@ void AssertStackFrameValid(const std::string& text,
   scoped_ptr<StackFrame> frame = StackFrame::CreateFromText(utf16_text);
 
   ASSERT_TRUE(frame.get()) << "Failed to create frame from '" << text << "'";
-  EXPECT_EQ(line, frame->line_number());
-  EXPECT_EQ(column, frame->column_number());
-  EXPECT_EQ(base::UTF8ToUTF16(source), frame->source());
-  EXPECT_EQ(base::UTF8ToUTF16(function), frame->function());
+  EXPECT_EQ(line, frame->line_number);
+  EXPECT_EQ(column, frame->column_number);
+  EXPECT_EQ(base::UTF8ToUTF16(source), frame->source);
+  EXPECT_EQ(base::UTF8ToUTF16(function), frame->function);
 }
 
 void AssertStackFrameInvalid(const std::string& text) {

@@ -1137,6 +1137,7 @@
         'common/permissions/manifest_permission_set_unittest.cc',
         'common/permissions/socket_permission_unittest.cc',
         'common/permissions/usb_device_permission_unittest.cc',
+        'common/stack_frame_unittest.cc',
         'common/url_pattern_set_unittest.cc',
         'common/url_pattern_unittest.cc',
         'common/user_script_unittest.cc',
