@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/rendering/RenderReplica.h"
 
+#include "core/paint/ReplicaPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderLayer.h"
 
@@ -72,22 +73,7 @@ void RenderReplica::computePreferredLogicalWidths()
 
 void RenderReplica::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseMask)
-        return;
-
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
-
-    if (paintInfo.phase == PaintPhaseForeground) {
-        // Turn around and paint the parent layer. Use temporary clipRects, so that the layer doesn't end up caching clip rects
-        // computing using the wrong rootLayer
-        RenderLayer* rootPaintingLayer = layer()->transform() ? layer()->parent() : layer()->enclosingTransformedAncestor();
-        LayerPaintingInfo paintingInfo(rootPaintingLayer, paintInfo.rect, PaintBehaviorNormal, LayoutSize(), 0);
-        PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects | PaintLayerPaintingReflection;
-        layer()->parent()->paintLayer(paintInfo.context, paintingInfo, flags);
-    } else if (paintInfo.phase == PaintPhaseMask)
-        paintMask(paintInfo, adjustedPaintOffset);
+    ReplicaPainter(*this).paint(paintInfo, paintOffset);
 }
 
 } // namespace blink
