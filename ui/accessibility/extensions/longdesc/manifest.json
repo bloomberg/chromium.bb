@@ -1,7 +1,7 @@
 {
-  "name": "An Extension",
+  "name": "__MSG_appName__",
   "version": "0.1",
-  "description": "An extension to modify the context menu when an HTML element contains a aria-describedat and/or longdesc property.",
+  "description": "__MSG_appDesc__",
   "background": {
     "scripts": [ "background.js" ]
   },

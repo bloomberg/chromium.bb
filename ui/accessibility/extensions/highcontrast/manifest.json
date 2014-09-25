@@ -1,7 +1,7 @@
 {
-  "name": "High Contrast",
+  "name": "__MSG_appName__",
   "version": "0.6",
-  "description": "Change or invert the color scheme to make webpages easier to read.",
+  "description": "__MSG_appDesc__",
   "manifest_version": 2,
   "permissions": [
     "<all_urls>",
@@ -15,7 +15,7 @@
   },
   "browser_action": {
     "default_icon": "highcontrast-19.png",
-    "default_title": "High Contrast (Shift+F11)",
+    "default_title": "__MSG_appName__",
     "default_popup": "popup.html"
   },
   "content_scripts": [

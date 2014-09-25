@@ -1,7 +1,7 @@
 {
   "name": "Replace images with alt text",
   "version": "0.1",
-  "description": "Replace images with their alt text",
+  "description": "__MSG_appDesc__",
   "background": {
     "scripts": [ "background.js" ]
   },
@@ -21,7 +21,6 @@
       "38": "images/icon-38.png"
     }
   },
-  "options_page": "options.html",
   "permissions": [
     "activeTab"
   ],

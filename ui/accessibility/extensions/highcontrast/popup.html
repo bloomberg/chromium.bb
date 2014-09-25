@@ -1,7 +1,6 @@
 <!doctype html>
 <html>
 <head>
-<title>High Contrast Pop-up</title>
 <link rel="stylesheet" type="text/css" href="highcontrast.css">
 <style type="text/css">
 html {
@@ -63,7 +62,7 @@ input[type="radio"] {
 </head>
 <body>
 
-<h2 id="title" tabIndex="0"></h2>
+<h2 id="title"></h2>
 
 <button id="toggle"></button>
 
@@ -73,11 +72,11 @@ input[type="radio"] {
     <legend id="scheme_title"></legend>
     <label>
       <input type="radio" name="scheme" value="0">
-      Normal
+      <span i18n-content="normal"></span>
     </label>
     <label>
       <input type="radio" name="scheme" value="1">
-      Increased Contrast
+      <span i18n-content="increased_contrast"><span>Increased Contrast
     </label>
     <label>
       <input type="radio" name="scheme" value="2">

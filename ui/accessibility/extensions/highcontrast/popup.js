@@ -93,6 +93,13 @@ function addRadioListeners(name) {
 }
 
 function init() {
+  var i18nElements = document.querySelectorAll('*[i18n-content]');
+  for (var i = 0; i < i18nElements.length; i++) {
+    var elem = i18nElements[i];
+    var msg = elem.getAttribute('i18n-content');
+    elem.innerHTML = chrome.i18n.getMessage(msg);
+  }
+
   addRadioListeners('keyaction');
   addRadioListeners('apply');
   addRadioListeners('scheme');
