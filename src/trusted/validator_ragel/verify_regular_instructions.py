@@ -153,21 +153,23 @@ def ValidateInstruction(instruction, validator_inst):
       ''.join(map(chr, instruction)),
       bitness=options.bitness)
 
-  # Objdump (and consequently our decoder) displays fwait with rex prefix in
-  # a rather strange way:
-  #   0: 41      fwait
+  # Objdump 2.24 (and consequently our decoder) displays fwait with rex prefix
+  # in  the following way (note the rex byte is extraneous here):
+  #   0: 41      rex.B
   #   1: 9b      fwait
-  # So we manually convert it to
+  # We manually convert it to
   #   0: 41 9b   fwait
   # for the purpose of validation.
-  # TODO(shcherbina): get rid of this special handling once
-  # https://code.google.com/p/nativeclient/issues/detail?id=3496 is fixed.
+  # TODO(shyamsundarr): investigate whether we can get rid of this special
+  # handling. Also https://code.google.com/p/nativeclient/issues/detail?id=3496.
   if (len(instruction) == 2 and
       IsRexPrefix(instruction[0]) and
       instruction[1] == FWAIT):
-    assert len(dis) == 2
-    assert dis[0].disasm == dis[1].disasm == 'fwait'
-    dis[0].bytes.extend(dis[1].bytes)
+    assert len(dis) == 2, (instruction, dis)
+    assert dis[1].disasm == 'fwait', (instruction, dis)
+    dis[0] = objdump_parser.Instruction(
+        address=dis[0].address, bytes=(dis[0].bytes + dis[1].bytes),
+        disasm=dis[1].disasm)
     del dis[1]
 
   assert len(dis) == 1, (instruction, dis)
