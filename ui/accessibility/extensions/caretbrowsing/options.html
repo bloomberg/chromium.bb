@@ -1,0 +1,218 @@
+<html>
+<head>
+  <title>Caret Browsing Options</title>
+  <style>
+    body {
+      font-family: Lucida Grande, sans-serif, arial, helvetica;
+      width: 920px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .banner {
+      width: 100%;
+      float: left;
+    }
+    .banner_left {
+      padding: 8px;
+      float: left;
+    }
+    .banner_right {
+      padding: 8px;
+    }
+    .body_wrapper {
+      width: 100%;
+      float: left;
+    }
+    .body_left {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      width: 50%;
+      float: left;
+    }
+    .body_right {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      width: 46%;
+      float: left;
+    }
+    .body_inner {
+      padding: 0 32px;
+    }
+    body.mac .nonmac {
+      display: none;
+    }
+    body.nonmac .mac {
+      display: none;
+    }
+    body.cros .noncros {
+      display: none;
+    }
+    body.noncros .cros {
+      display: none;
+    }
+    .key {
+      border: 1px solid #666;
+      color: #444;
+      padding: 0.2em 0.8em;
+      margin: 0 0.3em;
+      background: #eee;
+    }
+    p {
+      line-height: 1.6em;
+    }
+    fieldset {
+      margin-bottom: 1em;
+    }
+    fieldset div {
+      margin: 0.6em 0;
+    }
+    p.cros img {
+      vertical-align: middle;
+    }
+  </style>
+  <link href="caretbrowsing.css" rel="stylesheet" type="text/css">
+  <script src="accessibility_utils.js"></script>
+  <script src="traverse_util.js"></script>
+  <script src="caretbrowsing.js"></script>
+  <script src="options.js"></script>
+</head>
+<body caretbrowsing="on">
+
+<div class="banner">
+  <div class="banner_left">
+    <img src="caret_128.png" class="logo" alt="">
+  </div>
+  <div class="banner_right">
+    <h1 i18n-content="appName">Caret Browsing</h1>
+    <p i18n-content="subheading1">
+      This extension gives you a movable cursor in the web page,
+      allowing you to select text with the keyboard.
+    </p>
+    <p i18n-content="subheading2">
+      Try it out now - Caret Browsing is always enabled on this page!
+    </p>
+  </div>
+</div>
+
+<div class="body_wrapper">
+  <div class="body_left">
+    <div class="body_inner">
+      <h2 i18n-content="keyboardCommands">Keyboard Commands</h2>
+
+      <p class="noncros" i18n-content="enableDisableNonCros">
+        Press <span class="key">F7</span> to turn on Caret Browsing.
+        Press it again to turn it off.
+      </p>
+      <p class="cros" i18n-content="enableDisableCros">
+        Press <span class="key">Alt</span> + <img src="increase_brightness.png"> (the Increase Brightness key, or F7) to turn on Caret Browsing.
+        Press it again to turn it off.
+      </p>
+
+      <div i18n-content="navHelp">
+        <p>
+          Use arrow keys to move throughout the document.
+        </p>
+
+        <p>
+          Click anywhere to move the cursor to that location.
+        </p>
+
+        <p>
+          Press <span class="key">Shift</span> + arrows to select text.
+        </p>
+      </div>
+
+      <p class="nonmac" i18n-content="moveByWordsNonMac">
+        Hold down <span class="key">Control</span> to move by words.
+      </p>
+      <p class="mac" i18n-content="moveByWordsMac">
+        Hold down <span class="key">Option</span> to move by words.
+      </p>
+
+      <div i18n-content="focusHelp">
+        <p>
+          When you reach a link or control, it is automatically focused.
+          Press <span class="key">Enter</span> to click a link or button.
+        </p>
+
+        <p>
+          When a focused control (like a text box or a list box) is capturing
+          arrow keys, press <span class="key">Esc</span> followed by the
+          left or right arrow to continue Caret Browsing.
+        </p>
+
+        <p>
+          Alternatively, press <span class="key">Tab</span> to move to the
+          next focusable control.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="body_right">
+    <div class="body_inner">
+      <h2>Visual Feedback</h2>
+
+      <fieldset>
+        <legend i18n-content="whenEnabled">
+          When Caret Browsing is enabled:
+        </legend>
+
+        <div>
+        <input type="radio" id="onenable_anim" name="onenable" value="anim">
+        <label for="onenable_anim" i18n-content="animation">
+          Highlight the cursor position with an animation.
+        </label>
+        </div>
+
+        <div>
+        <input type="radio" id="onenable_flash" name="onenable" value="flash">
+        <label for="onenable_flash" i18n-content="flash">
+          Highlight the cursor position with a quick flash.
+        </label>
+        </div>
+
+        <div>
+        <input type="radio" id="onenable_nothing" name="onenable" value="none">
+        <label for="onenable_nothing" i18n-content="noFeedback">
+          No feedback, just show the cursor.
+        </label>
+        </div>
+
+      </fieldset>      
+
+      <fieldset>
+        <legend i18n-content="jump">
+          When the caret jumps by a large distance:
+        </legend>
+
+        <div>
+        <input type="radio" id="onjump_anim" name="onjump" value="anim">
+        <label for="onjump_anim" i18n-content="animation">
+          Highlight the cursor position with an animation.
+        </label>
+        </div>
+
+        <div>
+        <input type="radio" id="onjump_flash" name="onjump" value="flash">
+        <label for="onjump_flash" i18n-content="flash">
+          Highlight the cursor position with a quick flash.
+        </label>
+        </div>
+
+        <div>
+        <input type="radio" id="onjump_nothing" name="onjump" value="none">
+        <label for="onjump_nothing" i18n-content="noFeedback">
+          No feedback, just move the cursor.
+        </label>
+        </div>
+
+      </fieldset>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

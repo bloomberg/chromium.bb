@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+<title>High Contrast Pop-up</title>
+<link rel="stylesheet" type="text/css" href="highcontrast.css">
+<style type="text/css">
+html {
+  border-radius: 6px;
+}
+body {
+  width: 18em;
+  padding: 0.75em;
+  border-radius: 6px;
+}
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+}
+#title {
+  outline: none;
+}
+.kb {
+  font-weight: normal;
+  font-style: italic;
+  font-size: 10pt;
+}
+button {
+  width: 100%;
+  margin: 0.75em 0 0.25em 0;
+  padding: 0.5em 1.5em;
+}
+button#toggle {
+  font-size: 12pt;
+}
+body.disabled h3,
+body.disabled a,
+body.disabled label {
+  color: #aaa;
+}
+h2 {
+  font-size: 12pt;
+  text-align: center;
+}
+label {
+  display: block;
+}
+fieldset {
+  border: none;
+  margin: 0;
+  margin-bottom: 1em;
+  padding: 0;
+}
+legend {
+  padding-top: 1em;
+  padding-bottom: 0.5em;
+}
+input[type="radio"] {
+  margin-left: 1em;
+}
+</style>
+<script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="popup.js"></script>
+</head>
+<body>
+
+<h2 id="title" tabIndex="0"></h2>
+
+<button id="toggle"></button>
+
+<div id="subcontrols">
+
+  <fieldset>
+    <legend id="scheme_title"></legend>
+    <label>
+      <input type="radio" name="scheme" value="0">
+      Normal
+    </label>
+    <label>
+      <input type="radio" name="scheme" value="1">
+      Increased Contrast
+    </label>
+    <label>
+      <input type="radio" name="scheme" value="2">
+      Grayscale
+    </label>
+    <label>
+      <input type="radio" name="scheme" value="3">
+      Inverted Color
+    </label>
+    <label>
+      <input type="radio" name="scheme" value="4">
+      Inverted Grayscale
+    </label>
+    <label>
+      <input type="radio" name="scheme" value="5">
+      Yellow on Black
+    </label>
+  </fieldset>
+
+  <button id="make_default">Set as default scheme</button>
+
+  <button id="forget">Forget site customizations</button>
+
+</div>
+
+</body>
+</html>

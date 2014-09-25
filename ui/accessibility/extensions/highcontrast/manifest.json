@@ -1,0 +1,41 @@
+{
+  "name": "High Contrast",
+  "version": "0.6",
+  "description": "Change or invert the color scheme to make webpages easier to read.",
+  "manifest_version": 2,
+  "permissions": [
+    "<all_urls>",
+    "tabs"
+  ],
+  "background": {
+    "scripts": [
+      "common.js",
+      "background.js"
+    ]
+  },
+  "browser_action": {
+    "default_icon": "highcontrast-19.png",
+    "default_title": "High Contrast (Shift+F11)",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "run_at": "document_start",
+      "matches": [
+        "<all_urls>"
+      ],
+      "all_frames": true,
+      "css": [
+        "highcontrast.css"
+      ],
+      "js": [
+        "highcontrast.js"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "highcontrast-16.png",
+    "48": "highcontrast-48.png",
+    "128": "highcontrast-128.png"
+  }
+}
