@@ -963,6 +963,7 @@
     'sync': ['haitaol+watch@chromium.org',
              'tim+watch@chromium.org',
              'maniscalco+watch@chromium.org',
+             'pvalenzuela+watch@chromium.org',
              'zea+watch@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',
