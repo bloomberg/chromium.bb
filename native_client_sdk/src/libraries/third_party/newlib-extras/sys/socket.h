@@ -59,7 +59,7 @@ typedef	_BSD_SA_FAMILY_T_	sa_family_t;
 typedef	_BSD_SOCKLEN_T_	socklen_t;
 #undef	_BSD_SOCKLEN_T_
 #endif
- 
+
 /*
  * Types
  */
@@ -355,6 +355,18 @@ struct cmsgcred {
 	gid_t	cmcred_groups[CMGROUP_MAX];	/* groups */
 };
 
+/*
+ * Round p (pointer or byte index) up to a correctly-aligned value
+ * for all data types (int, long, ...).   The result is unsigned int
+ * and must be cast to any desired pointer type.
+ */
+#ifndef _ALIGNBYTES
+#define _ALIGNBYTES (sizeof(int) - 1)
+#endif
+#ifndef _ALIGN
+#define _ALIGN(p) (((unsigned)(p) + _ALIGNBYTES) & ~_ALIGNBYTES)
+#endif
+
 /* given pointer to struct cmsghdr, return pointer to data */
 #define	CMSG_DATA(cmsg)		((unsigned char *)(cmsg) + \
 				 _ALIGN(sizeof(struct cmsghdr)))
@@ -370,7 +382,7 @@ struct cmsgcred {
 #define	CMSG_FIRSTHDR(mhdr)	((struct cmsghdr *)(mhdr)->msg_control)
 
 /* RFC 2292 additions */
-	
+
 #define	CMSG_SPACE(l)		(_ALIGN(sizeof(struct cmsghdr)) + _ALIGN(l))
 #define	CMSG_LEN(l)		(_ALIGN(sizeof(struct cmsghdr)) + (l))
 
