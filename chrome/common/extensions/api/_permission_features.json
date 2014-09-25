@@ -423,10 +423,14 @@
   "fileManagerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "location": "component",
     "platforms": ["chromeos"],
     "whitelist": [
-      "397F221E63F86BE34C30165613E95B6CC8D22A52"  // http://crbug.com/415846
+      "74E2D32A61B08D29521A8C4E360F581DE78F5CA5",  // Image loader
+      "A948368FC53BE437A55FEB414106E207925482F5",  // Files app
+      "A13373C881097323F4DEF392474BE2E28DA6D4ED",  // Gallery
+      "8C726564C6DBE7380BAB388DE6CC7EC93EB44B06",  // Video player
+      "5065C83E84321221675D20FBE4DC43C655CC8C6F",  // Files app tests
+      "397F221E63F86BE34C30165613E95B6CC8D22A52"   // http://crbug.com/415846
     ]
   },
   "fileSystem": [{

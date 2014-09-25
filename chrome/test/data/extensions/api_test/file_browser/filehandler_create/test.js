@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var EXTENSION_ID = 'kidcpjlbjdmcnmccjhjdckhbngnhnepk';
+var EXTENSION_ID = 'pkplfbidichfdicaijlchgnapepdginl';
 var FILE_CONTENTS = 'hello from test extension.';
 
 function errorCallback(error) {

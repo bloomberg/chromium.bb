@@ -69,7 +69,7 @@ function runTests() {
               function(tasks) {
                 chrome.test.assertEq(1, tasks.length);
                 chrome.test.assertEq(
-                    'ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler',
+                    'pkplfbidichfdicaijlchgnapepdginl|app|magic_handler',
                     tasks[0].taskId);
                 onSuccess();
               });
@@ -89,7 +89,7 @@ function runTests() {
               function(tasks) {
                 chrome.test.assertEq(1, tasks.length);
                 chrome.test.assertEq(
-                    'ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler',
+                    'pkplfbidichfdicaijlchgnapepdginl|app|magic_handler',
                     tasks[0].taskId);
                 var onLaunched = function(event) {
                   chrome.test.assertTrue(!!event);

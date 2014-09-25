@@ -92,7 +92,7 @@ function testResolveFileSystemURL() {
   reportPromise(requestDriveFileSystem().then(function(fileSystem) {
     return Promise.all([
         resolveLocalFileSystemURL(
-            'filesystem:chrome-extension://kidcpjlbjdmcnmccjhjdckhbngnhnepk/' +
+            'filesystem:chrome-extension://pkplfbidichfdicaijlchgnapepdginl/' +
             'external/drive/root/test_dir/test_file.xul'),
         expectRejection(resolveLocalFileSystemURL(
             'filesystem:file:///external/drive/root/test_dir/test_file.xul'))
@@ -112,7 +112,7 @@ function testSendXHRToFileSystemURL() {
   reportPromise(requestDriveFileSystem().then(function(fileSystem) {
     return Promise.all([
         sendXHR(
-            'filesystem:chrome-extension://kidcpjlbjdmcnmccjhjdckhbngnhnepk/' +
+            'filesystem:chrome-extension://pkplfbidichfdicaijlchgnapepdginl/' +
             'external/drive/root/test_dir/test_file.xul'),
         expectRejection(sendXHR(
             'filesystem:file:///external/drive/root/test_dir/test_file.xul')).
