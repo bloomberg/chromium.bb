@@ -14,50 +14,37 @@
 define("test", [
   "mojo/public/js/bindings/core",
   "mojo/public/js/bindings/connection",
+  "mojo/public/js/bindings/support",
   "mojo/services/public/interfaces/network/network_service.mojom",
   "mojo/services/public/interfaces/network/url_loader.mojom",
   "mojo",
   "console"
-], function(core, connection, network, loader, mojo, console) {
+], function(core, connection, support, net, loader, mojo, console) {
 
-  function NetworkServiceImpl(remote) { }
-  NetworkServiceImpl.prototype =
-    Object.create(network.NetworkServiceStub.prototype);
-
-  function URLLoaderImpl(remote) { }
-  URLLoaderImpl.prototype =
-    Object.create(loader.URLLoaderStub.prototype);
-
-  var networkServiceHandle = mojo.connectToService(
+  var netServiceHandle = mojo.connectToService(
       "mojo:mojo_network_service", "mojo::NetworkService");
-  var networkConnection = new connection.Connection(
-      networkServiceHandle, NetworkServiceImpl, network.NetworkServiceProxy);
+  var netConnection = new connection.Connection(
+      netServiceHandle, net.NetworkServiceStub, net.NetworkServiceProxy);
 
   var urlLoaderPipe = new core.createMessagePipe();
-  networkConnection.remote.createURLLoader(urlLoaderPipe.handle1);
+  netConnection.remote.createURLLoader(urlLoaderPipe.handle1);
   var urlLoaderConnection = new connection.Connection(
-      urlLoaderPipe.handle0, URLLoaderImpl, loader.URLLoaderProxy);
+      urlLoaderPipe.handle0, loader.URLLoaderStub, loader.URLLoaderProxy);
 
   var urlRequest = new loader.URLRequest();
   urlRequest.url = "http://www.cnn.com";
   urlRequest.method = "GET";
   urlRequest.auto_follow_redirects = true;
+
   var urlRequestPromise = urlLoaderConnection.remote.start(urlRequest);
-  urlRequestPromise.then(
-    function(result) {
-      var body = core.readData(result.response.body,
-                               core.READ_DATA_FLAG_ALL_OR_NONE);
-      if (body.result == core.RESULT_OK)
-        console.log("body.buffer.byteLength=" + body.buffer.byteLength);
-      else
-        console.log("core.readData() failed err=" + body.result);
-      for(var key in result.response)
-        console.log(key + " => " + result.response[key]);
-      mojo.quit();
-    },
-    function(error) {
-      console.log("FAIL " + error.toString());
+  urlRequestPromise.then(function(result) {
+    for(var key in result.response)
+      console.log(key + " => " + result.response[key]);
+    var drainDataPromise = core.drainData(result.response.body);
+    drainDataPromise.then(function(result) {
+      console.log("read " + result.buffer.byteLength + " bytes");
+    }).then(function() {
       mojo.quit();
     });
-
+  });
 });

@@ -47,6 +47,8 @@ component("gin") {
     "public/wrapper_info.h",
     "runner.cc",
     "runner.h",
+    "run_microtasks_observer.cc",
+    "run_microtasks_observer.h",
     "shell_runner.cc",
     "shell_runner.h",
     "try_catch.cc",

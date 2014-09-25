@@ -16,6 +16,7 @@
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
+#include "mojo/bindings/js/drain_data.h"
 #include "mojo/bindings/js/handle.h"
 
 namespace mojo {
@@ -221,6 +222,18 @@ gin::Dictionary ReadData(const gin::Arguments& args,
   return dictionary;
 }
 
+// Asynchronously read all of the data available for the specified data pipe
+// consumer handle until the remote handle is closed or an error occurs. A
+// Promise is returned whose settled value is an object like this:
+// {result: core.RESULT_OK, buffer: dataArrayBuffer}. If the read failed,
+// then the Promise is rejected, the result will be the actual error code,
+// and the buffer will contain whatever was read before the error occurred.
+// The drainData data pipe handle argument is closed automatically.
+
+v8::Handle<v8::Value> DoDrainData(gin::Arguments* args, mojo::Handle handle) {
+  return (new DrainData(args->isolate(), handle))->GetPromise();
+}
+
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
@@ -245,6 +258,7 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
         .SetMethod("createDataPipe", CreateDataPipe)
         .SetMethod("writeData", WriteData)
         .SetMethod("readData", ReadData)
+        .SetMethod("drainData", DoDrainData)
 
         .SetValue("RESULT_OK", MOJO_RESULT_OK)
         .SetValue("RESULT_CANCELLED", MOJO_RESULT_CANCELLED)

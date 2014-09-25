@@ -47,7 +47,7 @@ bool JSApp::Start() {
 void JSApp::Quit() {
   CHECK(on_js_app_thread());
 
-  // The the terminate operation is posted to the message_loop so that
+  // The terminate operation is posted to the message_loop so that
   // the shell_runner isn't destroyed before this JS function returns.
   thread_.message_loop()->PostTask(
       FROM_HERE, base::Bind(&JSApp::Terminate, base::Unretained(this)));
@@ -80,6 +80,7 @@ void JSApp::Run() {
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::ArrayBufferAllocator::SharedInstance());
   isolate_holder_.reset(new gin::IsolateHolder());
+  isolate_holder_->AddRunMicrotasksObserver();
 
   shell_runner_.reset(
       new gin::ShellRunner(&runner_delegate_, isolate_holder_->isolate()));
@@ -90,6 +91,7 @@ void JSApp::Run() {
 }
 
 void JSApp::Terminate() {
+  isolate_holder_->RemoveRunMicrotasksObserver();
   shell_runner_.reset(NULL);
 
   // This JSApp's thread must be stopped on the thread that started it. Ask the

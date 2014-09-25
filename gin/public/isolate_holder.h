@@ -13,6 +13,7 @@
 namespace gin {
 
 class PerIsolateData;
+class RunMicrotasksObserver;
 
 // To embed Gin, first initialize gin using IsolateHolder::Initialize and then
 // create an instance of IsolateHolder to hold the v8::Isolate in which you
@@ -36,9 +37,22 @@ class GIN_EXPORT IsolateHolder {
 
   v8::Isolate* isolate() { return isolate_; }
 
+  // The implementations of Object.observe() and Promise enqueue v8 Microtasks
+  // that should be executed just before control is returned to the message
+  // loop. This method adds a MessageLoop TaskObserver which runs any pending
+  // Microtasks each time a Task is completed. This method should be called
+  // once, when a MessageLoop is created and it should be called on the
+  // MessageLoop's thread.
+  void AddRunMicrotasksObserver();
+
+  // This method should also only be called once, and on the MessageLoop's
+  // thread.
+  void RemoveRunMicrotasksObserver();
+
  private:
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;
+  scoped_ptr<RunMicrotasksObserver> task_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolateHolder);
 };

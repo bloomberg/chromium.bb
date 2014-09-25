@@ -505,6 +505,8 @@
         # Sources list duplicated in GN build.
         'bindings/js/core.cc',
         'bindings/js/core.h',
+        'bindings/js/drain_data.cc',
+        'bindings/js/drain_data.h',
         'bindings/js/handle.cc',
         'bindings/js/handle.h',
         'bindings/js/handle_close_observer.h',

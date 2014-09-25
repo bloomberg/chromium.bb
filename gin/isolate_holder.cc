@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "gin/array_buffer.h"
@@ -15,6 +16,7 @@
 #include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/v8_platform.h"
+#include "gin/run_microtasks_observer.h"
 
 namespace gin {
 
@@ -43,6 +45,8 @@ IsolateHolder::IsolateHolder() {
 }
 
 IsolateHolder::~IsolateHolder() {
+  if (task_observer_.get())
+    base::MessageLoop::current()->RemoveTaskObserver(task_observer_.get());
   isolate_data_.reset();
   isolate_->Dispose();
 }
@@ -64,6 +68,18 @@ void IsolateHolder::Initialize(ScriptMode mode,
   v8::V8::SetEntropySource(&GenerateEntropy);
   v8::V8::Initialize();
   v8_is_initialized = true;
+}
+
+void IsolateHolder::AddRunMicrotasksObserver() {
+  DCHECK(!task_observer_.get());
+  task_observer_.reset(new RunMicrotasksObserver(isolate_));;
+  base::MessageLoop::current()->AddTaskObserver(task_observer_.get());
+}
+
+void IsolateHolder::RemoveRunMicrotasksObserver() {
+  DCHECK(task_observer_.get());
+  base::MessageLoop::current()->RemoveTaskObserver(task_observer_.get());
+  task_observer_.reset();
 }
 
 }  // namespace gin

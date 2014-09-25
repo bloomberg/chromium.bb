@@ -7,6 +7,8 @@ source_set("js") {
   sources = [
     "core.cc",
     "core.h",
+    "drain_data.cc",
+    "drain_data.h",
     "handle.cc",
     "handle.h",
     "handle_close_observer.h",
