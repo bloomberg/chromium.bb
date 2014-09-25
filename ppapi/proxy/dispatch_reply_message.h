@@ -11,7 +11,6 @@
 #define PPAPI_PROXY_DISPATCH_REPLY_MESSAGE_H_
 
 #include "base/callback.h"
-#include "base/profiler/scoped_profile.h"  // For TRACK_RUN_IN_IPC_HANDLER.
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 

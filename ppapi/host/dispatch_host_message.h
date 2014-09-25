@@ -10,7 +10,7 @@
 #ifndef PPAPI_HOST_DISPATCH_HOST_MESSAGE_H_
 #define PPAPI_HOST_DISPATCH_HOST_MESSAGE_H_
 
-#include "base/profiler/scoped_profile.h"  // For TRACK_RUN_IN_IPC_HANDLER.
+#include "base/profiler/scoped_profile.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -66,7 +66,7 @@ inline int32_t DispatchResourceCall(ObjT* obj, Method method,
 // no params in the message).
 #define PPAPI_DISPATCH_HOST_RESOURCE_CALL(msg_class, member_func) \
     case msg_class::ID: { \
-      TRACK_RUN_IN_IPC_HANDLER(member_func); \
+      TRACK_RUN_IN_THIS_SCOPED_REGION(member_func); \
       msg_class::Schema::Param p; \
       if (msg_class::Read(&ipc_message__, &p)) { \
         return ppapi::host::DispatchResourceCall( \
@@ -79,7 +79,7 @@ inline int32_t DispatchResourceCall(ObjT* obj, Method method,
 
 #define PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(msg_class, member_func) \
   case msg_class::ID: { \
-    TRACK_RUN_IN_IPC_HANDLER(member_func); \
+    TRACK_RUN_IN_THIS_SCOPED_REGION(member_func); \
     return member_func(context); \
   }
 

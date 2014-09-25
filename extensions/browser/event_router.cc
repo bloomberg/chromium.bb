@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -237,8 +238,13 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
                                   listener->GetBrowserContext());
   std::string base_event_name = GetBaseEventName(listener->event_name());
   ObserverMap::iterator observer = observers_.find(base_event_name);
-  if (observer != observers_.end())
+  if (observer != observers_.end()) {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
+    tracked_objects::ScopedProfile tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "EventRouter_OnListenerAdded_ObserverCall"));
     observer->second->OnListenerAdded(details);
+  }
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
