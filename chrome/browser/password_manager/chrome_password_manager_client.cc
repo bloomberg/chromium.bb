@@ -40,6 +40,7 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "third_party/re2/re2/re2.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/password_authentication_manager.h"
@@ -488,8 +489,11 @@ bool ChromePasswordManagerClient::IsURLPasswordWebsiteReauth(
   if (!net::GetValueForKeyInQuery(url, "continue", &param_value))
     return false;
 
-  return GURL(param_value).host() ==
-      GURL(chrome::kPasswordManagerAccountDashboardURL).host();
+  // All password sites, including test sites, have autofilling disabled.
+  CR_DEFINE_STATIC_LOCAL(RE2, account_dashboard_pattern,
+                         ("passwords(-([a-z]+\\.corp))?\\.google\\.com"));
+
+  return RE2::FullMatch(GURL(param_value).host(), account_dashboard_pattern);
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
