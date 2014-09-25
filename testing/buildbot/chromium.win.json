@@ -43,6 +43,7 @@
     "gtest_tests": [
       "chrome_elf_unittests",
       "components_unittests",
+      "extensions_unittests",
       "gcm_unit_tests",
       "google_apis_unittests",
       "ipc_tests",
@@ -100,6 +101,7 @@
     "gtest_tests": [
       "chrome_elf_unittests",
       "components_unittests",
+      "extensions_unittests",
       "gcm_unit_tests",
       "google_apis_unittests",
       "ipc_tests",
@@ -166,6 +168,7 @@
     "gtest_tests": [
       "chrome_elf_unittests",
       "components_unittests",
+      "extensions_unittests",
       "gcm_unit_tests",
       "google_apis_unittests",
       "ipc_tests",
@@ -228,6 +231,7 @@
       "components_unittests",
       "gfx_unittests",
       "content_unittests",
+      "extensions_unittests",
       "ui_unittests",
       "views_unittests",
       "wm_unittests",
@@ -258,6 +262,7 @@
       "components_unittests",
       "courgette_unittests",
       "crypto_unittests",
+      "extensions_unittests",
       "gcm_unit_tests",
       "gpu_unittests",
       "url_unittests",
