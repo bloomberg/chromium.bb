@@ -2028,9 +2028,6 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
 {
     ASSERT(m_frame->view() == this);
 
-    if (paintsEntireContents())
-        return IntRect(IntPoint(), contentsSize());
-
     // Set our clip rect to be our contents.
     IntRect clipRect = contentsToWindow(visibleContentRect(scrollbarInclusion));
     if (!m_frame->deprecatedLocalOwner())

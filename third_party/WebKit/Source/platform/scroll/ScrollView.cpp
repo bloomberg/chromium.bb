@@ -43,7 +43,6 @@ ScrollView::ScrollView()
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
     , m_drawPanScrollIcon(false)
-    , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
 {
 }
@@ -158,11 +157,6 @@ void ScrollView::setCanHaveScrollbars(bool canScroll)
         newHorizontalMode = ScrollbarAlwaysOff;
 
     setScrollbarModes(newHorizontalMode, newVerticalMode);
-}
-
-void ScrollView::setPaintsEntireContents(bool paintsEntireContents)
-{
-    m_paintsEntireContents = paintsEntireContents;
 }
 
 void ScrollView::setClipsRepaints(bool clipsRepaints)
@@ -786,7 +780,7 @@ bool ScrollView::shouldPlaceVerticalScrollbarOnLeft() const
 void ScrollView::contentRectangleForPaintInvalidation(const IntRect& rect)
 {
     IntRect paintRect = rect;
-    if (clipsPaintInvalidations() && !paintsEntireContents())
+    if (clipsPaintInvalidations())
         paintRect.intersect(visibleContentRect());
     if (paintRect.isEmpty())
         return;
@@ -877,24 +871,16 @@ void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
     notifyPageThatContentAreaWillPaint();
 
     IntRect documentDirtyRect = rect;
-    if (!paintsEntireContents()) {
-        IntRect visibleAreaWithoutScrollbars(location(), visibleContentRect().size());
-        documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
-    }
+    IntRect visibleAreaWithoutScrollbars(location(), visibleContentRect().size());
+    documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
 
     if (!documentDirtyRect.isEmpty()) {
         GraphicsContextStateSaver stateSaver(*context);
 
-        context->translate(x(), y());
-        documentDirtyRect.moveBy(-location());
+        context->translate(x() - scrollX(), y() - scrollY());
+        context->clip(visibleContentRect());
 
-        if (!paintsEntireContents()) {
-            context->translate(-scrollX(), -scrollY());
-            documentDirtyRect.moveBy(scrollPosition());
-
-            context->clip(visibleContentRect());
-        }
-
+        documentDirtyRect.moveBy(-location() + scrollPosition());
         paintContents(context, documentDirtyRect);
     }
 
