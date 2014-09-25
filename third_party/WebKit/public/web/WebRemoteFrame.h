@@ -16,6 +16,9 @@ public:
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) = 0;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) = 0;
+
+    // Transfer initial drawing parameters from a local frame.
+    virtual void initializeFromFrame(WebLocalFrame*) const = 0;
 };
 
 } // namespace blink

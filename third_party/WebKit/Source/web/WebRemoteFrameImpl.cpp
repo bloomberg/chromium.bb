@@ -6,6 +6,7 @@
 #include "web/WebRemoteFrameImpl.h"
 
 #include "core/frame/FrameOwner.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
@@ -867,6 +868,15 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
     if (!frame.client())
         return 0;
     return static_cast<RemoteFrameClient*>(frame.client())->webFrame();
+}
+
+void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
+{
+    ASSERT(source);
+    WebLocalFrameImpl* localFrameImpl = toWebLocalFrameImpl(source);
+    client()->initializeChildFrame(
+        localFrameImpl->frame()->view()->frameRect(),
+        localFrameImpl->frame()->view()->visibleContentScaleFactor());
 }
 
 } // namespace blink

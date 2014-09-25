@@ -183,6 +183,8 @@ public:
 
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
 
+    virtual void initializeFromFrame(WebLocalFrame*) const OVERRIDE;
+
     virtual void trace(Visitor*);
 
 private:

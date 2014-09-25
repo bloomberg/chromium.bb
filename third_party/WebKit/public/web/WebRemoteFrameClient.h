@@ -23,7 +23,13 @@ public:
         WebLocalFrame* sourceFrame,
         WebRemoteFrame* targetFrame,
         WebSecurityOrigin targetOrigin,
-        WebDOMMessageEvent) = 0;
+        WebDOMMessageEvent) { }
+
+    // Send initial drawing parameters to a child frame that is being rendered
+    // out of process.
+    virtual void initializeChildFrame(
+        const WebRect& frameRect,
+        float scaleFactor) { }
 };
 
 } // namespace blink
