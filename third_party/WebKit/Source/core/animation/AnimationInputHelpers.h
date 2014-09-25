@@ -14,7 +14,7 @@ class TimingFunction;
 
 class AnimationInputHelpers {
 public:
-    static CSSPropertyID camelCaseCSSPropertyNameToID(const String&);
+    static CSSPropertyID keyframeAttributeToCSSPropertyID(const String&);
     static PassRefPtr<TimingFunction> parseTimingFunction(const String&);
 };
 

@@ -11,16 +11,25 @@
 
 namespace blink {
 
-TEST(AnimationAnimationInputHelpersTest, ParseCamelCasePropertyNames)
+TEST(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
 {
-    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("line-height")));
-    EXPECT_EQ(CSSPropertyLineHeight, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("lineHeight")));
-    EXPECT_EQ(CSSPropertyBorderTopWidth, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("borderTopWidth")));
-    EXPECT_EQ(CSSPropertyWidth, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("width")));
-    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("Width")));
-    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("-webkit-transform")));
-    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("webkitTransform")));
-    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::camelCaseCSSPropertyNameToID(String("cssFloat")));
+    EXPECT_EQ(CSSPropertyLineHeight, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("line-height")));
+    EXPECT_EQ(CSSPropertyLineHeight, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("lineHeight")));
+    EXPECT_EQ(CSSPropertyBorderTopWidth, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("borderTopWidth")));
+    EXPECT_EQ(CSSPropertyBorderTopWidth, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("border-topWidth")));
+    EXPECT_EQ(CSSPropertyWidth, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("width")));
+    EXPECT_EQ(CSSPropertyFloat, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("float")));
+    EXPECT_EQ(CSSPropertyFloat, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("cssFloat")));
+
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("Width")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("-epub-text-transform")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("EpubTextTransform")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("-internal-marquee-repetition")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("InternalMarqueeRepetition")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("-webkit-filter")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("-webkit-transform")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("webkitTransform")));
+    EXPECT_EQ(CSSPropertyInvalid, AnimationInputHelpers::keyframeAttributeToCSSPropertyID(String("WebkitTransform")));
 }
 
 static bool timingFunctionRoundTrips(const String& string)

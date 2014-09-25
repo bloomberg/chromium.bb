@@ -11,22 +11,20 @@
 
 namespace blink {
 
-CSSPropertyID AnimationInputHelpers::camelCaseCSSPropertyNameToID(const String& propertyName)
+CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSPropertyID(const String& propertyName)
 {
-    if (propertyName.find('-') != kNotFound)
+    // Disallow prefixed properties.
+    if (propertyName[0] == '-' || isASCIIUpper(propertyName[0]))
         return CSSPropertyInvalid;
-
+    if (propertyName == "cssFloat")
+        return CSSPropertyFloat;
     StringBuilder builder;
-    size_t position = 0;
-    size_t end;
-    while ((end = propertyName.find(isASCIIUpper, position)) != kNotFound) {
-        builder.append(propertyName.substring(position, end - position) + "-" + toASCIILower((propertyName)[end]));
-        position = end + 1;
+    for (size_t i = 0; i < propertyName.length(); ++i) {
+        if (isASCIIUpper(propertyName[i]))
+            builder.append('-');
+        builder.append(propertyName[i]);
     }
-    builder.append(propertyName.substring(position));
-    // Doesn't handle prefixed properties.
-    CSSPropertyID id = cssPropertyID(builder.toString());
-    return id;
+    return cssPropertyID(builder.toString());
 }
 
 PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const String& string)
