@@ -40,22 +40,23 @@ test('should display on click', function() {
   ok(menu.offsetWidth != 0 && menu.offsetHeight != 0);
 });
 
-test('should dismiss when <body> is clicked', function() {
+test('should dismiss when the menu is clicked', function() {
   var menu = menuButton.menu();
   menuButton.button().click();
-  document.body.click();
+  menu.click();
   ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
 });
 
-/*
-TODO(jamiewalch): Reinstate this once MenuButton is fixed properly.
-test('should dismiss when button is clicked', function() {
+test('should dismiss when anything outside the menu is clicked', function() {
   var menu = menuButton.menu();
   menuButton.button().click();
-  menuButton.button().click();
+  var x = menu.offsetRight + 1;
+  var y = menu.offsetBottom + 1;
+  var notMenu = document.elementFromPoint(x, y);
+  base.debug.assert(notMenu != menu);
+  notMenu.click();
   ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
 });
-*/
 
 test('should dismiss when menu item is clicked', function() {
   var menu = menuButton.menu();
@@ -70,7 +71,7 @@ test('should invoke callbacks', function() {
   menuButton.button().click();
   ok(onShow.called);
   ok(!onHide.called);
-  document.body.click();
+  menuButton.menu().click();
   ok(onHide.called);
 });
 

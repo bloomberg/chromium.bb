@@ -36,8 +36,11 @@ html.apps-v2 body:not(.fullscreen) {
   padding-__MSG_@@bidi_start_edge__: 12px;
   width: 100%;
   display: inline-block;
-  -webkit-app-region: drag;
   flex: 1;
+}
+
+.title-bar:not(.menu-opened) .window-title {
+  -webkit-app-region: drag;
 }
 
 .window-control {

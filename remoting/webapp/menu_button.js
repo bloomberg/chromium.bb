@@ -47,35 +47,41 @@ remoting.MenuButton = function(container, opt_onShow, opt_onHide) {
    */
   this.onHide_ = opt_onHide;
 
+  /**
+   * Create a "click-trap" div covering the entire document, but below the
+   * menu in the z-order. This ensures the the menu can be closed by clicking
+   * anywhere. Note that adding this event handler to <body> is not enough,
+   * because elements can prevent event propagation; specifically, the client
+   * plugin element does this.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  this.clickTrap_ = /** @type {HTMLElement} */ (document.createElement('div'));
+  this.clickTrap_.classList.add('menu-button-click-trap');
+
   /** @type {remoting.MenuButton} */
   var that = this;
 
-  /**
-   * @type {function(Event):void}
-   * @private
-   */
-  var closeHandler = function(event) {
+  var closeHandler = function() {
     that.button_.classList.remove(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
-    document.body.removeEventListener('click', closeHandler, false);
+    container.removeChild(that.clickTrap_);
     if (that.onHide_) {
       that.onHide_();
     }
   };
 
-  /**
-   * @type {function(Event):void}
-   * @private
-   */
-  var onClick = function(event) {
+  var onClick = function() {
     if (that.onShow_) {
       that.onShow_();
     }
     that.button_.classList.add(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
-    document.body.addEventListener('click', closeHandler, false);
-    event.stopPropagation();
+    container.appendChild(that.clickTrap_);
   };
 
   this.button_.addEventListener('click', onClick, false);
+  this.clickTrap_.addEventListener('click', closeHandler, false);
+  this.menu_.addEventListener('click', closeHandler, false);
 };
 
 /**

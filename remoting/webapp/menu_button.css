@@ -49,7 +49,7 @@ button.menu-button-activator.active {
   outline: 1px solid rgba(0, 0, 0, 0.2);
   padding: 0 0 6px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  z-index: 2;
 }
 
 .menu-button li {
@@ -88,4 +88,13 @@ button.menu-button-activator.active {
 #help-feedback-toolbar {
   margin-left: 8px;
   margin-top: 4px;
+}
+
+.menu-button-click-trap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
