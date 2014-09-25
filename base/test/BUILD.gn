@@ -96,6 +96,8 @@ source_set("test_support") {
     "thread_test_helper.h",
     "trace_event_analyzer.cc",
     "trace_event_analyzer.h",
+    "trace_to_file.cc",
+    "trace_to_file.h",
     "values_test_util.cc",
     "values_test_util.h",
   ]

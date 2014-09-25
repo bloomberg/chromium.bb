@@ -959,6 +959,8 @@
         'test/thread_test_helper.h',
         'test/trace_event_analyzer.cc',
         'test/trace_event_analyzer.h',
+        'test/trace_to_file.cc',
+        'test/trace_to_file.h',
         'test/values_test_util.cc',
         'test/values_test_util.h',
       ],

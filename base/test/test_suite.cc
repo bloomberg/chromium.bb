@@ -337,6 +337,8 @@ void TestSuite::Initialize() {
 #endif  // !defined(OS_IOS)
 
   TestTimeouts::Initialize();
+
+  trace_to_file_.BeginTracingFromCommandLineOptions();
 }
 
 void TestSuite::Shutdown() {

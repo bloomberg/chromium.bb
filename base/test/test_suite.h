@@ -13,6 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/trace_to_file.h"
 
 namespace testing {
 class TestInfo;
@@ -79,6 +80,8 @@ class TestSuite {
 
   // Basic initialization for the test suite happens here.
   void PreInitialize(bool create_at_exit_manager);
+
+  test::TraceToFile trace_to_file_;
 
   bool initialized_command_line_;
 
