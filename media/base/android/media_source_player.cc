@@ -44,6 +44,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       is_waiting_for_key_(false),
       is_waiting_for_audio_decoder_(false),
       is_waiting_for_video_decoder_(false),
+      prerolling_(false),
       weak_factory_(this) {
   audio_decoder_job_.reset(new AudioDecoderJob(
       base::Bind(&DemuxerAndroid::RequestDemuxerData,
@@ -346,6 +347,7 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
     audio_decoder_job_->BeginPrerolling(preroll_timestamp_);
   if (HasVideo())
     video_decoder_job_->BeginPrerolling(preroll_timestamp_);
+  prerolling_ = true;
 
   if (!doing_browser_seek_)
     manager()->OnSeekComplete(player_id(), current_time);
@@ -509,6 +511,14 @@ void MediaSourcePlayer::MediaDecoderCallback(
   if (status == MEDIA_CODEC_STOPPED)
     return;
 
+  if (prerolling_ && IsPrerollFinished(is_audio)) {
+    if (IsPrerollFinished(!is_audio)) {
+      prerolling_ = false;
+      StartInternal();
+    }
+    return;
+  }
+
   if (is_clock_manager) {
     // If we have a valid timestamp, start the starvation callback. Otherwise,
     // reset the |start_time_ticks_| so that the next frame will not suffer
@@ -524,6 +534,12 @@ void MediaSourcePlayer::MediaDecoderCallback(
     DecodeMoreAudio();
   else
     DecodeMoreVideo();
+}
+
+bool MediaSourcePlayer::IsPrerollFinished(bool is_audio) const {
+  if (is_audio)
+    return !HasAudio() || !audio_decoder_job_->prerolling();
+  return !HasVideo() || !video_decoder_job_->prerolling();
 }
 
 void MediaSourcePlayer::DecodeMoreAudio() {
@@ -589,11 +605,11 @@ void MediaSourcePlayer::ClearDecodingData() {
   start_time_ticks_ = base::TimeTicks();
 }
 
-bool MediaSourcePlayer::HasVideo() {
+bool MediaSourcePlayer::HasVideo() const {
   return video_decoder_job_->HasStream();
 }
 
-bool MediaSourcePlayer::HasAudio() {
+bool MediaSourcePlayer::HasAudio() const {
   return audio_decoder_job_->HasStream();
 }
 

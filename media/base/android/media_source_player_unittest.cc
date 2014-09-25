@@ -479,12 +479,19 @@ class MediaSourcePlayerTest : public testing::Test {
 
   // Preroll the decoder job to |target_timestamp|. The first access unit
   // to decode will have a timestamp equal to |start_timestamp|.
+  // |is_clock_manager| indicates whether the decoder serves as the clock
+  // manager for the player.
   // TODO(qinmin): Add additional test cases for out-of-order decodes.
   // See http://crbug.com/331421.
   void PrerollDecoderToTime(bool is_audio,
                             const base::TimeDelta& start_timestamp,
-                            const base::TimeDelta& target_timestamp) {
-    EXPECT_EQ(target_timestamp, player_.GetCurrentTime());
+                            const base::TimeDelta& target_timestamp,
+                            bool is_clock_manager) {
+    // For streams with both audio and video, it is possible that audio rolls
+    // past the |target_timestamp|. As a result, the current time may be larger
+    // than the |target_timestamp| for video as it may not be the clock manager.
+    EXPECT_TRUE(!is_clock_manager ||
+                target_timestamp == player_.GetCurrentTime());
     // |start_timestamp| must be smaller than |target_timestamp|.
     EXPECT_LE(start_timestamp, target_timestamp);
     DemuxerData data = is_audio ? CreateReadFromDemuxerAckForAudio(1) :
@@ -502,7 +509,8 @@ class MediaSourcePlayerTest : public testing::Test {
       player_.OnDemuxerDataAvailable(data);
       EXPECT_TRUE(GetMediaDecoderJob(is_audio)->is_decoding());
       EXPECT_TRUE(GetMediaCodecBridge(is_audio));
-      EXPECT_EQ(target_timestamp, player_.GetCurrentTime());
+      EXPECT_TRUE(!is_clock_manager ||
+                  target_timestamp == player_.GetCurrentTime());
       current_timestamp += 30;
       WaitForDecodeDone(is_audio, !is_audio);
     }
@@ -1516,7 +1524,7 @@ TEST_F(MediaSourcePlayerTest, PrerollAudioAfterSeek) {
   SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsPrerolling(true));
   PrerollDecoderToTime(
-      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100));
+      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), true);
 }
 
 TEST_F(MediaSourcePlayerTest, PrerollVideoAfterSeek) {
@@ -1529,7 +1537,7 @@ TEST_F(MediaSourcePlayerTest, PrerollVideoAfterSeek) {
   SeekPlayerWithAbort(false, base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsPrerolling(false));
   PrerollDecoderToTime(
-      false, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100));
+      false, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), true);
 }
 
 TEST_F(MediaSourcePlayerTest, SeekingAfterCompletingPrerollRestartsPreroll) {
@@ -1607,7 +1615,7 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossReleaseAndStart) {
   EXPECT_TRUE(IsPrerolling(true));
 
   // Send data after the seek position.
-  PrerollDecoderToTime(true, target_timestamp, target_timestamp);
+  PrerollDecoderToTime(true, target_timestamp, target_timestamp, true);
 }
 
 TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
@@ -1628,8 +1636,9 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
   DemuxerData data = CreateReadFromDemuxerAckWithConfigChanged(
       true, 0, configs);
   player_.OnDemuxerDataAvailable(data);
+
   PrerollDecoderToTime(
-      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100));
+      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), true);
 }
 
 TEST_F(MediaSourcePlayerTest, PrerollContinuesAfterUnchangedConfigs) {
@@ -1651,7 +1660,59 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAfterUnchangedConfigs) {
       true, 0, configs);
   player_.OnDemuxerDataAvailable(data);
   PrerollDecoderToTime(
-      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100));
+      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), true);
+}
+
+TEST_F(MediaSourcePlayerTest, AudioPrerollFinishesBeforeVideo) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that after audio finishes prerolling, it will wait for video to finish
+  // prerolling before advancing together.
+  CreateNextTextureAndSetVideoSurface();
+  Start(CreateAudioVideoDemuxerConfigs());
+
+  // Initiate a seek.
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(100);
+  player_.SeekTo(seek_position);
+  player_.OnDemuxerDataAvailable(CreateAbortedAck(true));
+  player_.OnDemuxerDataAvailable(CreateAbortedAck(false));
+  WaitForDecodeDone(true, true);
+
+  // Verify that the seek is requested.
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+  player_.OnDemuxerSeekDone(kNoTimestamp());
+  EXPECT_EQ(4, demuxer_->num_data_requests());
+  EXPECT_EQ(player_.GetCurrentTime().InMillisecondsF(), 100.0);
+  EXPECT_EQ(GetPrerollTimestamp().InMillisecondsF(), 100.0);
+
+  // Send both audio and video data to finish prefetching.
+  base::TimeDelta seek_ack_position = base::TimeDelta::FromMilliseconds(70);
+  DemuxerData audio_data = CreateReadFromDemuxerAckForAudio(0);
+  audio_data.access_units[0].timestamp = seek_ack_position;
+  DemuxerData video_data = CreateReadFromDemuxerAckForVideo();
+  video_data.access_units[0].timestamp = seek_ack_position;
+  player_.OnDemuxerDataAvailable(audio_data);
+  player_.OnDemuxerDataAvailable(video_data);
+  WaitForAudioDecodeDone();
+  WaitForVideoDecodeDone();
+
+  // Send audio data at and after the seek position. Audio should finish
+  // prerolling and stop decoding.
+  EXPECT_EQ(6, demuxer_->num_data_requests());
+  PrerollDecoderToTime(true, seek_position, seek_position, true);
+  EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
+  EXPECT_FALSE(IsPrerolling(true));
+  EXPECT_TRUE(IsPrerolling(false));
+
+  // Send video data to let video finish prerolling.
+  PrerollDecoderToTime(false, seek_position, seek_position, false);
+  EXPECT_FALSE(IsPrerolling(false));
+
+  // Both audio and video decoders should start decoding again.
+  player_.OnDemuxerDataAvailable(audio_data);
+  player_.OnDemuxerDataAvailable(video_data);
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+  EXPECT_TRUE(GetMediaDecoderJob(false)->is_decoding());
 }
 
 TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
@@ -1777,7 +1838,7 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_PrerollAfterBrowserSeek) {
   EXPECT_EQ(3, demuxer_->num_data_requests());
 
   PrerollDecoderToTime(
-      false, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100));
+      false, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), true);
 }
 
 TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChange) {

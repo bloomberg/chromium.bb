@@ -101,6 +101,8 @@ class MediaDecoderJob {
 
   bool is_content_encrypted() const { return is_content_encrypted_; }
 
+  bool prerolling() const { return prerolling_; }
+
  protected:
   // Creates a new MediaDecoderJob instance.
   // |decoder_task_runner| - Thread on which the decoder task will run.
