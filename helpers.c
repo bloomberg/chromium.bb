@@ -104,6 +104,7 @@ int gbm_dumb_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 
 	bo->handle.u32 = create_dumb.handle;
 	bo->size = create_dumb.size;
+	bo->stride = create_dumb.pitch;
 
 	return 0;
 }

@@ -14,7 +14,7 @@
 
 int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
 {
-	size_t size = width * height * ;
+	size_t size = width * height * gbm_bytes_from_format(format);
 	struct drm_rockchip_gem_create gem_create;
 	int ret;
 
@@ -27,6 +27,7 @@ int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, u
 
 	bo->handle.u32 = gem_create.handle;
 	bo->size = size;
+	bo->stride = width * gbm_bytes_from_format(format);
 
 	return 0;
 }

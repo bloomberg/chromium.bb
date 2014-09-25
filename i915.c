@@ -108,13 +108,15 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 	else if (flags & GBM_BO_USE_RENDERING)
 		tiling_mode = I915_TILING_Y;
 
+	bo->stride = i915_get_pitch(bo->gbm,
+		width * gbm_bytes_from_format(format),
+		tiling_mode);
+
 	memset(&gem_set_tiling, 0, sizeof(gem_set_tiling));
 	do {
 		gem_set_tiling.handle = bo->handle.u32;
 		gem_set_tiling.tiling_mode = tiling_mode;
-		gem_set_tiling.stride = i915_get_pitch(bo->gbm,
-							width * gbm_bytes_from_format(format),
-							tiling_mode);
+		gem_set_tiling.stride = bo->stride;
 		ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_I915_GEM_SET_TILING, &gem_set_tiling);
 	} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 

@@ -29,6 +29,7 @@ int gbm_exynos_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uin
 
 	bo->handle.u32 = gem_create.handle;
 	bo->size = size;
+	bo->stride = width * gbm_bytes_from_format(format);
 
 	return 0;
 }
