@@ -799,10 +799,15 @@ int KernelProxy::remove(const char* path) {
   return 0;
 }
 
-// TODO(noelallen): Needs implementation.
-int KernelProxy::fchmod(int fd, int mode) {
+int KernelProxy::fchmod(int fd, mode_t mode) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = handle->node()->Fchmod(mode);
   if (error) {
     errno = error;
     return -1;

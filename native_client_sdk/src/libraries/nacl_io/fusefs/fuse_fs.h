@@ -55,6 +55,7 @@ class FuseFsNode : public Node {
                           const struct termios* termios_p);
   virtual Error GetSize(off_t* out_size);
   virtual Error Futimens(const struct timespec times[2]);
+  virtual Error Fchmod(mode_t mode);
 
  protected:
   struct fuse_operations* fuse_ops_;

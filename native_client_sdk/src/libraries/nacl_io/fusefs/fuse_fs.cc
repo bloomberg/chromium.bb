@@ -261,6 +261,20 @@ Error FuseFsNode::Futimens(const struct timespec times[2]) {
   return result;
 }
 
+Error FuseFsNode::Fchmod(mode_t mode) {
+  int result;
+  if (!fuse_ops_->chmod) {
+    LOG_TRACE("fuse_ops_->chmod is NULL.");
+    return ENOSYS;
+  }
+
+  result = fuse_ops_->chmod(path_.c_str(), mode);
+  if (result < 0)
+    return -result;
+
+  return result;
+}
+
 Error FuseFsNode::VIoctl(int request, va_list args) {
   LOG_ERROR("Ioctl not implemented for fusefs.");
   return ENOSYS;

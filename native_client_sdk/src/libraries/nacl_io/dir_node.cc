@@ -69,6 +69,12 @@ Error DirNode::GetDents(size_t offs,
   return cache_.GetDents(offs, pdir, size, out_bytes);
 }
 
+Error DirNode::Fchmod(mode_t mode) {
+  AUTO_LOCK(node_lock_);
+  SetMode(mode);
+  return 0;
+}
+
 Error DirNode::AddChild(const std::string& name, const ScopedNode& node) {
   AUTO_LOCK(node_lock_);
 

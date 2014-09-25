@@ -180,6 +180,10 @@ Error Node::Futimens(const struct timespec times[2]) {
   return 0;
 }
 
+Error Node::Fchmod(mode_t mode) {
+  return EINVAL;
+}
+
 int Node::GetLinks() {
   return stat_.st_nlink;
 }

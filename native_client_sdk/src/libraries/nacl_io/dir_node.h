@@ -43,6 +43,7 @@ class DirNode : public Node {
                       const void* buf,
                       size_t count,
                       int* out_bytes);
+  virtual Error Fchmod(mode_t mode);
 
   // Adds a finds or adds a directory entry as an INO, updating the refcount
   virtual Error AddChild(const std::string& name, const ScopedNode& node);

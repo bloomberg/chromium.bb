@@ -31,18 +31,16 @@ class FuseFsForTesting : public FuseFs {
 
 // Implementation of a simple flat memory filesystem.
 struct File {
-  File() {
-    memset(&times, 0, sizeof(times));
-  }
+  File() : mode(0666) { memset(&times, 0, sizeof(times)); }
 
   std::string name;
   std::vector<uint8_t> data;
+  mode_t mode;
   timespec times[2];
 };
 
 typedef std::vector<File> Files;
 Files g_files;
-mode_t last_create_mode = 0666;
 
 bool IsValidPath(const char* path) {
   if (path == NULL)
@@ -81,7 +79,7 @@ int testfs_getattr(const char* path, struct stat* stbuf) {
   if (file == NULL)
     return -ENOENT;
 
-  stbuf->st_mode = S_IFREG | last_create_mode;
+  stbuf->st_mode = S_IFREG | file->mode;
   stbuf->st_size = file->data.size();
   stbuf->st_atime = file->times[0].tv_sec;
   stbuf->st_atimensec = file->times[0].tv_nsec;
@@ -119,7 +117,7 @@ int testfs_create(const char* path, mode_t mode, struct fuse_file_info* fi) {
     file = &g_files.back();
     file->name = &path[1];  // Skip initial /
   }
-  last_create_mode = mode;
+  file->mode = mode;
 
   return 0;
 }
@@ -180,33 +178,62 @@ int testfs_utimens(const char* path, const struct timespec times[2]) {
   return 0;
 }
 
+int testfs_chmod(const char* path, mode_t mode) {
+  File* file = FindFile(path);
+  if (file == NULL)
+    return -ENOENT;
+
+  file->mode = mode;
+  return 0;
+}
+
 const char hello_world[] = "Hello, World!\n";
 
 fuse_operations g_fuse_operations = {
     0,               // flag_nopath
     0,               // flag_reserved
+    testfs_getattr,  // getattr
+    NULL,            // readlink
+    NULL,            // mknod
+    NULL,            // mkdir
+    NULL,            // unlink
+    NULL,            // rmdir
+    NULL,            // symlink
+    NULL,            // rename
+    NULL,            // link
+    testfs_chmod,    // chmod
+    NULL,            // chown
+    NULL,            // truncate
+    testfs_open,     // open
+    testfs_read,     // read
+    testfs_write,    // write
+    NULL,            // statfs
+    NULL,            // flush
+    NULL,            // release
+    NULL,            // fsync
+    NULL,            // setxattr
+    NULL,            // getxattr
+    NULL,            // listxattr
+    NULL,            // removexattr
+    NULL,            // opendir
+    testfs_readdir,  // readdir
+    NULL,            // releasedir
+    NULL,            // fsyncdir
     NULL,            // init
     NULL,            // destroy
     NULL,            // access
     testfs_create,   // create
-    NULL,            // fgetattr
-    NULL,            // fsync
     NULL,            // ftruncate
-    testfs_getattr,  // getattr
-    NULL,            // mkdir
-    NULL,            // mknod
-    testfs_open,     // open
-    NULL,            // opendir
-    testfs_read,     // read
-    testfs_readdir,  // readdir
-    NULL,            // release
-    NULL,            // releasedir
-    NULL,            // rename
-    NULL,            // rmdir
-    NULL,            // truncate
-    NULL,            // unlink
-    testfs_write,    // write
+    NULL,            // fgetattr
+    NULL,            // lock
     testfs_utimens,  // utimens
+    NULL,            // bmap
+    NULL,            // ioctl
+    NULL,            // poll
+    NULL,            // write_buf
+    NULL,            // read_buf
+    NULL,            // flock
+    NULL,            // fallocate
 };
 
 class FuseFsTest : public ::testing::Test {
@@ -359,6 +386,20 @@ TEST_F(FuseFsTest, Utimens) {
   EXPECT_EQ(times[0].tv_nsec, statbuf.st_atimensec);
   EXPECT_EQ(times[1].tv_sec, statbuf.st_mtime);
   EXPECT_EQ(times[1].tv_nsec, statbuf.st_mtimensec);
+}
+
+TEST_F(FuseFsTest, Fchmod) {
+  struct stat statbuf;
+  ScopedNode node;
+
+  ASSERT_EQ(0, fs_.Open(Path("/hello"), O_RDONLY, &node));
+  ASSERT_EQ(0, node->GetStat(&statbuf));
+  EXPECT_EQ(0666, statbuf.st_mode & ~S_IFMT);
+
+  ASSERT_EQ(0, node->Fchmod(0777));
+
+  ASSERT_EQ(0, node->GetStat(&statbuf));
+  EXPECT_EQ(0777, statbuf.st_mode & ~S_IFMT);
 }
 
 namespace {

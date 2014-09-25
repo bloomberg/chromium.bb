@@ -122,4 +122,10 @@ Error MemFsNode::Resize(off_t new_length) {
   return 0;
 }
 
+Error MemFsNode::Fchmod(mode_t mode) {
+  AUTO_LOCK(node_lock_);
+  SetMode(mode);
+  return 0;
+}
+
 }  // namespace nacl_io

@@ -26,7 +26,7 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD1(dup, int(int));
   MOCK_METHOD2(dup2, int(int, int));
   MOCK_METHOD1(fchdir, int(int));
-  MOCK_METHOD2(fchmod, int(int, int));
+  MOCK_METHOD2(fchmod, int(int, mode_t));
   MOCK_METHOD3(fchown, int(int, uid_t, gid_t));
   MOCK_METHOD3(fcntl, int(int, int, va_list));
   MOCK_METHOD1(fdatasync, int(int));

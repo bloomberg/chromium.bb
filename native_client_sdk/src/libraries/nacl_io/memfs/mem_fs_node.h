@@ -27,6 +27,7 @@ class MemFsNode : public Node {
                       size_t count,
                       int* out_bytes);
   virtual Error FTruncate(off_t size);
+  virtual Error Fchmod(mode_t mode);
 
  private:
   Error Resize(off_t size);

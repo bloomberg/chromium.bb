@@ -87,35 +87,35 @@ struct fuse_operations {
   unsigned int flag_nopath : 1;
   unsigned int flag_reserved : 31;
 
-  // Called when a filesystem of this type is initialized.
-  void* (*init)(struct fuse_conn_info* conn);
-  // Called when a filesystem of this type is unmounted.
-  void (*destroy)(void*);
-  // Called by access()
-  int (*access)(const char* path, int mode);
-  // Called when O_CREAT is passed to open()
-  int (*create)(const char* path, mode_t mode, struct fuse_file_info*);
-  // Called by stat()/fstat(). If this function pointer is non-NULL, it is
-  // called, otherwise fuse_operations.getattr will be called.
-  int (*fgetattr)(const char* path, struct stat*, struct fuse_file_info*);
-  // Called by fsync(). The datasync paramater is not currently supported.
-  int (*fsync)(const char* path, int datasync, struct fuse_file_info*);
-  // Called by ftruncate()
-  int (*ftruncate)(const char* path, off_t, struct fuse_file_info*);
   // Called by stat()/fstat(), but only when fuse_operations.fgetattr is NULL.
   // Also called by open() to determine if the path is a directory or a regular
   // file.
   int (*getattr)(const char* path, struct stat*);
-  // Called by mkdir()
-  int (*mkdir)(const char* path, mode_t);
+  // Not called currently.
+  int (*readlink)(const char*, char*, size_t);
   // Called when O_CREAT is passed to open(), but only if fuse_operations.create
   // is non-NULL.
   int (*mknod)(const char* path, mode_t, dev_t);
+  // Called by mkdir()
+  int (*mkdir)(const char* path, mode_t);
+  // Called by unlink()
+  int (*unlink)(const char* path);
+  // Called by rmdir()
+  int (*rmdir)(const char* path);
+  // Not called currently.
+  int (*symlink)(const char*, const char*);
+  // Called by rename()
+  int (*rename)(const char* path, const char* new_path);
+  // Not called currently.
+  int (*link)(const char*, const char*);
+  // Called by chmod()/fchmod()
+  int (*chmod)(const char*, mode_t);
+  // Not called currently.
+  int (*chown)(const char*, uid_t, gid_t);
+  // Called by truncate(), as well as open() when O_TRUNC is passed.
+  int (*truncate)(const char* path, off_t);
   // Called by open()
   int (*open)(const char* path, struct fuse_file_info*);
-  // Called by getdents(), which is called by the more standard functions
-  // opendir()/readdir().
-  int (*opendir)(const char* path, struct fuse_file_info*);
   // Called by read(). Note that FUSE specifies that all reads will fill the
   // entire requested buffer. If this function returns less than that, the
   // remainder of the buffer is zeroed.
@@ -124,6 +124,34 @@ struct fuse_operations {
               size_t count,
               off_t,
               struct fuse_file_info*);
+  // Called by write(). Note that FUSE specifies that a write should always
+  // return the full count, unless an error occurs.
+  int (*write)(const char* path,
+               const char* buf,
+               size_t count,
+               off_t,
+               struct fuse_file_info*);
+  // Not called currently.
+  int (*statfs)(const char*, struct statvfs*);
+  // Not called currently.
+  int (*flush)(const char*, struct fuse_file_info*);
+  // Called when the last reference to this node is released. This is only
+  // called for regular files. For directories, fuse_operations.releasedir is
+  // called instead.
+  int (*release)(const char* path, struct fuse_file_info*);
+  // Called by fsync(). The datasync paramater is not currently supported.
+  int (*fsync)(const char* path, int datasync, struct fuse_file_info*);
+  // Not called currently.
+  int (*setxattr)(const char*, const char*, const char*, size_t, int);
+  // Not called currently.
+  int (*getxattr)(const char*, const char*, char*, size_t);
+  // Not called currently.
+  int (*listxattr)(const char*, char*, size_t);
+  // Not called currently.
+  int (*removexattr)(const char*, const char*);
+  // Called by getdents(), which is called by the more standard functions
+  // opendir()/readdir().
+  int (*opendir)(const char* path, struct fuse_file_info*);
   // Called by getdents(), which is called by the more standard function
   // readdir().
   //
@@ -176,68 +204,57 @@ struct fuse_operations {
                  off_t,
                  struct fuse_file_info*);
   // Called when the last reference to this node is released. This is only
-  // called for regular files. For directories, fuse_operations.releasedir is
-  // called instead.
-  int (*release)(const char* path, struct fuse_file_info*);
-  // Called when the last reference to this node is released. This is only
   // called for directories. For regular files, fuse_operations.release is
   // called instead.
   int (*releasedir)(const char* path, struct fuse_file_info*);
-  // Called by rename()
-  int (*rename)(const char* path, const char* new_path);
-  // Called by rmdir()
-  int (*rmdir)(const char* path);
-  // Called by truncate(), as well as open() when O_TRUNC is passed.
-  int (*truncate)(const char* path, off_t);
-  // Called by unlink()
-  int (*unlink)(const char* path);
-  // Called by write(). Note that FUSE specifies that a write should always
-  // return the full count, unless an error occurs.
-  int (*write)(const char* path,
-               const char* buf,
-               size_t count,
-               off_t,
-               struct fuse_file_info*);
+  // Not called currently.
+  int (*fsyncdir)(const char*, int, struct fuse_file_info*);
+  // Called when a filesystem of this type is initialized.
+  void* (*init)(struct fuse_conn_info* conn);
+  // Called when a filesystem of this type is unmounted.
+  void (*destroy)(void*);
+  // Called by access()
+  int (*access)(const char* path, int mode);
+  // Called when O_CREAT is passed to open()
+  int (*create)(const char* path, mode_t mode, struct fuse_file_info*);
+  // Called by ftruncate()
+  int (*ftruncate)(const char* path, off_t, struct fuse_file_info*);
+  // Called by stat()/fstat(). If this function pointer is non-NULL, it is
+  // called, otherwise fuse_operations.getattr will be called.
+  int (*fgetattr)(const char* path, struct stat*, struct fuse_file_info*);
+  // Not called currently.
+  int (*lock)(const char*, struct fuse_file_info*, int cmd, struct flock*);
   // Called by utime()/utimes()/futimes()/futimens() etc.
   int (*utimens)(const char*, const struct timespec tv[2]);
-
-  // The following functions are not currently called by the nacl_io
-  // implementation of FUSE.
+  // Not called currently.
   int (*bmap)(const char*, size_t blocksize, uint64_t* idx);
-  int (*chmod)(const char*, mode_t);
-  int (*chown)(const char*, uid_t, gid_t);
-  int (*fallocate)(const char*, int, off_t, off_t, struct fuse_file_info*);
-  int (*flock)(const char*, struct fuse_file_info*, int op);
-  int (*flush)(const char*, struct fuse_file_info*);
-  int (*fsyncdir)(const char*, int, struct fuse_file_info*);
-  int (*getxattr)(const char*, const char*, char*, size_t);
+  // Not called currently.
   int (*ioctl)(const char*,
                int cmd,
                void* arg,
                struct fuse_file_info*,
                unsigned int flags,
                void* data);
-  int (*link)(const char*, const char*);
-  int (*listxattr)(const char*, char*, size_t);
-  int (*lock)(const char*, struct fuse_file_info*, int cmd, struct flock*);
+  // Not called currently.
   int (*poll)(const char*,
               struct fuse_file_info*,
               struct fuse_pollhandle* ph,
               unsigned* reventsp);
+  // Not called currently.
+  int (*write_buf)(const char*,
+                   struct fuse_bufvec* buf,
+                   off_t off,
+                   struct fuse_file_info*);
+  // Not called currently.
   int (*read_buf)(const char*,
                   struct fuse_bufvec** bufp,
                   size_t size,
                   off_t off,
                   struct fuse_file_info*);
-  int (*readlink)(const char*, char*, size_t);
-  int (*removexattr)(const char*, const char*);
-  int (*setxattr)(const char*, const char*, const char*, size_t, int);
-  int (*statfs)(const char*, struct statvfs*);
-  int (*symlink)(const char*, const char*);
-  int (*write_buf)(const char*,
-                   struct fuse_bufvec* buf,
-                   off_t off,
-                   struct fuse_file_info*);
+  // Not called currently.
+  int (*flock)(const char*, struct fuse_file_info*, int op);
+  // Not called currently.
+  int (*fallocate)(const char*, int, off_t, off_t, struct fuse_file_info*);
 };
 
 #endif  // LIBRARIES_NACL_IO_FUSE_H_

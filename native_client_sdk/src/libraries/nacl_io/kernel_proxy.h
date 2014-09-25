@@ -107,7 +107,7 @@ class KernelProxy : protected KernelObject {
   virtual ssize_t read(int fd, void* buf, size_t nbyte);
   virtual ssize_t write(int fd, const void* buf, size_t nbyte);
 
-  virtual int fchmod(int fd, int prot);
+  virtual int fchmod(int fd, mode_t mode);
   virtual int fcntl(int fd, int request, va_list args);
   virtual int fstat(int fd, struct stat* buf);
   virtual int getdents(int fd, void* buf, unsigned int count);

@@ -127,6 +127,25 @@ TEST(MemFsNodeTest, File) {
   EXPECT_EQ(NULL_NODE, result_node.get());
 }
 
+TEST(MemFsNodeTest, Fchmod) {
+  MemFsNodeForTesting file;
+
+  ASSERT_EQ(0, file.Init(0));
+  EXPECT_EQ(S_IRALL | S_IWALL, file.GetMode());
+
+  struct stat s;
+  ASSERT_EQ(0, file.GetStat(&s));
+  EXPECT_EQ(S_IFREG | S_IRALL | S_IWALL, s.st_mode);
+
+  // Change to read-only.
+  EXPECT_EQ(0, file.Fchmod(S_IRALL));
+
+  EXPECT_EQ(S_IRALL, file.GetMode());
+
+  ASSERT_EQ(0, file.GetStat(&s));
+  EXPECT_EQ(S_IFREG | S_IRALL, s.st_mode);
+}
+
 TEST(MemFsNodeTest, FTruncate) {
   MemFsNodeForTesting file;
   off_t result_size = 0;
@@ -228,6 +247,12 @@ TEST(MemFsNodeTest, Directory) {
   EXPECT_EQ(0, result_size);
   EXPECT_EQ(EISDIR, root.Read(attr, buf1, sizeof(buf1), &result_bytes));
   EXPECT_EQ(EISDIR, root.Write(attr, buf1, sizeof(buf1), &result_bytes));
+
+  // Chmod test
+  EXPECT_EQ(0, root.Fchmod(S_IRALL | S_IWALL));
+  EXPECT_EQ(S_IRALL | S_IWALL, root.GetMode());
+  // Change it back.
+  EXPECT_EQ(0, root.Fchmod(S_IRALL | S_IWALL | S_IXALL));
 
   // Test directory operations
   MemFsNodeForTesting* raw_file = new MemFsNodeForTesting;
