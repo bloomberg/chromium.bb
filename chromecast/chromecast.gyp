@@ -222,6 +222,8 @@
         'shell/browser/cast_browser_process.h',
         'shell/browser/cast_content_browser_client.cc',
         'shell/browser/cast_content_browser_client.h',
+        'shell/browser/cast_download_manager_delegate.cc',
+        'shell/browser/cast_download_manager_delegate.h',
         'shell/browser/cast_http_user_agent_settings.cc',
         'shell/browser/cast_http_user_agent_settings.h',
         'shell/browser/devtools/cast_dev_tools_delegate.cc',

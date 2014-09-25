@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "chromecast/common/cast_paths.h"
+#include "chromecast/shell/browser/cast_download_manager_delegate.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -47,7 +48,8 @@ class CastBrowserContext::CastResourceContext :
 CastBrowserContext::CastBrowserContext(
     URLRequestContextFactory* url_request_context_factory)
     : url_request_context_factory_(url_request_context_factory),
-      resource_context_(new CastResourceContext(url_request_context_factory)) {
+      resource_context_(new CastResourceContext(url_request_context_factory)),
+      download_manager_delegate_(new CastDownloadManagerDelegate()) {
   InitWhileIOAllowed();
 }
 
@@ -113,8 +115,7 @@ content::ResourceContext* CastBrowserContext::GetResourceContext() {
 
 content::DownloadManagerDelegate*
 CastBrowserContext::GetDownloadManagerDelegate() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return download_manager_delegate_.get();
 }
 
 content::BrowserPluginGuestManager* CastBrowserContext::GetGuestManager() {
