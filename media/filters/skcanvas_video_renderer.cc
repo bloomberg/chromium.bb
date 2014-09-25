@@ -29,12 +29,45 @@
 namespace media {
 
 static bool IsYUV(media::VideoFrame::Format format) {
-  return format == media::VideoFrame::YV12 ||
-         format == media::VideoFrame::YV16 ||
-         format == media::VideoFrame::I420 ||
-         format == media::VideoFrame::YV12A ||
-         format == media::VideoFrame::YV12J ||
-         format == media::VideoFrame::YV24;
+  switch (format) {
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12A:
+    case VideoFrame::YV12J:
+    case VideoFrame::YV24:
+    case VideoFrame::NV12:
+      return true;
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+      return false;
+  }
+  NOTREACHED() << "Invalid videoframe format provided: " << format;
+  return false;
+}
+
+static bool IsJPEGColorSpace(media::VideoFrame::Format format) {
+  switch (format) {
+    case VideoFrame::YV12J:
+      return true;
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12A:
+    case VideoFrame::YV24:
+    case VideoFrame::NV12:
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+      return false;
+  }
+  NOTREACHED() << "Invalid videoframe format provided: " << format;
+  return false;
 }
 
 static bool IsYUVOrNative(media::VideoFrame::Format format) {
@@ -178,6 +211,8 @@ class VideoImageGenerator : public SkImageGenerator {
   VideoImageGenerator(const scoped_refptr<VideoFrame>& frame) : frame_(frame) {}
   virtual ~VideoImageGenerator() {}
 
+  void set_frame(const scoped_refptr<VideoFrame>& frame) { frame_ = frame; }
+
  protected:
   virtual bool onGetInfo(SkImageInfo* info) OVERRIDE {
     info->fWidth = frame_->visible_rect().width();
@@ -204,33 +239,48 @@ class VideoImageGenerator : public SkImageGenerator {
 
   virtual bool onGetYUV8Planes(SkISize sizes[3],
                                void* planes[3],
-                               size_t row_bytes[3]) OVERRIDE {
-    if (!frame_.get())
+                               size_t row_bytes[3],
+                               SkYUVColorSpace* color_space) OVERRIDE {
+    if (!frame_.get() || !IsYUV(frame_->format()))
       return false;
-    // Currently Skia only supports JPEG color range YUV.
-    if (frame_->format() != VideoFrame::YV12J)
-      return false;
+
+    if (color_space) {
+      if (IsJPEGColorSpace(frame_->format()))
+        *color_space = kJPEG_SkYUVColorSpace;
+      else
+        *color_space = kRec601_SkYUVColorSpace;
+    }
+
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
       if (sizes) {
         gfx::Size size;
-        size = VideoFrame::PlaneSize(
-            frame_->format(), plane, frame_->coded_size());
+        size =
+            VideoFrame::PlaneSize(frame_->format(),
+                                  plane,
+                                  gfx::Size(frame_->visible_rect().width(),
+                                            frame_->visible_rect().height()));
         sizes[plane].set(size.width(), size.height());
       }
-      if (row_bytes)
-        row_bytes[plane] = frame_->stride(plane);
-      if (planes)
-        planes[plane] = frame_->data(plane);
+      if (row_bytes && planes) {
+        size_t offset;
+        int y_shift = (frame_->format() == media::VideoFrame::YV16) ? 0 : 1;
+        if (plane == media::VideoFrame::kYPlane) {
+          offset = (frame_->stride(media::VideoFrame::kYPlane) *
+                    frame_->visible_rect().y()) +
+                   frame_->visible_rect().x();
+        } else {
+          offset = (frame_->stride(media::VideoFrame::kUPlane) *
+                    (frame_->visible_rect().y() >> y_shift)) +
+                   (frame_->visible_rect().x() >> 1);
+        }
+        row_bytes[plane] = static_cast<size_t>(frame_->stride(plane));
+        planes[plane] = frame_->data(plane) + offset;
+      }
     }
     if (planes && row_bytes)
       frame_ = NULL;
     return true;
-  }
- public:
-
-  virtual void set_frame(const scoped_refptr<VideoFrame>& frame) {
-    frame_ = frame;
   }
 
  private:
@@ -238,8 +288,7 @@ class VideoImageGenerator : public SkImageGenerator {
 };
 
 SkCanvasVideoRenderer::SkCanvasVideoRenderer()
-    : generator_(NULL),
-      last_frame_timestamp_(media::kNoTimestamp()) {
+    : generator_(NULL), last_frame_timestamp_(media::kNoTimestamp()) {
   last_frame_.setIsVolatile(true);
 }
 
@@ -265,6 +314,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // frame has an unexpected format.
   if (!video_frame.get() || !IsYUVOrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
+    canvas->flush();
     return;
   }
 
@@ -297,8 +347,14 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
         break;
     }
 
+    // We copied the frame into a new bitmap and threw out the old one, so we
+    // no longer have a |generator_| around. This should be removed when the
+    // above TODO is addressed.
+    if (video_rotation != VIDEO_ROTATION_0)
+      generator_ = NULL;
+
     last_frame_timestamp_ = video_frame->timestamp();
-  } else {
+  } else if (generator_) {
     generator_->set_frame(video_frame);
   }
 
@@ -307,6 +363,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // Paint using |last_frame_|.
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
   canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);
+  canvas->flush();
 }
 
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
