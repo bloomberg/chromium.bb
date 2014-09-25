@@ -1,8 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -51,31 +53,6 @@ class ProfileRelatedFileSystemUtilTest : public testing::Test {
 };
 
 }  // namespace
-
-TEST(FileSystemUtilTest, FilePathToDriveURL) {
-  base::FilePath path;
-
-  // Path with alphabets and numbers.
-  path = GetDriveMyDriveRootPath().AppendASCII("foo/bar012.txt");
-  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
-
-  // Path with symbols.
-  path = GetDriveMyDriveRootPath().AppendASCII(
-      " !\"#$%&'()*+,-.:;<=>?@[\\]^_`{|}~");
-  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
-
-  // Path with '%'.
-  path = GetDriveMyDriveRootPath().AppendASCII("%19%20%21.txt");
-  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
-
-  // Path with multi byte characters.
-  base::string16 utf16_string;
-  utf16_string.push_back(0x307b);  // HIRAGANA_LETTER_HO
-  utf16_string.push_back(0x3052);  // HIRAGANA_LETTER_GE
-  path = GetDriveMyDriveRootPath().Append(
-      base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(utf16_string) + ".txt"));
-  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
-}
 
 TEST_F(ProfileRelatedFileSystemUtilTest, GetDriveMountPointPath) {
   Profile* profile = testing_profile_manager().CreateTestingProfile("user1");

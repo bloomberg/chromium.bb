@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_URL_REQUEST_JOB_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_URL_REQUEST_JOB_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_REQUEST_JOB_H_
+#define CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_REQUEST_JOB_H_
 
 #include <string>
 
@@ -23,13 +23,13 @@ class NetworkDelegate;
 class URLRequest;
 }  // namespace net
 
-namespace drive {
+namespace chromeos {
 
-// DriveURLRequestJob is the gateway between network-level drive:...
+// ExternalFileURLRequestJob is the gateway between network-level drive:...
 // requests for drive resources and FileSystem.  It exposes content URLs
 // formatted as drive:<drive-file-path>.
 // The methods should be run on IO thread.
-class DriveURLRequestJob : public net::URLRequestJob {
+class ExternalFileURLRequestJob : public net::URLRequestJob {
  public:
   // Callback to take results from an internal helper defined in
   // drive_url_request_job.cc.
@@ -39,23 +39,24 @@ class DriveURLRequestJob : public net::URLRequestJob {
            const storage::FileSystemURL& file_system_url,
            const std::string& mime_type)> HelperCallback;
 
-  DriveURLRequestJob(void* profile_id,
-                     net::URLRequest* request,
-                     net::NetworkDelegate* network_delegate);
+  ExternalFileURLRequestJob(void* profile_id,
+                            net::URLRequest* request,
+                            net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob overrides:
-  virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers)
-      OVERRIDE;
+  virtual void SetExtraRequestHeaders(
+      const net::HttpRequestHeaders& headers) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Kill() OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual bool IsRedirectResponse(
-      GURL* location, int* http_status_code) OVERRIDE;
-  virtual bool ReadRawData(
-      net::IOBuffer* buf, int buf_size, int* bytes_read) OVERRIDE;
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int* bytes_read) OVERRIDE;
 
  protected:
-  virtual ~DriveURLRequestJob();
+  virtual ~ExternalFileURLRequestJob();
 
  private:
   // Called from an internal helper class defined in drive_url_request_job.cc,
@@ -90,10 +91,10 @@ class DriveURLRequestJob : public net::URLRequestJob {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<DriveURLRequestJob> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveURLRequestJob);
+  base::WeakPtrFactory<ExternalFileURLRequestJob> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(ExternalFileURLRequestJob);
 };
 
-}  // namespace drive
+}  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_URL_REQUEST_JOB_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_REQUEST_JOB_H_

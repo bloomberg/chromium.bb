@@ -85,15 +85,6 @@ DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile);
 // or disabled), returns NULL.
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile);
 
-// Returns the gdata file resource url formatted as "drive:<path>"
-GURL FilePathToDriveURL(const base::FilePath& path);
-
-// Converts a drive: URL back to a path that can be passed to FileSystem.
-base::FilePath DriveURLToFilePath(const GURL& url);
-
-// Overwrites |url| with a Drive URL when appropriate.
-void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url);
-
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);
 

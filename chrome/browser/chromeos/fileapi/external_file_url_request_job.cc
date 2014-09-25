@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_url_request_job.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_request_job.h"
 
 #include <algorithm>
 #include <vector>
@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
@@ -30,7 +31,7 @@
 
 using content::BrowserThread;
 
-namespace drive {
+namespace chromeos {
 namespace {
 
 const char kMimeTypeForRFC822[] = "message/rfc822";
@@ -40,11 +41,13 @@ const char kMimeTypeForMHTML[] = "multipart/related";
 bool IsValidURL(const storage::FileSystemURL& url) {
   switch (url.type()) {
     case storage::kFileSystemTypeDrive: {
-      const base::FilePath my_drive_path = util::GetDriveMyDriveRootPath();
+      const base::FilePath my_drive_path =
+          drive::util::GetDriveMyDriveRootPath();
       const base::FilePath drive_other_path =
-          util::GetDriveGrandRootPath().Append(util::kDriveOtherDirName);
+          drive::util::GetDriveGrandRootPath().Append(
+              drive::util::kDriveOtherDirName);
       const base::FilePath url_drive_path =
-          util::ExtractDrivePathFromFileSystemUrl(url);
+          drive::util::ExtractDrivePathFromFileSystemUrl(url);
       return my_drive_path == url_drive_path ||
              my_drive_path.IsParent(url_drive_path) ||
              drive_other_path.IsParent(url_drive_path);
@@ -65,7 +68,7 @@ class URLHelper {
 
   URLHelper(void* profile_id,
             const GURL& url,
-            const DriveURLRequestJob::HelperCallback& callback)
+            const ExternalFileURLRequestJob::HelperCallback& callback)
       : profile_id_(profile_id), url_(url), callback_(callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     Lifetime lifetime(this);
@@ -95,7 +98,7 @@ class URLHelper {
     // Obtain the absolute path in the file system.
     base::FilePath path = drive::util::GetDriveMountPointPath(profile);
     drive::util::GetDriveGrandRootPath().AppendRelativePath(
-        util::DriveURLToFilePath(url_), &path);
+        ExternalFileURLToFilePath(url_), &path);
 
     storage::ExternalFileSystemBackend* const backend =
         context->external_backend();
@@ -110,9 +113,10 @@ class URLHelper {
 
     // Obtain the file system URL.
     // TODO(hirono): After removing MHTML support, stop to use the special
+
     // drive: scheme and use filesystem: URL directly.  crbug.com/415455
     file_system_url_ = context->CreateCrackedFileSystemURL(
-        GURL(std::string(chrome::kDriveScheme) + ":"),
+        GURL(std::string(chrome::kExternalFileScheme) + ":"),
         storage::kFileSystemTypeExternal,
         virtual_path);
     if (!IsValidURL(file_system_url_)) {
@@ -155,7 +159,7 @@ class URLHelper {
 
   void* const profile_id_;
   const GURL url_;
-  const DriveURLRequestJob::HelperCallback callback_;
+  const ExternalFileURLRequestJob::HelperCallback callback_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   storage::FileSystemURL file_system_url_;
   std::string mime_type_;
@@ -165,16 +169,17 @@ class URLHelper {
 
 }  // namespace
 
-DriveURLRequestJob::DriveURLRequestJob(void* profile_id,
-                                       net::URLRequest* request,
-                                       net::NetworkDelegate* network_delegate)
+ExternalFileURLRequestJob::ExternalFileURLRequestJob(
+    void* profile_id,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
       profile_id_(profile_id),
       remaining_bytes_(0),
       weak_ptr_factory_(this) {
 }
 
-void DriveURLRequestJob::SetExtraRequestHeaders(
+void ExternalFileURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   std::string range_header;
   if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
@@ -185,29 +190,28 @@ void DriveURLRequestJob::SetExtraRequestHeaders(
       byte_range_ = ranges[0];
     } else {
       // Failed to parse Range: header, so notify the error.
-      NotifyDone(
-          net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     }
   }
 }
 
-void DriveURLRequestJob::Start() {
+void ExternalFileURLRequestJob::Start() {
   DVLOG(1) << "Starting request";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!stream_reader_);
 
   // We only support GET request.
   if (request()->method() != "GET") {
-    LOG(WARNING) << "Failed to start request: "
-                 << request()->method() << " method is not supported";
+    LOG(WARNING) << "Failed to start request: " << request()->method()
+                 << " method is not supported";
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_METHOD_NOT_SUPPORTED));
     return;
   }
 
   // Check if the scheme is correct.
-  if (!request()->url().SchemeIs(chrome::kDriveScheme)) {
+  if (!request()->url().SchemeIs(chrome::kExternalFileScheme)) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
     return;
@@ -216,11 +220,11 @@ void DriveURLRequestJob::Start() {
   // Owned by itself.
   new URLHelper(profile_id_,
                 request()->url(),
-                base::Bind(&DriveURLRequestJob::OnHelperResultObtained,
+                base::Bind(&ExternalFileURLRequestJob::OnHelperResultObtained,
                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveURLRequestJob::OnHelperResultObtained(
+void ExternalFileURLRequestJob::OnHelperResultObtained(
     net::Error error,
     const scoped_refptr<storage::FileSystemContext>& file_system_context,
     const storage::FileSystemURL& file_system_url,
@@ -241,11 +245,12 @@ void DriveURLRequestJob::OnHelperResultObtained(
   // Check if the entry has a redirect URL.
   file_system_context_->external_backend()->GetRedirectURLForContents(
       file_system_url_,
-      base::Bind(&DriveURLRequestJob::OnRedirectURLObtained,
+      base::Bind(&ExternalFileURLRequestJob::OnRedirectURLObtained,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveURLRequestJob::OnRedirectURLObtained(const GURL& redirect_url) {
+void ExternalFileURLRequestJob::OnRedirectURLObtained(
+    const GURL& redirect_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   redirect_url_ = redirect_url;
   if (!redirect_url_.is_empty()) {
@@ -256,12 +261,13 @@ void DriveURLRequestJob::OnRedirectURLObtained(const GURL& redirect_url) {
   // Obtain file system context.
   file_system_context_->operation_runner()->GetMetadata(
       file_system_url_,
-      base::Bind(&DriveURLRequestJob::OnFileInfoObtained,
+      base::Bind(&ExternalFileURLRequestJob::OnFileInfoObtained,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveURLRequestJob::OnFileInfoObtained(base::File::Error result,
-                                            const base::File::Info& file_info) {
+void ExternalFileURLRequestJob::OnFileInfoObtained(
+    base::File::Error result,
+    const base::File::Info& file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (result == base::File::FILE_ERROR_NOT_FOUND) {
@@ -301,7 +307,7 @@ void DriveURLRequestJob::OnFileInfoObtained(base::File::Error result,
   NotifyHeadersComplete();
 }
 
-void DriveURLRequestJob::Kill() {
+void ExternalFileURLRequestJob::Kill() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   stream_reader_.reset();
@@ -310,14 +316,14 @@ void DriveURLRequestJob::Kill() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-bool DriveURLRequestJob::GetMimeType(std::string* mime_type) const {
+bool ExternalFileURLRequestJob::GetMimeType(std::string* mime_type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   mime_type->assign(mime_type_);
   return !mime_type->empty();
 }
 
-bool DriveURLRequestJob::IsRedirectResponse(
-    GURL* location, int* http_status_code) {
+bool ExternalFileURLRequestJob::IsRedirectResponse(GURL* location,
+                                                   int* http_status_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (redirect_url_.is_empty())
     return false;
@@ -329,8 +335,9 @@ bool DriveURLRequestJob::IsRedirectResponse(
   return true;
 }
 
-bool DriveURLRequestJob::ReadRawData(
-    net::IOBuffer* buf, int buf_size, int* bytes_read) {
+bool ExternalFileURLRequestJob::ReadRawData(net::IOBuffer* buf,
+                                            int buf_size,
+                                            int* bytes_read) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(stream_reader_);
 
@@ -339,11 +346,11 @@ bool DriveURLRequestJob::ReadRawData(
     return true;
   }
 
-  const int result =
-      stream_reader_->Read(buf,
-                           std::min<int64>(buf_size, remaining_bytes_),
-                           base::Bind(&DriveURLRequestJob::OnReadCompleted,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  const int result = stream_reader_->Read(
+      buf,
+      std::min<int64>(buf_size, remaining_bytes_),
+      base::Bind(&ExternalFileURLRequestJob::OnReadCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   if (result == net::ERR_IO_PENDING) {
     // The data is not yet available.
@@ -362,16 +369,16 @@ bool DriveURLRequestJob::ReadRawData(
   return true;
 }
 
-DriveURLRequestJob::~DriveURLRequestJob() {
+ExternalFileURLRequestJob::~ExternalFileURLRequestJob() {
 }
 
-void DriveURLRequestJob::OnReadCompleted(int read_result) {
+void ExternalFileURLRequestJob::OnReadCompleted(int read_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (read_result < 0) {
     DCHECK_NE(read_result, net::ERR_IO_PENDING);
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                     read_result));
+    NotifyDone(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, read_result));
   }
 
   remaining_bytes_ -= read_result;
@@ -379,4 +386,4 @@ void DriveURLRequestJob::OnReadCompleted(int read_result) {
   NotifyReadComplete(read_result);
 }
 
-}  // namespace drive
+}  // namespace chromeos

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/location_bar/origin_chip_info.h"
 
+#include <string>
+
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -253,7 +255,7 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
 
 #if defined(OS_CHROMEOS)
   if (url.SchemeIs(chrome::kCrosScheme) ||
-      url.SchemeIs(chrome::kDriveScheme))
+      url.SchemeIs(chrome::kExternalFileScheme))
     return base::UTF8ToUTF16(url.spec());
 #endif
 

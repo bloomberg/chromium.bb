@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -139,7 +140,7 @@ bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
     GURL page_url = net::FilePathToFileURL(file_path);
     // Override drive resource to point to internal handler instead of file URL.
     if (drive::util::IsUnderDriveMountPoint(file_path)) {
-      page_url = drive::util::FilePathToDriveURL(
+      page_url = chromeos::FilePathToExternalFileURL(
           drive::util::ExtractDrivePath(file_path));
     }
     OpenNewTab(profile, page_url);
@@ -149,7 +150,7 @@ bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
   if (drive::util::HasHostedDocumentExtension(file_path)) {
     if (drive::util::IsUnderDriveMountPoint(file_path)) {
       // The file is on Google Docs. Open with drive URL.
-      GURL url = drive::util::FilePathToDriveURL(
+      GURL url = chromeos::FilePathToExternalFileURL(
           drive::util::ExtractDrivePath(file_path));
       OpenNewTab(profile, url);
     } else {

@@ -389,8 +389,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
 #if defined(OS_CHROMEOS)
-  WebString drive_scheme(ASCIIToUTF16(chrome::kDriveScheme));
-  WebSecurityPolicy::registerURLSchemeAsLocal(drive_scheme);
+  WebString external_file_scheme(ASCIIToUTF16(chrome::kExternalFileScheme));
+  WebSecurityPolicy::registerURLSchemeAsLocal(external_file_scheme);
 #endif
 
   // chrome: and chrome-search: pages should not be accessible by bookmarklets

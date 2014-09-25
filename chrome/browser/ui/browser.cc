@@ -205,7 +205,7 @@
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #endif
 
 #if defined(USE_ASH)
@@ -1923,7 +1923,10 @@ void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
   GURL url = net::FilePathToFileURL(file_info.local_path);
 
 #if defined(OS_CHROMEOS)
-  drive::util::MaybeSetDriveURL(profile_, file_info.file_path, &url);
+  const GURL external_url =
+      chromeos::CreateExternalFileURLFromPath(profile_, file_info.file_path);
+  if (!external_url.is_empty())
+    url = external_url;
 #endif
 
   if (url.is_empty())

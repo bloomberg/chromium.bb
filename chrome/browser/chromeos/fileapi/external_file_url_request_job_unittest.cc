@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_url_request_job.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_request_job.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -42,10 +42,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace drive {
+namespace chromeos {
 namespace {
 
-// A simple URLRequestJobFactory implementation to create DriveURLRequestJob.
+// A simple URLRequestJobFactory implementation to create
+// ExternalFileURLRequestJob.
 class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   explicit TestURLRequestJobFactory(void* profile_id)
@@ -58,11 +59,12 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new DriveURLRequestJob(profile_id_, request, network_delegate);
+    return new ExternalFileURLRequestJob(
+        profile_id_, request, network_delegate);
   }
 
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
-    return scheme == chrome::kDriveScheme;
+    return scheme == chrome::kExternalFileScheme;
   }
 
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
@@ -101,17 +103,16 @@ class TestDelegate : public net::TestDelegate {
 
 }  // namespace
 
-class DriveURLRequestJobTest : public testing::Test {
+class ExternalFileURLRequestJobTest : public testing::Test {
  protected:
-  DriveURLRequestJobTest()
+  ExternalFileURLRequestJobTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        integration_service_factory_callback_(
-            base::Bind(&DriveURLRequestJobTest::CreateDriveIntegrationService,
-                       base::Unretained(this))),
+        integration_service_factory_callback_(base::Bind(
+            &ExternalFileURLRequestJobTest::CreateDriveIntegrationService,
+            base::Unretained(this))),
         fake_file_system_(NULL) {}
 
-  virtual ~DriveURLRequestJobTest() {
-  }
+  virtual ~ExternalFileURLRequestJobTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Create a testing profile.
@@ -123,9 +124,9 @@ class DriveURLRequestJobTest : public testing::Test {
 
     // Create the drive integration service for the profile.
     integration_service_factory_scope_.reset(
-        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
             &integration_service_factory_callback_));
-    DriveIntegrationServiceFactory::GetForProfile(profile);
+    drive::DriveIntegrationServiceFactory::GetForProfile(profile);
 
     // Create the URL request job factory.
     test_network_delegate_.reset(new net::TestNetworkDelegate);
@@ -138,28 +139,28 @@ class DriveURLRequestJobTest : public testing::Test {
 
   virtual void TearDown() { profile_manager_.reset(); }
 
-  bool ReadDriveFileSync(
-      const base::FilePath& file_path, std::string* out_content) {
+  bool ReadDriveFileSync(const base::FilePath& file_path,
+                         std::string* out_content) {
     scoped_ptr<base::Thread> worker_thread(
         new base::Thread("ReadDriveFileSync"));
     if (!worker_thread->Start())
       return false;
 
-    scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
-        base::Bind(&DriveURLRequestJobTest::GetFileSystem,
-                   base::Unretained(this)),
-        worker_thread->message_loop_proxy().get()));
+    scoped_ptr<drive::DriveFileStreamReader> reader(
+        new drive::DriveFileStreamReader(
+            base::Bind(&ExternalFileURLRequestJobTest::GetFileSystem,
+                       base::Unretained(this)),
+            worker_thread->message_loop_proxy().get()));
     int error = net::ERR_FAILED;
-    scoped_ptr<ResourceEntry> entry;
+    scoped_ptr<drive::ResourceEntry> entry;
     {
       base::RunLoop run_loop;
-      reader->Initialize(
-          file_path,
-          net::HttpByteRange(),
-          google_apis::test_util::CreateQuitCallback(
-              &run_loop,
-              google_apis::test_util::CreateCopyResultCallback(
-                  &error, &entry)));
+      reader->Initialize(file_path,
+                         net::HttpByteRange(),
+                         google_apis::test_util::CreateQuitCallback(
+                             &run_loop,
+                             google_apis::test_util::CreateCopyResultCallback(
+                                 &error, &entry)));
       run_loop.Run();
     }
     if (error != net::OK || !entry)
@@ -167,7 +168,7 @@ class DriveURLRequestJobTest : public testing::Test {
 
     // Read data from the reader.
     std::string content;
-    if (test_util::ReadAllData(reader.get(), &content) != net::OK)
+    if (drive::test_util::ReadAllData(reader.get(), &content) != net::OK)
       return false;
 
     if (static_cast<size_t>(entry->file_info().size()) != content.size())
@@ -182,20 +183,21 @@ class DriveURLRequestJobTest : public testing::Test {
 
  private:
   // Create the drive integration service for the |profile|
-  DriveIntegrationService* CreateDriveIntegrationService(Profile* profile) {
-    FakeDriveService* const drive_service = new FakeDriveService;
-    if (!test_util::SetUpTestEntries(drive_service))
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile) {
+    drive::FakeDriveService* const drive_service = new drive::FakeDriveService;
+    if (!drive::test_util::SetUpTestEntries(drive_service))
       return NULL;
 
     const std::string& drive_mount_name =
-        util::GetDriveMountPointPath(profile).BaseName().AsUTF8Unsafe();
+        drive::util::GetDriveMountPointPath(profile).BaseName().AsUTF8Unsafe();
     storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
         drive_mount_name,
         storage::kFileSystemTypeDrive,
         storage::FileSystemMountOption(),
-        util::GetDriveMountPointPath(profile));
+        drive::util::GetDriveMountPointPath(profile));
     DCHECK(!fake_file_system_);
-    fake_file_system_ = new test_util::FakeFileSystem(drive_service);
+    fake_file_system_ = new drive::test_util::FakeFileSystem(drive_service);
     if (!drive_cache_dir_.CreateUniqueTempDir())
       return NULL;
     return new drive::DriveIntegrationService(profile,
@@ -206,15 +208,15 @@ class DriveURLRequestJobTest : public testing::Test {
                                               fake_file_system_);
   }
 
-  FileSystemInterface* GetFileSystem() { return fake_file_system_; }
+  drive::FileSystemInterface* GetFileSystem() { return fake_file_system_; }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  DriveIntegrationServiceFactory::FactoryCallback
+  drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;
-  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+  scoped_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       integration_service_factory_scope_;
-  scoped_ptr<DriveIntegrationService> integration_service_;
-  test_util::FakeFileSystem* fake_file_system_;
+  scoped_ptr<drive::DriveIntegrationService> integration_service_;
+  drive::test_util::FakeFileSystem* fake_file_system_;
 
   scoped_ptr<net::TestNetworkDelegate> test_network_delegate_;
   scoped_ptr<TestURLRequestJobFactory> test_url_request_job_factory_;
@@ -224,9 +226,9 @@ class DriveURLRequestJobTest : public testing::Test {
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 };
 
-TEST_F(DriveURLRequestJobTest, NonGetMethod) {
+TEST_F(ExternalFileURLRequestJobTest, NonGetMethod) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:drive/root/File 1.txt"),
+      GURL("externalfile:drive/root/File 1.txt"),
       net::DEFAULT_PRIORITY,
       test_delegate_.get(),
       NULL));
@@ -239,17 +241,14 @@ TEST_F(DriveURLRequestJobTest, NonGetMethod) {
   EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request->status().error());
 }
 
-TEST_F(DriveURLRequestJobTest, RegularFile) {
-  const GURL kTestUrl("drive:drive/root/File 1.txt");
+TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
+  const GURL kTestUrl("externalfile:drive/root/File 1.txt");
   const base::FilePath kTestFilePath("drive/root/File 1.txt");
 
   // For the first time, the file should be fetched from the server.
   {
     scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-        kTestUrl,
-        net::DEFAULT_PRIORITY,
-        test_delegate_.get(),
-        NULL));
+        kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get(), NULL));
     request->Start();
 
     base::RunLoop().Run();
@@ -273,7 +272,7 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
   {
     test_delegate_.reset(new TestDelegate);
     scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-        GURL("drive:drive/root/File 1.txt"),
+        GURL("externalfile:drive/root/File 1.txt"),
         net::DEFAULT_PRIORITY,
         test_delegate_.get(),
         NULL));
@@ -292,11 +291,11 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
   }
 }
 
-TEST_F(DriveURLRequestJobTest, HostedDocument) {
+TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
   // Open a gdoc file.
   test_delegate_->set_quit_on_redirect(true);
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:drive/root/Document 1 excludeDir-test.gdoc"),
+      GURL("externalfile:drive/root/Document 1 excludeDir-test.gdoc"),
       net::DEFAULT_PRIORITY,
       test_delegate_.get(),
       NULL));
@@ -310,9 +309,23 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
   EXPECT_TRUE(test_delegate_->redirect_url().is_valid());
 }
 
-TEST_F(DriveURLRequestJobTest, RootDirectory) {
+TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
+  scoped_ptr<net::URLRequest> request(
+      url_request_context_->CreateRequest(GURL("externalfile:drive/root"),
+                                          net::DEFAULT_PRIORITY,
+                                          test_delegate_.get(),
+                                          NULL));
+  request->Start();
+
+  base::RunLoop().Run();
+
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_FAILED, request->status().error());
+}
+
+TEST_F(ExternalFileURLRequestJobTest, Directory) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:drive/root"),
+      GURL("externalfile:drive/root/Directory 1"),
       net::DEFAULT_PRIORITY,
       test_delegate_.get(),
       NULL));
@@ -324,23 +337,9 @@ TEST_F(DriveURLRequestJobTest, RootDirectory) {
   EXPECT_EQ(net::ERR_FAILED, request->status().error());
 }
 
-TEST_F(DriveURLRequestJobTest, Directory) {
+TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:drive/root/Directory 1"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
-  request->Start();
-
-  base::RunLoop().Run();
-
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_FAILED, request->status().error());
-}
-
-TEST_F(DriveURLRequestJobTest, NonExistingFile) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:drive/root/non-existing-file.txt"),
+      GURL("externalfile:drive/root/non-existing-file.txt"),
       net::DEFAULT_PRIORITY,
       test_delegate_.get(),
       NULL));
@@ -352,12 +351,12 @@ TEST_F(DriveURLRequestJobTest, NonExistingFile) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error());
 }
 
-TEST_F(DriveURLRequestJobTest, WrongFormat) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
+  scoped_ptr<net::URLRequest> request(
+      url_request_context_->CreateRequest(GURL("externalfile:"),
+                                          net::DEFAULT_PRIORITY,
+                                          test_delegate_.get(),
+                                          NULL));
   request->Start();
 
   base::RunLoop().Run();
@@ -366,9 +365,9 @@ TEST_F(DriveURLRequestJobTest, WrongFormat) {
   EXPECT_EQ(net::ERR_INVALID_URL, request->status().error());
 }
 
-TEST_F(DriveURLRequestJobTest, Cancel) {
+TEST_F(ExternalFileURLRequestJobTest, Cancel) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("drive:drive/root/File 1.txt"),
+      GURL("externalfile:drive/root/File 1.txt"),
       net::DEFAULT_PRIORITY,
       test_delegate_.get(),
       NULL));
@@ -382,15 +381,12 @@ TEST_F(DriveURLRequestJobTest, Cancel) {
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
 }
 
-TEST_F(DriveURLRequestJobTest, RangeHeader) {
-  const GURL kTestUrl("drive:drive/root/File 1.txt");
+TEST_F(ExternalFileURLRequestJobTest, RangeHeader) {
+  const GURL kTestUrl("externalfile:drive/root/File 1.txt");
   const base::FilePath kTestFilePath("drive/root/File 1.txt");
 
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      kTestUrl,
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get(), NULL));
 
   // Set range header.
   request->SetExtraRequestHeaderByName(
@@ -408,14 +404,11 @@ TEST_F(DriveURLRequestJobTest, RangeHeader) {
   EXPECT_EQ(expected_data.substr(3, 3), test_delegate_->data_received());
 }
 
-TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
-  const GURL kTestUrl("drive:drive/root/File 1.txt");
+TEST_F(ExternalFileURLRequestJobTest, WrongRangeHeader) {
+  const GURL kTestUrl("externalfile:drive/root/File 1.txt");
 
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      kTestUrl,
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get(), NULL));
 
   // Set range header.
   request->SetExtraRequestHeaderByName(
@@ -428,4 +421,4 @@ TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request->status().error());
 }
 
-}  // namespace drive
+}  // namespace chromeos
