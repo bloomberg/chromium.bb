@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
 
@@ -579,6 +580,14 @@ TEST_F(StatusBubbleMacTest, StatuBubbleRespectsBaseFrameLimits) {
 
 TEST_F(StatusBubbleMacTest, ExpandBubble) {
   NSWindow* window = test_window();
+
+  // The system font changes between OSX 10.9 and OSX 10.10. Use the system
+  // font from OSX 10.9 for this test.
+  id mockContentView =
+      [OCMockObject partialMockForObject:[GetWindow() contentView]];
+  [[[mockContentView stub]
+      andReturn:[NSFont fontWithName:@"Lucida Grande" size:11]] font];
+
   ASSERT_TRUE(window);
   NSRect window_frame = [window frame];
   window_frame.size.width = 600.0;
