@@ -913,7 +913,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 
   if (!media::IsMediaLibraryInitialized()) {
-    WebRuntimeFeatures::enableMediaPlayer(false);
     WebRuntimeFeatures::enableWebAudio(false);
   }
 
