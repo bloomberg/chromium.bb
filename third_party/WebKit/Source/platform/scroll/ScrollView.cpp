@@ -520,7 +520,7 @@ const int panIconSizeLength = 16;
 
 IntRect ScrollView::rectToCopyOnScroll() const
 {
-    IntRect scrollViewRect = convertToRootView(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight()));
+    IntRect scrollViewRect = convertToContainingWindow(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight()));
     if (hasOverlayScrollbars()) {
         int verticalScrollbarWidth = (verticalScrollbar() && !hasLayerForVerticalScrollbar()) ? verticalScrollbar()->width() : 0;
         int horizontalScrollbarHeight = (horizontalScrollbar() && !hasLayerForHorizontalScrollbar()) ? horizontalScrollbar()->height() : 0;
@@ -577,19 +577,19 @@ void ScrollView::scrollContentsSlowPath(const IntRect& updateRect)
 
 IntPoint ScrollView::rootViewToContents(const IntPoint& rootViewPoint) const
 {
-    IntPoint viewPoint = convertFromRootView(rootViewPoint);
+    IntPoint viewPoint = convertFromContainingWindow(rootViewPoint);
     return viewPoint + scrollOffset();
 }
 
 IntPoint ScrollView::contentsToRootView(const IntPoint& contentsPoint) const
 {
     IntPoint viewPoint = contentsPoint - scrollOffset();
-    return convertToRootView(viewPoint);
+    return convertToContainingWindow(viewPoint);
 }
 
 IntRect ScrollView::rootViewToContents(const IntRect& rootViewRect) const
 {
-    IntRect viewRect = convertFromRootView(rootViewRect);
+    IntRect viewRect = convertFromContainingWindow(rootViewRect);
     viewRect.move(scrollOffset());
     return viewRect;
 }
@@ -598,7 +598,7 @@ IntRect ScrollView::contentsToRootView(const IntRect& contentsRect) const
 {
     IntRect viewRect = contentsRect;
     viewRect.move(-scrollOffset());
-    return convertToRootView(viewRect);
+    return convertToContainingWindow(viewRect);
 }
 
 IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const

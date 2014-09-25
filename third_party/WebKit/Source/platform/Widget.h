@@ -98,12 +98,6 @@ public:
 
     virtual void handleEvent(Event*) { }
 
-    IntRect convertToRootView(const IntRect&) const;
-    IntRect convertFromRootView(const IntRect&) const;
-
-    IntPoint convertToRootView(const IntPoint&) const;
-    IntPoint convertFromRootView(const IntPoint&) const;
-
     // It is important for cross-platform code to realize that Mac has flipped coordinates. Therefore any code
     // that tries to convert the location of a rect using the point-based convertFromContainingWindow will end
     // up with an inaccurate rect. Always make sure to use the rect-based convertFromContainingWindow method

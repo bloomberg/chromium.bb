@@ -64,42 +64,6 @@ Widget* Widget::root() const
     return 0;
 }
 
-IntRect Widget::convertFromRootView(const IntRect& rootRect) const
-{
-    if (const Widget* parentWidget = parent()) {
-        IntRect parentRect = parentWidget->convertFromRootView(rootRect);
-        return convertFromContainingView(parentRect);
-    }
-    return rootRect;
-}
-
-IntRect Widget::convertToRootView(const IntRect& localRect) const
-{
-    if (const Widget* parentWidget = parent()) {
-        IntRect parentRect = convertToContainingView(localRect);
-        return parentWidget->convertToRootView(parentRect);
-    }
-    return localRect;
-}
-
-IntPoint Widget::convertFromRootView(const IntPoint& rootPoint) const
-{
-    if (const Widget* parentWidget = parent()) {
-        IntPoint parentPoint = parentWidget->convertFromRootView(rootPoint);
-        return convertFromContainingView(parentPoint);
-    }
-    return rootPoint;
-}
-
-IntPoint Widget::convertToRootView(const IntPoint& localPoint) const
-{
-    if (const Widget* parentWidget = parent()) {
-        IntPoint parentPoint = convertToContainingView(localPoint);
-        return parentWidget->convertToRootView(parentPoint);
-    }
-    return localPoint;
-}
-
 IntRect Widget::convertFromContainingWindow(const IntRect& windowRect) const
 {
     if (const Widget* parentWidget = parent()) {

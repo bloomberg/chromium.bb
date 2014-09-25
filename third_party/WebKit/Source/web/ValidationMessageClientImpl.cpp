@@ -123,7 +123,7 @@ void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClien
     // Check the visibility of the element.
     // FIXME: Can we check invisibility by scrollable non-frame elements?
     IntRect newAnchorRect = currentView()->contentsToRootView(m_currentAnchor->pixelSnappedBoundingBox());
-    newAnchorRect = intersection(currentView()->convertToRootView(currentView()->boundsRect()), newAnchorRect);
+    newAnchorRect = intersection(currentView()->convertToContainingWindow(currentView()->boundsRect()), newAnchorRect);
     if (newAnchorRect.isEmpty()) {
         hideValidationMessage(*m_currentAnchor);
         return;
