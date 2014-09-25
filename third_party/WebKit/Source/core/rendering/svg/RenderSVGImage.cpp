@@ -27,18 +27,16 @@
 
 #include "core/rendering/svg/RenderSVGImage.h"
 
-#include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/paint/SVGImagePainter.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/LengthFunctions.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -148,58 +146,7 @@ void RenderSVGImage::layout()
 
 void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    if (paintInfo.phase != PaintPhaseForeground
-        || style()->visibility() == HIDDEN
-        || !m_imageResource->hasImage())
-        return;
-
-    FloatRect boundingBox = paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(boundingBox, m_localTransform, paintInfo))
-        return;
-
-    PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
-
-    if (!m_localTransform.isIdentity()) {
-        stateSaver.save();
-        childPaintInfo.applyTransform(m_localTransform, false);
-    }
-    if (!m_objectBoundingBox.isEmpty()) {
-        // SVGRenderingContext may taint the state - make sure we're always saving.
-        SVGRenderingContext renderingContext(this, childPaintInfo, stateSaver.saved() ?
-            SVGRenderingContext::DontSaveGraphicsContext : SVGRenderingContext::SaveGraphicsContext);
-
-        if (renderingContext.isRenderingPrepared()) {
-            if (style()->svgStyle().bufferedRendering() == BR_STATIC && renderingContext.bufferForeground(m_bufferedForeground))
-                return;
-
-            paintForeground(childPaintInfo);
-        }
-    }
-
-    if (style()->outlineWidth())
-        paintOutline(childPaintInfo, IntRect(boundingBox));
-}
-
-void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
-{
-    RefPtr<Image> image = m_imageResource->image();
-    FloatRect destRect = m_objectBoundingBox;
-    FloatRect srcRect(0, 0, image->width(), image->height());
-
-    SVGImageElement* imageElement = toSVGImageElement(element());
-    imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
-
-    InterpolationQuality interpolationQuality = InterpolationDefault;
-    if (style()->svgStyle().bufferedRendering() != BR_STATIC)
-        interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, this, image.get(), image.get(), LayoutSize(destRect.size()));
-
-    InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
-    paintInfo.context->setImageInterpolationQuality(interpolationQuality);
-    paintInfo.context->drawImage(image.get(), destRect, srcRect, CompositeSourceOver);
-    paintInfo.context->setImageInterpolationQuality(previousInterpolationQuality);
+    SVGImagePainter(*this).paint(paintInfo);
 }
 
 void RenderSVGImage::invalidateBufferedForeground()
