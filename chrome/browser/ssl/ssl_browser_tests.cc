@@ -99,14 +99,20 @@ enum AuthStateFlags {
   NONE = 0,
   DISPLAYED_INSECURE_CONTENT = 1 << 0,
   RAN_INSECURE_CONTENT = 1 << 1,
-  SHOWING_INTERSTITIAL = 1 << 2
+  SHOWING_INTERSTITIAL = 1 << 2,
+  SHOWING_ERROR = 1 << 3
 };
 
 void Check(const NavigationEntry& entry, int expected_authentication_state) {
-  EXPECT_EQ(!!(expected_authentication_state & AuthState::SHOWING_INTERSTITIAL)
-                ? content::PAGE_TYPE_INTERSTITIAL
-                : content::PAGE_TYPE_NORMAL,
-            entry.GetPageType());
+  if (expected_authentication_state == AuthState::SHOWING_ERROR) {
+    EXPECT_EQ(content::PAGE_TYPE_ERROR, entry.GetPageType());
+  } else {
+    EXPECT_EQ(
+        !!(expected_authentication_state & AuthState::SHOWING_INTERSTITIAL)
+            ? content::PAGE_TYPE_INTERSTITIAL
+            : content::PAGE_TYPE_NORMAL,
+        entry.GetPageType());
+  }
 
   bool displayed_insecure_content =
       !!(entry.GetSSL().content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT);
@@ -197,11 +203,12 @@ class SSLUITest : public InProcessBrowserTest {
                        expected_authentication_state);
   }
 
-  void CheckUnauthenticatedState(WebContents* tab) {
+  void CheckUnauthenticatedState(WebContents* tab,
+                                 int expected_authentication_state) {
     CheckSecurityState(tab,
                        CertError::NONE,
                        content::SECURITY_STYLE_UNAUTHENTICATED,
-                       AuthState::NONE);
+                       expected_authentication_state);
   }
 
   void CheckAuthenticationBrokenState(WebContents* tab,
@@ -381,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
                                test_server()->GetURL("files/ssl/google.html"));
 
   CheckUnauthenticatedState(
-      browser()->tab_strip_model()->GetActiveWebContents());
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
 // Visits a page over http which includes broken https resources (status should
@@ -402,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPWithBrokenHTTPSResource) {
       browser(), test_server()->GetURL(replacement_path));
 
   CheckUnauthenticatedState(
-      browser()->tab_strip_model()->GetActiveWebContents());
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithInsecureContent) {
@@ -524,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
   // Try to navigate to a new page. (to make sure bug 5800 is fixed).
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL("files/ssl/google.html"));
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 }
 
 // Visits a page with https error and then goes back using Browser::GoBack.
@@ -560,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // We should be back at the original good page.
   EXPECT_FALSE(browser()->tab_strip_model()->GetActiveWebContents()->
                    GetInterstitialPage());
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 }
 
 // Visits a page with https error and then goes back using GoToOffset.
@@ -589,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // We should be back at the original good page.
   EXPECT_FALSE(browser()->tab_strip_model()->GetActiveWebContents()->
                    GetInterstitialPage());
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 }
 
 // Visits a page with https error and then goes forward using GoToOffset.
@@ -638,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
   // We should be showing the second good page.
   EXPECT_FALSE(browser()->tab_strip_model()->GetActiveWebContents()->
                    GetInterstitialPage());
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
   EXPECT_FALSE(tab->GetController().CanGoForward());
   NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
   EXPECT_TRUE(entry2 == entry4);
@@ -1139,7 +1146,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
   const GURL url_http = test_server()->GetURL(replacement_path);
   ui_test_utils::NavigateToURL(browser(), url_http);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Load again but over SSL.  It should be marked as displaying insecure
   // content (even though the image comes from the WebCore memory cache).
@@ -1173,7 +1180,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRunsCachedInsecureContent) {
   const GURL url_http = test_server()->GetURL(replacement_path);
   ui_test_utils::NavigateToURL(browser(), url_http);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Load again but over SSL.  It should be marked as displaying insecure
   // content (even though the image comes from the WebCore memory cache).
@@ -1402,7 +1409,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
   ui_test_utils::NavigateToURL(browser(),
                                GURL(https_url.spec() + http_url.spec()));
   CheckUnauthenticatedState(
-      browser()->tab_strip_model()->GetActiveWebContents());
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
 // Visits a page to which we could not connect (bad port) over http and https
@@ -1410,12 +1417,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
   ui_test_utils::NavigateToURL(browser(), GURL("http://localhost:17"));
   CheckUnauthenticatedState(
-      browser()->tab_strip_model()->GetActiveWebContents());
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      AuthState::SHOWING_ERROR);
 
   // Same thing over HTTPS.
   ui_test_utils::NavigateToURL(browser(), GURL("https://localhost:17"));
   CheckUnauthenticatedState(
-      browser()->tab_strip_model()->GetActiveWebContents());
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      AuthState::SHOWING_ERROR);
 }
 
 //
@@ -1586,7 +1595,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(top_frame_path));
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Now navigate inside the frame to a secure HTTPS frame.
   {
@@ -1603,7 +1612,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   }
 
   // We should still be unauthenticated.
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Now navigate to a bad HTTPS frame.
   {
@@ -1620,7 +1629,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   }
 
   // State should not have changed.
-  CheckUnauthenticatedState(tab);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // And the frame should have been blocked (see bug #2316).
   bool is_content_evil = true;

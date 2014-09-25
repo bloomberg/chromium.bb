@@ -27,6 +27,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/test_util.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/gfx/rect.h"
 
 namespace extensions {
@@ -796,11 +797,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetAndGetZoom) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
-  const char kNewTestTabArgsA[] = "http://hostA/";
-  const char kNewTestTabArgsB[] = "http://hostB/";
+  // In this test we need two URLs that (1) represent real pages (i.e. they
+  // load without causing an error page load), (2) have different domains, and
+  // (3) are zoomable by the extension API (this last condition rules out
+  // chrome:// urls). We achieve this by noting that about:blank meets these
+  // requirements, allowing us to spin up a spawned http server on localhost to
+  // get the other domain.
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(http_server.Start());
 
-  GURL url_A(kNewTestTabArgsA);
-  GURL url_B(kNewTestTabArgsB);
+  GURL url_A = http_server.GetURL("files/simple.html");
+  GURL url_B("about:blank");
 
   // Tabs A1 and A2 are navigated to the same origin, while B is navigated
   // to a different one.

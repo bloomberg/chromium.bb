@@ -12,9 +12,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -110,4 +112,24 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, OnPreferenceChanged) {
   // Because this test relies on a round-trip IPC to/from the renderer process,
   // we need to wait for it to propagate.
   zoom_change_watcher.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesDoNotZoom) {
+  ui_test_utils::NavigateToURL(browser(), GURL("http://kjfhkjsdf.com"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+  EXPECT_EQ(
+      content::PAGE_TYPE_ERROR,
+      web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+
+  double old_zoom_level = zoom_controller->GetZoomLevel();
+  double new_zoom_level = old_zoom_level + 0.5;
+
+  // The following attempt to change the zoom level for an error page should
+  // fail.
+  zoom_controller->SetZoomLevel(new_zoom_level);
+  EXPECT_FLOAT_EQ(old_zoom_level, zoom_controller->GetZoomLevel());
 }

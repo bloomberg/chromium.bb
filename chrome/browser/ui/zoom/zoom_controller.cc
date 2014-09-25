@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_type.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/common/extension.h"
 #include "grit/theme_resources.h"
@@ -78,10 +79,14 @@ bool ZoomController::SetZoomLevel(double zoom_level) {
 bool ZoomController::SetZoomLevelByExtension(
     double zoom_level,
     const scoped_refptr<const extensions::Extension>& extension) {
+  bool is_normal_page =
+      web_contents()->GetController().GetLastCommittedEntry()->GetPageType() ==
+      content::PAGE_TYPE_NORMAL;
   // Cannot zoom in disabled mode. Also, don't allow changing zoom level on
-  // a crashed tab.
+  // a crashed tab, an error page or an interstitial page.
   if (zoom_mode_ == ZOOM_MODE_DISABLED ||
-      !web_contents()->GetRenderViewHost()->IsRenderViewLive())
+      !web_contents()->GetRenderViewHost()->IsRenderViewLive() ||
+      !is_normal_page)
     return false;
 
   // Store extension data so that |extension| can be attributed when the zoom

@@ -141,6 +141,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // The status code of the HTTP request.
   IPC_STRUCT_MEMBER(int, http_status_code)
 
+  // This flag is used to warn if the renderer is displaying an error page,
+  // so that we can set the appropriate page type.
+  IPC_STRUCT_MEMBER(bool, url_is_unreachable)
+
   // True if the connection was proxied.  In this case, socket_address
   // will represent the address of the proxy, rather than the remote host.
   IPC_STRUCT_MEMBER(bool, was_fetched_via_proxy)

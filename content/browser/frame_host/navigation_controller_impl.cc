@@ -1060,6 +1060,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     update_virtual_url = needs_update;
   }
 
+  if (params.url_is_unreachable)
+    new_entry->set_page_type(PAGE_TYPE_ERROR);
   new_entry->SetURL(params.url);
   if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);

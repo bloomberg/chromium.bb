@@ -3282,6 +3282,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.http_status_code = response.httpStatusCode();
+  params.url_is_unreachable = ds->hasUnreachableURL();
   params.is_post = false;
   params.post_id = -1;
   params.page_id = render_view_->page_id_;
