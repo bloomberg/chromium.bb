@@ -679,6 +679,43 @@ TEST_F(SpdySettingsServerPropertiesTest, MRUOfGetSpdySettings) {
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 }
 
+typedef HttpServerPropertiesImplTest SupportsQuicServerPropertiesTest;
+
+TEST_F(SupportsQuicServerPropertiesTest, Initialize) {
+  HostPortPair quic_server_google("www.google.com", 443);
+
+  // Check by initializing empty SupportsQuic.
+  SupportsQuicMap supports_quic_map;
+  impl_.InitializeSupportsQuic(&supports_quic_map);
+  SupportsQuic supports_quic = impl_.GetSupportsQuic(quic_server_google);
+  EXPECT_FALSE(supports_quic.used_quic);
+  EXPECT_EQ("", supports_quic.address);
+
+  // Check by initializing with www.google.com:443.
+  SupportsQuic supports_quic1(true, "foo");
+  supports_quic_map.insert(std::make_pair(quic_server_google, supports_quic1));
+  impl_.InitializeSupportsQuic(&supports_quic_map);
+
+  SupportsQuic supports_quic2 = impl_.GetSupportsQuic(quic_server_google);
+  EXPECT_TRUE(supports_quic2.used_quic);
+  EXPECT_EQ("foo", supports_quic2.address);
+}
+
+TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
+  HostPortPair test_host_port_pair("foo", 80);
+  SupportsQuic supports_quic = impl_.GetSupportsQuic(test_host_port_pair);
+  EXPECT_FALSE(supports_quic.used_quic);
+  EXPECT_EQ("", supports_quic.address);
+  impl_.SetSupportsQuic(test_host_port_pair, true, "foo");
+  SupportsQuic supports_quic1 = impl_.GetSupportsQuic(test_host_port_pair);
+  EXPECT_TRUE(supports_quic1.used_quic);
+  EXPECT_EQ("foo", supports_quic1.address);
+
+  impl_.Clear();
+  SupportsQuic supports_quic2 = impl_.GetSupportsQuic(test_host_port_pair);
+  EXPECT_FALSE(supports_quic2.used_quic);
+  EXPECT_EQ("", supports_quic2.address);
+}
 }  // namespace
 
 }  // namespace net

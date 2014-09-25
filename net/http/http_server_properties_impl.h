@@ -42,6 +42,8 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   void InitializeSpdySettingsServers(SpdySettingsMap* spdy_settings_map);
 
+  void InitializeSupportsQuic(SupportsQuicMap* supports_quic_map);
+
   // Get the list of servers (host/port) that support SPDY. The max_size is the
   // number of MRU servers that support SPDY that are to be returned.
   void GetSpdyServerList(base::ListValue* spdy_server_list,
@@ -140,6 +142,17 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Returns all persistent SPDY settings.
   virtual const SpdySettingsMap& spdy_settings_map() const OVERRIDE;
 
+  // Methods for SupportsQuic.
+  virtual SupportsQuic GetSupportsQuic(
+      const HostPortPair& host_port_pair) const OVERRIDE;
+
+  virtual void SetSupportsQuic(const HostPortPair& host_port_pair,
+                               bool used_quic,
+                               const std::string& address) OVERRIDE;
+
+  virtual const SupportsQuicMap& supports_quic_map() const OVERRIDE;
+
+  // Methods for NetworkStats.
   virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
                                      NetworkStats stats) OVERRIDE;
 
@@ -179,6 +192,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   AlternateProtocolExperiment alternate_protocol_experiment_;
 
   SpdySettingsMap spdy_settings_map_;
+  SupportsQuicMap supports_quic_map_;
   ServerNetworkStatsMap server_network_stats_map_;
   // Contains a map of servers which could share the same alternate protocol.
   // Map from a Canonical host/port (host is some postfix of host names) to an

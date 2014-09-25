@@ -103,6 +103,15 @@ void HttpServerPropertiesImpl::InitializeSpdySettingsServers(
   }
 }
 
+void HttpServerPropertiesImpl::InitializeSupportsQuic(
+    SupportsQuicMap* supports_quic_map) {
+  for (SupportsQuicMap::reverse_iterator it = supports_quic_map->rbegin();
+       it != supports_quic_map->rend();
+       ++it) {
+    supports_quic_map_.insert(std::make_pair(it->first, it->second));
+  }
+}
+
 void HttpServerPropertiesImpl::GetSpdyServerList(
     base::ListValue* spdy_server_list,
     size_t max_size) const {
@@ -158,6 +167,7 @@ void HttpServerPropertiesImpl::Clear() {
   alternate_protocol_map_.Clear();
   canonical_host_to_origin_map_.clear();
   spdy_settings_map_.Clear();
+  supports_quic_map_.clear();
 }
 
 bool HttpServerPropertiesImpl::SupportsSpdy(
@@ -404,6 +414,29 @@ void HttpServerPropertiesImpl::ClearAllSpdySettings() {
 const SpdySettingsMap&
 HttpServerPropertiesImpl::spdy_settings_map() const {
   return spdy_settings_map_;
+}
+
+SupportsQuic HttpServerPropertiesImpl::GetSupportsQuic(
+    const HostPortPair& host_port_pair) const {
+  SupportsQuicMap::const_iterator it = supports_quic_map_.find(host_port_pair);
+  if (it == supports_quic_map_.end()) {
+    CR_DEFINE_STATIC_LOCAL(SupportsQuic, kEmptySupportsQuic, ());
+    return kEmptySupportsQuic;
+  }
+  return it->second;
+}
+
+void HttpServerPropertiesImpl::SetSupportsQuic(
+    const HostPortPair& host_port_pair,
+    bool used_quic,
+    const std::string& address) {
+  SupportsQuic supports_quic(used_quic, address);
+  supports_quic_map_.insert(std::make_pair(host_port_pair, supports_quic));
+}
+
+const SupportsQuicMap&
+HttpServerPropertiesImpl::supports_quic_map() const {
+  return supports_quic_map_;
 }
 
 void HttpServerPropertiesImpl::SetServerNetworkStats(

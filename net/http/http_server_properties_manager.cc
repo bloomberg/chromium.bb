@@ -264,6 +264,29 @@ const SpdySettingsMap& HttpServerPropertiesManager::spdy_settings_map()
   return http_server_properties_impl_->spdy_settings_map();
 }
 
+net::SupportsQuic
+HttpServerPropertiesManager::GetSupportsQuic(
+    const net::HostPortPair& host_port_pair) const {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->GetSupportsQuic(host_port_pair);
+}
+
+void HttpServerPropertiesManager::SetSupportsQuic(
+    const net::HostPortPair& host_port_pair,
+    bool used_quic,
+    const std::string& address) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  http_server_properties_impl_->SetSupportsQuic(
+      host_port_pair, used_quic, address);
+  ScheduleUpdatePrefsOnNetworkThread();
+}
+
+const SupportsQuicMap& HttpServerPropertiesManager::supports_quic_map()
+    const {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->supports_quic_map();
+}
+
 void HttpServerPropertiesManager::SetServerNetworkStats(
     const net::HostPortPair& host_port_pair,
     NetworkStats stats) {
@@ -332,6 +355,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       new net::SpdySettingsMap(kMaxSpdySettingsHostsToPersist));
   scoped_ptr<net::AlternateProtocolMap> alternate_protocol_map(
       new net::AlternateProtocolMap(kMaxAlternateProtocolHostsToPersist));
+  scoped_ptr<net::SupportsQuicMap> supports_quic_map(
+      new net::SupportsQuicMap());
   // TODO(rtenneti): Delete the following code after the experiment.
   int alternate_protocols_to_load = k200AlternateProtocolHostsToLoad;
   net::AlternateProtocolExperiment alternate_protocol_experiment =
@@ -455,6 +480,32 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       alternate_protocol_map->Put(server, port_alternate_protocol);
       ++count;
     } while (false);
+
+    // Get SupportsQuic.
+    DCHECK(supports_quic_map->find(server) == supports_quic_map->end());
+    const base::DictionaryValue* supports_quic_dict = NULL;
+    if (!server_pref_dict->GetDictionaryWithoutPathExpansion(
+            "supports_quic", &supports_quic_dict)) {
+      continue;
+    }
+    do {
+      bool used_quic = 0;
+      if (!supports_quic_dict->GetBooleanWithoutPathExpansion(
+              "used_quic", &used_quic)) {
+        DVLOG(1) << "Malformed SupportsQuic server: " << server_str;
+        detected_corrupted_prefs = true;
+        continue;
+      }
+      std::string address;
+      if (!supports_quic_dict->GetStringWithoutPathExpansion(
+              "address", &address)) {
+        DVLOG(1) << "Malformed SupportsQuic server: " << server_str;
+        detected_corrupted_prefs = true;
+        continue;
+      }
+      net::SupportsQuic supports_quic(used_quic, address);
+      supports_quic_map->insert(std::make_pair(server, supports_quic));
+    } while (false);
   }
 
   network_task_runner_->PostTask(
@@ -466,6 +517,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
           base::Owned(spdy_settings_map.release()),
           base::Owned(alternate_protocol_map.release()),
           alternate_protocol_experiment,
+          base::Owned(supports_quic_map.release()),
           detected_corrupted_prefs));
 }
 
@@ -474,6 +526,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
     net::SpdySettingsMap* spdy_settings_map,
     net::AlternateProtocolMap* alternate_protocol_map,
     net::AlternateProtocolExperiment alternate_protocol_experiment,
+    net::SupportsQuicMap* supports_quic_map,
     bool detected_corrupted_prefs) {
   // Preferences have the master data because admins might have pushed new
   // preferences. Update the cached data with new data from preferences.
@@ -495,6 +548,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
       alternate_protocol_map);
   http_server_properties_impl_->SetAlternateProtocolExperiment(
       alternate_protocol_experiment);
+
+  http_server_properties_impl_->InitializeSupportsQuic(supports_quic_map);
 
   // Update the prefs with what we have read (delete all corrupted prefs).
   if (detected_corrupted_prefs)
@@ -569,6 +624,14 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     ++count;
   }
 
+  net::SupportsQuicMap* supports_quic_map = new net::SupportsQuicMap();
+  const net::SupportsQuicMap& main_supports_quic_map =
+      http_server_properties_impl_->supports_quic_map();
+  for (net::SupportsQuicMap::const_iterator it = main_supports_quic_map.begin();
+       it != main_supports_quic_map.end(); ++it) {
+    supports_quic_map->insert(std::make_pair(it->first, it->second));
+  }
+
   // Update the preferences on the pref thread.
   pref_task_runner_->PostTask(
       FROM_HERE,
@@ -577,30 +640,37 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
                  base::Owned(spdy_server_list),
                  base::Owned(spdy_settings_map),
                  base::Owned(alternate_protocol_map),
+                 base::Owned(supports_quic_map),
                  completion));
 }
 
 // A local or temporary data structure to hold |supports_spdy|, SpdySettings,
-// and AlternateProtocolInfo preferences for a server. This is used only in
-// UpdatePrefsOnPrefThread.
+// AlternateProtocolInfo and SupportsQuic preferences for a server. This is used
+// only in UpdatePrefsOnPrefThread.
 struct ServerPref {
-  ServerPref()
-      : supports_spdy(false), settings_map(NULL), alternate_protocol(NULL) {}
+  ServerPref() : supports_spdy(false),
+                 settings_map(NULL),
+                 alternate_protocol(NULL),
+                 supports_quic(NULL) {}
   ServerPref(bool supports_spdy,
              const net::SettingsMap* settings_map,
-             const net::AlternateProtocolInfo* alternate_protocol)
+             const net::AlternateProtocolInfo* alternate_protocol,
+             const net::SupportsQuic* supports_quic)
       : supports_spdy(supports_spdy),
         settings_map(settings_map),
-        alternate_protocol(alternate_protocol) {}
+        alternate_protocol(alternate_protocol),
+        supports_quic(supports_quic) {}
   bool supports_spdy;
   const net::SettingsMap* settings_map;
   const net::AlternateProtocolInfo* alternate_protocol;
+  const net::SupportsQuic* supports_quic;
 };
 
 void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     base::ListValue* spdy_server_list,
     net::SpdySettingsMap* spdy_settings_map,
     net::AlternateProtocolMap* alternate_protocol_map,
+    net::SupportsQuicMap* supports_quic_map,
     const base::Closure& completion) {
   typedef std::map<net::HostPortPair, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map;
@@ -617,7 +687,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
 
       ServerPrefMap::iterator it = server_pref_map.find(server);
       if (it == server_pref_map.end()) {
-        ServerPref server_pref(true, NULL, NULL);
+        ServerPref server_pref(true, NULL, NULL, NULL);
         server_pref_map[server] = server_pref;
       } else {
         it->second.supports_spdy = true;
@@ -633,7 +703,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
 
     ServerPrefMap::iterator it = server_pref_map.find(server);
     if (it == server_pref_map.end()) {
-      ServerPref server_pref(false, &map_it->second, NULL);
+      ServerPref server_pref(false, &map_it->second, NULL, NULL);
       server_pref_map[server] = server_pref;
     } else {
       it->second.settings_map = &map_it->second;
@@ -654,10 +724,24 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
 
     ServerPrefMap::iterator it = server_pref_map.find(server);
     if (it == server_pref_map.end()) {
-      ServerPref server_pref(false, NULL, &map_it->second);
+      ServerPref server_pref(false, NULL, &map_it->second, NULL);
       server_pref_map[server] = server_pref;
     } else {
       it->second.alternate_protocol = &map_it->second;
+    }
+  }
+
+  // Add SupportsQuic servers to server_pref_map.
+  for (net::SupportsQuicMap::const_iterator map_it = supports_quic_map->begin();
+       map_it != supports_quic_map->end(); ++map_it) {
+    const net::HostPortPair& server = map_it->first;
+
+    ServerPrefMap::iterator it = server_pref_map.find(server);
+    if (it == server_pref_map.end()) {
+      ServerPref server_pref(false, NULL, NULL, &map_it->second);
+      server_pref_map[server] = server_pref;
+    } else {
+      it->second.supports_quic = &map_it->second;
     }
   }
 
@@ -706,6 +790,16 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
           "probability", port_alternate_protocol->probability);
       server_pref_dict->SetWithoutPathExpansion(
           "alternate_protocol", port_alternate_protocol_dict);
+    }
+
+    // Save supports_quic.
+    if (server_pref.supports_quic) {
+      base::DictionaryValue* supports_quic_dict = new base::DictionaryValue;
+      const net::SupportsQuic* supports_quic = server_pref.supports_quic;
+      supports_quic_dict->SetBoolean("used_quic", supports_quic->used_quic);
+      supports_quic_dict->SetString("address", supports_quic->address);
+      server_pref_dict->SetWithoutPathExpansion(
+          "supports_quic", supports_quic_dict);
     }
 
     servers_dict->SetWithoutPathExpansion(server.ToString(), server_pref_dict);

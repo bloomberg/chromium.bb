@@ -153,6 +153,16 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // Returns all SPDY persistent settings.
   virtual const SpdySettingsMap& spdy_settings_map() const OVERRIDE;
 
+  // Methods for SupportsQuic.
+  virtual SupportsQuic GetSupportsQuic(
+      const HostPortPair& host_port_pair) const OVERRIDE;
+
+  virtual void SetSupportsQuic(const HostPortPair& host_port_pair,
+                               bool used_quic,
+                               const std::string& address) OVERRIDE;
+
+  virtual const SupportsQuicMap& supports_quic_map() const OVERRIDE;
+
   virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
                                      NetworkStats stats) OVERRIDE;
 
@@ -185,6 +195,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       SpdySettingsMap* spdy_settings_map,
       AlternateProtocolMap* alternate_protocol_map,
       AlternateProtocolExperiment alternate_protocol_experiment,
+      SupportsQuicMap* supports_quic_map,
       bool detected_corrupted_prefs);
 
   // These are used to delay updating the preferences when cached data in
@@ -212,6 +223,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void UpdatePrefsOnPrefThread(base::ListValue* spdy_server_list,
                                SpdySettingsMap* spdy_settings_map,
                                AlternateProtocolMap* alternate_protocol_map,
+                               SupportsQuicMap* supports_quic_map,
                                const base::Closure& completion);
 
  private:
