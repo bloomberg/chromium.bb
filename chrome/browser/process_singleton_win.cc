@@ -356,9 +356,12 @@ bool ProcessSingleton::Create() {
     // since it isn't guaranteed we will get it. It is better to create it
     // without ownership and explicitly get the ownership afterward.
     base::win::ScopedHandle only_me(::CreateMutex(NULL, FALSE, kMutexName));
-    DPCHECK(only_me.IsValid());
+    if (!only_me.IsValid()) {
+      DPLOG(FATAL) << "CreateMutex failed";
+      return false;
+    }
 
-    AutoLockMutex auto_lock_only_me(only_me);
+    AutoLockMutex auto_lock_only_me(only_me.Get());
 
     // We now own the mutex so we are the only process that can create the
     // window at this time, but we must still check if someone created it
@@ -402,9 +405,9 @@ bool ProcessSingleton::Create() {
         // until the event is signaled (i.e. Metro Chrome was successfully
         // activated). Ignore timeout waiting for |metro_activation_event|.
         {
-          AutoUnlockMutex auto_unlock_only_me(only_me);
+          AutoUnlockMutex auto_unlock_only_me(only_me.Get());
 
-          DWORD result = ::WaitForSingleObject(metro_activation_event,
+          DWORD result = ::WaitForSingleObject(metro_activation_event.Get(),
                                                kMetroChromeActivationTimeoutMs);
           DPCHECK(result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT)
               << "Result = " << result;
@@ -450,7 +453,7 @@ bool ProcessSingleton::Create() {
         base::win::ScopedHandle metro_activation_event(
             ::OpenEvent(EVENT_MODIFY_STATE, FALSE, kMetroActivationEventName));
         if (metro_activation_event.IsValid())
-          ::SetEvent(metro_activation_event);
+          ::SetEvent(metro_activation_event.Get());
       }
     }
   }

@@ -33,9 +33,10 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
     ColorTicketItem color;
     if (color.LoadFrom(description)) {
       bool is_color = color.value().type == STANDARD_COLOR;
-      dev_mode = CreateDevModeWithColor(printer, printer_name, is_color);
+      dev_mode = printing::CreateDevModeWithColor(printer.Get(), printer_name,
+                                                  is_color);
     } else {
-      dev_mode = printing::CreateDevMode(printer, NULL);
+      dev_mode = printing::CreateDevMode(printer.Get(), NULL);
     }
   }
 
@@ -124,7 +125,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
     }
   }
 
-  return printing::CreateDevMode(printer, dev_mode.get());
+  return printing::CreateDevMode(printer.Get(), dev_mode.get());
 }
 
 }  // namespace cloud_print

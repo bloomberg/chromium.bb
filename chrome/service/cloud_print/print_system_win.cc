@@ -68,9 +68,9 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     bool ret = false;
     if (printer_.OpenPrinter(printer_name_to_use)) {
       printer_change_.Set(FindFirstPrinterChangeNotification(
-          printer_, PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL));
+          printer_.Get(), PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL));
       if (printer_change_.IsValid()) {
-        ret = watcher_.StartWatching(printer_change_, this);
+        ret = watcher_.StartWatching(printer_change_.Get(), this);
       }
     }
     if (!ret) {
@@ -108,12 +108,12 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
         delegate_->OnJobChanged();
       }
     }
-    watcher_.StartWatching(printer_change_, this);
+    watcher_.StartWatching(printer_change_.Get(), this);
   }
 
   bool GetCurrentPrinterInfo(printing::PrinterBasicInfo* printer_info) {
     DCHECK(printer_info);
-    return InitBasicPrinterInfo(printer_, printer_info);
+    return InitBasicPrinterInfo(printer_.Get(), printer_info);
   }
 
  private:
@@ -153,7 +153,7 @@ class PrintServerWatcherWin
   virtual void OnPrinterChanged() OVERRIDE {}
   virtual void OnJobChanged() OVERRIDE {}
 
-  protected:
+ protected:
   virtual ~PrintServerWatcherWin() {}
 
  private:
@@ -204,7 +204,7 @@ class PrinterWatcherWin
     delegate_->OnJobChanged();
   }
 
-  protected:
+ protected:
   virtual ~PrinterWatcherWin() {}
 
  private:
@@ -752,14 +752,14 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
   bool ret = false;
   if (printer_handle.IsValid()) {
     DWORD bytes_needed = 0;
-    GetJob(printer_handle, job_id, 1, NULL, 0, &bytes_needed);
+    GetJob(printer_handle.Get(), job_id, 1, NULL, 0, &bytes_needed);
     DWORD last_error = GetLastError();
     if (ERROR_INVALID_PARAMETER != last_error) {
       // ERROR_INVALID_PARAMETER normally means that the job id is not valid.
       DCHECK(last_error == ERROR_INSUFFICIENT_BUFFER);
       scoped_ptr<BYTE[]> job_info_buffer(new BYTE[bytes_needed]);
-      if (GetJob(printer_handle, job_id, 1, job_info_buffer.get(), bytes_needed,
-                &bytes_needed)) {
+      if (GetJob(printer_handle.Get(), job_id, 1, job_info_buffer.get(),
+                 bytes_needed, &bytes_needed)) {
         JOB_INFO_1 *job_info =
             reinterpret_cast<JOB_INFO_1 *>(job_info_buffer.get());
         if (job_info->pStatus) {

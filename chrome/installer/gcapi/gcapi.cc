@@ -478,7 +478,8 @@ BOOL __stdcall LaunchGoogleChrome() {
         if (process_handle.IsValid()) {
           HANDLE process_token = NULL;
           HANDLE user_token = NULL;
-          if (::OpenProcessToken(process_handle, TOKEN_DUPLICATE | TOKEN_QUERY,
+          if (::OpenProcessToken(process_handle.Get(),
+                                 TOKEN_DUPLICATE | TOKEN_QUERY,
                                  &process_token) &&
               ::DuplicateTokenEx(process_token,
                                  TOKEN_IMPERSONATE | TOKEN_QUERY |

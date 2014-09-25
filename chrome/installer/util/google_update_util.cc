@@ -95,7 +95,8 @@ bool LaunchProcessAndWaitWithTimeout(const base::string16& cmd_string,
   if (!base::LaunchProcess(cmd_string, base::LaunchOptions(),
                            &process)) {
     PLOG(ERROR) << "Failed to launch (" << cmd_string << ")";
-  } else if (!base::WaitForExitCodeWithTimeout(process, &exit_code, timeout)) {
+  } else if (!base::WaitForExitCodeWithTimeout(process.Get(), &exit_code,
+                                               timeout)) {
     // The GetExitCodeProcess failed or timed-out.
     LOG(ERROR) <<"Command (" << cmd_string << ") is taking more than "
                << timeout.InMilliseconds() << " milliseconds to complete.";

@@ -84,7 +84,8 @@ int GetDirectoryWriteTimeInHours(const wchar_t* path) {
     return -1;
 
   FILETIME time;
-  return ::GetFileTime(file, NULL, NULL, &time) ? FileTimeToHours(time) : -1;
+  return ::GetFileTime(file.Get(), NULL, NULL, &time) ?
+      FileTimeToHours(time) : -1;
 }
 
 // Returns the time in hours since the last write to the user data directory.
@@ -513,7 +514,7 @@ void InactiveUserToastExperiment(int flavor,
       break;
     default:
       outcome = kToastExpTriesErrorGroup;
-  };
+  }
   // Write to the |client| key for the last time.
   SetClient(experiment_group + outcome, true);
 

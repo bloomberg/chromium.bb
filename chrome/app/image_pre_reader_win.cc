@@ -227,7 +227,7 @@ bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
   headers.reserve(kMinHeaderBufferSize);
 
   // Read, hopefully, all of the headers.
-  if (!ReadMissingBytes(file, &headers, kMinHeaderBufferSize))
+  if (!ReadMissingBytes(file.Get(), &headers, kMinHeaderBufferSize))
     return false;
 
   // The DOS header starts at offset 0 and allows us to get the offset of the
@@ -235,7 +235,7 @@ bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
   size_t nt_headers_start =
       reinterpret_cast<IMAGE_DOS_HEADER*>(&headers[0])->e_lfanew;
   size_t nt_headers_end = nt_headers_start + sizeof(IMAGE_NT_HEADERS);
-  if (!ReadMissingBytes(file, &headers, nt_headers_end))
+  if (!ReadMissingBytes(file.Get(), &headers, nt_headers_end))
     return false;
 
   // Now that we've got the NT headers we can get the total header size,
@@ -243,7 +243,7 @@ bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
   // to capture all of the header data.
   size_t size_of_headers = reinterpret_cast<IMAGE_NT_HEADERS*>(
       &headers[nt_headers_start])->OptionalHeader.SizeOfHeaders;
-  if (!ReadMissingBytes(file, &headers, size_of_headers))
+  if (!ReadMissingBytes(file.Get(), &headers, size_of_headers))
     return false;
 
   // Now we have all of the headers. This is enough to let us use the PEImage
@@ -263,9 +263,10 @@ bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
   for (UINT i = 0; (section = pe_image.GetSectionHeader(i)) != NULL; ++i) {
     CHECK_LE(reinterpret_cast<const uint8*>(section + 1),
              &headers[0] + headers.size());
-    if (!ReadThroughSection(
-            file, section, percentage, buffer.get(), max_chunk_size))
+    if (!ReadThroughSection(file.Get(), section, percentage, buffer.get(),
+                            max_chunk_size)) {
       return false;
+    }
   }
 
   // We're done.
@@ -357,7 +358,7 @@ bool ImagePreReader::PreReadImage(const wchar_t* file_path,
 
     DWORD len;
     size_t total_read = 0;
-    while (::ReadFile(file, buffer, actual_step_size, &len, NULL) &&
+    while (::ReadFile(file.Get(), buffer, actual_step_size, &len, NULL) &&
            len > 0 &&
            (size_to_read ? total_read < size_to_read : true)) {
       total_read += static_cast<size_t>(len);

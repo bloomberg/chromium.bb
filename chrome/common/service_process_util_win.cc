@@ -103,7 +103,7 @@ bool CheckServiceProcessReady() {
   if (!event.IsValid())
     return false;
   // Check if the event is signaled.
-  return WaitForSingleObject(event, 0) == WAIT_OBJECT_0;
+  return WaitForSingleObject(event.Get(), 0) == WAIT_OBJECT_0;
 }
 
 struct ServiceProcessState::StateData {

@@ -85,7 +85,7 @@ void MemoryDetails::CollectProcessData(
     LOG(ERROR) << "CreateToolhelp32Snaphot failed: " << GetLastError();
     return;
   }
-  if (!::Process32First(snapshot, &process_entry)) {
+  if (!::Process32First(snapshot.Get(), &process_entry)) {
     LOG(ERROR) << "Process32First failed: " << GetLastError();
     return;
   }
@@ -93,12 +93,12 @@ void MemoryDetails::CollectProcessData(
     base::ProcessId pid = process_entry.th32ProcessID;
     base::win::ScopedHandle process_handle(::OpenProcess(
         PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid));
-    if (!process_handle.Get())
+    if (!process_handle.IsValid())
       continue;
     bool is_64bit_process =
         ((windows_architecture == base::win::OSInfo::X64_ARCHITECTURE) ||
          (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)) &&
-        (base::win::OSInfo::GetWOW64StatusForProcess(process_handle) ==
+        (base::win::OSInfo::GetWOW64StatusForProcess(process_handle.Get()) ==
             base::win::OSInfo::WOW64_DISABLED);
     for (unsigned int index2 = 0; index2 < process_data_.size(); index2++) {
       if (_wcsicmp(process_data_[index2].process_name.c_str(),
@@ -115,7 +115,8 @@ void MemoryDetails::CollectProcessData(
         info.process_type = content::PROCESS_TYPE_UNKNOWN;
 
       scoped_ptr<base::ProcessMetrics> metrics;
-      metrics.reset(base::ProcessMetrics::CreateProcessMetrics(process_handle));
+      metrics.reset(base::ProcessMetrics::CreateProcessMetrics(
+                        process_handle.Get()));
       metrics->GetCommittedKBytes(&info.committed);
       metrics->GetWorkingSetKBytes(&info.working_set);
 
@@ -134,7 +135,7 @@ void MemoryDetails::CollectProcessData(
           info.process_type = child_info[child].process_type;
           break;
         }
-      } else if (GetModuleFileNameEx(process_handle, NULL, name,
+      } else if (GetModuleFileNameEx(process_handle.Get(), NULL, name,
                                      MAX_PATH - 1)) {
         std::wstring str_name(name);
         scoped_ptr<FileVersionInfo> version_info(
@@ -154,7 +155,7 @@ void MemoryDetails::CollectProcessData(
       }
       break;
     }
-  } while (::Process32Next(snapshot, &process_entry));
+  } while (::Process32Next(snapshot.Get(), &process_entry));
 
   // Finally return to the browser thread.
   BrowserThread::PostTask(

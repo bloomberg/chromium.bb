@@ -72,7 +72,9 @@ base::Time GetFileCreationTime(const base::string16& file) {
                  NULL, OPEN_EXISTING,
                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL));
   FILETIME creation_filetime;
-  if (GetFileTime(file_handle, &creation_filetime, NULL, NULL))
+  if (!file_handle.IsValid())
+    return creation_time;
+  if (GetFileTime(file_handle.Get(), &creation_filetime, NULL, NULL))
     creation_time = base::Time::FromFileTime(creation_filetime);
   return creation_time;
 }

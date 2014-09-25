@@ -486,7 +486,7 @@ TEST_F(InstallerStateTest, IsFileInUse) {
                    SYNCHRONIZE | FILE_EXECUTE,
                    FILE_SHARE_DELETE | FILE_SHARE_READ,
                    NULL, OPEN_EXISTING, 0, 0));
-    ASSERT_TRUE(temp_handle != NULL);
+    ASSERT_TRUE(temp_handle.IsValid());
 
     // The file should now be in use.
     EXPECT_TRUE(MockInstallerState::IsFileInUse(temp_file));

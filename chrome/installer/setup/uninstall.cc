@@ -282,13 +282,13 @@ void CloseChromeFrameHelperProcess() {
   ::GetWindowThreadProcessId(window, &pid);
   DCHECK_NE(pid, 0U);
   base::win::ScopedHandle process(::OpenProcess(SYNCHRONIZE, FALSE, pid));
-  PLOG_IF(INFO, !process) << "Failed to open process: " << pid;
+  PLOG_IF(INFO, !process.IsValid()) << "Failed to open process: " << pid;
 
   bool kill = true;
   if (SendMessageTimeout(window, WM_CLOSE, 0, 0, SMTO_BLOCK, kWaitMs, NULL) &&
-      process) {
+      process.IsValid()) {
     VLOG(1) << "Waiting for " << installer::kChromeFrameHelperExe;
-    DWORD wait = ::WaitForSingleObject(process, kWaitMs);
+    DWORD wait = ::WaitForSingleObject(process.Get(), kWaitMs);
     if (wait != WAIT_OBJECT_0) {
       LOG(WARNING) << "Wait for " << installer::kChromeFrameHelperExe
                    << " to exit failed or timed out.";

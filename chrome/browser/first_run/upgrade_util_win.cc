@@ -264,7 +264,7 @@ bool SwapNewChromeExeIfPresent() {
       options.start_hidden = true;
       if (base::LaunchProcess(rename_cmd, options, &handle)) {
         DWORD exit_code;
-        ::GetExitCodeProcess(handle, &exit_code);
+        ::GetExitCodeProcess(handle.Get(), &exit_code);
         if (exit_code == installer::RENAME_SUCCESSFUL)
           return true;
       }

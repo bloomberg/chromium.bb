@@ -22,7 +22,7 @@ bool ImageWriter::IsValidDevice() {
                  OPEN_EXISTING,
                  FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH,
                  NULL));
-  if (device_handle == INVALID_HANDLE_VALUE) {
+  if (!device_handle.IsValid()) {
     Error(error::kOpenDevice);
     return false;
   }
@@ -34,7 +34,7 @@ bool ImageWriter::IsValidDevice() {
 
   scoped_ptr<char[]> output_buf(new char[kStorageQueryBufferSize]);
   BOOL status = DeviceIoControl(
-      device_handle,                   // Device handle.
+      device_handle.Get(),             // Device handle.
       IOCTL_STORAGE_QUERY_PROPERTY,    // Flag to request device properties.
       &query,                          // Query parameters.
       sizeof(STORAGE_PROPERTY_QUERY),  // query parameters size.
