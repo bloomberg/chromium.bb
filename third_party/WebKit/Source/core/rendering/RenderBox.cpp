@@ -1276,15 +1276,9 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
 bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
-    RenderBox* layerRenderer = 0;
-    if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground())))
-        layerRenderer = view();
-    else
-        layerRenderer = this;
-
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            layerRenderer->setShouldDoFullPaintInvalidation(true);
+            setShouldDoFullPaintInvalidation(true);
             return true;
         }
     }
