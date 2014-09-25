@@ -110,6 +110,21 @@ class HotwordService : public content::NotificationObserver,
   // no error.
   int error_message() { return error_message_; }
 
+  // These methods are for launching, and getting and setting the launch mode of
+  // the Hotword Audio Verification App.
+  //
+  // TODO(kcarattini): Remove this when
+  // https://code.google.com/p/chromium/issues/detail?id=165573 is fixed,
+  // at which time we can simply launch the app in the given mode instead of
+  // having to check for it here.
+  enum LaunchMode {
+    AUDIO_HISTORY_ONLY,
+    HOTWORD_ONLY,
+    HOTWORD_AND_AUDIO_HISTORY
+  };
+  void LaunchHotwordAudioVerificationApp(const LaunchMode& launch_mode);
+  virtual LaunchMode GetHotwordAudioVerificationLaunchMode();
+
  private:
   Profile* profile_;
 
@@ -129,6 +144,9 @@ class HotwordService : public content::NotificationObserver,
   bool reinstall_pending_;
 
   base::WeakPtrFactory<HotwordService> weak_factory_;
+
+  // Stores the launch mode for the Hotword Audio Verification App.
+  LaunchMode hotword_audio_verification_launch_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordService);
 };

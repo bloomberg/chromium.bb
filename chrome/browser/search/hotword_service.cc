@@ -215,6 +215,9 @@ HotwordService::HotwordService(Profile* profile)
       base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
                  base::Unretained(this)));
 
+  // TODO(kcarattini): Control the enabling of the pref with the Hotword
+  // Audio Verification app, rather than listening for a change in the
+  // enabled state.
   pref_registrar_.Add(
       prefs::kHotwordAlwaysOnSearchEnabled,
       base::Bind(&HotwordService::OnHotwordAlwaysOnSearchEnabledChanged,
@@ -453,20 +456,30 @@ void HotwordService::DisableHotwordExtension(
 void HotwordService::OnHotwordAlwaysOnSearchEnabledChanged(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, std::string(prefs::kHotwordAlwaysOnSearchEnabled));
+  // TODO(kcarattini): Launch in the appropriate mode given the state of
+  // the account-level Audio History setting.
+  LaunchHotwordAudioVerificationApp(HOTWORD_AND_AUDIO_HISTORY);
+}
+
+void HotwordService::LaunchHotwordAudioVerificationApp(
+    const LaunchMode& launch_mode) {
+  hotword_audio_verification_launch_mode_ = launch_mode;
 
   ExtensionService* extension_service = GetExtensionService(profile_);
   if (!extension_service)
     return;
-
   const extensions::Extension* extension = extension_service->GetExtensionById(
       extension_misc::kHotwordAudioVerificationAppId, true);
   if (!extension)
     return;
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled)) {
-    OpenApplication(AppLaunchParams(
-        profile_, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
-  }
+  OpenApplication(AppLaunchParams(
+      profile_, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
+}
+
+HotwordService::LaunchMode
+HotwordService::GetHotwordAudioVerificationLaunchMode() {
+  return hotword_audio_verification_launch_mode_;
 }
 
 void HotwordService::OnHotwordSearchEnabledChanged(

@@ -17,6 +17,10 @@
 
 namespace extensions {
 
+namespace hotword_private_constants {
+const char kHotwordServiceUnavailable[] = "Hotword Service is unavailable.";
+}  // hotword_private_constants
+
 namespace OnEnabledChanged =
     api::hotword_private::OnEnabledChanged;
 
@@ -142,6 +146,23 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
       HotwordServiceFactory::GetForProfile(GetProfile());
   if (hotword_service && hotword_service->client())
     hotword_service->client()->OnHotwordRecognized();
+  return true;
+}
+
+bool HotwordPrivateGetLaunchStateFunction::RunSync() {
+  api::hotword_private::LaunchState result;
+
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service) {
+    error_ = hotword_private_constants::kHotwordServiceUnavailable;
+    return false;
+  } else {
+    result.launch_mode =
+        hotword_service->GetHotwordAudioVerificationLaunchMode();
+  }
+
+  SetResult(result.ToValue().release());
   return true;
 }
 

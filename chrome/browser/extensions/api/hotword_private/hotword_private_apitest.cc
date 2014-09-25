@@ -38,8 +38,17 @@ class MockHotwordService : public HotwordService {
     return new MockHotwordService(static_cast<Profile*>(profile));
   }
 
+  virtual LaunchMode GetHotwordAudioVerificationLaunchMode() OVERRIDE {
+    return launch_mode_;
+  }
+
+  void SetHotwordAudioVerificationLaunchMode(const LaunchMode& launch_mode) {
+    launch_mode_ = launch_mode;
+  }
+
  private:
   bool service_available_;
+  LaunchMode launch_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(MockHotwordService);
 };
@@ -240,4 +249,21 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, HotwordSession) {
   EXPECT_TRUE(client.last_enabled());
   EXPECT_EQ(1, client.state_changed_count());
   EXPECT_EQ(1, client.recognized_count());
+}
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, GetLaunchStateHotwordOnly) {
+  service()->SetHotwordAudioVerificationLaunchMode(
+      HotwordService::HOTWORD_ONLY);
+  ExtensionTestMessageListener listener("launchMode: 1", false);
+  ASSERT_TRUE(RunComponentExtensionTest("getLaunchState")) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest,
+    GetLaunchStateHotwordAudioHistory) {
+  service()->SetHotwordAudioVerificationLaunchMode(
+      HotwordService::HOTWORD_AND_AUDIO_HISTORY);
+  ExtensionTestMessageListener listener("launchMode: 2", false);
+  ASSERT_TRUE(RunComponentExtensionTest("getLaunchState")) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }

@@ -955,6 +955,7 @@ enum HistogramValue {
   USB_GETCONFIGURATION,
   WEBVIEWINTERNAL_SETALLOWTRANSPARENCY,
   EASYUNLOCKPRIVATE_GETUSERINFO,
+  HOTWORDPRIVATE_GETLAUNCHSTATE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -12,7 +12,8 @@
     "content_security_policy": "default-src 'self'; script-src 'self' chrome://resources"
   },
   "permissions": [
-    "chrome://resources/"
+    "chrome://resources/",
+    "hotwordPrivate"
   ],
   "display_in_launcher": false
 }

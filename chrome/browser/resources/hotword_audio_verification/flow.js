@@ -11,12 +11,17 @@
   /** @const */ var SPEECH_TRAINING = 'speech-training-container';
   /** @const */ var FINISHED = 'finished-container';
 
-  /** @const */ var FLOWS = {
-    HOTWORD_AND_AUDIO_HISTORY: [
-        HOTWORD_AUDIO_HISTORY, SPEECH_TRAINING, FINISHED],
-    HOTWORD_ONLY: [HOTWORD_ONLY_START, SPEECH_TRAINING, FINISHED],
-    AUDIO_HISTORY_ONLY: [AUDIO_HISTORY_START]
-  };
+  /**
+   * These flows correspond to the three LaunchModes as defined in
+   * chrome/browser/search/hotword_service.h and should be kept in sync
+   * with them.
+   * @const
+   */
+  var FLOWS = [
+    [AUDIO_HISTORY_START],
+    [HOTWORD_ONLY_START, SPEECH_TRAINING, FINISHED],
+    [HOTWORD_AUDIO_HISTORY, SPEECH_TRAINING, FINISHED]
+  ];
 
   /**
    * Class to control the page flow of the always-on hotword and
@@ -29,32 +34,33 @@
   }
 
   /**
-   * Gets the appropriate flow and displays its first page.
-   */
-  Flow.prototype.startFlow = function() {
-    this.currentFlow_ = getFlowForSetting_.apply(this);
-    this.advanceStep();
-  };
-
-  /**
    * Advances the current step.
    */
   Flow.prototype.advanceStep = function() {
     this.currentStepIndex_++;
     if (this.currentStepIndex_ < this.currentFlow_.length)
-      showStep_.apply(this);
+      this.showStep_.apply(this);
+  };
+
+  /**
+   * Gets the appropriate flow and displays its first page.
+   */
+  Flow.prototype.startFlow = function() {
+    if (chrome.hotwordPrivate && chrome.hotwordPrivate.getLaunchState)
+      chrome.hotwordPrivate.getLaunchState(this.startFlowForMode_.bind(this));
   };
 
   // ---- private methods:
 
   /**
-   * Gets the appropriate flow for the current configuration of settings.
+   * Gets and starts the appropriate flow for the launch mode.
    * @private
    */
-  getFlowForSetting_ = function() {
-    // TODO(kcarattini): This should eventually return the correct flow for
-    // the current settings state.
-    return FLOWS.HOTWORD_AND_AUDIO_HISTORY;
+  Flow.prototype.startFlowForMode_ = function(state) {
+    assert(state.launchMode >= 0 && state.launchMode < FLOWS.length,
+           'Invalid Launch Mode.');
+    this.currentFlow_ = FLOWS[state.launchMode];
+    this.advanceStep();
   };
 
   /**
@@ -62,7 +68,7 @@
    * also hides the previous step.
    * @private
    */
-  showStep_ = function() {
+  Flow.prototype.showStep_ = function() {
     var currentStep = this.currentFlow_[this.currentStepIndex_];
     var previousStep = null;
     if (this.currentStepIndex_ > 0)

@@ -35,11 +35,21 @@
     boolean alwaysOnEnabled;
   };
 
+  dictionary LaunchState {
+    // TODO(kcarattini): Consider adding more variables here,
+    // such as the available state of the hotword service.
+
+    // The mode that the Hotword Audio Verification app was launched in.
+    long launchMode;
+  };
+
+
   // The type of the recognized hotword. Right now it only has 'search' but
   // could be expanded to other types of actions in the future.
   enum HotwordType { search };
 
   callback GenericDoneCallback = void ();
+  callback LaunchStateCallback = void(LaunchState result);
   callback StatusDetailsCallback = void(StatusDetails result);
 
   interface Functions {
@@ -65,6 +75,10 @@
     // hotword session.
     static void notifyHotwordRecognition(HotwordType type,
                                          optional GenericDoneCallback callback);
+
+    // Retrieves the state that the Hotword Audio Verification app was
+    // launched in. The result is put into a LaunchState object.
+    static void getLaunchState(LaunchStateCallback callback);
   };
 
   interface Events {
