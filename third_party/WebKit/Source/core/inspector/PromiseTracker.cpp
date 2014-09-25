@@ -62,7 +62,7 @@ private:
     {
     }
 
-    RefPtrWillBeMember<ScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     int m_promiseHash;
     int m_promiseId;
     ScopedPersistent<v8::Object> m_promise;
