@@ -918,9 +918,11 @@ NaClErrorCode NaClElfImageLoadDynamically(
     if (0 != (php->p_flags & PF_X)) {
       /* Load code segment. */
       /*
-       * We make a copy of the code.  This is not ideal given that
-       * GioMemoryFileSnapshot and NaClGioShm already have a copy of
-       * the file in memory or mmapped.
+       * We make a copy of the code.  This is not ideal given that this
+       * code path is used only for loading the IRT, and we could assume
+       * that the contents of the irt.nexe file will not change underneath
+       * us.  We should be able to mmap() the IRT's code segment instead of
+       * copying it.
        * TODO(mseaborn): Reduce the amount of copying here.
        */
       char *code_copy = malloc(filesz);
