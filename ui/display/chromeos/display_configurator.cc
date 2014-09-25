@@ -160,7 +160,8 @@ DisplayConfigurator::DisplayConfigurator()
       is_panel_fitting_enabled_(false),
       configure_display_(base::SysInfo::IsRunningOnChromeOS()),
       display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
-      power_state_(chromeos::DISPLAY_POWER_ALL_ON),
+      requested_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
+      current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       next_display_protection_client_id_(1) {}
 
 DisplayConfigurator::~DisplayConfigurator() {
@@ -179,7 +180,7 @@ void DisplayConfigurator::SetDelegateForTesting(
 void DisplayConfigurator::SetInitialDisplayPower(
     chromeos::DisplayPowerState power_state) {
   DCHECK_EQ(display_state_, MULTIPLE_DISPLAY_STATE_INVALID);
-  power_state_ = power_state;
+  requested_power_state_ = current_power_state_ = power_state;
 }
 
 void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
@@ -206,9 +207,10 @@ void DisplayConfigurator::ForceInitialConfigure(
   UpdateCachedDisplays();
   if (cached_displays_.size() > 1 && background_color_argb)
     native_display_delegate_->SetBackgroundColor(background_color_argb);
-  const MultipleDisplayState new_state = ChooseDisplayState(power_state_);
-  const bool success =
-      EnterStateOrFallBackToSoftwareMirroring(new_state, power_state_);
+  const MultipleDisplayState new_state = ChooseDisplayState(
+      requested_power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, requested_power_state_);
 
   // Force the DPMS on chrome startup as the driver doesn't always detect
   // that all displays are on when signing out.
@@ -452,7 +454,8 @@ bool DisplayConfigurator::SetDisplayPower(
           << DisplayPowerStateToString(power_state) << " flags=" << flags
           << ", configure timer="
           << (configure_timer_.IsRunning() ? "Running" : "Stopped");
-  if (power_state == power_state_ && !(flags & kSetDisplayPowerForceProbe))
+  if (power_state == current_power_state_ &&
+      !(flags & kSetDisplayPowerForceProbe))
     return true;
 
   native_display_delegate_->GrabServer();
@@ -480,7 +483,7 @@ bool DisplayConfigurator::SetDisplayPower(
   native_display_delegate_->UngrabServer();
   if (attempted_change)
     NotifyObservers(success, new_state);
-  return true;
+  return success;
 }
 
 bool DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
@@ -501,8 +504,8 @@ bool DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
 
   native_display_delegate_->GrabServer();
   UpdateCachedDisplays();
-  const bool success =
-      EnterStateOrFallBackToSoftwareMirroring(new_state, power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, requested_power_state_);
   native_display_delegate_->UngrabServer();
 
   NotifyObservers(success, new_state);
@@ -542,7 +545,7 @@ void DisplayConfigurator::SuspendDisplays() {
   // suspending.  This shouldn't be very noticeable to the user since the
   // backlight is off at this point, and doing this lets us resume directly
   // into the "on" state, which greatly reduces resume times.
-  if (power_state_ == chromeos::DISPLAY_POWER_ALL_OFF) {
+  if (requested_power_state_ == chromeos::DISPLAY_POWER_ALL_OFF) {
     SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
                     kSetDisplayPowerOnlyIfSingleInternalDisplay);
 
@@ -561,7 +564,7 @@ void DisplayConfigurator::ResumeDisplays() {
       base::TimeDelta::FromMilliseconds(kResumeDelayMs),
       base::Bind(base::IgnoreResult(&DisplayConfigurator::SetDisplayPower),
                  base::Unretained(this),
-                 power_state_,
+                 requested_power_state_,
                  kSetDisplayPowerForceProbe));
 }
 
@@ -713,9 +716,10 @@ void DisplayConfigurator::ConfigureDisplays() {
 
   native_display_delegate_->GrabServer();
   UpdateCachedDisplays();
-  const MultipleDisplayState new_state = ChooseDisplayState(power_state_);
-  const bool success =
-      EnterStateOrFallBackToSoftwareMirroring(new_state, power_state_);
+  const MultipleDisplayState new_state = ChooseDisplayState(
+      requested_power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, requested_power_state_);
   native_display_delegate_->UngrabServer();
 
   NotifyObservers(success, new_state);
@@ -741,7 +745,7 @@ bool DisplayConfigurator::EnterStateOrFallBackToSoftwareMirroring(
     bool enable_software_mirroring = false;
     if (!success && display_state == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
       if (display_state_ != MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED ||
-          power_state_ != power_state)
+          current_power_state_ != power_state)
         EnterState(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED, power_state);
       enable_software_mirroring = success =
           display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
@@ -758,6 +762,9 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
       GetDisplayPower(cached_displays_, power_state, &display_power);
   VLOG(1) << "EnterState: display=" << DisplayStateToString(display_state)
           << " power=" << DisplayPowerStateToString(power_state);
+
+  // Save the requested state so we'll try to use it next time even if we fail.
+  requested_power_state_ = power_state;
 
   // Framebuffer dimensions.
   gfx::Size size;
@@ -925,7 +932,7 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
 
   if (all_succeeded) {
     display_state_ = display_state;
-    power_state_ = power_state;
+    current_power_state_ = power_state;
     framebuffer_size_ = size;
   }
   return all_succeeded;

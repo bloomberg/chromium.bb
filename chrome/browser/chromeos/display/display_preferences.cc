@@ -308,7 +308,8 @@ void StoreDisplayPowerState(DisplayPowerState power_state) {
 
 void StoreCurrentDisplayPowerState() {
   StoreDisplayPowerState(
-      ash::Shell::GetInstance()->display_configurator()->power_state());
+      ash::Shell::GetInstance()->display_configurator()->
+          requested_power_state());
 }
 
 void StoreCurrentDisplayRotationLockPrefs() {

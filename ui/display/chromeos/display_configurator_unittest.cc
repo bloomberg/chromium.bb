@@ -1233,8 +1233,6 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
     outputs_[i].set_native_mode(modes[0]);
   }
 
-  configurator_.Init(false);
-
   // First test simply fails in MULTIPLE_DISPLAY_STATE_SINGLE mode. This is
   // probably unrealistic but we want to make sure any assumptions don't creep
   // in.
@@ -1297,6 +1295,44 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                                    modes[0]->size().height() +
                                        DisplayConfigurator::kVerticalGap))
               .c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+}
+
+// Tests that power state requests are saved after failed configuration attempts
+// so they can be reused later: http://crosbug.com/p/31571
+TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
+  // Start out with two displays in extended mode.
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  configurator_.Init(false);
+  configurator_.ForceInitialConfigure(0);
+  log_->GetActionsAndClear();
+
+  // Turn off the internal display, simulating docked mode.
+  EXPECT_TRUE(configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags));
+  log_->GetActionsAndClear();
+
+  // Make all subsequent configuration requests fail and try to turn the
+  // internal display back on.
+  native_display_delegate_->set_max_configurable_pixels(1);
+  EXPECT_FALSE(configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags));
+  log_->GetActionsAndClear();
+
+  // Simulate the external display getting disconnected and check that the
+  // internal display is turned on (i.e. DISPLAY_POWER_ALL_ON is used) rather
+  // than the earlier DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON state.
+  native_display_delegate_->set_max_configurable_pixels(0);
+  UpdateOutputs(1, true);
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());

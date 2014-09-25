@@ -137,7 +137,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   virtual ~DisplayConfigurator();
 
   MultipleDisplayState display_state() const { return display_state_; }
-  chromeos::DisplayPowerState power_state() const { return power_state_; }
+  chromeos::DisplayPowerState requested_power_state() const {
+    return requested_power_state_;
+  }
   const gfx::Size framebuffer_size() const { return framebuffer_size_; }
   const std::vector<DisplayState>& cached_displays() const {
     return cached_displays_;
@@ -174,7 +176,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
   // the display(s) in question so that the low power state is engaged.
-  // |flags| contains bitwise-or-ed kSetDisplayPower* values.
+  // |flags| contains bitwise-or-ed kSetDisplayPower* values. Returns true if
+  // the system successfully enters (or was already in) |power_state|.
   bool SetDisplayPower(chromeos::DisplayPowerState power_state, int flags);
 
   // Force switching the display mode to |new_state|. Returns false if
@@ -320,8 +323,11 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   gfx::Size framebuffer_size_;
 
-  // The current power state.
-  chromeos::DisplayPowerState power_state_;
+  // The last-requested and current power state. These may differ if
+  // configuration fails: SetDisplayMode() needs the last-requested state while
+  // SetDisplayPower() needs the current state.
+  chromeos::DisplayPowerState requested_power_state_;
+  chromeos::DisplayPowerState current_power_state_;
 
   // Most-recently-used display configuration. Note that the actual
   // configuration changes asynchronously.
