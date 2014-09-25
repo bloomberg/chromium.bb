@@ -90,34 +90,10 @@
     "gtest_tests": [
       "accessibility_unittests",
       "ash_unittests",
-      {
-        "test": "base_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "test": "browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 5
-        }
-      },
+      "base_unittests",
       "cacheinvalidation_unittests",
       "chromeos_unittests",
       "components_unittests",
-      {
-        "test": "content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "test": "content_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       "crypto_unittests",
       "dbus_unittests",
       "display_unittests",
@@ -125,23 +101,12 @@
       "gcm_unit_tests",
       "google_apis_unittests",
       "gpu_unittests",
-      {
-        "test": "interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       "url_unittests",
       "jingle_unittests",
       "content_unittests",
       "device_unittests",
       "media_unittests",
-      {
-        "test": "net_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "net_unittests",
       "ozone_unittests",
       "ppapi_unittests",
       "printing_unittests",
@@ -157,21 +122,19 @@
       "events_unittests",
       "ipc_tests",
       "sync_unit_tests",
-      {
-        "test": "unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "unit_tests",
       "sql_unittests",
       "nacl_loader_unittests",
-      "athena_unittests",
-      "app_shell_browsertests",
-      "chromevox_tests"
+      "athena_unittests"
     ]
   },
   "Linux ChromiumOS Ozone Tests (2)": {
     "gtest_tests": [
+      "interactive_ui_tests",
+      "browser_tests",
+      "content_browsertests",
+      "app_shell_browsertests",
+      "chromevox_tests"
     ]
   },
   "Linux ChromiumOS Tests (dbg)(1)": {
