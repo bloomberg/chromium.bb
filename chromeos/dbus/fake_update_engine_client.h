@@ -65,6 +65,11 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
       return reboot_after_update_call_count_;
   }
 
+  // Returns how many times RequestUpdateCheck() is called.
+  int request_update_check_call_count() const {
+    return request_update_check_call_count_;
+  }
+
   // Returns how many times Rollback() is called.
   int rollback_call_count() const { return rollback_call_count_; }
 
@@ -78,6 +83,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   UpdateEngineClient::UpdateCheckResult update_check_result_;
   bool can_rollback_stub_result_;
   int reboot_after_update_call_count_;
+  int request_update_check_call_count_;
   int rollback_call_count_;
   int can_rollback_call_count_;
 };

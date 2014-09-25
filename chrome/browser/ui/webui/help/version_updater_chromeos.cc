@@ -113,6 +113,7 @@ VersionUpdater* VersionUpdater::Create() {
 
 void VersionUpdaterCros::GetUpdateStatus(const StatusCallback& callback) {
   callback_ = callback;
+
   if (!EnsureCanUpdate(callback))
     return;
 
@@ -136,12 +137,18 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
   if (!update_engine_client->HasObserver(this))
     update_engine_client->AddObserver(this);
 
+  if (update_engine_client->GetLastStatus().status !=
+      UpdateEngineClient::UPDATE_STATUS_IDLE) {
+    check_for_update_when_idle_ = true;
+    return;
+  }
+  check_for_update_when_idle_ = false;
+
   // Make sure that libcros is loaded and OOBE is complete.
   if (!WizardController::default_controller() ||
       chromeos::StartupUtils::IsDeviceRegistered()) {
-    update_engine_client->RequestUpdateCheck(
-        base::Bind(&VersionUpdaterCros::OnUpdateCheck,
-                   weak_ptr_factory_.GetWeakPtr()));
+    update_engine_client->RequestUpdateCheck(base::Bind(
+        &VersionUpdaterCros::OnUpdateCheck, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -170,6 +177,7 @@ void VersionUpdaterCros::GetChannel(bool get_current_channel,
 
 VersionUpdaterCros::VersionUpdaterCros()
     : last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
+      check_for_update_when_idle_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -229,6 +237,11 @@ void VersionUpdaterCros::UpdateStatusChanged(
 
   callback_.Run(my_status, progress, message);
   last_operation_ = status.status;
+
+  if (check_for_update_when_idle_ &&
+      status.status == UpdateEngineClient::UPDATE_STATUS_IDLE) {
+    CheckForUpdate(callback_);
+  }
 }
 
 void VersionUpdaterCros::OnUpdateCheck(

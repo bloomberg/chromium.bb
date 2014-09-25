@@ -1220,6 +1220,7 @@
       'browser/ui/webui/chromeos/login/l10n_util_unittest.cc',
       'browser/ui/webui/chromeos/login/signin_userlist_unittest.cc',
       'browser/ui/webui/fileicon_source_unittest.cc',
+      'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
       'browser/ui/webui/history_ui_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
       'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',

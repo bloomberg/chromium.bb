@@ -10,6 +10,7 @@ FakeUpdateEngineClient::FakeUpdateEngineClient()
     : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
       can_rollback_stub_result_(false),
       reboot_after_update_call_count_(0),
+      request_update_check_call_count_(0),
       rollback_call_count_(0),
       can_rollback_call_count_(0) {
 }
@@ -29,11 +30,12 @@ void FakeUpdateEngineClient::RemoveObserver(Observer* observer) {
 }
 
 bool FakeUpdateEngineClient::HasObserver(Observer* observer) {
-  return false;
+  return observers_.HasObserver(observer);
 }
 
 void FakeUpdateEngineClient::RequestUpdateCheck(
     const UpdateCheckCallback& callback) {
+  request_update_check_call_count_++;
   callback.Run(update_check_result_);
 }
 

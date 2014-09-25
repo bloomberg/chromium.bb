@@ -45,6 +45,9 @@ class VersionUpdaterCros : public VersionUpdater,
   // Last state received via UpdateStatusChanged().
   chromeos::UpdateEngineClient::UpdateStatusOperation last_operation_;
 
+  // True if an update check should be scheduled when the update engine is idle.
+  bool check_for_update_when_idle_;
+
   base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCros);
