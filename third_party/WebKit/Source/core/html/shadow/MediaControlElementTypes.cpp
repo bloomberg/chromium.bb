@@ -51,7 +51,7 @@ HTMLMediaElement* toParentMediaElement(Node* node)
         return 0;
     Node* mediaNode = node->shadowHost();
     if (!mediaNode)
-        mediaNode = node;
+        return 0;
     if (!isHTMLMediaElement(mediaNode))
         return 0;
 
