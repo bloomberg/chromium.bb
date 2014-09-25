@@ -162,7 +162,7 @@ void PCMWaveInAudioInputStream::Stop() {
     return;
 
   // Wait for the callback to finish, it will signal us when ready to be reset.
-  DWORD wait = ::WaitForSingleObject(stopped_event_, INFINITE);
+  DWORD wait = ::WaitForSingleObject(stopped_event_.Get(), INFINITE);
   DCHECK_EQ(wait, WAIT_OBJECT_0);
 
   // Stop input and reset the current position to zero for |wavein_|.
@@ -308,7 +308,7 @@ void PCMWaveInAudioInputStream::WaveCallback(HWAVEIN hwi, UINT msg,
       // Main thread has called Stop() and set |callback_| to NULL and is
       // now waiting to issue waveInReset which will kill this thread.
       // We should not call AudioSourceCallback code anymore.
-      ::SetEvent(obj->stopped_event_);
+      ::SetEvent(obj->stopped_event_.Get());
     }
   } else if (msg == WIM_CLOSE) {
     // Intentionaly no-op for now.

@@ -365,7 +365,8 @@ void WASAPIAudioInputStream::Run() {
   bool recording = true;
   bool error = false;
   double volume = GetVolume();
-  HANDLE wait_array[2] = {stop_capture_event_, audio_samples_ready_event_};
+  HANDLE wait_array[2] =
+      { stop_capture_event_.Get(), audio_samples_ready_event_.Get() };
 
   while (recording && !error) {
     HRESULT hr = S_FALSE;
