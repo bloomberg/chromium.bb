@@ -40,11 +40,6 @@ base::ProcessId TestSink::GetSelfPID() const {
   return base::ProcessId();
 }
 
-ChannelHandle TestSink::TakePipeHandle() {
-  NOTIMPLEMENTED();
-  return ChannelHandle();
-}
-
 bool TestSink::OnMessageReceived(const Message& msg) {
   ObserverListBase<Listener>::Iterator it(filter_list_);
   Listener* observer;

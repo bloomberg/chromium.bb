@@ -82,7 +82,6 @@ class TestSink : public Channel {
   virtual void Close() OVERRIDE;
   virtual base::ProcessId GetPeerPID() const OVERRIDE;
   virtual base::ProcessId GetSelfPID() const OVERRIDE;
-  virtual ChannelHandle TakePipeHandle() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   virtual int GetClientFileDescriptor() const OVERRIDE;

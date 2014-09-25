@@ -144,12 +144,6 @@ base::ProcessId ChannelWin::GetSelfPID() const {
   return GetCurrentProcessId();
 }
 
-ChannelHandle ChannelWin::TakePipeHandle() {
-  ChannelHandle handle = ChannelHandle(pipe_);
-  pipe_ = INVALID_HANDLE_VALUE;
-  return handle;
-}
-
 // static
 bool ChannelWin::IsNamedServerInitialized(
     const std::string& channel_id) {

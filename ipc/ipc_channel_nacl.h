@@ -43,7 +43,6 @@ class ChannelNacl : public Channel,
   // Channel implementation.
   virtual base::ProcessId GetPeerPID() const OVERRIDE;
   virtual base::ProcessId GetSelfPID() const OVERRIDE;
-  virtual ChannelHandle TakePipeHandle() OVERRIDE;
   virtual bool Connect() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual bool Send(Message* message) OVERRIDE;

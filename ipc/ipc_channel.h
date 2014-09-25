@@ -173,11 +173,6 @@ class IPC_EXPORT Channel : public Sender {
   // Get its own process id. This value is told to the peer.
   virtual base::ProcessId GetSelfPID() const = 0;
 
-  // Return connected ChannelHandle which the channel has owned.
-  // This method transfers the ownership to the caller
-  // so the channel isn't valid after the call.
-  virtual ChannelHandle TakePipeHandle() WARN_UNUSED_RESULT = 0;
-
   // Send a message over the Channel to the listener on the other end.
   //
   // |message| must be allocated using operator new.  This object will be

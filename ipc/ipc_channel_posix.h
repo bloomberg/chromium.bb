@@ -63,7 +63,6 @@ class IPC_EXPORT ChannelPosix : public Channel,
   virtual bool Send(Message* message) OVERRIDE;
   virtual base::ProcessId GetPeerPID() const OVERRIDE;
   virtual base::ProcessId GetSelfPID() const OVERRIDE;
-  virtual ChannelHandle TakePipeHandle() OVERRIDE;
   virtual int GetClientFileDescriptor() const OVERRIDE;
   virtual int TakeClientFileDescriptor() OVERRIDE;
 

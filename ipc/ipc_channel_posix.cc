@@ -1052,13 +1052,6 @@ base::ProcessId ChannelPosix::GetSelfPID() const {
   return GetHelloMessageProcId();
 }
 
-ChannelHandle ChannelPosix::TakePipeHandle() {
-  ChannelHandle handle = ChannelHandle(pipe_name_,
-                                       base::FileDescriptor(pipe_, false));
-  pipe_ = -1;
-  return handle;
-}
-
 //------------------------------------------------------------------------------
 // Channel's methods
 

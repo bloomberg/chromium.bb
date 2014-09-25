@@ -191,11 +191,6 @@ base::ProcessId ChannelMojo::GetSelfPID() const {
   return base::GetCurrentProcId();
 }
 
-ChannelHandle ChannelMojo::TakePipeHandle() {
-  NOTREACHED();
-  return ChannelHandle();
-}
-
 void ChannelMojo::OnClientLaunched(base::ProcessHandle handle) {
   bootstrap_->OnClientLaunched(handle);
 }
