@@ -10,13 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_split.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
 struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
-  typedef std::vector<std::pair<std::string, std::string> >
-      HeadersVector;
+  typedef base::StringPairs HeadersVector;
 
   CONTENT_EXPORT ResourceDevToolsInfo();
 
