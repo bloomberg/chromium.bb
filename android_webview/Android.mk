@@ -7,31 +7,9 @@
 # glue layer in the Android tree.
 
 LOCAL_PATH := $(call my-dir)
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := android_webview_java
-
-LOCAL_MODULE_TAGS := optional
-
-# Temporary extra dependency: force android_webview_java_with_new_resources to
-# be built whenever this target is built, so that we get build coverage until
-# the switch happens.
-LOCAL_ADDITIONAL_DEPENDENCIES := \
-    $(call intermediates-dir-for,JAVA_LIBRARIES,android_webview_java_with_new_resources,,COMMON)/javalib.jar
-
-
-include $(LOCAL_PATH)/java_library_common.mk
-# resource glue layer
-LOCAL_SRC_FILES += \
-    $(call all-java-files-under, ../content/public/android/java/resource_map) \
-    $(call all-java-files-under, ../ui/android/java/resource_map) \
-
-include $(BUILD_STATIC_JAVA_LIBRARY)
 
 ########################################################
-# This is intended to replace android_webview_java once the Android side of
-# the code that uses the WebView is updated. In the transition period the
-# goal of having this here is to make sure the new build isn't broken.
+# This defines the target for the Chromium Java code and resources.
 include $(CLEAR_VARS)
 LOCAL_MODULE := android_webview_java_with_new_resources
 
