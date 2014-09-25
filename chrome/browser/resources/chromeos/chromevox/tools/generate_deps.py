@@ -42,6 +42,11 @@ def main():
 
   path_rewriter = PathRewriter(options.prefix_map)
 
+  # Create the generated deps file's parent directory.
+  output_dir = os.path.dirname(os.path.abspath(options.output_file))
+  if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
   # Write the generated deps file.
   with open(options.output_file, 'w') as output:
     for path in args:
