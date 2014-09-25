@@ -56,6 +56,8 @@ public:
     void subtreeStyleDidChange();
     void subtreeTextDidChange(RenderSVGInlineText*);
 
+    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
+
 private:
     virtual const char* renderName() const OVERRIDE { return "RenderSVGText"; }
     virtual bool isSVGText() const OVERRIDE { return true; }
@@ -77,7 +79,6 @@ private:
     virtual FloatRect objectBoundingBox() const OVERRIDE { return frameRect(); }
     virtual FloatRect strokeBoundingBox() const OVERRIDE;
 
-    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
     virtual RootInlineBox* createRootInlineBox() OVERRIDE;
 
     bool shouldHandleSubtreeMutations() const;

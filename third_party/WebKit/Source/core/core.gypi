@@ -1517,6 +1517,8 @@
             'paint/MultiColumnSetPainter.h',
             'paint/SVGForeignObjectPainter.cpp',
             'paint/SVGForeignObjectPainter.h',
+            'paint/SVGTextPainter.cpp',
+            'paint/SVGTextPainter.h',
             'paint/TablePainter.cpp',
             'paint/TablePainter.h',
             'paint/TableRowPainter.cpp',

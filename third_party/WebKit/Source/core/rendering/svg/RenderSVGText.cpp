@@ -29,6 +29,7 @@
 #include "core/rendering/svg/RenderSVGText.h"
 
 #include "core/editing/PositionWithAffinity.h"
+#include "core/paint/SVGTextPainter.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
@@ -51,7 +52,6 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -467,24 +467,7 @@ void RenderSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) cons
 
 void RenderSVGText::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
-    if (paintInfo.phase != PaintPhaseForeground
-     && paintInfo.phase != PaintPhaseSelection)
-         return;
-
-    PaintInfo blockInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*blockInfo.context, false);
-    const AffineTransform& localTransform = localToParentTransform();
-    if (!localTransform.isIdentity()) {
-        stateSaver.save();
-        blockInfo.applyTransform(localTransform, false);
-    }
-    RenderBlock::paint(blockInfo, LayoutPoint());
-
-    // Paint the outlines, if any
-    if (paintInfo.phase == PaintPhaseForeground) {
-        blockInfo.phase = PaintPhaseSelfOutline;
-        RenderBlock::paint(blockInfo, LayoutPoint());
-    }
+    SVGTextPainter(*this).paint(paintInfo);
 }
 
 FloatRect RenderSVGText::strokeBoundingBox() const
