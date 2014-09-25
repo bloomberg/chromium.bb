@@ -407,4 +407,9 @@ void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const Atomi
         UseCounter::count(frame->document(), UseCounter::MixedContentPrivateHostnameInPublicHostname);
 }
 
+void MixedContentChecker::trace(Visitor* visitor)
+{
+    visitor->trace(m_frame);
+}
+
 } // namespace blink

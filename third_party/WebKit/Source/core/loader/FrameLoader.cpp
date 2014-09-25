@@ -127,11 +127,15 @@ FrameLoader::FrameLoader(LocalFrame* frame)
 
 FrameLoader::~FrameLoader()
 {
+    // Verify that this FrameLoader has been detached.
+    ASSERT(!m_progressTracker);
 }
 
 void FrameLoader::trace(Visitor* visitor)
 {
     visitor->trace(m_frame);
+    visitor->trace(m_mixedContentChecker);
+    visitor->trace(m_progressTracker);
     visitor->trace(m_fetchContext);
 }
 
@@ -1140,6 +1144,7 @@ void FrameLoader::detachClient()
     ASSERT(client());
 
     // Finish all cleanup work that might require talking to the embedder.
+    m_progressTracker->dispose();
     m_progressTracker.clear();
     setOpener(0);
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling

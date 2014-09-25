@@ -226,7 +226,7 @@ private:
     mutable FrameLoaderStateMachine m_stateMachine;
     mutable MixedContentChecker m_mixedContentChecker;
 
-    OwnPtr<ProgressTracker> m_progressTracker;
+    OwnPtrWillBeMember<ProgressTracker> m_progressTracker;
 
     FrameState m_state;
     FrameLoadType m_loadType;

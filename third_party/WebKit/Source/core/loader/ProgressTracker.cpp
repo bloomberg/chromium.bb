@@ -62,6 +62,11 @@ public:
     long long estimatedLength;
 };
 
+PassOwnPtrWillBeRawPtr<ProgressTracker> ProgressTracker::create(LocalFrame* frame)
+{
+    return adoptPtrWillBeNoop(new ProgressTracker(frame));
+}
+
 ProgressTracker::ProgressTracker(LocalFrame* frame)
     : m_frame(frame)
     , m_inProgress(false)
@@ -78,13 +83,18 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
 
 ProgressTracker::~ProgressTracker()
 {
-    if (m_inProgress)
-        progressCompleted();
+    ASSERT(!m_inProgress);
 }
 
-PassOwnPtr<ProgressTracker> ProgressTracker::create(LocalFrame* frame)
+void ProgressTracker::trace(Visitor* visitor)
 {
-    return adoptPtr(new ProgressTracker(frame));
+    visitor->trace(m_frame);
+}
+
+void ProgressTracker::dispose()
+{
+    if (m_inProgress)
+        progressCompleted();
 }
 
 double ProgressTracker::estimatedProgress() const

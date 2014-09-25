@@ -26,12 +26,12 @@
 #ifndef ProgressTracker_h
 #define ProgressTracker_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -42,12 +42,14 @@ struct ProgressItem;
 // FIXME: This is only used on Android. Android is the only Chrome
 // browser which shows a progress bar during loading.
 // We should find a better way for Android to get this data and remove this!
-class ProgressTracker {
-    WTF_MAKE_NONCOPYABLE(ProgressTracker); WTF_MAKE_FAST_ALLOCATED;
+class ProgressTracker FINAL : public NoBaseWillBeGarbageCollectedFinalized<ProgressTracker> {
+    WTF_MAKE_NONCOPYABLE(ProgressTracker); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    ~ProgressTracker();
+    static PassOwnPtrWillBeRawPtr<ProgressTracker> create(LocalFrame*);
 
-    static PassOwnPtr<ProgressTracker> create(LocalFrame*);
+    ~ProgressTracker();
+    void trace(Visitor*);
+    void dispose();
 
     double estimatedProgress() const;
 
@@ -62,19 +64,11 @@ public:
     long long totalBytesReceived() const { return m_totalBytesReceived; }
 
 private:
-    ProgressTracker(LocalFrame*);
+    explicit ProgressTracker(LocalFrame*);
 
     void reset();
 
-    // This bare frame pointer is safe; it refers to the
-    // owning frame (via FrameLoader.)
-    //
-    // ProgressTracker is finalized by FrameLoader (which in turn is
-    // finalized by LocalFrame.) Its lifetime thus guarantees that
-    // m_frame cannot be used to access a dead LocalFrame.
-    //
-    // FIXME: Oilpan: tidy up and move ProgressTracker to the heap.
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     bool m_inProgress;
     long long m_totalPageAndResourceBytesToLoad;
     long long m_totalBytesReceived;

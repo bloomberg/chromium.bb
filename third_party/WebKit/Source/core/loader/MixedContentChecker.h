@@ -31,6 +31,7 @@
 #ifndef MixedContentChecker_h
 #define MixedContentChecker_h
 
+#include "platform/heap/Handle.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
 
@@ -41,8 +42,9 @@ class LocalFrame;
 class KURL;
 class SecurityOrigin;
 
-class MixedContentChecker {
+class MixedContentChecker FINAL {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);
+    DISALLOW_ALLOCATION();
 public:
     explicit MixedContentChecker(LocalFrame*);
 
@@ -64,6 +66,8 @@ public:
     static bool isMixedContent(SecurityOrigin*, const KURL&);
 
     static void checkMixedPrivatePublic(LocalFrame*, const AtomicString& resourceIPAddress);
+
+    void trace(Visitor*);
 
 private:
     enum MixedContentType {
@@ -93,7 +97,7 @@ private:
 
     void logWarning(bool allowed, const KURL& i, const MixedContentType) const;
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 } // namespace blink
