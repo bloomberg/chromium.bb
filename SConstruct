@@ -398,10 +398,15 @@ def SetUpArgumentBits(env):
     desc='EXPERIMENTAL: Compile validator code for testing within enuminsts')
 
   # PNaCl sanity checks
-  if ((env.Bit('pnacl_generate_pexe') or env.Bit('use_sandboxed_translator'))
-      and not env.Bit('bitcode')):
-    raise UserError("pnacl_generate_pexe and use_sandboxed_translator"
-                    " don't make sense without bitcode")
+  if not env.Bit('bitcode'):
+    pnacl_only_flags = ('nonsfi_nacl',
+                        'pnacl_generate_pexe',
+                        'use_sandboxed_translator')
+    for flag_name in pnacl_only_flags:
+      if env.Bit(flag_name):
+        raise UserError('The option %r only makes sense when using the '
+                        'PNaCl toolchain (i.e. with bitcode=1)'
+                        % flag_name)
 
 def CheckArguments():
   for key in ARGUMENTS:
