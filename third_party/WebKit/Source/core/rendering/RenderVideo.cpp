@@ -32,6 +32,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/paint/VideoPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/graphics/media/MediaPlayer.h"
@@ -144,32 +145,7 @@ bool RenderVideo::shouldDisplayVideo() const
 
 void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    WebMediaPlayer* mediaPlayer = mediaElement()->webMediaPlayer();
-    bool displayingPoster = videoElement()->shouldDisplayPosterImage();
-    if (!displayingPoster && !mediaPlayer)
-        return;
-
-    LayoutRect rect = videoBox();
-    if (rect.isEmpty())
-        return;
-    rect.moveBy(paintOffset);
-
-    LayoutRect contentRect = contentBoxRect();
-    contentRect.moveBy(paintOffset);
-    GraphicsContext* context = paintInfo.context;
-    bool clip = !contentRect.contains(rect);
-    if (clip) {
-        context->save();
-        context->clip(contentRect);
-    }
-
-    if (displayingPoster)
-        paintIntoRect(context, rect);
-    else if ((document().view() && document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers) || !acceleratedRenderingInUse())
-        videoElement()->paintCurrentFrameInContext(context, pixelSnappedIntRect(rect));
-
-    if (clip)
-        context->restore();
+    VideoPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
 bool RenderVideo::acceleratedRenderingInUse()

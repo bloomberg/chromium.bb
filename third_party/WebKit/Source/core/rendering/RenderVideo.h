@@ -44,10 +44,11 @@ public:
     bool supportsAcceleratedRendering() const;
 
     bool shouldDisplayVideo() const;
+    HTMLVideoElement* videoElement() const;
+    bool acceleratedRenderingInUse();
 
 private:
     virtual void updateFromElement() OVERRIDE;
-    inline HTMLVideoElement* videoElement() const;
 
     virtual void intrinsicSizeChanged() OVERRIDE;
     LayoutSize calculateIntrinsicSize();
@@ -76,7 +77,6 @@ private:
 
     void updatePlayer();
 
-    bool acceleratedRenderingInUse();
 
     LayoutSize m_cachedImageSize;
 };
