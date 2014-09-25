@@ -26,8 +26,7 @@ define([
     expect(new testStructs.RectPair({second: r}).first).toBeNull();
 
     var nr = new testStructs.NamedRegion();
-    // TODO(hansmuller): nr.name should be null, see crbug.com/417039.
-    expect(nr.name).toBe("");
+    expect(nr.name).toBeNull();
     expect(nr.rects).toBeNull();
     expect(nr).toEqual(new testStructs.NamedRegion({}));
 
@@ -42,6 +41,39 @@ define([
     expect(e).toEqual(new testStructs.EmptyStruct({foo:123}));
   }
 
+  function testNoDefaultFieldValues() {
+    var s = new testStructs.NoDefaultFieldValues();
+    expect(s.f0).toEqual(false);
+
+    // f1 - f10, number type fields
+    for (var i = 1; i <= 10; i++)
+      expect(s["f" + i]).toEqual(0);
+
+    // f11,12 strings, f13-22 handles, f23-f26 arrays, f27,28 structs
+    for (var i = 11; i <= 28; i++)
+      expect(s["f" + i]).toBeNull();
+  }
+
+  function testDefaultFieldValues() {
+    var s = new testStructs.DefaultFieldValues();
+    expect(s.f0).toEqual(true);
+
+    // f1 - f12, number type fields
+    for (var i = 1; i <= 12; i++)
+      expect(s["f" + i]).toEqual(100);
+
+    // f13,14 "foo"
+    for (var i = 13; i <= 14; i++)
+      expect(s["f" + i]).toEqual("foo");
+
+    // f15,16 a default instance of Rect
+    var r = new rect.Rect();
+    expect(s.f15).toEqual(r);
+    expect(s.f16).toEqual(r);
+  }
+
   testConstructors();
+  testNoDefaultFieldValues();
+  testDefaultFieldValues();
   this.result = "PASS";
 });

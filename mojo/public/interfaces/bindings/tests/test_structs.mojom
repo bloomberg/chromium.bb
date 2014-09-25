@@ -20,4 +20,66 @@ struct RectPair {
 struct EmptyStruct {
 };
 
+// Used to verify that struct fields which don't specify a deafult are
+// initialized to: false for bool, 0 for numbers, and null for strings,
+// handles, and structs. The "?" nullable suffix shouldn't have any 
+// impact on initial field values.
+
+struct NoDefaultFieldValues {
+  bool f0;
+  int8 f1;
+  uint8 f2;
+  int16 f3;
+  uint16 f4;
+  int32 f5;
+  uint32 f6;
+  int64 f7;
+  uint64 f8;
+  float f9;
+  double f10;
+  string f11;
+  string? f12;
+  handle<message_pipe> f13;
+  handle<data_pipe_consumer> f14;
+  handle<data_pipe_producer> f15;
+  handle<message_pipe>? f16;
+  handle<data_pipe_consumer>? f17;
+  handle<data_pipe_producer>? f18;
+  handle f19;
+  handle? f20;
+  handle<shared_buffer> f21;
+  handle<shared_buffer>? f22;
+  string[] f23;
+  string?[] f24;
+  string[]? f25;
+  string?[]? f26;
+  EmptyStruct f27;
+  EmptyStruct? f28;
+};
+
+// Used to verify that struct fields with an explicit default value
+// are initialized correctly. The "?" nullable suffix shouldn't have any 
+// impact on initial field values.
+
+struct DefaultFieldValues {
+  const string kFoo = "foo";
+  bool f0 = true;
+  int8 f1 = 100;
+  uint8 f2 = 100;
+  int16 f3 = 100;
+  uint16 f4 = 100;
+  int32 f5 = 100;
+  uint32 f6 = 100;
+  int64 f7 = 100;
+  uint64 f8 = 100;
+  float f9 = 100;
+  float f10 = 100.0;
+  double f11 = 100;
+  double f12 = 100.0;
+  string f13 = kFoo;
+  string? f14 = kFoo;
+  Rect f15 = default;
+  Rect? f16 = default;
+};
+
 }

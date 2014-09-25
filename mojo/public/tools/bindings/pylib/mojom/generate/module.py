@@ -334,6 +334,10 @@ def IsBoolKind(kind):
   return kind.spec == BOOL.spec
 
 
+def IsFloatKind(kind):
+  return kind.spec == FLOAT.spec
+
+
 def IsStringKind(kind):
   return kind.spec == STRING.spec or kind.spec == NULLABLE_STRING.spec
 

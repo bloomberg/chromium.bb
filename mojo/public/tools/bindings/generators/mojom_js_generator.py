@@ -31,8 +31,8 @@ _kind_to_javascript_default_value = {
   mojom.INT64:                 "0",
   mojom.UINT64:                "0",
   mojom.DOUBLE:                "0",
-  mojom.STRING:                '""',
-  mojom.NULLABLE_STRING:       '""'
+  mojom.STRING:                "null",
+  mojom.NULLABLE_STRING:       "null"
 }
 
 

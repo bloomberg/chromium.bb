@@ -188,6 +188,7 @@ define([
       expect(result).toEqual(expectedResult);
     }
     encodeDecode(codec.String, "banana", "banana", 24);
+    encodeDecode(codec.NullableString, null, null, 8);
     encodeDecode(codec.Int8, -1, -1);
     encodeDecode(codec.Int8, 0xff, -1);
     encodeDecode(codec.Int16, -1, -1);
