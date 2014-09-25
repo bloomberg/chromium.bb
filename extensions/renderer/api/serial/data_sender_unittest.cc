@@ -22,6 +22,8 @@ class DataSenderTest : public ApiTestBase {
     env()->RegisterModule("data_sender", IDR_DATA_SENDER_JS);
     env()->RegisterModule("device/serial/data_stream.mojom",
                           IDR_DATA_STREAM_MOJOM_JS);
+    env()->RegisterModule("device/serial/data_stream_serialization.mojom",
+                          IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS);
     service_provider()->AddService(
         base::Bind(&DataSenderTest::CreateDataSink, base::Unretained(this)));
   }
@@ -157,6 +159,34 @@ TEST_F(DataSenderTest, Cancel) {
 
 TEST_F(DataSenderTest, Close) {
   RunTest("data_sender_unittest.js", "testClose");
+}
+
+TEST_F(DataSenderTest, SendAfterSerialization) {
+  expected_data_.push("aa");
+  RunTest("data_sender_unittest.js", "testSendAfterSerialization");
+}
+
+TEST_F(DataSenderTest, SendErrorAfterSerialization) {
+  expected_data_.push("");
+  expected_data_.push("a");
+  error_to_report_.push(1);
+  RunTest("data_sender_unittest.js", "testSendErrorAfterSerialization");
+}
+
+TEST_F(DataSenderTest, CancelAfterSerialization) {
+  RunTest("data_sender_unittest.js", "testCancelAfterSerialization");
+}
+
+TEST_F(DataSenderTest, SerializeCancelsSendsInProgress) {
+  RunTest("data_sender_unittest.js", "testSerializeCancelsSendsInProgress");
+}
+
+TEST_F(DataSenderTest, SerializeWaitsForCancel) {
+  RunTest("data_sender_unittest.js", "testSerializeWaitsForCancel");
+}
+
+TEST_F(DataSenderTest, SerializeAfterClose) {
+  RunTest("data_sender_unittest.js", "testSerializeAfterClose");
 }
 
 }  // namespace extensions

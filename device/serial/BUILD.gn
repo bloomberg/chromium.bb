@@ -75,6 +75,7 @@ mojom("serial_mojo") {
 
   sources = [
     "data_stream.mojom",
+    "data_stream_serialization.mojom",
     "serial.mojom",
   ]
 }

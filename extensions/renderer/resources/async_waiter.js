@@ -16,8 +16,8 @@ define('async_waiter', [
 
   /**
    * A waiter that waits for a handle to be ready for either reading or writing.
-   * @param {MojoHandle} handle The handle to wait on.
-   * @param {int} signals The signals to wait for handle to be ready for.
+   * @param {!MojoHandle} handle The handle to wait on.
+   * @param {number} signals The signals to wait for handle to be ready for.
    * @param {module:async_waiter.AsyncWaiter.Callback} callback The callback to
    *     call when handle is ready.
    * @constructor
@@ -26,7 +26,7 @@ define('async_waiter', [
   function AsyncWaiter(handle, signals, callback) {
     /**
      * The handle to wait on.
-     * @type {MojoHandle}
+     * @type {!MojoHandle}
      * @private
      */
     this.handle_ = handle;
@@ -71,7 +71,7 @@ define('async_waiter', [
   };
 
   /**
-   * Returns whether this {@ linke AsyncWaiter} is waiting.
+   * Returns whether this {@link AsyncWaiter} is waiting.
    * @return {boolean} Whether this AsyncWaiter is waiting.
    */
   AsyncWaiter.prototype.isWaiting = function() {

@@ -21,12 +21,13 @@ function generateData(size, pattern) {
   return buffer;
 }
 
+// Returns a promise to a newly created DataSender.
 function createSender() {
   return Promise.all([
     requireAsync('content/public/renderer/service_provider'),
     requireAsync('data_sender'),
     requireAsync('device/serial/data_stream.mojom'),
-  ]).then(test.callbackPass(function(modules) {
+  ]).then(function(modules) {
     var serviceProvider = modules[0];
     var dataSender = modules[1];
     var dataStream = modules[2];
@@ -34,185 +35,257 @@ function createSender() {
         serviceProvider.connectToService(dataStream.DataSinkProxy.NAME_),
         BUFFER_SIZE,
         FATAL_ERROR);
-  }));
+  });
+}
+
+// Returns a function that sends data to a provided DataSender |sender|,
+// checks that the send completes successfully and returns a promise that will
+// resolve to |sender|.
+function sendAndExpectSuccess(data) {
+  return function(sender) {
+    return sender.send(data).then(function(bytesSent) {
+      test.assertEq(data.byteLength, bytesSent);
+      return sender;
+    });
+  };
+}
+
+// Returns a function that sends data to a provided DataSender |sender|,
+// checks that the send fails with the expected error and expected number of
+// bytes sent, and returns a promise that will resolve to |sender|.
+function sendAndExpectError(data, expectedError, expectedBytesSent) {
+  return function(sender) {
+    return sender.send(data).catch(function(result) {
+      test.assertEq(expectedError, result.error);
+      test.assertEq(expectedBytesSent, result.bytesSent);
+      return sender;
+    });
+  };
+}
+
+// Returns a function that cancels sends on the provided DataSender |sender|
+// with error |cancelReason|, returning a promise that will resolve to |sender|
+// once the cancel completes.
+function cancelSend(cancelReason) {
+  return function(sender) {
+    return sender.cancel(cancelReason).then(function() {
+      return sender;
+    });
+  };
+}
+
+// Checks that attempting to start a send with |sender| fails.
+function sendAfterClose(sender) {
+  test.assertThrows(sender.send, sender, [], 'DataSender has been closed');
+}
+
+// Checks that the provided promises resolve in order, returning the result of
+// the first.
+function expectOrder(promises) {
+  var nextIndex = 0;
+  function createOrderChecker(promise, expectedIndex) {
+    return promise.then(function(sender) {
+      test.assertEq(nextIndex, expectedIndex);
+      nextIndex++;
+      return sender;
+    });
+  }
+  var wrappedPromises = [];
+  for (var i = 0; i < promises.length; i++) {
+    wrappedPromises.push(createOrderChecker(promises[i], i));
+  }
+  return Promise.all(wrappedPromises).then(function(results) {
+    return results[0];
+  });
+}
+
+// Serializes and deserializes the provided DataSender |sender|, returning a
+// promise that will resolve to the newly deserialized DataSender.
+function serializeRoundTrip(sender) {
+  return Promise.all([
+    sender.serialize(),
+    requireAsync('data_sender'),
+  ]).then(function(promises) {
+    var serialized = promises[0];
+    var dataSenderModule = promises[1];
+    return dataSenderModule.DataSender.deserialize(serialized);
+  });
+}
+
+function closeSender(sender) {
+  sender.close();
+  return sender;
 }
 
 unittestBindings.exportTests([
   function testSend() {
-    createSender().then(test.callbackPass(function(sender) {
-      var seen = null;
-      sender.send(generateData(1)).then(test.callbackPass(function(bytesSent) {
-        test.assertEq(1, bytesSent);
-        test.assertEq(null, seen);
-        seen = 'first';
-      }));
-      sender.send(generateData(1)).then(test.callbackPass(function(bytesSent) {
-        sender.close();
-        test.assertEq(1, bytesSent);
-        test.assertEq('first', seen);
-        seen = 'second';
-      }));
-    }));
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectSuccess(generateData(1))),
+        sender.then(sendAndExpectSuccess(generateData(1))),
+    ])
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testLargeSend() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 3, '123')).then(
-          test.callbackPass(function(bytesSent) {
-        test.assertEq(BUFFER_SIZE * 3, bytesSent);
-        sender.close();
-      }));
-    }));
+    createSender()
+        .then(sendAndExpectSuccess(generateData(BUFFER_SIZE * 3, '123')))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testSendError() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 3, 'b')).catch(test.callbackPass(
-          function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(0, e.bytesSent);
-        sender.send(generateData(1)).then(test.callbackPass(
-            function(bytesSent) {
-          test.assertEq(1, bytesSent);
-          sender.close();
-        }));
-      }));
-    }));
+    createSender()
+        .then(sendAndExpectError(generateData(BUFFER_SIZE * 3, 'b'), 1, 0))
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testSendErrorPartialSuccess() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 3, 'b')).catch(test.callbackPass(
-          function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(5, e.bytesSent);
-        sender.send(generateData(1)).then(test.callbackPass(
-            function(bytesSent) {
-          test.assertEq(1, bytesSent);
-          sender.close();
-        }));
-      }));
-    }));
+    createSender()
+        .then(sendAndExpectError(generateData(BUFFER_SIZE * 3, 'b'), 1, 5))
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testSendErrorBetweenPackets() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(2, 'b')).catch(test.callbackPass(function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(2, e.bytesSent);
-      }));
-      // After an error, all sends in progress will be cancelled.
-      sender.send(generateData(2, 'b')).catch(test.callbackPass(function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(0, e.bytesSent);
-        sender.send(generateData(1)).then(test.callbackPass(
-            function(bytesSent) {
-          test.assertEq(1, bytesSent);
-          sender.close();
-        }));
-      }));
-    }));
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(2, 'b'), 1, 2)),
+        sender.then(sendAndExpectError(generateData(2, 'b'), 1, 0)),
+    ])
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testSendErrorInSecondPacket() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(2, 'b')).then(test.callbackPass(
-          function(bytesSent) {
-        test.assertEq(2, bytesSent);
-      }));
-      sender.send(generateData(2, 'b')).catch(test.callbackPass(function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(1, e.bytesSent);
-        sender.send(generateData(1)).then(test.callbackPass(
-            function(bytesSent) {
-          test.assertEq(1, bytesSent);
-          sender.close();
-        }));
-      }));
-    }));
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectSuccess(generateData(2, 'b'))),
+        sender.then(sendAndExpectError(generateData(2, 'b'), 1, 1)),
+    ])
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testSendErrorInLargeSend() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 3, '1234567890')).catch(
-          test.callbackPass(function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(12, e.bytesSent);
-        sender.send(generateData(1)).then(test.callbackPass(
-            function(bytesSent) {
-          test.assertEq(1, bytesSent);
-          sender.close();
-        }));
-      }));
-    }));
+    createSender()
+        .then(sendAndExpectError(
+            generateData(BUFFER_SIZE * 3, '1234567890'), 1, 12))
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testSendErrorBeforeLargeSend() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(5, 'b')).catch(test.callbackPass(function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(2, e.bytesSent);
-      }));
-      sender.send(generateData(BUFFER_SIZE * 3, '1234567890')).catch(
-          test.callbackPass(function(e) {
-        test.assertEq(1, e.error);
-        test.assertEq(0, e.bytesSent);
-        sender.send(generateData(1)).then(test.callbackPass(
-            function(bytesSent) {
-          test.assertEq(1, bytesSent);
-          sender.close();
-        }));
-      }));
-    }));
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(5, 'b'), 1, 2)),
+        sender.then(sendAndExpectError(
+            generateData(BUFFER_SIZE * 3, '1234567890'), 1, 0)),
+    ])
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testCancelWithoutSend() {
-    createSender().then(test.callbackPass(function(sender) {
-      sender.cancel(3).then(test.callbackPass(function() {
-        sender.close();
-      }));
-    }));
+    createSender()
+        .then(cancelSend(3))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
   },
 
   function testCancel() {
-    createSender().then(test.callbackPass(function(sender) {
-      var seen = null;
-      sender.send(generateData(1, 'b')).catch(test.callbackPass(function(e) {
-        test.assertEq(3, e.error);
-        test.assertEq(0, e.bytesSent);
-        test.assertEq(null, seen);
-        seen = 'send';
-      }));
-      sender.cancel(3).then(test.callbackPass(function() {
-        test.assertEq('send', seen);
-        seen = 'cancel';
-        sender.close();
-      }));
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(1, 'b'), 3, 0)),
+        sender.then(cancelSend(3)),
+    ])
+        .then(closeSender)
+        .then(test.succeed, test.fail);
+    sender.then(function(sender) {
       test.assertThrows(
           sender.cancel, sender, [], 'Cancel already in progress');
       test.assertThrows(sender.send, sender, [], 'Cancel in progress');
-    }));
+    });
   },
 
   function testClose() {
-    createSender().then(test.callbackPass(function(sender) {
-      var seen = null;
-      sender.send(generateData(1, 'b')).catch(test.callbackPass(function(e) {
-        test.assertEq(FATAL_ERROR, e.error);
-        test.assertEq(0, e.bytesSent);
-        test.assertEq(null, seen);
-        seen = 'send';
-      }));
-      sender.cancel(3).then(test.callbackPass(function() {
-        test.assertEq('send', seen);
-        seen = 'cancel';
-        sender.close();
-      }));
-      sender.close();
-      test.assertThrows(
-          sender.cancel, sender, [], 'DataSender has been closed');
-      test.assertThrows(sender.send, sender, [], 'DataSender has been closed');
-    }));
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(1, 'b'), FATAL_ERROR, 0)),
+        sender.then(cancelSend(3)),
+    ]);
+    sender
+        .then(closeSender)
+        .then(sendAfterClose)
+        .then(test.succeed, test.fail);
+  },
+
+  function testSendAfterSerialization() {
+    var sender = createSender().then(serializeRoundTrip);
+    expectOrder([
+        sender.then(sendAndExpectSuccess(generateData(1))),
+        sender.then(sendAndExpectSuccess(generateData(1))),
+    ])
+        .then(closeSender)
+        .then(test.succeed, test.fail);
+  },
+
+  function testSendErrorAfterSerialization() {
+    createSender()
+        .then(serializeRoundTrip)
+        .then(sendAndExpectError(generateData(BUFFER_SIZE * 3, 'b'), 1, 0))
+        .then(sendAndExpectSuccess(generateData(1)))
+        .then(closeSender)
+        .then(test.succeed, test.fail);
+  },
+
+
+  function testCancelAfterSerialization() {
+    var sender = createSender().then(serializeRoundTrip);
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(1, 'b'), 4, 0)),
+        sender.then(cancelSend(4)),
+    ])
+        .then(closeSender)
+        .then(test.succeed, test.fail);
+  },
+
+  function testSerializeCancelsSendsInProgress() {
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(1, 'b'), FATAL_ERROR, 0)),
+        sender.then(sendAndExpectError(generateData(1, 'b'), FATAL_ERROR, 0)),
+        sender.then(serializeRoundTrip),
+    ])
+        .then(closeSender)
+        .then(test.succeed, test.fail);
+  },
+
+  function testSerializeWaitsForCancel() {
+    var sender = createSender();
+    expectOrder([
+        sender.then(sendAndExpectError(generateData(1, 'b'), 3, 0)),
+        sender.then(cancelSend(3)),
+        sender.then(serializeRoundTrip),
+    ])
+        .then(closeSender)
+        .then(test.succeed, test.fail);
+  },
+
+  function testSerializeAfterClose() {
+    createSender()
+        .then(closeSender)
+        .then(serializeRoundTrip)
+        .then(sendAfterClose)
+        .then(test.succeed, test.fail);
   },
 
 ], test.runTests, exports);

@@ -404,6 +404,8 @@ class SerialApiTest : public ApiTestBase {
     env()->RegisterModule("serial_service", IDR_SERIAL_SERVICE_JS);
     env()->RegisterModule("device/serial/data_stream.mojom",
                           IDR_DATA_STREAM_MOJOM_JS);
+    env()->RegisterModule("device/serial/data_stream_serialization.mojom",
+                          IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS);
     env()->RegisterModule("device/serial/serial.mojom", IDR_SERIAL_MOJOM_JS);
     service_provider()->AddService<device::serial::SerialService>(base::Bind(
         &SerialApiTest::CreateSerialService, base::Unretained(this)));

@@ -22,6 +22,8 @@ class DataReceiverTest : public ApiTestBase {
     env()->RegisterModule("data_receiver", IDR_DATA_RECEIVER_JS);
     env()->RegisterModule("device/serial/data_stream.mojom",
                           IDR_DATA_STREAM_MOJOM_JS);
+    env()->RegisterModule("device/serial/data_stream_serialization.mojom",
+                          IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS);
     service_provider()->AddService(base::Bind(
         &DataReceiverTest::CreateDataSource, base::Unretained(this)));
   }
@@ -101,6 +103,37 @@ TEST_F(DataReceiverTest, ReceiveErrorThenData) {
   data_to_send_.push("a");
   error_to_send_.push(1);
   RunTest("data_receiver_unittest.js", "testReceiveErrorThenData");
+}
+
+TEST_F(DataReceiverTest, ReceiveBeforeAndAfterSerialization) {
+  data_to_send_.push("a");
+  data_to_send_.push("b");
+  RunTest("data_receiver_unittest.js",
+          "testReceiveBeforeAndAfterSerialization");
+}
+
+TEST_F(DataReceiverTest, ReceiveErrorSerialization) {
+  error_to_send_.push(1);
+  error_to_send_.push(3);
+  RunTest("data_receiver_unittest.js", "testReceiveErrorSerialization");
+}
+
+TEST_F(DataReceiverTest, ReceiveDataAndErrorSerialization) {
+  data_to_send_.push("a");
+  data_to_send_.push("b");
+  error_to_send_.push(1);
+  error_to_send_.push(3);
+  RunTest("data_receiver_unittest.js", "testReceiveDataAndErrorSerialization");
+}
+
+TEST_F(DataReceiverTest, SerializeDuringReceive) {
+  data_to_send_.push("a");
+  RunTest("data_receiver_unittest.js", "testSerializeDuringReceive");
+}
+
+TEST_F(DataReceiverTest, SerializeAfterClose) {
+  data_to_send_.push("a");
+  RunTest("data_receiver_unittest.js", "testSerializeAfterClose");
 }
 
 TEST_F(DataReceiverTest, SourceShutdown) {
