@@ -3876,3 +3876,10 @@
    fun:_ZNK7storage24SandboxFileSystemBackend25CreateFileSystemOperationERKNS_13FileSystemURLEPNS_17FileSystemContextEPN4base4File5ErrorE
    fun:_ZN7storage17FileSystemContext25CreateFileSystemOperationERKNS_13FileSystemURLEPN4base4File5ErrorE
 }
+{
+   bug_417526
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19SequencedWorkerPoolC1EmRKSs
+   fun:_ZN16sync_file_system13drive_backend14SyncEngineTest5SetUpEv
+}
