@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Service Worker: CacheStorage.keys 
-FAIL CacheStorage keys not implemented
-Harness: the test ran to completion.
-
