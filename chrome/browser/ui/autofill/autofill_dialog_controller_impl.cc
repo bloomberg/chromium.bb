@@ -78,7 +78,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
-#include "grit/component_scaled_resources.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
 #include "grit/platform_locale_settings.h"
 #include "grit/theme_resources.h"

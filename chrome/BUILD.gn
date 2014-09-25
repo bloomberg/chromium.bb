@@ -334,7 +334,7 @@ repack("packed_extra_resources") {
     "$root_gen_dir/chrome/browser/resources/signin_internals_resources.pak",
     "$root_gen_dir/chrome/browser/resources/sync_internals_resources.pak",
     "$root_gen_dir/chrome/browser/resources/translate_internals_resources.pak",
-    "$root_gen_dir/components/resources/component_resources.pak",
+    "$root_gen_dir/components/resources/components_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
@@ -451,7 +451,7 @@ template("chrome_repack_percent") {
     visibility = [ ":$copy_name" ]
     # All sources should also have deps for completeness.
     sources = [
-      "$root_gen_dir/components/resources/component_resources_${percent}_percent.pak",
+      "$root_gen_dir/components/resources/components_resources_${percent}_percent.pak",
       "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/renderer_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/app/theme/theme_resources_${percent}_percent.pak",

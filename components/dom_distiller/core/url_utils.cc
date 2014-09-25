@@ -8,7 +8,7 @@
 
 #include "base/guid.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "grit/component_resources.h"
+#include "grit/components_resources.h"
 #include "net/base/url_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"

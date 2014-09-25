@@ -890,7 +890,7 @@
               'action_name': 'repack_components_pack',
               'variables': {
                 'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/components/component_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
                 ],
                 'pak_output': '<(PRODUCT_DIR)/components_resources.pak',

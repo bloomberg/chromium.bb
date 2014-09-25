@@ -11,7 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/component_resources.h"
+#include "grit/components_resources.h"
 #include "grit/components_strings.h"
 
 namespace dom_distiller {

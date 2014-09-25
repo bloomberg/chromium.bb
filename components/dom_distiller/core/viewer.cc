@@ -17,7 +17,7 @@
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "grit/component_resources.h"
+#include "grit/components_resources.h"
 #include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"

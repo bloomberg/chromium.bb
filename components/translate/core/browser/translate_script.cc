@@ -16,7 +16,7 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
 #include "google_apis/google_api_keys.h"
-#include "grit/component_resources.h"
+#include "grit/components_resources.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "ui/base/resource/resource_bundle.h"
