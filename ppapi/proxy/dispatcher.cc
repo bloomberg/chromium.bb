@@ -47,11 +47,12 @@ InterfaceProxy* Dispatcher::GetInterfaceProxy(ApiID id) {
   return proxy;
 }
 
-void Dispatcher::AddIOThreadMessageFilter(IPC::MessageFilter* filter) {
+void Dispatcher::AddIOThreadMessageFilter(
+    scoped_refptr<IPC::MessageFilter> filter) {
   // Our filter is refcounted. The channel will call the destruct method on the
   // filter when the channel is done with it, so the corresponding Release()
   // happens there.
-  channel()->AddFilter(filter);
+  channel()->AddFilter(filter.get());
 }
 
 bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
