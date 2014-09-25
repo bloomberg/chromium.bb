@@ -439,8 +439,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
       "twoGetUserMediaAndStop({video: true, audio: true});");
 }
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on Webkit Win7 Debug bot: http://crbug.com/417756
+#define MAYBE_TwoGetUserMediaWithEqualConstraints \
+    DISABLED_TwoGetUserMediaWithEqualConstraints
+#else
+#define MAYBE_TwoGetUserMediaWithEqualConstraints \
+    TwoGetUserMediaWithEqualConstraints
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithEqualConstraints) {
+                       MAYBE_TwoGetUserMediaWithEqualConstraints) {
   std::string constraints1 = "{video: true, audio: true}";
   const std::string& constraints2 = constraints1;
   std::string expected_result = "w=640:h=480-w=640:h=480";
@@ -466,7 +474,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 #define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
     TwoGetUserMediaWithFirstHdSecondVga
 #endif
-
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
