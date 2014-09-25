@@ -44,7 +44,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   virtual void RemoveWaiter(Waiter* waiter,
                             HandleSignalsState* signals_state) OVERRIDE;
 
-  // This is only to be used by |ProxyMessagePipeEndpoint|:
+  // This is only to be used by |MessagePipe|:
   MessageInTransitQueue* message_queue() { return &message_queue_; }
 
  private:

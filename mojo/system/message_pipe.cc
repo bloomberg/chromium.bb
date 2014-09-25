@@ -170,14 +170,14 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
       << "Direct message pipe passing across multiple channels not yet "
          "implemented; will proxy";
 
+  scoped_ptr<MessagePipeEndpoint> old_endpoint(endpoints_[port].Pass());
   scoped_refptr<ChannelEndpoint> channel_endpoint(
       new ChannelEndpoint(this, port));
-  scoped_ptr<MessagePipeEndpoint> replacement_endpoint(
-      new ProxyMessagePipeEndpoint(
-          channel_endpoint.get(),
-          static_cast<LocalMessagePipeEndpoint*>(endpoints_[port].get()),
-          is_peer_open));
-  endpoints_[port].swap(replacement_endpoint);
+  endpoints_[port].reset(
+      new ProxyMessagePipeEndpoint(channel_endpoint.get(), is_peer_open));
+  channel_endpoint->TakeMessages(static_cast<LocalMessagePipeEndpoint*>(
+                                     old_endpoint.get())->message_queue());
+  old_endpoint->Close();
 
   return channel_endpoint;
 }

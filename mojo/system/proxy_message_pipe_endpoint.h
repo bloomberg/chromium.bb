@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/message_in_transit.h"
-#include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -38,13 +37,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
   explicit ProxyMessagePipeEndpoint(ChannelEndpoint* channel_endpoint);
-  // Constructs a |ProxyMessagePipeEndpoint| that replaces the given
-  // |LocalMessagePipeEndpoint| (which this constructor will close), taking its
-  // message queue's contents. This is done when transferring a message pipe
-  // handle over a remote message pipe.
+  // Constructs a |ProxyMessagePipeEndpoint|, whose peer may already be closed.
+  // This is used to construct one to replace a |LocalMessagePipeEndpoint|, when
+  // transferring a message pipe handle over a remote message pipe.
   ProxyMessagePipeEndpoint(
       ChannelEndpoint* channel_endpoint,
-      LocalMessagePipeEndpoint* local_message_pipe_endpoint,
       bool is_peer_open);
   virtual ~ProxyMessagePipeEndpoint();
 
@@ -69,10 +66,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   bool is_running_;
 
   bool is_peer_open_;
-
-  // This queue is only used while we're detached, to store messages while we're
-  // not ready to send them yet.
-  MessageInTransitQueue paused_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);
 };

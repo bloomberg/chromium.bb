@@ -22,15 +22,24 @@ ChannelEndpoint::ChannelEndpoint(MessagePipe* message_pipe, unsigned port)
   DCHECK(port_ == 0 || port_ == 1);
 }
 
+void ChannelEndpoint::TakeMessages(MessageInTransitQueue* message_queue) {
+  DCHECK(paused_message_queue_.IsEmpty());
+  paused_message_queue_.Swap(message_queue);
+}
+
 bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
   DCHECK(message);
 
   base::AutoLock locker(lock_);
 
-  if (!channel_) {
-    // Generally, this should only happen if the channel is shut down for some
-    // reason (with live message pipes on it).
-    return false;
+  if (!channel_ || remote_id_ == MessageInTransit::kInvalidEndpointId) {
+    // We may reach here if we haven't been attached or run yet.
+    // TODO(vtl): We may also reach here if the channel is shut down early for
+    // some reason (with live message pipes on it). We can't check |state_| yet,
+    // until it's protected under lock, but in this case we should return false
+    // (and not enqueue any messages).
+    paused_message_queue_.AddMessage(message.Pass());
+    return true;
   }
 
   // TODO(vtl): Currently, this only works in the "running" case.
@@ -77,6 +86,11 @@ void ChannelEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   DCHECK(channel_);
   DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);
   remote_id_ = remote_id;
+
+  while (!paused_message_queue_.IsEmpty()) {
+    LOG_IF(WARNING, !WriteMessageNoLock(paused_message_queue_.GetMessage()))
+        << "Failed to write enqueue message to channel";
+  }
 }
 
 void ChannelEndpoint::DetachFromChannel() {

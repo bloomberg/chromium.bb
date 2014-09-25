@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -112,6 +113,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // TODO(vtl): More comments....
   ChannelEndpoint(MessagePipe* message_pipe, unsigned port);
 
+  // Takes messages from the given |MessageInTransitQueue|. This must be called
+  // before this object is attached to a channel, and before anyone has a chance
+  // to enqueue any messages.
+  void TakeMessages(MessageInTransitQueue* message_queue);
+
   // Methods called by |MessagePipe| (via |ProxyMessagePipeEndpoint|):
 
   // TODO(vtl): This currently only works if we're "running". We'll move the
@@ -169,6 +175,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   Channel* channel_;
   MessageInTransit::EndpointId local_id_;
   MessageInTransit::EndpointId remote_id_;
+
+  // This queue is used before we're running on a channel and ready to send
+  // messages.
+  MessageInTransitQueue paused_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelEndpoint);
 };

@@ -23,19 +23,15 @@ ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
 
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
     ChannelEndpoint* channel_endpoint,
-    LocalMessagePipeEndpoint* local_message_pipe_endpoint,
     bool is_peer_open)
     : channel_endpoint_(channel_endpoint),
       is_running_(false),
       is_peer_open_(is_peer_open) {
-  paused_message_queue_.Swap(local_message_pipe_endpoint->message_queue());
-  local_message_pipe_endpoint->Close();
 }
 
 ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
   DCHECK(!is_running());
   DCHECK(!is_attached());
-  DCHECK(paused_message_queue_.IsEmpty());
 }
 
 MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
@@ -46,10 +42,6 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_peer_open_);
 
   is_peer_open_ = false;
-
-  // If our outgoing message queue isn't empty, we shouldn't be destroyed yet.
-  if (!paused_message_queue_.IsEmpty())
-    return true;
 
   if (is_attached()) {
     if (!is_running()) {
@@ -69,13 +61,9 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
 // This case is handled in |Run()| (which will call us).
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
-  if (is_running()) {
-    DCHECK(channel_endpoint_.get());
-    LOG_IF(WARNING, !channel_endpoint_->EnqueueMessage(message.Pass()))
-        << "Failed to write enqueue message to channel";
-  } else {
-    paused_message_queue_.AddMessage(message.Pass());
-  }
+  DCHECK(channel_endpoint_.get());
+  LOG_IF(WARNING, !channel_endpoint_->EnqueueMessage(message.Pass()))
+      << "Failed to write enqueue message to channel";
 }
 
 bool ProxyMessagePipeEndpoint::Run() {
@@ -84,13 +72,6 @@ bool ProxyMessagePipeEndpoint::Run() {
   DCHECK(!is_running());
 
   is_running_ = true;
-
-  while (!paused_message_queue_.IsEmpty()) {
-    LOG_IF(
-        WARNING,
-        !channel_endpoint_->EnqueueMessage(paused_message_queue_.GetMessage()))
-        << "Failed to write enqueue message to channel";
-  }
 
   if (is_peer_open_)
     return true;  // Stay alive.
@@ -110,7 +91,6 @@ void ProxyMessagePipeEndpoint::Detach() {
   channel_endpoint_->DetachFromMessagePipe();
   channel_endpoint_ = nullptr;
   is_running_ = false;
-  paused_message_queue_.Clear();
 }
 
 }  // namespace system
