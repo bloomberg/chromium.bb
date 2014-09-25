@@ -33,6 +33,11 @@ static bool IsRangeListSorted(
 // Returns an estimate of how far from the beginning or end of a range a buffer
 // can be to still be considered in the range, given the |approximate_duration|
 // of a buffer in the stream.
+// TODO(wolenetz): Once all stream parsers emit accurate frame durations, use
+// logic like FrameProcessor (2*last_frame_duration + last_decode_timestamp)
+// instead of an overall maximum interbuffer delta for range discontinuity
+// detection, and adjust similarly for splice frame discontinuity detection.
+// See http://crbug.com/351489 and http://crbug.com/351166.
 static base::TimeDelta ComputeFudgeRoom(base::TimeDelta approximate_duration) {
   // Because we do not know exactly when is the next timestamp, any buffer
   // that starts within 2x the approximate duration of a buffer is considered
@@ -149,6 +154,8 @@ SourceBufferStream::~SourceBufferStream() {
 
 void SourceBufferStream::OnNewMediaSegment(
     DecodeTimestamp media_segment_start_time) {
+  DVLOG(1) << __FUNCTION__ << "(" << media_segment_start_time.InSecondsF()
+           << ")";
   DCHECK(!end_of_stream_);
   media_segment_start_time_ = media_segment_start_time;
   new_media_segment_ = true;
@@ -163,8 +170,11 @@ void SourceBufferStream::OnNewMediaSegment(
                              media_segment_start_time)) {
     last_appended_buffer_timestamp_ = kNoDecodeTimestamp();
     last_appended_buffer_is_keyframe_ = false;
+    DVLOG(3) << __FUNCTION__ << " next appended buffers will be in a new range";
   } else if (last_range != ranges_.end()) {
     DCHECK(last_range == range_for_next_append_);
+    DVLOG(3) << __FUNCTION__ << " next appended buffers will continue range "
+             << "unless intervening remove makes discontinuity";
   }
 }
 
@@ -503,8 +513,15 @@ void SourceBufferStream::UpdateMaxInterbufferDistance(
     DecodeTimestamp current_timestamp = (*itr)->GetDecodeTimestamp();
     DCHECK(current_timestamp != kNoDecodeTimestamp());
 
+    base::TimeDelta interbuffer_distance = (*itr)->duration();
+    DCHECK(interbuffer_distance >= base::TimeDelta());
+
     if (prev_timestamp != kNoDecodeTimestamp()) {
-      base::TimeDelta interbuffer_distance = current_timestamp - prev_timestamp;
+      interbuffer_distance =
+          std::max(current_timestamp - prev_timestamp, interbuffer_distance);
+    }
+
+    if (interbuffer_distance > base::TimeDelta()) {
       if (max_interbuffer_distance_ == kNoTimestamp()) {
         max_interbuffer_distance_ = interbuffer_distance;
       } else {
