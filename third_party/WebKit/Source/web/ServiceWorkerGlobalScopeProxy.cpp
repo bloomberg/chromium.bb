@@ -115,7 +115,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebStri
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
-    m_workerGlobalScope->dispatchEvent(Event::create(EventTypeNames::sync));
+    if (RuntimeEnabledFeatures::backgroundSyncEnabled())
+        m_workerGlobalScope->dispatchEvent(Event::create(EventTypeNames::sync));
     ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandleSyncEvent(eventID);
 }
 

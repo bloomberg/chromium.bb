@@ -20,6 +20,7 @@ AnyPointerMediaQueries status=experimental
 ApplicationCache status=stable
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
+BackgroundSync status=experimental
 BatteryStatus status=stable
 Beacon status=stable
 

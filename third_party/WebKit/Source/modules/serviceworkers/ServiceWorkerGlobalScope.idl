@@ -48,5 +48,5 @@
   [RuntimeEnabled=ServiceWorkerOnFetch] attribute EventHandler onfetch;
   attribute EventHandler oninstall;
   attribute EventHandler onmessage;
-  attribute EventHandler onsync;
+  [RuntimeEnabled=BackgroundSync] attribute EventHandler onsync;
 };
