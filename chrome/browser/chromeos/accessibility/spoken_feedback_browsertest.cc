@@ -313,6 +313,35 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxPrefixKey) {
   EXPECT_EQ("Enter a search query.", speech_monitor_.GetNextUtterance());
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNavigateAndSelect) {
+  LoadChromeVoxAndThenNavigateToURL(
+      GURL("data:text/html;charset=utf-8,"
+           "<h1>Title</h1>"
+           "<button autofocus>Click me</button>"));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (utterance == "Click me")
+      break;
+  }
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+
+  // Press Search+Shift+Up to navigate to the previous item.
+  SendKeyPressWithSearchAndShift(ui::VKEY_UP);
+  EXPECT_EQ("Title", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Heading 1", speech_monitor_.GetNextUtterance());
+
+  // Press Search+Shift+S to select the text.
+  SendKeyPressWithSearchAndShift(ui::VKEY_S);
+  EXPECT_EQ("Start selection", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Title", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(", selected", speech_monitor_.GetNextUtterance());
+
+  // Press again to end the selection.
+  SendKeyPressWithSearchAndShift(ui::VKEY_S);
+  EXPECT_EQ("End selection", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Title", speech_monitor_.GetNextUtterance());
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
