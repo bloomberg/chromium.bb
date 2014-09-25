@@ -72,9 +72,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnHitTest(gfx::Point point);
   void OnFatalError();
 
-  // So we can queue up tasks to be executed later.
-  base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;
-
   // Events from Blink are collected until they are ready to be
   // sent to the browser.
   std::vector<AccessibilityHostMsg_EventParams> pending_events_;
@@ -95,6 +92,9 @@ class CONTENT_EXPORT RendererAccessibilityComplete
 
   // Set if we are waiting for an accessibility event ack.
   bool ack_pending_;
+
+  // So we can queue up tasks to be executed later.
+  base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererAccessibilityComplete);
 };

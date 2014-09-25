@@ -35,11 +35,11 @@ namespace content {
 RendererAccessibilityComplete::RendererAccessibilityComplete(
     RenderFrameImpl* render_frame)
     : RendererAccessibility(render_frame),
-      weak_factory_(this),
       tree_source_(render_frame),
       serializer_(&tree_source_),
       last_scroll_offset_(gfx::Size()),
-      ack_pending_(false) {
+      ack_pending_(false),
+      weak_factory_(this) {
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->settings();
   settings->setAccessibilityEnabled(true);

@@ -213,15 +213,15 @@ bool ChildThread::ChildThreadMessageRouter::Send(IPC::Message* msg) {
 
 ChildThread::ChildThread()
     : router_(this),
-      channel_connected_factory_(this),
-      in_browser_process_(false) {
+      in_browser_process_(false),
+      channel_connected_factory_(this) {
   Init(Options());
 }
 
 ChildThread::ChildThread(const Options& options)
     : router_(this),
-      channel_connected_factory_(this),
-      in_browser_process_(true) {
+      in_browser_process_(true),
+      channel_connected_factory_(this) {
   Init(options);
 }
 

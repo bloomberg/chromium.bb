@@ -544,8 +544,8 @@ WebPluginImpl::WebPluginImpl(
       ignore_response_error_(false),
       file_path_(file_path),
       mime_type_(base::UTF16ToASCII(params.mimeType)),
-      weak_factory_(this),
-      loader_client_(this) {
+      loader_client_(this),
+      weak_factory_(this) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
   base::StringToLowerASCII(&mime_type_);
 

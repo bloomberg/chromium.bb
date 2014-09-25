@@ -124,7 +124,6 @@ class SharedWorkerHost {
                                bool allowed);
   scoped_ptr<SharedWorkerInstance> instance_;
   scoped_refptr<WorkerDocumentSet> worker_document_set_;
-  base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
   FilterList filters_;
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_process_id_;
@@ -132,6 +131,9 @@ class SharedWorkerHost {
   bool load_failed_;
   bool closed_;
   const base::TimeTicks creation_time_;
+
+  base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
 };
 }  // namespace content

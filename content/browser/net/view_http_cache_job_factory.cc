@@ -28,9 +28,9 @@ class ViewHttpCacheJob : public net::URLRequestJob {
                    net::NetworkDelegate* network_delegate)
       : net::URLRequestJob(request, network_delegate),
         core_(new Core),
-        weak_factory_(this),
         callback_(base::Bind(&ViewHttpCacheJob::OnStartCompleted,
-                             base::Unretained(this))) {
+                             base::Unretained(this))),
+        weak_factory_(this) {
   }
 
   // net::URLRequestJob implementation.
@@ -89,8 +89,9 @@ class ViewHttpCacheJob : public net::URLRequestJob {
   void OnStartCompleted();
 
   scoped_refptr<Core> core_;
-  base::WeakPtrFactory<ViewHttpCacheJob> weak_factory_;
   base::Closure callback_;
+
+  base::WeakPtrFactory<ViewHttpCacheJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewHttpCacheJob);
 };

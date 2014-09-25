@@ -128,8 +128,6 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     base::ThreadChecker audio_thread_checker_;
 
-    base::WeakPtrFactory<AudioSink> weak_factory_;
-
     // Number of buffers.
     int32_t number_of_buffers_;
 
@@ -144,6 +142,8 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     // Pending |Configure()| reply context.
     ppapi::host::ReplyMessageContext pending_configure_reply_;
+
+    base::WeakPtrFactory<AudioSink> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(AudioSink);
   };

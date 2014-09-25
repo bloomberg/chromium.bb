@@ -77,13 +77,13 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
                                    int worker_route_id)
     : instance_(instance),
       worker_document_set_(new WorkerDocumentSet()),
-      weak_factory_(this),
       container_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
       worker_route_id_(worker_route_id),
       load_failed_(false),
       closed_(false),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 

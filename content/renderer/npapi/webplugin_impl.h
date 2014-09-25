@@ -324,8 +324,6 @@ class WebPluginImpl : public WebPlugin,
   std::vector<std::string> arg_names_;
   std::vector<std::string> arg_values_;
 
-  base::WeakPtrFactory<WebPluginImpl> weak_factory_;
-
   class LoaderClient : public blink::WebURLLoaderClient {
    public:
     LoaderClient(WebPluginImpl*);
@@ -359,6 +357,8 @@ class WebPluginImpl : public WebPlugin,
   };
 
   LoaderClient loader_client_;
+
+  base::WeakPtrFactory<WebPluginImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };

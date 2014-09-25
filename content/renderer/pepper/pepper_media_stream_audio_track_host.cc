@@ -72,10 +72,10 @@ PepperMediaStreamAudioTrackHost::AudioSink::AudioSink(
       active_buffer_offset_(0),
       buffers_generation_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
-      weak_factory_(this),
       number_of_buffers_(kDefaultNumberOfBuffers),
       bytes_per_second_(0),
-      user_buffer_duration_(kDefaultDuration) {}
+      user_buffer_duration_(kDefaultDuration),
+      weak_factory_(this) {}
 
 PepperMediaStreamAudioTrackHost::AudioSink::~AudioSink() {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());

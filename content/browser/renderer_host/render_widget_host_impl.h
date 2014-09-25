@@ -827,8 +827,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // not sent to the renderer.
   bool has_touch_handler_;
 
-  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
-
   scoped_ptr<SyntheticGestureController> synthetic_gesture_controller_;
 
   scoped_ptr<TouchEmulator> touch_emulator_;
@@ -848,6 +846,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   typedef std::map<int,
       base::Callback<void(const unsigned char*, size_t)> > PendingSnapshotMap;
   PendingSnapshotMap pending_browser_snapshots_;
+
+  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

@@ -551,6 +551,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
+  friend class PpapiPluginInstanceTest;
   friend class PpapiUnittest;
 
   // Delete should be called by the WebPlugin before this destructor.
@@ -923,7 +924,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_;
   base::WeakPtrFactory<PepperPluginInstanceImpl> weak_factory_;
 
-  friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);
 };
 

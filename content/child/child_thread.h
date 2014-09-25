@@ -241,8 +241,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   scoped_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
-  base::WeakPtrFactory<ChildThread> channel_connected_factory_;
-
   // Observes the trace event system. When tracing is enabled, optionally
   // starts profiling the tcmalloc heap.
   scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
@@ -250,6 +248,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<base::PowerMonitor> power_monitor_;
 
   bool in_browser_process_;
+
+  base::WeakPtrFactory<ChildThread> channel_connected_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };
