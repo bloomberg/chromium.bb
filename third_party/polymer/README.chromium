@@ -32,9 +32,14 @@ technologies called the Polymer.
 
 Local Modifications:
 - Removed executable bit from the files in 'components/core-list'.
+- Created a copy 'components-chromium' of the 'components' directory with the
+only difference that all inline JavaScript blocks are extracted from Polymer
+HTML elements to external JS files. This version of the Polymer is used in a web
+UI, where CSP forbids an execution of inline scripts. The extraction was made
+with the help of the Vulcanize tool (https://github.com/Polymer/vulcanize).
 
-To restore a content of the 'components' and '../third_party/web-animations-js'
-directory from scratch, run ./reproduce.sh (requires bower).
+To restore a content of the 'components', 'components-chromium' directorires
+from scratch, run ./reproduce.sh (requires bower and vulcanize).
 
 Note on Bower:
 The directory can be updated by running "bower update". A new component can be
@@ -45,4 +50,3 @@ Also be sure that you listed all the added packages and **all their
 dependencies** in bower.json, and specified **exact** versions of every package
 explicitly. That is needed because Bower can't handle recursive dependencies
 correctly (see http://stackoverflow.com/q/25899532).
-

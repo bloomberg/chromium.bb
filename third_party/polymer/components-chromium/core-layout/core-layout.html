@@ -1,0 +1,169 @@
+<!--
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!--
+The `core-layout` element is a helper for using
+[CSS3 Flexible Boxes](https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes).
+A `core-layout` element enables a set of css selectors for easy flexbox styling.
+
+Example:
+
+    <core-layout>
+      <div>Left</div>
+      <div core-flex>Main</div>
+      <div>Right</div>
+    </core-layout>
+
+ Renders something like this:
+
+    ---------------------------------
+    |-------------------------------|
+    ||Left|       Main       |Right||
+    |-------------------------------|
+    ---------------------------------
+
+__Note__: the `core-layout` element applies layout to itself if it has children or to
+its parent element, if it does not. This feature allows you to apply layout to an
+arbitrary parent.
+
+Elements can layout horizontally, such that their items stack
+left to right or vertically, such that their items stack top to bottom. The
+default is horizontal. Set `vertical` to true to layout the elements vertically.
+
+To make a particular child _flexible_, use the `core-flex` attribute.
+You can control flexibility from 1 to 3 by giving the attribute a
+corresponding value. For other values, apply the css manually.
+
+It's common in flexbox parlance to hear the terms _main axis_ and _cross axis_.
+For a horizontal layout the main axis is horizontal and the cross axis is vertical.
+These are exchanged for a vertical layout.
+
+To effect alignment in the main axis, use the `justify` attribute. The 
+supported values are `start`, `center`, `end`, and `between`.
+
+To effect alignment in the cross axis, use the `align` attribute. The
+supported values are `start`, `center`, and `end`.
+
+Note, it's also possible to include the `core-layout.css` stylesheet separate
+from the `core-layout` element. Including the element automatically includes
+the stylesheet. To use the stylesheet independent of the element, css classes 
+should be used of the following form: `core-h`, `core-v`, `core-flex`, 
+`core-justify-start`, and `core-align-start`.
+
+The `core-layout` and css file also provide a few commonly needed layout
+behaviors. Apply the `core-fit` class to fit an element to its container. To 
+ensure a container will contain an element inside it with the `core-fit` class
+give it the `core-relative` class.
+
+More examples:
+
+    <core-layout vertical>
+
+      <div>Header</div>
+      <div core-flex>Body</div>
+      <div>Footer</div>
+
+    </core-layout>
+
+    ----------
+    ||------||
+    ||Header||
+    ||------||
+    ||Body  ||
+    ||      ||
+    ||      ||
+    ||      ||
+    ||      ||
+    ||      ||
+    ||      ||
+    ||------||
+    ||Footer||
+    ||------||
+    ----------
+
+Justify:
+
+    <core-layout justify="end">
+      <div core-flex>Left</div>
+      <div>Main</div>
+      <div>Right</div>
+    </core-layout>
+
+    ---------------------------------
+    |-------------------------------|
+    ||              Left|Main|Right||
+    |-------------------------------|
+    ---------------------------------
+
+Align:
+
+    <core-layout align="center">
+      <div>Left</div>
+      <div core-flex>Main</div>
+      <div>Right</div>
+    </core-layout>
+
+    ---------------------------------
+    |-------------------------------|
+    ||    |                  |     ||
+    ||Left|       Main       |Right||
+    ||    |                  |     ||
+    |-------------------------------|
+    ---------------------------------
+
+
+To layout contents of a parent element, place a `core-layout` inside of it:
+
+    <some-element>
+      <core-layout></core-layout>
+      <div>Left</div>
+      <div core-flex>Main</div>
+      <div>Right</div>
+    </some-element>
+
+    ---------------------------------
+    |-------------------------------|
+    ||Left|       Main       |Right||
+    |-------------------------------|
+    ---------------------------------
+
+You may also use the `core-layout` stylesheet directly:
+
+    <link rel="stylesheet" href="../core-layout/core-layout.css">
+    <div class="core-h core-justify-end">
+      <div core-flex>Left</div>
+      <div>Main</div>
+      <div>Right</div>  
+    </div>
+
+    ---------------------------------
+    |-------------------------------|
+    ||              Left|Main|Right||
+    |-------------------------------|
+    ---------------------------------
+
+@group Polymer Core Elements
+@element core-layout
+
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<polymer-element name="core-layout" attributes="vertical justify align isContainer reverse" assetpath="">
+  
+  <template>
+  
+    <link no-shim="" rel="stylesheet" href="core-layout.css">
+    <link no-shim="" rel="stylesheet" href="core-layout-host.css">
+  
+  </template>
+  
+  
+
+</polymer-element>
+<script src="core-layout-extracted.js"></script>

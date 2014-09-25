@@ -1,0 +1,89 @@
+<!--
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-transition/core-transition.html">
+<link rel="import" href="core-key-helper.html">
+<link rel="import" href="core-overlay-layer.html">
+
+<!--
+The `core-overlay` element displays overlayed on top of other content. It starts
+out hidden and is displayed by setting its `opened` property to true.
+A `core-overlay's` opened state can be toggled by calling the `toggle`
+method.
+
+The `core-overlay` will, by default, show/hide itself when it's opened. The 
+`target` property may be set to another element to cause that element to 
+be shown when the overlay is opened.
+
+It's common to want a `core-overlay` to animate to its opened
+position. The `core-overlay` element uses a `core-transition` to handle
+animation. The default transition is `core-transition-fade` which 
+causes the overlay to fade in when displayed. See 
+<a href="../core-transition/">`core-transition`</a> for more
+information about customizing a `core-overlay's` opening animation. The
+`backdrop` property can be set to true to show a backdrop behind the overlay
+that will darken the rest of the window.
+
+An element that should close the `core-overlay` will automatically
+do so if it's given the `core-overlay-toggle` attribute. This attribute
+can be customized with the `closeAttribute` property. You can also use
+`closeSelector` if more general matching is needed.
+
+By default  `core-overlay` will close whenever the user taps outside it or
+presses the escape key. This behavior can be turned off via the
+`autoCloseDisabled` property.
+
+    <core-overlay>
+      <h2>Dialog</h2>
+      <input placeholder="say something..." autofocus>
+      <div>I agree with this wholeheartedly.</div>
+      <button core-overlay-toggle>OK</button>
+    </core-overlay>
+
+`core-overlay` will automatically size and position itself according to the 
+following rules. If the target's style.top and style.left are unset, the 
+target will be centered. The size of the target is constrained to be no larger
+than the window dimensions. The `margin` property specifies the extra amount
+of space that should be reserved around the overlay. This can be used to ensure
+that, for example, a drop shadow is always visible around the overlay.
+
+@group Core Elements
+@element core-overlay
+@homepage github.io
+-->
+<!--
+Fired when the `core-overlay`'s `opened` property changes.
+
+@event core-overlay-open
+@param {Object} detail
+@param {Object} detail.opened the opened state
+-->
+
+<style>
+  .core-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .core-overlay-backdrop.core-opened {
+    opacity: 0.6;
+  }
+</style>
+
+<polymer-element name="core-overlay" assetpath="">
+
+</polymer-element>
+<script src="core-overlay-extracted.js"></script>
