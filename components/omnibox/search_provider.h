@@ -11,6 +11,9 @@
 #ifndef COMPONENTS_OMNIBOX_SEARCH_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_SEARCH_PROVIDER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -85,6 +88,7 @@ class SearchProvider : public BaseSearchProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestQueryUsesToken);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SessionToken);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, AnswersCache);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveExtraAnswers);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
@@ -230,6 +234,10 @@ class SearchProvider : public BaseSearchProvider,
 
   // Converts the parsed results to a set of AutocompleteMatches, |matches_|.
   void ConvertResultsToAutocompleteMatches();
+
+  // Remove answer contents from each match in |matches| other than the first
+  // that appears.
+  static void RemoveExtraAnswers(ACMatches* matches);
 
   // Returns an iterator to the first match in |matches_| which might
   // be chosen as default.

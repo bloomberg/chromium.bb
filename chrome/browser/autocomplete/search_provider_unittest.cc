@@ -3420,3 +3420,32 @@ TEST_F(SearchProviderTest, AnswersCache) {
             provider_->prefetch_data_.full_query_text);
   EXPECT_EQ(base::ASCIIToUTF16("2334"), provider_->prefetch_data_.query_type);
 }
+
+TEST_F(SearchProviderTest, RemoveExtraAnswers) {
+  ACMatches matches;
+  AutocompleteMatch match1, match2, match3, match4, match5;
+  match1.answer_contents = base::ASCIIToUTF16("the answer");
+  match1.answer_type = base::ASCIIToUTF16("42");
+  match3.answer_contents = base::ASCIIToUTF16("not to play");
+  match3.answer_type = base::ASCIIToUTF16("1983");
+  match5.answer_contents = base::ASCIIToUTF16("a man");
+  match5.answer_type = base::ASCIIToUTF16("423");
+
+  matches.push_back(match1);
+  matches.push_back(match2);
+  matches.push_back(match3);
+  matches.push_back(match4);
+  matches.push_back(match5);
+
+  SearchProvider::RemoveExtraAnswers(&matches);
+  EXPECT_EQ(base::ASCIIToUTF16("the answer"), matches[0].answer_contents);
+  EXPECT_EQ(base::ASCIIToUTF16("42"), matches[0].answer_type);
+  EXPECT_TRUE(matches[1].answer_contents.empty());
+  EXPECT_TRUE(matches[1].answer_type.empty());
+  EXPECT_TRUE(matches[2].answer_contents.empty());
+  EXPECT_TRUE(matches[2].answer_type.empty());
+  EXPECT_TRUE(matches[3].answer_contents.empty());
+  EXPECT_TRUE(matches[3].answer_type.empty());
+  EXPECT_TRUE(matches[4].answer_contents.empty());
+  EXPECT_TRUE(matches[4].answer_type.empty());
+}

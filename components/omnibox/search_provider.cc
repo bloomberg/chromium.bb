@@ -873,7 +873,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // scores, unless we have already accepted AutocompleteResult::kMaxMatches
   // higher-scoring matches under the conditions above.
   std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
-  matches_.clear();
+
   // Guarantee that if there's a legal default match anywhere in the result
   // set that it'll get returned.  The rotate() call does this by moving the
   // default match to the front of the list.
@@ -881,6 +881,15 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (default_match != matches.end())
     std::rotate(matches.begin(), default_match, default_match + 1);
 
+  // It's possible to get a copy of an answer from previous matches and get the
+  // same or a different answer to another server-provided suggestion.  In the
+  // future we may decide that we want to have answers attached to multiple
+  // suggestions, but the current assumption is that there should only ever be
+  // one suggestion with an answer.  To maintain this assumption, remove any
+  // answers after the first.
+  RemoveExtraAnswers(&matches);
+
+  matches_.clear();
   size_t num_suggestions = 0;
   for (ACMatches::const_iterator i(matches.begin());
        (i != matches.end()) &&
@@ -906,6 +915,20 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.ConvertResultsTime",
                       base::TimeTicks::Now() - start_time);
+}
+
+void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
+  bool answer_seen = false;
+  for (ACMatches::iterator it = matches->begin(); it != matches->end(); ++it) {
+    if (!it->answer_contents.empty()) {
+      if (!answer_seen) {
+        answer_seen = true;
+      } else {
+        it->answer_contents.clear();
+        it->answer_type.clear();
+      }
+    }
+  }
 }
 
 ACMatches::const_iterator SearchProvider::FindTopMatch() const {
