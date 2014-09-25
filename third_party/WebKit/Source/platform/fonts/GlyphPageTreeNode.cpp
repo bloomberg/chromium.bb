@@ -173,6 +173,8 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                     buffer[newlineCharacter] = space;
                     buffer[characterTabulation] = space;
                     buffer[noBreakSpace] = space;
+                } else if (start == (arabicLetterMark & ~(GlyphPage::size - 1))) {
+                    buffer[arabicLetterMark - start] = zeroWidthSpace;
                 } else if (start == (leftToRightMark & ~(GlyphPage::size - 1))) {
                     // LRM, RLM, LRE, RLE, ZWNJ, ZWJ, and PDF must not render at all.
                     buffer[leftToRightMark - start] = zeroWidthSpace;
@@ -184,6 +186,16 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                     buffer[zeroWidthNonJoiner - start] = zeroWidthSpace;
                     buffer[zeroWidthJoiner - start] = zeroWidthSpace;
                     buffer[popDirectionalFormatting - start] = zeroWidthSpace;
+                    buffer[activateArabicFormShaping - start] = zeroWidthSpace;
+                    buffer[activateSymmetricSwapping - start] = zeroWidthSpace;
+                    buffer[firstStrongIsolate - start] = zeroWidthSpace;
+                    buffer[inhibitArabicFormShaping - start] = zeroWidthSpace;
+                    buffer[inhibitSymmetricSwapping - start] = zeroWidthSpace;
+                    buffer[leftToRightIsolate - start] = zeroWidthSpace;
+                    buffer[nationalDigitShapes - start] = zeroWidthSpace;
+                    buffer[nominalDigitShapes - start] = zeroWidthSpace;
+                    buffer[popDirectionalIsolate - start] = zeroWidthSpace;
+                    buffer[rightToLeftIsolate - start] = zeroWidthSpace;
                 } else if (start == (objectReplacementCharacter & ~(GlyphPage::size - 1))) {
                     // Object replacement character must not render at all.
                     buffer[objectReplacementCharacter - start] = zeroWidthSpace;
