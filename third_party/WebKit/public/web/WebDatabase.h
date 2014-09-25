@@ -36,18 +36,10 @@
 
 namespace blink {
 
-class Database;
 class WebString;
 
 class WebDatabase {
 public:
-    BLINK_EXPORT WebString name() const;
-    BLINK_EXPORT WebString displayName() const;
-    BLINK_EXPORT unsigned long estimatedSize() const;
-    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
-    // Deprecated: This always returns false.
-    BLINK_EXPORT bool isSyncDatabase() const;
-
     BLINK_EXPORT static void updateDatabaseSize(
         const WebString& originIdentifier, const WebString& name, long long size);
     BLINK_EXPORT static void updateSpaceAvailable(
@@ -58,14 +50,8 @@ public:
     BLINK_EXPORT static void closeDatabaseImmediately(
         const WebString& originIdentifier, const WebString& databaseName);
 
-#if BLINK_IMPLEMENTATION
-    WebDatabase(const Database*);
-#endif
-
 private:
     WebDatabase() { }
-
-    const Database* m_database;
 };
 
 } // namespace blink

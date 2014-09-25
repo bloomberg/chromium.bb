@@ -31,44 +31,12 @@
 #include "config.h"
 #include "public/web/WebDatabase.h"
 
-#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebString.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
-
-WebString WebDatabase::name() const
-{
-    ASSERT(m_database);
-    return m_database->stringIdentifier();
-}
-
-WebString WebDatabase::displayName() const
-{
-    ASSERT(m_database);
-    return m_database->displayName();
-}
-
-unsigned long WebDatabase::estimatedSize() const
-{
-    ASSERT(m_database);
-    return m_database->estimatedSize();
-}
-
-WebSecurityOrigin WebDatabase::securityOrigin() const
-{
-    ASSERT(m_database);
-    return WebSecurityOrigin(m_database->securityOrigin());
-}
-
-bool WebDatabase::isSyncDatabase() const
-{
-    return false;
-}
 
 void WebDatabase::updateDatabaseSize(const WebString& originIdentifier, const WebString& name, long long size)
 {
@@ -88,11 +56,6 @@ void WebDatabase::resetSpaceAvailable(const WebString& originIdentifier)
 void WebDatabase::closeDatabaseImmediately(const WebString& originIdentifier, const WebString& databaseName)
 {
     DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, databaseName);
-}
-
-WebDatabase::WebDatabase(const Database* database)
-    : m_database(database)
-{
 }
 
 } // namespace blink
