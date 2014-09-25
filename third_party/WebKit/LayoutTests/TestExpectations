@@ -1342,3 +1342,5 @@ crbug.com/416580 [ Win ] svg/custom/linking-base-external-reference.xhtml [ Need
 
 # Failure on Linux Leak bot
 crbug.com/417752 [ Linux ] storage/websql/sql-error-codes.html [ Pass Failure ]
+
+crbug.com/91208 virtual/gpu/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
