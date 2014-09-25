@@ -38,7 +38,7 @@ class FakeServerEntity {
 
   // Common data items needed by server
   virtual std::string GetParentId() const = 0;
-  virtual sync_pb::SyncEntity* SerializeAsProto() = 0;
+  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) = 0;
   virtual bool IsDeleted() const = 0;
   virtual bool IsFolder() const = 0;
 

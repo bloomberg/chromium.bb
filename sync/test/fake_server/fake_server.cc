@@ -288,7 +288,7 @@ bool FakeServer::HandleGetUpdatesRequest(
     FakeServerEntity* entity = it->second;
     if (sieve->ClientWantsItem(entity)) {
       sync_pb::SyncEntity* response_entity = response->add_entries();
-      response_entity->CopyFrom(*(entity->SerializeAsProto()));
+      entity->SerializeAsProto(response_entity);
       max_response_version = std::max(max_response_version,
                                       response_entity->version());
 

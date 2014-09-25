@@ -68,19 +68,16 @@ string UniqueClientEntity::GetParentId() const {
   return FakeServerEntity::GetTopLevelId(model_type_);
 }
 
-sync_pb::SyncEntity* UniqueClientEntity::SerializeAsProto() {
-  sync_pb::SyncEntity* sync_entity = new sync_pb::SyncEntity();
-  FakeServerEntity::SerializeBaseProtoFields(sync_entity);
+void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+  FakeServerEntity::SerializeBaseProtoFields(proto);
 
-  sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
+  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
   specifics->CopyFrom(specifics_);
 
-  sync_entity->set_parent_id_string(GetParentId());
-  sync_entity->set_client_defined_unique_tag(client_defined_unique_tag_);
-  sync_entity->set_ctime(creation_time_);
-  sync_entity->set_mtime(last_modified_time_);
-
-  return sync_entity;
+  proto->set_parent_id_string(GetParentId());
+  proto->set_client_defined_unique_tag(client_defined_unique_tag_);
+  proto->set_ctime(creation_time_);
+  proto->set_mtime(last_modified_time_);
 }
 
 bool UniqueClientEntity::IsDeleted() const {

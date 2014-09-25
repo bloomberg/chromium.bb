@@ -108,25 +108,21 @@ string BookmarkEntity::GetParentId() const {
   return parent_id_;
 }
 
-sync_pb::SyncEntity* BookmarkEntity::SerializeAsProto() {
-  sync_pb::SyncEntity* sync_entity = new sync_pb::SyncEntity();
-  FakeServerEntity::SerializeBaseProtoFields(sync_entity);
+void BookmarkEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+  FakeServerEntity::SerializeBaseProtoFields(proto);
 
-  sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
+  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
   specifics->CopyFrom(specifics_);
 
-  sync_entity->set_originator_cache_guid(originator_cache_guid_);
-  sync_entity->set_originator_client_item_id(originator_client_item_id_);
+  proto->set_originator_cache_guid(originator_cache_guid_);
+  proto->set_originator_client_item_id(originator_client_item_id_);
 
-  sync_entity->set_parent_id_string(parent_id_);
-  sync_entity->set_ctime(creation_time_);
-  sync_entity->set_mtime(last_modified_time_);
+  proto->set_parent_id_string(parent_id_);
+  proto->set_ctime(creation_time_);
+  proto->set_mtime(last_modified_time_);
 
-  sync_pb::UniquePosition* unique_position =
-      sync_entity->mutable_unique_position();
+  sync_pb::UniquePosition* unique_position = proto->mutable_unique_position();
   unique_position->CopyFrom(unique_position_);
-
-  return sync_entity;
 }
 
 bool BookmarkEntity::IsDeleted() const {

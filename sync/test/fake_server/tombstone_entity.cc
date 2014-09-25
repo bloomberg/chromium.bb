@@ -32,14 +32,11 @@ string TombstoneEntity::GetParentId() const {
   return string();
 }
 
-sync_pb::SyncEntity* TombstoneEntity::SerializeAsProto() {
-  sync_pb::SyncEntity* sync_entity = new sync_pb::SyncEntity();
-  FakeServerEntity::SerializeBaseProtoFields(sync_entity);
+void TombstoneEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+  FakeServerEntity::SerializeBaseProtoFields(proto);
 
-  sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
+  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
   AddDefaultFieldValue(FakeServerEntity::GetModelType(), specifics);
-
-  return sync_entity;
 }
 
 bool TombstoneEntity::IsDeleted() const {

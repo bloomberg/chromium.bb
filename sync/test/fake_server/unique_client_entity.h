@@ -28,7 +28,7 @@ class UniqueClientEntity : public FakeServerEntity {
 
   // FakeServerEntity implementation.
   virtual std::string GetParentId() const OVERRIDE;
-  virtual sync_pb::SyncEntity* SerializeAsProto() OVERRIDE;
+  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) OVERRIDE;
   virtual bool IsDeleted() const OVERRIDE;
   virtual bool IsFolder() const OVERRIDE;
 

@@ -98,17 +98,14 @@ string PermanentEntity::GetParentId() const {
   return parent_id_;
 }
 
-sync_pb::SyncEntity* PermanentEntity::SerializeAsProto() {
-  sync_pb::SyncEntity* sync_entity = new sync_pb::SyncEntity();
-  FakeServerEntity::SerializeBaseProtoFields(sync_entity);
+void PermanentEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+  FakeServerEntity::SerializeBaseProtoFields(proto);
 
-  sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
+  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
   specifics->CopyFrom(specifics_);
 
-  sync_entity->set_parent_id_string(parent_id_);
-  sync_entity->set_server_defined_unique_tag(server_defined_unique_tag_);
-
-  return sync_entity;
+  proto->set_parent_id_string(parent_id_);
+  proto->set_server_defined_unique_tag(server_defined_unique_tag_);
 }
 
 bool PermanentEntity::IsDeleted() const {
