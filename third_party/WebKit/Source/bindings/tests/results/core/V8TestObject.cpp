@@ -6589,8 +6589,6 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> arg3;
     Vector<String> variadic;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg1, toInt32(info[0], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
         if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
             exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
@@ -6598,7 +6596,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
         arg2 = Dictionary(info[1], info.GetIsolate());
-        TOSTRING_VOID_PROMISE_INTERNAL(arg3, info[2], info);
+        TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg3, info[2], exceptionState, info, ScriptState::current(info.GetIsolate()));
         TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(variadic, toImplArguments<String>(info, 3, exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
     v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
@@ -6813,12 +6811,11 @@ static void overloadedPromiseMethod1Method(const v8::FunctionCallbackInfo<v8::Va
 
 static void overloadedPromiseMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPromiseMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TOSTRING_VOID_PROMISE_INTERNAL(arg, info[0], info);
+        TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg, info[0], exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
     v8SetReturnValue(info, impl->overloadedPromiseMethod(arg).v8Value());
 }

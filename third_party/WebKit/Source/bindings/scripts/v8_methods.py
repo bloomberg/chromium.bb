@@ -34,7 +34,7 @@ Extends IdlTypeBase and IdlUnionType with property |union_arguments|.
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
-from idl_definitions import IdlArgument
+from idl_definitions import IdlArgument, IdlOperation
 from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
@@ -53,7 +53,6 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 
 
 def argument_needs_try_catch(method, argument):
-    return_promise = method.idl_type and method.idl_type.name == 'Promise'
     idl_type = argument.idl_type
     base_type = idl_type.base_type
 
@@ -70,12 +69,12 @@ def argument_needs_try_catch(method, argument):
         # TOSTRING_* macros except for _PROMISE variants in
         # Source/bindings/core/v8/V8BindingMacros.h don't use a v8::TryCatch.
         ((base_type == 'DOMString' or idl_type.is_enum) and
-         not return_promise) or
+         not method.returns_promise) or
         # Conversion that take an ExceptionState& argument throw all their
         # exceptions via it, and doesn't need/use a TryCatch, except if the
         # argument has [Clamp], in which case it uses a separate code path in
         # Source/bindings/templates/methods.cpp, which *does* use a TryCatch.
-        argument.v8_conversion_needs_exception_state or
+        argument_conversion_needs_exception_state(method, argument) or
         # A trivial conversion cannot throw exceptions at all, so doesn't need a
         # TryCatch to catch them.
         idl_type.v8_conversion_is_trivial)
@@ -174,7 +173,7 @@ def method_context(interface, method):
             is_check_security_for_window or
             any(argument for argument in arguments
                 if (argument.idl_type.name == 'SerializedScriptValue' or
-                    argument.v8_conversion_needs_exception_state)),
+                    argument_conversion_needs_exception_state(method, argument))),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -225,8 +224,6 @@ def argument_context(interface, method, argument, index):
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
-    return_promise = (method.idl_type.name == 'Promise' if method.idl_type
-                                                        else False)
 
     if ('ImplementedInPrivateScript' in extended_attributes and
         not idl_type.is_wrapper_type and
@@ -270,7 +267,7 @@ def argument_context(interface, method, argument, index):
             creation_context='scriptState->context()->Global()'),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=return_promise),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=method.returns_promise),
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 
@@ -472,8 +469,15 @@ IdlUnionType.union_arguments = property(union_arguments)
 IdlArgument.default_cpp_value = property(argument_default_cpp_value)
 
 
-def v8_conversion_needs_exception_state(argument):
-    return (argument.idl_type.v8_conversion_needs_exception_state or
-            argument.is_variadic)
+def method_returns_promise(method):
+    return method.idl_type and method.idl_type.name == 'Promise'
 
-IdlArgument.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
+IdlOperation.returns_promise = property(method_returns_promise)
+
+
+def argument_conversion_needs_exception_state(method, argument):
+    idl_type = argument.idl_type
+    return (idl_type.v8_conversion_needs_exception_state or
+            argument.is_variadic or
+            (method.returns_promise and (idl_type.is_string_type or
+                                         idl_type.is_enum)))

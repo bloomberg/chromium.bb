@@ -135,21 +135,13 @@ namespace blink {
     if (UNLIKELY(!var.prepare()))                  \
         return retVal;
 
-// We need to cancel the exception propergation when we return a rejected
+// We need to cancel the exception propagation when we return a rejected
 // Promise.
-#define TOSTRING_VOID_PROMISE_INTERNAL(var, value, info)                                           \
-    var = (value);                                                                                 \
-    if (UNLIKELY(!var.prepare()))  {                                                               \
-        info.GetReturnValue().Set(ScriptPromise::rejectRaw(info.GetIsolate(), block.Exception())); \
-        block.Reset();                                                                             \
-        return;                                                                                    \
-    }
-
-#define TOSTRING_VOID_PROMISE(type, var, value, info)           \
-    type var;                                                   \
-    {                                                           \
-        v8::TryCatch block;                                     \
-        TOSTRING_VOID_PROMISE_INTERNAL(type, var, value, info); \
+#define TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState) \
+    var = (value);                                                                                   \
+    if (UNLIKELY(!var.prepare(exceptionState)))  {                                                   \
+        v8SetReturnValue(info, exceptionState.reject(scriptState).v8Value());                        \
+        return;                                                                                      \
     }
 
 } // namespace blink

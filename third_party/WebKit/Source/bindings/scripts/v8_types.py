@@ -570,10 +570,12 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate)
     args = [variable_name, cpp_value]
     if idl_type.base_type == 'DOMString':
-        macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
+        if return_promise:
+            macro = 'TOSTRING_VOID_EXCEPTIONSTATE'
+        else:
+            macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
     elif idl_type.v8_conversion_needs_exception_state:
         macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
-        args.append('exceptionState')
     elif idl_type.v8_conversion_is_trivial:
         assignment = '%s = %s' % (variable_name, cpp_value)
         if declare_variable:
@@ -581,6 +583,9 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
         return assignment
     else:
         macro = 'TONATIVE_DEFAULT' if used_in_private_script else 'TONATIVE_VOID'
+
+    if macro.endswith('_EXCEPTIONSTATE'):
+        args.append('exceptionState')
 
     if used_in_private_script:
         args.append('false')
@@ -592,7 +597,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     if return_promise:
         suffix += '_PROMISE'
         args.append('info')
-        if macro == 'TONATIVE_VOID_EXCEPTIONSTATE':
+        if macro.endswith('_EXCEPTIONSTATE'):
             args.append('ScriptState::current(%s)' % isolate)
 
     if declare_variable:
