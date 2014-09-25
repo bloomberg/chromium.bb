@@ -62,6 +62,7 @@ cvox2.Background.prototype = {
 
       if (!this.isWhitelisted_(tab.url)) {
         chrome.commands.onCommand.removeListener(this.onGotCommand);
+        cvox.ChromeVox.background.injectChromeVoxIntoTabs([tab], true);
         return;
       }
 

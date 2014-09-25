@@ -33,6 +33,7 @@
     "virtualKeyboardPrivate",
     "<all_urls>"
   ],
+{% if use_chromevox_next == '0' %}
   "content_scripts": [
     {
       "matches": [ "<all_urls>" ],
@@ -43,7 +44,8 @@
       ]
     }
   ],
-  "web_accessible_resources": [
+{% endif %}
+"web_accessible_resources": [
     "chromevox/injected/api.js",
     "chromevox/injected/api_util.js",
     "chromevox/injected/mathjax.js",
