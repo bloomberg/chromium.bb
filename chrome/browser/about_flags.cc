@@ -2034,10 +2034,6 @@ bool SkipConditionalExperiment(const Experiment& experiment,
                                FlagsStorage* flags_storage) {
   if (experiment.internal_name ==
       std::string("enhanced-bookmarks-experiment")) {
-#if defined(OS_ANDROID)
-      // On Android, user can opt in.
-      return false;
-#else
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     // Dont't skip experiment if it has non default value.
     // It means user selected it.
@@ -2045,7 +2041,6 @@ bool SkipConditionalExperiment(const Experiment& experiment,
       return false;
 
     return !IsEnhancedBookmarksExperimentEnabled(flags_storage);
-#endif
   }
 
   if ((experiment.internal_name == std::string("manual-enhanced-bookmarks")) ||
