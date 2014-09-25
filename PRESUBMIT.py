@@ -28,10 +28,10 @@ _EXCLUDED_PATHS = (
     r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js"
 )
 
-# TestRunner and NetscapePlugIn library is temporarily excluded from pan-project
-# checks until it's transitioned to chromium coding style.
+# The NetscapePlugIn library is excluded from pan-project as it will soon
+# be deleted together with the rest of the NPAPI and it's not worthwhile to
+# update the coding style until then.
 _TESTRUNNER_PATHS = (
-    r"^content[\\\/]shell[\\\/]renderer[\\\/]test_runner[\\\/].*",
     r"^content[\\\/]shell[\\\/]tools[\\\/]plugin[\\\/].*",
 )
 
