@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "modules/serviceworkers/RegistrationOptionList.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/heap/Handle.h"
@@ -45,7 +46,6 @@
 
 namespace blink {
 
-class Dictionary;
 class ExecutionContext;
 class WebServiceWorker;
 class WebServiceWorkerProvider;
@@ -69,7 +69,7 @@ public:
     ScriptPromise ready(ScriptState*);
     WebServiceWorkerProvider* provider() { return m_provider; }
 
-    ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
+    ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const RegistrationOptionList&);
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);
 
     // WebServiceWorkerProviderClient overrides.

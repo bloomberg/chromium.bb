@@ -40,7 +40,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
-#include "modules/serviceworkers/RegistrationOptionList.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -101,9 +100,8 @@ void ServiceWorkerContainer::trace(Visitor* visitor)
     visitor->trace(m_ready);
 }
 
-ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const Dictionary& dictionary)
+ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptionList& options)
 {
-    RegistrationOptionList options(dictionary);
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -123,7 +121,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-    KURL patternURL = executionContext->completeURL(options.scope);
+    KURL patternURL = executionContext->completeURL(options.scope());
     patternURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(patternURL)) {
         resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));

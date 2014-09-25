@@ -5,7 +5,6 @@
 #include "config.h"
 #include "modules/serviceworkers/Cache.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -18,19 +17,17 @@ namespace blink {
 
 namespace {
 
-WebServiceWorkerCache::QueryParams queryParamsFromDictionary(const Dictionary& dictionary)
+WebServiceWorkerCache::QueryParams toWebQueryParams(const QueryParams& queryParams)
 {
-    WebServiceWorkerCache::QueryParams queryParams;
-    DictionaryHelper::get(dictionary, "ignoreSearch", queryParams.ignoreSearch);
-    DictionaryHelper::get(dictionary, "ignoreMethod", queryParams.ignoreMethod);
-    DictionaryHelper::get(dictionary, "ignoreVary", queryParams.ignoreVary);
-    DictionaryHelper::get(dictionary, "prefixMatch", queryParams.prefixMatch);
-    {
-        String cacheName;
-        DictionaryHelper::get(dictionary, "cacheName", cacheName);
-        queryParams.cacheName = cacheName;
-    }
-    return queryParams;
+    WebServiceWorkerCache::QueryParams webQueryParams;
+    // FIXME: The queryParams.hasXXXX() calls can be removed if defaults are
+    // added to the IDL. https://github.com/slightlyoff/ServiceWorker/issues/466
+    webQueryParams.ignoreSearch = queryParams.hasIgnoreSearch() && queryParams.ignoreSearch();
+    webQueryParams.ignoreMethod = queryParams.hasIgnoreMethod() && queryParams.ignoreMethod();
+    webQueryParams.ignoreVary = queryParams.hasIgnoreVary() && queryParams.ignoreVary();
+    webQueryParams.prefixMatch = queryParams.hasPrefixMatch() && queryParams.prefixMatch();
+    webQueryParams.cacheName = queryParams.cacheName();
+    return webQueryParams;
 }
 
 // FIXME: Consider using CallbackPromiseAdapter.
@@ -125,7 +122,7 @@ Cache* Cache::create(WebServiceWorkerCache* webCache)
     return new Cache(webCache);
 }
 
-ScriptPromise Cache::match(ScriptState* scriptState, Request* originalRequest, const Dictionary& queryParamsDict)
+ScriptPromise Cache::match(ScriptState* scriptState, Request* originalRequest, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), originalRequest, exceptionState);
@@ -133,10 +130,10 @@ ScriptPromise Cache::match(ScriptState* scriptState, Request* originalRequest, c
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return matchImpl(scriptState, request, queryParamsDict);
+    return matchImpl(scriptState, request, queryParams);
 }
 
-ScriptPromise Cache::match(ScriptState* scriptState, const String& requestString, const Dictionary& queryParamsDict)
+ScriptPromise Cache::match(ScriptState* scriptState, const String& requestString, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
@@ -144,10 +141,10 @@ ScriptPromise Cache::match(ScriptState* scriptState, const String& requestString
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return matchImpl(scriptState, request, queryParamsDict);
+    return matchImpl(scriptState, request, queryParams);
 }
 
-ScriptPromise Cache::matchAll(ScriptState* scriptState, Request* originalRequest, const Dictionary& queryParamsDict)
+ScriptPromise Cache::matchAll(ScriptState* scriptState, Request* originalRequest, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), originalRequest, exceptionState);
@@ -155,10 +152,10 @@ ScriptPromise Cache::matchAll(ScriptState* scriptState, Request* originalRequest
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return matchAllImpl(scriptState, request, queryParamsDict);
+    return matchAllImpl(scriptState, request, queryParams);
 }
 
-ScriptPromise Cache::matchAll(ScriptState* scriptState, const String& requestString, const Dictionary& queryParamsDict)
+ScriptPromise Cache::matchAll(ScriptState* scriptState, const String& requestString, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
@@ -166,7 +163,7 @@ ScriptPromise Cache::matchAll(ScriptState* scriptState, const String& requestStr
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return matchAllImpl(scriptState, request, queryParamsDict);
+    return matchAllImpl(scriptState, request, queryParams);
 }
 
 ScriptPromise Cache::add(ScriptState* scriptState, Request* originalRequest)
@@ -197,7 +194,7 @@ ScriptPromise Cache::addAll(ScriptState* scriptState, const Vector<ScriptValue>&
     return rejectAsNotImplemented(scriptState);
 }
 
-ScriptPromise Cache::deleteFunction(ScriptState* scriptState, Request* originalRequest, const Dictionary& queryParamsDict)
+ScriptPromise Cache::deleteFunction(ScriptState* scriptState, Request* originalRequest, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), originalRequest, exceptionState);
@@ -205,10 +202,10 @@ ScriptPromise Cache::deleteFunction(ScriptState* scriptState, Request* originalR
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return deleteImpl(scriptState, request, queryParamsDict);
+    return deleteImpl(scriptState, request, queryParams);
 }
 
-ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const String& requestString, const Dictionary& queryParamsDict)
+ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const String& requestString, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
@@ -216,7 +213,7 @@ ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const String& requ
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return deleteImpl(scriptState, request, queryParamsDict);
+    return deleteImpl(scriptState, request, queryParams);
 }
 
 ScriptPromise Cache::put(ScriptState* scriptState, Request* originalRequest, Response* response)
@@ -246,7 +243,7 @@ ScriptPromise Cache::keys(ScriptState* scriptState)
     return keysImpl(scriptState);
 }
 
-ScriptPromise Cache::keys(ScriptState* scriptState, Request* originalRequest, const Dictionary& queryParamsDict)
+ScriptPromise Cache::keys(ScriptState* scriptState, Request* originalRequest, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), originalRequest, exceptionState);
@@ -254,10 +251,10 @@ ScriptPromise Cache::keys(ScriptState* scriptState, Request* originalRequest, co
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return keysImpl(scriptState, request, queryParamsDict);
+    return keysImpl(scriptState, request, queryParams);
 }
 
-ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString, const Dictionary& queryParamsDict)
+ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString, const QueryParams& queryParams)
 {
     TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
@@ -265,31 +262,31 @@ ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString,
         // FIXME: We should throw the caught error.
         return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
     }
-    return keysImpl(scriptState, request, queryParamsDict);
+    return keysImpl(scriptState, request, queryParams);
 }
 
 Cache::Cache(WebServiceWorkerCache* webCache)
     : m_webCache(adoptPtr(webCache)) { }
 
-ScriptPromise Cache::matchImpl(ScriptState* scriptState, Request* request, const Dictionary& queryParamsDict)
+ScriptPromise Cache::matchImpl(ScriptState* scriptState, Request* request, const QueryParams& queryParams)
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchMatch(new CacheMatchCallbacks(resolver), webRequest, queryParamsFromDictionary(queryParamsDict));
+    m_webCache->dispatchMatch(new CacheMatchCallbacks(resolver), webRequest, toWebQueryParams(queryParams));
     return promise;
 }
 
-ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, Request* request, const Dictionary& queryParamsDict)
+ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, Request* request, const QueryParams& queryParams)
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver), webRequest, queryParamsFromDictionary(queryParamsDict));
+    m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver), webRequest, toWebQueryParams(queryParams));
     return promise;
 }
 
@@ -320,12 +317,12 @@ PassRefPtrWillBeRawPtr<DOMException> Cache::domExceptionForCacheError(WebService
     }
 }
 
-ScriptPromise Cache::deleteImpl(ScriptState* scriptState, Request* request, const Dictionary& queryParamsDict)
+ScriptPromise Cache::deleteImpl(ScriptState* scriptState, Request* request, const QueryParams& queryParams)
 {
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
     batchOperations[0].operationType = WebServiceWorkerCache::OperationTypeDelete;
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
-    batchOperations[0].matchParams = queryParamsFromDictionary(queryParamsDict);
+    batchOperations[0].matchParams = toWebQueryParams(queryParams);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
@@ -354,14 +351,14 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState)
     return promise;
 }
 
-ScriptPromise Cache::keysImpl(ScriptState* scriptState, Request* request, const Dictionary& queryParamsDict)
+ScriptPromise Cache::keysImpl(ScriptState* scriptState, Request* request, const QueryParams& queryParams)
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), 0, queryParamsFromDictionary(queryParamsDict));
+    m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), 0, toWebQueryParams(queryParams));
     return promise;
 }
 

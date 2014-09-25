@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 // http://fetch.spec.whatwg.org/#headers-class
+typedef Dictionary OpenEndedDictionary;
 [
     Constructor,
     Constructor(Headers input),
-    Constructor(Dictionary input),
+    Constructor(OpenEndedDictionary input),
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     RaisesException=Constructor,

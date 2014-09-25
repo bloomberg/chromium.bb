@@ -177,9 +177,9 @@ protected:
 
         ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
         ScriptState::Scope scriptScope(scriptState());
-        Dictionary options = Dictionary::createEmpty(isolate());
-        EXPECT_TRUE(options.set("scope", scope));
-        ScriptPromise promise = container->registerServiceWorker(scriptState(), scriptURL, options);
+        RegistrationOptionList* options = RegistrationOptionList::create();
+        options->setScope(scope);
+        ScriptPromise promise = container->registerServiceWorker(scriptState(), scriptURL, *options);
         expectRejected(scriptState(), promise, valueTest);
 
         container->willBeDetachedFromFrame();
@@ -318,9 +318,9 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
     // register
     {
         ScriptState::Scope scriptScope(scriptState());
-        Dictionary options = Dictionary::createEmpty(isolate());
-        EXPECT_TRUE(options.set("scope", "y/"));
-        container->registerServiceWorker(scriptState(), "/z/worker.js", options);
+        RegistrationOptionList* options = RegistrationOptionList::create();
+        options->setScope("y/");
+        container->registerServiceWorker(scriptState(), "/z/worker.js", *options);
 
         EXPECT_EQ(1ul, stubProvider.registerCallCount());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.registerScope());

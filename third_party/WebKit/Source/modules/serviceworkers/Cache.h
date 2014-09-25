@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMException.h"
+#include "modules/serviceworkers/QueryParams.h"
 #include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "wtf/Forward.h"
@@ -18,7 +19,6 @@
 
 namespace blink {
 
-class Dictionary;
 class Response;
 class Request;
 class ScriptState;
@@ -30,20 +30,20 @@ public:
     static Cache* create(WebServiceWorkerCache*);
 
     // From Cache.idl:
-    ScriptPromise match(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise match(ScriptState*, const String&, const Dictionary& queryParams);
-    ScriptPromise matchAll(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise matchAll(ScriptState*, const String&, const Dictionary& queryParams);
+    ScriptPromise match(ScriptState*, Request*, const QueryParams&);
+    ScriptPromise match(ScriptState*, const String&, const QueryParams&);
+    ScriptPromise matchAll(ScriptState*, Request*, const QueryParams&);
+    ScriptPromise matchAll(ScriptState*, const String&, const QueryParams&);
     ScriptPromise add(ScriptState*, Request*);
     ScriptPromise add(ScriptState*, const String&);
     ScriptPromise addAll(ScriptState*, const Vector<ScriptValue>&);
-    ScriptPromise deleteFunction(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise deleteFunction(ScriptState*, const String&, const Dictionary& queryParams);
+    ScriptPromise deleteFunction(ScriptState*, Request*, const QueryParams&);
+    ScriptPromise deleteFunction(ScriptState*, const String&, const QueryParams&);
     ScriptPromise put(ScriptState*, Request*, Response*);
     ScriptPromise put(ScriptState*, const String&, Response*);
     ScriptPromise keys(ScriptState*);
-    ScriptPromise keys(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise keys(ScriptState*, const String&, const Dictionary& queryParams);
+    ScriptPromise keys(ScriptState*, Request*, const QueryParams&);
+    ScriptPromise keys(ScriptState*, const String&, const QueryParams&);
 
     static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
 
@@ -52,14 +52,14 @@ public:
 private:
     explicit Cache(WebServiceWorkerCache*);
 
-    ScriptPromise matchImpl(ScriptState*, Request*, const Dictionary& queryParams);
-    ScriptPromise matchAllImpl(ScriptState*, Request*, const Dictionary& queryParams);
+    ScriptPromise matchImpl(ScriptState*, Request*, const QueryParams&);
+    ScriptPromise matchAllImpl(ScriptState*, Request*, const QueryParams&);
     ScriptPromise addImpl(ScriptState*, Request*);
     ScriptPromise addAllImpl(ScriptState*, Vector<Request*>);
-    ScriptPromise deleteImpl(ScriptState*, Request*, const Dictionary& queryParams);
+    ScriptPromise deleteImpl(ScriptState*, Request*, const QueryParams&);
     ScriptPromise putImpl(ScriptState*, Request*, Response*);
     ScriptPromise keysImpl(ScriptState*);
-    ScriptPromise keysImpl(ScriptState*, Request*, const Dictionary& queryParams);
+    ScriptPromise keysImpl(ScriptState*, Request*, const QueryParams&);
 
     OwnPtr<WebServiceWorkerCache> m_webCache;
 };

@@ -6,7 +6,6 @@
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -52,14 +51,12 @@ ServiceWorkerClients::ServiceWorkerClients()
 {
 }
 
-ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const Dictionary& options)
+ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const ServiceWorkerClientQueryParams& options)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    bool includeUncontrolled = false;
-    DictionaryHelper::get(options, "includeUncontrolled", includeUncontrolled);
-    if (includeUncontrolled) {
+    if (options.hasIncludeUncontrolled() && options.includeUncontrolled()) {
         // FIXME: Currently we don't support includeUncontrolled=true.
         resolver->reject(DOMException::create(NotSupportedError, "includeUncontrolled parameter of getAll is not supported."));
         return promise;

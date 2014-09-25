@@ -268,15 +268,16 @@ TEST_F(ServiceWorkerCacheTest, Basics)
 
     const String url = "http://www.cachetest.org/";
 
-    ScriptPromise matchPromise = cache->match(scriptState(), url, Dictionary());
+    QueryParams* queryParams = QueryParams::create();
+    ScriptPromise matchPromise = cache->match(scriptState(), url, *queryParams);
     EXPECT_EQ(kNotImplementedString, getRejectString(matchPromise));
 
     cache = Cache::create(testCache = new ErrorWebCacheForTests(WebServiceWorkerCacheErrorNotFound));
-    matchPromise = cache->match(scriptState(), url, Dictionary());
+    matchPromise = cache->match(scriptState(), url, *queryParams);
     EXPECT_EQ("NotFoundError: Entry was not found.", getRejectString(matchPromise));
 
     cache = Cache::create(testCache = new ErrorWebCacheForTests(WebServiceWorkerCacheErrorExists));
-    matchPromise = cache->match(scriptState(), url, Dictionary());
+    matchPromise = cache->match(scriptState(), url, *queryParams);
     EXPECT_EQ("InvalidAccessError: Entry already exists.", getRejectString(matchPromise));
 }
 
@@ -296,27 +297,27 @@ TEST_F(ServiceWorkerCacheTest, BasicArguments)
     expectedQueryParams.cacheName = "this is a cache name";
     testCache->setExpectedQueryParams(&expectedQueryParams);
 
-    Dictionary queryParamsDict = Dictionary::createEmpty(isolate());
-    queryParamsDict.set("ignoreVary", 1);
-    queryParamsDict.set("cacheName", expectedQueryParams.cacheName);
+    QueryParams* queryParams = QueryParams::create();
+    queryParams->setIgnoreVary(1);
+    queryParams->setCacheName(expectedQueryParams.cacheName);
 
     Request* request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise matchResult = cache->match(scriptState(), request, queryParamsDict);
+    ScriptPromise matchResult = cache->match(scriptState(), request, *queryParams);
     EXPECT_EQ("dispatchMatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(matchResult));
 
-    ScriptPromise stringMatchResult = cache->match(scriptState(), url, queryParamsDict);
+    ScriptPromise stringMatchResult = cache->match(scriptState(), url, *queryParams);
     EXPECT_EQ("dispatchMatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringMatchResult));
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise matchAllResult = cache->matchAll(scriptState(), request, queryParamsDict);
+    ScriptPromise matchAllResult = cache->matchAll(scriptState(), request, *queryParams);
     EXPECT_EQ("dispatchMatchAll", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(matchAllResult));
 
-    ScriptPromise stringMatchAllResult = cache->matchAll(scriptState(), url, queryParamsDict);
+    ScriptPromise stringMatchAllResult = cache->matchAll(scriptState(), url, *queryParams);
     EXPECT_EQ("dispatchMatchAll", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringMatchAllResult));
 
@@ -326,11 +327,11 @@ TEST_F(ServiceWorkerCacheTest, BasicArguments)
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise keysResult2 = cache->keys(scriptState(), request, queryParamsDict);
+    ScriptPromise keysResult2 = cache->keys(scriptState(), request, *queryParams);
     EXPECT_EQ("dispatchKeys", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(keysResult2));
 
-    ScriptPromise stringKeysResult2 = cache->keys(scriptState(), url, queryParamsDict);
+    ScriptPromise stringKeysResult2 = cache->keys(scriptState(), url, *queryParams);
     EXPECT_EQ("dispatchKeys", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringKeysResult2));
 }
@@ -347,9 +348,9 @@ TEST_F(ServiceWorkerCacheTest, BatchOperationArguments)
     expectedQueryParams.cacheName = "this is another cache name";
     testCache->setExpectedQueryParams(&expectedQueryParams);
 
-    Dictionary queryParamsDict = Dictionary::createEmpty(isolate());
-    queryParamsDict.set("prefixMatch", 1);
-    queryParamsDict.set("cacheName", expectedQueryParams.cacheName);
+    QueryParams* queryParams = QueryParams::create();
+    queryParams->setPrefixMatch(1);
+    queryParams->setCacheName(expectedQueryParams.cacheName);
 
     const String url = "http://batch.operations.test/";
     Request* request = newRequestFromUrl(url);
@@ -369,11 +370,11 @@ TEST_F(ServiceWorkerCacheTest, BatchOperationArguments)
     }
     testCache->setExpectedBatchOperations(&expectedDeleteOperations);
 
-    ScriptPromise deleteResult = cache->deleteFunction(scriptState(), request, queryParamsDict);
+    ScriptPromise deleteResult = cache->deleteFunction(scriptState(), request, *queryParams);
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(deleteResult));
 
-    ScriptPromise stringDeleteResult = cache->deleteFunction(scriptState(), url, queryParamsDict);
+    ScriptPromise stringDeleteResult = cache->deleteFunction(scriptState(), url, *queryParams);
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringDeleteResult));
 
@@ -425,8 +426,9 @@ TEST_F(ServiceWorkerCacheTest, MatchResponseTest)
     webResponse.setURL(KURL(ParsedURLString, responseUrl));
 
     Cache* cache = Cache::create(new MatchTestCache(webResponse));
+    QueryParams* queryParams = QueryParams::create();
 
-    ScriptPromise result = cache->match(scriptState(), requestUrl, Dictionary());
+    ScriptPromise result = cache->match(scriptState(), requestUrl, *queryParams);
     ScriptValue scriptValue = getResolveValue(result);
     Response* response = V8Response::toImplWithTypeCheck(isolate(), scriptValue.v8Value());
     ASSERT_TRUE(response);
@@ -513,7 +515,8 @@ TEST_F(ServiceWorkerCacheTest, MatchAllAndBatchResponseTest)
 
     Cache* cache = Cache::create(new MatchAllAndBatchTestCache(webResponses));
 
-    ScriptPromise result = cache->matchAll(scriptState(), "http://some.url/", Dictionary());
+    QueryParams* queryParams = QueryParams::create();
+    ScriptPromise result = cache->matchAll(scriptState(), "http://some.url/", *queryParams);
     ScriptValue scriptValue = getResolveValue(result);
 
     NonThrowableExceptionState exceptionState;
@@ -526,7 +529,7 @@ TEST_F(ServiceWorkerCacheTest, MatchAllAndBatchResponseTest)
             EXPECT_EQ(expectedUrls[i], response->url());
     }
 
-    result = cache->deleteFunction(scriptState(), "http://some.url/", Dictionary());
+    result = cache->deleteFunction(scriptState(), "http://some.url/", *queryParams);
     scriptValue = getResolveValue(result);
     responses = toImplArray<v8::Handle<v8::Value> >(scriptValue.v8Value(), 0, isolate(), exceptionState);
     EXPECT_EQ(expectedUrls.size(), responses.size());

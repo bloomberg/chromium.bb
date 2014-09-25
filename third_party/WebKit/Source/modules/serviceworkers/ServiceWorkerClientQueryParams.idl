@@ -1,0 +1,11 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#serviceworker-client-query-params-dictionary
+[
+    GarbageCollected
+] dictionary ServiceWorkerClientQueryParams {
+    // FIXME: Specify defaults. https://github.com/slightlyoff/ServiceWorker/issues/466
+    boolean includeUncontrolled;
+};
