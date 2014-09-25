@@ -29,6 +29,7 @@
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../ui/views/views.gyp:views',
         'resources/athena_resources.gyp:athena_resources',
+        'strings/athena_strings.gyp:athena_strings',
       ],
       'defines': [
         'ATHENA_IMPLEMENTATION',

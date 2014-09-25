@@ -33,6 +33,7 @@ OS = None
 CHROMEOS = False
 
 USE_ASH = False
+USE_ATHENA = False
 ENABLE_AUTOFILL_DIALOG = False
 ENABLE_EXTENSIONS = False
 
@@ -87,6 +88,11 @@ def calc_inputs(locale):
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash/strings/ash_strings_da.pak',
     inputs.append(os.path.join(SHARE_INT_DIR, 'ash', 'strings',
                   'ash_strings_%s.pak' % locale))
+
+  if USE_ATHENA:
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/athena/strings/athena_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'athena', 'strings',
+                  'athena_strings_%s.pak' % locale))
 
   if CHROMEOS:
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'chromeos', 'strings',
@@ -183,6 +189,7 @@ def DoMain(argv):
   global OS
   global CHROMEOS
   global USE_ASH
+  global USE_ATHENA
   global WHITELIST
   global ENABLE_AUTOFILL_DIALOG
   global ENABLE_EXTENSIONS
@@ -208,6 +215,8 @@ def DoMain(argv):
                     help="The target OS. (e.g. mac, linux, win, etc.)")
   parser.add_option("--use-ash", action="store", dest="use_ash",
                     help="Whether to include ash strings")
+  parser.add_option("--use-athena", action="store", dest="use_athena",
+                    help="Whether to include athena strings")
   parser.add_option("--chromeos", action="store",
                     help="Whether building for Chrome OS")
   parser.add_option("--whitelist", action="store", help="Full path to the "
@@ -233,6 +242,7 @@ def DoMain(argv):
   OS = options.os
   CHROMEOS = options.chromeos == '1'
   USE_ASH = options.use_ash == '1'
+  USE_ATHENA = options.use_athena == '1'
   WHITELIST = options.whitelist
   ENABLE_AUTOFILL_DIALOG = options.enable_autofill_dialog == '1'
   ENABLE_EXTENSIONS = options.enable_extensions == '1'

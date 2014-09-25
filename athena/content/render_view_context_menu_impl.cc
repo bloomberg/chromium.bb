@@ -4,12 +4,13 @@
 
 #include "athena/content/render_view_context_menu_impl.h"
 
-#include "base/strings/utf_string_conversions.h"
+#include "athena/strings/grit/athena_strings.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace athena {
 using blink::WebContextMenuData;
@@ -44,32 +45,46 @@ const int kNumCustomCommandIds = 1000;
 // TODO(oshima): Move IDS for context menus to components/renderer_context_menu
 // and replace hardcoded strings below.
 void AppendPageItems(ui::SimpleMenuModel* menu_model) {
-  menu_model->AddItem(CMD_BACK, base::ASCIIToUTF16("Back"));
-  menu_model->AddItem(CMD_FORWARD, base::ASCIIToUTF16("Forward"));
-  menu_model->AddItem(CMD_RELOAD, base::ASCIIToUTF16("Reload"));
+  menu_model->AddItem(CMD_BACK,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_BACK));
+  menu_model->AddItem(CMD_FORWARD,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_FORWARD));
+  menu_model->AddItem(CMD_RELOAD,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_RELOAD));
   menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model->AddItem(CMD_VIEW_SOURCE, base::ASCIIToUTF16("View Source"));
+  menu_model->AddItem(
+      CMD_VIEW_SOURCE,
+      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_VIEWPAGESOURCE));
 }
 
 void AppendLinkItems(const content::ContextMenuParams& params,
                      ui::SimpleMenuModel* menu_model) {
   if (!params.link_url.is_empty())
-    menu_model->AddItem(CMD_OPEN_LINK_NEW_ACTIVITY,
-                        base::ASCIIToUTF16("Open Link In New Activity"));
+    menu_model->AddItem(
+        CMD_OPEN_LINK_NEW_ACTIVITY,
+        l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_OPENLINKNEWACTIVITY));
 }
 
 void AppendEditableItems(ui::SimpleMenuModel* menu_model) {
-  menu_model->AddItem(CMD_UNDO, base::ASCIIToUTF16("Undo"));
-  menu_model->AddItem(CMD_REDO, base::ASCIIToUTF16("Redo"));
+  menu_model->AddItem(CMD_UNDO,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_UNDO));
+  menu_model->AddItem(CMD_REDO,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_REDO));
   menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model->AddItem(CMD_CUT, base::ASCIIToUTF16("Cut"));
-  menu_model->AddItem(CMD_COPY, base::ASCIIToUTF16("Copy"));
-  menu_model->AddItem(CMD_PASTE, base::ASCIIToUTF16("Paste"));
-  menu_model->AddItem(CMD_PASTE_AND_MATCH_STYLE,
-                      base::ASCIIToUTF16("Paste as plain text"));
-  menu_model->AddItem(CMD_DELETE, base::ASCIIToUTF16("Delete"));
+  menu_model->AddItem(CMD_CUT,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_CUT));
+  menu_model->AddItem(CMD_COPY,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_COPY));
+  menu_model->AddItem(CMD_PASTE,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_PASTE));
+  menu_model->AddItem(
+      CMD_PASTE_AND_MATCH_STYLE,
+      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_PASTE_AND_MATCH_STYLE));
+  menu_model->AddItem(CMD_DELETE,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_DELETE));
   menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model->AddItem(CMD_SELECT_ALL, base::ASCIIToUTF16("Select All"));
+  menu_model->AddItem(CMD_SELECT_ALL,
+                      l10n_util::GetStringUTF16(IDS_ATHENA_CONTEXT_SELECTALL));
 }
 
 }  // namespace

@@ -8,17 +8,18 @@
 #include <vector>
 
 #include "athena/home/public/app_model_builder.h"
+#include "athena/strings/grit/athena_strings.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/speech_ui_model.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -30,8 +31,8 @@ AppListViewDelegate::AppListViewDelegate(AppModelBuilder* model_builder)
     : model_(new app_list::AppListModel),
       speech_ui_(new app_list::SpeechUIModel) {
   model_builder->PopulateApps(model_.get());
-  // TODO(mukai): get the text from the resources.
-  model_->search_box()->SetHintText(base::ASCIIToUTF16("Search"));
+  model_->search_box()->SetHintText(
+      l10n_util::GetStringUTF16(IDS_ATHENA_SEARCH_BOX_HINT));
 }
 
 AppListViewDelegate::~AppListViewDelegate() {

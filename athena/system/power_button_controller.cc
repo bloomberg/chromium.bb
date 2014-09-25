@@ -5,8 +5,9 @@
 #include "athena/system/power_button_controller.h"
 
 #include "athena/screen/public/screen_manager.h"
-#include "base/strings/utf_string_conversions.h"
+#include "athena/strings/grit/athena_strings.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -50,9 +51,8 @@ void PowerButtonController::ShowShutdownWarningDialog() {
   params.parent = warning_message_container_;
   shutdown_warning_message_->Init(params);
 
-  // TODO(pkotwicz): Get text from the resource.
-  views::Label* label = new views::Label(
-      base::UTF8ToUTF16("Keep holding power button to shutdown."));
+  views::Label* label =
+      new views::Label(l10n_util::GetStringUTF16(IDS_ATHENA_SHUTDOWN_WARNING));
   label->SetBackgroundColor(SK_ColorWHITE);
   label->SetFontList(gfx::FontList().DeriveWithStyle(gfx::Font::BOLD));
 

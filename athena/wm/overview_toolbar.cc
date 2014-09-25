@@ -5,10 +5,11 @@
 #include "athena/wm/overview_toolbar.h"
 
 #include "athena/resources/grit/athena_resources.h"
+#include "athena/strings/grit/athena_strings.h"
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/layer.h"
@@ -29,8 +30,8 @@ namespace athena {
 
 class ActionButton : public ui::LayerDelegate {
  public:
-  ActionButton(int resource_id, const std::string& label)
-      : resource_id_(resource_id), label_(base::UTF8ToUTF16(label)) {
+  ActionButton(int resource_id, const base::string16& label)
+      : resource_id_(resource_id), label_(label) {
     layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
     layer_->set_delegate(this);
     layer_->SetFillsBoundsOpaquely(false);
@@ -99,8 +100,12 @@ class ActionButton : public ui::LayerDelegate {
 OverviewToolbar::OverviewToolbar(aura::Window* container)
     : shown_(false),
       disabled_action_bitfields_(0),
-      close_(new ActionButton(IDR_ATHENA_OVERVIEW_TRASH, "Close")),
-      split_(new ActionButton(IDR_ATHENA_OVERVIEW_SPLIT, "Split")),
+      close_(new ActionButton(
+          IDR_ATHENA_OVERVIEW_TRASH,
+          l10n_util::GetStringUTF16(IDS_ATHENA_OVERVIEW_CLOSE))),
+      split_(new ActionButton(
+          IDR_ATHENA_OVERVIEW_SPLIT,
+          l10n_util::GetStringUTF16(IDS_ATHENA_OVERVIEW_SPLIT))),
       current_action_(ACTION_TYPE_NONE),
       container_bounds_(container->bounds()) {
   const int kPaddingFromBottom = 200;

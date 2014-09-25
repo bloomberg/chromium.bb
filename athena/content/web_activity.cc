@@ -9,6 +9,7 @@
 #include "athena/content/content_proxy.h"
 #include "athena/content/public/dialogs.h"
 #include "athena/input/public/accelerator_manager.h"
+#include "athena/strings/grit/athena_strings.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/favicon_url.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
@@ -372,7 +374,8 @@ class AthenaWebView : public views::WebView {
     params.parent = GetWidget()->GetNativeView();
     reload_message_->Init(params);
 
-    views::Label* label = new views::Label(base::UTF8ToUTF16("Reload"));
+    views::Label* label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_ATHENA_PULL_TO_RELOAD_MESSAGE));
     label->SetBackgroundColor(SK_ColorGRAY);
     label->set_background(
         views::Background::CreateSolidBackground(SK_ColorGRAY));

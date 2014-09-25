@@ -45,6 +45,7 @@
             '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/athena/resources/athena_resources_100_percent.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/athena/strings/athena_strings_en-US.pak',
             '<(SHARED_INTERMEDIATE_DIR)/components/components_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
             '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',

@@ -10,9 +10,7 @@
 # The first entry in the file, SRCDIR, is special: It is a relative path from
 # this file to the base of your checkout.
 #
-# http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx says that the
-# range for IDR_ is 1 to 28,671 and the range for IDS_ is 1 to 32,767 and
-# common convention starts practical use of IDs at 100 or 101.
+# The range of ID values, which is used by pak files, is from 0 to 2^16 - 1. 
 {
   "SRCDIR": "../..",
 
@@ -57,11 +55,14 @@
   "athena/resources/athena_resources.grd": {
     "structures": [6400],
   },
+  "athena/strings/athena_strings.grd": {
+    "messages": [6500],
+  },
   "chrome/app/theme/theme_resources.grd": {
-    "structures": [6500],
+    "structures": [7000],
   },
   "chrome/app/theme/chrome_unscaled_resources.grd": {
-    "includes": [7500],
+    "includes": [8000],
   },
   "ui/strings/app_locale_settings.grd": {
     "messages": [9000],
