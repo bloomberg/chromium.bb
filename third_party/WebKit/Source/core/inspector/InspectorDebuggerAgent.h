@@ -149,6 +149,7 @@ public:
     virtual void enablePromiseTracker(ErrorString*) OVERRIDE FINAL;
     virtual void disablePromiseTracker(ErrorString*) OVERRIDE FINAL;
     virtual void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) OVERRIDE FINAL;
+    virtual void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) OVERRIDE FINAL;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);

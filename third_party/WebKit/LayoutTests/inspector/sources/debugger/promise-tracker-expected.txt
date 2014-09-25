@@ -17,5 +17,8 @@ Promise:
     status: pending
     parent id: 1
     testFunction promise-tracker.html:14
+Promise:
+    status: resolved
+    value: Resolved!
 Script execution resumed.
 

@@ -1200,6 +1200,21 @@ void InspectorDebuggerAgent::getPromises(ErrorString* errorString, RefPtr<Array<
     promises = promiseTracker().promises();
 }
 
+void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promiseId, const String* objectGroup, RefPtr<RemoteObject>& promise)
+{
+    if (!promiseTracker().isEnabled()) {
+        *errorString = "Promise tracking is disabled";
+        return;
+    }
+    ScriptValue value = promiseTracker().promiseById(promiseId);
+    if (value.isEmpty()) {
+        *errorString = "Promise with specified ID not found.";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(value.scriptState());
+    promise = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
+}
+
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
 {
     if (scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions) {

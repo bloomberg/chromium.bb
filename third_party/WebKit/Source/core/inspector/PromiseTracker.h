@@ -16,6 +16,7 @@
 namespace blink {
 
 class ScriptState;
+class ScriptValue;
 
 class PromiseTracker FINAL : public NoBaseWillBeGarbageCollected<PromiseTracker> {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
@@ -34,6 +35,7 @@ public:
     void didReceiveV8PromiseEvent(ScriptState*, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status);
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> > promises();
+    ScriptValue promiseById(int promiseId) const;
 
     class PromiseData;
 
@@ -48,7 +50,7 @@ private:
     PromiseTracker();
 
     int circularSequentialId();
-    PassRefPtrWillBeRawPtr<PromiseData> createPromiseDataIfNeeded(v8::Isolate*, v8::Handle<v8::Object> promise);
+    PassRefPtrWillBeRawPtr<PromiseData> createPromiseDataIfNeeded(ScriptState*, v8::Handle<v8::Object> promise);
 
     int m_circularSequentialId;
     PromiseDataMap m_promiseDataMap;

@@ -77,6 +77,33 @@ var test = function ()
         }
 
         InspectorTest.addResults(output);
+
+        DebuggerAgent.getPromiseById(response[0].id, "console", didGetPromiseById);
+    }
+
+    function didGetPromiseById(error, response)
+    {
+        InspectorTest.assertTrue(!error, "FAIL: " + error);
+        InspectorTest.assertTrue(response && response.type === "object" && response.className === "Promise", "FAIL: returned by ID object is not a Promise.");
+
+        RuntimeAgent.getProperties(response.objectId, didGetProperties);
+    }
+
+    function didGetProperties(error, properties, internalProperties) {
+        InspectorTest.assertTrue(!error, "FAIL: " + error);
+        InspectorTest.assertTrue(internalProperties && internalProperties.length > 0, "FAIL: no internal properties.");
+
+        var status, value;
+        for (var i = 0; i < internalProperties.length; i++) {
+            var property = internalProperties[i];
+            if (property.name === "[[PromiseStatus]]")
+                status = property.value.value;
+            if (property.name === "[[PromiseValue]]")
+                value = property.value.value;
+        }
+
+        InspectorTest.addResult("Promise:\n    status: " + status + "\n    value: " + value);
+
         DebuggerAgent.disablePromiseTracker();
         DebuggerAgent.getPromises(didGetPromises2);
     }

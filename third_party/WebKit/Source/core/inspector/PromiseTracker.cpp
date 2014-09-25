@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
 
@@ -19,9 +20,9 @@ namespace blink {
 
 class PromiseTracker::PromiseData FINAL : public RefCountedWillBeGarbageCollectedFinalized<PromiseData> {
 public:
-    static PassRefPtrWillBeRawPtr<PromiseData> create(v8::Isolate* isolate, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
+    static PassRefPtrWillBeRawPtr<PromiseData> create(ScriptState* scriptState, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
     {
-        return adoptRefWillBeNoop(new PromiseData(isolate, promiseHash, promiseId, promise));
+        return adoptRefWillBeNoop(new PromiseData(scriptState, promiseHash, promiseId, promise));
     }
 
     int promiseHash() const { return m_promiseHash; }
@@ -48,10 +49,11 @@ public:
 private:
     friend class PromiseTracker;
 
-    PromiseData(v8::Isolate* isolate, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
-        : m_promiseHash(promiseHash)
+    PromiseData(ScriptState* scriptState, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
+        : m_scriptState(scriptState)
+        , m_promiseHash(promiseHash)
         , m_promiseId(promiseId)
-        , m_promise(isolate, promise)
+        , m_promise(scriptState->isolate(), promise)
         , m_parentPromiseId(0)
         , m_status(0)
 #if !ENABLE(OILPAN)
@@ -60,6 +62,7 @@ private:
     {
     }
 
+    RefPtrWillBeMember<ScriptState> m_scriptState;
     int m_promiseHash;
     int m_promiseId;
     ScopedPersistent<v8::Object> m_promise;
@@ -189,7 +192,7 @@ int PromiseTracker::circularSequentialId()
     return m_circularSequentialId;
 }
 
-PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromiseDataIfNeeded(v8::Isolate* isolate, v8::Handle<v8::Object> promise)
+PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromiseDataIfNeeded(ScriptState* scriptState, v8::Handle<v8::Object> promise)
 {
     int promiseHash = promise->GetIdentityHash();
     RawPtr<PromiseDataVector> vector = nullptr;
@@ -199,14 +202,14 @@ PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromis
     else
         vector = &m_promiseDataMap.add(promiseHash, PromiseDataVector()).storedValue->value;
 
-    int index = indexOf(vector, ScopedPersistent<v8::Object>(isolate, promise));
+    int index = indexOf(vector, ScopedPersistent<v8::Object>(scriptState->isolate(), promise));
     if (index != -1)
         return vector->at(index);
 
     // FIXME: Consider using the ScriptState's DOMWrapperWorld instead
     // to handle the lifetime of PromiseDataWrapper, avoiding all this
     // manual labor to achieve the same, with and without Oilpan.
-    RefPtrWillBeRawPtr<PromiseData> data = PromiseData::create(isolate, promiseHash, circularSequentialId(), promise);
+    RefPtrWillBeRawPtr<PromiseData> data = PromiseData::create(scriptState, promiseHash, circularSequentialId(), promise);
     OwnPtrWillBeRawPtr<PromiseDataWrapper> dataWrapper = PromiseDataWrapper::create(data.get(), this);
 #if ENABLE(OILPAN)
     OwnPtr<Persistent<PromiseDataWrapper> > wrapper = adoptPtr(new Persistent<PromiseDataWrapper>(dataWrapper));
@@ -223,13 +226,12 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Hand
 {
     ASSERT(isEnabled());
 
-    v8::Isolate* isolate = scriptState->isolate();
-    RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(isolate, promise);
+    RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(scriptState, promise);
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
         v8::Handle<v8::Object> handle = parentPromise->ToObject();
-        RefPtrWillBeRawPtr<PromiseData> parentData = createPromiseDataIfNeeded(isolate, handle);
+        RefPtrWillBeRawPtr<PromiseData> parentData = createPromiseDataIfNeeded(scriptState, handle);
         data->m_parentPromiseId = parentData->m_promiseId;
-        data->m_parentPromise.set(isolate, handle);
+        data->m_parentPromise.set(scriptState->isolate(), handle);
     } else {
         data->m_status = status;
         if (!status && !data->m_callStack) {
@@ -268,6 +270,24 @@ PassRefPtr<Array<PromiseDetails> > PromiseTracker::promises()
     }
 
     return result.release();
+}
+
+ScriptValue PromiseTracker::promiseById(int promiseId) const
+{
+    ASSERT(isEnabled());
+
+    for (PromiseDataMap::const_iterator it = m_promiseDataMap.begin(); it != m_promiseDataMap.end(); ++it) {
+        const PromiseDataVector* vector = &it->value;
+        for (size_t index = 0; index < vector->size(); ++index) {
+            RefPtrWillBeRawPtr<PromiseData> data = vector->at(index);
+            if (data->m_promiseId == promiseId) {
+                ScriptState* scriptState = data->m_scriptState.get();
+                return ScriptValue(scriptState, data->m_promise.newLocal(scriptState->isolate()));
+            }
+        }
+    }
+
+    return ScriptValue();
 }
 
 } // namespace blink
