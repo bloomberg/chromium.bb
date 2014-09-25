@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Strings for all extensions.  Each message should be named with the
+     name of the extension as a prefix, e.g. IDS_ALT_APP_NAME. -->
+
+<grit base_dir="." current_release="1" enc_check="möl" latest_public_release="0" source_lang_id="en">
+  <outputs>
+    <output filename="_locales/am/messages.json" type="chrome_messages_json" lang="am"/>
+    <output filename="_locales/ar/messages.json" type="chrome_messages_json" lang="ar"/>
+    <output filename="_locales/bg/messages.json" type="chrome_messages_json" lang="bg"/>
+    <output filename="_locales/bn/messages.json" type="chrome_messages_json" lang="bn"/>
+    <output filename="_locales/ca/messages.json" type="chrome_messages_json" lang="ca"/>
+    <output filename="_locales/cs/messages.json" type="chrome_messages_json" lang="cs"/>
+    <output filename="_locales/da/messages.json" type="chrome_messages_json" lang="da"/>
+    <output filename="_locales/de/messages.json" type="chrome_messages_json" lang="de"/>
+    <output filename="_locales/el/messages.json" type="chrome_messages_json" lang="el"/>
+    <output filename="_locales/en_GB/messages.json" type="chrome_messages_json" lang="en-GB"/>
+    <output filename="_locales/en/messages.json" type="chrome_messages_json" lang="en"/>
+    <output filename="_locales/es/messages.json" type="chrome_messages_json" lang="es"/>
+    <output filename="_locales/es_419/messages.json" type="chrome_messages_json" lang="es-419"/>
+    <output filename="_locales/et/messages.json" type="chrome_messages_json" lang="et"/>
+    <output filename="_locales/fa/messages.json" type="chrome_messages_json" lang="fa"/>
+    <output filename="_locales/fi/messages.json" type="chrome_messages_json" lang="fi"/>
+    <output filename="_locales/fil/messages.json" type="chrome_messages_json" lang="fil"/>
+    <output filename="_locales/fr/messages.json" type="chrome_messages_json" lang="fr"/>
+    <output filename="_locales/gu/messages.json" type="chrome_messages_json" lang="gu"/>
+    <output filename="_locales/he/messages.json" type="chrome_messages_json" lang="he"/>
+    <output filename="_locales/hi/messages.json" type="chrome_messages_json" lang="hi"/>
+    <output filename="_locales/hr/messages.json" type="chrome_messages_json" lang="hr"/>
+    <output filename="_locales/hu/messages.json" type="chrome_messages_json" lang="hu"/>
+    <output filename="_locales/id/messages.json" type="chrome_messages_json" lang="id"/>
+    <output filename="_locales/it/messages.json" type="chrome_messages_json" lang="it"/>
+    <output filename="_locales/ja/messages.json" type="chrome_messages_json" lang="ja"/>
+    <output filename="_locales/kn/messages.json" type="chrome_messages_json" lang="kn"/>
+    <output filename="_locales/ko/messages.json" type="chrome_messages_json" lang="ko"/>
+    <output filename="_locales/lt/messages.json" type="chrome_messages_json" lang="lt"/>
+    <output filename="_locales/lv/messages.json" type="chrome_messages_json" lang="lv"/>
+    <output filename="_locales/ml/messages.json" type="chrome_messages_json" lang="ml"/>
+    <output filename="_locales/mr/messages.json" type="chrome_messages_json" lang="mr"/>
+    <output filename="_locales/ms/messages.json" type="chrome_messages_json" lang="ms"/>
+    <output filename="_locales/nl/messages.json" type="chrome_messages_json" lang="nl"/>
+    <output filename="_locales/nb/messages.json" type="chrome_messages_json" lang="no"/>
+    <output filename="_locales/pl/messages.json" type="chrome_messages_json" lang="pl"/>
+    <output filename="_locales/pt_BR/messages.json" type="chrome_messages_json" lang="pt-BR"/>
+    <output filename="_locales/pt_PT/messages.json" type="chrome_messages_json" lang="pt-PT"/>
+    <output filename="_locales/ro/messages.json" type="chrome_messages_json" lang="ro"/>
+    <output filename="_locales/ru/messages.json" type="chrome_messages_json" lang="ru"/>
+    <output filename="_locales/sk/messages.json" type="chrome_messages_json" lang="sk"/>
+    <output filename="_locales/sl/messages.json" type="chrome_messages_json" lang="sl"/>
+    <output filename="_locales/sr/messages.json" type="chrome_messages_json" lang="sr"/>
+    <output filename="_locales/sv/messages.json" type="chrome_messages_json" lang="sv"/>
+    <output filename="_locales/sw/messages.json" type="chrome_messages_json" lang="sw"/>
+    <output filename="_locales/ta/messages.json" type="chrome_messages_json" lang="ta"/>
+    <output filename="_locales/te/messages.json" type="chrome_messages_json" lang="te"/>
+    <output filename="_locales/th/messages.json" type="chrome_messages_json" lang="th"/>
+    <output filename="_locales/tr/messages.json" type="chrome_messages_json" lang="tr"/>
+    <output filename="_locales/uk/messages.json" type="chrome_messages_json" lang="uk"/>
+    <output filename="_locales/vi/messages.json" type="chrome_messages_json" lang="vi"/>
+    <output filename="_locales/zh_CN/messages.json" type="chrome_messages_json" lang="zh-CN"/>
+    <output filename="_locales/zh_TW/messages.json" type="chrome_messages_json" lang="zh-TW"/>
+  </outputs>
+  <translations>
+    <file path="accessibility_extensions_strings_am.xtb" lang="am" />
+    <file path="accessibility_extensions_strings_ar.xtb" lang="ar" />
+    <file path="accessibility_extensions_strings_bg.xtb" lang="bg" />
+    <file path="accessibility_extensions_strings_bn.xtb" lang="bn" />
+    <file path="accessibility_extensions_strings_ca.xtb" lang="ca" />
+    <file path="accessibility_extensions_strings_cs.xtb" lang="cs" />
+    <file path="accessibility_extensions_strings_da.xtb" lang="da" />
+    <file path="accessibility_extensions_strings_de.xtb" lang="de" />
+    <file path="accessibility_extensions_strings_el.xtb" lang="el" />
+    <file path="accessibility_extensions_strings_en-GB.xtb" lang="en-GB" />
+    <file path="accessibility_extensions_strings_es.xtb" lang="es" />
+    <file path="accessibility_extensions_strings_es-419.xtb" lang="es-419" />
+    <file path="accessibility_extensions_strings_et.xtb" lang="et" />
+    <file path="accessibility_extensions_strings_fa.xtb" lang="fa" />
+    <file path="accessibility_extensions_strings_fi.xtb" lang="fi" />
+    <file path="accessibility_extensions_strings_fil.xtb" lang="fil" />
+    <file path="accessibility_extensions_strings_fr.xtb" lang="fr" />
+    <file path="accessibility_extensions_strings_gu.xtb" lang="gu" />
+    <file path="accessibility_extensions_strings_hi.xtb" lang="hi" />
+    <file path="accessibility_extensions_strings_hr.xtb" lang="hr" />
+    <file path="accessibility_extensions_strings_hu.xtb" lang="hu" />
+    <file path="accessibility_extensions_strings_id.xtb" lang="id" />
+    <file path="accessibility_extensions_strings_it.xtb" lang="it" />
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <file path="accessibility_extensions_strings_iw.xtb" lang="he" />
+    <file path="accessibility_extensions_strings_ja.xtb" lang="ja" />
+    <file path="accessibility_extensions_strings_kn.xtb" lang="kn" />
+    <file path="accessibility_extensions_strings_ko.xtb" lang="ko" />
+    <file path="accessibility_extensions_strings_lt.xtb" lang="lt" />
+    <file path="accessibility_extensions_strings_lv.xtb" lang="lv" />
+    <file path="accessibility_extensions_strings_ml.xtb" lang="ml" />
+    <file path="accessibility_extensions_strings_mr.xtb" lang="mr" />
+    <file path="accessibility_extensions_strings_ms.xtb" lang="ms" />
+    <file path="accessibility_extensions_strings_nl.xtb" lang="nl" />
+    <file path="accessibility_extensions_strings_no.xtb" lang="no" />
+    <file path="accessibility_extensions_strings_pl.xtb" lang="pl" />
+    <file path="accessibility_extensions_strings_pt-BR.xtb" lang="pt-BR" />
+    <file path="accessibility_extensions_strings_pt-PT.xtb" lang="pt-PT" />
+    <file path="accessibility_extensions_strings_ro.xtb" lang="ro" />
+    <file path="accessibility_extensions_strings_ru.xtb" lang="ru" />
+    <file path="accessibility_extensions_strings_sk.xtb" lang="sk" />
+    <file path="accessibility_extensions_strings_sl.xtb" lang="sl" />
+    <file path="accessibility_extensions_strings_sr.xtb" lang="sr" />
+    <file path="accessibility_extensions_strings_sv.xtb" lang="sv" />
+    <file path="accessibility_extensions_strings_sw.xtb" lang="sw" />
+    <file path="accessibility_extensions_strings_ta.xtb" lang="ta" />
+    <file path="accessibility_extensions_strings_te.xtb" lang="te" />
+    <file path="accessibility_extensions_strings_th.xtb" lang="th" />
+    <file path="accessibility_extensions_strings_tr.xtb" lang="tr" />
+    <file path="accessibility_extensions_strings_uk.xtb" lang="uk" />
+    <file path="accessibility_extensions_strings_vi.xtb" lang="vi" />
+    <file path="accessibility_extensions_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="accessibility_extensions_strings_zh-TW.xtb" lang="zh-TW" />
+  </translations>
+  <release allow_pseudo="false" seq="1">
+    <messages fallback_to_english="true">
+    </messages>
+  </release>
+</grit>
