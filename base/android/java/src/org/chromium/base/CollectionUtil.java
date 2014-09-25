@@ -17,12 +17,14 @@ import java.util.HashSet;
 public final class CollectionUtil {
     private CollectionUtil() {}
 
+    @SafeVarargs
     public static <E> HashSet<E> newHashSet(E... elements) {
         HashSet<E> set = new HashSet<E>(elements.length);
         Collections.addAll(set, elements);
         return set;
     }
 
+    @SafeVarargs
     public static <E> ArrayList<E> newArrayList(E... elements) {
         ArrayList<E> list = new ArrayList<E>(elements.length);
         Collections.addAll(list, elements);
