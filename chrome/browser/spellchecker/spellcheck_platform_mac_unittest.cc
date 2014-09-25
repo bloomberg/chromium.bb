@@ -136,7 +136,10 @@ TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
     {"beleive", "believe"},
     {"bellweather", "bellwether"},
     {"benifit", "benefit"},
-    {"bouy", "buoy"},
+    // This particular spelling correction was removed in OSX 10.10. Replacing
+    // it with another spelling correction that also works on older OSes.
+    // {"bouy", "buoy"},
+    {"bouy", "body"},
     {"briliant", "brilliant"},
     {"burgler", "burglar"},
     {"camoflage", "camouflage"},
