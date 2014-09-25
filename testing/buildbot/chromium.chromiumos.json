@@ -48,7 +48,12 @@
       "content_unittests",
       "device_unittests",
       "media_unittests",
-      "net_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
