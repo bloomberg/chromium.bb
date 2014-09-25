@@ -84,8 +84,6 @@ source_set("browser") {
       "$root_gen_dir/ui/resources/grit/webui_resources_map.cc",
       "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.cc",
       "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.h",
-      "$root_gen_dir/content/browser/devtools/protocol/devtools_protocol_handler_impl.cc",
-      "$root_gen_dir/content/browser/devtools/protocol/devtools_protocol_handler_impl.h",
     ], ".")
 
     # Non-iOS deps.
