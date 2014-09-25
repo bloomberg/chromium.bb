@@ -14,6 +14,9 @@
 
 typedef int (*TYPE_thread_test)(struct threading_environment *env);
 
+#define TEST_TIME_VALUE 20
+#define TEST_WAIT_TIME 10
+
 static void *nop_thread(void *arg) {
   return NULL;
 }
@@ -33,6 +36,44 @@ static void *mutex_thread(void *arg) {
     return (void *) ((uintptr_t) ret);
 
   return (void *) ((uintptr_t) pthread_mutex_unlock(mutex));
+}
+
+enum CondWaitState {
+  /* Initial state. */
+  CondWaitStateInitialized,
+
+  /* Set by the cond_wait_thread after obtaining the lock. */
+  CondWaitStateReady,
+
+  /* Set by the main thread to indicate it is signally the condition. */
+  CondWaitStateSignalling,
+
+  /* Set by the cond_wait_thread to signify the condition is signalled. */
+  CondWaitStateSignalled,
+};
+
+struct CondWaitThreadArg {
+  volatile enum CondWaitState state;
+  pthread_mutex_t *mutex;
+  pthread_cond_t *cond;
+};
+
+static void *cond_wait_thread(void *arg) {
+  struct CondWaitThreadArg *cond_wait_arg = arg;
+
+  int ret = pthread_mutex_lock(cond_wait_arg->mutex);
+  if (0 != ret)
+    return (void *) ((uintptr_t) ret);
+
+  cond_wait_arg->state = CondWaitStateReady;
+
+  ret = pthread_cond_wait(cond_wait_arg->cond, cond_wait_arg->mutex);
+  if (0 != ret)
+    return (void *) ((uintptr_t) ret);
+
+  cond_wait_arg->state = CondWaitStateSignalled;
+
+  return (void *) ((uintptr_t) pthread_mutex_unlock(cond_wait_arg->mutex));
 }
 
 /* Basic pthread tests. */
@@ -219,6 +260,278 @@ static int do_mutex_test(struct threading_environment *env) {
   return 0;
 }
 
+static int do_cond_signal_test(struct threading_environment *env) {
+  if (env->num_futex_wake_calls != 0) {
+    irt_ext_test_print("do_cond_signal_test: Threading env not initialized.\n");
+    return 1;
+  }
+
+  pthread_cond_t cond;
+  int ret = pthread_cond_init(&cond, NULL);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_signal_test: pthread_cond_init failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_cond_signal(&cond);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_signal_test: pthread_cond_signal failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_cond_destroy(&cond);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_signal_test: pthread_cond_destroy failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  if (env->num_futex_wake_calls != 1) {
+    irt_ext_test_print("do_cond_signal_test: did not trigger wake:\n"
+                       "  Expected 1 Futex Wake call.\n"
+                       "  Triggered %d Futex Wake calls.\n",
+                       env->num_futex_wake_calls);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_cond_broadcast_test(struct threading_environment *env) {
+  if (env->num_futex_wake_calls != 0) {
+    irt_ext_test_print("do_cond_broadcast_test: Env not initialized.\n");
+    return 1;
+  }
+
+  pthread_cond_t cond;
+  int ret = pthread_cond_init(&cond, NULL);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_broadcast_test: pthread_cond_init fail: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_cond_broadcast(&cond);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_broadcast_test: pthread_cond_signal failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_cond_destroy(&cond);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_broadcast_test: pthread_cond_destroy failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  if (env->num_futex_wake_calls != 1) {
+    irt_ext_test_print("do_cond_broadcast_test: did not trigger wake:\n"
+                       "  Expected 1 Futex Wake call.\n"
+                       "  Triggered %d Futex Wake calls.\n",
+                       env->num_futex_wake_calls);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_cond_timed_wait_test(struct threading_environment *env) {
+  if (env->num_futex_wait_calls != 0) {
+    irt_ext_test_print("do_cond_timed_wait_test: Env not initialized.\n");
+    return 1;
+  }
+
+  pthread_mutex_t mutex;
+  int ret = pthread_mutex_init(&mutex, NULL);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_mutex_init failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_mutex_lock(&mutex);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_mutex_lock failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  pthread_cond_t cond;
+  ret = pthread_cond_init(&cond, NULL);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_cond_init failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  struct timespec wait_time = { TEST_TIME_VALUE + TEST_WAIT_TIME };
+  env->current_time = TEST_TIME_VALUE;
+  ret = pthread_cond_timedwait(&cond, &mutex, &wait_time);
+  if (ETIMEDOUT != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_cond_timedwait_abs"
+                       " expected to time out: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_cond_destroy(&cond);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_cond_destroy failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_mutex_unlock(&mutex);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_mutex_unlock failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_mutex_destroy(&mutex);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_timed_wait_test: pthread_mutex_destroy failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  if (env->num_futex_wait_calls != 1) {
+    irt_ext_test_print("do_cond_timed_wait_test: did not trigger wait:\n"
+                       "  Expected 1 Futex Wait call.\n"
+                       "  Triggered %d Futex Wait calls.\n",
+                       env->num_futex_wait_calls);
+    return 1;
+  }
+
+  if (env->current_time != (TEST_TIME_VALUE + TEST_WAIT_TIME)) {
+    irt_ext_test_print("do_cond_timed_wait_test: did not wait for"
+                       " expected duration.\n"
+                       "  Expected duration: %d.\n"
+                       "  Waited duration: %d.\n",
+                       TEST_WAIT_TIME,
+                       env->current_time - TEST_TIME_VALUE);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_cond_wait_test(struct threading_environment *env) {
+  if (env->num_futex_wait_calls != 0 || env->num_futex_wake_calls != 0) {
+    irt_ext_test_print("do_cond_wait_test: Env not initialized.\n");
+    return 1;
+  }
+
+  pthread_mutex_t mutex;
+  int ret = pthread_mutex_init(&mutex, NULL);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: pthread_mutex_init failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  pthread_cond_t cond;
+  ret = pthread_cond_init(&cond, NULL);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: pthread_cond_init failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  struct CondWaitThreadArg arg = {
+    CondWaitStateInitialized,
+    &mutex,
+    &cond,
+  };
+
+  pthread_t thread_id;
+  ret = pthread_create(&thread_id, NULL, cond_wait_thread, &arg);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: pthread_create failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  /* Wait for cond_wait_thread to be ready. */
+  while (arg.state != CondWaitStateReady) {
+    sched_yield();
+  }
+
+  /* Indicate that we will be signally now. */
+  arg.state = CondWaitStateSignalling;
+
+  /* Continually signal the condition until the state is signalled. */
+  while (arg.state != CondWaitStateSignalled) {
+    pthread_cond_signal(&cond);
+    sched_yield();
+  }
+
+  /*
+   * Because joining threads also calls futex calls, we must test the
+   * thread environment before we join the thread.
+   */
+  if (env->num_futex_wake_calls == 0) {
+    irt_ext_test_print("do_cond_wait_test: did not trigger wake calls:\n"
+                       "  Expected at least 1 Futex Wake call.\n"
+                       "  Triggered 0 Futex Wake calls.\n");
+    return 1;
+  }
+
+  if (env->num_futex_wait_calls != 1) {
+    irt_ext_test_print("do_cond_wait_test: did not trigger wait:\n"
+                       "  Expected 1 Futex Wait call.\n"
+                       "  Triggered %d Futex Wait calls.\n",
+                       env->num_futex_wait_calls);
+    return 1;
+  }
+
+  void *thread_status = NULL;
+  ret = pthread_join(thread_id, &thread_status);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: pthread_join failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = (int) thread_status;
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: mutex lock thread failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_cond_destroy(&cond);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: pthread_cond_destroy failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = pthread_mutex_destroy(&mutex);
+  if (0 != ret) {
+    irt_ext_test_print("do_cond_wait_test: pthread_mutex_destroy failed:"
+                       " %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  return 0;
+}
+
 static const TYPE_thread_test g_thread_tests[] = {
   /* Basic pthread tests. */
   do_thread_creation_test,
@@ -226,6 +539,10 @@ static const TYPE_thread_test g_thread_tests[] = {
 
   /* Do futex tests. */
   do_mutex_test,
+  do_cond_signal_test,
+  do_cond_broadcast_test,
+  do_cond_timed_wait_test,
+  do_cond_wait_test,
 };
 
 static void setup(struct threading_environment *env) {

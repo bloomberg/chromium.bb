@@ -43,6 +43,8 @@ static int my_thread_nice(const int nice) {
 int my_futex_wait_abs(volatile int *addr, int value,
                       const struct timespec *abstime) {
   if (g_activated_env) {
+    __sync_fetch_and_add(&g_activated_env->num_futex_wait_calls, 1);
+
     if (*addr != value) {
       return EAGAIN;
     } else if (abstime != NULL) {
@@ -69,8 +71,6 @@ int my_futex_wait_abs(volatile int *addr, int value,
       }
       return ETIMEDOUT;
     }
-
-    __sync_fetch_and_add(&g_activated_env->num_futex_wait_calls, 1);
   }
 
   return g_irt_futex.futex_wait_abs(addr, value, abstime);
