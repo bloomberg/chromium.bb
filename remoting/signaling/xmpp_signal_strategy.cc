@@ -27,10 +27,16 @@ const char kDefaultResourceName[] = "chromoting";
 // connections that are idle for more than a minute.
 const int kKeepAliveIntervalSeconds = 50;
 
-// Read buffer size used by ChromeAsyncSocket for read and write buffers. Most
-// of XMPP messages are smaller than 4kB.
-const size_t kReadBufferSize = 4096;
-const size_t kWriteBufferSize = 4096;
+// Read buffer size used by ChromeAsyncSocket for read and write buffers.
+//
+// TODO(sergeyu): Currently jingle::ChromeAsyncSocket fails Write() when the
+// write buffer is full and talk::XmppClient just ignores the error. As result
+// chunks of data sent to the server are dropped (and they may not be full XMPP
+// stanzas). The problem needs to be fixed either in XmppClient on
+// ChromeAsyncSocket (e.g. ChromeAsyncSocket could close the connection when
+// buffer is full).
+const size_t kReadBufferSize = 64 * 1024;
+const size_t kWriteBufferSize = 64 * 1024;
 
 namespace remoting {
 
