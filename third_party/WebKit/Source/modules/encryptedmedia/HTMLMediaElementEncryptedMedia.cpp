@@ -63,7 +63,8 @@ private:
 
     void reportSetFailed(ExceptionCode, const String& errorMessage);
 
-    RawPtrWillBeMember<HTMLMediaElement> m_element;
+    // Keep media element alive until promise is fulfilled
+    RefPtrWillBePersistent<HTMLMediaElement> m_element;
     Persistent<MediaKeys> m_newMediaKeys;
     Timer<SetMediaKeysHandler> m_timer;
 };
