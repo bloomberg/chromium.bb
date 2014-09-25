@@ -49,7 +49,7 @@ public class ClipboardTest extends ContentShellTestBase {
      */
     @LargeTest
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    @Feature({"Clipboard","TextInput"})
+    @Feature({"Clipboard", "TextInput"})
     @RerunWithUpdatedContainerView
     public void testCopyDocumentFragment() throws Throwable {
         final ClipboardManager clipboardManager = (ClipboardManager)

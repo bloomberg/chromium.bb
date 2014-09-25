@@ -34,9 +34,9 @@ public class AwLegacyQuirksTest extends AwTestBase {
         final String pageTemplate = "<html><head>" +
                 "<meta name='viewport' content='width=device-width, target-densityDpi=%s' />" +
                 "</head><body onload='document.title=document.body.clientWidth'></body></html>";
-        final String pageDeviceDpi = String.format((Locale)null, pageTemplate, "device-dpi");
-        final String pageHighDpi = String.format((Locale)null, pageTemplate, "high-dpi");
-        final String pageDpi100 = String.format((Locale)null, pageTemplate, "100");
+        final String pageDeviceDpi = String.format((Locale) null, pageTemplate, "device-dpi");
+        final String pageHighDpi = String.format((Locale) null, pageTemplate, "high-dpi");
+        final String pageDpi100 = String.format((Locale) null, pageTemplate, "100");
 
         settings.setJavaScriptEnabled(true);
 
@@ -187,7 +187,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         final int pageWidth = 3000;
         final float pageScale = 1.0f;
-        final String page = String.format((Locale)null, "<html><head>" +
+        final String page = String.format((Locale) null, "<html><head>" +
                 "<meta name='viewport' content='width=%d' />" +
                 "<meta name='viewport' content='initial-scale=%.1f' />" +
                 "<meta name='viewport' content='user-scalable=0' />" +
@@ -224,7 +224,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
         final int pageWidth = 3000;
-        final String page = String.format((Locale)null, "<html><head>" +
+        final String page = String.format((Locale) null, "<html><head>" +
                 "<meta name='viewport' content='width=device-width' />" +
                 "<meta name='viewport' content='width=%d' />" +
                 "</head><body onload='document.title=document.body.clientWidth'></body></html>",
@@ -253,8 +253,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
                 "</head><body>" +
                 "<div style='width:10000px;height:200px'>A big div</div>" +
                 "</body></html>";
-        final String pageScale4 = String.format((Locale)null, pageTemplate, 4);
-        final String page = String.format((Locale)null, pageTemplate, 1);
+        final String pageScale4 = String.format((Locale) null, pageTemplate, 4);
+        final String page = String.format((Locale) null, pageTemplate, 1);
 
         // Page scale updates are asynchronous. There is an issue that we can't
         // reliably check, whether the scale as NOT changed (i.e. remains to be 1.0).

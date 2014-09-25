@@ -51,11 +51,11 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
     public void testSetComposingText() throws Throwable {
         mConnection.setComposingText("t", 1);
         assertCorrectState("t", 1, 1, 0, 1, mConnection.getImeStateForTesting());
-        mWrapper.verifyUpdateSelectionCall(0, 1, 1, 0 ,1);
+        mWrapper.verifyUpdateSelectionCall(0, 1, 1, 0, 1);
 
         mConnection.setComposingText("te", 1);
         assertCorrectState("te", 2, 2, 0, 2, mConnection.getImeStateForTesting());
-        mWrapper.verifyUpdateSelectionCall(1, 2, 2, 0 ,2);
+        mWrapper.verifyUpdateSelectionCall(1, 2, 2, 0, 2);
 
         mConnection.setComposingText("tes", 1);
         assertCorrectState("tes", 3, 3, 0, 3, mConnection.getImeStateForTesting());
@@ -82,7 +82,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         assertEquals(0, mWrapper.getUpdateSelectionCallCount());
         mConnection.endBatchEdit();
         assertEquals(1, mWrapper.getUpdateSelectionCallCount());
-        mWrapper.verifyUpdateSelectionCall(0, 4, 4, 0 ,4);
+        mWrapper.verifyUpdateSelectionCall(0, 4, 4, 0, 4);
     }
 
     @MediumTest

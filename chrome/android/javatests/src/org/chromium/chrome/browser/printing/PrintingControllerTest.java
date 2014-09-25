@@ -253,7 +253,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
 
     private void callFinishOnUiThread(final PrintingControllerImpl controller) {
         try {
-            runTestOnUiThread( new Runnable() {
+            runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     controller.onFinish();

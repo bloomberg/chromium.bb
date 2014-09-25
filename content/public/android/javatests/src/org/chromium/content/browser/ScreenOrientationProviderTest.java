@@ -63,7 +63,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ScreenOrientationProvider.lockOrientation((byte)orientations);
+                ScreenOrientationProvider.lockOrientation((byte) orientations);
             }
         });
         getInstrumentation().waitForIdleSync();

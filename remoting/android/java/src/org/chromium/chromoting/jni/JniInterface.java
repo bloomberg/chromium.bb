@@ -246,8 +246,8 @@ public class JniInterface {
         final View pinEntry = sContext.getLayoutInflater().inflate(R.layout.pin_dialog, null);
         pinPrompt.setView(pinEntry);
 
-        final TextView pinTextView = (TextView)pinEntry.findViewById(R.id.pin_dialog_text);
-        final CheckBox pinCheckBox = (CheckBox)pinEntry.findViewById(R.id.pin_dialog_check);
+        final TextView pinTextView = (TextView) pinEntry.findViewById(R.id.pin_dialog_text);
+        final CheckBox pinCheckBox = (CheckBox) pinEntry.findViewById(R.id.pin_dialog_check);
 
         if (!pairingSupported) {
             pinCheckBox.setChecked(false);

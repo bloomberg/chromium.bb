@@ -101,9 +101,9 @@ public class ProxyChangeListener {
         // TODO(sgurun): once android.net.ProxyInfo is public, rewrite this.
         private ProxyConfig extractNewProxy(Intent intent) {
             try {
-                final String GET_HOST_NAME = "getHost";
-                final String GET_PORT_NAME = "getPort";
-                final String GET_PAC_FILE_URL = "getPacFileUrl";
+                final String getHostName = "getHost";
+                final String getPortName = "getPort";
+                final String getPacFileUrl = "getPacFileUrl";
                 String className;
                 String proxyInfo;
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -120,8 +120,8 @@ public class ProxyChangeListener {
                 }
 
                 Class<?> cls = Class.forName(className);
-                Method getHostMethod = cls.getDeclaredMethod(GET_HOST_NAME);
-                Method getPortMethod = cls.getDeclaredMethod(GET_PORT_NAME);
+                Method getHostMethod = cls.getDeclaredMethod(getHostName);
+                Method getPortMethod = cls.getDeclaredMethod(getPortName);
 
                 String host = (String) getHostMethod.invoke(props);
                 int port = (Integer) getPortMethod.invoke(props);
@@ -129,14 +129,14 @@ public class ProxyChangeListener {
                 // TODO(xunjieli): rewrite this once the API is public.
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
                     Method getPacFileUrlMethod =
-                        cls.getDeclaredMethod(GET_PAC_FILE_URL);
+                        cls.getDeclaredMethod(getPacFileUrl);
                     String pacFileUrl = (String) getPacFileUrlMethod.invoke(props);
                     if (!TextUtils.isEmpty(pacFileUrl)) {
                        return new ProxyConfig(host, port, pacFileUrl);
                     }
                 } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
                     Method getPacFileUrlMethod =
-                        cls.getDeclaredMethod(GET_PAC_FILE_URL);
+                        cls.getDeclaredMethod(getPacFileUrl);
                     Uri pacFileUrl = (Uri) getPacFileUrlMethod.invoke(props);
                     if (!Uri.EMPTY.equals(pacFileUrl)) {
                       return new ProxyConfig(host, port, pacFileUrl.toString());

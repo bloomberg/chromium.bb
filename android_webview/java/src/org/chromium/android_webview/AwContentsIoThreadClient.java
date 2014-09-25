@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.android_webview.AwContentsClient;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 

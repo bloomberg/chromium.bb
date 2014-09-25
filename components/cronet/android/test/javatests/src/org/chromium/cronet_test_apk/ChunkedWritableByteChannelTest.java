@@ -75,7 +75,7 @@ public class ChunkedWritableByteChannelTest extends InstrumentationTestCase {
     public void testCapacityGrows() throws Exception {
         mChannel.setCapacity(123);
         byte[] data = new byte[1234];
-        Arrays.fill(data, (byte)'G');
+        Arrays.fill(data, (byte) 'G');
         mChannel.write(ByteBuffer.wrap(data));
         assertTrue(Arrays.equals(data, mChannel.getBytes()));
     }

@@ -70,27 +70,21 @@ public class VideoCaptureTango extends VideoCapture {
       return formatList.toArray(new CaptureFormat[formatList.size()]);
     }
 
-    VideoCaptureTango(Context context,
-                      int id,
-                      long nativeVideoCaptureDeviceAndroid) {
-        // All Tango cameras are like the back facing one for the generic
-        // VideoCapture code.
+    VideoCaptureTango(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
+        // All Tango cameras are like the back facing one for the generic VideoCapture code.
         super(context, 0, nativeVideoCaptureDeviceAndroid);
         mTangoCameraId = id;
     }
 
     @Override
-    protected void setCaptureParameters(
-            int width,
-            int height,
-            int frameRate,
+    protected void setCaptureParameters(int width, int height, int frameRate,
             Camera.Parameters cameraParameters) {
-      mCaptureFormat = new CaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
+        mCaptureFormat = new CaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
                                          CAM_PARAMS[mTangoCameraId].mHeight,
                                          frameRate,
                                          ImageFormat.YV12);
-      // Connect Tango SuperFrame mode. Available sf modes are "all",
-      // "big-rgb", "small-rgb", "depth", "ir".
+        // Connect Tango SuperFrame mode. Available sf modes are "all",
+        // "big-rgb", "small-rgb", "depth", "ir".
         cameraParameters.set("sf-mode", "all");
     }
 
@@ -112,9 +106,8 @@ public class VideoCaptureTango extends VideoCapture {
     public void onPreviewFrame(byte[] data, Camera camera) {
         mPreviewBufferLock.lock();
         try {
-            if (!mIsRunning) {
-                return;
-            }
+            if (!mIsRunning) return;
+
             if (data.length == SF_WIDTH * SF_FULL_HEIGHT) {
                 int rotation = getDeviceOrientation();
                 if (rotation != mDeviceOrientation) {
@@ -128,8 +121,7 @@ public class VideoCaptureTango extends VideoCapture {
                 if (mTangoCameraId == DEPTH_CAMERA_ID) {
                     int sizeY = SF_WIDTH * SF_LINES_DEPTH;
                     int startY =
-                        SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE +
-                                    SF_LINES_RESERVED);
+                            SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE + SF_LINES_RESERVED);
                     // Depth is composed of 16b samples in which only 12b are
                     // used. Throw away lowest 4 resolution bits. Android
                     // platforms are big endian, LSB in lowest address. In this
@@ -137,26 +129,21 @@ public class VideoCaptureTango extends VideoCapture {
                     // explicitly since they're filled to 128 on creation.
                     byte depthsample;
                     for (int j = startY; j < startY + 2 * sizeY; j += 2) {
-                        depthsample = (byte)((data[j + 1] << 4) |
-                                             ((data[j] & 0xF0) >> 4));
+                        depthsample = (byte) ((data[j + 1] << 4) | ((data[j] & 0xF0) >> 4));
                         mFrameBuffer.put(depthsample);
                     }
-                    for (int j = 0;
-                         j < mCaptureFormat.mWidth * mCaptureFormat.mHeight -
-                                 sizeY;
-                         ++j)
-                      mFrameBuffer.put((byte)0);
+                    for (int j = 0; j < mCaptureFormat.mWidth * mCaptureFormat.mHeight - sizeY;
+                            ++j) {
+                        mFrameBuffer.put((byte) 0);
+                    }
                 } else if (mTangoCameraId == FISHEYE_CAMERA_ID) {
                     int sizeY = SF_WIDTH * SF_LINES_FISHEYE;
                     int startY = SF_WIDTH * SF_LINES_HEADER;
-                    // Fisheye is black and white so Chroma components are
-                    // unused. No need to write them explicitly since they're
-                    // filled to 128 on creation.
-                    ByteBuffer.wrap(data, startY, sizeY)
-                              .get(mFrameBuffer.array(), 0, sizeY);
+                    // Fisheye is black and white so Chroma components are unused. No need to write
+                    // them explicitly since they're filled to 128 on creation.
+                    ByteBuffer.wrap(data, startY, sizeY).get(mFrameBuffer.array(), 0, sizeY);
                 } else if (mTangoCameraId == FOURMP_CAMERA_ID) {
-                    int startY =
-                        SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE +
+                    int startY = SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE +
                                     SF_LINES_RESERVED + SF_LINES_DEPTH_PADDED);
                     int sizeY = SF_WIDTH * SF_LINES_BIGIMAGE;
 
@@ -164,8 +151,7 @@ public class VideoCaptureTango extends VideoCapture {
                     // and format of these channels.
                     int startU = SF_WIDTH * (SF_HEIGHT + SF_OFFSET_4MP_CHROMA);
                     int sizeU = SF_WIDTH * SF_LINES_BIGIMAGE / 4;
-                    int startV = (SF_WIDTH * SF_HEIGHT * 5 / 4) +
-                            SF_WIDTH * SF_OFFSET_4MP_CHROMA;
+                    int startV = (SF_WIDTH * SF_HEIGHT * 5 / 4) + SF_WIDTH * SF_OFFSET_4MP_CHROMA;
                     int sizeV = SF_WIDTH * SF_LINES_BIGIMAGE / 4;
 
                     // Equivalent to the following |for| loop but much faster:
@@ -182,10 +168,8 @@ public class VideoCaptureTango extends VideoCapture {
                     return;
                 }
                 mFrameBuffer.rewind();  // Important!
-                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
-                                       mFrameBuffer.array(),
-                                       mFrameBuffer.capacity(),
-                                       rotation);
+                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, mFrameBuffer.array(),
+                        mFrameBuffer.capacity(), rotation);
             }
         } finally {
             mPreviewBufferLock.unlock();

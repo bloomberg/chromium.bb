@@ -860,8 +860,7 @@ public class AwContents {
         // Restore injected JavaScript interfaces.
         for (Map.Entry<String, Pair<Object, Class>> entry : javascriptInterfaces.entrySet()) {
             @SuppressWarnings("unchecked")
-            Class<? extends Annotation> requiredAnnotation = (Class<? extends Annotation>)
-                    entry.getValue().second;
+            Class<? extends Annotation> requiredAnnotation = entry.getValue().second;
             mContentViewCore.addPossiblyUnsafeJavascriptInterface(
                     entry.getValue().first,
                     entry.getKey(),
@@ -1626,7 +1625,7 @@ public class AwContents {
      * the screen density factor. See CTS WebViewTest.testSetInitialScale.
      */
     public float getScale() {
-        return (float)(mPageScaleFactor * mDIPScale);
+        return (float) (mPageScaleFactor * mDIPScale);
     }
 
     /**
@@ -2174,8 +2173,8 @@ public class AwContents {
             float oldPageScaleFactor = mPageScaleFactor;
             mPageScaleFactor = pageScaleFactor;
             mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
-                    (float)(oldPageScaleFactor * mDIPScale),
-                    (float)(mPageScaleFactor * mDIPScale));
+                    (float) (oldPageScaleFactor * mDIPScale),
+                    (float) (mPageScaleFactor * mDIPScale));
         }
     }
 

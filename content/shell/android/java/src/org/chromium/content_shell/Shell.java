@@ -229,14 +229,14 @@ public class Shell extends LinearLayout {
                 if (mNavigationController.canGoForward()) mNavigationController.goForward();
             }
         });
-        mStopButton = (ImageButton)findViewById(R.id.stop);
+        mStopButton = (ImageButton) findViewById(R.id.stop);
         mStopButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mLoading) mWebContents.stop();
             }
         });
-        mReloadButton = (ImageButton)findViewById(R.id.reload);
+        mReloadButton = (ImageButton) findViewById(R.id.reload);
         mReloadButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

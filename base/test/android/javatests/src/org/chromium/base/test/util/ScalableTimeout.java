@@ -23,6 +23,6 @@ public class ScalableTimeout {
                 sTimeoutScale = 1.0;
             }
         }
-        return (long)(timeout * sTimeoutScale);
+        return (long) (timeout * sTimeoutScale);
     }
 }

@@ -36,11 +36,11 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
     private static final MediaMetadata sEmptyMetadata = new MediaMetadata(0, 0, 0, false);
     private static final String sExternalStorageDirectory = "/test_external_storage";
 
-    private static final Map<String,String> sHeadersCookieOnly;
-    private static final Map<String,String> sHeadersCookieAndUA;
-    private static final Map<String,String> sHeadersUAOnly;
+    private static final Map<String, String> sHeadersCookieOnly;
+    private static final Map<String, String> sHeadersCookieAndUA;
+    private static final Map<String, String> sHeadersUAOnly;
     static {
-        Map<String,String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put("Cookie", TEST_COOKIES);
         sHeadersCookieOnly = Collections.unmodifiableMap(headers);
 
@@ -99,7 +99,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
     private static class FakeMediaResourceGetter extends MediaResourceGetter {
         // Read these back in tests to ensure proper values passed through
         String mUri = null;
-        Map<String,String> mHeaders = null;
+        Map<String, String> mHeaders = null;
         String mPath = null;
         int mFd;
         long mOffset;

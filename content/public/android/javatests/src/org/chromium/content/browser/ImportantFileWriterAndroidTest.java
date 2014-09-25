@@ -64,7 +64,7 @@ public class ImportantFileWriterAndroidTest extends InstrumentationTestCase {
     @Feature({"Android-AppBase"})
     public void testAtomicWrite() {
         // Try writing a file that can't be created.
-        byte[] data1 = {0,1,2,3,4,5,6,7,8,9};
+        byte[] data1 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         assertFalse("Writing bad file succeded",
                 ImportantFileWriterAndroid.writeFileAtomically(
                         "/junk/junk", data1));

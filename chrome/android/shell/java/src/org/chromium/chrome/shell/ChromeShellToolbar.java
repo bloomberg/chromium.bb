@@ -197,7 +197,7 @@ public class ChromeShellToolbar extends LinearLayout {
     }
 
     private void initializeStopReloadButton() {
-        mStopReloadButton = (ImageButton)findViewById(R.id.stop_reload_button);
+        mStopReloadButton = (ImageButton) findViewById(R.id.stop_reload_button);
         mStopReloadButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

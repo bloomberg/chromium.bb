@@ -21,21 +21,21 @@ public class AccountsAdapter extends ArrayAdapter<Account> {
         // getDropDownView(). But these methods are overridden here to return custom Views, so it's
         // OK to provide 0 as the resource for the base class.
         super(context, 0, accounts);
-        mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = mInflater.inflate(R.layout.account_selected, parent, false);
         Account account = getItem(position);
-        TextView target = (TextView)view.findViewById(R.id.account_name);
+        TextView target = (TextView) view.findViewById(R.id.account_name);
         target.setText(account.name);
         return view;
     }
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        TextView view = (TextView)mInflater.inflate(R.layout.account_dropdown, parent, false);
+        TextView view = (TextView) mInflater.inflate(R.layout.account_dropdown, parent, false);
         Account account = getItem(position);
         view.setText(account.name);
         return view;

@@ -432,7 +432,7 @@ public class CastExtensionHandler implements ClientExtension, ActivityLifecycleL
         }
         try {
             Cast.CastApi.setMessageReceivedCallbacks(
-                    mApiClient,mChromotocastChannel.getNamespace(),mChromotocastChannel);
+                    mApiClient, mChromotocastChannel.getNamespace(), mChromotocastChannel);
             sendPendingMessagesToCastDevice();
         } catch (IOException e) {
             showToast(R.string.connection_to_cast_failed, Toast.LENGTH_SHORT);

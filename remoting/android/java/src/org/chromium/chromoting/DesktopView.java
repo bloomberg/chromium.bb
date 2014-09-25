@@ -98,7 +98,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             // seamless fading-out effect. The animation needs to have more than one color so it's
             // visible over any background color.
             float radius = size * progress;
-            int alpha = (int)((1 - progress) * 0xff);
+            int alpha = (int) ((1 - progress) * 0xff);
 
             int transparentBlack = Color.argb(0, 0, 0, 0);
             int white = Color.argb(alpha, 0xff, 0xff, 0xff);
@@ -370,7 +370,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     @Override
     public void showKeyboard() {
         InputMethodManager inputManager =
-                (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.showSoftInput(this, 0);
     }
 

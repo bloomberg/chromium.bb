@@ -5,14 +5,14 @@
 package org.chromium.memconsumer;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.view.KeyEvent;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.NumberPicker;
@@ -27,13 +27,13 @@ public class MemConsumer extends Activity {
     private NumberPicker mMemoryPicker;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
-
-        public void onServiceConnected(ComponentName name,
-                                       IBinder binder) {
-            mResidentService = ((ResidentService.ServiceBinder)binder).getService();
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            mResidentService = ((ResidentService.ServiceBinder) binder).getService();
             mResidentService.useMemory(mMemory);
         }
 
+        @Override
         public void onServiceDisconnected(ComponentName name) {
             mResidentService = null;
         }
@@ -55,7 +55,7 @@ public class MemConsumer extends Activity {
         for (int i = 0; i < mMemoryPicker.getChildCount(); i++) {
             View child = mMemoryPicker.getChildAt(i);
             if (child instanceof EditText) {
-                EditText editText = (EditText)child;
+                EditText editText = (EditText) child;
                 editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction (TextView v, int actionId, KeyEvent event) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@ package org.chromium.tools.findbugs.plugin;
  * SynchronizedThisDetector.
  */
 class SimpleSynchronizedThis {
-  private int i = 0;
+    private int mCounter = 0;
 
-  void synchronizedThis() {
-    synchronized(this) {
-      i++;
+    void synchronizedThis() {
+        synchronized (this) {
+            mCounter++;
+        }
     }
-  }
 }

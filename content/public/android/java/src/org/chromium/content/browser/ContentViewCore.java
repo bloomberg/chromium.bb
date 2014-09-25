@@ -2829,7 +2829,7 @@ public class ContentViewCore
         final int offsetYInDp = (int) (mSmartClipOffsetY / deviceScale);
         clipRect.offset(-offsetXInDp, -offsetYInDp);
 
-        if (mSmartClipDataListener != null ) {
+        if (mSmartClipDataListener != null) {
             mSmartClipDataListener.onSmartClipDataExtracted(text, html, clipRect);
         }
     }

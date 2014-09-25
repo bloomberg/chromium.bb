@@ -33,7 +33,7 @@ import java.util.Map;
 class MediaResourceGetter {
 
     private static final String TAG = "MediaResourceGetter";
-    private static final MediaMetadata EMPTY_METADATA = new MediaMetadata(0,0,0,false);
+    private static final MediaMetadata EMPTY_METADATA = new MediaMetadata(0, 0, 0, false);
 
     private final MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
 
@@ -95,7 +95,7 @@ class MediaResourceGetter {
                 return false;
             if (getClass() != obj.getClass())
                 return false;
-            MediaMetadata other = (MediaMetadata)obj;
+            MediaMetadata other = (MediaMetadata) obj;
             if (mDurationInMilliseconds != other.mDurationInMilliseconds)
                 return false;
             if (mHeight != other.mHeight)
@@ -403,7 +403,7 @@ class MediaResourceGetter {
     }
 
     @VisibleForTesting
-    void configure(String url, Map<String,String> headers) {
+    void configure(String url, Map<String, String> headers) {
         mRetriever.setDataSource(url, headers);
     }
 

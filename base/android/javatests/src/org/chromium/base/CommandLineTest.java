@@ -122,7 +122,7 @@ public class CommandLineTest extends InstrumentationTestCase {
                                   "i\\'j",
                                   "k\\\"l",
                                   "mn\\'op",
-                                  "qr\\\"st",};
+                                  "qr\\\"st"};
         checkTokenizer(expected, toParse);
     }
 }

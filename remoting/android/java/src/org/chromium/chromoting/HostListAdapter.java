@@ -29,7 +29,7 @@ class HostListAdapter extends ArrayAdapter<HostInfo> {
     /** Generates a View corresponding to this particular host. */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TextView target = (TextView)super.getView(position, convertView, parent);
+        TextView target = (TextView) super.getView(position, convertView, parent);
 
         final HostInfo host = getItem(position);
 

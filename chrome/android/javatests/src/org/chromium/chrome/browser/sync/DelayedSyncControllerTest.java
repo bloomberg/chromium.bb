@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.sync;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -19,8 +21,6 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 public class DelayedSyncControllerTest extends ChromeShellTestBase {
     private static final Account TEST_ACCOUNT =

@@ -159,7 +159,7 @@ public class AppBannerView extends SwipableOverlayView
      * @return            The created banner.
      */
     public static AppBannerView create(
-            ContentViewCore contentViewCore, Observer observer,AppData data) {
+            ContentViewCore contentViewCore, Observer observer, AppData data) {
         Context context = contentViewCore.getContext().getApplicationContext();
         AppBannerView banner =
                 (AppBannerView) LayoutInflater.from(context).inflate(BANNER_LAYOUT, null);

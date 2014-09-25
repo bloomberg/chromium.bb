@@ -104,7 +104,7 @@ class BatteryStatusManager {
 
        int current = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
        int max = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-       double level = (double)current / (double)max;
+       double level = (double) current / (double) max;
        if (level < 0 || level > 1) {
            // Sanity check, assume default value in this case.
            level = 1.0;

@@ -1,20 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.tools.findbugs.plugin;
 
+import org.apache.bcel.classfile.Code;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.bcel.OpcodeStackDetector;
-
-import org.apache.bcel.classfile.Code;
 
 /**
  * This class detects the synchronized method.
  */
 public class SynchronizedMethodDetector extends OpcodeStackDetector {
-
     private BugReporter mBugReporter;
 
     public SynchronizedMethodDetector(BugReporter bugReporter) {

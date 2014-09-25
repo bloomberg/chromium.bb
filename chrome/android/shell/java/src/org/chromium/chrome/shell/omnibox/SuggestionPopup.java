@@ -105,7 +105,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
 
     private int getSuggestionPopupHeight() {
         Rect appRect = new Rect();
-        ((ChromeShellActivity)mContext).getWindow().getDecorView().
+        ((ChromeShellActivity) mContext).getWindow().getDecorView().
                 getWindowVisibleDisplayFrame(appRect);
         int dropDownItemHeight = mContext.getResources().
                 getDimensionPixelSize(R.dimen.dropdown_item_height);

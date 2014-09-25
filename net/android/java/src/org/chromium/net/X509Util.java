@@ -55,14 +55,11 @@ public class X509Util {
             if (intent.getAction().equals(KeyChain.ACTION_STORAGE_CHANGED)) {
                 try {
                     reloadDefaultTrustManager();
-                }
-                catch (CertificateException e) {
+                } catch (CertificateException e) {
                     Log.e(TAG, "Unable to reload the default TrustManager", e);
-                }
-                catch (KeyStoreException e) {
+                } catch (KeyStoreException e) {
                     Log.e(TAG, "Unable to reload the default TrustManager", e);
-                }
-                catch (NoSuchAlgorithmException e) {
+                } catch (NoSuchAlgorithmException e) {
                     Log.e(TAG, "Unable to reload the default TrustManager", e);
                 }
             }
@@ -377,7 +374,7 @@ public class X509Util {
             }
 
             // If the subject and public key match, this is a system root.
-            X509Certificate anchorX509 = (X509Certificate)anchor;
+            X509Certificate anchorX509 = (X509Certificate) anchor;
             if (root.getSubjectX500Principal().equals(anchorX509.getSubjectX500Principal()) &&
                 root.getPublicKey().equals(anchorX509.getPublicKey())) {
                 sSystemTrustAnchorCache.add(key);

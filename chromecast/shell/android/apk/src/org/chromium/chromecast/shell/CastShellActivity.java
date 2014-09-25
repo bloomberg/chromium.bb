@@ -80,7 +80,7 @@ public class CastShellActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         setContentView(R.layout.cast_shell_activity);
         mCastWindowManager = (CastWindowManager) findViewById(R.id.shell_container);
@@ -216,7 +216,7 @@ public class CastShellActivity extends Activity {
         // Clamp within [DEFAULT_HEIGHT_PIXELS, displayHeight]
         int desiredHeight =
                 Math.min(displayHeight, Math.max(DEFAULT_HEIGHT_PIXELS, requestedHeight));
-        double deviceScaleFactor = ((double)displayHeight) / desiredHeight;
+        double deviceScaleFactor = ((double) displayHeight) / desiredHeight;
         Log.d(TAG, "Using scale factor " + deviceScaleFactor + " to set height " + desiredHeight);
         CommandLine.getInstance().appendSwitchWithValue("force-device-scale-factor",
                 String.valueOf(deviceScaleFactor));

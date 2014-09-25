@@ -9,8 +9,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.UiUtils;
 
@@ -168,6 +168,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
             return mFontSize;
         }
 
+        @Override
         public void onChangeFontSize(float font) {
             mFontSize = font;
         }
@@ -176,10 +177,12 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
             return mForceEnableZoom;
         }
 
+        @Override
         public void onChangeForceEnableZoom(boolean enabled) {
             mForceEnableZoom = enabled;
         }
 
+        @Override
         public void onChangeUserSetForceEnableZoom(boolean enabled) {
             mUserSetForceEnableZoom = enabled;
         }
@@ -191,6 +194,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     private void getFontSizePrefs(final Context context) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 mFontSizePrefs = FontSizePrefs.getInstance(context);
             }
@@ -199,6 +203,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     private void setFontScale(final float fontsize) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 mFontSizePrefs.setFontScaleFactor(fontsize);
             }
@@ -216,6 +221,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     private void setForceEnableZoom(final boolean enabled) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 mFontSizePrefs.setForceEnableZoom(enabled);
             }
@@ -233,6 +239,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     private void setUserSetForceEnableZoom(final boolean enabled) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 mFontSizePrefs.setUserSetForceEnableZoom(enabled);
             }

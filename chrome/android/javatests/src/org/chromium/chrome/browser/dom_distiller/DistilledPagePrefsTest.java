@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
-import android.test.suitebuilder.annotation.SmallTest;
 import android.test.UiThreadTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -33,6 +33,7 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
 
     private void getDistilledPagePrefs() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 DomDistillerService domDistillerService = DomDistillerServiceFactory.
                         getForProfile(Profile.getLastUsedProfile());
@@ -167,6 +168,7 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
             return mFontFamily;
         }
 
+        @Override
         public void onChangeFontFamily(FontFamily font) {
             mFontFamily = font;
         }
@@ -175,6 +177,7 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
             return mTheme;
         }
 
+        @Override
         public void onChangeTheme(Theme theme) {
             mTheme = theme;
         }
@@ -182,6 +185,7 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
 
     private void setFontFamily(final FontFamily font) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 mDistilledPagePrefs.setFontFamily(font);
             }
@@ -190,6 +194,7 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
 
     private void setTheme(final Theme theme) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 mDistilledPagePrefs.setTheme(theme);
             }

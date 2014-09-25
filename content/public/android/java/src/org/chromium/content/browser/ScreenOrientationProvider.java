@@ -94,7 +94,7 @@ public class ScreenOrientationProvider {
                 ScreenOrientationConstants.EXTRA_ORIENTATION,
                 ScreenOrientationValues.DEFAULT);
         defaultOrientation = getOrientationFromWebScreenOrientations(
-                (byte)orientation, activity);
+                (byte) orientation, activity);
 
         try {
             if (defaultOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {

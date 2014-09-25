@@ -124,6 +124,7 @@
       <property name="allowEmptyMethods" value="true"/>
    </module>
     <module name="WhitespaceAfter">
+      <property name="severity" value="error"/>
       <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
     </module>
     <module name="NoWhitespaceAfter">
@@ -142,7 +143,7 @@
       <property name="severity" value="warning"/>
     </module>
     <module name="ParenPad">
-      <property name="severity" value="warning"/>
+      <property name="severity" value="error"/>
     </module>
     <module name="ImportOrder">
       <property name="severity" value="error"/>
@@ -159,7 +160,9 @@
       <property name="throwsIndent" value="8"/>
     </module>
   </module>
-  <module name="FileTabCharacter"/>
+  <module name="FileTabCharacter">
+    <property name="severity" value="error"/>
+  </module>
   <module name="RegexpSingleline">
     <property name="format" value="((//.*)|(\*.*))FIXME"/>
     <property name="message" value="TODO is preferred to FIXME.  e.g. &quot;TODO(johndoe):"/>

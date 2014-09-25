@@ -84,7 +84,7 @@ class SystemMessageHandler extends Handler {
             mQueueHasSyncBarrier = false;
             return;
         }
-        Message queueHead = (Message)getField(mMessageQueue, mMessageQueueMessageField);
+        Message queueHead = (Message) getField(mMessageQueue, mMessageQueueMessageField);
         setqueueHasSyncBarrier(isSyncBarrierMessage(queueHead));
     }
 
@@ -100,7 +100,7 @@ class SystemMessageHandler extends Handler {
         boolean success = false;
         try {
             Method getQueueMethod = Looper.class.getMethod("getQueue", new Class[]{});
-            mMessageQueue = (MessageQueue)getQueueMethod.invoke(getLooper());
+            mMessageQueue = (MessageQueue) getQueueMethod.invoke(getLooper());
 
             mMessageQueueMessageField = mMessageQueue.getClass().getDeclaredField("mMessages");
             mMessageQueueMessageField.setAccessible(true);

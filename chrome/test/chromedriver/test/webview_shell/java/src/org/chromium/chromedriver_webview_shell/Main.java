@@ -6,8 +6,6 @@ package org.chromium.chromedriver_webview_shell;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 import android.webkit.WebChromeClient;
@@ -33,11 +31,13 @@ public class Main extends Activity {
 
         final Activity activity = this;
         mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
             public void onProgressChanged(WebView view, int progress) {
                 activity.setProgress(progress * 100);
             }
          });
         mWebView.setWebViewClient(new WebViewClient() {
+            @Override
             public void onReceivedError(WebView view, int errorCode, String description,
                 String failingUrl) {
                 Toast.makeText(activity, "Error: " + description, Toast.LENGTH_SHORT).show();

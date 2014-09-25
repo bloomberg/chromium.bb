@@ -159,7 +159,7 @@ public class AwSettings {
                         case RUN_RUNNABLE_BLOCKING:
                             synchronized (mAwSettingsLock) {
                                 if (mNativeAwSettings != 0) {
-                                    ((Runnable)msg.obj).run();
+                                    ((Runnable) msg.obj).run();
                                 }
                                 mSynchronizationPending = false;
                                 mAwSettingsLock.notifyAll();

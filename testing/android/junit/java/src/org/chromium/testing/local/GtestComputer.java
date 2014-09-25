@@ -51,7 +51,7 @@ public class GtestComputer extends Computer {
 
         public void filter(Filter filter) throws NoTestsRemainException {
             if (mRunner instanceof Filterable) {
-                ((Filterable)mRunner).filter(filter);
+                ((Filterable) mRunner).filter(filter);
             }
         }
     }

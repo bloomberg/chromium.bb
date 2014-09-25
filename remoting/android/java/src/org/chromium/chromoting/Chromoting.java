@@ -155,7 +155,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         mHostListLoader = new HostListLoader();
 
         // Get ahold of our view widgets.
-        mHostListView = (ListView)findViewById(R.id.hostList_chooser);
+        mHostListView = (ListView) findViewById(R.id.hostList_chooser);
         mHostListView.setEmptyView(findViewById(R.id.hostList_empty));
         mProgressView = findViewById(R.id.hostList_progress);
 
@@ -457,6 +457,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     private ThirdPartyTokenFetcher createTokenFetcher(HostInfo host) {
         ThirdPartyTokenFetcher.Callback callback = new ThirdPartyTokenFetcher.Callback() {
+            @Override
             public void onTokenFetched(String code, String accessToken) {
                 // The native client sends the OAuth authorization code to the host as the token so
                 // that the host can obtain the shared secret from the third party authorization

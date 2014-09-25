@@ -4,14 +4,11 @@
 
 package org.chromium.base;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
-
-import org.chromium.base.CalledByNative;
 
 /**
  * Utilities for testing operations on content URI.

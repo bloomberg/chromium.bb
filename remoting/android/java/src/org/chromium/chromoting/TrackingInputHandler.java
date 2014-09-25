@@ -121,7 +121,7 @@ public class TrackingInputHandler implements TouchInputHandler {
             repositionImage();
         }
 
-        mViewer.injectMouseEvent((int)newX, (int)newY, BUTTON_UNDEFINED, false);
+        mViewer.injectMouseEvent((int) newX, (int) newY, BUTTON_UNDEFINED, false);
     }
 
     /**
@@ -136,8 +136,8 @@ public class TrackingInputHandler implements TouchInputHandler {
 
             // Translate so the cursor is displayed in the middle of the screen.
             mRenderData.transform.postTranslate(
-                    (float)mRenderData.screenWidth / 2 - cursorScreen[0],
-                    (float)mRenderData.screenHeight / 2 - cursorScreen[1]);
+                    (float) mRenderData.screenWidth / 2 - cursorScreen[0],
+                    (float) mRenderData.screenHeight / 2 - cursorScreen[1]);
 
             // Now the cursor is displayed in the middle of the screen, see if the image can be
             // panned so that more of it is visible. The primary goal is to show as much of the
@@ -200,14 +200,14 @@ public class TrackingInputHandler implements TouchInputHandler {
             }
 
             // Get image size scaled to screen coordinates.
-            float[] imageSize = {(float)mRenderData.imageWidth, (float)mRenderData.imageHeight};
+            float[] imageSize = {mRenderData.imageWidth, mRenderData.imageHeight};
             mRenderData.transform.mapVectors(imageSize);
 
             if (imageSize[0] < mRenderData.screenWidth && imageSize[1] < mRenderData.screenHeight) {
                 // Displayed image is too small in both directions, so apply the minimum zoom
                 // level needed to fit either the width or height.
-                float scale = Math.min((float)mRenderData.screenWidth / mRenderData.imageWidth,
-                                       (float)mRenderData.screenHeight / mRenderData.imageHeight);
+                float scale = Math.min((float) mRenderData.screenWidth / mRenderData.imageWidth,
+                                       (float) mRenderData.screenHeight / mRenderData.imageHeight);
                 mRenderData.transform.setScale(scale, scale);
             }
 
@@ -217,7 +217,7 @@ public class TrackingInputHandler implements TouchInputHandler {
 
     /** Injects a button event using the current cursor location. */
     private void injectButtonEvent(int button, boolean pressed) {
-        mViewer.injectMouseEvent((int)mCursorPosition.x, (int)mCursorPosition.y, button, pressed);
+        mViewer.injectMouseEvent((int) mCursorPosition.x, (int) mCursorPosition.y, button, pressed);
     }
 
     /** Processes a (multi-finger) swipe gesture. */
@@ -288,7 +288,7 @@ public class TrackingInputHandler implements TouchInputHandler {
 
     @Override
     public void onHostSizeChanged(int width, int height) {
-        moveCursor((float)width / 2, (float)height / 2);
+        moveCursor((float) width / 2, (float) height / 2);
         repositionImageWithZoom();
     }
 
@@ -302,7 +302,7 @@ public class TrackingInputHandler implements TouchInputHandler {
         }
         int deltaX = mFlingScroller.getCurrX() - previousX;
         int deltaY = mFlingScroller.getCurrY() - previousY;
-        float[] delta = {(float)deltaX, (float)deltaY};
+        float[] delta = {deltaX, deltaY};
         synchronized (mRenderData) {
             Matrix canvasToImage = new Matrix();
             mRenderData.transform.invert(canvasToImage);
@@ -331,7 +331,7 @@ public class TrackingInputHandler implements TouchInputHandler {
             }
 
             if (pointerCount == 2 && mSwipePinchDetector.isSwiping()) {
-                mViewer.injectMouseWheelDeltaEvent(-(int)distanceX, -(int)distanceY);
+                mViewer.injectMouseWheelDeltaEvent(-(int) distanceX, -(int) distanceY);
 
                 // Prevent the cursor being moved or flung by the gesture.
                 mSuppressCursorMovement = true;
@@ -373,7 +373,7 @@ public class TrackingInputHandler implements TouchInputHandler {
             // this, the cursor movement is computed from relative coordinate changes from
             // |mFlingScroller|. This means the fling can be started at (0, 0) with no bounding
             // constraints - the cursor is already constrained by the desktop size.
-            mFlingScroller.fling(0, 0, (int)velocityX, (int)velocityY, Integer.MIN_VALUE,
+            mFlingScroller.fling(0, 0, (int) velocityX, (int) velocityY, Integer.MIN_VALUE,
                     Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE);
             // Initialize the scroller's current offset coordinates, since they are used for
             // calculating the delta values.

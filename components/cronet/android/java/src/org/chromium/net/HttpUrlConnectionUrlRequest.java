@@ -172,7 +172,7 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
             throw new IllegalArgumentException(
                 "Upload contentLength is too big.");
         }
-        mUploadContentLength = (int)contentLength;
+        mUploadContentLength = (int) contentLength;
         mPostContentType = contentType;
         mPostDataChannel = channel;
         mPostData = null;
@@ -205,7 +205,7 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
             }
 
             URL url = new URL(mUrl);
-            mConnection = (HttpURLConnection)url.openConnection();
+            mConnection = (HttpURLConnection) url.openConnection();
             // If configured, use the provided http verb.
             if (mMethod != null) {
                 try {
@@ -381,13 +381,13 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
                     continue;
                 } else {
                     mSkippingToOffset = false;
-                    start = (int)(mOffset - (mSize - size));
+                    start = (int) (mOffset - (mSize - size));
                     count -= start;
                 }
             }
 
             if (mContentLengthLimit != 0 && mSize > mContentLengthLimit) {
-                count -= (int)(mSize - mContentLengthLimit);
+                count -= (int) (mSize - mContentLengthLimit);
                 if (count > 0) {
                     mSink.write(ByteBuffer.wrap(buffer, start, count));
                 }
@@ -459,12 +459,12 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
      */
     @Override
     public ByteBuffer getByteBuffer() {
-        return ((ChunkedWritableByteChannel)mSink).getByteBuffer();
+        return ((ChunkedWritableByteChannel) mSink).getByteBuffer();
     }
 
     @Override
     public byte[] getResponseAsBytes() {
-        return ((ChunkedWritableByteChannel)mSink).getBytes();
+        return ((ChunkedWritableByteChannel) mSink).getBytes();
     }
 
     @Override

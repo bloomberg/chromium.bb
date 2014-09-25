@@ -251,8 +251,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
             public Boolean call() throws Exception {
                 Bitmap bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
                 Canvas canvas = new Canvas(bitmap);
-                canvas.translate(-(float)mTestContainerView.getWidth() / 2,
-                        -(float)mTestContainerView.getHeight() / 2);
+                canvas.translate(-(float) mTestContainerView.getWidth() / 2,
+                        -(float) mTestContainerView.getHeight() / 2);
                 mAwContents.onDraw(canvas);
                 return bitmap.getPixel(0, 0) == Color.BLUE;
             }
