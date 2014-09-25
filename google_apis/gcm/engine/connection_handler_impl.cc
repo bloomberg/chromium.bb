@@ -184,9 +184,9 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
   }
 
   // Used to determine whether a Socket::Read is necessary.
-  size_t min_bytes_needed = 0;
+  int min_bytes_needed = 0;
   // Used to limit the size of the Socket::Read.
-  size_t max_bytes_needed = 0;
+  int max_bytes_needed = 0;
 
   switch(state) {
     case MCS_VERSION_TAG_AND_SIZE:
@@ -214,7 +214,7 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
   }
   DCHECK_GE(max_bytes_needed, min_bytes_needed);
 
-  size_t unread_byte_count = input_stream_->UnreadByteCount();
+  int unread_byte_count = input_stream_->UnreadByteCount();
   if (min_bytes_needed > unread_byte_count &&
       input_stream_->Refresh(
           base::Bind(&ConnectionHandlerImpl::WaitForData,

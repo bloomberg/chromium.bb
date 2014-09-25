@@ -20,11 +20,11 @@ typedef std::vector<net::MockRead> ReadList;
 typedef std::vector<net::MockWrite> WriteList;
 
 const char kReadData[] = "read_data";
-const uint64 kReadDataSize = arraysize(kReadData) - 1;
+const int kReadDataSize = arraysize(kReadData) - 1;
 const char kReadData2[] = "read_alternate_data";
-const uint64 kReadData2Size = arraysize(kReadData2) - 1;
+const int kReadData2Size = arraysize(kReadData2) - 1;
 const char kWriteData[] = "write_data";
-const uint64 kWriteDataSize = arraysize(kWriteData) - 1;
+const int kWriteDataSize = arraysize(kWriteData) - 1;
 
 class GCMSocketStreamTest : public testing::Test {
  public:
@@ -38,12 +38,12 @@ class GCMSocketStreamTest : public testing::Test {
   void PumpLoop();
 
   // Simulates a google::protobuf::io::CodedInputStream read.
-  base::StringPiece DoInputStreamRead(uint64 bytes);
+  base::StringPiece DoInputStreamRead(int bytes);
   // Simulates a google::protobuf::io::CodedOutputStream write.
-  uint64 DoOutputStreamWrite(const base::StringPiece& write_src);
+  int DoOutputStreamWrite(const base::StringPiece& write_src);
 
   // Synchronous Refresh wrapper.
-  void WaitForData(size_t msg_size);
+  void WaitForData(int msg_size);
 
   base::MessageLoop* message_loop() { return &message_loop_; };
   net::DelayedSocketData* data_provider() { return data_provider_.get(); }
@@ -101,8 +101,8 @@ void GCMSocketStreamTest::PumpLoop() {
   run_loop.RunUntilIdle();
 }
 
-base::StringPiece GCMSocketStreamTest::DoInputStreamRead(uint64 bytes) {
-  uint64 total_bytes_read = 0;
+base::StringPiece GCMSocketStreamTest::DoInputStreamRead(int bytes) {
+  int total_bytes_read = 0;
   const void* initial_buffer = NULL;
   const void* buffer = NULL;
   int size = 0;
@@ -130,22 +130,22 @@ base::StringPiece GCMSocketStreamTest::DoInputStreamRead(uint64 bytes) {
                            total_bytes_read);
 }
 
-uint64 GCMSocketStreamTest::DoOutputStreamWrite(
+int GCMSocketStreamTest::DoOutputStreamWrite(
     const base::StringPiece& write_src) {
   DCHECK_EQ(socket_output_stream_->GetState(), SocketOutputStream::EMPTY);
-  uint64 total_bytes_written = 0;
+  int total_bytes_written = 0;
   void* buffer = NULL;
   int size = 0;
-  size_t bytes = write_src.size();
+  int bytes = write_src.size();
 
   do {
     if (!socket_output_stream_->Next(&buffer, &size))
       break;
-    uint64 bytes_to_write = (static_cast<uint64>(size) < bytes ? size : bytes);
+    int bytes_to_write = (size < bytes ? size : bytes);
     memcpy(buffer,
            write_src.data() + total_bytes_written,
            bytes_to_write);
-    if (bytes_to_write < static_cast<uint64>(size))
+    if (bytes_to_write < size)
       socket_output_stream_->BackUp(size - bytes_to_write);
     total_bytes_written += bytes_to_write;
   } while (total_bytes_written < bytes);
@@ -159,7 +159,7 @@ uint64 GCMSocketStreamTest::DoOutputStreamWrite(
   return total_bytes_written;
 }
 
-void GCMSocketStreamTest::WaitForData(size_t msg_size) {
+void GCMSocketStreamTest::WaitForData(int msg_size) {
   while (input_stream()->UnreadByteCount() < msg_size) {
     base::RunLoop run_loop;
     if (input_stream()->Refresh(run_loop.QuitClosure(),
@@ -207,8 +207,8 @@ TEST_F(GCMSocketStreamTest, ReadDataSync) {
 
 // A read that comes in two parts.
 TEST_F(GCMSocketStreamTest, ReadPartialDataSync) {
-  size_t first_read_len = kReadDataSize / 2;
-  size_t second_read_len = kReadDataSize - first_read_len;
+  int first_read_len = kReadDataSize / 2;
+  int second_read_len = kReadDataSize - first_read_len;
   ReadList read_list;
   read_list.push_back(
       net::MockRead(net::SYNCHRONOUS,
@@ -227,8 +227,8 @@ TEST_F(GCMSocketStreamTest, ReadPartialDataSync) {
 
 // A read where no data is available at first (IO_PENDING will be returned).
 TEST_F(GCMSocketStreamTest, ReadAsync) {
-  size_t first_read_len = kReadDataSize / 2;
-  size_t second_read_len = kReadDataSize - first_read_len;
+  int first_read_len = kReadDataSize / 2;
+  int second_read_len = kReadDataSize - first_read_len;
   ReadList read_list;
   read_list.push_back(
       net::MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING));

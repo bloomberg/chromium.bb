@@ -72,7 +72,7 @@ class GCM_EXPORT SocketInputStream
   virtual int64 ByteCount() const OVERRIDE;
 
   // The remaining amount of valid data available to be read.
-  size_t UnreadByteCount() const;
+  int UnreadByteCount() const;
 
   // Reads from the socket, appending a max of |byte_limit| bytes onto the read
   // buffer. net::ERR_IO_PENDING is returned if the refresh can't complete
