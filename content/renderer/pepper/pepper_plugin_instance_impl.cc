@@ -1701,6 +1701,12 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
 
   UpdateLayerTransform();
 
+  if (bound_graphics_2d_platform_ &&
+      (!view_data_.is_page_visible ||
+       PP_ToGfxRect(view_data_.clip_rect).IsEmpty())) {
+    bound_graphics_2d_platform_->ClearCache();
+  }
+
   // It's possible that Delete() has been called but the renderer hasn't
   // released its reference to this object yet.
   if (instance_interface_) {

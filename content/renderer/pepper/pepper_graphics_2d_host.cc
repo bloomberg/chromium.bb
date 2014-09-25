@@ -307,6 +307,7 @@ bool PepperGraphics2DHost::BindToInstance(
     new_instance->InvalidateRect(gfx::Rect());
   }
 
+  cached_bitmap_.reset();
   texture_mailbox_modified_ = true;
 
   bound_instance_ = new_instance;
@@ -406,6 +407,10 @@ gfx::Size PepperGraphics2DHost::Size() const {
   if (!image_data_.get())
     return gfx::Size();
   return gfx::Size(image_data_->width(), image_data_->height());
+}
+
+void PepperGraphics2DHost::ClearCache() {
+  cached_bitmap_.reset();
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
@@ -547,9 +552,17 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
   return ReadImageData(image, &top_left) ? PP_OK : PP_ERROR_FAILED;
 }
 
-void ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
-                     uint32 sync_point,
-                     bool lost_resource) {}
+void PepperGraphics2DHost::ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
+                                           const gfx::Size& bitmap_size,
+                                           uint32 sync_point,
+                                           bool lost_resource) {
+  cached_bitmap_.reset();
+  // Only keep around a cached bitmap if the plugin is currently drawing (has
+  // need_flush_ack_ set).
+  if (need_flush_ack_ && bound_instance_)
+    cached_bitmap_ = bitmap.Pass();
+  cached_bitmap_size_ = bitmap_size;
+}
 
 bool PepperGraphics2DHost::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
@@ -558,10 +571,18 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
     return false;
   // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  scoped_ptr<cc::SharedBitmap> shared_bitmap =
-      RenderThreadImpl::current()
-          ->shared_bitmap_manager()
-          ->AllocateSharedBitmap(pixel_image_size);
+  scoped_ptr<cc::SharedBitmap> shared_bitmap;
+  if (cached_bitmap_) {
+    if (cached_bitmap_size_ == pixel_image_size)
+      shared_bitmap = cached_bitmap_.Pass();
+    else
+      cached_bitmap_.reset();
+  }
+  if (!shared_bitmap) {
+    shared_bitmap = RenderThreadImpl::current()
+                        ->shared_bitmap_manager()
+                        ->AllocateSharedBitmap(pixel_image_size);
+  }
   if (!shared_bitmap)
     return false;
   void* src = image_data_->Map();
@@ -572,7 +593,10 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
 
   *mailbox = cc::TextureMailbox(shared_bitmap->memory(), pixel_image_size);
   *release_callback = cc::SingleReleaseCallback::Create(
-      base::Bind(&ReleaseCallback, base::Passed(&shared_bitmap)));
+      base::Bind(&PepperGraphics2DHost::ReleaseCallback,
+                 this->AsWeakPtr(),
+                 base::Passed(&shared_bitmap),
+                 pixel_image_size));
   texture_mailbox_modified_ = false;
   return true;
 }

@@ -20,6 +20,7 @@
 #include "ui/gfx/size.h"
 
 namespace cc {
+class SharedBitmap;
 class SingleReleaseCallback;
 class TextureMailbox;
 }
@@ -84,6 +85,8 @@ class CONTENT_EXPORT PepperGraphics2DHost
   bool IsAlwaysOpaque() const;
   PPB_ImageData_Impl* ImageData();
   gfx::Size Size() const;
+
+  void ClearCache();
 
  private:
   PepperGraphics2DHost(RendererPpapiHost* host,
@@ -157,6 +160,11 @@ class CONTENT_EXPORT PepperGraphics2DHost
                                      gfx::Rect* op_rect,
                                      gfx::Point* delta);
 
+  void ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
+                       const gfx::Size& bitmap_size,
+                       uint32 sync_point,
+                       bool lost_resource);
+
   RendererPpapiHost* renderer_ppapi_host_;
 
   scoped_refptr<PPB_ImageData_Impl> image_data_;
@@ -192,6 +200,11 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   bool texture_mailbox_modified_;
   bool is_using_texture_layer_;
+
+  // This is a bitmap that was recently released by the compositor and may be
+  // used to transfer bytes to the compositor again.
+  scoped_ptr<cc::SharedBitmap> cached_bitmap_;
+  gfx::Size cached_bitmap_size_;
 
   friend class PepperGraphics2DHostTest;
   DISALLOW_COPY_AND_ASSIGN(PepperGraphics2DHost);
