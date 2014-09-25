@@ -168,14 +168,10 @@ void RecordOutgoingMessageToUMA(
     ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_HOUR;
   else if (message.time_to_live <= 24 * 60 * 60)
     ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_DAY;
-  else if (message.time_to_live <= 7 * 24 * 60 * 60)
-    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_WEEK;
-  else if (message.time_to_live < gcm::GCMClient::OutgoingMessage::kMaximumTTL)
-    ttl_category = TTL_MORE_THAN_ONE_WEEK;
   else
     ttl_category = TTL_MAXIMUM;
 
-  UMA_HISTOGRAM_ENUMERATION("GCM.GCMOutgoingMessageTTLCategory",
+  UMA_HISTOGRAM_ENUMERATION("GCM.OutgoingMessageTTL",
                             ttl_category,
                             TTL_CATEGORY_COUNT);
 }
