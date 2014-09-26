@@ -139,8 +139,7 @@ public class LibraryLoaderHelper {
             ApplicationInfo appInfo = context.getApplicationInfo();
             ZipFile file = new ZipFile(new File(appInfo.sourceDir), ZipFile.OPEN_READ);
             for (String libName : NativeLibraries.LIBRARIES) {
-                String jniNameInApk = "lib/" + Build.CPU_ABI + "/" +
-                    System.mapLibraryName(libName);
+                String jniNameInApk = getJniNameInApk(libName);
 
                 final ZipEntry entry = file.getEntry(jniNameInApk);
                 if (entry == null) {
@@ -227,12 +226,17 @@ public class LibraryLoaderHelper {
         deleteDirectorySync(libDir);
     }
 
+    @SuppressWarnings("deprecation")
+    private static String getJniNameInApk(String libName) {
+        // TODO(aurimas): Build.CPU_ABI has been deprecated. Replace it when final L SDK is public.
+        return "lib/" + Build.CPU_ABI + "/" + System.mapLibraryName(libName);
+    }
+
     private static void deleteDirectorySync(File dir) {
         try {
             File[] files = dir.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    String fileName = file.getName();
                     if (!file.delete()) {
                       Log.e(TAG, "Failed to remove " + file.getAbsolutePath());
                     }
