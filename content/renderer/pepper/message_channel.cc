@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/common/content_client.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
@@ -62,10 +60,6 @@ const char kVarToV8ConversionError[] =
     "Failed to convert a PostMessage "
     "argument from a PP_Var to a Javascript value. It may have cycles or be of "
     "an unsupported type.";
-
-bool HasDevPermission() {
-  return GetContentClient()->renderer()->IsPluginAllowedToUseDevChannelAPIs();
-}
 
 }  // namespace
 
@@ -227,7 +221,7 @@ v8::Local<v8::Value> MessageChannel::GetNamedProperty(
     return gin::CreateFunctionTemplate(isolate,
         base::Bind(&MessageChannel::PostMessageToNative,
                    weak_ptr_factory_.GetWeakPtr()))->GetFunction();
-  } else if (identifier == kPostMessageAndAwaitResponse && HasDevPermission()) {
+  } else if (identifier == kPostMessageAndAwaitResponse) {
     return gin::CreateFunctionTemplate(isolate,
         base::Bind(&MessageChannel::PostBlockingMessageToNative,
                    weak_ptr_factory_.GetWeakPtr()))->GetFunction();
@@ -256,7 +250,7 @@ bool MessageChannel::SetNamedProperty(v8::Isolate* isolate,
   PepperTryCatchV8 try_catch(instance_, V8VarConverter::kDisallowObjectVars,
                              isolate);
   if (identifier == kPostMessage ||
-      (identifier == kPostMessageAndAwaitResponse && HasDevPermission())) {
+      (identifier == kPostMessageAndAwaitResponse)) {
     try_catch.ThrowException("Cannot set properties with the name postMessage"
                              "or postMessageAndAwaitResponse");
     return true;
@@ -276,8 +270,7 @@ std::vector<std::string> MessageChannel::EnumerateNamedProperties(
   if (plugin_object)
     result = plugin_object->EnumerateNamedProperties(isolate);
   result.push_back(kPostMessage);
-  if (HasDevPermission())
-    result.push_back(kPostMessageAndAwaitResponse);
+  result.push_back(kPostMessageAndAwaitResponse);
   return result;
 }
 

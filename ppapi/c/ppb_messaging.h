@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Wed Sep 10 15:41:14 2014. */
+/* From ppb_messaging.idl modified Wed Sep 24 10:48:37 2014. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -17,8 +17,8 @@
 #include "ppapi/c/ppp_message_handler.h"
 
 #define PPB_MESSAGING_INTERFACE_1_0 "PPB_Messaging;1.0"
-#define PPB_MESSAGING_INTERFACE_1_2 "PPB_Messaging;1.2" /* dev */
-#define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_1_0
+#define PPB_MESSAGING_INTERFACE_1_2 "PPB_Messaging;1.2"
+#define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_1_2
 
 /**
  * @file
@@ -37,7 +37,7 @@
  * and is related to sending messages to JavaScript message event listeners on
  * the DOM element associated with specific module instance.
  */
-struct PPB_Messaging_1_2 { /* dev */
+struct PPB_Messaging_1_2 {
   /**
    * PostMessage() asynchronously invokes any listeners for message events on
    * the DOM element for the given module instance. A call to PostMessage()
@@ -157,11 +157,11 @@ struct PPB_Messaging_1_2 { /* dev */
   void (*UnregisterMessageHandler)(PP_Instance instance);
 };
 
+typedef struct PPB_Messaging_1_2 PPB_Messaging;
+
 struct PPB_Messaging_1_0 {
   void (*PostMessage)(PP_Instance instance, struct PP_Var message);
 };
-
-typedef struct PPB_Messaging_1_0 PPB_Messaging;
 /**
  * @}
  */
