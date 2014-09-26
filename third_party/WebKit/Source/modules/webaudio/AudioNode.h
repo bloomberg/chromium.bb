@@ -171,7 +171,7 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&);
 
     String channelCountMode();
-    void setChannelCountMode(const String&, ExceptionState&);
+    virtual void setChannelCountMode(const String&, ExceptionState&);
 
     String channelInterpretation();
     void setChannelInterpretation(const String&, ExceptionState&);
@@ -221,13 +221,13 @@ private:
 #endif
     static unsigned s_instanceCount;
 
-    // The new channel count mode that will be used to set the actual mode in the pre or post
-    // rendering phase.
-    ChannelCountMode m_newChannelCountMode;
 protected:
     unsigned m_channelCount;
     ChannelCountMode m_channelCountMode;
     AudioBus::ChannelInterpretation m_channelInterpretation;
+    // The new channel count mode that will be used to set the actual mode in the pre or post
+    // rendering phase.
+    ChannelCountMode m_newChannelCountMode;
 };
 
 } // namespace blink

@@ -28,6 +28,8 @@
 
 #include "modules/webaudio/PannerNode.h"
 
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/audio/HRTFPanner.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
@@ -577,6 +579,60 @@ void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node, HashMap<Audi
             }
         }
     }
+}
+
+void PannerNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+{
+    ASSERT(isMainThread());
+    AudioContext::AutoLocker locker(context());
+
+    // A PannerNode only supports 1 or 2 channels
+    if (channelCount > 0 && channelCount <= 2) {
+        if (m_channelCount != channelCount) {
+            m_channelCount = channelCount;
+            if (m_channelCountMode != Max)
+                updateChannelsForInputs();
+        }
+    } else {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexOutsideRange<unsigned long>(
+                "channelCount",
+                channelCount,
+                1,
+                ExceptionMessages::InclusiveBound,
+                2,
+                ExceptionMessages::InclusiveBound));
+    }
+}
+
+void PannerNode::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
+{
+    ASSERT(isMainThread());
+    AudioContext::AutoLocker locker(context());
+
+    ChannelCountMode oldMode = m_channelCountMode;
+
+    if (mode == "clamped-max") {
+        m_newChannelCountMode = ClampedMax;
+    } else if (mode == "explicit") {
+        m_newChannelCountMode = Explicit;
+    } else if (mode == "max") {
+        // This is not supported for a PannerNode, which can only handle 1 or 2 channels.
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::failedToSet(
+                "channelCountMode",
+                "PannerNode",
+                "'max' is not allowed"));
+        m_newChannelCountMode = oldMode;
+    } else {
+        // Do nothing for other invalid values.
+        m_newChannelCountMode = oldMode;
+    }
+
+    if (m_newChannelCountMode != oldMode)
+        context()->addChangedChannelCountMode(this);
 }
 
 void PannerNode::trace(Visitor* visitor)

@@ -109,6 +109,14 @@ PASS node.gain.exponentialRampToValueAtTime(0, 0.1) threw exception InvalidState
 PASS oc = new OfflineAudioContext(1, 44100, 44100) did not throw exception.
 PASS conv = oc.createConvolver() did not throw exception.
 PASS conv.buffer = oc.createBuffer(1, 100, 22050) threw exception NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer sample rate of 22050 does not match the context rate of 44100 Hz..
+PASS panner.channelCount = 1 did not throw exception.
+PASS panner.channelCount = 2 did not throw exception.
+PASS panner.channelCount = 0 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channelCount provided (0) is outside the range [1, 2]..
+PASS panner.channelCount = 3 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channelCount provided (3) is outside the range [1, 2]..
+PASS panner.channelCountMode = 'max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': Failed to set the 'channelCountMode' property on 'PannerNode': 'max' is not allowed.
+PASS panner.channelCountMode = 'explicit' did not throw exception.
+PASS panner.channelCountMode = 'clamped-max' did not throw exception.
+PASS panner.channelCountMode = 'junk' did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

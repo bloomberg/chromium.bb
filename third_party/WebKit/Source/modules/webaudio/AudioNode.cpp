@@ -54,10 +54,10 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_lastNonSilentTime(-1)
     , m_connectionRefCount(0)
     , m_isDisabled(false)
-    , m_newChannelCountMode(Max)
     , m_channelCount(2)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
+    , m_newChannelCountMode(Max)
 {
     m_context->registerLiveNode(*this);
 #if DEBUG_AUDIONODE_REFERENCES

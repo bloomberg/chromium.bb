@@ -107,6 +107,9 @@ public:
     virtual double tailTime() const OVERRIDE { return m_panner ? m_panner->tailTime() : 0; }
     virtual double latencyTime() const OVERRIDE { return m_panner ? m_panner->latencyTime() : 0; }
 
+    virtual void setChannelCount(unsigned long, ExceptionState&) FINAL;
+    virtual void setChannelCountMode(const String&, ExceptionState&) FINAL;
+
     virtual void trace(Visitor*) OVERRIDE;
 
 private:

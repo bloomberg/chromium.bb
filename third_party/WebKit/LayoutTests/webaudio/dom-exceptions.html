@@ -19,6 +19,7 @@ var otherContext;
 var node;
 var node2;
 var mode;
+var panner;
 
 function runTest() {
     if (window.testRunner) {
@@ -219,6 +220,19 @@ function runTest() {
     shouldNotThrow("oc = new OfflineAudioContext(1, 44100, 44100)");
     shouldNotThrow("conv = oc.createConvolver()");
     shouldThrow("conv.buffer = oc.createBuffer(1, 100, 22050)");
+
+    // PannerNode channel count and mode
+    panner = context.createPanner();
+    // Channel count can only be set to 1 or 2.
+    shouldNotThrow("panner.channelCount = 1");
+    shouldNotThrow("panner.channelCount = 2");
+    shouldThrow("panner.channelCount = 0");
+    shouldThrow("panner.channelCount = 3");
+    // It is illegal to set the mode to 'max'
+    shouldThrow("panner.channelCountMode = 'max'");
+    shouldNotThrow("panner.channelCountMode = 'explicit'");
+    shouldNotThrow("panner.channelCountMode = 'clamped-max'");
+    shouldNotThrow("panner.channelCountMode = 'junk'");
 }
 
 runTest();
