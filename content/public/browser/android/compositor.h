@@ -55,10 +55,6 @@ class CONTENT_EXPORT Compositor {
   // having been made visible again.
   virtual void SetVisible(bool visible) = 0;
 
-  // Set the output surface handle which the compositor renders into.
-  // DEPRECATED: Use SetSurface() which takes a Java Surface object.
-  virtual void SetWindowSurface(ANativeWindow* window) = 0;
-
   // Set the output surface which the compositor renders into.
   virtual void SetSurface(jobject surface) = 0;
 

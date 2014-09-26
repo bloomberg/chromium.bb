@@ -61,7 +61,6 @@ class CONTENT_EXPORT CompositorImpl
  private:
   // Compositor implementation.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE;
-  virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
   virtual void SetSurface(jobject surface) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void setDeviceScaleFactor(float factor) OVERRIDE;
@@ -103,6 +102,8 @@ class CONTENT_EXPORT CompositorImpl
                        base::TimeDelta vsync_period) OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual ui::SystemUIResourceManager& GetSystemUIResourceManager() OVERRIDE;
+
+  void SetWindowSurface(ANativeWindow* window);
 
   enum CompositingTrigger {
     DO_NOT_COMPOSITE,
