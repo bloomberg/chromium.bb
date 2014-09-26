@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "content/public/browser/browser_thread.h"
 #include "device/core/device_client.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_service.h"
@@ -38,6 +39,7 @@ HidDeviceManager::GetFactoryInstance() {
 scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     const Extension* extension,
     const std::vector<HidDeviceFilter>& filters) {
+  DCHECK(IsCalledOnValidThread());
   UpdateDevices();
 
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
@@ -107,6 +109,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
 
 bool HidDeviceManager::GetDeviceInfo(int resource_id,
                                      device::HidDeviceInfo* device_info) {
+  DCHECK(IsCalledOnValidThread());
   UpdateDevices();
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
@@ -121,6 +124,7 @@ bool HidDeviceManager::GetDeviceInfo(int resource_id,
 
 bool HidDeviceManager::HasPermission(const Extension* extension,
                                      const device::HidDeviceInfo& device_info) {
+  DCHECK(IsCalledOnValidThread());
   UsbDevicePermission::CheckParam usbParam(
       device_info.vendor_id,
       device_info.product_id,
@@ -142,8 +146,13 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
   return false;
 }
 
+// static
+bool HidDeviceManager::IsCalledOnValidThread() {
+  return content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE);
+}
+
 void HidDeviceManager::UpdateDevices() {
-  thread_checker_.CalledOnValidThread();
+  DCHECK(IsCalledOnValidThread());
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
 

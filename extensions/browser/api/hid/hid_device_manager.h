@@ -51,10 +51,9 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
 
   static const char* service_name() { return "HidDeviceManager"; }
+  static bool IsCalledOnValidThread();
 
   void UpdateDevices();
-
-  base::ThreadChecker thread_checker_;
 
   int next_resource_id_;
 
