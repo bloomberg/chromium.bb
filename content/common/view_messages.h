@@ -71,10 +71,14 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
-IPC_ENUM_TRAITS(blink::WebMediaPlayerAction::Type)
-IPC_ENUM_TRAITS(blink::WebPluginAction::Type)
-IPC_ENUM_TRAITS(blink::WebPopupType)
-IPC_ENUM_TRAITS(blink::WebTextDirection)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
+                          blink::WebMediaPlayerAction::Type::TypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
+                          blink::WebPluginAction::Type::TypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
+                          blink::WebPopupType::WebPopupTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
+                          blink::WebTextDirection::WebTextDirectionLast)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
