@@ -459,7 +459,7 @@ function handleCanExecuteForDocument(e) {
       e.canExecute = e.currentTarget.activeElement !== $('term');
       break;
     default:
-      handleCanExecuteForList(e);
+      canExecuteForList(e);
       break;
   }
 }
