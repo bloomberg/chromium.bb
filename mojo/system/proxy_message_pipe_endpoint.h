@@ -37,35 +37,22 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
   explicit ProxyMessagePipeEndpoint(ChannelEndpoint* channel_endpoint);
-  // Constructs a |ProxyMessagePipeEndpoint|, whose peer may already be closed.
-  // This is used to construct one to replace a |LocalMessagePipeEndpoint|, when
-  // transferring a message pipe handle over a remote message pipe.
-  ProxyMessagePipeEndpoint(
-      ChannelEndpoint* channel_endpoint,
-      bool is_peer_open);
   virtual ~ProxyMessagePipeEndpoint();
 
   // |MessagePipeEndpoint| implementation:
   virtual Type GetType() const OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
-  virtual bool Run() OVERRIDE;
   virtual void OnRemove() OVERRIDE;
 
  private:
   void Detach();
 
-  // TODO(vtl): Get rid of these.
+  // TODO(vtl): Get rid of this.
   bool is_attached() const { return !!channel_endpoint_.get(); }
-  bool is_running() const { return is_running_; }
 
   // This should only be set if we're attached.
   scoped_refptr<ChannelEndpoint> channel_endpoint_;
-
-  // TODO(vtl): Get rid of this.
-  bool is_running_;
-
-  bool is_peer_open_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);
 };

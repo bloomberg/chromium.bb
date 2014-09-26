@@ -16,21 +16,10 @@ namespace system {
 
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
     ChannelEndpoint* channel_endpoint)
-    : channel_endpoint_(channel_endpoint),
-      is_running_(false),
-      is_peer_open_(true) {
-}
-
-ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
-    ChannelEndpoint* channel_endpoint,
-    bool is_peer_open)
-    : channel_endpoint_(channel_endpoint),
-      is_running_(false),
-      is_peer_open_(is_peer_open) {
+    : channel_endpoint_(channel_endpoint) {
 }
 
 ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
-  DCHECK(!is_running());
   DCHECK(!is_attached());
 }
 
@@ -39,19 +28,8 @@ MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
 }
 
 bool ProxyMessagePipeEndpoint::OnPeerClose() {
-  DCHECK(is_peer_open_);
-
-  is_peer_open_ = false;
-
-  if (is_attached()) {
-    if (!is_running()) {
-      // If we're not running yet, we can't be destroyed yet, because we're
-      // still waiting for the "run" message from the other side.
-      return true;
-    }
-
+  if (is_attached())
     Detach();
-  }
 
   return false;
 }
@@ -66,21 +44,6 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
       << "Failed to write enqueue message to channel";
 }
 
-bool ProxyMessagePipeEndpoint::Run() {
-  // Assertions about current state:
-  DCHECK(is_attached());
-  DCHECK(!is_running());
-
-  is_running_ = true;
-
-  if (is_peer_open_)
-    return true;  // Stay alive.
-
-  // We were just waiting to die.
-  Detach();
-  return false;
-}
-
 void ProxyMessagePipeEndpoint::OnRemove() {
   Detach();
 }
@@ -90,7 +53,6 @@ void ProxyMessagePipeEndpoint::Detach() {
 
   channel_endpoint_->DetachFromMessagePipe();
   channel_endpoint_ = nullptr;
-  is_running_ = false;
 }
 
 }  // namespace system

@@ -125,8 +125,6 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                      MessageInTransit::EndpointId remote_id) {
   scoped_refptr<ChannelEndpoint> endpoint;
   ChannelEndpoint::State state;
-  scoped_refptr<MessagePipe> message_pipe;
-  unsigned port;
   {
     base::AutoLock locker(lock_);
 
@@ -139,8 +137,6 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
       return false;
     endpoint = it->second;
     state = it->second->state_;
-    message_pipe = it->second->message_pipe_;
-    port = it->second->port_;
   }
 
   // Assume that this was in response to |kSubtypeChannelRunMessagePipeEndpoint|
@@ -154,8 +150,6 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
   // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
   // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
   endpoint->Run(remote_id);
-  // TODO(vtl): Get rid of this.
-  message_pipe->Run(port);
   return true;
 }
 

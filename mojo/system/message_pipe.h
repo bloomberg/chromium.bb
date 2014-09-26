@@ -95,8 +95,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
   MojoResult EnqueueMessage(unsigned port,
                             scoped_ptr<MessageInTransit> message);
 
-  // These are used by |Channel|.
-  void Run(unsigned port);
+  // This is used by |Channel|. TODO(vtl): Remove it.
   void OnRemove(unsigned port);
 
  private:

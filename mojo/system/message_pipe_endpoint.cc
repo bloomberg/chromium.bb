@@ -52,11 +52,6 @@ void MessagePipeEndpoint::Attach(ChannelEndpoint* /*channel_endpoint*/) {
   NOTREACHED();
 }
 
-bool MessagePipeEndpoint::Run() {
-  NOTREACHED();
-  return true;
-}
-
 void MessagePipeEndpoint::OnRemove() {
   NOTREACHED();
 }

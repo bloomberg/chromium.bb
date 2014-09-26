@@ -158,13 +158,11 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
   DCHECK(endpoints_[port]);
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeLocal);
 
-  bool is_peer_open = !!endpoints_[GetPeerPort(port)];
-
   // TODO(vtl): Allowing this case is a temporary hack. It'll set up a
   // |MessagePipe| with two proxy endpoints, which will then act as a proxy
   // (rather than trying to connect the two ends directly).
   DLOG_IF(WARNING,
-          is_peer_open &&
+          !!endpoints_[GetPeerPort(port)] &&
               endpoints_[GetPeerPort(port)]->GetType() !=
                   MessagePipeEndpoint::kTypeLocal)
       << "Direct message pipe passing across multiple channels not yet "
@@ -173,8 +171,7 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
   scoped_ptr<MessagePipeEndpoint> old_endpoint(endpoints_[port].Pass());
   scoped_refptr<ChannelEndpoint> channel_endpoint(
       new ChannelEndpoint(this, port));
-  endpoints_[port].reset(
-      new ProxyMessagePipeEndpoint(channel_endpoint.get(), is_peer_open));
+  endpoints_[port].reset(new ProxyMessagePipeEndpoint(channel_endpoint.get()));
   channel_endpoint->TakeMessages(static_cast<LocalMessagePipeEndpoint*>(
                                      old_endpoint.get())->message_queue());
   old_endpoint->Close();
@@ -185,15 +182,6 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
 MojoResult MessagePipe::EnqueueMessage(unsigned port,
                                        scoped_ptr<MessageInTransit> message) {
   return EnqueueMessageInternal(port, message.Pass(), nullptr);
-}
-
-void MessagePipe::Run(unsigned port) {
-  DCHECK(port == 0 || port == 1);
-
-  base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port]);
-  if (!endpoints_[port]->Run())
-    endpoints_[port].reset();
 }
 
 void MessagePipe::OnRemove(unsigned port) {
