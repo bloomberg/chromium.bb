@@ -104,8 +104,7 @@ class DeviceSensors implements SensorEventListener {
         synchronized (mNativePtrLock) {
             switch (eventType) {
                 case DEVICE_ORIENTATION:
-                    success = registerSensors(DEVICE_ORIENTATION_SENSORS, rateInMilliseconds,
-                            true);
+                    success = registerSensors(DEVICE_ORIENTATION_SENSORS, rateInMilliseconds, true);
                     break;
                 case DEVICE_MOTION:
                     // note: device motion spec does not require all sensors to be available
