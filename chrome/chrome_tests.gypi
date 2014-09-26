@@ -2946,13 +2946,26 @@
         ['archive_gpu_tests==1', {
           'targets': [
             {
+              'target_name': 'gpu_tests_base',
+              'type': 'none',
+              'dependencies': [
+                # depend on icu to fix races. http://crbug.com/417583
+                '../third_party/icu/icu.gyp:icudata',
+              ],
+              'direct_dependent_settings': {
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+              },
+            },
+            {
               'target_name': 'angle_unittests_run',
               'type': 'none',
               'dependencies': [
                 '../gpu/gpu.gyp:angle_unittests',
+                'gpu_tests_base',
               ],
               'includes': [
-                '../build/isolate.gypi',
                 'angle_unittests.isolate',
               ],
               'sources': [
@@ -2964,9 +2977,9 @@
               'type': 'none',
               'dependencies': [
                 '../gpu/gpu.gyp:gl_tests',
+                'gpu_tests_base',
               ],
               'includes': [
-                '../build/isolate.gypi',
                 'gl_tests.isolate',
               ],
               'sources': [
@@ -2978,9 +2991,9 @@
               'type': 'none',
               'dependencies': [
                 'browser_tests_run',
+                'gpu_tests_base',
               ],
               'includes': [
-                '../build/isolate.gypi',
                 'tab_capture_end2end_tests.isolate',
               ],
               'sources': [
@@ -2993,9 +3006,9 @@
               'dependencies': [
                 'chrome_run',
                 '../tools/telemetry/telemetry.gyp:bitmaptools#host',
+                'gpu_tests_base',
               ],
               'includes': [
-                '../build/isolate.gypi',
                 'telemetry_gpu_test.isolate',
               ],
               'sources': [
@@ -3007,9 +3020,9 @@
               'type': 'none',
               'dependencies': [
                 '../gpu/gpu.gyp:gpu_unittests',
+                'gpu_tests_base',
               ],
               'includes': [
-                '../build/isolate.gypi',
                 'gpu_unittests.isolate',
               ],
               'sources': [
@@ -3025,9 +3038,9 @@
                   'type': 'none',
                   'dependencies': [
                     '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
+                    'gpu_tests_base',
                   ],
                   'includes': [
-                    '../build/isolate.gypi',
                     'gles2_conform_test.isolate',
                   ],
                   'sources': [
