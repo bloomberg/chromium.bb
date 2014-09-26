@@ -56,6 +56,7 @@ class DevToolsHttpHandlerImpl
   virtual GURL GetFrontendURL() OVERRIDE;
 
   // net::HttpServer::Delegate implementation.
+  virtual void OnConnect(int connection_id) OVERRIDE {}
   virtual void OnHttpRequest(int connection_id,
                              const net::HttpServerRequestInfo& info) OVERRIDE;
   virtual void OnWebSocketRequest(

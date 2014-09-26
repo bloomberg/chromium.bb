@@ -70,6 +70,8 @@ class FetchUrlTest : public testing::Test,
   }
 
   // Overridden from net::HttpServer::Delegate:
+  virtual void OnConnect(int connection_id) OVERRIDE {}
+
   virtual void OnHttpRequest(int connection_id,
                              const net::HttpServerRequestInfo& info) OVERRIDE {
     switch (response_) {

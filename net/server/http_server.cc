@@ -153,7 +153,9 @@ int HttpServer::HandleAcceptResult(int rv) {
   HttpConnection* connection =
       new HttpConnection(++last_id_, accepted_socket_.Pass());
   id_to_connection_[connection->id()] = connection;
-  DoReadLoop(connection);
+  delegate_->OnConnect(connection->id());
+  if (!HasClosedConnection(connection))
+    DoReadLoop(connection);
   return OK;
 }
 

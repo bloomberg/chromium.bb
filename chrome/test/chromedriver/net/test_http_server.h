@@ -61,8 +61,9 @@ class TestHttpServer : public net::HttpServer::Delegate {
   GURL web_socket_url() const;
 
   // Overridden from net::HttpServer::Delegate:
+  virtual void OnConnect(int connection_id) OVERRIDE;
   virtual void OnHttpRequest(int connection_id,
-                             const net::HttpServerRequestInfo& info) OVERRIDE;
+                             const net::HttpServerRequestInfo& info) OVERRIDE {}
   virtual void OnWebSocketRequest(
       int connection_id,
       const net::HttpServerRequestInfo& info) OVERRIDE;

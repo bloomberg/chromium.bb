@@ -141,6 +141,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
 
  private:
   // net::HttpServer::Delegate methods:
+  virtual void OnConnect(int connection_id) OVERRIDE {}
   virtual void OnHttpRequest(
       int connection_id,
       const net::HttpServerRequestInfo& info) OVERRIDE;

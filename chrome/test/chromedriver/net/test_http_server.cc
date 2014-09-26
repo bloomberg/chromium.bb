@@ -75,9 +75,7 @@ GURL TestHttpServer::web_socket_url() const {
   return web_socket_url_;
 }
 
-void TestHttpServer::OnHttpRequest(
-    int connection_id,
-    const net::HttpServerRequestInfo& info) {
+void TestHttpServer::OnConnect(int connection_id) {
   server_->SetSendBufferSize(connection_id, kBufferSize);
   server_->SetReceiveBufferSize(connection_id, kBufferSize);
 }
@@ -85,9 +83,6 @@ void TestHttpServer::OnHttpRequest(
 void TestHttpServer::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  server_->SetSendBufferSize(connection_id, kBufferSize);
-  server_->SetReceiveBufferSize(connection_id, kBufferSize);
-
   WebSocketRequestAction action;
   {
     base::AutoLock lock(action_lock_);
@@ -111,8 +106,6 @@ void TestHttpServer::OnWebSocketRequest(
 
 void TestHttpServer::OnWebSocketMessage(int connection_id,
                                         const std::string& data) {
-  server_->SetSendBufferSize(connection_id, kBufferSize);
-  server_->SetReceiveBufferSize(connection_id, kBufferSize);
   WebSocketMessageAction action;
   {
     base::AutoLock lock(action_lock_);

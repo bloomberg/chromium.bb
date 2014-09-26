@@ -38,6 +38,7 @@ class WebSocketServer : public net::HttpServer::Delegate,
 
  protected:
   // Overridden from net::HttpServer::Delegate.
+  virtual void OnConnect(int connection_id) OVERRIDE {}
   virtual void OnHttpRequest(
       int connection_id,
       const net::HttpServerRequestInfo& info) OVERRIDE;
