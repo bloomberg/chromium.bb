@@ -196,8 +196,8 @@ TEST(ProximityAuthConnectionTest,
   connection.AddObserver(&observer);
 
   ON_CALL(connection, DeserializeWireMessageProxy(_))
-      .WillByDefault(DoAll(SetArgPointee<0>(false),
-                           Return(new TestWireMessage)));
+      .WillByDefault(
+          DoAll(SetArgPointee<0>(false), Return(new TestWireMessage)));
   EXPECT_CALL(observer, OnMessageReceived(Ref(connection), _));
   connection.OnBytesReceived(std::string());
 }

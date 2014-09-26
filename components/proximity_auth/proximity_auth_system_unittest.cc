@@ -9,8 +9,8 @@
 namespace proximity_auth {
 
 TEST(ProximityAuthSystemTest, GetRemoteDevices) {
-  RemoteDevice device1 = { "device 1" };
-  RemoteDevice device2 = { "device 2" };
+  RemoteDevice device1 = {"device 1"};
+  RemoteDevice device2 = {"device 2"};
 
   std::vector<RemoteDevice> device_list;
   device_list.push_back(device1);

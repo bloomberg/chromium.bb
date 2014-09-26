@@ -103,8 +103,7 @@ TEST(ProximityAuthWireMessage, Deserialize_BodyLacksPayload) {
 TEST(ProximityAuthWireMessage, Deserialize_BodyHasEmptyPermitId) {
   bool is_incomplete;
   std::string header("\3\0\x24", 3);
-  std::string bytes =
-      header + "{\"permit_id\": \"\", \"payload\": \"YQ==\"}";
+  std::string bytes = header + "{\"permit_id\": \"\", \"payload\": \"YQ==\"}";
   scoped_ptr<WireMessage> message =
       WireMessage::Deserialize(bytes, &is_incomplete);
   EXPECT_FALSE(is_incomplete);
@@ -116,8 +115,7 @@ TEST(ProximityAuthWireMessage, Deserialize_BodyHasEmptyPermitId) {
 TEST(ProximityAuthWireMessage, Deserialize_BodyHasEmptyPayload) {
   bool is_incomplete;
   std::string header("\3\0\x23", 3);
-  std::string bytes =
-      header + "{\"permit_id\": \"Hi!\", \"payload\": \"\"}";
+  std::string bytes = header + "{\"permit_id\": \"Hi!\", \"payload\": \"\"}";
   scoped_ptr<WireMessage> message =
       WireMessage::Deserialize(bytes, &is_incomplete);
   EXPECT_FALSE(is_incomplete);
@@ -151,13 +149,12 @@ TEST(ProximityAuthWireMessage, Deserialize_ValidMessage) {
 TEST(ProximityAuthWireMessage, Deserialize_ValidMessageWithExtraUnknownFields) {
   bool is_incomplete;
   std::string header("\3\0\x46", 3);
-  std::string bytes =
-      header +
-      "{"
-      "  \"permit_id\": \"Hi!\","
-      "  \"payload\": \"YQ==\","
-      "  \"unexpected\": \"surprise!\""
-      "}";
+  std::string bytes = header +
+                      "{"
+                      "  \"permit_id\": \"Hi!\","
+                      "  \"payload\": \"YQ==\","
+                      "  \"unexpected\": \"surprise!\""
+                      "}";
   scoped_ptr<WireMessage> message =
       WireMessage::Deserialize(bytes, &is_incomplete);
   EXPECT_FALSE(is_incomplete);

@@ -24,11 +24,10 @@ typedef base::Callback<void(const std::string& error_message)> ErrorCallback;
 // |error_callback| with an error message on failure. Because this can be an
 // expensive operation, the work will be run on the provided |task_runner|,
 // which should correspond to a background thread.
-void SeekDeviceByAddress(
-    const std::string& device_address,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback,
-    base::TaskRunner* task_runner);
+void SeekDeviceByAddress(const std::string& device_address,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback,
+                         base::TaskRunner* task_runner);
 
 void ConnectToServiceInsecurely(
     device::BluetoothDevice* device,

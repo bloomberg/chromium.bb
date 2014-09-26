@@ -118,8 +118,7 @@ std::string WireMessage::Serialize() const {
 
 WireMessage::WireMessage(const std::string& permit_id,
                          const std::string& payload)
-    : permit_id_(permit_id),
-      payload_(payload) {
+    : permit_id_(permit_id), payload_(payload) {
 }
 
 }  // namespace proximity_auth

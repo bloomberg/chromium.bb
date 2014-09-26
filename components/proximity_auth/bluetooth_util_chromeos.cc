@@ -69,8 +69,7 @@ struct SeekDeviceResult {
 
 // Writes |address| into the |result|. Return true on success, false if the
 // |address| is not a valid Bluetooth address.
-bool BluetoothAddressToBdaddr(const std::string& address,
-                              bdaddr_t* result) {
+bool BluetoothAddressToBdaddr(const std::string& address, bdaddr_t* result) {
   std::string canonical_address = BluetoothDevice::CanonicalizeAddress(address);
   if (canonical_address.empty())
     return false;
@@ -118,7 +117,7 @@ SeekDeviceResult SeekDeviceByAddressImpl(
   net::SocketDescriptor socket_descriptor =
       socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
   int result = connect(socket_descriptor,
-                       reinterpret_cast<struct sockaddr *>(&addr),
+                       reinterpret_cast<struct sockaddr*>(&addr),
                        sizeof(addr));
   if (result == 0) {
     seek_result.success = true;
@@ -151,7 +150,8 @@ void SeekDeviceByAddress(const std::string& device_address,
   base::PostTaskAndReplyWithResult(
       task_runner,
       FROM_HERE,
-      base::Bind(&SeekDeviceByAddressImpl, device_address,
+      base::Bind(&SeekDeviceByAddressImpl,
+                 device_address,
                  make_scoped_refptr(task_runner)),
       base::Bind(&OnSeekDeviceResult, callback, error_callback));
 }
