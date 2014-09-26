@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
@@ -104,6 +105,7 @@ bool EmbeddedWorkerDevToolsManager::SharedWorkerCreated(
   AgentHostMap::iterator it = FindExistingSharedWorkerAgentHost(instance);
   if (it == workers_.end()) {
     workers_[id] = new EmbeddedWorkerDevToolsAgentHost(id, instance);
+    DevToolsManager::GetInstance()->AgentHostChanged(workers_[id]);
     return false;
   }
   WorkerRestarted(id, it);
@@ -121,6 +123,7 @@ bool EmbeddedWorkerDevToolsManager::ServiceWorkerCreated(
   if (it == workers_.end()) {
     workers_[id] = new EmbeddedWorkerDevToolsAgentHost(
         id, service_worker_id, debug_service_worker_on_start_);
+    DevToolsManager::GetInstance()->AgentHostChanged(workers_[id]);
     return debug_service_worker_on_start_;
   }
   WorkerRestarted(id, it);
@@ -133,7 +136,9 @@ void EmbeddedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
-  it->second->WorkerDestroyed();
+  scoped_refptr<EmbeddedWorkerDevToolsAgentHost> agent_host(it->second);
+  agent_host->WorkerDestroyed();
+  DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 }
 
 void EmbeddedWorkerDevToolsManager::WorkerReadyForInspection(
@@ -201,6 +206,7 @@ void EmbeddedWorkerDevToolsManager::WorkerRestarted(
   agent_host->WorkerRestarted(id);
   workers_.erase(it);
   workers_[id] = agent_host;
+  DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 }
 
 void EmbeddedWorkerDevToolsManager::ResetForTesting() {
