@@ -75,6 +75,11 @@ void WebRuntimeFeatures::enableDatabase(bool enable)
     RuntimeEnabledFeatures::setDatabaseEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableDecodeToYUV(bool enable)
+{
+    RuntimeEnabledFeatures::setDecodeToYUVEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableDisplayList2dCanvas(bool enable)
 {
     RuntimeEnabledFeatures::setDisplayList2dCanvasEnabled(enable);

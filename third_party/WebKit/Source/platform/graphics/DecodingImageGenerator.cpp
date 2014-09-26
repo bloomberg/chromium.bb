@@ -29,6 +29,7 @@
 #include "SkData.h"
 #include "SkImageInfo.h"
 #include "platform/PlatformInstrumentation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageFrameGenerator.h"
@@ -85,9 +86,11 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
 
 bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace* colorSpace)
 {
-    if (!planes || !planes[0]) {
+    if (!RuntimeEnabledFeatures::decodeToYUVEnabled())
+        return false;
+
+    if (!planes || !planes[0])
         return m_frameGenerator->getYUVComponentSizes(sizes);
-    }
 
     TRACE_EVENT0("blink", "DecodingImageGenerator::onGetYUV8Planes");
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
