@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sched.h>
+#include <semaphore.h>
 #include <string.h>
 
 #include "native_client/tests/irt_ext/libc/libc_test.h"
@@ -36,6 +37,18 @@ static void *mutex_thread(void *arg) {
     return (void *) ((uintptr_t) ret);
 
   return (void *) ((uintptr_t) pthread_mutex_unlock(mutex));
+}
+
+struct semaphore_thread_args {
+  volatile int finished;
+  sem_t *semaphore;
+};
+
+static void *semaphore_thread(void *arg) {
+  struct semaphore_thread_args *semaphore_args = arg;
+  int ret = sem_wait(semaphore_args->semaphore);
+  semaphore_args->finished = 1;
+  return (void *) ((uintptr_t) ret);
 }
 
 enum CondWaitState {
@@ -250,9 +263,103 @@ static int do_mutex_test(struct threading_environment *env) {
     return 1;
   }
 
-  ret = (int) thread_status;
+  ret = (int) ((uintptr_t) thread_status);
   if (0 != ret) {
     irt_ext_test_print("do_mutex_test: mutex lock thread failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_semaphore_test(struct threading_environment *env) {
+  if (env->num_futex_wait_calls != 0 || env->num_futex_wake_calls != 0) {
+    irt_ext_test_print("do_semaphore_test: Threading env not initialized.\n");
+    return 1;
+  }
+
+  sem_t semaphore;
+  int ret = sem_init(&semaphore, 0, 0);
+  if (0 != ret) {
+    irt_ext_test_print("do_semaphore_test: sem_init failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  struct semaphore_thread_args thread_args = {
+    0,
+    &semaphore,
+  };
+
+  pthread_t thread_id;
+  ret = pthread_create(&thread_id, NULL, semaphore_thread, &thread_args);
+  if (0 != ret) {
+    irt_ext_test_print("do_semaphore_test: pthread_create failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  /*
+   * At this point we need to spin until we know that semaphore_thread has
+   * begun waiting on the semaphore. Most semaphore's simply set the count
+   * value to be negative to signify that there are threads waiting, but
+   * according to the specification it is valid for the count to return
+   * zero as well. Unfortunately if the count cannot be relied upon we have
+   * to look at the internals of sem_t which is implementation specific.
+   */
+  /*
+   * TODO(dyen): Currently we are only testing newlib, add in macros to
+   * test using "if (sem_getvalue() < 0)" for other libraries.
+   */
+  while (semaphore.nwaiters == 0) {
+    sched_yield();
+  }
+
+  ret = sem_post(&semaphore);
+  if (0 != ret) {
+    irt_ext_test_print("do_semaphore_test: sem_post failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  /*
+   * The environment checks must be done before the thread is joined because
+   * thread joins will trigger their own futex calls. We also cannot check if
+   * the wait call has been called until after sem_post() and that the thread
+   * state is finished. This is because it is still possible to increment
+   * the semaphore counter before the semaphore has truly begun waiting.
+   * We also cannot guarantee that a wake is actually triggered, because
+   * the waiter thread could have been triggered to wake up between setting
+   * the number of waiters variable and actually waiting.
+   */
+  while (!thread_args.finished) {
+    sched_yield();
+  }
+
+  if (env->num_futex_wait_calls == 0) {
+    irt_ext_test_print("do_semaphore_test: futex wait call not triggered.\n");
+    return 1;
+  }
+
+  void *thread_status = NULL;
+  ret = pthread_join(thread_id, &thread_status);
+  if (0 != ret) {
+    irt_ext_test_print("do_semaphore_test: pthread_join failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = sem_destroy(&semaphore);
+  if (0 != ret) {
+    irt_ext_test_print("do_semaphore_test: sem_destroy failed: %s\n",
+                       strerror(ret));
+    return 1;
+  }
+
+  ret = (int) ((uintptr_t) thread_status);
+  if (0 != ret) {
+    irt_ext_test_print("do_semaphore_test: mutex lock thread failed: %s\n",
                        strerror(ret));
     return 1;
   }
@@ -506,7 +613,7 @@ static int do_cond_wait_test(struct threading_environment *env) {
     return 1;
   }
 
-  ret = (int) thread_status;
+  ret = (int) ((uintptr_t) thread_status);
   if (0 != ret) {
     irt_ext_test_print("do_cond_wait_test: mutex lock thread failed: %s\n",
                        strerror(ret));
@@ -539,6 +646,7 @@ static const TYPE_thread_test g_thread_tests[] = {
 
   /* Do futex tests. */
   do_mutex_test,
+  do_semaphore_test,
   do_cond_signal_test,
   do_cond_broadcast_test,
   do_cond_timed_wait_test,
