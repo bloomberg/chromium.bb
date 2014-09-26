@@ -45,7 +45,7 @@ public final class DomDistillerFeedbackReporter implements
      * @return whether the DOM Distiller feature is enabled.
      */
     public static boolean isEnabled() {
-        return nativeIsEnabled();
+        return false;
     }
 
     /**
