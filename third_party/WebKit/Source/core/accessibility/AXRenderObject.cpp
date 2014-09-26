@@ -280,6 +280,11 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return buttonRoleType();
     if (isHTMLDetailsElement(node))
         return DetailsRole;
+    if (isHTMLSummaryElement(node)) {
+        if (node->parentElement() && isHTMLDetailsElement(node->parentElement()))
+            return DisclosureTriangleRole;
+        return UnknownRole;
+    }
     if (isHTMLLegendElement(node))
         return LegendRole;
     if (m_renderer->isText())

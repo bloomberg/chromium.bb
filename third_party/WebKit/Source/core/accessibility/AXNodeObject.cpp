@@ -193,6 +193,12 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return buttonRoleType();
     if (isHTMLDetailsElement(*node()))
         return DetailsRole;
+    if (isHTMLSummaryElement(*node())) {
+        if (node()->parentNode() && isHTMLDetailsElement(node()->parentNode()))
+            return DisclosureTriangleRole;
+        return UnknownRole;
+    }
+
     if (isHTMLInputElement(*node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
         const AtomicString& type = input.type();
