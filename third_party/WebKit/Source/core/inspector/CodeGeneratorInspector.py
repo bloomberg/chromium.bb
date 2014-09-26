@@ -115,43 +115,6 @@ class Capitalizer:
         str = possible_abbreviation.lower() + str[pos:]
         return str
 
-    @staticmethod
-    def camel_case_to_capitalized_with_underscores(str):
-        if len(str) == 0:
-            return str
-        output = Capitalizer.split_camel_case_(str)
-        return "_".join(output).upper()
-
-    @staticmethod
-    def split_camel_case_(str):
-        output = []
-        pos_being = 0
-        pos = 1
-        has_oneletter = False
-        while pos < len(str):
-            if str[pos].isupper():
-                output.append(str[pos_being:pos].upper())
-                if pos - pos_being == 1:
-                    has_oneletter = True
-                pos_being = pos
-            pos += 1
-        output.append(str[pos_being:])
-        if has_oneletter:
-            array_pos = 0
-            while array_pos < len(output) - 1:
-                if len(output[array_pos]) == 1:
-                    array_pos_end = array_pos + 1
-                    while array_pos_end < len(output) and len(output[array_pos_end]) == 1:
-                        array_pos_end += 1
-                    if array_pos_end - array_pos > 1:
-                        possible_abbreviation = "".join(output[array_pos:array_pos_end])
-                        if possible_abbreviation.upper() in Capitalizer.ABBREVIATION:
-                            output[array_pos:array_pos_end] = [possible_abbreviation]
-                        else:
-                            array_pos = array_pos_end - 1
-                array_pos += 1
-        return output
-
     ABBREVIATION = frozenset(["XHR", "DOM", "CSS"])
 
 VALIDATOR_IFDEF_NAME = "ENABLE(ASSERT)"
@@ -182,26 +145,6 @@ class RawTypes(object):
         else:
             raise Exception("Unknown type: %s" % json_type)
 
-    # For output parameter all values are passed by pointer except RefPtr-based types.
-    class OutputPassModel:
-        class ByPointer:
-            @staticmethod
-            def get_argument_prefix():
-                return "&"
-
-            @staticmethod
-            def get_parameter_type_suffix():
-                return "*"
-
-        class ByReference:
-            @staticmethod
-            def get_argument_prefix():
-                return ""
-
-            @staticmethod
-            def get_parameter_type_suffix():
-                return "&"
-
     class BaseType(object):
         @classmethod
         def get_raw_validator_call_text(cls):
@@ -221,10 +164,6 @@ class RawTypes(object):
         @staticmethod
         def get_constructor_pattern():
             return "InspectorString::create(%s)"
-
-        @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByPointer
 
         @staticmethod
         def is_heavy_value():
@@ -256,10 +195,6 @@ class RawTypes(object):
             return "RuntimeCastHelper::assertInt"
 
         @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByPointer
-
-        @staticmethod
         def is_heavy_value():
             return False
 
@@ -289,10 +224,6 @@ class RawTypes(object):
             return "RuntimeCastHelper::assertType<JSONValue::TypeNumber>"
 
         @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByPointer
-
-        @staticmethod
         def is_heavy_value():
             return False
 
@@ -314,10 +245,6 @@ class RawTypes(object):
         @staticmethod
         def get_constructor_pattern():
             return "InspectorBasicValue::create(%s)"
-
-        @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByPointer
 
         @staticmethod
         def is_heavy_value():
@@ -349,10 +276,6 @@ class RawTypes(object):
             return ""
 
         @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByReference
-
-        @staticmethod
         def is_heavy_value():
             return True
 
@@ -378,10 +301,6 @@ class RawTypes(object):
         @staticmethod
         def get_raw_validator_call_text():
             return "RuntimeCastHelper::assertAny"
-
-        @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByReference
 
         @staticmethod
         def is_heavy_value():
@@ -411,10 +330,6 @@ class RawTypes(object):
         @staticmethod
         def get_output_argument_prefix():
             return ""
-
-        @staticmethod
-        def get_output_pass_model():
-            return RawTypes.OutputPassModel.ByReference
 
         @staticmethod
         def is_heavy_value():
