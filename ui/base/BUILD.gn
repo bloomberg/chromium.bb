@@ -528,8 +528,7 @@ component("base") {
 
   if (is_mac) {
     deps += [
-      #TODO(tfarina): port this third_party component to GN.
-      #"//third_party/mozilla",
+      "//third_party/mozilla",
     ]
 
     sources -= [
