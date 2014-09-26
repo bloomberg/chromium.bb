@@ -177,6 +177,13 @@ class PasswordManagerTest : public testing::Test {
     return form;
   }
 
+  PasswordForm MakeSimpleFormWithOnlyPasswordField() {
+    PasswordForm form(MakeSimpleForm());
+    form.username_element.clear();
+    form.username_value.clear();
+    return form;
+  }
+
   bool FormsAreEqual(const autofill::PasswordForm& lhs,
                      const autofill::PasswordForm& rhs) {
     if (lhs.origin != rhs.origin)
@@ -825,6 +832,42 @@ TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
   manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
   manager()->OnPasswordFormsRendered(observed,
                                      true);  // The post-navigation layout.
+}
+
+TEST_F(PasswordManagerTest, FormSubmitWithOnlyPassowrdField) {
+  // Test to verify that on submitting the HTML password form without having
+  // username input filed shows password save promt and saves the password to
+  // store.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
+  std::vector<PasswordForm> observed;
+
+  // Loads passsword form without username input field.
+  PasswordForm form(MakeSimpleFormWithOnlyPasswordField());
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(observed);          // The initial load.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
+
+  // And the form submit contract is to call ProvisionallySavePassword.
+  manager()->ProvisionallySavePassword(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
+
+  ASSERT_TRUE(form_to_save.get());
+  EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
 }
 
 }  // namespace password_manager

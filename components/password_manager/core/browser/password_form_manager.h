@@ -100,8 +100,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // form.
   bool IsPendingCredentialsPublicSuffixMatch();
 
-  // Checks if the form is a valid password form. Forms which lack either
-  // login or password field are not considered valid.
+  // Checks if the form is a valid password form. Forms which lack password
+  // field are not considered valid.
   bool HasValidPasswordForm();
 
   // These functions are used to determine if this form has had it's password

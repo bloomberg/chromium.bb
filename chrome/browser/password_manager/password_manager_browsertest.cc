@@ -1208,3 +1208,75 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptWhenPasswordFormWithoutUsernameFieldSubmitted) {
+  password_manager::TestPasswordStore* password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                              Profile::IMPLICIT_ACCESS).get());
+
+  EXPECT_TRUE(password_store->IsEmpty());
+
+  NavigateToFile("/password/form_with_only_password_field.html");
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string submit =
+      "document.getElementById('password').value = 'password';"
+      "document.getElementById('submit-button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  observer.Wait();
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Accept();
+
+  // Spin the message loop to make sure the password store had a chance to save
+  // the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(password_store->IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       AutofillSuggetionsForPasswordFormWithoutUsernameField) {
+  password_manager::TestPasswordStore* password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                              Profile::IMPLICIT_ACCESS).get());
+
+  EXPECT_TRUE(password_store->IsEmpty());
+
+  // Password form without username-field.
+  NavigateToFile("/password/form_with_only_password_field.html");
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string submit =
+      "document.getElementById('password').value = 'mypassword';"
+      "document.getElementById('submit-button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  observer.Wait();
+
+  prompt_observer->Accept();
+
+  // Spin the message loop to make sure the password store had a chance to save
+  // the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(password_store->IsEmpty());
+
+  // Now, navigate to same html password form and verify whether password is
+  // autofilled.
+  NavigateToFile("/password/form_with_only_password_field.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  // Wait until that interaction causes the password value to be revealed.
+  WaitForElementValue("password", "mypassword");
+}

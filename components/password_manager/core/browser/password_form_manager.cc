@@ -227,9 +227,8 @@ bool PasswordFormManager::HasValidPasswordForm() {
   // do not contain username_element and password_element values.
   if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
     return true;
-  return !observed_form_.username_element.empty() &&
-         (!observed_form_.password_element.empty() ||
-          !observed_form_.new_password_element.empty());
+  return !observed_form_.password_element.empty() ||
+         !observed_form_.new_password_element.empty();
 }
 
 void PasswordFormManager::ProvisionallySave(
