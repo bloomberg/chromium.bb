@@ -121,6 +121,7 @@ void RenderSVGForeignObject::layout()
 void RenderSVGForeignObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     FloatRect r(rect);
+    r.inflate(style()->outlineWidth());
     SVGRenderSupport::computeFloatRectForPaintInvalidation(this, paintInvalidationContainer, r, paintInvalidationState);
     rect = enclosingLayoutRect(r);
 }

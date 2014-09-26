@@ -97,6 +97,7 @@ const RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(const RenderObje
 void RenderSVGText::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     FloatRect paintInvalidationRect = rect;
+    paintInvalidationRect.inflate(style()->outlineWidth());
     computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
     rect = enclosingLayoutRect(paintInvalidationRect);
 }

@@ -54,14 +54,14 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const Rende
     // Pass our local paint rect to computeRectForPaintInvalidation() which will
     // map to parent coords and recurse up the parent chain.
     FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
+    paintInvalidationRect.inflate(object->style()->outlineWidth());
+
     object->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
     return enclosingLayoutRect(paintInvalidationRect);
 }
 
 void SVGRenderSupport::computeFloatRectForPaintInvalidation(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState)
 {
-    paintInvalidationRect.inflate(object->style()->outlineWidth());
-
     // Translate to coords in our parent renderer, and then call computeFloatRectForPaintInvalidation() on our parent.
     paintInvalidationRect = object->localToParentTransform().mapRect(paintInvalidationRect);
     object->parent()->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
