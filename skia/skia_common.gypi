@@ -114,6 +114,13 @@
         'SK_ARM_HAS_OPTIONAL_NEON',
       ],
     }],
+
+    # Enable feedback-directed optimisation for skia when building in android.
+    [ 'android_webview_build == 1', {
+      'aosp_build_settings': {
+        'LOCAL_FDO_SUPPORT': 'true',
+      },
+    }],
   ],
 
   'variables': {

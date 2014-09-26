@@ -161,6 +161,12 @@
                 '-Wno-pointer-to-int-cast',
               ],
             }],
+            # Enable feedback-directed optimisation for sqlite when building in android.
+            ['android_webview_build == 1', {
+              'aosp_build_settings': {
+                'LOCAL_FDO_SUPPORT': 'true',
+              },
+            }],
           ],
         }],
       ],

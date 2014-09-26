@@ -31,6 +31,11 @@
         '../ui/android/ui_android.gyp:page_transition_types_java',
         '../ui/android/ui_android.gyp:window_open_disposition_java',
       ],
+      # Enable feedback-directed optimisation for the library when building in
+      # android.
+      'aosp_build_settings': {
+        'LOCAL_FDO_SUPPORT': 'true',
+      },
     }],
     [ 'android_webview_build==1 and use_system_skia==0', {
       # When not using the system skia there are linker warnings about

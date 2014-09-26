@@ -7,8 +7,9 @@
 # https://sourceware.org/binutils/docs-2.24/ld/VERSION.html#VERSION
 
 {
-  global: 
+  global:
     Java_*_native*;
     JNI_OnLoad;
+    __gcov_*;
   local: *;
 };
