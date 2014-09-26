@@ -654,7 +654,7 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
   content::MediaStreamDevices devices;
   scoped_ptr<content::MediaStreamUI> ui;
 
-#if defined(ENABLE_EXTENSIONS)
+#if defined(ENABLE_EXTENSIONS) && !defined(USE_ATHENA)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extensions::TabCaptureRegistry* tab_capture_registry =
