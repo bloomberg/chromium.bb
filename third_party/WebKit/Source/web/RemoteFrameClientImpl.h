@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemoteFrameClient_h
-#define RemoteFrameClient_h
+#ifndef RemoteFrameClientImpl_h
+#define RemoteFrameClientImpl_h
 
-#include "core/frame/FrameClient.h"
+#include "core/frame/RemoteFrameClient.h"
 
 namespace blink {
-
 class WebRemoteFrameImpl;
 
-class RemoteFrameClient : public FrameClient {
+class RemoteFrameClientImpl : public RemoteFrameClient {
 public:
-    explicit RemoteFrameClient(WebRemoteFrameImpl*);
+    explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
     // FrameClient overrides:
     virtual Frame* opener() const OVERRIDE;
@@ -28,6 +27,9 @@ public:
 
     virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const OVERRIDE;
 
+    // RemoteFrameClient overrides:
+    virtual void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) OVERRIDE;
+
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 
 private:
@@ -36,4 +38,4 @@ private:
 
 } // namespace blink
 
-#endif // RemoteFrameClient_h
+#endif // RemoteFrameClientImpl_h

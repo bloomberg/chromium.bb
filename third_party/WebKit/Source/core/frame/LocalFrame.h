@@ -78,6 +78,7 @@ namespace blink {
         virtual ~LocalFrame();
         virtual void trace(Visitor*) OVERRIDE;
 
+        virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) OVERRIDE;
         virtual void detach() OVERRIDE;
 
         void addDestructionObserver(FrameDestructionObserver*);

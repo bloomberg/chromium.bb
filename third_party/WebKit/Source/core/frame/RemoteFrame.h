@@ -9,15 +9,17 @@
 
 namespace blink {
 
+class RemoteFrameClient;
 class RemoteFrameView;
 
 class RemoteFrame: public Frame {
 public:
-    static PassRefPtrWillBeRawPtr<RemoteFrame> create(FrameClient*, FrameHost*, FrameOwner*);
+    static PassRefPtrWillBeRawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
     virtual bool isRemoteFrame() const OVERRIDE { return true; }
 
     virtual ~RemoteFrame();
 
+    virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) OVERRIDE;
     virtual void detach() OVERRIDE;
 
     void setView(PassRefPtr<RemoteFrameView>);
@@ -26,7 +28,9 @@ public:
     RemoteFrameView* view() const;
 
 private:
-    RemoteFrame(FrameClient*, FrameHost*, FrameOwner*);
+    RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
+
+    RemoteFrameClient* remoteFrameClient() const;
 
     RefPtr<RemoteFrameView> m_view;
 };

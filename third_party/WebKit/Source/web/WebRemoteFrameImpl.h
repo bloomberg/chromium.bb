@@ -8,7 +8,7 @@
 #include "platform/heap/Handle.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
-#include "web/RemoteFrameClient.h"
+#include "web/RemoteFrameClientImpl.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -188,7 +188,7 @@ public:
     virtual void trace(Visitor*);
 
 private:
-    RemoteFrameClient m_frameClient;
+    RemoteFrameClientImpl m_frameClient;
     RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 

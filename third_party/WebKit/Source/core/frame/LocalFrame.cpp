@@ -157,6 +157,11 @@ void LocalFrame::trace(Visitor* visitor)
     Frame::trace(visitor);
 }
 
+void LocalFrame::navigate(Document& originDocument, const KURL& url, const Referrer& referrer, bool lockBackForwardList)
+{
+    m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), referrer, lockBackForwardList);
+}
+
 void LocalFrame::detach()
 {
     // A lot of the following steps can result in the current frame being

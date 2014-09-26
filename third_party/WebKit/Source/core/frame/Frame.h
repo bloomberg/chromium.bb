@@ -36,15 +36,19 @@
 namespace blink {
 
 class ChromeClient;
+class Document;
 class FrameClient;
 class FrameHost;
 class FrameOwner;
 class HTMLFrameOwnerElement;
 class LocalDOMWindow;
+class KURL;
 class Page;
 class RenderPart;
 class Settings;
 class WebLayer;
+
+struct Referrer;
 
 class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
@@ -54,6 +58,7 @@ public:
     virtual ~Frame();
     virtual void trace(Visitor*);
 
+    virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) = 0;
     virtual void detach() = 0;
     void detachChildren();
 

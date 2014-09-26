@@ -30,6 +30,9 @@ public:
     virtual void initializeChildFrame(
         const WebRect& frameRect,
         float scaleFactor) { }
+
+    // A remote frame was asked to start a navigation.
+    virtual void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) { }
 };
 
 } // namespace blink

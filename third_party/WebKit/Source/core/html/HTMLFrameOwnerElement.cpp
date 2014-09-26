@@ -239,9 +239,8 @@ Widget* HTMLFrameOwnerElement::ownedWidget() const
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
     RefPtrWillBeRawPtr<LocalFrame> parentFrame = document().frame();
-    // FIXME(kenrb): The necessary semantics for RemoteFrames have not been worked out yet, but this will likely need some logic to handle them.
-    if (contentFrame() && contentFrame()->isLocalFrame()) {
-        toLocalFrame(contentFrame())->navigationScheduler().scheduleLocationChange(&document(), url.string(), Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
+    if (contentFrame()) {
+        contentFrame()->navigate(document(), url, Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
         return true;
     }
 

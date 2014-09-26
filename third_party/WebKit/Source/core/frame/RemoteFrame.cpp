@@ -5,17 +5,18 @@
 #include "config.h"
 #include "core/frame/RemoteFrame.h"
 
+#include "core/frame/RemoteFrameClient.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
 namespace blink {
 
-inline RemoteFrame::RemoteFrame(FrameClient* client, FrameHost* host, FrameOwner* owner)
+inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, FrameOwner* owner)
     : Frame(client, host, owner)
 {
 }
 
-PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, FrameHost* host, FrameOwner* owner)
+PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(RemoteFrameClient* client, FrameHost* host, FrameOwner* owner)
 {
     return adoptRefWillBeNoop(new RemoteFrame(client, host, owner));
 }
@@ -23,6 +24,11 @@ PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, Fra
 RemoteFrame::~RemoteFrame()
 {
     setView(nullptr);
+}
+
+void RemoteFrame::navigate(Document&, const KURL& url, const Referrer& referrer, bool lockBackForwardList)
+{
+    remoteFrameClient()->navigate(ResourceRequest(url, referrer), lockBackForwardList);
 }
 
 void RemoteFrame::detach()
@@ -46,6 +52,11 @@ void RemoteFrame::createView()
         ASSERT(owner);
         owner->setWidget(view);
     }
+}
+
+RemoteFrameClient* RemoteFrame::remoteFrameClient() const
+{
+    return static_cast<RemoteFrameClient*>(client());
 }
 
 } // namespace blink

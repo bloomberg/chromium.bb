@@ -867,7 +867,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
 {
     if (!frame.client())
         return 0;
-    return static_cast<RemoteFrameClient*>(frame.client())->webFrame();
+    return static_cast<RemoteFrameClientImpl*>(frame.client())->webFrame();
 }
 
 void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
