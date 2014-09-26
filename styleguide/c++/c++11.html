@@ -153,7 +153,7 @@ Are Variadic macros nonstandard?</a></td>
 <td><code>template &lt;<i>typename</i> ... <i>arg</i>&gt;</code></td>
 <td>Allows templates that accept a variable number of arguments</td>
 <td>TODO: documentation link</td>
-<td>Usage should be rare. Use instead of .pump files.<a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
+<td>Usage should be rare. Use instead of .pump files. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
 </tr>
 
 </tbody>
@@ -162,28 +162,6 @@ Are Variadic macros nonstandard?</a></td>
 <h2 id="blacklist">C++11 Blacklist (Disallowed and Banned Features)</h2>
 
 <p>This section lists features that are not allowed to be used yet.
-
-<table id="banned_list" class="unlined striped">
-<tbody>
-
-<tr>
-<th style='width:240px;'>Feature or Library</th>
-<th style='width:240px;'>Snippet</th>
-<th style='width:240px;'>Description</th>
-<th style='width:240px;'>Documentation Link</th>
-<th style='width:240px;'>Notes</th>
-</tr>
-
-<tr>
-<td>Rvalue References (and Move Semantics)</td>
-<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
-<td>Reference that only binds to a temporary object</td>
-<td>TODO: documentation link</td>
-<td>To be revisited in the future.  Allowed in exceptional cases where approved by the OWNERS of src/styleguide/c++/.</td>
-</tr>
-
-</tbody>
-</table>
 
 <h3 id="blacklist_banned">C++11 Banned Features</h3>
 
@@ -220,6 +198,14 @@ function for logging purposes</td>
 <td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=338">
 The __func__ Predeclared Identifier is Coming to C++</a></td>
 <td>Doesn't work in MSVS2013. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ojGfcgSDzHM">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Rvalue References (and Move Semantics)</td>
+<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
+<td>Reference that only binds to a temporary object</td>
+<td>TODO: documentation link</td>
+<td>To be revisited in the future.  Allowed in exceptional cases where approved by the OWNERS of src/styleguide/c++/.</td>
 </tr>
 
 <tr>
