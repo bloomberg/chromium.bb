@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+
+<script>
+description('This test ensures that a plugin which wants to receive wheel ' +
+            'events is included in the non-fast scrollable region.');
+
+onload = function() {
+    if (window.internals) {
+        shouldBe('internals.nonFastScrollableRects(document).length', '1');
+    }
+}
+</script>
+
+<embed id="plugin" type="application/x-webkit-test-webplugin"></embed>

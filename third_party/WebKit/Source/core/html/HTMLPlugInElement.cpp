@@ -41,6 +41,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -503,6 +504,11 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     }
     document().setContainsPlugins();
     scheduleSVGFilterLayerUpdateHack();
+    // Make sure any input event handlers introduced by the plugin are taken into account.
+    if (Page* page = document().frame()->page()) {
+        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+            scrollingCoordinator->notifyLayoutUpdated();
+    }
     return true;
 }
 
