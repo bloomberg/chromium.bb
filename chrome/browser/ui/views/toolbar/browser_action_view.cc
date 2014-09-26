@@ -154,6 +154,7 @@ void BrowserActionView::UpdateState() {
   SetTooltipText(name);
   SetAccessibleName(name);
 
+  Layout();  // We need to layout since we may have added an icon as a result.
   SchedulePaint();
 }
 
