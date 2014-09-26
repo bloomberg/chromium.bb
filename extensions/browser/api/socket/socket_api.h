@@ -204,7 +204,6 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
   int socket_id_;
   std::string hostname_;
   int port_;
-  Socket* socket_;
 };
 
 class SocketDisconnectFunction : public SocketAsyncApiFunction {
@@ -359,7 +358,6 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
   size_t io_buffer_size_;
   std::string hostname_;
   int port_;
-  Socket* socket_;
 };
 
 class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {

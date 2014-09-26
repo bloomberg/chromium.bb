@@ -184,7 +184,8 @@ bool SocketDestroyFunction::Prepare() {
 void SocketDestroyFunction::Work() { RemoveSocket(socket_id_); }
 
 SocketConnectFunction::SocketConnectFunction()
-    : socket_id_(0), hostname_(), port_(0), socket_(NULL) {}
+    : socket_id_(0), hostname_(), port_(0) {
+}
 
 SocketConnectFunction::~SocketConnectFunction() {}
 
@@ -196,18 +197,18 @@ bool SocketConnectFunction::Prepare() {
 }
 
 void SocketConnectFunction::AsyncWorkStart() {
-  socket_ = GetSocket(socket_id_);
-  if (!socket_) {
+  Socket* socket = GetSocket(socket_id_);
+  if (!socket) {
     error_ = kSocketNotFoundError;
     SetResult(new base::FundamentalValue(-1));
     AsyncWorkCompleted();
     return;
   }
 
-  socket_->set_hostname(hostname_);
+  socket->set_hostname(hostname_);
 
   SocketPermissionRequest::OperationType operation_type;
-  switch (socket_->GetSocketType()) {
+  switch (socket->GetSocketType()) {
     case Socket::TYPE_TCP:
       operation_type = SocketPermissionRequest::TCP_CONNECT;
       break;
@@ -242,9 +243,17 @@ void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketConnectFunction::StartConnect() {
-  socket_->Connect(resolved_address_,
-                   port_,
-                   base::Bind(&SocketConnectFunction::OnConnect, this));
+  Socket* socket = GetSocket(socket_id_);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  socket->Connect(resolved_address_,
+                  port_,
+                  base::Bind(&SocketConnectFunction::OnConnect, this));
 }
 
 void SocketConnectFunction::OnConnect(int result) {
@@ -489,11 +498,8 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
 }
 
 SocketSendToFunction::SocketSendToFunction()
-    : socket_id_(0),
-      io_buffer_(NULL),
-      io_buffer_size_(0),
-      port_(0),
-      socket_(NULL) {}
+    : socket_id_(0), io_buffer_(NULL), io_buffer_size_(0), port_(0) {
+}
 
 SocketSendToFunction::~SocketSendToFunction() {}
 
@@ -510,15 +516,15 @@ bool SocketSendToFunction::Prepare() {
 }
 
 void SocketSendToFunction::AsyncWorkStart() {
-  socket_ = GetSocket(socket_id_);
-  if (!socket_) {
+  Socket* socket = GetSocket(socket_id_);
+  if (!socket) {
     error_ = kSocketNotFoundError;
     SetResult(new base::FundamentalValue(-1));
     AsyncWorkCompleted();
     return;
   }
 
-  if (socket_->GetSocketType() == Socket::TYPE_UDP) {
+  if (socket->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::UDP_SEND_TO, hostname_, port_);
     if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
@@ -543,11 +549,19 @@ void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketSendToFunction::StartSendTo() {
-  socket_->SendTo(io_buffer_,
-                  io_buffer_size_,
-                  resolved_address_,
-                  port_,
-                  base::Bind(&SocketSendToFunction::OnCompleted, this));
+  Socket* socket = GetSocket(socket_id_);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  socket->SendTo(io_buffer_,
+                 io_buffer_size_,
+                 resolved_address_,
+                 port_,
+                 base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 
 void SocketSendToFunction::OnCompleted(int bytes_written) {
