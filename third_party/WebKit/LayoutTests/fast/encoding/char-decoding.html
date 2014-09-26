@@ -47,8 +47,6 @@ batchTestDecode(turkish);
 // FIXME: Have to add tests for Euro and a few new characters added to ISO-8859-x
 // that are NOT subsets of the corresponding Windows codepages. For instance,
 // ISO-8859-7:2003 has Euro at 0xA4 and a couple of other new characters.
-// ICU 3.8.x or later has them. Perhaps, we need to have a separate test that
-// can be enabled only with modern ICU.
 
 // Baltic encodings fine points.
 testDecode('ISO-8859-13', '%A1', 'U+201D');
@@ -63,6 +61,9 @@ testDecode('windows-1257', '%FF', 'U+02D9');
 testDecode('iso-8859-7', '%A1', 'U+2018');
 testDecode('iso-8859-7', '%B5', 'U+0385');
 testDecode('iso-8859-7', '%B6', 'U+0386');
+testDecode('iso-8859-7', '%A4', 'U+20AC');
+testDecode('iso-8859-7', '%A5', 'U+20AF');
+testDecode('iso-8859-7', '%AA', 'U+037A');
 testDecode('windows-1253', '%80', 'U+20AC');
 testDecode('windows-1253', '%A1', 'U+0385');
 testDecode('windows-1253', '%B5', 'U+00B5');
@@ -75,12 +76,10 @@ testDecode('KOI8-U', '%A4', 'U+0454');
 testDecode('KOI8-U', '%AD', 'U+0491');
 
 // Test that TIS-620 and ISO-8859-11 (Thai) are upgraded to windows-874.
-// "0xDB => U+F8C1" is a weird PUA mapping that doesn't seem to be of
-// any use, even on Windows.
 var thai = {
   encodings: ['TIS-620', 'ISO-8859-11', 'windows-874', 'dos-874'],
-  encoded: ['%80', '%96', '%A0', '%A1', '%DB'],
-  unicode: ['U+20AC', 'U+2013', 'U+00A0', 'U+0E01', 'U+F8C1']
+  encoded: ['%80', '%96', '%A0', '%A1', '%DA'],
+  unicode: ['U+20AC', 'U+2013', 'U+00A0', 'U+0E01', 'U+0E3A']
 };
 
 batchTestDecode(thai);
