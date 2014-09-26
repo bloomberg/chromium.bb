@@ -14,10 +14,6 @@
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace content {
 
 // Update the accessibility histogram 45 seconds after initialization.
@@ -79,16 +75,6 @@ void BrowserAccessibilityStateImpl::DisableAccessibility() {
 
 void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = AccessibilityModeOff;
-#if defined(OS_WIN)
-  // On Windows 8, always enable accessibility for editable text controls
-  // so we can show the virtual keyboard when one is enabled.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRendererAccessibility)) {
-    accessibility_mode_ = AccessibilityModeEditableTextOnly;
-  }
-#endif  // defined(OS_WIN)
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
     accessibility_mode_ = AccessibilityModeComplete;

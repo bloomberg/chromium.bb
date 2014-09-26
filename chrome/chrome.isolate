@@ -43,6 +43,13 @@
         ],
       },
     }],
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_200_percent.pak',
+        ],
+      },
+    }],
     ['OS=="mac"', {
       'variables': {
         'command': [

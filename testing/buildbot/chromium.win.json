@@ -337,6 +337,7 @@
       "aura_unittests",
       "ash_unittests",
       "compositor_unittests",
+      "content_browsertests",
       "events_unittests"
     ]
   }

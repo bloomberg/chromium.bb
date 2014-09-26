@@ -622,6 +622,21 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     InitializeMojo();
 #endif
 
+#if defined(OS_WIN)
+    bool init_device_scale_factor = true;
+    if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
+      std::string scale_factor_string = command_line.GetSwitchValueASCII(
+          switches::kDeviceScaleFactor);
+      double scale_factor = 0;
+      if (base::StringToDouble(scale_factor_string, &scale_factor)) {
+        init_device_scale_factor = false;
+        gfx::InitDeviceScaleFactor(scale_factor);
+      }
+    }
+    if (init_device_scale_factor)
+      ui::win::InitDeviceScaleFactor();
+#endif
+
     if (!GetContentClient())
       SetContentClient(&empty_content_client_);
     ContentClientInitializer::Set(process_type, delegate_);
@@ -666,19 +681,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       MachBroker::ChildSendTaskPortToParent();
     }
 #elif defined(OS_WIN)
-    bool init_device_scale_factor = true;
-    if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
-      std::string scale_factor_string = command_line.GetSwitchValueASCII(
-          switches::kDeviceScaleFactor);
-      double scale_factor = 0;
-      if (base::StringToDouble(scale_factor_string, &scale_factor)) {
-        init_device_scale_factor = false;
-        gfx::InitDeviceScaleFactor(scale_factor);
-      }
-    }
-    if (init_device_scale_factor)
-      ui::win::InitDeviceScaleFactor();
-
     SetupCRT(command_line);
 #endif
 
