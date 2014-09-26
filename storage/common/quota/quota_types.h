@@ -22,6 +22,7 @@ enum QuotaLimitType {
   kQuotaLimitTypeUnknown,
   kQuotaLimitTypeLimited,
   kQuotaLimitTypeUnlimited,
+  kQuotaLimitTypeLast = kQuotaLimitTypeUnlimited
 };
 
 }  // namespace storage
