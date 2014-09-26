@@ -193,6 +193,7 @@
       'browser/chromeos/locale_change_guard_unittest.cc',
       'browser/chromeos/login/auth/cryptohome_authenticator_unittest.cc',
       'browser/chromeos/login/auth/online_attempt_unittest.cc',
+      'browser/chromeos/login/error_screens_histogram_helper_unittest.cc',
       'browser/chromeos/login/existing_user_controller_auto_login_unittest.cc',
       'browser/chromeos/login/hwid_checker_unittest.cc',
       'browser/chromeos/login/profile_auth_data_unittest.cc',

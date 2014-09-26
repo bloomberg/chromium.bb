@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
@@ -255,6 +256,7 @@ SigninScreenHandler::SigninScreenHandler(
                              ->CapsLockIsEnabled()),
       gaia_screen_handler_(gaia_screen_handler),
       oobe_ui_observer_added_(false),
+      histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_actor_);
@@ -431,6 +433,7 @@ void SigninScreenHandler::Show(const LoginScreenContext& context) {
   }
   gaia_screen_handler_->PopulateEmail(email);
   ShowImpl();
+  histogram_helper_->OnScreenShow();
 }
 
 void SigninScreenHandler::ShowRetailModeLoginSpinner() {
@@ -688,6 +691,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
     params.SetString("lastNetworkType", network_type);
     error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
     error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
+    histogram_helper_->OnErrorShow(error_screen_actor_->error_state());
   }
 }
 
@@ -698,6 +702,7 @@ void SigninScreenHandler::HideOfflineMessage(
     return;
 
   error_screen_actor_->Hide();
+  histogram_helper_->OnErrorHide();
 
   // Forces a reload for Gaia screen on hiding error message.
   if (IsGaiaVisible() || IsGaiaHiddenByError())
