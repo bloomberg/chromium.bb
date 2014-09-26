@@ -50,10 +50,20 @@ bool CdmSessionAdapter::Initialize(
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionReady, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
-      base::Bind(&CdmSessionAdapter::OnSessionError, weak_this));
+      base::Bind(&CdmSessionAdapter::OnSessionError, weak_this),
+      base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
+      base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this));
 
   // Success if |media_keys_| created.
   return media_keys_;
+}
+
+void CdmSessionAdapter::SetServerCertificate(
+    const uint8* server_certificate,
+    int server_certificate_length,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  media_keys_->SetServerCertificate(
+      server_certificate, server_certificate_length, promise.Pass());
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
@@ -71,7 +81,7 @@ bool CdmSessionAdapter::RegisterSession(
   return true;
 }
 
-void CdmSessionAdapter::RemoveSession(const std::string& web_session_id) {
+void CdmSessionAdapter::UnregisterSession(const std::string& web_session_id) {
   DCHECK(ContainsKey(sessions_, web_session_id));
   sessions_.erase(web_session_id);
 }
@@ -98,10 +108,22 @@ void CdmSessionAdapter::UpdateSession(
       web_session_id, response, response_length, promise.Pass());
 }
 
-void CdmSessionAdapter::ReleaseSession(
+void CdmSessionAdapter::CloseSession(
     const std::string& web_session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  media_keys_->ReleaseSession(web_session_id, promise.Pass());
+  media_keys_->CloseSession(web_session_id, promise.Pass());
+}
+
+void CdmSessionAdapter::RemoveSession(
+    const std::string& web_session_id,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  media_keys_->RemoveSession(web_session_id, promise.Pass());
+}
+
+void CdmSessionAdapter::GetUsableKeyIds(
+    const std::string& web_session_id,
+    scoped_ptr<media::KeyIdsPromise> promise) {
+  media_keys_->GetUsableKeyIds(web_session_id, promise.Pass());
 }
 
 media::Decryptor* CdmSessionAdapter::GetDecryptor() {
@@ -126,6 +148,25 @@ void CdmSessionAdapter::OnSessionMessage(const std::string& web_session_id,
                              << web_session_id;
   if (session)
     session->OnSessionMessage(message, destination_url);
+}
+
+void CdmSessionAdapter::OnSessionKeysChange(const std::string& web_session_id,
+                                            bool has_additional_usable_key) {
+  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
+  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
+                             << web_session_id;
+  if (session)
+    session->OnSessionKeysChange(has_additional_usable_key);
+}
+
+void CdmSessionAdapter::OnSessionExpirationUpdate(
+    const std::string& web_session_id,
+    const base::Time& new_expiry_time) {
+  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
+  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
+                             << web_session_id;
+  if (session)
+    session->OnSessionExpirationUpdate(new_expiry_time);
 }
 
 void CdmSessionAdapter::OnSessionReady(const std::string& web_session_id) {

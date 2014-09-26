@@ -121,9 +121,10 @@ class FakeEncryptedMedia {
                                   const std::vector<uint8>& message,
                                   const GURL& destination_url) = 0;
 
-    virtual void OnSessionReady(const std::string& web_session_id) = 0;
-
     virtual void OnSessionClosed(const std::string& web_session_id) = 0;
+
+    virtual void OnSessionKeysChange(const std::string& web_session_id,
+                                     bool has_additional_usable_key) = 0;
 
     // Errors are not expected unless overridden.
     virtual void OnSessionError(const std::string& web_session_id,
@@ -142,6 +143,8 @@ class FakeEncryptedMedia {
       : decryptor_(base::Bind(&FakeEncryptedMedia::OnSessionMessage,
                               base::Unretained(this)),
                    base::Bind(&FakeEncryptedMedia::OnSessionClosed,
+                              base::Unretained(this)),
+                   base::Bind(&FakeEncryptedMedia::OnSessionKeysChange,
                               base::Unretained(this))),
         app_(app) {}
 
@@ -156,12 +159,13 @@ class FakeEncryptedMedia {
     app_->OnSessionMessage(web_session_id, message, destination_url);
   }
 
-  void OnSessionReady(const std::string& web_session_id) {
-    app_->OnSessionReady(web_session_id);
-  }
-
   void OnSessionClosed(const std::string& web_session_id) {
     app_->OnSessionClosed(web_session_id);
+  }
+
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key) {
+    app_->OnSessionKeysChange(web_session_id, has_additional_usable_key);
   }
 
   void OnSessionError(const std::string& web_session_id,
@@ -236,12 +240,14 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(current_session_id_, web_session_id);
   }
 
-  virtual void OnSessionReady(const std::string& web_session_id) OVERRIDE {
+  virtual void OnSessionClosed(const std::string& web_session_id) OVERRIDE {
     EXPECT_EQ(current_session_id_, web_session_id);
   }
 
-  virtual void OnSessionClosed(const std::string& web_session_id) OVERRIDE {
+  virtual void OnSessionKeysChange(const std::string& web_session_id,
+                                   bool has_additional_usable_key) OVERRIDE {
     EXPECT_EQ(current_session_id_, web_session_id);
+    EXPECT_EQ(has_additional_usable_key, true);
   }
 
   virtual void NeedKey(const std::string& type,
@@ -361,14 +367,15 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
     FAIL() << "Unexpected Message";
   }
 
-  virtual void OnSessionReady(const std::string& web_session_id) OVERRIDE {
-    EXPECT_FALSE(web_session_id.empty());
-    FAIL() << "Unexpected Ready";
-  }
-
   virtual void OnSessionClosed(const std::string& web_session_id) OVERRIDE {
     EXPECT_FALSE(web_session_id.empty());
     FAIL() << "Unexpected Closed";
+  }
+
+  virtual void OnSessionKeysChange(const std::string& web_session_id,
+                                   bool has_additional_usable_key) OVERRIDE {
+    EXPECT_FALSE(web_session_id.empty());
+    EXPECT_EQ(has_additional_usable_key, true);
   }
 
   virtual void NeedKey(const std::string& type,

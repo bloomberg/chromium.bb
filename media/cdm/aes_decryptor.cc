@@ -224,15 +224,25 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
 }
 
 AesDecryptor::AesDecryptor(const SessionMessageCB& session_message_cb,
-                           const SessionClosedCB& session_closed_cb)
+                           const SessionClosedCB& session_closed_cb,
+                           const SessionKeysChangeCB& session_keys_change_cb)
     : session_message_cb_(session_message_cb),
-      session_closed_cb_(session_closed_cb) {
+      session_closed_cb_(session_closed_cb),
+      session_keys_change_cb_(session_keys_change_cb) {
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
+  DCHECK(!session_keys_change_cb_.is_null());
 }
 
 AesDecryptor::~AesDecryptor() {
   key_map_.clear();
+}
+
+void AesDecryptor::SetServerCertificate(const uint8* certificate_data,
+                                        int certificate_data_length,
+                                        scoped_ptr<SimpleCdmPromise> promise) {
+  promise->reject(
+      NOT_SUPPORTED_ERROR, 0, "SetServerCertificate() is not supported.");
 }
 
 void AesDecryptor::CreateSession(const std::string& init_data_type,
@@ -318,6 +328,43 @@ void AesDecryptor::UpdateSession(const std::string& web_session_id,
   }
 
   promise->resolve();
+
+  // Assume that at least 1 new key has been successfully added and thus
+  // sending true.
+  session_keys_change_cb_.Run(web_session_id, true);
+}
+
+void AesDecryptor::CloseSession(const std::string& web_session_id,
+                                scoped_ptr<SimpleCdmPromise> promise) {
+  // Validate that this is a reference to an active session and then forget it.
+  std::set<std::string>::iterator it = valid_sessions_.find(web_session_id);
+  DCHECK(it != valid_sessions_.end());
+
+  valid_sessions_.erase(it);
+
+  // Close the session.
+  DeleteKeysForSession(web_session_id);
+  promise->resolve();
+  session_closed_cb_.Run(web_session_id);
+}
+
+void AesDecryptor::RemoveSession(const std::string& web_session_id,
+                                 scoped_ptr<SimpleCdmPromise> promise) {
+  // AesDecryptor doesn't keep any persistent data, so this should be
+  // NOT_REACHED().
+  // TODO(jrummell): Make sure persistent session types are rejected.
+  // http://crbug.com/384152.
+  //
+  // However, v0.1b calls to CancelKeyRequest() will call this, so close the
+  // session, if it exists.
+  // TODO(jrummell): Remove the close() call when prefixed EME is removed.
+  // http://crbug.com/249976.
+  if (valid_sessions_.find(web_session_id) != valid_sessions_.end()) {
+    CloseSession(web_session_id, promise.Pass());
+    return;
+  }
+
+  promise->reject(INVALID_ACCESS_ERROR, 0, "Session does not exist.");
 }
 
 void AesDecryptor::GetUsableKeyIds(const std::string& web_session_id,
@@ -335,24 +382,6 @@ void AesDecryptor::GetUsableKeyIds(const std::string& web_session_id,
       keyids.push_back(std::vector<uint8>(it->first.begin(), it->first.end()));
   }
   promise->resolve(keyids);
-}
-
-void AesDecryptor::ReleaseSession(const std::string& web_session_id,
-                                  scoped_ptr<SimpleCdmPromise> promise) {
-  // Validate that this is a reference to an active session and then forget it.
-  std::set<std::string>::iterator it = valid_sessions_.find(web_session_id);
-  // TODO(jrummell): Convert back to a DCHECK once prefixed EME is removed.
-  if (it == valid_sessions_.end()) {
-    promise->reject(INVALID_ACCESS_ERROR, 0, "Session does not exist.");
-    return;
-  }
-
-  valid_sessions_.erase(it);
-
-  // Close the session.
-  DeleteKeysForSession(web_session_id);
-  promise->resolve();
-  session_closed_cb_.Run(web_session_id);
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {

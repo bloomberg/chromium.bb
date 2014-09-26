@@ -14,6 +14,10 @@
 #include "media/base/media_export.h"
 #include "url/gurl.h"
 
+namespace base {
+class Time;
+}
+
 namespace media {
 
 class Decryptor;
@@ -72,6 +76,12 @@ class MEDIA_EXPORT MediaKeys {
   MediaKeys();
   virtual ~MediaKeys();
 
+  // Provides a server certificate to be used to encrypt messages to the
+  // license server.
+  virtual void SetServerCertificate(const uint8* certificate_data,
+                                    int certificate_data_length,
+                                    scoped_ptr<SimpleCdmPromise> promise) = 0;
+
   // Creates a session with the |init_data_type|, |init_data| and |session_type|
   // provided.
   // Note: UpdateSession() and ReleaseSession() should only be called after
@@ -94,9 +104,19 @@ class MEDIA_EXPORT MediaKeys {
                              int response_length,
                              scoped_ptr<SimpleCdmPromise> promise) = 0;
 
-  // Releases the session specified by |web_session_id|.
-  virtual void ReleaseSession(const std::string& web_session_id,
-                              scoped_ptr<SimpleCdmPromise> promise) = 0;
+  // Closes the session specified by |web_session_id|.
+  virtual void CloseSession(const std::string& web_session_id,
+                            scoped_ptr<SimpleCdmPromise> promise) = 0;
+
+  // Removes stored session data associated with the session specified by
+  // |web_session_id|.
+  virtual void RemoveSession(const std::string& web_session_id,
+                             scoped_ptr<SimpleCdmPromise> promise) = 0;
+
+  // Retrieves the key IDs for keys in the session that the CDM knows are
+  // currently usable to decrypt media data.
+  virtual void GetUsableKeyIds(const std::string& web_session_id,
+                               scoped_ptr<KeyIdsPromise> promise) = 0;
 
   // Gets the Decryptor object associated with the MediaKeys. Returns NULL if
   // no Decryptor object is associated. The returned object is only guaranteed
@@ -121,6 +141,14 @@ typedef base::Callback<void(const std::string& web_session_id,
                             MediaKeys::Exception exception_code,
                             uint32 system_code,
                             const std::string& error_message)> SessionErrorCB;
+
+typedef base::Callback<void(const std::string& web_session_id,
+                            bool has_additional_usable_key)>
+    SessionKeysChangeCB;
+
+typedef base::Callback<void(const std::string& web_session_id,
+                            const base::Time& new_expiry_time)>
+    SessionExpirationUpdateCB;
 
 }  // namespace media
 

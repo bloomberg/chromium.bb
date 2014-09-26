@@ -12,9 +12,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/cdm_result_promise.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -78,7 +80,8 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(
     scoped_refptr<CdmSessionAdapter> adapter)
-    : adapter_(adapter) {}
+    : adapter_(adapter) {
+}
 
 WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() {
 }
@@ -95,6 +98,17 @@ WebContentDecryptionModuleImpl::createSession(
   WebContentDecryptionModuleSessionImpl* session = adapter_->CreateSession();
   session->setClientInterface(client);
   return session;
+}
+
+void WebContentDecryptionModuleImpl::setServerCertificate(
+    const uint8* server_certificate,
+    size_t server_certificate_length,
+    blink::WebContentDecryptionModuleResult result) {
+  DCHECK(server_certificate);
+  adapter_->SetServerCertificate(
+      server_certificate,
+      server_certificate_length,
+      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
 }
 
 media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {

@@ -28,10 +28,15 @@ namespace media {
 class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
  public:
   AesDecryptor(const SessionMessageCB& session_message_cb,
-               const SessionClosedCB& session_closed_cb);
+               const SessionClosedCB& session_closed_cb,
+               const SessionKeysChangeCB& session_keys_change_cb);
   virtual ~AesDecryptor();
 
   // MediaKeys implementation.
+  virtual void SetServerCertificate(
+      const uint8* certificate_data,
+      int certificate_data_length,
+      scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
   virtual void CreateSession(const std::string& init_data_type,
                              const uint8* init_data,
                              int init_data_length,
@@ -43,8 +48,12 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
                              const uint8* response,
                              int response_length,
                              scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
-  virtual void ReleaseSession(const std::string& web_session_id,
-                              scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+  virtual void CloseSession(const std::string& web_session_id,
+                            scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+  virtual void RemoveSession(const std::string& web_session_id,
+                             scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+  virtual void GetUsableKeyIds(const std::string& web_session_id,
+                               scoped_ptr<KeyIdsPromise> promise) OVERRIDE;
   virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // Decryptor implementation.
@@ -66,9 +75,6 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
       const VideoDecodeCB& video_decode_cb) OVERRIDE;
   virtual void ResetDecoder(StreamType stream_type) OVERRIDE;
   virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
-
-  void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<KeyIdsPromise> promise);
 
  private:
   // TODO(fgalligan): Remove this and change KeyMap to use crypto::SymmetricKey
@@ -120,6 +126,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
+  SessionKeysChangeCB session_keys_change_cb_;
 
   // Since only Decrypt() is called off the renderer thread, we only need to
   // protect |key_map_|, the only member variable that is shared between

@@ -47,6 +47,12 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
       const std::string& key_system,
       const GURL& security_origin);
 
+  // Provides a server certificate to be used to encrypt messages to the
+  // license server.
+  void SetServerCertificate(const uint8* server_certificate,
+                            int server_certificate_length,
+                            scoped_ptr<media::SimpleCdmPromise> promise);
+
   // Creates a new session and adds it to the internal map. The caller owns the
   // created session. RemoveSession() must be called when destroying it, if
   // RegisterSession() was called.
@@ -60,10 +66,10 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
       base::WeakPtr<WebContentDecryptionModuleSessionImpl> session);
 
   // Removes a session from the internal map.
-  void RemoveSession(const std::string& web_session_id);
+  void UnregisterSession(const std::string& web_session_id);
 
   // Initializes a session with the |init_data_type|, |init_data| and
-  // |session_type| provided. Takes ownership of |promise|.
+  // |session_type| provided.
   void InitializeNewSession(const std::string& init_data_type,
                             const uint8* init_data,
                             int init_data_length,
@@ -71,16 +77,24 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
                             scoped_ptr<media::NewSessionCdmPromise> promise);
 
   // Updates the session specified by |web_session_id| with |response|.
-  // Takes ownership of |promise|.
   void UpdateSession(const std::string& web_session_id,
                      const uint8* response,
                      int response_length,
                      scoped_ptr<media::SimpleCdmPromise> promise);
 
-  // Releases the session specified by |web_session_id|.
-  // Takes ownership of |promise|.
-  void ReleaseSession(const std::string& web_session_id,
-                      scoped_ptr<media::SimpleCdmPromise> promise);
+  // Closes the session specified by |web_session_id|.
+  void CloseSession(const std::string& web_session_id,
+                    scoped_ptr<media::SimpleCdmPromise> promise);
+
+  // Removes stored session data associated with the session specified by
+  // |web_session_id|.
+  void RemoveSession(const std::string& web_session_id,
+                     scoped_ptr<media::SimpleCdmPromise> promise);
+
+  // Retrieves the key IDs for keys in the session that the CDM knows are
+  // currently usable to decrypt media data.
+  void GetUsableKeyIds(const std::string& web_session_id,
+                       scoped_ptr<media::KeyIdsPromise> promise);
 
   // Returns the Decryptor associated with this CDM. May be NULL if no
   // Decryptor is associated with the MediaKeys object.
@@ -109,6 +123,10 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key);
+  void OnSessionExpirationUpdate(const std::string& web_session_id,
+                                 const base::Time& new_expiry_time);
   void OnSessionReady(const std::string& web_session_id);
   void OnSessionClosed(const std::string& web_session_id);
   void OnSessionError(const std::string& web_session_id,

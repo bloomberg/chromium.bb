@@ -245,6 +245,8 @@
       'renderer/media/audio_message_filter.h',
       'renderer/media/audio_renderer_mixer_manager.cc',
       'renderer/media/audio_renderer_mixer_manager.h',
+      'renderer/media/cdm_result_promise.cc',
+      'renderer/media/cdm_result_promise.h',
       'renderer/media/cdm_session_adapter.cc',
       'renderer/media/cdm_session_adapter.h',
       'renderer/media/crypto/content_decryption_module_factory.cc',

@@ -49,11 +49,18 @@ class WebContentDecryptionModuleSessionImpl
   virtual void update(const uint8* response,
                       size_t response_length,
                       blink::WebContentDecryptionModuleResult result);
+  virtual void close(blink::WebContentDecryptionModuleResult result);
+  virtual void remove(blink::WebContentDecryptionModuleResult result);
+  virtual void getUsableKeyIds(blink::WebContentDecryptionModuleResult result);
+
+  // TODO(jrummell): Remove the next method once blink updated.
   virtual void release(blink::WebContentDecryptionModuleResult result);
 
   // Callbacks.
   void OnSessionMessage(const std::vector<uint8>& message,
                         const GURL& destination_url);
+  void OnSessionKeysChange(bool has_additional_usable_key);
+  void OnSessionExpirationUpdate(const base::Time& new_expiry_time);
   void OnSessionReady();
   void OnSessionClosed();
   void OnSessionError(media::MediaKeys::Exception exception_code,
@@ -61,24 +68,9 @@ class WebContentDecryptionModuleSessionImpl
                       const std::string& error_message);
 
  private:
-  typedef std::map<uint32, blink::WebContentDecryptionModuleResult> ResultMap;
-
-  // These function are used as callbacks when CdmPromise resolves/rejects.
-  // |result_index| = kReservedIndex means that there is no
-  // WebContentDecryptionModuleResult.
-  void SessionCreated(uint32 result_index, const std::string& web_session_id);
-  void SessionUpdatedOrReleased(uint32 result_index);
-  void SessionError(uint32 result_index,
-                    media::MediaKeys::Exception exception_code,
-                    uint32 system_code,
-                    const std::string& error_message);
-
-  // As initializeNewSession(), update(), and release() get passed a
-  // WebContentDecryptionModuleResult, keep track of them since this class owns
-  // it and needs to keep them around until completed. Returns the index used
-  // to locate the WebContentDecryptionModuleResult when the operation is
-  // complete.
-  uint32 AddResult(blink::WebContentDecryptionModuleResult result);
+  // Called when a new session is created.
+  blink::WebContentDecryptionModuleResult::SessionStatus OnSessionInitialized(
+      const std::string& web_session_id);
 
   scoped_refptr<CdmSessionAdapter> adapter_;
 
@@ -94,10 +86,6 @@ class WebContentDecryptionModuleSessionImpl
   // TODO(jrummell): Remove this once blink tests handle close() promise and
   // closed() event.
   bool is_closed_;
-
-  // Keep track of all the outstanding WebContentDecryptionModuleResult objects.
-  uint32 next_available_result_index_;
-  ResultMap outstanding_results_;
 
   // Since promises will live until they are fired, use a weak reference when
   // creating a promise in case this class disappears before the promise

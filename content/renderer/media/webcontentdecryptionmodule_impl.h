@@ -64,6 +64,11 @@ class WebContentDecryptionModuleImpl
   virtual blink::WebContentDecryptionModuleSession* createSession(
       blink::WebContentDecryptionModuleSession::Client* client);
 
+  virtual void setServerCertificate(
+      const uint8* server_certificate,
+      size_t server_certificate_length,
+      blink::WebContentDecryptionModuleResult result);
+
  private:
   // Takes reference to |adapter|.
   WebContentDecryptionModuleImpl(scoped_refptr<CdmSessionAdapter> adapter);

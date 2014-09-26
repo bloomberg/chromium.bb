@@ -92,6 +92,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key);
   void OnSessionClosed(const std::string& web_session_id);
 
   // Handle the success/failure of a promise. These methods are responsible for
@@ -99,8 +101,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionCreated(uint32 promise_id, const std::string& web_session_id);
   void OnSessionLoaded(uint32 promise_id, const std::string& web_session_id);
   void OnSessionUpdated(uint32 promise_id, const std::string& web_session_id);
-  void OnSessionReleased(uint32 promise_id, const std::string& web_session_id);
   void OnUsableKeyIdsObtained(uint32 promise_id, const KeyIdsVector& key_ids);
+  void OnPromiseResolved(uint32 promise_id);
   void OnPromiseFailed(uint32 promise_id,
                        MediaKeys::Exception exception_code,
                        uint32 system_code,

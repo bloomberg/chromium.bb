@@ -46,12 +46,15 @@ class ContentDecryptorDelegate {
   ~ContentDecryptorDelegate();
 
   // This object should not be accessed after |fatal_plugin_error_cb| is called.
-  void Initialize(const std::string& key_system,
-                  const media::SessionMessageCB& session_message_cb,
-                  const media::SessionReadyCB& session_ready_cb,
-                  const media::SessionClosedCB& session_closed_cb,
-                  const media::SessionErrorCB& session_error_cb,
-                  const base::Closure& fatal_plugin_error_cb);
+  void Initialize(
+      const std::string& key_system,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionReadyCB& session_ready_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionErrorCB& session_error_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      const base::Closure& fatal_plugin_error_cb);
 
   void InstanceCrashed();
 
@@ -219,6 +222,8 @@ class ContentDecryptorDelegate {
   media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
+  media::SessionKeysChangeCB session_keys_change_cb_;
+  media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
   // Callback to notify that unexpected error happened and |this| should not
   // be used anymore.

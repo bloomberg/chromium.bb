@@ -38,11 +38,17 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
       const media::SessionMessageCB& session_message_cb,
       const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::SessionErrorCB& session_error_cb);
+      const media::SessionErrorCB& session_error_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
   virtual ~PpapiDecryptor();
 
   // media::MediaKeys implementation.
+  virtual void SetServerCertificate(
+      const uint8* certificate_data,
+      int certificate_data_length,
+      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
   virtual void CreateSession(
       const std::string& init_data_type,
       const uint8* init_data,
@@ -57,9 +63,15 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
       const uint8* response,
       int response_length,
       scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
-  virtual void ReleaseSession(
+  virtual void CloseSession(
       const std::string& web_session_id,
       scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+  virtual void RemoveSession(
+      const std::string& web_session_id,
+      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+  virtual void GetUsableKeyIds(
+      const std::string& web_session_id,
+      scoped_ptr<media::KeyIdsPromise> promise) OVERRIDE;
   virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // media::Decryptor implementation.
@@ -83,12 +95,15 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
 
  private:
-  PpapiDecryptor(const std::string& key_system,
-                 scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
-                 const media::SessionMessageCB& session_message_cb,
-                 const media::SessionReadyCB& session_ready_cb,
-                 const media::SessionClosedCB& session_closed_cb,
-                 const media::SessionErrorCB& session_error_cb);
+  PpapiDecryptor(
+      const std::string& key_system,
+      scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionReadyCB& session_ready_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionErrorCB& session_error_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
   void OnDecoderInitialized(StreamType stream_type, bool success);
 
@@ -96,6 +111,10 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key);
+  void OnSessionExpirationUpdate(const std::string& web_session_id,
+                                 const base::Time& new_expiry_time);
   void OnSessionReady(const std::string& web_session_id);
   void OnSessionClosed(const std::string& web_session_id);
   void OnSessionError(const std::string& web_session_id,
@@ -122,6 +141,8 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
+  media::SessionKeysChangeCB session_keys_change_cb_;
+  media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
   scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
 

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/cdm_result_promise.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "media/base/cdm_promise.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -17,62 +18,39 @@ namespace content {
 
 const char kCreateSessionUMAName[] = "CreateSession";
 
-// For backwards compatibility with blink not using
-// WebContentDecryptionModuleResult, reserve an index for |outstanding_results_|
-// that will not be used when adding a WebContentDecryptionModuleResult.
-// TODO(jrummell): Remove once blink always uses
-// WebContentDecryptionModuleResult.
-const uint32 kReservedIndex = 0;
+typedef base::Callback<blink::WebContentDecryptionModuleResult::SessionStatus(
+    const std::string& web_session_id)> SessionInitializedCB;
 
-static blink::WebContentDecryptionModuleException ConvertException(
-    media::MediaKeys::Exception exception_code) {
-  switch (exception_code) {
-    case media::MediaKeys::NOT_SUPPORTED_ERROR:
-      return blink::WebContentDecryptionModuleExceptionNotSupportedError;
-    case media::MediaKeys::INVALID_STATE_ERROR:
-      return blink::WebContentDecryptionModuleExceptionInvalidStateError;
-    case media::MediaKeys::INVALID_ACCESS_ERROR:
-      return blink::WebContentDecryptionModuleExceptionInvalidAccessError;
-    case media::MediaKeys::QUOTA_EXCEEDED_ERROR:
-      return blink::WebContentDecryptionModuleExceptionQuotaExceededError;
-    case media::MediaKeys::UNKNOWN_ERROR:
-      return blink::WebContentDecryptionModuleExceptionUnknownError;
-    case media::MediaKeys::CLIENT_ERROR:
-      return blink::WebContentDecryptionModuleExceptionClientError;
-    case media::MediaKeys::OUTPUT_ERROR:
-      return blink::WebContentDecryptionModuleExceptionOutputError;
-    default:
-      NOTREACHED();
-      return blink::WebContentDecryptionModuleExceptionUnknownError;
+class NewSessionCdmResultPromise : public CdmResultPromise<std::string> {
+ public:
+  NewSessionCdmResultPromise(blink::WebContentDecryptionModuleResult result,
+                             std::string uma_name,
+                             const SessionInitializedCB& new_session_created_cb)
+      : CdmResultPromise<std::string>(result, uma_name),
+        new_session_created_cb_(new_session_created_cb) {}
+
+ protected:
+  virtual void OnResolve(const std::string& web_session_id) OVERRIDE {
+    blink::WebContentDecryptionModuleResult::SessionStatus status =
+        new_session_created_cb_.Run(web_session_id);
+    web_cdm_result_.completeWithSession(status);
   }
-}
+
+ private:
+  SessionInitializedCB new_session_created_cb_;
+};
 
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter),
       is_closed_(false),
-      next_available_result_index_(1),
       weak_ptr_factory_(this) {
 }
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {
   if (!web_session_id_.empty())
-    adapter_->RemoveSession(web_session_id_);
-
-  // Release any WebContentDecryptionModuleResult objects that are left. Their
-  // index will have been passed down via a CdmPromise, but it uses a WeakPtr.
-  DLOG_IF(WARNING, outstanding_results_.size() > 0)
-      << "Clearing " << outstanding_results_.size() << " results";
-  for (ResultMap::iterator it = outstanding_results_.begin();
-       it != outstanding_results_.end();
-       ++it) {
-    it->second.completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidStateError,
-        0,
-        "Outstanding request being cancelled.");
-  }
-  outstanding_results_.clear();
+    adapter_->UnregisterSession(web_session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::setClientInterface(Client* client) {
@@ -87,57 +65,19 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     const blink::WebString& init_data_type,
     const uint8* init_data,
     size_t init_data_length) {
-  DCHECK(base::IsStringASCII(init_data_type));
-
-  std::string init_data_type_as_ascii = base::UTF16ToASCII(init_data_type);
-  DLOG_IF(WARNING, init_data_type_as_ascii.find('/') != std::string::npos)
-      << "init_data_type '" << init_data_type_as_ascii
-      << "' may be a MIME type";
-
-  // Attempt to translate content types.
-  // TODO(sandersd): Remove once tests stop using content types.
-  // http://crbug.com/385874
-  std::string content_type = base::StringToLowerASCII(init_data_type_as_ascii);
-  if (content_type == "audio/mp4" || content_type == "video/mp4") {
-    init_data_type_as_ascii = "cenc";
-  } else if (content_type == "audio/webm" || content_type == "video/webm") {
-    init_data_type_as_ascii = "webm";
-  }
-
-  scoped_ptr<media::NewSessionCdmPromise> promise(
-      new media::NewSessionCdmPromise(
-          base::Bind(&WebContentDecryptionModuleSessionImpl::SessionCreated,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     kReservedIndex),
-          base::Bind(&WebContentDecryptionModuleSessionImpl::OnSessionError,
-                     weak_ptr_factory_.GetWeakPtr()),
-          adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName));
-  adapter_->InitializeNewSession(init_data_type_as_ascii,
-                                 init_data,
-                                 init_data_length,
-                                 media::MediaKeys::TEMPORARY_SESSION,
-                                 promise.Pass());
+  // TODO(jrummell): Remove once blink updated.
+  NOTREACHED();
 }
 
 void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
                                                    size_t response_length) {
-  DCHECK(response);
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
-      base::Bind(&WebContentDecryptionModuleSessionImpl::OnSessionReady,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&WebContentDecryptionModuleSessionImpl::OnSessionError,
-                 weak_ptr_factory_.GetWeakPtr())));
-  adapter_->UpdateSession(
-      web_session_id_, response, response_length, promise.Pass());
+  // TODO(jrummell): Remove once blink updated.
+  NOTREACHED();
 }
 
 void WebContentDecryptionModuleSessionImpl::release() {
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
-      base::Bind(&WebContentDecryptionModuleSessionImpl::OnSessionClosed,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&WebContentDecryptionModuleSessionImpl::OnSessionError,
-                 weak_ptr_factory_.GetWeakPtr())));
-  adapter_->ReleaseSession(web_session_id_, promise.Pass());
+  // TODO(jrummell): Remove once blink updated.
+  NOTREACHED();
 }
 
 void WebContentDecryptionModuleSessionImpl::initializeNewSession(
@@ -146,17 +86,18 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     size_t init_data_length,
     const blink::WebString& session_type,
     blink::WebContentDecryptionModuleResult result) {
-  uint32 result_index = AddResult(result);
 
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII MIME types.
   if (!base::IsStringASCII(init_data_type)) {
     NOTREACHED();
-    SessionError(result_index,
-                 media::MediaKeys::NOT_SUPPORTED_ERROR,
-                 0,
-                 "The initialization data type " + init_data_type.utf8() +
-                     " is not supported by the key system.");
+    std::string message = "The initialization data type " +
+                          init_data_type.utf8() +
+                          " is not supported by the key system.";
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionNotSupportedError,
+        0,
+        blink::WebString::fromUTF8(message));
     return;
   }
 
@@ -165,20 +106,17 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
       << "init_data_type '" << init_data_type_as_ascii
       << "' may be a MIME type";
 
-  scoped_ptr<media::NewSessionCdmPromise> promise(
-      new media::NewSessionCdmPromise(
-          base::Bind(&WebContentDecryptionModuleSessionImpl::SessionCreated,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     result_index),
-          base::Bind(&WebContentDecryptionModuleSessionImpl::SessionError,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     result_index),
-          adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName));
-  adapter_->InitializeNewSession(init_data_type_as_ascii,
-                                 init_data,
-                                 init_data_length,
-                                 media::MediaKeys::TEMPORARY_SESSION,
-                                 promise.Pass());
+  adapter_->InitializeNewSession(
+      init_data_type_as_ascii,
+      init_data,
+      init_data_length,
+      media::MediaKeys::TEMPORARY_SESSION,
+      scoped_ptr<media::NewSessionCdmPromise>(new NewSessionCdmResultPromise(
+          result,
+          adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName,
+          base::Bind(
+              &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
+              base::Unretained(this)))));
 }
 
 void WebContentDecryptionModuleSessionImpl::update(
@@ -186,31 +124,42 @@ void WebContentDecryptionModuleSessionImpl::update(
     size_t response_length,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
-  uint32 result_index = AddResult(result);
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
-      base::Bind(
-          &WebContentDecryptionModuleSessionImpl::SessionUpdatedOrReleased,
-          weak_ptr_factory_.GetWeakPtr(),
-          result_index),
-      base::Bind(&WebContentDecryptionModuleSessionImpl::SessionError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 result_index)));
+  DCHECK(!web_session_id_.empty());
   adapter_->UpdateSession(
-      web_session_id_, response, response_length, promise.Pass());
+      web_session_id_,
+      response,
+      response_length,
+      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+}
+
+void WebContentDecryptionModuleSessionImpl::close(
+    blink::WebContentDecryptionModuleResult result) {
+  DCHECK(!web_session_id_.empty());
+  adapter_->CloseSession(
+      web_session_id_,
+      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+}
+
+void WebContentDecryptionModuleSessionImpl::remove(
+    blink::WebContentDecryptionModuleResult result) {
+  DCHECK(!web_session_id_.empty());
+  adapter_->RemoveSession(
+      web_session_id_,
+      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+}
+
+void WebContentDecryptionModuleSessionImpl::getUsableKeyIds(
+    blink::WebContentDecryptionModuleResult result) {
+  DCHECK(!web_session_id_.empty());
+  adapter_->GetUsableKeyIds(
+      web_session_id_,
+      scoped_ptr<media::KeyIdsPromise>(
+          new CdmResultPromise<media::KeyIdsVector>(result)));
 }
 
 void WebContentDecryptionModuleSessionImpl::release(
     blink::WebContentDecryptionModuleResult result) {
-  uint32 result_index = AddResult(result);
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
-      base::Bind(
-          &WebContentDecryptionModuleSessionImpl::SessionUpdatedOrReleased,
-          weak_ptr_factory_.GetWeakPtr(),
-          result_index),
-      base::Bind(&WebContentDecryptionModuleSessionImpl::SessionError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 result_index)));
-  adapter_->ReleaseSession(web_session_id_, promise.Pass());
+  close(result);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
@@ -219,6 +168,18 @@ void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
   DCHECK(client_) << "Client not set before message event";
   client_->message(
       message.empty() ? NULL : &message[0], message.size(), destination_url);
+}
+
+void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
+    bool has_additional_usable_key) {
+  // TODO(jrummell): Update this once Blink client supports this.
+}
+
+void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
+    const base::Time& new_expiry_time) {
+  // TODO(jrummell): Update this once Blink client supports this.
+  // The EME spec has expiration attribute as the time in milliseconds, so use
+  // InMillisecondsF() to convert.
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
@@ -251,62 +212,19 @@ void WebContentDecryptionModuleSessionImpl::OnSessionError(
   }
 }
 
-void WebContentDecryptionModuleSessionImpl::SessionCreated(
-    uint32 result_index,
+blink::WebContentDecryptionModuleResult::SessionStatus
+WebContentDecryptionModuleSessionImpl::OnSessionInitialized(
     const std::string& web_session_id) {
-  blink::WebContentDecryptionModuleResult::SessionStatus status;
-
   // CDM will return NULL if the session to be loaded can't be found.
-  if (web_session_id.empty()) {
-    status = blink::WebContentDecryptionModuleResult::SessionNotFound;
-  } else {
-    DCHECK(web_session_id_.empty())
-        << "Session ID may not be changed once set.";
-    web_session_id_ = web_session_id;
-    status =
-        adapter_->RegisterSession(web_session_id_,
-                                  weak_ptr_factory_.GetWeakPtr())
-            ? blink::WebContentDecryptionModuleResult::NewSession
-            : blink::WebContentDecryptionModuleResult::SessionAlreadyExists;
-  }
+  if (web_session_id.empty())
+    return blink::WebContentDecryptionModuleResult::SessionNotFound;
 
-  ResultMap::iterator it = outstanding_results_.find(result_index);
-  if (it != outstanding_results_.end()) {
-    blink::WebContentDecryptionModuleResult& result = it->second;
-    result.completeWithSession(status);
-    outstanding_results_.erase(result_index);
-  }
-}
-
-void WebContentDecryptionModuleSessionImpl::SessionUpdatedOrReleased(
-    uint32 result_index) {
-  ResultMap::iterator it = outstanding_results_.find(result_index);
-  DCHECK(it != outstanding_results_.end());
-  blink::WebContentDecryptionModuleResult& result = it->second;
-  result.complete();
-  outstanding_results_.erase(it);
-}
-
-void WebContentDecryptionModuleSessionImpl::SessionError(
-    uint32 result_index,
-    media::MediaKeys::Exception exception_code,
-    uint32 system_code,
-    const std::string& error_message) {
-  ResultMap::iterator it = outstanding_results_.find(result_index);
-  DCHECK(it != outstanding_results_.end());
-  blink::WebContentDecryptionModuleResult& result = it->second;
-  result.completeWithError(ConvertException(exception_code),
-                           system_code,
-                           blink::WebString::fromUTF8(error_message));
-  outstanding_results_.erase(it);
-}
-
-uint32 WebContentDecryptionModuleSessionImpl::AddResult(
-    blink::WebContentDecryptionModuleResult result) {
-  uint32 result_index = next_available_result_index_++;
-  DCHECK(result_index != kReservedIndex);
-  outstanding_results_.insert(std::make_pair(result_index, result));
-  return result_index;
+  DCHECK(web_session_id_.empty()) << "Session ID may not be changed once set.";
+  web_session_id_ = web_session_id;
+  return adapter_->RegisterSession(web_session_id_,
+                                   weak_ptr_factory_.GetWeakPtr())
+             ? blink::WebContentDecryptionModuleResult::NewSession
+             : blink::WebContentDecryptionModuleResult::SessionAlreadyExists;
 }
 
 }  // namespace content

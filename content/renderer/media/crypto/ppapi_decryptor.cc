@@ -93,7 +93,9 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb) {
+    const media::SessionErrorCB& session_error_cb,
+    const media::SessionKeysChangeCB& session_keys_change_cb,
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   std::string plugin_type = GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper =
@@ -109,7 +111,9 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
                          session_message_cb,
                          session_ready_cb,
                          session_closed_cb,
-                         session_error_cb));
+                         session_error_cb,
+                         session_keys_change_cb,
+                         session_expiration_update_cb));
 }
 
 PpapiDecryptor::PpapiDecryptor(
@@ -118,12 +122,16 @@ PpapiDecryptor::PpapiDecryptor(
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb)
+    const media::SessionErrorCB& session_error_cb,
+    const media::SessionKeysChangeCB& session_keys_change_cb,
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb)
     : pepper_cdm_wrapper_(pepper_cdm_wrapper.Pass()),
       session_message_cb_(session_message_cb),
       session_ready_cb_(session_ready_cb),
       session_closed_cb_(session_closed_cb),
       session_error_cb_(session_error_cb),
+      session_keys_change_cb_(session_keys_change_cb),
+      session_expiration_update_cb_(session_expiration_update_cb),
       render_loop_proxy_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(this) {
   DCHECK(pepper_cdm_wrapper_.get());
@@ -131,6 +139,8 @@ PpapiDecryptor::PpapiDecryptor(
   DCHECK(!session_ready_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
   DCHECK(!session_error_cb_.is_null());
+  DCHECK(!session_keys_change_cb.is_null());
+  DCHECK(!session_expiration_update_cb.is_null());
 
   base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
@@ -139,11 +149,29 @@ PpapiDecryptor::PpapiDecryptor(
       base::Bind(&PpapiDecryptor::OnSessionReady, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionError, weak_this),
+      base::Bind(&PpapiDecryptor::OnSessionKeysChange, weak_this),
+      base::Bind(&PpapiDecryptor::OnSessionExpirationUpdate, weak_this),
       base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this));
 }
 
 PpapiDecryptor::~PpapiDecryptor() {
   pepper_cdm_wrapper_.reset();
+}
+
+void PpapiDecryptor::SetServerCertificate(
+    const uint8* certificate_data,
+    int certificate_data_length,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  if (!CdmDelegate()) {
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    return;
+  }
+
+  CdmDelegate()->SetServerCertificate(
+      certificate_data, certificate_data_length, promise.Pass());
 }
 
 void PpapiDecryptor::CreateSession(
@@ -178,6 +206,8 @@ void PpapiDecryptor::LoadSession(
     return;
   }
 
+  // TODO(jrummell): Intercepting the promise should not be necessary once
+  // OnSessionKeysChange() is called in all cases. http://crbug.com/413413.
   scoped_ptr<SessionLoadedPromise> session_loaded_promise(
       new SessionLoadedPromise(promise.Pass(),
                                base::Bind(&PpapiDecryptor::ResumePlayback,
@@ -200,6 +230,8 @@ void PpapiDecryptor::UpdateSession(
     return;
   }
 
+  // TODO(jrummell): Intercepting the promise should not be necessary once
+  // OnSessionKeysChange() is called in all cases. http://crbug.com/413413.
   scoped_ptr<SessionUpdatedPromise> session_updated_promise(
       new SessionUpdatedPromise(promise.Pass(),
                                 base::Bind(&PpapiDecryptor::ResumePlayback,
@@ -211,7 +243,19 @@ void PpapiDecryptor::UpdateSession(
       session_updated_promise.PassAs<media::SimpleCdmPromise>());
 }
 
-void PpapiDecryptor::ReleaseSession(
+void PpapiDecryptor::CloseSession(const std::string& web_session_id,
+                                  scoped_ptr<media::SimpleCdmPromise> promise) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  if (!CdmDelegate()) {
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    return;
+  }
+
+  CdmDelegate()->CloseSession(web_session_id, promise.Pass());
+}
+
+void PpapiDecryptor::RemoveSession(
     const std::string& web_session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
@@ -221,7 +265,19 @@ void PpapiDecryptor::ReleaseSession(
     return;
   }
 
-  CdmDelegate()->CloseSession(web_session_id, promise.Pass());
+  CdmDelegate()->RemoveSession(web_session_id, promise.Pass());
+}
+
+void PpapiDecryptor::GetUsableKeyIds(const std::string& web_session_id,
+                                     scoped_ptr<media::KeyIdsPromise> promise) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  if (!CdmDelegate()) {
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    return;
+  }
+
+  CdmDelegate()->GetUsableKeyIds(web_session_id, promise.Pass());
 }
 
 media::Decryptor* PpapiDecryptor::GetDecryptor() {
@@ -436,9 +492,30 @@ void PpapiDecryptor::OnSessionMessage(const std::string& web_session_id,
   session_message_cb_.Run(web_session_id, message, destination_url);
 }
 
+void PpapiDecryptor::OnSessionKeysChange(const std::string& web_session_id,
+                                         bool has_additional_usable_key) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  // TODO(jrummell): Handling resume playback should be done in the media
+  // player, not in the Decryptors. http://crbug.com/413413.
+  if (has_additional_usable_key)
+    ResumePlayback();
+
+  session_keys_change_cb_.Run(web_session_id, has_additional_usable_key);
+}
+
+void PpapiDecryptor::OnSessionExpirationUpdate(
+    const std::string& web_session_id,
+    const base::Time& new_expiry_time) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  session_expiration_update_cb_.Run(web_session_id, new_expiry_time);
+}
+
 void PpapiDecryptor::OnSessionReady(const std::string& web_session_id) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
+  // TODO(jrummell): Calling ResumePlayback() here should not be necessary once
+  // OnSessionKeysChange() is called in all cases. http://crbug.com/413413.
   ResumePlayback();
   session_ready_cb_.Run(web_session_id);
 }

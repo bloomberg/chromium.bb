@@ -218,7 +218,7 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
                                   base::Bind(&ProxyDecryptor::OnSessionError,
                                              weak_ptr_factory_.GetWeakPtr(),
                                              web_session_id)));
-  media_keys_->ReleaseSession(web_session_id, promise.Pass());
+  media_keys_->RemoveSession(web_session_id, promise.Pass());
 }
 
 scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
@@ -240,6 +240,10 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       base::Bind(&ProxyDecryptor::OnSessionClosed,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::OnSessionError,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::OnSessionKeysChange,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::OnSessionExpirationUpdate,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -259,6 +263,17 @@ void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
   }
 
   key_message_cb_.Run(web_session_id, message, destination_url);
+}
+
+void ProxyDecryptor::OnSessionKeysChange(const std::string& web_session_id,
+                                         bool has_additional_usable_key) {
+  // EME v0.1b doesn't support this event.
+}
+
+void ProxyDecryptor::OnSessionExpirationUpdate(
+    const std::string& web_session_id,
+    const base::Time& new_expiry_time) {
+  // EME v0.1b doesn't support this event.
 }
 
 void ProxyDecryptor::OnSessionReady(const std::string& web_session_id) {

@@ -25,6 +25,7 @@
 #include "media/base/video_util.h"
 #include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
@@ -326,6 +327,8 @@ void ContentDecryptorDelegate::Initialize(
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb,
+    const media::SessionKeysChangeCB& session_keys_change_cb,
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const base::Closure& fatal_plugin_error_cb) {
   DCHECK(!key_system.empty());
   DCHECK(key_system_.empty());
@@ -335,6 +338,8 @@ void ContentDecryptorDelegate::Initialize(
   session_ready_cb_ = session_ready_cb;
   session_closed_cb_ = session_closed_cb;
   session_error_cb_ = session_error_cb;
+  session_keys_change_cb_ = session_keys_change_cb;
+  session_expiration_update_cb_ = session_expiration_update_cb;
   fatal_plugin_error_cb_ = fatal_plugin_error_cb;
 
   plugin_decryption_interface_->Initialize(
@@ -826,13 +831,27 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
 void ContentDecryptorDelegate::OnSessionKeysChange(
     PP_Var web_session_id,
     PP_Bool has_additional_usable_key) {
-  // TODO(jrummell): Pass this event on.
+  if (session_keys_change_cb_.is_null())
+    return;
+
+  StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
+  DCHECK(web_session_id_string);
+
+  session_keys_change_cb_.Run(web_session_id_string->value(),
+                              PP_ToBool(has_additional_usable_key));
 }
 
 void ContentDecryptorDelegate::OnSessionExpirationChange(
     PP_Var web_session_id,
     PP_Time new_expiry_time) {
-  // TODO(jrummell): Pass this event on.
+  if (session_expiration_update_cb_.is_null())
+    return;
+
+  StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
+  DCHECK(web_session_id_string);
+
+  session_expiration_update_cb_.Run(web_session_id_string->value(),
+                                    ppapi::PPTimeToTime(new_expiry_time));
 }
 
 void ContentDecryptorDelegate::OnSessionReady(PP_Var web_session_id) {

@@ -30,7 +30,9 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb) {
+    const media::SessionErrorCB& session_error_cb,
+    const media::SessionKeysChangeCB& session_keys_change_cb,
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   // TODO(jrummell): Pass |security_origin| to all constructors.
   // TODO(jrummell): Enable the following line once blink code updated to
   // check the security origin before calling.
@@ -41,8 +43,8 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #endif
 
   if (CanUseAesDecryptor(key_system)) {
-    return scoped_ptr<media::MediaKeys>(
-        new media::AesDecryptor(session_message_cb, session_closed_cb));
+    return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
+        session_message_cb, session_closed_cb, session_keys_change_cb));
   }
 #if defined(ENABLE_PEPPER_CDMS)
   return scoped_ptr<media::MediaKeys>(
@@ -52,7 +54,9 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                              session_message_cb,
                              session_ready_cb,
                              session_closed_cb,
-                             session_error_cb));
+                             session_error_cb,
+                             session_keys_change_cb,
+                             session_expiration_update_cb));
 #elif defined(ENABLE_BROWSER_CDMS)
   scoped_ptr<ProxyMediaKeys> proxy_media_keys =
       ProxyMediaKeys::Create(key_system,
@@ -61,7 +65,9 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                              session_message_cb,
                              session_ready_cb,
                              session_closed_cb,
-                             session_error_cb);
+                             session_error_cb,
+                             session_keys_change_cb,
+                             session_expiration_update_cb);
   if (proxy_media_keys)
     *cdm_id = proxy_media_keys->GetCdmId();
   return proxy_media_keys.PassAs<media::MediaKeys>();
