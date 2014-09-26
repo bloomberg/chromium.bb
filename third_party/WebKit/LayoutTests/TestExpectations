@@ -1318,7 +1318,6 @@ crbug.com/416846 inspector/elements/styles/styles-add-new-rule.html [ Pass Failu
 
 crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failure ]
 
-crbug.com/416580 [ Win ] svg/custom/external-paintserver-reference.svg [ NeedsRebaseline ]
 crbug.com/416580 [ Win ] svg/custom/linking-base-external-reference.xhtml [ NeedsRebaseline ]
 
 # Failure on Linux Leak bot
