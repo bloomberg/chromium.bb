@@ -264,6 +264,7 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const St
     DateTimeEditElement* edit = this->dateTimeEditElement();
     if (!edit)
         return;
+    EventQueueScope scope;
     DateComponents date;
     unsigned end;
     if (date.parseDate(value, 0, end) && end == value.length())
