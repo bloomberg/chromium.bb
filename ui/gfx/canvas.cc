@@ -13,9 +13,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
@@ -348,13 +346,14 @@ void Canvas::DrawImageInt(const ImageSkia& image,
   const SkBitmap& bitmap = image_rep.sk_bitmap();
   float bitmap_scale = image_rep.scale();
 
-  ScopedCanvas scoper(this);
+  canvas_->save();
   canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
                  SkFloatToScalar(1.0f / bitmap_scale));
   canvas_->drawBitmap(bitmap,
                       SkFloatToScalar(x * bitmap_scale),
                       SkFloatToScalar(y * bitmap_scale),
                       &paint);
+  canvas_->restore();
 }
 
 void Canvas::DrawImageInt(const ImageSkia& image,
@@ -416,14 +415,13 @@ void Canvas::DrawImageIntInPixel(const ImageSkia& image,
 
   // Ensure that the direction of the x and y scales is preserved. This is
   // important for RTL layouts.
-  matrix.setScaleX(matrix.getScaleX() > 0 ? 1.0f : -1.0f);
-  matrix.setScaleY(matrix.getScaleY() > 0 ? 1.0f : -1.0f);
+  matrix.getScaleX() > 0 ? matrix.setScaleX(1.0f) : matrix.setScaleX(-1.0f);
+  matrix.getScaleY() > 0 ? matrix.setScaleY(1.0f) : matrix.setScaleY(-1.0f);
 
-  // Floor so that we get consistent rounding.
-  matrix.setTranslateX(SkScalarFloorToScalar(matrix.getTranslateX()));
-  matrix.setTranslateY(SkScalarFloorToScalar(matrix.getTranslateY()));
+  matrix.setTranslateX(SkScalarRoundToInt(matrix.getTranslateX()));
+  matrix.setTranslateY(SkScalarRoundToInt(matrix.getTranslateY()));
 
-  ScopedCanvas scoper(this);
+  Save();
 
   canvas_->setMatrix(matrix);
 
@@ -440,6 +438,9 @@ void Canvas::DrawImageIntInPixel(const ImageSkia& image,
                      paint,
                      image_scale_,
                      true);
+
+  // Restore the state of the canvas.
+  Restore();
 }
 
 void Canvas::DrawImageInPath(const ImageSkia& image,
