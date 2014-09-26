@@ -5567,6 +5567,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Download.MapWinShErrorTransientError"
+    enum="SpecialShFileOperationCodes">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Windows error that produced a DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR
+    result in MapShFileOperationCodes().
+  </summary>
+</histogram>
+
 <histogram name="Download.OnChanged">
   <owner>asanka@chromium.org</owner>
   <summary>
@@ -5698,6 +5707,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Download.Time" units="milliseconds">
   <owner>asanka@chromium.org</owner>
   <summary>Time between the start of a download and its completion.</summary>
+</histogram>
+
+<histogram name="Download.TimeToRenameFailureAfterInitialFailure"
+    units="milliseconds">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Time elapsed until a retried download file rename operation failed for the
+    last time after the initial rename failed.
+  </summary>
+</histogram>
+
+<histogram name="Download.TimeToRenameSuccessAfterInitialFailure"
+    units="milliseconds">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Time elapsed until a retried download file rename operation succeeded after
+    the initial rename failed.
+  </summary>
 </histogram>
 
 <histogram name="Download.UserDiscard" enum="DownloadItem.DangerType">
@@ -50900,7 +50927,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="SpecialShFileOperationCodes" type="int">
   <summary>Legacy error codes still returned by |ShFileOperation()|</summary>
-  <int value="5" label="Access denied"/>
+  <int value="5" label="Access denied (Win32)"/>
+  <int value="32" label="Sharing violation (Win32)"/>
+  <int value="87" label="Invalid parameter (Win32)"/>
   <int value="113" label="Source and Destination are same file"/>
   <int value="114" label="Multiple source mapped to single destination"/>
   <int value="115" label="Rename to different directory"/>

@@ -195,6 +195,12 @@ class BaseFileTest : public testing::Test {
     expected_error_ = err;
   }
 
+  void ExpectPermissionError(DownloadInterruptReason err) {
+    EXPECT_TRUE(err == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR ||
+                err == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED)
+        << "Interrupt reason = " << err;
+  }
+
  protected:
   // BaseClass instance we are testing.
   scoped_ptr<BaseFile> base_file_;
@@ -469,11 +475,59 @@ TEST_F(BaseFileTest, RenameWithError) {
   {
     base::FilePermissionRestorer restore_permissions_for(test_dir);
     ASSERT_TRUE(base::MakeFileUnwritable(test_dir));
-    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
-              base_file_->Rename(new_path));
+    ExpectPermissionError(base_file_->Rename(new_path));
   }
 
   base_file_->Finish();
+}
+
+// Test that if a rename fails for an in-progress BaseFile, it remains writeable
+// and renameable.
+TEST_F(BaseFileTest, RenameWithErrorInProgress) {
+  ASSERT_TRUE(InitializeFile());
+
+  base::FilePath test_dir(temp_dir_.path().AppendASCII("TestDir"));
+  ASSERT_TRUE(base::CreateDirectory(test_dir));
+
+  base::FilePath new_path(test_dir.AppendASCII("TestFile"));
+  EXPECT_FALSE(base::PathExists(new_path));
+
+  // Write some data to start with.
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_TRUE(base_file_->in_progress());
+
+  base::FilePath old_path = base_file_->full_path();
+
+  {
+    base::FilePermissionRestorer restore_permissions_for(test_dir);
+    ASSERT_TRUE(base::MakeFileUnwritable(test_dir));
+    ExpectPermissionError(base_file_->Rename(new_path));
+
+    // The file should still be open and we should be able to continue writing
+    // to it.
+    ASSERT_TRUE(base_file_->in_progress());
+    ASSERT_TRUE(AppendDataToFile(kTestData2));
+    ASSERT_EQ(old_path.value(), base_file_->full_path().value());
+
+    // Try to rename again, just for kicks. It should still fail.
+    ExpectPermissionError(base_file_->Rename(new_path));
+  }
+
+  // Now that TestDir is writeable again, we should be able to successfully
+  // rename the file.
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, base_file_->Rename(new_path));
+  ASSERT_EQ(new_path.value(), base_file_->full_path().value());
+  ASSERT_TRUE(AppendDataToFile(kTestData3));
+
+  base_file_->Finish();
+
+  // The contents of the file should be intact.
+  std::string file_contents;
+  std::string expected_contents(kTestData1);
+  expected_contents += kTestData2;
+  expected_contents += kTestData3;
+  ASSERT_TRUE(base::ReadFileToString(new_path, &file_contents));
+  EXPECT_EQ(expected_contents, file_contents);
 }
 
 // Test that a failed write reports an error.

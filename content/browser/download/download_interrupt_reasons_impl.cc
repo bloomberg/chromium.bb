@@ -8,6 +8,35 @@
 
 namespace content {
 
+DownloadInterruptReason ConvertFileErrorToInterruptReason(
+    base::File::Error file_error) {
+  switch (file_error) {
+    case base::File::FILE_OK:
+      return DOWNLOAD_INTERRUPT_REASON_NONE;
+
+    case base::File::FILE_ERROR_IN_USE:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+
+    case base::File::FILE_ERROR_TOO_MANY_OPENED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+
+    case base::File::FILE_ERROR_NO_MEMORY:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+
+    case base::File::FILE_ERROR_NO_SPACE:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE;
+
+    case base::File::FILE_ERROR_SECURITY:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+
+    default:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+  }
+}
+
 DownloadInterruptReason ConvertNetErrorToInterruptReason(
     net::Error net_error, DownloadInterruptSource source) {
   switch (net_error) {

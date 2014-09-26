@@ -25,6 +25,12 @@ namespace content {
 const int kUpdatePeriodMs = 500;
 const int kMaxTimeBlockingFileThreadMs = 1000;
 
+// These constants control the default retry behavior for failing renames. Each
+// retry is performed after a delay that is twice the previous delay. The
+// initial delay is specified by kInitialRenameRetryDelayMs.
+const int kMaxRenameRetries = 3;
+const int kInitialRenameRetryDelayMs = 200;
+
 int DownloadFile::number_active_objects_ = 0;
 
 DownloadFileImpl::DownloadFileImpl(
@@ -36,20 +42,20 @@ DownloadFileImpl::DownloadFileImpl(
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
-        : file_(save_info->file_path,
-                url,
-                referrer_url,
-                save_info->offset,
-                calculate_hash,
-                save_info->hash_state,
-                save_info->file.Pass(),
-                bound_net_log),
-          default_download_directory_(default_download_directory),
-          stream_reader_(stream.Pass()),
-          bytes_seen_(0),
-          bound_net_log_(bound_net_log),
-          observer_(observer),
-          weak_factory_(this) {
+    : file_(save_info->file_path,
+            url,
+            referrer_url,
+            save_info->offset,
+            calculate_hash,
+            save_info->hash_state,
+            save_info->file.Pass(),
+            bound_net_log),
+      default_download_directory_(default_download_directory),
+      stream_reader_(stream.Pass()),
+      bytes_seen_(0),
+      bound_net_log_(bound_net_log),
+      observer_(observer),
+      weak_factory_(this) {
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
@@ -103,47 +109,84 @@ DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
 void DownloadFileImpl::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::FilePath new_path(full_path);
-
-  int uniquifier = base::GetUniquePathNumber(
-      new_path, base::FilePath::StringType());
-  if (uniquifier > 0) {
-    new_path = new_path.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", uniquifier));
-  }
-
-  DownloadInterruptReason reason = file_.Rename(new_path);
-  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    // Make sure our information is updated, since we're about to
-    // error out.
-    SendUpdate();
-
-    // Null out callback so that we don't do any more stream processing.
-    stream_reader_->RegisterCallback(base::Closure());
-
-    new_path.clear();
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, reason, new_path));
+  RenameWithRetryInternal(
+      full_path, UNIQUIFY, kMaxRenameRetries, base::TimeTicks(), callback);
 }
 
 void DownloadFileImpl::RenameAndAnnotate(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
+  RenameWithRetryInternal(full_path,
+                          ANNOTATE_WITH_SOURCE_INFORMATION,
+                          kMaxRenameRetries,
+                          base::TimeTicks(),
+                          callback);
+}
+
+base::TimeDelta DownloadFileImpl::GetRetryDelayForFailedRename(
+    int attempt_number) {
+  DCHECK_GE(attempt_number, 0);
+  // |delay| starts at kInitialRenameRetryDelayMs and increases by a factor of
+  // 2 at each subsequent retry. Assumes that |retries_left| starts at
+  // kMaxRenameRetries. Also assumes that kMaxRenameRetries is less than the
+  // number of bits in an int.
+  return base::TimeDelta::FromMilliseconds(kInitialRenameRetryDelayMs) *
+         (1 << attempt_number);
+}
+
+bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
+  return reason == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+}
+
+void DownloadFileImpl::RenameWithRetryInternal(
+    const base::FilePath& full_path,
+    RenameOption option,
+    int retries_left,
+    base::TimeTicks time_of_first_failure,
+    const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::FilePath new_path(full_path);
 
-  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
-  // Short circuit null rename.
-  if (full_path != file_.full_path())
-    reason = file_.Rename(new_path);
+  if ((option & UNIQUIFY) && full_path != file_.full_path()) {
+    int uniquifier =
+        base::GetUniquePathNumber(new_path, base::FilePath::StringType());
+    if (uniquifier > 0)
+      new_path = new_path.InsertBeforeExtensionASCII(
+          base::StringPrintf(" (%d)", uniquifier));
+  }
 
-  if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+  DownloadInterruptReason reason = file_.Rename(new_path);
+
+  // Attempt to retry the rename if possible. If the rename failed and the
+  // subsequent open also failed, then in_progress() would be false. We don't
+  // try to retry renames if the in_progress() was false to begin with since we
+  // have less assurance that the file at file_.full_path() was the one we were
+  // working with.
+  if (ShouldRetryFailedRename(reason) && file_.in_progress() &&
+      retries_left > 0) {
+    int attempt_number = kMaxRenameRetries - retries_left;
+    BrowserThread::PostDelayedTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&DownloadFileImpl::RenameWithRetryInternal,
+                   weak_factory_.GetWeakPtr(),
+                   full_path,
+                   option,
+                   --retries_left,
+                   time_of_first_failure.is_null() ? base::TimeTicks::Now()
+                                                   : time_of_first_failure,
+                   callback),
+        GetRetryDelayForFailedRename(attempt_number));
+    return;
+  }
+
+  if (!time_of_first_failure.is_null())
+    RecordDownloadFileRenameResultAfterRetry(
+        base::TimeTicks::Now() - time_of_first_failure, reason);
+
+  if (reason == DOWNLOAD_INTERRUPT_REASON_NONE &&
+      (option & ANNOTATE_WITH_SOURCE_INFORMATION)) {
     // Doing the annotation after the rename rather than before leaves
     // a very small window during which the file has the final name but
     // hasn't been marked with the Mark Of The Web.  However, it allows

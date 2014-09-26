@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "content/browser/browser_thread_impl.h"
@@ -59,6 +61,48 @@ class MockDownloadDestinationObserver : public DownloadDestinationObserver {
 
 MATCHER(IsNullCallback, "") { return (arg.is_null()); }
 
+typedef void (DownloadFile::*DownloadFileRenameMethodType)(
+    const base::FilePath&,
+    const DownloadFile::RenameCompletionCallback&);
+
+// This is a test DownloadFileImpl that has no retry delay and, on Posix,
+// retries renames failed due to ACCESS_DENIED.
+class TestDownloadFileImpl : public DownloadFileImpl {
+ public:
+  TestDownloadFileImpl(scoped_ptr<DownloadSaveInfo> save_info,
+                       const base::FilePath& default_downloads_directory,
+                       const GURL& url,
+                       const GURL& referrer_url,
+                       bool calculate_hash,
+                       scoped_ptr<ByteStreamReader> stream,
+                       const net::BoundNetLog& bound_net_log,
+                       base::WeakPtr<DownloadDestinationObserver> observer)
+      : DownloadFileImpl(save_info.Pass(),
+                         default_downloads_directory,
+                         url,
+                         referrer_url,
+                         calculate_hash,
+                         stream.Pass(),
+                         bound_net_log,
+                         observer) {}
+
+ protected:
+  virtual base::TimeDelta GetRetryDelayForFailedRename(
+      int attempt_count) OVERRIDE {
+    return base::TimeDelta::FromMilliseconds(0);
+  }
+
+#if !defined(OS_WIN)
+  // On Posix, we don't encounter transient errors during renames, except
+  // possibly EAGAIN, which is difficult to replicate reliably. So we resort to
+  // simulating a transient error using ACCESS_DENIED instead.
+  virtual bool ShouldRetryFailedRename(
+      DownloadInterruptReason reason) OVERRIDE {
+    return reason == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+  }
+#endif
+};
+
 }  // namespace
 
 class DownloadFileTest : public testing::Test {
@@ -104,15 +148,15 @@ class DownloadFileTest : public testing::Test {
   }
 
   // Mock calls to this function are forwarded here.
-  void RegisterCallback(base::Closure sink_callback) {
+  void RegisterCallback(const base::Closure& sink_callback) {
     sink_callback_ = sink_callback;
   }
 
-  void SetInterruptReasonCallback(bool* was_called,
+  void SetInterruptReasonCallback(const base::Closure& closure,
                                   DownloadInterruptReason* reason_p,
                                   DownloadInterruptReason reason) {
-    *was_called = true;
     *reason_p = reason;
+    closure.Run();
   }
 
   bool CreateDownloadFile(int offset, bool calculate_hash) {
@@ -128,30 +172,29 @@ class DownloadFileTest : public testing::Test {
         .RetiresOnSaturation();
 
     scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-    download_file_.reset(
-        new DownloadFileImpl(save_info.Pass(),
-                             base::FilePath(),
-                             GURL(),  // Source
-                             GURL(),  // Referrer
-                             calculate_hash,
-                             scoped_ptr<ByteStreamReader>(input_stream_),
-                             net::BoundNetLog(),
-                             observer_factory_.GetWeakPtr()));
-    download_file_->SetClientGuid(
-        "12345678-ABCD-1234-DCBA-123456789ABC");
+    scoped_ptr<TestDownloadFileImpl> download_file_impl(
+        new TestDownloadFileImpl(save_info.Pass(),
+                                 base::FilePath(),
+                                 GURL(),  // Source
+                                 GURL(),  // Referrer
+                                 calculate_hash,
+                                 scoped_ptr<ByteStreamReader>(input_stream_),
+                                 net::BoundNetLog(),
+                                 observer_factory_.GetWeakPtr()));
+    download_file_impl->SetClientGuid("12345678-ABCD-1234-DCBA-123456789ABC");
+    download_file_ = download_file_impl.PassAs<DownloadFile>();
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))
         .RetiresOnSaturation();
 
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
-    bool called = false;
-    DownloadInterruptReason result;
+    DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
+    base::RunLoop loop_runner;
     download_file_->Initialize(base::Bind(
         &DownloadFileTest::SetInterruptReasonCallback,
-        weak_ptr_factory.GetWeakPtr(), &called, &result));
-    loop_.RunUntilIdle();
-    EXPECT_TRUE(called);
+        weak_ptr_factory.GetWeakPtr(), loop_runner.QuitClosure(), &result));
+    loop_runner.Run();
 
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);
     return result == DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -243,42 +286,42 @@ class DownloadFileTest : public testing::Test {
   DownloadInterruptReason RenameAndUniquify(
       const base::FilePath& full_path,
       base::FilePath* result_path_p) {
-    base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
-    DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
-    bool callback_was_called(false);
-    base::FilePath result_path;
-
-    download_file_->RenameAndUniquify(
-        full_path, base::Bind(&DownloadFileTest::SetRenameResult,
-                              weak_ptr_factory.GetWeakPtr(),
-                              &callback_was_called,
-                              &result_reason, result_path_p));
-    loop_.RunUntilIdle();
-
-    EXPECT_TRUE(callback_was_called);
-    return result_reason;
+    return InvokeRenameMethodAndWaitForCallback(
+        &DownloadFile::RenameAndUniquify, full_path, result_path_p);
   }
 
   DownloadInterruptReason RenameAndAnnotate(
       const base::FilePath& full_path,
       base::FilePath* result_path_p) {
-    base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
-    DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
-    bool callback_was_called(false);
-    base::FilePath result_path;
+    return InvokeRenameMethodAndWaitForCallback(
+        &DownloadFile::RenameAndAnnotate, full_path, result_path_p);
+  }
 
-    download_file_->RenameAndAnnotate(
-        full_path, base::Bind(&DownloadFileTest::SetRenameResult,
-                              weak_ptr_factory.GetWeakPtr(),
-                              &callback_was_called,
-                              &result_reason, result_path_p));
-    loop_.RunUntilIdle();
-
-    EXPECT_TRUE(callback_was_called);
-    return result_reason;
+  void ExpectPermissionError(DownloadInterruptReason err) {
+    EXPECT_TRUE(err == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR ||
+                err == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED)
+        << "Interrupt reason = " << err;
   }
 
  protected:
+  DownloadInterruptReason InvokeRenameMethodAndWaitForCallback(
+      DownloadFileRenameMethodType method,
+      const base::FilePath& full_path,
+      base::FilePath* result_path_p) {
+    DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
+    base::FilePath result_path;
+
+    base::RunLoop loop_runner;
+    ((*download_file_).*method)(full_path,
+                                base::Bind(&DownloadFileTest::SetRenameResult,
+                                           base::Unretained(this),
+                                           loop_runner.QuitClosure(),
+                                           &result_reason,
+                                           result_path_p));
+    loop_runner.Run();
+    return result_reason;
+  }
+
   scoped_ptr<StrictMock<MockDownloadDestinationObserver> > observer_;
   base::WeakPtrFactory<DownloadDestinationObserver> observer_factory_;
 
@@ -300,17 +343,16 @@ class DownloadFileTest : public testing::Test {
   base::MessageLoop loop_;
 
  private:
-  void SetRenameResult(bool* called_p,
+  void SetRenameResult(const base::Closure& closure,
                        DownloadInterruptReason* reason_p,
                        base::FilePath* result_path_p,
                        DownloadInterruptReason reason,
                        const base::FilePath& result_path) {
-    if (called_p)
-      *called_p = true;
     if (reason_p)
       *reason_p = reason;
     if (result_path_p)
       *result_path_p = result_path;
+    closure.Run();
   }
 
   // UI thread.
@@ -321,6 +363,33 @@ class DownloadFileTest : public testing::Test {
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;
 };
+
+// DownloadFile::RenameAndAnnotate and DownloadFile::RenameAndUniquify have a
+// considerable amount of functional overlap. In order to re-use test logic, we
+// are going to introduce this value parameterized test fixture. It will take a
+// DownloadFileRenameMethodType value which can be either of the two rename
+// methods.
+class DownloadFileTestWithRename
+    : public DownloadFileTest,
+      public ::testing::WithParamInterface<DownloadFileRenameMethodType> {
+ protected:
+  DownloadInterruptReason InvokeSelectedRenameMethod(
+      const base::FilePath& full_path,
+      base::FilePath* result_path_p) {
+    return InvokeRenameMethodAndWaitForCallback(
+        GetParam(), full_path, result_path_p);
+  }
+};
+
+// And now instantiate all DownloadFileTestWithRename tests using both
+// DownloadFile rename methods. Each test of the form
+// DownloadFileTestWithRename.<FooTest> will be instantiated once with
+// RenameAndAnnotate as the value parameter and once with RenameAndUniquify as
+// the value parameter.
+INSTANTIATE_TEST_CASE_P(DownloadFile,
+                        DownloadFileTestWithRename,
+                        ::testing::Values(&DownloadFile::RenameAndAnnotate,
+                                          &DownloadFile::RenameAndUniquify));
 
 const char* DownloadFileTest::kTestData1 =
     "Let's write some data to the file!\n";
@@ -335,7 +404,7 @@ const int DownloadFileTest::kDummyRequestId = 67;
 
 // Rename the file before any data is downloaded, after some has, after it all
 // has, and after it's closed.
-TEST_F(DownloadFileTest, RenameFileFinal) {
+TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(base::PathExists(initial_path));
@@ -343,12 +412,11 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   base::FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
   base::FilePath path_3(initial_path.InsertBeforeExtensionASCII("_3"));
   base::FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
-  base::FilePath path_5(initial_path.InsertBeforeExtensionASCII("_5"));
   base::FilePath output_path;
 
   // Rename the file before downloading any data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            RenameAndUniquify(path_1, &output_path));
+            InvokeSelectedRenameMethod(path_1, &output_path));
   base::FilePath renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_1, renamed_path);
   EXPECT_EQ(path_1, output_path);
@@ -363,7 +431,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading some data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            RenameAndUniquify(path_2, &output_path));
+            InvokeSelectedRenameMethod(path_2, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_2, renamed_path);
   EXPECT_EQ(path_2, output_path);
@@ -377,7 +445,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            RenameAndUniquify(path_3, &output_path));
+            InvokeSelectedRenameMethod(path_3, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_3, renamed_path);
   EXPECT_EQ(path_3, output_path);
@@ -394,7 +462,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data and closing the file.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            RenameAndUniquify(path_4, &output_path));
+            InvokeSelectedRenameMethod(path_4, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_4, renamed_path);
   EXPECT_EQ(path_4, output_path);
@@ -407,29 +475,42 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_TRUE(download_file_->GetHash(&hash));
   EXPECT_EQ(kDataHash, base::HexEncode(hash.data(), hash.size()));
 
-  // Check that a rename with overwrite to an existing file succeeds.
-  std::string file_contents;
-  ASSERT_FALSE(base::PathExists(path_5));
+  DestroyDownloadFile(0);
+}
+
+// Test to make sure the rename overwrites when requested. This is separate from
+// the above test because it only applies to RenameAndAnnotate().
+// RenameAndUniquify() doesn't overwrite by design.
+TEST_F(DownloadFileTest, RenameOverwrites) {
+  ASSERT_TRUE(CreateDownloadFile(0, true));
+  base::FilePath initial_path(download_file_->FullPath());
+  EXPECT_TRUE(base::PathExists(initial_path));
+  base::FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
+
+  ASSERT_FALSE(base::PathExists(path_1));
   static const char file_data[] = "xyzzy";
-  ASSERT_EQ(static_cast<int>(sizeof(file_data) - 1),
-            base::WriteFile(path_5, file_data, sizeof(file_data) - 1));
-  ASSERT_TRUE(base::PathExists(path_5));
-  EXPECT_TRUE(base::ReadFileToString(path_5, &file_contents));
-  EXPECT_EQ(std::string(file_data), file_contents);
+  ASSERT_EQ(static_cast<int>(sizeof(file_data)),
+            base::WriteFile(path_1, file_data, sizeof(file_data)));
+  ASSERT_TRUE(base::PathExists(path_1));
 
+  base::FilePath new_path;
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            RenameAndAnnotate(path_5, &output_path));
-  EXPECT_EQ(path_5, output_path);
+            RenameAndAnnotate(path_1, &new_path));
+  EXPECT_EQ(path_1.value(), new_path.value());
 
-  file_contents = "";
-  EXPECT_TRUE(base::ReadFileToString(path_5, &file_contents));
+  std::string file_contents;
+  ASSERT_TRUE(base::ReadFileToString(new_path, &file_contents));
   EXPECT_NE(std::string(file_data), file_contents);
 
+  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
+  loop_.RunUntilIdle();
   DestroyDownloadFile(0);
 }
 
 // Test to make sure the rename uniquifies if we aren't overwriting
-// and there's a file where we're aiming.
+// and there's a file where we're aiming. As above, not a
+// DownloadFileTestWithRename test because this only applies to
+// RenameAndUniquify().
 TEST_F(DownloadFileTest, RenameUniquifies) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
@@ -451,16 +532,35 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
   DestroyDownloadFile(0);
 }
 
+// Test that RenameAndUniquify doesn't try to uniquify in the case where the
+// target filename is the same as the current filename.
+TEST_F(DownloadFileTest, RenameRecognizesSelfConflict) {
+  ASSERT_TRUE(CreateDownloadFile(0, true));
+  base::FilePath initial_path(download_file_->FullPath());
+  EXPECT_TRUE(base::PathExists(initial_path));
+
+  base::FilePath new_path;
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+            RenameAndUniquify(initial_path, &new_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
+
+  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
+  loop_.RunUntilIdle();
+  DestroyDownloadFile(0);
+  EXPECT_EQ(initial_path.value(), new_path.value());
+}
+
 // Test to make sure we get the proper error on failure.
-TEST_F(DownloadFileTest, RenameError) {
+TEST_P(DownloadFileTestWithRename, RenameError) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
 
   // Create a subdirectory.
-  base::FilePath tempdir(
-      initial_path.DirName().Append(FILE_PATH_LITERAL("tempdir")));
-  ASSERT_TRUE(base::CreateDirectory(tempdir));
-  base::FilePath target_path(tempdir.Append(initial_path.BaseName()));
+  base::FilePath target_dir(
+      initial_path.DirName().Append(FILE_PATH_LITERAL("TargetDir")));
+  ASSERT_FALSE(base::DirectoryExists(target_dir));
+  ASSERT_TRUE(base::CreateDirectory(target_dir));
+  base::FilePath target_path(target_dir.Append(initial_path.BaseName()));
 
   // Targets
   base::FilePath target_path_suffixed(
@@ -470,15 +570,106 @@ TEST_F(DownloadFileTest, RenameError) {
 
   // Make the directory unwritable and try to rename within it.
   {
-    base::FilePermissionRestorer restorer(tempdir);
-    ASSERT_TRUE(base::MakeFileUnwritable(tempdir));
+    base::FilePermissionRestorer restorer(target_dir);
+    ASSERT_TRUE(base::MakeFileUnwritable(target_dir));
 
     // Expect nulling out of further processing.
     EXPECT_CALL(*input_stream_, RegisterCallback(IsNullCallback()));
-    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
-              RenameAndAnnotate(target_path, NULL));
+    ExpectPermissionError(InvokeSelectedRenameMethod(target_path, NULL));
     EXPECT_FALSE(base::PathExists(target_path_suffixed));
   }
+
+  FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
+  loop_.RunUntilIdle();
+  DestroyDownloadFile(0);
+}
+
+namespace {
+
+void TestRenameCompletionCallback(const base::Closure& closure,
+                                  bool* did_run_callback,
+                                  DownloadInterruptReason interrupt_reason,
+                                  const base::FilePath& new_path) {
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+  *did_run_callback = true;
+  closure.Run();
+}
+
+}  // namespace
+
+// Test that the retry logic works. This test assumes that DownloadFileImpl will
+// post tasks to the current message loop (acting as the FILE thread)
+// asynchronously to retry the renames. We will stuff RunLoop::QuitClosures()
+// in between the retry tasks to stagger them and then allow the rename to
+// succeed.
+//
+// Note that there is only one queue of tasks to run, and that is in the tests'
+// base::MessageLoop::current(). Each RunLoop processes that queue until it sees
+// a QuitClosure() targeted at itself, at which point it stops processing.
+TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
+  ASSERT_TRUE(CreateDownloadFile(0, true));
+  base::FilePath initial_path(download_file_->FullPath());
+
+  // Create a subdirectory.
+  base::FilePath target_dir(
+      initial_path.DirName().Append(FILE_PATH_LITERAL("TargetDir")));
+  ASSERT_FALSE(base::DirectoryExists(target_dir));
+  ASSERT_TRUE(base::CreateDirectory(target_dir));
+  base::FilePath target_path(target_dir.Append(initial_path.BaseName()));
+
+  bool did_run_callback = false;
+
+  // Each RunLoop can be used the run the MessageLoop until the corresponding
+  // QuitClosure() is run. This one is used to produce the QuitClosure() that
+  // will be run when the entire rename operation is complete.
+  base::RunLoop succeeding_run;
+  {
+    // (Scope for the base::File or base::FilePermissionRestorer below.)
+#if defined(OS_WIN)
+    // On Windows we test with an actual transient error, a sharing violation.
+    // The rename will fail because we are holding the file open for READ. On
+    // Posix this doesn't cause a failure.
+    base::File locked_file(initial_path,
+                           base::File::FLAG_OPEN | base::File::FLAG_READ);
+    ASSERT_TRUE(locked_file.IsValid());
+#else
+    // Simulate a transient failure by revoking write permission for target_dir.
+    // The TestDownloadFileImpl class treats this error as transient even though
+    // DownloadFileImpl itself doesn't.
+    base::FilePermissionRestorer restore_permissions_for(target_dir);
+    ASSERT_TRUE(base::MakeFileUnwritable(target_dir));
+#endif
+
+    // The Rename() should fail here and enqueue a retry task without invoking
+    // the completion callback.
+    ((*download_file_).*GetParam())(target_path,
+                                    base::Bind(&TestRenameCompletionCallback,
+                                               succeeding_run.QuitClosure(),
+                                               &did_run_callback));
+    EXPECT_FALSE(did_run_callback);
+
+    base::RunLoop first_failing_run;
+    // Queue the QuitClosure() on the MessageLoop now. Any tasks queued by the
+    // Rename() will be in front of the QuitClosure(). Running the message loop
+    // now causes the just the first retry task to be run. The rename still
+    // fails, so another retry task would get queued behind the QuitClosure().
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           first_failing_run.QuitClosure());
+    first_failing_run.Run();
+    EXPECT_FALSE(did_run_callback);
+
+    // Running another loop should have the same effect as the above as long as
+    // kMaxRenameRetries is greater than 2.
+    base::RunLoop second_failing_run;
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           second_failing_run.QuitClosure());
+    second_failing_run.Run();
+    EXPECT_FALSE(did_run_callback);
+  }
+
+  // This time the QuitClosure from succeeding_run should get executed.
+  succeeding_run.Run();
+  EXPECT_TRUE(did_run_callback);
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
   loop_.RunUntilIdle();

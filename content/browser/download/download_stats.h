@@ -200,6 +200,11 @@ void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time);
 
+// Record the result of a download file rename.
+void RecordDownloadFileRenameResultAfterRetry(
+    base::TimeDelta time_since_first_failure,
+    DownloadInterruptReason interrupt_reason);
+
 enum SavePackageEvent {
   // The user has started to save a page as a package.
   SAVE_PACKAGE_STARTED,
