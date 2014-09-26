@@ -16,7 +16,7 @@ namespace {
 
 const char kUrlPlaceHolder[] = "http://host/";
 
-const char kStubPrivetCode[] = "01234";
+const char kStubPrivetCode[] = "1234";
 
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);

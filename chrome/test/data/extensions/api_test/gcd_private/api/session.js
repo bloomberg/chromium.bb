@@ -7,11 +7,11 @@ onload = function() {
     function session() {
       function onConfirmCode(sessionId, status, confirmationInfo) {
         chrome.test.assertEq("success", status);
-        chrome.test.assertEq("01234", confirmationInfo.code);
+        chrome.test.assertEq("1234", confirmationInfo.code);
         chrome.test.assertEq("displayCode", confirmationInfo.type);
 
         chrome.gcdPrivate.confirmCode(sessionId,
-                                      "01234",
+                                      "1234",
                                       onSessionEstablished.bind(null,
                                                                 sessionId));
       }
