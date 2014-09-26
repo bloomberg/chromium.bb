@@ -11,6 +11,7 @@
 #include "tools/gn/path_output.h"
 
 class BuildSettings;
+class Err;
 class Settings;
 class Target;
 class Toolchain;
@@ -24,7 +25,8 @@ class NinjaBuildWriter {
       const BuildSettings* settings,
       const std::vector<const Settings*>& all_settings,
       const Toolchain* default_toolchain,
-      const std::vector<const Target*>& default_toolchain_targets);
+      const std::vector<const Target*>& default_toolchain_targets,
+      Err* err);
 
  private:
   NinjaBuildWriter(const BuildSettings* settings,
@@ -35,12 +37,12 @@ class NinjaBuildWriter {
                    std::ostream& dep_out);
   ~NinjaBuildWriter();
 
-  void Run();
+  bool Run(Err* err);
 
   void WriteNinjaRules();
   void WriteLinkPool();
   void WriteSubninjas();
-  void WritePhonyAndAllRules();
+  bool WritePhonyAndAllRules(Err* err);
 
   void WritePhonyRule(const Target* target, const OutputFile& target_file,
                       const std::string& phony_name);

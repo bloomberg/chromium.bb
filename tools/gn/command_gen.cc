@@ -94,10 +94,14 @@ int RunGen(const std::vector<std::string>& args) {
   if (!setup->Run())
     return 1;
 
+  Err err;
   // Write the root ninja files.
   if (!NinjaWriter::RunAndWriteFiles(&setup->build_settings(),
-                                     setup->builder()))
+                                     setup->builder(),
+                                     &err)) {
+    err.PrintToStdout();
     return 1;
+  }
 
   base::TimeDelta elapsed_time = timer.Elapsed();
 

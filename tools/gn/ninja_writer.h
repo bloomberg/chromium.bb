@@ -13,21 +13,24 @@
 
 class Builder;
 class BuildSettings;
+class Err;
 class Settings;
 class Target;
 
 class NinjaWriter {
  public:
-  // On failure will print an error and will return false.
+  // On failure will populate |err| and will return false.
   static bool RunAndWriteFiles(const BuildSettings* build_settings,
-                               Builder* builder);
+                               Builder* builder,
+                               Err* err);
 
   // Writes only the toolchain.ninja files, skipping the root buildfile. The
   // settings for the files written will be added to the vector.
   static bool RunAndWriteToolchainFiles(
       const BuildSettings* build_settings,
       Builder* builder,
-      std::vector<const Settings*>* all_settings);
+      std::vector<const Settings*>* all_settings,
+      Err* err);
 
  private:
   NinjaWriter(const BuildSettings* build_settings, Builder* builder);
@@ -35,9 +38,11 @@ class NinjaWriter {
 
   bool WriteToolchains(
       std::vector<const Settings*>* all_settings,
-      std::vector<const Target*>* default_targets);
+      std::vector<const Target*>* default_targets,
+      Err* err);
   bool WriteRootBuildfiles(const std::vector<const Settings*>& all_settings,
-                           const std::vector<const Target*>& default_targets);
+                           const std::vector<const Target*>& default_targets,
+                           Err* err);
 
   const BuildSettings* build_settings_;
   Builder* builder_;
