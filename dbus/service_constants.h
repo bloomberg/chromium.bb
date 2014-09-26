@@ -1337,6 +1337,16 @@ const char kDeviceProperty[] = "Device";
 const char kPrimaryProperty[] = "Primary";
 const char kIncludesProperty[] = "Includes";
 const char kCharacteristicsProperty[] = "Characteristics";
+
+// Bluetooth GATT Service errors.
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
+const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+const char kErrorNotPaired[] = "org.bluez.Error.NotPaired";
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+const char kErrorReadNotPermitted[] = "org.bluez.Error.ReadNotPermitted";
+const char kErrorWriteNotPermitted[] = "org.bluez.Error.WriteNotPermitted";
 }  // namespace bluetooth_gatt_service
 
 namespace bluetooth_input {
@@ -1353,6 +1363,65 @@ const char kHostReconnectModeProperty[] = "host";
 const char kDeviceReconnectModeProperty[] = "device";
 const char kAnyReconnectModeProperty[] = "any";
 }  // namespace bluetooth_input
+
+namespace bluetooth_media {
+// Bluetooth Media service identifiers
+const char kBluetoothMediaServiceName[] = "org.bluez";
+const char kBluetoothMediaInterface[] = "org.bluez.Media1";
+
+// Bluetooth Media methods
+const char kRegisterEndpoint[] = "RegisterEndpoint";
+const char kUnregisterEndpoint[] = "UnregisterEndpoint";
+const char kRegisterPlayer[] = "RegisterPlayer";
+const char kUnregisterPlayer[] = "UnregisterPlayer";
+
+// Bluetooth Media errors
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+}  // namespace bluetooth_media
+
+namespace bluetooth_media_endpoint {
+// Bluetooth Media Endpoint service identifiers
+const char kBluetoothMediaEndpointServiceName[] = "org.bluez";
+const char kBluetoothMediaEndpointInterface[] = "org.bluez.MediaEndpoint1";
+
+// Bluetooth Media Endpoint methods
+const char kSetConfiguration[] = "SetConfiguration";
+const char kSelectConfiguration[] = "SelectConfiguration";
+const char kClearConfiguration[] = "ClearConfiguration";
+const char kRelease[] = "Release";
+}  // namespace bluetooth_media_endpoint
+
+namespace bluetooth_media_transport {
+// Bluetooth Media Transport service identifiers
+const char kBluetoothMediaTransportServiceName[] = "org.bluez";
+const char kBluetoothMediaTransportInterface[] = "org.bluez.MediaTransport1";
+
+// Bluetooth Media Transport methods
+const char kAcquire[] = "Acquire";
+const char kTryAcquire[] = "TryAcquire";
+const char kRelease[] = "Release";
+
+// Bluetooth Media Transport property names.
+const char kDeviceProperty[] = "Device";
+const char kUUIDProperty[] = "UUID";
+const char kCodecProperty[] = "Codec";
+const char kConfigurationProperty[] = "Configuration";
+const char kStateProperty[] = "State";
+const char kDelayProperty[] = "Delay";
+const char kVolumeProperty[] = "Volume";
+
+// Possible states for the "State" property
+const char kStateIdle[] = "idle";
+const char kStatePending[] = "pending";
+const char kStateActive[] = "active";
+
+// Bluetooth Media Transport errors.
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+const char kErrorNotAvailable[] = "org.bluez.Error.NotAvailable";
+}  // namespace bluetooth_media_transport
 
 namespace bluetooth_object_manager {
 // Bluetooth daemon Object Manager service identifiers.
@@ -1415,7 +1484,7 @@ const char kErrorCanceled[] = "org.bluez.Error.Canceled";
 namespace bluetooth_advertisement {
 // Bluetooth LE Advertisement service identifiers.
 const char kBluetoothAdvertisementServiceName[] = "org.bluez";
-const char kBluetoothAdvertisementIntervace[] =
+const char kBluetoothAdvertisementInterface[] =
     "org.bluez.LEAdvertisement1";
 
 // Bluetooth Advertisement methods.
@@ -1427,6 +1496,7 @@ const char kServiceUUIDsProperty[] = "ServiceUUIDs";
 const char kServiceDataProperty[] = "ServiceData";
 const char kSolicitUUIDsProperty[] = "SolicitUUIDs";
 const char kTypeProperty[] = "Type";
+const char kIncludeTxPowerProperty[] = "IncludeTxPower";
 
 // Possible values for the "Type" property.
 const char kTypeBroadcast[] = "broadcast";
