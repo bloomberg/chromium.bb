@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/win/scoped_handle.h"
 #include "ipc/ipc_channel_reader.h"
 
 namespace base {
@@ -73,7 +74,7 @@ class ChannelWin : public Channel,
   State input_state_;
   State output_state_;
 
-  HANDLE pipe_;
+  base::win::ScopedHandle pipe_;
 
   base::ProcessId peer_pid_;
 
