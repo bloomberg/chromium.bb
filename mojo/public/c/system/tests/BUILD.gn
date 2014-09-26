@@ -7,6 +7,8 @@ source_set("tests") {
   visibility = [ "//mojo/public/cpp/system/tests:mojo_public_system_unittests" ]
 
   deps = [
+    "//mojo/public/c/environment",
+    "//mojo/public/c/system",
     "//testing/gtest",
   ]
 
@@ -29,6 +31,8 @@ executable("perftests") {
   deps = [
     "//base",
     "//mojo/common/test:run_all_perftests",
+    "//mojo/public/c/environment",
+    "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/cpp/utility",
     "//testing/gtest",

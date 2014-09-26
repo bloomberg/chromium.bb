@@ -4,17 +4,19 @@
 
 # GYP version: mojo/mojo_public_tests.gypi:mojo_public_environment_unittests
 test("mojo_public_environment_unittests") {
-  deps = [
-    "//mojo/common/test:run_all_unittests",
-    "//mojo/public/cpp/environment:standalone",
-    "//mojo/public/cpp/test_support:test_utils",
-    "//mojo/public/cpp/utility",
-    "//testing/gtest",
-  ]
-
   sources = [
     "async_waiter_unittest.cc",
     "logger_unittest.cc",
     "logging_unittest.cc",
+  ]
+
+  deps = [
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/public/c/environment",
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/cpp/utility",
+    "//testing/gtest",
   ]
 }

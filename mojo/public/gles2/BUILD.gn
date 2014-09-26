@@ -2,46 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("gles2_config") {
-  defines = [ "GLES2_USE_MOJO" ]
-}
-
-# GYP version: mojo/mojo_public.gypi:mojo_gles2
-static_library("gles2") {
-  defines = [
-    "MOJO_GLES2_IMPLEMENTATION",
-  ]
-
-  configs += [
-    ":gles2_config",
-    "//third_party/khronos:khronos_headers",
-  ]
-  public_configs = [
-    ":gles2_config",
-    "//third_party/khronos:khronos_headers",
-  ]
-
-  sources = [
-    "../c/gles2/gles2.h",
-    "../c/gles2/gles2_export.h",
-    "../platform/native/gles2_thunks.cc",
-    "../platform/native/gles2_thunks.h",
-    "../platform/native/gles2_impl_thunks.cc",
-    "../platform/native/gles2_impl_thunks.h",
-    "../platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc",
-    "../platform/native/gles2_impl_chromium_texture_mailbox_thunks.h",
-    "../platform/native/gles2_impl_chromium_sync_point_thunks.cc",
-    "../platform/native/gles2_impl_chromium_sync_point_thunks.h",
-    "gles2_interface.h",
-  ]
-
-  if (is_mac) {
-    # TODO(GYP): Make it a run-path dependent library.
-    # 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
-  }
-}
-
-
 # In an is_component_build build, everything can link against //mojo/gles2
 # because it is built as a shared library. However, in a static build,
 # //mojo/gles2 is linked into an executable (e.g., mojo_shell), and must be
@@ -65,5 +25,39 @@ group("for_shared_library") {
 group("for_component") {
   if (is_component_build) {
     deps = [ "//mojo/gles2" ]
+  }
+}
+
+# GYP version: mojo/mojo_public.gypi:mojo_gles2
+static_library("gles2") {
+  visibility = [ ":for_shared_library" ]
+
+  sources = [
+    "../platform/native/gles2_thunks.cc",
+    "../platform/native/gles2_thunks.h",
+    "../platform/native/gles2_impl_thunks.cc",
+    "../platform/native/gles2_impl_thunks.h",
+    "../platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc",
+    "../platform/native/gles2_impl_chromium_texture_mailbox_thunks.h",
+    "../platform/native/gles2_impl_chromium_sync_point_thunks.cc",
+    "../platform/native/gles2_impl_chromium_sync_point_thunks.h",
+    "gles2_interface.h",
+  ]
+
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+
+  public_deps = [ "//mojo/public/c/gles2" ]
+
+  defines = [
+    "MOJO_GLES2_IMPLEMENTATION",
+  ]
+  deps = [
+    "//mojo/public/c/environment",
+    "//mojo/public/c/system",
+  ]
+
+  if (is_mac) {
+    # TODO(GYP): Make it a run-path dependent library.
+    # 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
   }
 }

@@ -5,7 +5,6 @@
 source_set("bindings") {
   sources = [
     "array.h",
-    "callback.h",
     "error_handler.h",
     "interface_ptr.h",
     "message.h",
@@ -23,7 +22,6 @@ source_set("bindings") {
     "lib/bounds_checker.cc",
     "lib/bounds_checker.h",
     "lib/buffer.h",
-    "lib/callback_internal.h",
     "lib/connector.cc",
     "lib/connector.h",
     "lib/filter_chain.cc",
@@ -42,12 +40,27 @@ source_set("bindings") {
     "lib/no_interface.cc",
     "lib/router.cc",
     "lib/router.h",
-    "lib/shared_data.h",
-    "lib/shared_ptr.h",
     "lib/string_serialization.cc",
     "lib/string_serialization.h",
-    "lib/template_util.h",
     "lib/validation_errors.cc",
     "lib/validation_errors.h",
   ]
+
+  deps = [
+    ":callback",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
+  ]
+}
+
+source_set("callback") {
+  sources = [
+    "callback.h",
+    "lib/callback_internal.h",
+    "lib/template_util.h",
+    "lib/shared_data.h",
+    "lib/shared_ptr.h",
+  ]
+
+  deps = [ "//mojo/public/cpp/system" ]
 }

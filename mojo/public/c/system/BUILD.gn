@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Depend on this target to use the types etc defined in the system without
+# linking against a specific implementation of the system. To link against a
+# particular implementation, use the :for_component or
+# :for_shared_library targets, depending on the type of target you are.
 source_set("system") {
   sources = [
-    "../../platform/native/system_thunks.cc",
-    "../../platform/native/system_thunks.h",
     "buffer.h",
     "core.h",
     "data_pipe.h",
@@ -15,16 +17,6 @@ source_set("system") {
     "system_export.h",
     "types.h",
   ]
-  defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]
-
-  # The GYP target analogous to this one builds this code into a
-  # static library.  When building for Android, both the GYP and GN
-  # builds add --exclude-libs=ALL globally, which means that all
-  # symbols in static libraries are excluded from export.  That's a
-  # problem, as code outside this target needs to be able to call
-  # MojoSetSystemThunks(). Therefore, the GYP target needs to specifiy
-  # that all dependent targets remove that link flag. Since GN uses a
-  # source_set here, this flag change is not needed.
 }
 
 # In an is_component_build build, everything can link against //mojo/system
@@ -40,14 +32,16 @@ source_set("system") {
 # //mojo/public/c/system:for_shared_library to your deps
 
 group("for_shared_library") {
+  public_deps = [ ":system" ]
   if (is_component_build) {
     deps = [ "//mojo/system" ]
   } else {
-    deps = [ ":system" ]
+    deps = [ "//mojo/public/platform/native:system_thunks" ]
   }
 }
 
 group("for_component") {
+  public_deps = [ ":system" ]
   if (is_component_build) {
     deps = [ "//mojo/system" ]
   }

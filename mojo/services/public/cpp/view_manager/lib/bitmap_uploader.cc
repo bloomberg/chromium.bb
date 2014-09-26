@@ -14,6 +14,7 @@
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 #include "mojo/services/public/cpp/surfaces/surfaces_utils.h"

@@ -6,6 +6,7 @@
 test("mojo_public_utility_unittests") {
   deps = [
     "//mojo/common/test:run_all_unittests",
+    "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/cpp/utility",
     "//testing/gtest",

@@ -2,17 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("environment") {
+  sources = [
+    "logging.h",
+    "environment.h",
+  ]
+
+  public_deps = [ "//mojo/public/c/environment" ]
+
+  deps = [ "//mojo/public/cpp/system" ]
+}
+
 source_set("standalone") {
   sources = [
-    "../c/environment/async_waiter.h",
-    "../c/environment/logger.h",
-    "environment.h",
     "lib/default_async_waiter.cc",
     "lib/default_async_waiter.h",
     "lib/default_logger.cc",
     "lib/default_logger.h",
     "lib/environment.cc",
     "lib/logging.cc",
-    "logging.h",
+  ]
+
+  public_deps = [ ":environment" ]
+
+  deps = [
+    "//mojo/public/c/environment",
+    "//mojo/public/cpp/utility",
   ]
 }
