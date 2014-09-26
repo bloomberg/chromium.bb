@@ -31,9 +31,13 @@ jobject ParseData(JNIEnv* env, jclass jcaller, jstring data_as_string) {
     return Java_ValidationTestUtil_buildData(
                env, NULL, 0, j_error_message.obj()).Release();
   }
-
+  void* data_ptr = &data[0];
+  if (!data_ptr) {
+    DCHECK(!data.size());
+    data_ptr = &data;
+  }
   jobject byte_buffer =
-      env->NewDirectByteBuffer(&data[0], data.size());
+      env->NewDirectByteBuffer(data_ptr, data.size());
   return Java_ValidationTestUtil_buildData(env, byte_buffer, num_handles, NULL)
       .Release();
 }
