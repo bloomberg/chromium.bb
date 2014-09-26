@@ -678,7 +678,7 @@
       <!-- New style avatar button -->
       <if expr="toolkit_views">
         <!-- Windows, themed -->
-        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_DROPARROW" file="win/avatar_button/themed/sign_in_button_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_AVATAR" file="win/avatar_button/themed/sign_in_button_avatar.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_NORMAL_BOTTOM" file="win/avatar_button/themed/sign_in_button_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_NORMAL_BOTTOM_LEFT" file="win/avatar_button/themed/sign_in_button_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_NORMAL_BOTTOM_RIGHT" file="win/avatar_button/themed/sign_in_button_bottom_right.png" />
@@ -708,7 +708,7 @@
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_BUTTON_PRESSED_TOP_RIGHT" file="win/avatar_button/themed/sign_in_button_pressed_top_right.png" />
 
         <!-- Windows, Aero -->
-        <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_DROPARROW" file="win/avatar_button/win7/sign_in_button_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_AVATAR" file="win/avatar_button/win7/sign_in_button_avatar.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_NORMAL_BOTTOM" file="win/avatar_button/win7/sign_in_button_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_NORMAL_BOTTOM_LEFT" file="win/avatar_button/win7/sign_in_button_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_NORMAL_BOTTOM_RIGHT" file="win/avatar_button/win7/sign_in_button_bottom_right.png" />
@@ -738,7 +738,7 @@
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_PRESSED_TOP_RIGHT" file="win/avatar_button/win7/sign_in_button_pressed_top_right.png" />
 
         <!-- Windows, metro -->
-        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_DROPARROW" file="win/avatar_button/win8/sign_in_button_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_AVATAR" file="win/avatar_button/win8/sign_in_button_avatar.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_BOTTOM" file="win/avatar_button/win8/sign_in_button_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_BOTTOM_LEFT" file="win/avatar_button/win8/sign_in_button_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_BOTTOM_RIGHT" file="win/avatar_button/win8/sign_in_button_bottom_right.png" />

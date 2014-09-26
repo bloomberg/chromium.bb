@@ -112,7 +112,15 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   // minimize button.
   if (new_avatar_button()) {
     DCHECK(switches::IsNewAvatarMenu());
-    minimize_button_offset -= new_avatar_button()->width();
+    minimize_button_offset -=
+        new_avatar_button()->width() + kNewAvatarButtonOffset;
+
+    // In non-maximized mode, allow the new tab button to completely slide under
+    // the avatar button.
+    if (!frame()->IsMaximized() && !base::i18n::IsRTL()) {
+      minimize_button_offset +=
+          TabStrip::kNewTabButtonAssetWidth + kNewTabCaptionRestoredSpacing;
+    }
   }
 
   int tabstrip_x = browser_view()->ShouldShowAvatar() ?

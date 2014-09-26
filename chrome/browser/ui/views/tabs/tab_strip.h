@@ -66,6 +66,13 @@ class TabStrip : public views::View,
   // restored windows.
   static const int kNewTabButtonVerticalOffset;
 
+  // The size of the new tab button must be hardcoded because we need to be
+  // able to lay it out before we are able to get its image from the
+  // ui::ThemeProvider.  It also makes sense to do this, because the size of the
+  // new tab button should not need to be calculated dynamically.
+  static const int kNewTabButtonAssetWidth;
+  static const int kNewTabButtonAssetHeight;
+
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
 
@@ -310,13 +317,6 @@ class TabStrip : public views::View,
 
   // Horizontal gap between mini and non-mini-tabs.
   static const int kMiniToNonMiniGap;
-
-  // The size of the new tab button must be hardcoded because we need to be
-  // able to lay it out before we are able to get its image from the
-  // ui::ThemeProvider.  It also makes sense to do this, because the size of the
-  // new tab button should not need to be calculated dynamically.
-  static const int kNewTabButtonAssetWidth;
-  static const int kNewTabButtonAssetHeight;
 
   void Init();
 

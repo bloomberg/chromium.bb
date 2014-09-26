@@ -528,10 +528,9 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
 
   // Check the location of the avatar button.
   EXPECT_EQ("385,1 12x18", new_avatar_button_->bounds().ToString());
-  // The basic window bounds are (-1, 13 398x29). There should not be an icon
-  // avatar in the left, and the new avatar button has an offset of 5 to its
-  // next control.
-  EXPECT_EQ("-1,13 381x29",
+  // The new tab button is 39px wide and slides completely under the new
+  // avatar button, thus increasing the tabstrip by that amount.
+  EXPECT_EQ("-1,13 420x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());

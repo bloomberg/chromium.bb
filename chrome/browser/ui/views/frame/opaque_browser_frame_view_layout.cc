@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/views/profiles/avatar_label.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "ui/gfx/font.h"
@@ -382,21 +383,26 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
   if (!new_avatar_button_)
     return;
 
-  gfx::Size label_size = new_avatar_button_->GetPreferredSize();
-  int button_size_with_offset = kNewAvatarButtonOffset + label_size.width();
+  int button_width = new_avatar_button_->GetPreferredSize().width();
+  int button_width_with_offset = button_width + kNewAvatarButtonOffset;
 
-  int button_x = host->width() - trailing_button_start_ -
-      button_size_with_offset;
+  int button_x =
+      host->width() - trailing_button_start_ - button_width_with_offset;
   int button_y = CaptionButtonY(!IsTitleBarCondensed());
 
-  trailing_button_start_ += button_size_with_offset;
-  minimum_size_for_buttons_ += button_size_with_offset;
+  minimum_size_for_buttons_ += button_width_with_offset;
+  trailing_button_start_ += button_width_with_offset;
+
+  // In non-maximized mode, allow the new tab button to completely slide under
+  // the avatar button.
+  if (!IsTitleBarCondensed()) {
+    trailing_button_start_ -=
+        TabStrip::kNewTabButtonAssetWidth + kNewTabCaptionNormalSpacing;
+  }
 
   // Do not include the 1px padding that is added for the caption buttons.
-  new_avatar_button_->SetBounds(button_x,
-                                button_y,
-                                label_size.width(),
-                                kCaptionButtonHeightWithPadding - 1);
+  new_avatar_button_->SetBounds(
+      button_x, button_y, button_width, kCaptionButtonHeightWithPadding - 1);
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
