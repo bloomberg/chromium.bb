@@ -14597,13 +14597,6 @@ Do you accept?
     <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE" desc="The text to show on the button in the notification inviting the user to use the Easy Unlock feature.">
       1-minute setup
     </message>
-    <!-- Strings for the Easy Unlock success notification -->
-    <message name="IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_TITLE" desc="Title for the notification informing the user that Easy Unlock has been successfully set up.">
-      All set!
-    </message>
-    <message name="IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_MESSAGE" desc="The body text for the notification informing the user that Easy Unlock has been successfully set up.">
-      You can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when you and your Android phone are nearby.
-    </message>
     <!-- Strings for notification shown when the Chromebook is added to Easy Unlock -->
     <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE" desc="Title for notification shown when this Chromebook is added to Easy Unlock as an additional Easy Unlock device.">
       Easy unlock is now enabled
