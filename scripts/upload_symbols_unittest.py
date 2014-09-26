@@ -9,10 +9,12 @@ from __future__ import print_function
 
 import BaseHTTPServer
 import ctypes
+import errno
 import logging
 import multiprocessing
 import os
 import signal
+import socket
 import SocketServer
 import sys
 import time
@@ -68,10 +70,17 @@ PUBLIC 1471 0 main"""
 
   def SpawnServer(self, RequestHandler):
     """Spawn a new http server"""
-    port = remote_access.GetUnusedPort()
-    address = ('', port)
+    while True:
+      try:
+        port = remote_access.GetUnusedPort()
+        address = ('', port)
+        self.httpd = SymbolServer(address, RequestHandler)
+        break
+      except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+          continue
+        raise
     self.server = 'http://localhost:%i' % port
-    self.httpd = SymbolServer(address, RequestHandler)
     self.httpd_pid = os.fork()
     if self.httpd_pid == 0:
       self.httpd.serve_forever(poll_interval=0.1)
