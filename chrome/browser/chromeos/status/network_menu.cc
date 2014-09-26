@@ -217,8 +217,7 @@ class MainMenuModel : public NetworkMenuModel {
 
 void NetworkMenuModel::ConnectToNetworkAt(int index) {
   const std::string& service_path = menu_items_[index].service_path;
-  gfx::NativeWindow native_window = owner_->delegate()->GetNativeWindow();
-  ash::network_connect::ConnectToNetwork(service_path, native_window);
+  ash::network_connect::ConnectToNetwork(service_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

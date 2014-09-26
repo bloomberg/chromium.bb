@@ -65,8 +65,7 @@ void ShowErrorNotification(const std::string& error_name,
       ShowNetworkConnectError(error_name, service_path);
 }
 
-void HandleUnconfiguredNetwork(const std::string& service_path,
-                               gfx::NativeWindow parent_window) {
+void HandleUnconfiguredNetwork(const std::string& service_path) {
   const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path);
   if (!network) {
@@ -78,7 +77,7 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
     // Only show the config view for secure networks, otherwise do nothing.
     if (network->security() != shill::kSecurityNone) {
       ash::Shell::GetInstance()->system_tray_delegate()->
-          ShowNetworkConfigure(service_path, parent_window);
+          ShowNetworkConfigure(service_path);
     }
     return;
   }
@@ -86,7 +85,7 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
   if (network->type() == shill::kTypeWimax ||
       network->type() == shill::kTypeVPN) {
     ash::Shell::GetInstance()->system_tray_delegate()->
-        ShowNetworkConfigure(service_path, parent_window);
+        ShowNetworkConfigure(service_path);
     return;
   }
 
@@ -136,7 +135,6 @@ bool GetNetworkProfilePath(bool shared, std::string* profile_path) {
 }
 
 void OnConnectFailed(const std::string& service_path,
-                     gfx::NativeWindow parent_window,
                      const std::string& error_name,
                      scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
@@ -152,14 +150,14 @@ void OnConnectFailed(const std::string& service_path,
       error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
       error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
-    HandleUnconfiguredNetwork(service_path, parent_window);
+    HandleUnconfiguredNetwork(service_path);
     return;
   }
 
   if (error_name == NetworkConnectionHandler::kErrorCertificateRequired) {
     if (!ash::Shell::GetInstance()->system_tray_delegate()->EnrollNetwork(
-            service_path, parent_window)) {
-      HandleUnconfiguredNetwork(service_path, parent_window);
+            service_path)) {
+      HandleUnconfiguredNetwork(service_path);
     }
     return;
   }
@@ -191,7 +189,7 @@ void OnConnectFailed(const std::string& service_path,
   if (dbus_error_name == kErrorInProgress)
     return;
 
-  HandleUnconfiguredNetwork(service_path, parent_window);
+  HandleUnconfiguredNetwork(service_path);
 }
 
 void OnConnectSucceeded(const std::string& service_path) {
@@ -204,12 +202,9 @@ void OnConnectSucceeded(const std::string& service_path) {
 
 // If |check_error_state| is true, error state for the network is checked,
 // otherwise any current error state is ignored (e.g. for recently configured
-// networks or repeat connect attempts). |parent_window| will be used to parent
-// any configuration UI on failure and may be NULL (in which case the default
-// window will be used).
+// networks or repeat connect attempts).
 void CallConnectToNetwork(const std::string& service_path,
-                          bool check_error_state,
-                          gfx::NativeWindow parent_window) {
+                          bool check_error_state) {
   if (!ash::Shell::HasInstance())
     return;
   message_center::MessageCenter::Get()->RemoveNotification(
@@ -218,7 +213,7 @@ void CallConnectToNetwork(const std::string& service_path,
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       service_path,
       base::Bind(&OnConnectSucceeded, service_path),
-      base::Bind(&OnConnectFailed, service_path, parent_window),
+      base::Bind(&OnConnectFailed, service_path),
       check_error_state);
 }
 
@@ -246,8 +241,7 @@ void OnConfigureSucceeded(bool connect_on_configure,
     return;
   // After configuring a network, ignore any (possibly stale) error state.
   const bool check_error_state = false;
-  const gfx::NativeWindow parent_window = NULL;
-  CallConnectToNetwork(service_path, check_error_state, parent_window);
+  CallConnectToNetwork(service_path, check_error_state);
 }
 
 void CallCreateConfiguration(base::DictionaryValue* properties,
@@ -297,13 +291,11 @@ void ClearPropertiesAndConnect(
   NET_LOG_USER("ClearPropertiesAndConnect", service_path);
   // After configuring a network, ignore any (possibly stale) error state.
   const bool check_error_state = false;
-  const gfx::NativeWindow parent_window = NULL;
   NetworkHandler::Get()->network_configuration_handler()->ClearProperties(
       service_path,
       properties_to_clear,
       base::Bind(&CallConnectToNetwork,
-                 service_path, check_error_state,
-                 parent_window),
+                 service_path, check_error_state),
       base::Bind(&SetPropertiesFailed, "ClearProperties", service_path));
 }
 
@@ -337,8 +329,7 @@ const char kNetworkActivateNotificationId[] =
 
 const char kErrorActivateFailed[] = "activate-failed";
 
-void ConnectToNetwork(const std::string& service_path,
-                      gfx::NativeWindow parent_window) {
+void ConnectToNetwork(const std::string& service_path) {
   NET_LOG_USER("ConnectToNetwork", service_path);
   const NetworkState* network = GetNetworkState(service_path);
   if (network) {
@@ -346,7 +337,7 @@ void ConnectToNetwork(const std::string& service_path,
       NET_LOG_USER("Configure: " + network->error(), service_path);
       // If the network is in an error state, show the configuration UI directly
       // to avoid a spurious notification.
-      HandleUnconfiguredNetwork(service_path, parent_window);
+      HandleUnconfiguredNetwork(service_path);
       return;
     } else if (network->RequiresActivation()) {
       ActivateCellular(service_path);
@@ -354,7 +345,7 @@ void ConnectToNetwork(const std::string& service_path,
     }
   }
   const bool check_error_state = true;
-  CallConnectToNetwork(service_path, check_error_state, parent_window);
+  CallConnectToNetwork(service_path, check_error_state);
 }
 
 void SetTechnologyEnabled(const NetworkTypePattern& technology,

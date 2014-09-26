@@ -746,15 +746,13 @@ void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
 }
 
 void SystemTrayDelegateChromeOS::ShowNetworkConfigure(
-    const std::string& network_id,
-    gfx::NativeWindow parent_window) {
-  NetworkConfigView::Show(network_id, parent_window);
+    const std::string& network_id) {
+  NetworkConfigView::Show(network_id, GetNativeWindow());
 }
 
 bool SystemTrayDelegateChromeOS::EnrollNetwork(
-    const std::string& network_id,
-    gfx::NativeWindow parent_window) {
-  return enrollment::CreateDialog(network_id, parent_window);
+    const std::string& network_id) {
+  return enrollment::CreateDialog(network_id, GetNativeWindow());
 }
 
 void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {

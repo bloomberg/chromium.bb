@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace base {
 class TimeDelta;
@@ -235,16 +234,11 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Shows UI to configure or activate the network specified by |network_id|,
   // which may include showing Payment or Portal UI when appropriate.
-  // |parent_window| is used to parent any configuration UI. If NULL a default
-  // window will be used.
-  virtual void ShowNetworkConfigure(const std::string& network_id,
-                                    gfx::NativeWindow parent_window) = 0;
+  virtual void ShowNetworkConfigure(const std::string& network_id) = 0;
 
   // Shows UI to enroll the network specified by |network_id| if appropriate
-  // and returns true, otherwise returns false. |parent_window| is used
-  // to parent any configuration UI. If NULL a default window will be used.
-  virtual bool EnrollNetwork(const std::string& network_id,
-                             gfx::NativeWindow parent_window) = 0;
+  // and returns true, otherwise returns false.
+  virtual bool EnrollNetwork(const std::string& network_id) = 0;
 
   // Shows UI to manage bluetooth devices.
   virtual void ManageBluetoothDevices() = 0;

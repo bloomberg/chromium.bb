@@ -290,12 +290,10 @@ bool AddIntegerPropertyIfChanged(const std::string& key,
   return false;
 }
 
-void RequestReconnect(const std::string& service_path,
-                      gfx::NativeWindow owning_window) {
+void RequestReconnect(const std::string& service_path) {
   NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
       service_path,
-      base::Bind(&ash::network_connect::ConnectToNetwork,
-                 service_path, owning_window),
+      base::Bind(&ash::network_connect::ConnectToNetwork, service_path),
       base::Bind(&ShillError, "RequestReconnect"));
 }
 
@@ -595,7 +593,7 @@ void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  ash::network_connect::ConnectToNetwork(service_path, GetNativeWindow());
+  ash::network_connect::ConnectToNetwork(service_path);
 }
 
 void InternetOptionsHandler::StartDisconnectCallback(
@@ -833,7 +831,7 @@ void InternetOptionsHandler::SetIPConfigProperties(
     // If auto config or a static IP property changed, we need to reconnect
     // to the network.
     if (request_reconnect)
-      callback = base::Bind(&RequestReconnect, service_path, GetNativeWindow());
+      callback = base::Bind(&RequestReconnect, service_path);
     NetworkHandler::Get()->network_device_handler()->RequestRefreshIPConfigs(
         device_path,
         callback,

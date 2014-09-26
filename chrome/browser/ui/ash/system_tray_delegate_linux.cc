@@ -213,12 +213,10 @@ class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
   }
 
-  virtual void ShowNetworkConfigure(const std::string& network_id,
-                                    gfx::NativeWindow parent_window) OVERRIDE {
+  virtual void ShowNetworkConfigure(const std::string& network_id) OVERRIDE {
   }
 
-  virtual bool EnrollNetwork(const std::string& network_id,
-                             gfx::NativeWindow parent_window) OVERRIDE {
+  virtual bool EnrollNetwork(const std::string& network_id) OVERRIDE {
     return true;
   }
 

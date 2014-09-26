@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
 namespace base {
 class DictionaryValue;
@@ -28,10 +27,7 @@ ASH_EXPORT extern const char kNetworkActivateNotificationId[];
 ASH_EXPORT extern const char kErrorActivateFailed[];
 
 // Requests a network connection and handles any errors and notifications.
-// |parent_window| is used to parent any UI on failure (e.g. for certificate
-// enrollment). If NULL, the default window will be used.
-ASH_EXPORT void ConnectToNetwork(const std::string& service_path,
-                                 gfx::NativeWindow parent_window);
+ASH_EXPORT void ConnectToNetwork(const std::string& service_path);
 
 // Enables or disables a network technology. If |technology| refers to cellular
 // and the device cannot be enabled due to a SIM lock, this function will

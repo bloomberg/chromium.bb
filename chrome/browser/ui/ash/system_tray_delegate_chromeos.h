@@ -103,10 +103,8 @@ class SystemTrayDelegateChromeOS
   virtual void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) OVERRIDE;
   virtual void SwitchIME(const std::string& ime_id) OVERRIDE;
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE;
-  virtual void ShowNetworkConfigure(const std::string& network_id,
-                                    gfx::NativeWindow parent_window) OVERRIDE;
-  virtual bool EnrollNetwork(const std::string& network_id,
-                             gfx::NativeWindow parent_window) OVERRIDE;
+  virtual void ShowNetworkConfigure(const std::string& network_id) OVERRIDE;
+  virtual bool EnrollNetwork(const std::string& network_id) OVERRIDE;
   virtual void ManageBluetoothDevices() OVERRIDE;
   virtual void ToggleBluetooth() OVERRIDE;
   virtual void ShowMobileSimDialog() OVERRIDE;

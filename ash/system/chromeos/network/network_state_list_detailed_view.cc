@@ -271,7 +271,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
         list_type_ == LIST_TYPE_VPN ?
         ash::UMA_STATUS_AREA_CONNECT_TO_VPN :
         ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-    ash::network_connect::ConnectToNetwork(service_path, NULL);
+    ash::network_connect::ConnectToNetwork(service_path);
   }
 }
 
