@@ -6,8 +6,12 @@
 
 import argparse
 import ast
+import contextlib
 import os
 import re
+import shutil
+import tempfile
+import zipfile
 
 from jinja2 import contextfilter
 
@@ -350,6 +354,22 @@ def HasMethodWithoutResponse(interface):
       return True
   return False
 
+@contextlib.contextmanager
+def TempDir():
+  dirname = tempfile.mkdtemp()
+  try:
+    yield dirname
+  finally:
+    shutil.rmtree(dirname)
+
+def ZipContentInto(root, zip_filename):
+  with zipfile.ZipFile(zip_filename, 'w') as zip_file:
+    for dirname, _, files in os.walk(root):
+      for filename in files:
+        path = os.path.join(dirname, filename)
+        path_in_archive = os.path.relpath(path, root)
+        zip_file.write(path, path_in_archive)
+
 class Generator(generator.Generator):
 
   java_filters = {
@@ -417,19 +437,13 @@ class Generator(generator.Generator):
                     'constants': module.constants})
     return exports
 
-  def GenerateFiles(self, unparsed_args):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--java_output_directory', dest='java_output_directory')
-    args = parser.parse_args(unparsed_args)
-    if self.output_dir and args.java_output_directory:
-      self.output_dir = os.path.join(args.java_output_directory,
-                                     GetPackage(self.module).replace('.', '/'))
-      if not os.path.exists(self.output_dir):
-        try:
-          os.makedirs(self.output_dir)
-        except:
-          # Ignore errors on directory creation.
-          pass
+  def DoGenerateFiles(self):
+    if not os.path.exists(self.output_dir):
+      try:
+        os.makedirs(self.output_dir)
+      except:
+        # Ignore errors on directory creation.
+        pass
 
     # Keep this above the others as .GetStructs() changes the state of the
     # module, annotating structs with required information.
@@ -450,6 +464,26 @@ class Generator(generator.Generator):
     if self.module.constants:
       self.Write(self.GenerateConstantsSource(self.module),
                  '%s.java' % GetConstantsMainEntityName(self.module))
+
+  def GenerateFiles(self, unparsed_args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--java_output_directory', dest='java_output_directory')
+    args = parser.parse_args(unparsed_args)
+    package_path = GetPackage(self.module).replace('.', '/')
+
+    # Generate the java files in a temporary directory and place a single
+    # srcjar in the output directory.
+    zip_filename = os.path.join(self.output_dir,
+                                "%s.srcjar" % self.module.name)
+    with TempDir() as temp_java_root:
+      self.output_dir = os.path.join(temp_java_root, package_path)
+      self.DoGenerateFiles();
+      ZipContentInto(temp_java_root, zip_filename)
+
+    if args.java_output_directory:
+      # If requested, generate the java files directly into indicated directory.
+      self.output_dir = os.path.join(args.java_output_directory, package_path)
+      self.DoGenerateFiles();
 
   def GetJinjaParameters(self):
     return {
