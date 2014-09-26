@@ -186,8 +186,9 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
         return false;
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
-      root_hashes_[file_path] = std::string();
-      root_hashes_[file_path].swap(root_hash);
+      RootHashes::iterator i = root_hashes_.insert(std::make_pair(
+          base::StringToLowerASCII(file_path.value()), std::string()));
+      i->second.swap(root_hash);
     }
 
     break;
@@ -195,13 +196,24 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
   return true;
 }
 
-const std::string* VerifiedContents::GetTreeHashRoot(
-    const base::FilePath& relative_path) {
-  std::map<base::FilePath, std::string>::const_iterator i =
-      root_hashes_.find(relative_path.NormalizePathSeparatorsTo('/'));
-  if (i == root_hashes_.end())
-    return NULL;
-  return &i->second;
+bool VerifiedContents::HasTreeHashRoot(
+    const base::FilePath& relative_path) const {
+  base::FilePath::StringType path = base::StringToLowerASCII(
+      relative_path.NormalizePathSeparatorsTo('/').value());
+  return root_hashes_.find(path) != root_hashes_.end();
+}
+
+bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
+                                          const std::string& expected) const {
+  base::FilePath::StringType path = base::StringToLowerASCII(
+      relative_path.NormalizePathSeparatorsTo('/').value());
+  for (RootHashes::const_iterator i = root_hashes_.find(path);
+       i != root_hashes_.end();
+       ++i) {
+    if (expected == i->second)
+      return true;
+  }
+  return false;
 }
 
 // We're loosely following the "JSON Web Signature" draft spec for signing

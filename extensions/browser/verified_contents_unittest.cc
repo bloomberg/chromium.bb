@@ -19,21 +19,14 @@ namespace extensions {
 
 namespace {
 
-bool Base64UrlStringEquals(std::string input, const std::string* bytes) {
-  if (!bytes)
-    return false;
-  if (!VerifiedContents::FixupBase64Encoding(&input))
-    return false;
+std::string DecodeBase64Url(const std::string& encoded) {
+  std::string fixed_up_base64 = encoded;
+  if (!VerifiedContents::FixupBase64Encoding(&fixed_up_base64))
+    return std::string();
   std::string decoded;
-  if (!base::Base64Decode(input, &decoded))
-    return false;
-  if (decoded.size() != bytes->size())
-    return false;
-
-  if (bytes->empty())
-    return true;
-
-  return decoded == *bytes;
+  if (!base::Base64Decode(fixed_up_base64, &decoded))
+    return std::string();
+  return decoded;
 }
 
 bool GetPublicKey(const base::FilePath& path, std::string* public_key) {
@@ -68,24 +61,69 @@ TEST(VerifiedContents, Simple) {
   EXPECT_EQ(contents.extension_id(), "abcdefghijklmnopabcdefghijklmnop");
   EXPECT_EQ("1.2.3", contents.version().GetString());
 
-  EXPECT_TRUE(Base64UrlStringEquals(
-      "-vyyIIn7iSCzg7X3ICUI5wZa3tG7w7vyiCckxZdJGfs",
-      contents.GetTreeHashRoot(
-          base::FilePath::FromUTF8Unsafe("manifest.json"))));
-  EXPECT_TRUE(Base64UrlStringEquals(
-      "txHiG5KQvNoPOSH5FbQo9Zb5gJ23j3oFB0Ru9DOnziw",
-      contents.GetTreeHashRoot(
-          base::FilePath::FromUTF8Unsafe("background.js"))));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("manifest.json"),
+      DecodeBase64Url("-vyyIIn7iSCzg7X3ICUI5wZa3tG7w7vyiCckxZdJGfs")));
+
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("background.js"),
+      DecodeBase64Url("txHiG5KQvNoPOSH5FbQo9Zb5gJ23j3oFB0Ru9DOnziw")));
 
   base::FilePath foo_bar_html =
       base::FilePath(FILE_PATH_LITERAL("foo")).AppendASCII("bar.html");
   EXPECT_FALSE(foo_bar_html.IsAbsolute());
-  EXPECT_TRUE(
-      Base64UrlStringEquals("L37LFbT_hmtxRL7AfGZN9YTpW6yoz_ZiQ1opLJn1NZU",
-                            contents.GetTreeHashRoot(foo_bar_html)));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      foo_bar_html,
+      DecodeBase64Url("L37LFbT_hmtxRL7AfGZN9YTpW6yoz_ZiQ1opLJn1NZU")));
 
   base::FilePath nonexistent = base::FilePath::FromUTF8Unsafe("nonexistent");
-  EXPECT_TRUE(contents.GetTreeHashRoot(nonexistent) == NULL);
+  EXPECT_FALSE(contents.HasTreeHashRoot(nonexistent));
+
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("lowercase.html"),
+      DecodeBase64Url("HpLotLGCmmOdKYvGQmD3OkXMKGs458dbanY4WcfAZI0")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("Lowercase.Html"),
+      DecodeBase64Url("HpLotLGCmmOdKYvGQmD3OkXMKGs458dbanY4WcfAZI0")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("LOWERCASE.HTML"),
+      DecodeBase64Url("HpLotLGCmmOdKYvGQmD3OkXMKGs458dbanY4WcfAZI0")));
+
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("ALLCAPS.HTML"),
+      DecodeBase64Url("bl-eV8ENowvtw6P14D4X1EP0mlcMoG-_aOx5o9C1364")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("AllCaps.Html"),
+      DecodeBase64Url("bl-eV8ENowvtw6P14D4X1EP0mlcMoG-_aOx5o9C1364")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("allcaps.html"),
+      DecodeBase64Url("bl-eV8ENowvtw6P14D4X1EP0mlcMoG-_aOx5o9C1364")));
+
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("MixedCase.Html"),
+      DecodeBase64Url("zEAO9FwciigMNy3NtU2XNb-dS5TQMmVNx0T9h7WvXbQ")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("MIXEDCASE.HTML"),
+      DecodeBase64Url("zEAO9FwciigMNy3NtU2XNb-dS5TQMmVNx0T9h7WvXbQ")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("mixedcase.html"),
+      DecodeBase64Url("zEAO9FwciigMNy3NtU2XNb-dS5TQMmVNx0T9h7WvXbQ")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("mIxedcAse.Html"),
+      DecodeBase64Url("zEAO9FwciigMNy3NtU2XNb-dS5TQMmVNx0T9h7WvXbQ")));
+
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("mIxedcAse.Html"),
+      DecodeBase64Url("nKRqUcJg1_QZWAeCb4uFd5ouC0McuGavKp8TFDRqBgg")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("MIXEDCASE.HTML"),
+      DecodeBase64Url("nKRqUcJg1_QZWAeCb4uFd5ouC0McuGavKp8TFDRqBgg")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("mixedcase.html"),
+      DecodeBase64Url("nKRqUcJg1_QZWAeCb4uFd5ouC0McuGavKp8TFDRqBgg")));
+  EXPECT_TRUE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("MixedCase.Html"),
+      DecodeBase64Url("nKRqUcJg1_QZWAeCb4uFd5ouC0McuGavKp8TFDRqBgg")));
 }
 
 }  // namespace extensions

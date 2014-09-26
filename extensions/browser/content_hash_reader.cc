@@ -85,14 +85,9 @@ bool ContentHashReader::Init() {
       block_size_ % crypto::kSHA256Length != 0)
     return false;
 
-  const std::string* expected_root =
-      verified_contents_->GetTreeHashRoot(relative_path_);
-  if (!expected_root)
-    return false;
-
   std::string root =
       ComputeTreeHashRoot(hashes_, block_size_ / crypto::kSHA256Length);
-  if (*expected_root != root)
+  if (!verified_contents_->TreeHashRootEquals(relative_path_, root))
     return false;
 
   status_ = SUCCESS;

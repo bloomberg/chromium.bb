@@ -379,9 +379,7 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     extension_path_.AppendRelativePath(full_path, &relative_path);
     relative_path = relative_path.NormalizePathSeparatorsTo('/');
 
-    const std::string* expected_root =
-        verified_contents_->GetTreeHashRoot(relative_path);
-    if (!expected_root)
+    if (!verified_contents_->HasTreeHashRoot(relative_path))
       continue;
 
     std::string contents;
@@ -396,7 +394,7 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     ComputedHashes::ComputeHashesForContent(contents, block_size_, &hashes);
     std::string root =
         ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
-    if (expected_root && *expected_root != root) {
+    if (!verified_contents_->TreeHashRootEquals(relative_path, root)) {
       VLOG(1) << "content mismatch for " << relative_path.AsUTF8Unsafe();
       hash_mismatch_paths_.insert(relative_path);
       continue;
