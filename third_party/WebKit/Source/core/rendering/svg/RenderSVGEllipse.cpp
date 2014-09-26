@@ -52,6 +52,7 @@ void RenderSVGEllipse::updateShapeFromElement()
     m_strokeBoundingBox = FloatRect();
     m_center = FloatPoint();
     m_radii = FloatSize();
+    m_usePathFallback = false;
 
     calculateRadiiAndCenter();
 
@@ -66,7 +67,6 @@ void RenderSVGEllipse::updateShapeFromElement()
             m_usePathFallback = true;
             return;
         }
-        m_usePathFallback = false;
     }
 
     m_fillBoundingBox = FloatRect(m_center.x() - m_radii.width(), m_center.y() - m_radii.height(), 2 * m_radii.width(), 2 * m_radii.height());

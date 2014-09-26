@@ -49,6 +49,7 @@ void RenderSVGRect::updateShapeFromElement()
     m_fillBoundingBox = FloatRect();
     m_innerStrokeRect = FloatRect();
     m_outerStrokeRect = FloatRect();
+    m_usePathFallback = false;
     SVGRectElement* rect = toSVGRectElement(element());
     ASSERT(rect);
 
@@ -67,7 +68,6 @@ void RenderSVGRect::updateShapeFromElement()
             m_usePathFallback = true;
             return;
         }
-        m_usePathFallback = false;
     }
 
     m_fillBoundingBox = FloatRect(FloatPoint(rect->x()->currentValue()->value(lengthContext), rect->y()->currentValue()->value(lengthContext)), boundingBoxSize);
