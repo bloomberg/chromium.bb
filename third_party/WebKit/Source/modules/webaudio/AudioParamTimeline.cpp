@@ -38,52 +38,120 @@
 
 namespace blink {
 
-void AudioParamTimeline::setValueAtTime(float value, double time)
+static bool isValidAudioParamValue(float value, ExceptionState& exceptionState)
 {
+    if (std::isfinite(value))
+        return true;
+
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        "Target value must be a finite number: " + String::number(value));
+    return false;
+}
+
+static bool isPositiveAudioParamValue(float value, ExceptionState& exceptionState)
+{
+    if (std::isfinite(value) && (value > 0))
+        return true;
+
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        "Target value must be a finite positive number: " + String::number(value));
+    return false;
+}
+
+static bool isValidAudioParamTime(double time, ExceptionState& exceptionState, String message)
+{
+    if (std::isfinite(time) && (time >= 0))
+        return true;
+
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        message + " must be a finite non-negative number: " + String::number(time));
+    return false;
+}
+
+static bool isPositiveAudioParamTime(double time, ExceptionState& exceptionState, String message)
+{
+    if (std::isfinite(time) && (time > 0))
+        return true;
+
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        message + " must be a finite positive number: " + String::number(time));
+    return false;
+}
+
+static bool isValidAudioParamTime(double time, ExceptionState& exceptionState)
+{
+    return isValidAudioParamTime(time, exceptionState, "Time");
+}
+
+void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState& exceptionState)
+{
+    ASSERT(isMainThread());
+
+    if (!isValidAudioParamValue(value, exceptionState)
+        || !isValidAudioParamTime(time, exceptionState))
+        return;
+
     insertEvent(ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr));
 }
 
-void AudioParamTimeline::linearRampToValueAtTime(float value, double time)
+void AudioParamTimeline::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
+
+    if (!isValidAudioParamValue(value, exceptionState)
+        || !isValidAudioParamTime(time, exceptionState))
+        return;
+
     insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr));
 }
 
 void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (value <= 0) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "Target value for exponential ramp must be positive: " + String::number(value));
+
+    if (!isPositiveAudioParamValue(value, exceptionState)
+        || !isValidAudioParamTime(time, exceptionState))
         return;
-    }
 
     insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr));
 }
 
-void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant)
+void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
+
+    if (!isValidAudioParamValue(target, exceptionState)
+        || !isValidAudioParamTime(time, exceptionState)
+        || !isValidAudioParamTime(timeConstant, exceptionState, "Time constant"))
+        return;
+
     insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, nullptr));
 }
 
-void AudioParamTimeline::setValueCurveAtTime(Float32Array* curve, double time, double duration)
+void AudioParamTimeline::setValueCurveAtTime(Float32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
-    insertEvent(ParamEvent(ParamEvent::SetValueCurve, 0, time, 0, duration, curve));
-}
+    ASSERT(isMainThread());
 
-static bool isValidNumber(float x)
-{
-    return !std::isnan(x) && !std::isinf(x);
+    if (!isValidAudioParamTime(time, exceptionState)
+        || !isPositiveAudioParamTime(duration, exceptionState, "Duration"))
+        return;
+
+    insertEvent(ParamEvent(ParamEvent::SetValueCurve, 0, time, 0, duration, curve));
 }
 
 void AudioParamTimeline::insertEvent(const ParamEvent& event)
 {
-    // Sanity check the event. Be super careful we're not getting infected with NaN or Inf.
+    // Sanity check the event. Be super careful we're not getting infected with NaN or Inf. These
+    // should have been handled by the caller.
     bool isValid = event.type() < ParamEvent::LastType
-        && isValidNumber(event.value())
-        && isValidNumber(event.time())
-        && isValidNumber(event.timeConstant())
-        && isValidNumber(event.duration())
+        && std::isfinite(event.value())
+        && std::isfinite(event.time())
+        && std::isfinite(event.timeConstant())
+        && std::isfinite(event.duration())
         && event.duration() >= 0;
 
     ASSERT(isValid);
@@ -108,8 +176,16 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event)
     m_events.insert(i, event);
 }
 
-void AudioParamTimeline::cancelScheduledValues(double startTime)
+void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
+
+    if (!std::isfinite(startTime)) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "Time must be a finite number: " + String::number(startTime));
+    }
+
     MutexLocker locker(m_eventsLock);
 
     // Remove all events starting at startTime.

@@ -146,7 +146,23 @@ function runTest() {
     buffer = context.createBuffer(1,1, context.sampleRate);
     shouldNotThrow("source = context.createBufferSource()");
     shouldNotThrow("source.buffer = buffer");
+    shouldThrow("source.start(-1)");
+    shouldThrow("source.start(Infinity)");
+    shouldThrow("source.start(-Infinity)");
+    shouldThrow("source.start(NaN)");
+    shouldThrow("source.start(1, Infinity)");
+    shouldThrow("source.start(1, -Infinity)");
+    shouldThrow("source.start(1, NaN)");
+    shouldThrow("source.start(1, -1)");
+    shouldThrow("source.start(1, 1, Infinity)");
+    shouldThrow("source.start(1, 1, -Infinity)");
+    shouldThrow("source.start(1, 1, NaN)");
+    shouldThrow("source.start(1, 1, -1)");
     shouldNotThrow("source.start()");
+    shouldThrow("source.stop(-1)");
+    shouldThrow("source.stop(Infinity)");
+    shouldThrow("source.stop(-Infinity)");
+    shouldThrow("source.stop(NaN)");
     shouldNotThrow("source.stop()");
 
     // It's not clear from the spec, but I think it's valid to call start(). The spec is silent on
@@ -174,7 +190,15 @@ function runTest() {
     
     // Start/stop for OscillatorNodes
     shouldNotThrow("source = context.createOscillator()");
+    shouldThrow("source.start(-1)");
+    shouldThrow("source.start(Infinity)");
+    shouldThrow("source.start(-Infinity)");
+    shouldThrow("source.start(NaN)");
     shouldNotThrow("source.start()");
+    shouldThrow("source.stop(-1)");
+    shouldThrow("source.stop(Infinity)");
+    shouldThrow("source.stop(-Infinity)");
+    shouldThrow("source.stop(NaN)");
     shouldNotThrow("source.stop()");
 
     shouldNotThrow("osc = context.createOscillator()");

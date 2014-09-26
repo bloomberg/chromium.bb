@@ -145,6 +145,13 @@ void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState
         return;
     }
 
+    if (!std::isfinite(when) || (when < 0)) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "Start time must be a finite non-negative number: " + String::number(when));
+        return;
+    }
+
     m_startTime = when;
     m_playbackState = SCHEDULED_STATE;
 }
@@ -157,13 +164,21 @@ void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
         exceptionState.throwDOMException(
             InvalidStateError,
             "cannot call stop without calling start first.");
-    } else {
-        // stop() can be called more than once, with the last call to stop taking effect, unless the
-        // source has already stopped due to earlier calls to stop. No exceptions are thrown in any
-        // case.
-        when = std::max(0.0, when);
-        m_endTime = when;
+        return;
     }
+
+    if (!std::isfinite(when) || (when < 0)) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "Stop time must be a finite non-negative number: " + String::number(when));
+        return;
+    }
+
+    // stop() can be called more than once, with the last call to stop taking effect, unless the
+    // source has already stopped due to earlier calls to stop. No exceptions are thrown in any
+    // case.
+    when = std::max(0.0, when);
+    m_endTime = when;
 }
 
 void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener)
