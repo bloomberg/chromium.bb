@@ -65,8 +65,11 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
       base::Bind(&AddResourceToFrame, resource_provider, delegated_frame.get());
   for (size_t i = 0; i < delegated_frame->render_pass_list.size(); ++i) {
     RenderPass* pass = delegated_frame->render_pass_list[i];
-    for (size_t j = 0; j < pass->quad_list.size(); ++j)
-      pass->quad_list[j]->IterateResources(add_resource_to_frame_callback);
+    for (QuadList::Iterator iter = pass->quad_list.begin();
+         iter != pass->quad_list.end();
+         ++iter) {
+      iter->IterateResources(add_resource_to_frame_callback);
+    }
   }
 
   CreateChildIdIfNeeded(base::Bind(&NoopReturnCallback));

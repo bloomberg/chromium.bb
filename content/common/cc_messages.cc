@@ -299,8 +299,10 @@ void ParamTraits<cc::RenderPass>::Write(
 
   size_t shared_quad_state_index = 0;
   size_t last_shared_quad_state_index = kuint32max;
-  for (size_t i = 0; i < p.quad_list.size(); ++i) {
-    const cc::DrawQuad* quad = p.quad_list[i];
+  for (cc::QuadList::ConstIterator iter = p.quad_list.begin();
+       iter != p.quad_list.end();
+       ++iter) {
+    const cc::DrawQuad* quad = &*iter;
     DCHECK(quad->rect.Contains(quad->visible_rect))
         << quad->material << " rect: " << quad->rect.ToString()
         << " visible_rect: " << quad->visible_rect.ToString();
@@ -393,13 +395,14 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
   return to_reserve;
 }
 
-template<typename QuadType>
-static scoped_ptr<cc::DrawQuad> ReadDrawQuad(const Message* m,
-                                             PickleIterator* iter) {
-  scoped_ptr<QuadType> quad(new QuadType);
-  if (!ReadParam(m, iter, quad.get()))
-    return scoped_ptr<QuadType>().template PassAs<cc::DrawQuad>();
-  return quad.template PassAs<cc::DrawQuad>();
+template <typename QuadType>
+static cc::DrawQuad* ReadDrawQuad(const Message* m,
+                                  PickleIterator* iter,
+                                  cc::RenderPass* render_pass) {
+  QuadType* quad = render_pass->CreateAndAppendDrawQuad<QuadType>();
+  if (!ReadParam(m, iter, quad))
+    return NULL;
+  return quad;
 }
 
 bool ParamTraits<cc::RenderPass>::Read(
@@ -434,40 +437,40 @@ bool ParamTraits<cc::RenderPass>::Read(
     if (!ReadParam(m, &temp_iter, &material))
       return false;
 
-    scoped_ptr<cc::DrawQuad> draw_quad;
+    cc::DrawQuad* draw_quad = NULL;
     switch (material) {
       case cc::DrawQuad::CHECKERBOARD:
-        draw_quad = ReadDrawQuad<cc::CheckerboardDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::CheckerboardDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::DEBUG_BORDER:
-        draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::IO_SURFACE_CONTENT:
-        draw_quad = ReadDrawQuad<cc::IOSurfaceDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::IOSurfaceDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         return false;
       case cc::DrawQuad::SURFACE_CONTENT:
-        draw_quad = ReadDrawQuad<cc::SurfaceDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::SurfaceDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::TEXTURE_CONTENT:
-        draw_quad = ReadDrawQuad<cc::TextureDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::TextureDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::RENDER_PASS:
-        draw_quad = ReadDrawQuad<cc::RenderPassDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::RenderPassDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::SOLID_COLOR:
-        draw_quad = ReadDrawQuad<cc::SolidColorDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::SolidColorDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::TILED_CONTENT:
-        draw_quad = ReadDrawQuad<cc::TileDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::TileDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-        draw_quad = ReadDrawQuad<cc::StreamVideoDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::StreamVideoDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::YUV_VIDEO_CONTENT:
-        draw_quad = ReadDrawQuad<cc::YUVVideoDrawQuad>(m, iter);
+        draw_quad = ReadDrawQuad<cc::YUVVideoDrawQuad>(m, iter, p);
         break;
       case cc::DrawQuad::INVALID:
         break;
@@ -507,7 +510,6 @@ bool ParamTraits<cc::RenderPass>::Read(
     }
 
     draw_quad->shared_quad_state = p->shared_quad_state_list.back();
-    p->quad_list.push_back(draw_quad.Pass());
   }
 
   return true;
@@ -534,10 +536,12 @@ void ParamTraits<cc::RenderPass>::Log(
     LogParam(*p.shared_quad_state_list[i], l);
   }
   l->append("], [");
-  for (size_t i = 0; i < p.quad_list.size(); ++i) {
-    if (i)
+  for (cc::QuadList::ConstIterator iter = p.quad_list.begin();
+       iter != p.quad_list.end();
+       ++iter) {
+    if (iter != p.quad_list.begin())
       l->append(", ");
-    const cc::DrawQuad* quad = p.quad_list[i];
+    const cc::DrawQuad* quad = &*iter;
     switch (quad->material) {
       case cc::DrawQuad::CHECKERBOARD:
         LogParam(*cc::CheckerboardDrawQuad::MaterialCast(quad), l);

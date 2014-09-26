@@ -106,7 +106,7 @@ void AddPasses(RenderPassList* pass_list,
   }
 }
 
-void TestQuadMatchesExpectations(Quad expected_quad, DrawQuad* quad) {
+void TestQuadMatchesExpectations(Quad expected_quad, const DrawQuad* quad) {
   switch (expected_quad.material) {
     case DrawQuad::SOLID_COLOR: {
       ASSERT_EQ(DrawQuad::SOLID_COLOR, quad->material);
@@ -132,17 +132,21 @@ void TestQuadMatchesExpectations(Quad expected_quad, DrawQuad* quad) {
   }
 }
 
-void TestPassMatchesExpectations(Pass expected_pass, RenderPass* pass) {
+void TestPassMatchesExpectations(Pass expected_pass, const RenderPass* pass) {
   ASSERT_EQ(expected_pass.quad_count, pass->quad_list.size());
-  for (size_t i = 0u; i < pass->quad_list.size(); ++i) {
+  size_t i = 0;
+  for (QuadList::ConstIterator iter = pass->quad_list.begin();
+       iter != pass->quad_list.end();
+       ++iter) {
     SCOPED_TRACE(base::StringPrintf("Quad number %" PRIuS, i));
-    TestQuadMatchesExpectations(expected_pass.quads[i], pass->quad_list.at(i));
+    TestQuadMatchesExpectations(expected_pass.quads[i], &*iter);
+    ++i;
   }
 }
 
 void TestPassesMatchExpectations(Pass* expected_passes,
                                  size_t expected_pass_count,
-                                 RenderPassList* passes) {
+                                 const RenderPassList* passes) {
   ASSERT_EQ(expected_pass_count, passes->size());
 
   for (size_t i = 0; i < passes->size(); ++i) {

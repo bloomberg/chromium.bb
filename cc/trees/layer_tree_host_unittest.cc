@@ -2550,7 +2550,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     EXPECT_EQ(1u, resource_provider->num_resources());
     CHECK_EQ(1u, frame->render_passes.size());
     CHECK_LE(1u, frame->render_passes[0]->quad_list.size());
-    const DrawQuad* quad = frame->render_passes[0]->quad_list[0];
+    const DrawQuad* quad = frame->render_passes[0]->quad_list.front();
     CHECK_EQ(DrawQuad::IO_SURFACE_CONTENT, quad->material);
     const IOSurfaceDrawQuad* io_surface_draw_quad =
         IOSurfaceDrawQuad::MaterialCast(quad);

@@ -467,9 +467,10 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
   for (size_t i = 0; i < frame->render_passes_in_draw_order->size(); ++i) {
     RenderPass* pass = frame->render_passes_in_draw_order->at(i);
-    for (size_t j = 0; j < pass->quad_list.size(); ++j) {
-      DrawQuad* quad = pass->quad_list[j];
-      quad->IterateResources(wait_on_resource_syncpoints_callback);
+    for (QuadList::Iterator iter = pass->quad_list.begin();
+         iter != pass->quad_list.end();
+         ++iter) {
+      iter->IterateResources(wait_on_resource_syncpoints_callback);
     }
   }
 

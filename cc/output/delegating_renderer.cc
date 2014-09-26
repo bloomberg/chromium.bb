@@ -93,8 +93,11 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       base::Bind(&AppendToArray, &resources);
   for (size_t i = 0; i < out_data.render_pass_list.size(); ++i) {
     RenderPass* render_pass = out_data.render_pass_list.at(i);
-    for (size_t j = 0; j < render_pass->quad_list.size(); ++j)
-      render_pass->quad_list[j]->IterateResources(append_to_array);
+    for (QuadList::Iterator iter = render_pass->quad_list.begin();
+         iter != render_pass->quad_list.end();
+         ++iter) {
+      iter->IterateResources(append_to_array);
+    }
   }
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 }

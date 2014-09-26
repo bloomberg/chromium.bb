@@ -47,8 +47,10 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
     AppendQuadsData data;
     picture_layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
 
-    for (size_t i = 0; i < render_pass->quad_list.size(); ++i)
-      EXPECT_EQ(render_pass->quad_list[i]->material, DrawQuad::PICTURE_CONTENT);
+    for (QuadList::Iterator iter = render_pass->quad_list.begin();
+         iter != render_pass->quad_list.end();
+         ++iter)
+      EXPECT_EQ(iter->material, DrawQuad::PICTURE_CONTENT);
 
     // Triggers pixel readback and ends the test.
     LayerTreePixelTest::SwapBuffersOnThread(host_impl, result);

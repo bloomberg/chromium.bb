@@ -12,6 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/quads/list_container.h"
 #include "cc/quads/render_pass_id.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/rect.h"
@@ -28,15 +29,17 @@ class Value;
 namespace cc {
 
 class DrawQuad;
-class RenderPassDrawQuad;
 class CopyOutputRequest;
+class RenderPassDrawQuad;
 class SharedQuadState;
 
 // A list of DrawQuad objects, sorted internally in front-to-back order.
-class QuadList : public ScopedPtrVector<DrawQuad> {
+class QuadList : public ListContainer<DrawQuad> {
  public:
-  typedef reverse_iterator BackToFrontIterator;
-  typedef const_reverse_iterator ConstBackToFrontIterator;
+  explicit QuadList(size_t default_size_to_reserve);
+
+  typedef QuadList::ReverseIterator BackToFrontIterator;
+  typedef QuadList::ConstReverseIterator ConstBackToFrontIterator;
 
   inline BackToFrontIterator BackToFrontBegin() { return rbegin(); }
   inline BackToFrontIterator BackToFrontEnd() { return rend(); }
@@ -75,11 +78,10 @@ class CC_EXPORT RenderPass {
   void AsValueInto(base::debug::TracedValue* dict) const;
 
   SharedQuadState* CreateAndAppendSharedQuadState();
+
   template <typename DrawQuadType>
   DrawQuadType* CreateAndAppendDrawQuad() {
-    scoped_ptr<DrawQuadType> draw_quad = make_scoped_ptr(new DrawQuadType);
-    quad_list.push_back(draw_quad.template PassAs<DrawQuad>());
-    return static_cast<DrawQuadType*>(quad_list.back());
+    return quad_list.AllocateAndConstruct<DrawQuadType>();
   }
 
   RenderPassDrawQuad* CopyFromAndAppendRenderPassDrawQuad(
@@ -119,10 +121,7 @@ class CC_EXPORT RenderPass {
  private:
   template <typename DrawQuadType>
   DrawQuadType* CopyFromAndAppendTypedDrawQuad(const DrawQuad* quad) {
-    scoped_ptr<DrawQuadType> draw_quad =
-        make_scoped_ptr(new DrawQuadType(*DrawQuadType::MaterialCast(quad)));
-    quad_list.push_back(draw_quad.template PassAs<DrawQuad>());
-    return static_cast<DrawQuadType*>(quad_list.back());
+    return quad_list.AllocateAndCopyFrom(DrawQuadType::MaterialCast(quad));
   }
 
   DISALLOW_COPY_AND_ASSIGN(RenderPass);

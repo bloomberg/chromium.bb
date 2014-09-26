@@ -136,6 +136,22 @@ TEST(ListContainerTest, DestructorCalledOnceWhenErase) {
   separator.Call();
 }
 
+TEST(ListContainerTest, SimpleIndexAccessSharedQuadState) {
+  ListContainer<SharedQuadState> list;
+
+  size_t size = 3;
+  SharedQuadState* sqs_1 = list.AllocateAndConstruct<SharedQuadState>();
+  SharedQuadState* sqs_2 = list.AllocateAndConstruct<SharedQuadState>();
+  SharedQuadState* sqs_3 = list.AllocateAndConstruct<SharedQuadState>();
+
+  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(sqs_1, list.front());
+  EXPECT_EQ(sqs_3, list.back());
+  EXPECT_EQ(list.front(), list.ElementAt(0));
+  EXPECT_EQ(sqs_2, list.ElementAt(1));
+  EXPECT_EQ(list.back(), list.ElementAt(2));
+}
+
 TEST(ListContainerTest, SimpleInsertionSharedQuadState) {
   ListContainer<SharedQuadState> list;
 
@@ -463,6 +479,49 @@ TEST(ListContainerTest, SimpleIterationAndManipulation) {
        ++sdq_iter) {
     EXPECT_EQ(i, (*sdq_iter)->get_value());
     ++i;
+  }
+}
+
+TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDrawQuad) {
+  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  std::vector<SimpleDrawQuad*> dq_list;
+  size_t size = 10;
+  for (size_t i = 0; i < size; ++i) {
+    dq_list.push_back(list.AllocateAndConstruct<SimpleDrawQuad>());
+  }
+  EXPECT_EQ(size, list.size());
+
+  for (size_t i = 0; i < size; ++i) {
+    static_cast<SimpleDrawQuad*>(list.ElementAt(i))->set_value(i);
+  }
+
+  int i = 0;
+  for (std::vector<SimpleDrawQuad*>::const_iterator dq_iter = dq_list.begin();
+       dq_iter != dq_list.end();
+       ++dq_iter, ++i) {
+    EXPECT_EQ(i, (*dq_iter)->get_value());
+  }
+}
+
+TEST(ListContainerTest,
+     SimpleManipulationWithIndexMoreThanOneAllocationSimpleDrawQuad) {
+  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad), 2);
+  std::vector<SimpleDrawQuad*> dq_list;
+  size_t size = 10;
+  for (size_t i = 0; i < size; ++i) {
+    dq_list.push_back(list.AllocateAndConstruct<SimpleDrawQuad>());
+  }
+  EXPECT_EQ(size, list.size());
+
+  for (size_t i = 0; i < size; ++i) {
+    static_cast<SimpleDrawQuad*>(list.ElementAt(i))->set_value(i);
+  }
+
+  int i = 0;
+  for (std::vector<SimpleDrawQuad*>::const_iterator dq_iter = dq_list.begin();
+       dq_iter != dq_list.end();
+       ++dq_iter, ++i) {
+    EXPECT_EQ(i, (*dq_iter)->get_value());
   }
 }
 

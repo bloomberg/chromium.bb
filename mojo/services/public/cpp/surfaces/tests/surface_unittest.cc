@@ -69,7 +69,7 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
                      arbitrary_color,
                      force_anti_aliasing_off);
 
-  QuadPtr mojo_quad = Quad::From(*(pass->quad_list.back()));
+  QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*color_quad);
   ASSERT_FALSE(mojo_quad.is_null());
   EXPECT_EQ(MATERIAL_SOLID_COLOR, mojo_quad->material);
   EXPECT_EQ(Rect::From(rect), mojo_quad->rect);
@@ -89,7 +89,7 @@ TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
   surface_quad->SetAll(
       sqs, rect, opaque_rect, visible_rect, needs_blending, arbitrary_id);
 
-  QuadPtr mojo_quad = Quad::From(*(pass->quad_list.back()));
+  QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*surface_quad);
   ASSERT_FALSE(mojo_quad.is_null());
   EXPECT_EQ(MATERIAL_SURFACE_CONTENT, mojo_quad->material);
   ASSERT_TRUE(mojo_quad->surface_quad_state);
@@ -121,7 +121,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
                        vertex_opacity,
                        flipped);
 
-  QuadPtr mojo_quad = Quad::From(*(pass->quad_list.back()));
+  QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*texture_quad);
   ASSERT_FALSE(mojo_quad.is_null());
   EXPECT_EQ(MATERIAL_TEXTURE_CONTENT, mojo_quad->material);
   ASSERT_TRUE(mojo_quad->texture_quad_state);
@@ -317,31 +317,31 @@ TEST(SurfaceLibTest, RenderPass) {
   EXPECT_EQ(opacity, round_trip_sqs->opacity);
   EXPECT_EQ(sorting_context_id, round_trip_sqs->sorting_context_id);
 
-  cc::QuadList::iterator dq_iter = round_trip_pass->quad_list.begin();
+  cc::QuadList::Iterator dq_iter = round_trip_pass->quad_list.begin();
   // First is solid color quad.
-  ASSERT_EQ(cc::DrawQuad::SOLID_COLOR, (*dq_iter)->material);
-  EXPECT_EQ(rect, (*dq_iter)->rect);
-  EXPECT_EQ(opaque_rect, (*dq_iter)->opaque_rect);
-  EXPECT_EQ(visible_rect, (*dq_iter)->visible_rect);
-  EXPECT_EQ(needs_blending, (*dq_iter)->needs_blending);
+  ASSERT_EQ(cc::DrawQuad::SOLID_COLOR, dq_iter->material);
+  EXPECT_EQ(rect, dq_iter->rect);
+  EXPECT_EQ(opaque_rect, dq_iter->opaque_rect);
+  EXPECT_EQ(visible_rect, dq_iter->visible_rect);
+  EXPECT_EQ(needs_blending, dq_iter->needs_blending);
   const cc::SolidColorDrawQuad* round_trip_color_quad =
-      cc::SolidColorDrawQuad::MaterialCast(*dq_iter);
+      cc::SolidColorDrawQuad::MaterialCast(&*dq_iter);
   EXPECT_EQ(arbitrary_color, round_trip_color_quad->color);
   EXPECT_EQ(force_anti_aliasing_off,
             round_trip_color_quad->force_anti_aliasing_off);
 
   ++dq_iter;
   // Second is surface quad.
-  ASSERT_EQ(cc::DrawQuad::SURFACE_CONTENT, (*dq_iter)->material);
+  ASSERT_EQ(cc::DrawQuad::SURFACE_CONTENT, dq_iter->material);
   const cc::SurfaceDrawQuad* round_trip_surface_quad =
-      cc::SurfaceDrawQuad::MaterialCast(*dq_iter);
+      cc::SurfaceDrawQuad::MaterialCast(&*dq_iter);
   EXPECT_EQ(arbitrary_id, round_trip_surface_quad->surface_id);
 
   ++dq_iter;
   // Third is texture quad.
-  ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, (*dq_iter)->material);
+  ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, dq_iter->material);
   const cc::TextureDrawQuad* round_trip_texture_quad =
-      cc::TextureDrawQuad::MaterialCast(*dq_iter);
+      cc::TextureDrawQuad::MaterialCast(&*dq_iter);
   EXPECT_EQ(resource_id, round_trip_texture_quad->resource_id);
   EXPECT_EQ(premultiplied_alpha, round_trip_texture_quad->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, round_trip_texture_quad->uv_top_left);

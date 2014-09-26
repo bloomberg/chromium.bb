@@ -353,8 +353,8 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
-    EXPECT_RECT_EQ(gfx::Rect(6, 0, 39, 3), quads[0]->rect);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_RECT_EQ(gfx::Rect(6, 0, 39, 3), quads.front()->rect);
   }
 
   // Contents scale should scale the draw quad.
@@ -369,8 +369,8 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
-    EXPECT_RECT_EQ(gfx::Rect(12, 0, 78, 6), quads[0]->rect);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_RECT_EQ(gfx::Rect(12, 0, 78, 6), quads.front()->rect);
   }
   scrollbar_layer_impl->draw_properties().contents_scale_x = 1.f;
   scrollbar_layer_impl->draw_properties().contents_scale_y = 1.f;
@@ -387,8 +387,8 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
-    EXPECT_RECT_EQ(gfx::Rect(8, 0, 19, 3), quads[0]->rect);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_RECT_EQ(gfx::Rect(8, 0, 19, 3), quads.front()->rect);
   }
 
   // We shouldn't attempt div-by-zero when the maximum is zero.
@@ -403,8 +403,8 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
-    EXPECT_RECT_EQ(gfx::Rect(1, 0, 19, 3), quads[0]->rect);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_RECT_EQ(gfx::Rect(1, 0, 19, 3), quads.front()->rect);
   }
 }
 
@@ -464,8 +464,8 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
-    EXPECT_RECT_EQ(gfx::Rect(3, 0, 3, 3), quads[0]->rect);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_RECT_EQ(gfx::Rect(3, 0, 3, 3), quads.front()->rect);
   }
 }
 

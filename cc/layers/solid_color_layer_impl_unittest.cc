@@ -70,8 +70,9 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
 
   ASSERT_EQ(render_pass->quad_list.size(), 1U);
-  EXPECT_EQ(SolidColorDrawQuad::MaterialCast(render_pass->quad_list[0])->color,
-            test_color);
+  EXPECT_EQ(
+      SolidColorDrawQuad::MaterialCast(render_pass->quad_list.front())->color,
+      test_color);
 }
 
 TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
@@ -99,9 +100,9 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
 
   ASSERT_EQ(render_pass->quad_list.size(), 1U);
-  EXPECT_EQ(
-      opacity,
-      SolidColorDrawQuad::MaterialCast(render_pass->quad_list[0])->opacity());
+  EXPECT_EQ(opacity,
+            SolidColorDrawQuad::MaterialCast(render_pass->quad_list.front())
+                ->opacity());
 }
 
 TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
@@ -148,7 +149,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_EQ(visible_content_rect.ToString(),
-              render_pass->quad_list[0]->opaque_rect.ToString());
+              render_pass->quad_list.front()->opaque_rect.ToString());
   }
 
   EXPECT_TRUE(layer->contents_opaque());
@@ -175,7 +176,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_EQ(gfx::Rect().ToString(),
-              render_pass->quad_list[0]->opaque_rect.ToString());
+              render_pass->quad_list.front()->opaque_rect.ToString());
   }
 }
 

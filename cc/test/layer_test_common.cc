@@ -40,8 +40,10 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                                   const gfx::Rect& rect) {
   Region remaining = rect;
 
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DrawQuad* quad = quads[i];
+  size_t i = 0;
+  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
+       ++iter) {
+    const DrawQuad* quad = &*iter;
     gfx::RectF quad_rectf =
         MathUtil::MapClippedRect(quad->quadTransform(), gfx::RectF(quad->rect));
 
@@ -58,6 +60,8 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
         << quad_string << i << " remaining: " << remaining.ToString()
         << " quad: " << quad_rect.ToString();
     remaining.Subtract(quad_rect);
+
+    ++i;
   }
 
   EXPECT_TRUE(remaining.IsEmpty());
@@ -68,15 +72,17 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
                                              const gfx::Rect& occluded,
                                              size_t* partially_occluded_count) {
   // No quad should exist if it's fully occluded.
-  for (size_t i = 0; i < quads.size(); ++i) {
+  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
+       ++iter) {
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
-        quads[i]->quadTransform(), quads[i]->visible_rect);
+        iter->quadTransform(), iter->visible_rect);
     EXPECT_FALSE(occluded.Contains(target_visible_rect));
   }
 
   // Quads that are fully occluded on one axis only should be shrunken.
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DrawQuad* quad = quads[i];
+  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
+       ++iter) {
+    const DrawQuad* quad = &*iter;
     DCHECK(quad->quadTransform().IsIdentityOrIntegerTranslation());
     gfx::Rect target_rect =
         MathUtil::MapEnclosingClippedRect(quad->quadTransform(), quad->rect);

@@ -128,10 +128,10 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
        it != render_pass_list->end();
        ++it) {
     QuadList& quad_list = (*it)->quad_list;
-    for (QuadList::iterator quad_it = quad_list.begin();
+    for (QuadList::Iterator quad_it = quad_list.begin();
          quad_it != quad_list.end();
          ++quad_it) {
-      (*quad_it)->IterateResources(remap);
+      quad_it->IterateResources(remap);
     }
   }
   if (!invalid_frame)
@@ -234,7 +234,8 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
     SharedQuadState* shared_quad_state =
         dest_pass->CreateAndAppendSharedQuadState();
     shared_quad_state->CopyFrom(surface_quad->shared_quad_state);
-    scoped_ptr<RenderPassDrawQuad> quad(new RenderPassDrawQuad);
+    RenderPassDrawQuad* quad =
+        dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_quad_state,
                  surface_quad->rect,
                  surface_quad->visible_rect,
@@ -244,7 +245,6 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                  FilterOperations(),
                  gfx::Vector2dF(),
                  FilterOperations());
-    dest_pass->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
   dest_pass->damage_rect =
       gfx::UnionRects(dest_pass->damage_rect,
@@ -284,8 +284,11 @@ void SurfaceAggregator::CopyQuadsToPass(
     SurfaceId surface_id) {
   const SharedQuadState* last_copied_source_shared_quad_state = NULL;
 
-  for (size_t i = 0, sqs_i = 0; i < source_quad_list.size(); ++i) {
-    DrawQuad* quad = source_quad_list[i];
+  size_t sqs_i = 0;
+  for (QuadList::ConstIterator iter = source_quad_list.begin();
+       iter != source_quad_list.end();
+       ++iter) {
+    const DrawQuad* quad = &*iter;
     while (quad->shared_quad_state != source_shared_quad_state_list[sqs_i]) {
       ++sqs_i;
       DCHECK_LT(sqs_i, source_shared_quad_state_list.size());

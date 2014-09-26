@@ -1387,7 +1387,8 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   active_layer_->DidDraw(NULL);
 
   ASSERT_EQ(1U, render_pass->quad_list.size());
-  EXPECT_EQ(DrawQuad::PICTURE_CONTENT, render_pass->quad_list[0]->material);
+  EXPECT_EQ(DrawQuad::PICTURE_CONTENT,
+            render_pass->quad_list.front()->material);
 }
 
 TEST_F(PictureLayerImplTest, MarkRequiredNullTiles) {
@@ -1704,10 +1705,10 @@ TEST_F(PictureLayerImplTest,
   // All high res tiles drew, and the one ideal res tile drew.
   ASSERT_GT(render_pass->quad_list.size(), 9u);
   EXPECT_EQ(gfx::SizeF(99.f, 99.f),
-            TileDrawQuad::MaterialCast(render_pass->quad_list[0])
+            TileDrawQuad::MaterialCast(render_pass->quad_list.front())
                 ->tex_coord_rect.size());
   EXPECT_EQ(gfx::SizeF(49.5f, 49.5f),
-            TileDrawQuad::MaterialCast(render_pass->quad_list[1])
+            TileDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(1))
                 ->tex_coord_rect.size());
 
   // Neither the high res nor the ideal tiles were considered as incomplete.

@@ -70,13 +70,15 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   EXPECT_EQ(expected_quad_size, quads.size());
 
   Region remaining(visible_content_rect);
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DrawQuad* quad = quads[i];
-    gfx::Rect quad_rect = quad->rect;
+  size_t i = 0;
+  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
+       ++iter) {
+    gfx::Rect quad_rect = iter->rect;
 
     EXPECT_TRUE(visible_content_rect.Contains(quad_rect)) << i;
     EXPECT_TRUE(remaining.Contains(quad_rect)) << i;
     remaining.Subtract(Region(quad_rect));
+    ++i;
   }
 
   // Check if the left-over quad is the same size as the mapped aperture quad in
@@ -90,9 +92,9 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   // Verify UV rects
   gfx::Rect bitmap_rect(bitmap_size);
   Region tex_remaining(bitmap_rect);
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DrawQuad* quad = quads[i];
-    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(quad);
+  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
+       ++iter) {
+    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(&*iter);
     gfx::RectF tex_rect =
         gfx::BoundingRect(tex_quad->uv_top_left, tex_quad->uv_bottom_right);
     tex_rect.Scale(bitmap_size.width(), bitmap_size.height());

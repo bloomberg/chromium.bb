@@ -154,7 +154,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   active_layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
   active_layer->DidDraw(NULL);
 
-  EXPECT_EQ(DrawQuad::TILED_CONTENT, render_pass->quad_list[0]->material);
+  EXPECT_EQ(DrawQuad::TILED_CONTENT, render_pass->quad_list.front()->material);
 
   // Tiles are ready at correct scale, so should not set had_incomplete_tile.
   EXPECT_EQ(0, data.num_incomplete_tiles);

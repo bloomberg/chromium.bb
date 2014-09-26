@@ -126,9 +126,10 @@ void DelegatedRendererLayerImpl::SetFrameData(
                  &resources_in_frame);
   for (size_t i = 0; i < render_pass_list.size(); ++i) {
     RenderPass* pass = render_pass_list[i];
-    for (size_t j = 0; j < pass->quad_list.size(); ++j) {
-      DrawQuad* quad = pass->quad_list[j];
-      quad->IterateResources(remap_resources_to_parent_callback);
+    for (QuadList::Iterator iter = pass->quad_list.begin();
+         iter != pass->quad_list.end();
+         ++iter) {
+      iter->IterateResources(remap_resources_to_parent_callback);
     }
   }
 
@@ -393,8 +394,10 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
   const SharedQuadState* delegated_shared_quad_state = NULL;
   SharedQuadState* output_shared_quad_state = NULL;
 
-  for (size_t i = 0; i < delegated_render_pass->quad_list.size(); ++i) {
-    const DrawQuad* delegated_quad = delegated_render_pass->quad_list[i];
+  for (QuadList::ConstIterator iter = delegated_render_pass->quad_list.begin();
+       iter != delegated_render_pass->quad_list.end();
+       ++iter) {
+    const DrawQuad* delegated_quad = &*iter;
 
     bool is_root_delegated_render_pass =
         delegated_render_pass == render_passes_in_draw_order_.back();

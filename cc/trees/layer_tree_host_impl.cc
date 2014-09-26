@@ -902,8 +902,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
 #if DCHECK_IS_ON
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
-    for (size_t j = 0; j < frame->render_passes[i]->quad_list.size(); ++j)
-      DCHECK(frame->render_passes[i]->quad_list[j]->shared_quad_state);
+    for (QuadList::Iterator iter = frame->render_passes[i]->quad_list.begin();
+         iter != frame->render_passes[i]->quad_list.end();
+         ++iter)
+      DCHECK(iter->shared_quad_state);
     DCHECK(frame->render_passes_by_id.find(frame->render_passes[i]->id)
            != frame->render_passes_by_id.end());
   }
@@ -1025,7 +1027,7 @@ static void RemoveRenderPassesRecursive(RenderPassId remove_render_pass_id,
       quad_list.BackToFrontBegin();
   for (; quad_list_iterator != quad_list.BackToFrontEnd();
        ++quad_list_iterator) {
-    DrawQuad* current_quad = (*quad_list_iterator);
+    const DrawQuad* current_quad = &*quad_list_iterator;
     if (current_quad->material != DrawQuad::RENDER_PASS)
       continue;
 
@@ -1048,7 +1050,7 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::ShouldRemoveRenderPass(
            quad_list.BackToFrontBegin();
        quad_list_iterator != quad_list.BackToFrontEnd();
        ++quad_list_iterator) {
-    DrawQuad* current_quad = *quad_list_iterator;
+    const DrawQuad* current_quad = &*quad_list_iterator;
 
     if (current_quad->material != DrawQuad::RENDER_PASS)
       return false;
@@ -1080,7 +1082,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
 
     for (; quad_list_iterator != quad_list.BackToFrontEnd();
          ++quad_list_iterator) {
-      DrawQuad* current_quad = *quad_list_iterator;
+      const DrawQuad* current_quad = &*quad_list_iterator;
 
       if (current_quad->material != DrawQuad::RENDER_PASS)
         continue;

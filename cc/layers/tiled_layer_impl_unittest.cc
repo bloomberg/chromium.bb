@@ -168,8 +168,10 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     EXPECT_EQ(render_pass->quad_list.size(), 4u);
     EXPECT_EQ(0u, data.num_missing_tiles);
 
-    for (size_t i = 0; i < render_pass->quad_list.size(); ++i)
-      EXPECT_EQ(render_pass->quad_list[i]->material, DrawQuad::TILED_CONTENT);
+    for (QuadList::Iterator iter = render_pass->quad_list.begin();
+         iter != render_pass->quad_list.end();
+         ++iter)
+      EXPECT_EQ(iter->material, DrawQuad::TILED_CONTENT);
   }
 
   for (int i = 0; i < num_tiles_x; ++i)
@@ -185,8 +187,10 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
     EXPECT_LT(0u, data.num_missing_tiles);
     EXPECT_EQ(render_pass->quad_list.size(), 4u);
-    for (size_t i = 0; i < render_pass->quad_list.size(); ++i)
-      EXPECT_NE(render_pass->quad_list[i]->material, DrawQuad::TILED_CONTENT);
+    for (QuadList::Iterator iter = render_pass->quad_list.begin();
+         iter != render_pass->quad_list.end();
+         ++iter)
+      EXPECT_NE(iter->material, DrawQuad::TILED_CONTENT);
   }
 }
 
@@ -262,9 +266,11 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
            LayerTilingData::NO_BORDER_TEXELS,
            gfx::Rect(layer_size));
 
-  for (size_t i = 0; i < render_pass->quad_list.size(); ++i) {
-    const TileDrawQuad* quad =
-        TileDrawQuad::MaterialCast(render_pass->quad_list[i]);
+  size_t i = 0;
+  for (QuadList::Iterator iter = render_pass->quad_list.begin();
+       iter != render_pass->quad_list.end();
+       ++iter) {
+    const TileDrawQuad* quad = TileDrawQuad::MaterialCast(&*iter);
 
     EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quad_string << i;
     EXPECT_EQ(gfx::RectF(gfx::PointF(), tile_size), quad->tex_coord_rect)

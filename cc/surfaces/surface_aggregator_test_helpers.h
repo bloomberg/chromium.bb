@@ -81,13 +81,13 @@ void AddPasses(RenderPassList* pass_list,
                Pass* passes,
                size_t pass_count);
 
-void TestQuadMatchesExpectations(Quad expected_quad, DrawQuad* quad);
+void TestQuadMatchesExpectations(Quad expected_quad, const DrawQuad* quad);
 
-void TestPassMatchesExpectations(Pass expected_pass, RenderPass* pass);
+void TestPassMatchesExpectations(Pass expected_pass, const RenderPass* pass);
 
 void TestPassesMatchExpectations(Pass* expected_passes,
                                  size_t expected_pass_count,
-                                 RenderPassList* passes);
+                                 const RenderPassList* passes);
 
 }  // namespace test
 }  // namespace cc

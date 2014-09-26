@@ -68,6 +68,7 @@ class ListContainer<BaseElementType>::ListContainerCharAllocator {
     char* Begin() const { return data.get(); }
     char* End() const { return data.get() + size * step; }
     char* LastElement() const { return data.get() + (size - 1) * step; }
+    char* ElementAt(size_t index) const { return data.get() + index * step; }
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InnerList);
@@ -370,6 +371,37 @@ template <typename BaseElementType>
 const BaseElementType* ListContainer<BaseElementType>::back() const {
   ConstReverseIterator iter = rbegin();
   return &*iter;
+}
+
+template <typename BaseElementType>
+const BaseElementType* ListContainer<BaseElementType>::ElementAt(
+    size_t index) const {
+  DCHECK_LT(index, size());
+  size_t list_index;
+  for (list_index = 0; list_index < data_->list_count(); ++list_index) {
+    size_t current_size = data_->InnerListById(list_index)->size;
+    if (index < current_size)
+      break;
+    index -= current_size;
+  }
+  return &*ConstIterator(data_.get(),
+                         list_index,
+                         data_->InnerListById(list_index)->ElementAt(index));
+}
+
+template <typename BaseElementType>
+BaseElementType* ListContainer<BaseElementType>::ElementAt(size_t index) {
+  DCHECK_LT(index, size());
+  size_t list_index;
+  for (list_index = 0; list_index < data_->list_count(); ++list_index) {
+    size_t current_size = data_->InnerListById(list_index)->size;
+    if (index < current_size)
+      break;
+    index -= current_size;
+  }
+  return &*Iterator(data_.get(),
+                    list_index,
+                    data_->InnerListById(list_index)->ElementAt(index));
 }
 
 template <typename BaseElementType>

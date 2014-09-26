@@ -189,17 +189,17 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   // contributing RenderPasses.
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_EQ(gfx::Rect(0, 0, 6, 6).ToString(),
-            frame.render_passes[1]->quad_list[0]->rect.ToString());
+            frame.render_passes[1]->quad_list.front()->rect.ToString());
 
   // Verify it added the right quads.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
   EXPECT_EQ(gfx::Rect(0, 0, 7, 7).ToString(),
-            frame.render_passes[2]->quad_list[0]->rect.ToString());
+            frame.render_passes[2]->quad_list.front()->rect.ToString());
   EXPECT_EQ(gfx::Rect(6, 6, 6, 6).ToString(),
-            frame.render_passes[2]->quad_list[1]->rect.ToString());
+            frame.render_passes[2]->quad_list.ElementAt(1)->rect.ToString());
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_EQ(gfx::Rect(0, 0, 6, 6).ToString(),
-            frame.render_passes[1]->quad_list[0]->rect.ToString());
+            frame.render_passes[1]->quad_list.front()->rect.ToString());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -222,11 +222,11 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass) {
 
   // Verify it added the right quads.
   EXPECT_EQ(gfx::Rect(7, 7, 7, 7).ToString(),
-            frame.render_passes[3]->quad_list[0]->rect.ToString());
+            frame.render_passes[3]->quad_list.front()->rect.ToString());
 
   // Its target layer should have a quad as well.
   EXPECT_EQ(gfx::Rect(0, 0, 15, 15).ToString(),
-            frame.render_passes[3]->quad_list[1]->rect.ToString());
+            frame.render_passes[3]->quad_list.ElementAt(1)->rect.ToString());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -247,17 +247,21 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   gfx::Transform transform;
   transform.Translate(4.0, 4.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      transform, frame.render_passes[3]->quad_list[0]->quadTransform());
+      transform, frame.render_passes[3]->quad_list.front()->quadTransform());
 
   // Quads from non-root RenderPasses should not be shifted though.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
+
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[2]->quad_list[0]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[2]->quad_list.front()->quadTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[2]->quad_list[1]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[2]->quad_list.ElementAt(1)->quadTransform());
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[1]->quad_list[0]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[1]->quad_list.front()->quadTransform());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -412,17 +416,18 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   // contributing RenderPasses.
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_EQ(gfx::Rect(0, 0, 6, 6).ToString(),
-            frame.render_passes[1]->quad_list[0]->rect.ToString());
+            frame.render_passes[1]->quad_list.front()->rect.ToString());
 
   // Verify it added the right quads.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
+
   EXPECT_EQ(gfx::Rect(0, 0, 7, 7).ToString(),
-            frame.render_passes[2]->quad_list[0]->rect.ToString());
+            frame.render_passes[2]->quad_list.front()->rect.ToString());
   EXPECT_EQ(gfx::Rect(6, 6, 6, 6).ToString(),
-            frame.render_passes[2]->quad_list[1]->rect.ToString());
+            frame.render_passes[2]->quad_list.ElementAt(1)->rect.ToString());
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_EQ(gfx::Rect(0, 0, 6, 6).ToString(),
-            frame.render_passes[1]->quad_list[0]->rect.ToString());
+            frame.render_passes[1]->quad_list.front()->rect.ToString());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -447,7 +452,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass) {
 
   // Verify it added the right quads.
   EXPECT_EQ(gfx::Rect(7, 7, 7, 7).ToString(),
-            frame.render_passes[3]->quad_list[0]->rect.ToString());
+            frame.render_passes[3]->quad_list.front()->rect.ToString());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -466,17 +471,22 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   // Because the DelegatedRendererLayer owns a RenderSurfaceImpl, its root
   // RenderPass' quads do not need to be translated at all.
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[3]->quad_list[0]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[3]->quad_list.front()->quadTransform());
 
   // Quads from non-root RenderPasses should not be shifted either.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
+
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[2]->quad_list[0]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[2]->quad_list.front()->quadTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[2]->quad_list[1]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[2]->quad_list.ElementAt(1)->quadTransform());
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), frame.render_passes[1]->quad_list[0]->quadTransform());
+      gfx::Transform(),
+      frame.render_passes[1]->quad_list.front()->quadTransform());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -650,20 +660,20 @@ class DelegatedRendererLayerImplTestTransform
 
     // All quads in a render pass should share the same state.
     *contrib_delegated_shared_quad_state =
-        contrib_delegated_quad_list[0]->shared_quad_state;
+        contrib_delegated_quad_list.front()->shared_quad_state;
     EXPECT_EQ(*contrib_delegated_shared_quad_state,
-              contrib_delegated_quad_list[1]->shared_quad_state);
+              contrib_delegated_quad_list.ElementAt(1)->shared_quad_state);
 
     *root_delegated_shared_quad_state =
-        root_delegated_quad_list[0]->shared_quad_state;
+        root_delegated_quad_list.front()->shared_quad_state;
     EXPECT_EQ(*root_delegated_shared_quad_state,
-              root_delegated_quad_list[1]->shared_quad_state);
+              root_delegated_quad_list.ElementAt(1)->shared_quad_state);
     EXPECT_EQ(*root_delegated_shared_quad_state,
-              root_delegated_quad_list[2]->shared_quad_state);
+              root_delegated_quad_list.ElementAt(2)->shared_quad_state);
     EXPECT_EQ(*root_delegated_shared_quad_state,
-              root_delegated_quad_list[3]->shared_quad_state);
+              root_delegated_quad_list.ElementAt(3)->shared_quad_state);
     EXPECT_EQ(*root_delegated_shared_quad_state,
-              root_delegated_quad_list[4]->shared_quad_state);
+              root_delegated_quad_list.ElementAt(4)->shared_quad_state);
 
     EXPECT_NE(*contrib_delegated_shared_quad_state,
               *root_delegated_shared_quad_state);
@@ -1099,7 +1109,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the quads don't have a clip of their own, the clip rect is set to
   // the drawable_content_rect of the delegated renderer layer.
@@ -1129,7 +1139,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
       frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the quads have a clip of their own, it is used.
   EXPECT_EQ(gfx::Rect(25, 25, 40, 40).ToString(),
@@ -1157,7 +1167,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the quads don't have a clip of their own, the clip rect is set to
   // the drawable_content_rect of the delegated renderer layer. When the layer
@@ -1187,7 +1197,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the quads have a clip of their own, it is used, but it is
   // combined with the clip rect of the delegated renderer layer.
@@ -1218,7 +1228,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the layer owns a surface, the quads don't need to be clipped
   // further than they already specify. If they aren't clipped, then their
@@ -1247,7 +1257,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the quads have a clip of their own, it is used.
   EXPECT_EQ(gfx::Rect(5, 5, 40, 40).ToString(),
@@ -1277,7 +1287,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the layer owns a surface, the quads don't need to be clipped
   // further than they already specify. If they aren't clipped, then their
@@ -1305,7 +1315,7 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   const QuadList& root_delegated_quad_list = frame.render_passes[1]->quad_list;
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
-      root_delegated_quad_list[0]->shared_quad_state;
+      root_delegated_quad_list.front()->shared_quad_state;
 
   // When the quads have a clip of their own, it is used, but it is
   // combined with the clip rect of the delegated renderer layer. If the
@@ -1365,7 +1375,7 @@ TEST_F(DelegatedRendererLayerImplTest, InvalidRenderPassDrawQuad) {
   ASSERT_EQ(1u, frame.render_passes.size());
   ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
   EXPECT_EQ(DrawQuad::SOLID_COLOR,
-            frame.render_passes[0]->quad_list[0]->material);
+            frame.render_passes[0]->quad_list.front()->material);
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
@@ -1422,7 +1432,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
       LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
                                                    quad_screen_rect);
       ASSERT_EQ(1u, impl.quad_list().size());
-      EXPECT_EQ(DrawQuad::RENDER_PASS, impl.quad_list()[0]->material);
+      EXPECT_EQ(DrawQuad::RENDER_PASS, impl.quad_list().front()->material);
     }
     {
       SCOPED_TRACE("Contributing render pass");
@@ -1431,7 +1441,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
       LayerTestCommon::VerifyQuadsExactlyCoverRect(
           impl.quad_list(), gfx::Rect(quad_screen_rect.size()));
       ASSERT_EQ(1u, impl.quad_list().size());
-      EXPECT_EQ(DrawQuad::SOLID_COLOR, impl.quad_list()[0]->material);
+      EXPECT_EQ(DrawQuad::SOLID_COLOR, impl.quad_list().front()->material);
     }
   }
 
@@ -1496,7 +1506,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
       // The occlusion extends to 500 in the x-axis, pushing the left of the
       // visible part of the quad to 500 - 211 = 300 - 11 inside the quad.
       EXPECT_EQ(gfx::Rect(300 - 11, 0, 100 + 11, 500).ToString(),
-                impl.quad_list()[0]->visible_rect.ToString());
+                impl.quad_list().front()->visible_rect.ToString());
     }
     {
       gfx::Rect occlusion_in_root_target(0, 0, 500, 1000);
@@ -1528,7 +1538,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
       // root. The occlusion extends to 500 in the x-axis, pushing the left of
       // the visible part of the quad to 500 - 222 = 300 - 22 inside the quad.
       EXPECT_EQ(gfx::Rect(300 - 22, 0, 100 + 22, 500).ToString(),
-                impl.quad_list()[0]->visible_rect.ToString());
+                impl.quad_list().front()->visible_rect.ToString());
     }
   }
 }

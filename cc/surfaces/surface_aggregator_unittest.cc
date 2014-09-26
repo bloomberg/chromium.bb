@@ -326,13 +326,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     const QuadList& third_pass_quad_list = aggregated_pass_list[2]->quad_list;
     ASSERT_EQ(2u, third_pass_quad_list.size());
     TestQuadMatchesExpectations(embedded_quads[1][0],
-                                third_pass_quad_list.at(0u));
+                                third_pass_quad_list.ElementAt(0));
 
     // This render pass pass quad will reference the first pass from the
     // embedded surface, which is the second pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::RENDER_PASS, third_pass_quad_list.at(1u)->material);
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              third_pass_quad_list.ElementAt(1)->material);
     const RenderPassDrawQuad* third_pass_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(third_pass_quad_list.at(1u));
+        RenderPassDrawQuad::MaterialCast(third_pass_quad_list.ElementAt(1));
     EXPECT_EQ(actual_pass_ids[1],
               third_pass_render_pass_draw_quad->render_pass_id);
   }
@@ -347,21 +348,23 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     // The first quad will be the yellow quad from the embedded surface's last
     // pass.
     TestQuadMatchesExpectations(embedded_quads[2][0],
-                                fourth_pass_quad_list.at(0u));
+                                fourth_pass_quad_list.ElementAt(0));
 
     // The next quad will be a render pass quad referencing the second pass from
     // the embedded surface, which is the third pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::RENDER_PASS, fourth_pass_quad_list.at(1u)->material);
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              fourth_pass_quad_list.ElementAt(1)->material);
     const RenderPassDrawQuad* fourth_pass_first_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.at(1u));
+        RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(1));
     EXPECT_EQ(actual_pass_ids[2],
               fourth_pass_first_render_pass_draw_quad->render_pass_id);
 
     // The last quad will be a render pass quad referencing the first pass from
     // the root surface, which is the first pass overall.
-    ASSERT_EQ(DrawQuad::RENDER_PASS, fourth_pass_quad_list.at(2u)->material);
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              fourth_pass_quad_list.ElementAt(2)->material);
     const RenderPassDrawQuad* fourth_pass_second_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.at(2u));
+        RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(2));
     EXPECT_EQ(actual_pass_ids[0],
               fourth_pass_second_render_pass_draw_quad->render_pass_id);
   }
@@ -371,14 +374,16 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     const QuadList& fifth_pass_quad_list = aggregated_pass_list[4]->quad_list;
     ASSERT_EQ(2u, fifth_pass_quad_list.size());
 
-    TestQuadMatchesExpectations(root_quads[2][0], fifth_pass_quad_list.at(0));
+    TestQuadMatchesExpectations(root_quads[2][0],
+                                fifth_pass_quad_list.ElementAt(0));
 
     // The last quad in the last pass will reference the second pass from the
     // root surface, which after aggregating is the fourth pass in the overall
     // list.
-    ASSERT_EQ(DrawQuad::RENDER_PASS, fifth_pass_quad_list.at(1u)->material);
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              fifth_pass_quad_list.ElementAt(1)->material);
     const RenderPassDrawQuad* fifth_pass_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(fifth_pass_quad_list.at(1u));
+        RenderPassDrawQuad::MaterialCast(fifth_pass_quad_list.ElementAt(1));
     EXPECT_EQ(actual_pass_ids[3],
               fifth_pass_render_pass_draw_quad->render_pass_id);
   }
@@ -529,8 +534,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   }
 
   // Make sure the render pass quads reference the remapped pass IDs.
-  DrawQuad* render_pass_quads[] = {aggregated_pass_list[1]->quad_list[0],
-                                   aggregated_pass_list[2]->quad_list[0]};
+  DrawQuad* render_pass_quads[] = {aggregated_pass_list[1]->quad_list.front(),
+                                   aggregated_pass_list[2]->quad_list.front()};
   ASSERT_EQ(render_pass_quads[0]->material, DrawQuad::RENDER_PASS);
   EXPECT_EQ(
       actual_pass_ids[0],
@@ -693,9 +698,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 
   ASSERT_EQ(7u, aggregated_quad_list.size());
 
-  for (size_t i = 0; i < aggregated_quad_list.size(); ++i) {
-    DrawQuad* quad = aggregated_quad_list[i];
-    EXPECT_EQ(blend_modes[i], quad->shared_quad_state->blend_mode) << i;
+  size_t i = 0;
+  for (QuadList::ConstIterator iter = aggregated_quad_list.begin();
+       iter != aggregated_quad_list.end();
+       ++iter) {
+    EXPECT_EQ(blend_modes[i], iter->shared_quad_state->blend_mode) << i;
+    ++i;
   }
   factory_.Destroy(child_one_surface_id);
   factory_.Destroy(child_two_surface_id);
@@ -830,11 +838,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   // and the child surface draw quad's translation (8, 0).
   expected_root_pass_quad_transforms[1].Translate(8, 10);
 
-  for (size_t i = 0; i < 2; ++i) {
-    DrawQuad* quad = aggregated_pass_list[1]->quad_list.at(i);
+  size_t i = 0;
+  for (QuadList::Iterator iter = aggregated_pass_list[1]->quad_list.begin();
+       iter != aggregated_pass_list[1]->quad_list.end();
+       ++iter) {
     EXPECT_EQ(expected_root_pass_quad_transforms[i].ToString(),
-              quad->quadTransform().ToString())
+              iter->quadTransform().ToString())
         << i;
+    i++;
   }
 
   EXPECT_EQ(true,

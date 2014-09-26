@@ -477,15 +477,19 @@ TEST_F(CCMessagesTest, AllQuads) {
     Compare(pass_cmp->shared_quad_state_list[i],
             pass_in->shared_quad_state_list[i]);
   }
-  for (size_t i = 0; i < pass_in->quad_list.size(); ++i)
-    Compare(pass_cmp->quad_list[i], pass_in->quad_list[i]);
+  for (cc::QuadList::Iterator in_iter = pass_in->quad_list.begin(),
+                              cmp_iter = pass_cmp->quad_list.begin();
+       in_iter != pass_in->quad_list.end();
+       ++in_iter, ++cmp_iter)
+    Compare(&*cmp_iter, &*in_iter);
+
   for (size_t i = 1; i < pass_in->quad_list.size(); ++i) {
     bool same_shared_quad_state_cmp =
-        pass_cmp->quad_list[i]->shared_quad_state ==
-        pass_cmp->quad_list[i - 1]->shared_quad_state;
+        pass_cmp->quad_list.ElementAt(i)->shared_quad_state ==
+        pass_cmp->quad_list.ElementAt(i - 1)->shared_quad_state;
     bool same_shared_quad_state_in =
-        pass_in->quad_list[i]->shared_quad_state ==
-        pass_in->quad_list[i - 1]->shared_quad_state;
+        pass_in->quad_list.ElementAt(i)->shared_quad_state ==
+        pass_in->quad_list.ElementAt(i - 1)->shared_quad_state;
     EXPECT_EQ(same_shared_quad_state_cmp, same_shared_quad_state_in);
   }
 
@@ -509,15 +513,19 @@ TEST_F(CCMessagesTest, AllQuads) {
     Compare(pass_cmp->shared_quad_state_list[i],
             pass_out->shared_quad_state_list[i]);
   }
-  for (size_t i = 0; i < pass_out->quad_list.size(); ++i)
-    Compare(pass_cmp->quad_list[i], pass_out->quad_list[i]);
+  for (cc::QuadList::Iterator out_iter = pass_out->quad_list.begin(),
+                              cmp_iter = pass_cmp->quad_list.begin();
+       out_iter != pass_out->quad_list.end();
+       ++out_iter, ++cmp_iter)
+    Compare(&*cmp_iter, &*out_iter);
+
   for (size_t i = 1; i < pass_out->quad_list.size(); ++i) {
     bool same_shared_quad_state_cmp =
-        pass_cmp->quad_list[i]->shared_quad_state ==
-        pass_cmp->quad_list[i - 1]->shared_quad_state;
+        pass_cmp->quad_list.ElementAt(i)->shared_quad_state ==
+        pass_cmp->quad_list.ElementAt(i - 1)->shared_quad_state;
     bool same_shared_quad_state_out =
-        pass_out->quad_list[i]->shared_quad_state ==
-        pass_out->quad_list[i - 1]->shared_quad_state;
+        pass_out->quad_list.ElementAt(i)->shared_quad_state ==
+        pass_out->quad_list.ElementAt(i - 1)->shared_quad_state;
     EXPECT_EQ(same_shared_quad_state_cmp, same_shared_quad_state_out);
   }
 }

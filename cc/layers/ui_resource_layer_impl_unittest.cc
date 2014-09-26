@@ -95,7 +95,7 @@ void OpaqueBoundsTest(scoped_ptr<UIResourceLayerImpl> layer,
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;
   EXPECT_GE(quads.size(), (size_t)0);
-  gfx::Rect opaque_rect = quads.at(0)->opaque_rect;
+  gfx::Rect opaque_rect = quads.front()->opaque_rect;
   EXPECT_EQ(expected_opaque_bounds, opaque_rect);
 }
 

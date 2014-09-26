@@ -359,8 +359,11 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
       input.shared_quad_state_list.size());
   int sqs_i = -1;
   const cc::SharedQuadState* last_sqs = NULL;
-  for (size_t i = 0; i < quads.size(); ++i) {
-    const cc::DrawQuad& quad = *input.quad_list[i];
+  size_t i = 0;
+  for (cc::QuadList::ConstIterator iter = input.quad_list.begin();
+       iter != input.quad_list.end();
+       ++iter) {
+    const cc::DrawQuad& quad = *iter;
     quads[i] = Quad::From(quad);
     if (quad.shared_quad_state != last_sqs) {
       sqs_i++;
@@ -369,6 +372,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
       last_sqs = quad.shared_quad_state;
     }
     quads[i]->shared_quad_state_index = sqs_i;
+    ++i;
   }
   // We should copy all shared quad states.
   DCHECK_EQ(static_cast<size_t>(sqs_i + 1), shared_quad_state.size());
@@ -381,6 +385,8 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
 scoped_ptr<cc::RenderPass>
 TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
     const PassPtr& input) {
+  // TODO(weiliangc): RenderPass will have a constructor that takes in preset
+  // size of quad list and shared quad state list size in upcoming CL.
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetAll(cc::RenderPassId(1, input->id),
                input->output_rect.To<gfx::Rect>(),
@@ -392,7 +398,6 @@ TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
   for (size_t i = 0; i < input->shared_quad_states.size(); ++i) {
     ConvertSharedQuadState(input->shared_quad_states[i], pass.get());
   }
-  pass->quad_list.reserve(input->quads.size());
   for (size_t i = 0; i < input->quads.size(); ++i) {
     QuadPtr quad = input->quads[i].Pass();
     if (!ConvertDrawQuad(

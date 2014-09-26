@@ -4072,9 +4072,10 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
  protected:
   size_t CountGutterQuads(const QuadList& quad_list) {
     size_t num_gutter_quads = 0;
-    for (size_t i = 0; i < quad_list.size(); ++i) {
-      num_gutter_quads += (quad_list[i]->material ==
-                           gutter_quad_material_) ? 1 : 0;
+    for (QuadList::ConstIterator iter = quad_list.begin();
+         iter != quad_list.end();
+         ++iter) {
+      num_gutter_quads += (iter->material == gutter_quad_material_) ? 1 : 0;
     }
     return num_gutter_quads;
   }
@@ -4086,10 +4087,12 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   // Make sure that the texture coordinates match their expectations.
   void ValidateTextureDrawQuads(const QuadList& quad_list) {
-    for (size_t i = 0; i < quad_list.size(); ++i) {
-      if (quad_list[i]->material != DrawQuad::TEXTURE_CONTENT)
+    for (QuadList::ConstIterator iter = quad_list.begin();
+         iter != quad_list.end();
+         ++iter) {
+      if (iter->material != DrawQuad::TEXTURE_CONTENT)
         continue;
-      const TextureDrawQuad* quad = TextureDrawQuad::MaterialCast(quad_list[i]);
+      const TextureDrawQuad* quad = TextureDrawQuad::MaterialCast(&*iter);
       gfx::SizeF gutter_texture_size_pixels = gfx::ScaleSize(
           gutter_texture_size_, host_impl_->device_scale_factor());
       EXPECT_EQ(quad->uv_top_left.x(),
@@ -4688,9 +4691,9 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
     ASSERT_EQ(1U, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(1U, frame.render_passes[1]->quad_list.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     EXPECT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[1]->quad_list[0]->material);
+              frame.render_passes[1]->quad_list.front()->material);
 
     my_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
     my_host_impl->DidDrawAllLayers(frame);
@@ -4715,9 +4718,9 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
     ASSERT_EQ(1U, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(1U, frame.render_passes[1]->quad_list.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     EXPECT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[1]->quad_list[0]->material);
+              frame.render_passes[1]->quad_list.front()->material);
 
     my_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
     my_host_impl->DidDrawAllLayers(frame);
@@ -4890,12 +4893,12 @@ class LayerTreeHostImplTestWithDelegatingRenderer
       LayerImpl* child = host_impl_->active_tree()->root_layer()->children()[0];
       gfx::RectF expected_child_visible_rect(child->content_bounds());
       EXPECT_RECT_EQ(expected_child_visible_rect,
-                     root_render_pass->quad_list[0]->visible_rect);
+                     root_render_pass->quad_list.front()->visible_rect);
 
       LayerImpl* root = host_impl_->active_tree()->root_layer();
       gfx::RectF expected_root_visible_rect(root->content_bounds());
       EXPECT_RECT_EQ(expected_root_visible_rect,
-                     root_render_pass->quad_list[1]->visible_rect);
+                     root_render_pass->quad_list.ElementAt(1)->visible_rect);
     }
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
@@ -5029,9 +5032,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5057,9 +5061,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5087,9 +5092,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5147,9 +5153,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5174,9 +5181,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5204,9 +5212,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5229,9 +5238,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5294,9 +5304,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[1]->material);
-    const RenderPassDrawQuad* replica_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+              frame.render_passes[0]->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad = RenderPassDrawQuad::MaterialCast(
+        frame.render_passes[0]->quad_list.ElementAt(1));
     EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5321,9 +5331,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[1]->material);
-    const RenderPassDrawQuad* replica_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+              frame.render_passes[0]->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad = RenderPassDrawQuad::MaterialCast(
+        frame.render_passes[0]->quad_list.ElementAt(1));
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5351,9 +5361,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[1]->material);
-    const RenderPassDrawQuad* replica_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+              frame.render_passes[0]->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad = RenderPassDrawQuad::MaterialCast(
+        frame.render_passes[0]->quad_list.ElementAt(1));
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5376,9 +5386,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     ASSERT_EQ(1u, frame.render_passes.size());
     ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[1]->material);
-    const RenderPassDrawQuad* replica_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+              frame.render_passes[0]->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad = RenderPassDrawQuad::MaterialCast(
+        frame.render_passes[0]->quad_list.ElementAt(1));
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5453,17 +5463,18 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
 
     // The surface is 100x50.
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
               render_pass_quad->rect.ToString());
 
     // The mask covers the owning layer only.
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[1]->material);
-    const RenderPassDrawQuad* replica_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+              frame.render_passes[0]->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad = RenderPassDrawQuad::MaterialCast(
+        frame.render_passes[0]->quad_list.ElementAt(1));
     EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
@@ -5485,17 +5496,18 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
 
     // The surface is 100x50 with its origin at (-50, 0).
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
               render_pass_quad->rect.ToString());
 
     // The mask covers the owning layer only.
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[1]->material);
-    const RenderPassDrawQuad* replica_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+              frame.render_passes[0]->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad = RenderPassDrawQuad::MaterialCast(
+        frame.render_passes[0]->quad_list.ElementAt(1));
     EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
@@ -5577,9 +5589,10 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
 
     // The surface is clipped to 10x20.
     ASSERT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[0]->quad_list[0]->material);
+              frame.render_passes[0]->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+        RenderPassDrawQuad::MaterialCast(
+            frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
               render_pass_quad->rect.ToString());
 
@@ -5654,7 +5667,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   ASSERT_EQ(1u, frame.render_passes.size());
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
-  const DrawQuad* quad = frame.render_passes[0]->quad_list[0];
+  const DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
   float edge[24];
   gfx::QuadF device_layer_quad;
