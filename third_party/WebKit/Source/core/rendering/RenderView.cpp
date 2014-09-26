@@ -465,16 +465,9 @@ IntRect RenderView::selectionBounds() const
     // Now create a single bounding box rect that encloses the whole selection.
     LayoutRect selRect;
     SelectionMap::iterator end = selectedObjects.end();
-    for (SelectionMap::iterator i = selectedObjects.begin(); i != end; ++i) {
-        RenderSelectionInfo* info = i->value.get();
-        // RenderSelectionInfo::rect() is in the coordinates of the paintInvalidationContainer, so map to page coordinates.
-        LayoutRect currRect = info->rect();
-        if (const RenderLayerModelObject* paintInvalidationContainer = info->paintInvalidationContainer()) {
-            FloatQuad absQuad = paintInvalidationContainer->localToAbsoluteQuad(FloatRect(currRect));
-            currRect = absQuad.enclosingBoundingBox();
-        }
-        selRect.unite(currRect);
-    }
+    for (SelectionMap::iterator i = selectedObjects.begin(); i != end; ++i)
+        selRect.unite(i->value->absoluteSelectionRect());
+
     return pixelSnappedIntRect(selRect);
 }
 
@@ -648,9 +641,9 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         RenderObject* obj = i->key;
         RenderSelectionInfo* newInfo = newSelectedObjects.get(obj);
         RenderSelectionInfo* oldInfo = i->value.get();
-        if (!newInfo || oldInfo->rect() != newInfo->rect() || oldInfo->state() != newInfo->state() ||
-            (m_selectionStart == obj && oldStartPos != m_selectionStartPos) ||
-            (m_selectionEnd == obj && oldEndPos != m_selectionEndPos)) {
+        if (!newInfo || newInfo->hasChangedFrom(*oldInfo)
+            || (m_selectionStart == obj && oldStartPos != m_selectionStartPos)
+            || (m_selectionEnd == obj && oldEndPos != m_selectionEndPos)) {
             oldInfo->invalidatePaint();
             if (newInfo) {
                 newInfo->invalidatePaint();
@@ -670,7 +663,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         RenderBlock* block = i->key;
         RenderBlockSelectionInfo* newInfo = newSelectedBlocks.get(block);
         RenderBlockSelectionInfo* oldInfo = i->value.get();
-        if (!newInfo || oldInfo->rects() != newInfo->rects() || oldInfo->state() != newInfo->state()) {
+        if (!newInfo || newInfo->hasChangedFrom(*oldInfo)) {
             oldInfo->invalidatePaint();
             if (newInfo) {
                 newInfo->invalidatePaint();
