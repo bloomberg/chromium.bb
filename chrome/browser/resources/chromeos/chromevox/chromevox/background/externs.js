@@ -52,6 +52,14 @@ chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(on) {
 chrome.accessibilityPrivate.getAlertsForTab =
     function(tabId, callback) {};
 
+/**
+ * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ *     rects The bounding rects to draw focus ring(s) around, in global
+ *     screen coordinates.
+ */
+chrome.accessibilityPrivate.setFocusRing = function(rects) {
+};
+
 /** @type ChromeEvent */
 chrome.accessibilityPrivate.onWindowOpened;
 

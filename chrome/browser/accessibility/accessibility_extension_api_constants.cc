@@ -23,6 +23,7 @@ const char kCheckedKey[] = "details.isChecked";
 const char kHasSubmenuKey[] = "details.hasSubmenu";
 const char kMessageKey[] = "message";
 const char kStringValueKey[] = "details.stringValue";
+const char kBoundsKey[] = "bounds";
 
 // Types of controls that can receive accessibility events.
 const char kTypeAlert[] = "alert";
@@ -41,6 +42,12 @@ const char kTypeTextBox[] = "textbox";
 const char kTypeTree[] = "tree";
 const char kTypeTreeItem[] = "treeitem";
 const char kTypeWindow[] = "window";
+
+// ScreenRect fields.
+const char kLeft[] = "left";
+const char kTop[] = "top";
+const char kWidth[] = "width";
+const char kHeight[] = "height";
 
 // Errors.
 const char kErrorNotSupported[] = "This API is not supported on this platform.";

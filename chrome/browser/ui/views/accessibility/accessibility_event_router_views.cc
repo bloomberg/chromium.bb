@@ -262,6 +262,7 @@ void AccessibilityEventRouterViews::SendTabNotification(
   std::string name = base::UTF16ToUTF8(state.name);
   std::string context = GetViewContext(view);
   AccessibilityTabInfo info(profile, name, context, state.index, state.count);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -272,6 +273,7 @@ void AccessibilityEventRouterViews::SendButtonNotification(
     Profile* profile) {
   AccessibilityButtonInfo info(
       profile, GetViewName(view), GetViewContext(view));
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -282,6 +284,7 @@ void AccessibilityEventRouterViews::SendStaticTextNotification(
     Profile* profile) {
   AccessibilityStaticTextInfo info(
       profile, GetViewName(view), GetViewContext(view));
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -291,6 +294,7 @@ void AccessibilityEventRouterViews::SendLinkNotification(
     ui::AXEvent event,
     Profile* profile) {
   AccessibilityLinkInfo info(profile, GetViewName(view), GetViewContext(view));
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -300,6 +304,7 @@ void AccessibilityEventRouterViews::SendMenuNotification(
     ui::AXEvent event,
     Profile* profile) {
   AccessibilityMenuInfo info(profile, GetViewName(view));
+  info.set_bounds(view->GetBoundsInScreen());
   SendMenuAccessibilityNotification(event, &info);
 }
 
@@ -330,6 +335,7 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
 
   AccessibilityMenuItemInfo info(
       profile, name, context, has_submenu, index, count);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -339,6 +345,7 @@ void AccessibilityEventRouterViews::SendTreeNotification(
     ui::AXEvent event,
     Profile* profile) {
   AccessibilityTreeInfo info(profile, GetViewName(view));
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -384,6 +391,7 @@ void AccessibilityEventRouterViews::SendTreeItemNotification(
   AccessibilityTreeItemInfo info(
       profile, name, context, depth, index, siblings_count, children_count,
       is_expanded);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -400,6 +408,7 @@ void AccessibilityEventRouterViews::SendTextfieldNotification(
   AccessibilityTextBoxInfo info(profile, name, context, password);
   std::string value = base::UTF16ToUTF8(state.value);
   info.SetValue(value, state.selection_start, state.selection_end);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -415,6 +424,7 @@ void AccessibilityEventRouterViews::SendComboboxNotification(
   std::string context = GetViewContext(view);
   AccessibilityComboBoxInfo info(
       profile, name, context, value, state.index, state.count);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -432,6 +442,7 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
       name,
       context,
       state.HasStateFlag(ui::AX_STATE_CHECKED));
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -454,6 +465,7 @@ void AccessibilityEventRouterViews::SendWindowNotification(
     window_text = base::UTF16ToUTF8(state.name);
 
   AccessibilityWindowInfo info(profile, window_text);
+  info.set_bounds(view->GetBoundsInScreen());
   SendWindowAccessibilityNotification(event, &info);
 }
 
@@ -473,6 +485,7 @@ void AccessibilityEventRouterViews::SendSliderNotification(
       name,
       context,
       value);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 
@@ -488,6 +501,7 @@ void AccessibilityEventRouterViews::SendAlertControlNotification(
   AccessibilityAlertInfo info(
       profile,
       name);
+  info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }
 

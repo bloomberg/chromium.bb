@@ -63,6 +63,14 @@ void AccessibilityControlInfo::SerializeToDict(
   dict->SetString(keys::kTypeKey, type());
   if (!context_.empty())
     dict->SetString(keys::kContextKey, context_);
+  if (!bounds_.IsEmpty()) {
+    base::DictionaryValue* bounds_value = new base::DictionaryValue();
+    bounds_value->SetInteger(keys::kLeft, bounds_.x());
+    bounds_value->SetInteger(keys::kTop, bounds_.y());
+    bounds_value->SetInteger(keys::kWidth, bounds_.width());
+    bounds_value->SetInteger(keys::kHeight, bounds_.height());
+    dict->Set(keys::kBoundsKey, bounds_value);
+  }
 }
 
 AccessibilityWindowInfo::AccessibilityWindowInfo(Profile* profile,

@@ -323,10 +323,10 @@ bool AccessibilityPrivateSetFocusRingFunction::RunSync() {
     base::DictionaryValue* rect_value = NULL;
     EXTENSION_FUNCTION_VALIDATE(rect_values->GetDictionary(i, &rect_value));
     int left, top, width, height;
-    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("left", &left));
-    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("top", &top));
-    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("width", &width));
-    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("height", &height));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger(keys::kLeft, &left));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger(keys::kTop, &top));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger(keys::kWidth, &width));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger(keys::kHeight, &height));
     rects.push_back(gfx::Rect(left, top, width, height));
   }
 

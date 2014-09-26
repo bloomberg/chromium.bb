@@ -124,6 +124,17 @@
         }
       },
       {
+        "id": "ScreenRect",
+        "type": "object",
+        "description": "Bounding rectangle in global screen coordinates.",
+        "properties": {
+          "left": {"type": "integer", "description": "Left coordinate in global screen coordinates."},
+          "top": {"type": "integer", "description": "Top coordinate in global screen coordinates."},
+          "width": {"type": "integer", "description": "Width in pixels."},
+          "height": {"type": "integer", "description": "Height in pixels."}
+        }
+      },
+      {
         "id": "AccessibilityObject",
         "type": "object",
         "description": "Parent class for accessibility information about an object.",
@@ -157,18 +168,12 @@
               { "$ref": "TreeDetails" },
               { "$ref": "TreeItemDetails" }
             ]
+          },
+          "bounds": {
+            "$ref": "ScreenRect",
+            "description": "The bounds of the object, in global screen coordinates.",
+            "optional": true
           }
-        }
-      },
-      {
-        "id": "ScreenRect",
-        "type": "object",
-        "description": "Bounding rectangle in global screen coordinates.",
-        "properties": {
-          "left": {"type": "integer", "description": "Left coordinate in global screen coordinates."},
-          "top": {"type": "integer", "description": "Top coordinate in global screen coordinates."},
-          "width": {"type": "integer", "description": "Width in pixels."},
-          "height": {"type": "integer", "description": "Height in pixels."}
         }
       }
     ],

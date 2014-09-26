@@ -162,6 +162,12 @@ cvox.AccessibilityApiHandler.prototype.setWebContext = function() {
   this.lastContext = '--internal-web--';
   this.editableTextHandler = null;
   this.editableTextName = '';
+
+  if (chrome.accessibilityPrivate.setFocusRing &&
+      cvox.ChromeVox.isChromeOS) {
+    // Clear the focus ring.
+    chrome.accessibilityPrivate.setFocusRing([]);
+  }
 };
 
 /**
@@ -399,6 +405,12 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
 cvox.AccessibilityApiHandler.prototype.onControlFocused = function(ctl) {
   if (!cvox.ChromeVox.isActive) {
     return;
+  }
+
+  if (ctl.bounds &&
+      chrome.accessibilityPrivate.setFocusRing &&
+      cvox.ChromeVox.isChromeOS) {
+    chrome.accessibilityPrivate.setFocusRing([ctl.bounds]);
   }
 
   // Call this first because it may clear this.editableTextHandler.
