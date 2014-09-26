@@ -268,9 +268,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._RunHWTestSuite(returncode=3, fails=True)
 
   def testHandleInfraErrorCodeForCanary(self):
-    """Tests that we pass canary on INFRA_FAILURE."""
+    """Tests that we fail canary on INFRA_FAILURE."""
     self._Prepare('x86-alex-release')
-    self._RunHWTestSuite(returncode=3, fails=False)
+    self._RunHWTestSuite(returncode=3, fails=True)
 
   def testWithSuiteWithFatalFailure(self):
     """Tests that we fail on ERROR."""
@@ -282,9 +282,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._RunHWTestSuite(returncode=1, fails=False)
 
   def testReturnTimeoutForCanary(self):
-    """Tests that we pass canary on SUITE_TIMEOUT."""
+    """Tests that we fail canary on SUITE_TIMEOUT."""
     self._Prepare('x86-alex-release')
-    self._RunHWTestSuite(returncode=4, fails=False)
+    self._RunHWTestSuite(returncode=4, fails=True)
 
   def testReturnTimeoutForCQ(self):
     """Tests that we fail CQ on SUITE_TIMEOUT."""
@@ -312,9 +312,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._RunHWTestSuite(returncode=5, fails=True)
 
   def testRaiseTimeoutForCanary(self):
-    """Canary should pass even if timeout exception is raised."""
+    """Canary should fail if timeout exception is raised."""
     self._Prepare('x86-alex-release')
-    self._RunHWTestSuite(timeout=True, fails=False)
+    self._RunHWTestSuite(timeout=True, fails=True)
 
   def testRaiseTimeoutForCQ(self):
     """CQ should fail if timeout exception is raised."""
@@ -326,18 +326,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._Prepare('falco-chrome-pfq')
     self._RunHWTestSuite(timeout=True, fails=True)
 
-  def testHandleLabDownAsWarningForCanary(self):
-    """Test that the stage passes with a warning if lab is down."""
-    self._Prepare('lumpy-release')
-    check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
-    check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
-    cros_build_lib.PrintBuildbotStepWarnings()
-    cros_build_lib.Warning(mox.IgnoreArg())
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testHandleLabDownAsFatalForCQ(self):
+  def testHandleLabDownAsFatal(self):
     """Test that the stage fails when lab is down."""
     self._Prepare('lumpy-paladin')
     commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndReturn(False)

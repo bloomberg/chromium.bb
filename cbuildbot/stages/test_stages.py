@@ -271,15 +271,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         logging.warning('HWTest did not run because the board was not '
                         'available in the lab yet')
         return self._HandleExceptionAsWarning(exc_info)
-    elif issubclass(exc_type, failures_lib.InfrastructureFailure):
-      # Tests did not run correctly or suite timed out before completion;
-      # builders that do not check in code should pass. Note that timeout
-      # could be caused by real bugs, but we ignore that for now so canaries
-      # don't fail frequently due to timeouts.
-      if not cbuildbot_config.IsPFQType(self._run.config.build_type):
-        logging.warning('HWTest did not complete due to infrastructure issues '
-                        '(%s)', exc_type)
-        return self._HandleExceptionAsWarning(exc_info)
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
 
