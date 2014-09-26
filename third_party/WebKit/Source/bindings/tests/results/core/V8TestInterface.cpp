@@ -1399,8 +1399,6 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     ScriptValue partialCallbackTypeArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         partialCallbackTypeArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);

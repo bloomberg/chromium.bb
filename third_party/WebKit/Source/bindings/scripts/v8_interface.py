@@ -902,9 +902,6 @@ def sort_and_groupby(l, key=None):
 
 # [Constructor]
 def constructor_context(interface, constructor):
-    arguments_need_try_catch = any(v8_methods.argument_needs_try_catch(constructor, argument)
-                                   for argument in constructor.arguments)
-
     # [RaisesException=Constructor]
     is_constructor_raises_exception = \
         interface.extended_attributes.get('RaisesException') == 'Constructor'
@@ -912,7 +909,6 @@ def constructor_context(interface, constructor):
     return {
         'arguments': [v8_methods.argument_context(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
-        'arguments_need_try_catch': arguments_need_try_catch,
         'cpp_type': cpp_template_type(
             cpp_ptr_type('RefPtr', 'RawPtr', gc_type(interface)),
             cpp_name(interface)),

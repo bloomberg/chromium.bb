@@ -5650,8 +5650,6 @@ static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackIn
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptValue voidCallbackFunctionArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodVoidCallbackFunctionArg(voidCallbackFunctionArg);
@@ -5673,8 +5671,6 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::Function
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptValue anyCallbackFunctionOptionalAnyArgArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         anyCallbackFunctionOptionalAnyArgArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodAnyCallbackFunctionOptionalAnyArg(anyCallbackFunctionOptionalAnyArgArg);

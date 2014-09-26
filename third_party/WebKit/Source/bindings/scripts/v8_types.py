@@ -565,50 +565,60 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
     # FIXME: Support union type.
     if idl_type.is_union_type:
-        return ''
+        return '/* no V8 -> C++ conversion for IDL union type: %s */' % idl_type.name
 
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
-
     idl_type = idl_type.preprocessed_type
+
+    if idl_type.base_type in ('void', 'object', 'EventHandler', 'EventListener'):
+        return '/* no V8 -> C++ conversion for IDL type: %s */' % idl_type.name
+
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate)
-    args = [variable_name, cpp_value]
-    if idl_type.base_type == 'DOMString':
-        if return_promise:
+    if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
+        # Types that need error handling and use one of a group of (C++) macros
+        # to take care of this.
+
+        args = [variable_name, cpp_value]
+
+        if idl_type.v8_conversion_needs_exception_state:
+            macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
+        elif return_promise:
             macro = 'TOSTRING_VOID_EXCEPTIONSTATE'
         else:
             macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
-    elif idl_type.v8_conversion_needs_exception_state:
-        macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
-    elif idl_type.v8_conversion_is_trivial:
-        assignment = '%s = %s' % (variable_name, cpp_value)
-        if declare_variable:
-            return '%s %s' % (this_cpp_type, assignment)
-        return assignment
-    else:
-        macro = 'TONATIVE_DEFAULT' if used_in_private_script else 'TONATIVE_VOID'
 
-    if macro.endswith('_EXCEPTIONSTATE'):
-        args.append('exceptionState')
-
-    if used_in_private_script:
-        args.append('false')
-
-    # Macros come in several variants, to minimize expensive creation of
-    # v8::TryCatch.
-    suffix = ''
-
-    if return_promise:
-        suffix += '_PROMISE'
-        args.append('info')
         if macro.endswith('_EXCEPTIONSTATE'):
-            args.append('ScriptState::current(%s)' % isolate)
+            args.append('exceptionState')
 
+        if used_in_private_script:
+            args.append('false')
+
+        suffix = ''
+
+        if return_promise:
+            suffix += '_PROMISE'
+            args.append('info')
+            if macro.endswith('_EXCEPTIONSTATE'):
+                args.append('ScriptState::current(%s)' % isolate)
+
+        if declare_variable:
+            args.insert(0, this_cpp_type)
+        else:
+            suffix += '_INTERNAL'
+
+        return '%s(%s)' % (macro + suffix, ', '.join(args))
+
+    # Types that don't need error handling, and simply assign a value to the
+    # local variable.
+
+    if not idl_type.v8_conversion_is_trivial:
+        raise Exception('unclassified V8 -> C++ conversion for IDL type: %s' % idl_type.name)
+
+    assignment = '%s = %s' % (variable_name, cpp_value)
     if declare_variable:
-        args.insert(0, this_cpp_type)
-    else:
-        suffix += '_INTERNAL'
+        return '%s %s' % (this_cpp_type, assignment)
+    return assignment
 
-    return '%s(%s)' % (macro + suffix, ', '.join(args))
 
 IdlTypeBase.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 

@@ -52,34 +52,6 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 ])
 
 
-def argument_needs_try_catch(method, argument):
-    idl_type = argument.idl_type
-    base_type = idl_type.base_type
-
-    return not(
-        # These cases are handled by separate code paths in the
-        # generate_argument() macro in Source/bindings/templates/methods.cpp.
-        idl_type.is_callback_interface or
-        base_type == 'SerializedScriptValue' or
-        (argument.is_variadic and idl_type.is_wrapper_type) or
-        # Variadic arguments use toImplArguments() with throws excentions via
-        # its ExceptionState& argument.
-        argument.is_variadic or
-        # String and enumeration arguments converted using one of the
-        # TOSTRING_* macros except for _PROMISE variants in
-        # Source/bindings/core/v8/V8BindingMacros.h don't use a v8::TryCatch.
-        ((base_type == 'DOMString' or idl_type.is_enum) and
-         not method.returns_promise) or
-        # Conversion that take an ExceptionState& argument throw all their
-        # exceptions via it, and doesn't need/use a TryCatch, except if the
-        # argument has [Clamp], in which case it uses a separate code path in
-        # Source/bindings/templates/methods.cpp, which *does* use a TryCatch.
-        argument_conversion_needs_exception_state(method, argument) or
-        # A trivial conversion cannot throw exceptions at all, so doesn't need a
-        # TryCatch to catch them.
-        idl_type.v8_conversion_is_trivial)
-
-
 def use_local_result(method):
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
@@ -142,17 +114,12 @@ def method_context(interface, method):
 
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    arguments_need_try_catch = (
-        any(argument_needs_try_catch(method, argument)
-            for argument in arguments))
-
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [argument_context(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
         'argument_declarations_for_private_script':
             argument_declarations_for_private_script(interface, method),
-        'arguments_need_try_catch': arguments_need_try_catch,
         'conditional_string': v8_utilities.conditional_string(method),
         'cpp_type': (v8_types.cpp_template_type('Nullable', idl_type.cpp_type)
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),

@@ -63,10 +63,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {{generate_argument_var_declaration(argument)}};
 {% endfor %}
 {
-    {% if method.arguments_need_try_catch %}
-    v8::TryCatch block;
-    V8RethrowTryCatchScope rethrow(block);
-    {% endif %}
     {% for argument in method.arguments %}
     {% if argument.default_value %}
     if (!info[{{argument.index}}]->IsUndefined()) {
