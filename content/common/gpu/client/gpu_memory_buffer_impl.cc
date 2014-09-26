@@ -27,6 +27,7 @@ bool GpuMemoryBufferImpl::IsFormatValid(unsigned internalformat) {
   switch (internalformat) {
     case GL_BGRA8_EXT:
     case GL_RGBA8_OES:
+    case GL_RGB8_OES:
       return true;
     default:
       return false;
@@ -49,6 +50,7 @@ size_t GpuMemoryBufferImpl::BytesPerPixel(unsigned internalformat) {
   switch (internalformat) {
     case GL_BGRA8_EXT:
     case GL_RGBA8_OES:
+    case GL_RGB8_OES:
       return 4;
     default:
       NOTREACHED();

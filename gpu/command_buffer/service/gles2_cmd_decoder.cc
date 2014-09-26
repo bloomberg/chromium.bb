@@ -1748,6 +1748,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool back_buffer_has_depth_;
   bool back_buffer_has_stencil_;
 
+  bool surfaceless_;
+
   // Backbuffer attachments that are currently undefined.
   uint32 backbuffer_needs_clear_bits_;
 
@@ -2304,6 +2306,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_color_format_(0),
       back_buffer_has_depth_(false),
       back_buffer_has_stencil_(false),
+      surfaceless_(false),
       backbuffer_needs_clear_bits_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
@@ -2368,6 +2371,8 @@ bool GLES2DecoderImpl::Initialize(
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
+
+  surfaceless_ = surface->IsSurfaceless();
 
   set_initialized();
   gpu_tracer_.reset(new GPUTracer(this));
@@ -2626,17 +2631,19 @@ bool GLES2DecoderImpl::Initialize(
     // make it appear RGB. If on the other hand we ask for RGBA nd get RGB we
     // can't do anything about that.
 
-    GLint v = 0;
-    glGetIntegerv(GL_ALPHA_BITS, &v);
-    // This checks if the user requested RGBA and we have RGBA then RGBA. If the
-    // user requested RGB then RGB. If the user did not specify a preference
-    // than use whatever we were given. Same for DEPTH and STENCIL.
-    back_buffer_color_format_ =
-        (attrib_parser.alpha_size != 0 && v > 0) ? GL_RGBA : GL_RGB;
-    glGetIntegerv(GL_DEPTH_BITS, &v);
-    back_buffer_has_depth_ = attrib_parser.depth_size != 0 && v > 0;
-    glGetIntegerv(GL_STENCIL_BITS, &v);
-    back_buffer_has_stencil_ = attrib_parser.stencil_size != 0 && v > 0;
+    if (!surfaceless_) {
+      GLint v = 0;
+      glGetIntegerv(GL_ALPHA_BITS, &v);
+      // This checks if the user requested RGBA and we have RGBA then RGBA. If
+      // the user requested RGB then RGB. If the user did not specify a
+      // preference than use whatever we were given. Same for DEPTH and STENCIL.
+      back_buffer_color_format_ =
+          (attrib_parser.alpha_size != 0 && v > 0) ? GL_RGBA : GL_RGB;
+      glGetIntegerv(GL_DEPTH_BITS, &v);
+      back_buffer_has_depth_ = attrib_parser.depth_size != 0 && v > 0;
+      glGetIntegerv(GL_STENCIL_BITS, &v);
+      back_buffer_has_stencil_ = attrib_parser.stencil_size != 0 && v > 0;
+    }
   }
 
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
@@ -2679,7 +2686,7 @@ bool GLES2DecoderImpl::Initialize(
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-  bool call_gl_clear = true;
+  bool call_gl_clear = !surfaceless_;
 #if defined(OS_ANDROID)
   // Temporary workaround for Android WebView because this clear ignores the
   // clip and corrupts that external UI of the App. Not calling glClear is ok
@@ -3123,6 +3130,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     Framebuffer* framebuffer,
     GLenum target, const char* func_name) {
   if (!framebuffer) {
+    if (surfaceless_)
+      return false;
     if (backbuffer_needs_clear_bits_) {
       glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
           offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);

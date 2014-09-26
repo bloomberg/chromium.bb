@@ -106,6 +106,7 @@ bool GpuMemoryBufferImplOzoneNativeBuffer::IsFormatSupported(
     unsigned internalformat) {
   switch (internalformat) {
     case GL_RGBA8_OES:
+    case GL_RGB8_OES:
       return true;
     default:
       return false;

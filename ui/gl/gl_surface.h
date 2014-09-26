@@ -122,6 +122,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                     const Rect& bounds_rect,
                                     const RectF& crop_rect);
 
+  virtual bool IsSurfaceless() const;
+
   // Create a GL surface that renders directly to a view.
   static scoped_refptr<GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window);
@@ -181,6 +183,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
                                     GLImage* image,
                                     const Rect& bounds_rect,
                                     const RectF& crop_rect) OVERRIDE;
+  virtual bool IsSurfaceless() const OVERRIDE;
 
   GLSurface* surface() const { return surface_.get(); }
 

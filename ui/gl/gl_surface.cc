@@ -235,6 +235,10 @@ bool GLSurface::ScheduleOverlayPlane(int z_order,
   return false;
 }
 
+bool GLSurface::IsSurfaceless() const {
+  return false;
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -350,6 +354,10 @@ bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
                                             const RectF& crop_rect) {
   return surface_->ScheduleOverlayPlane(
       z_order, transform, image, bounds_rect, crop_rect);
+}
+
+bool GLSurfaceAdapter::IsSurfaceless() const {
+  return surface_->IsSurfaceless();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
