@@ -852,9 +852,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   blink::initialize(webkit_platform_support_.get());
-  main_thread_compositor_task_runner_ =
-      make_scoped_refptr(new SchedulerProxyTaskRunner<
-          &blink::WebSchedulerProxy::postCompositorTask>());
+  main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
