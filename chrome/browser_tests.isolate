@@ -107,15 +107,21 @@
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/lib32/',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
           '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
+        ],
+      },
+    }],
+    ['OS=="mac" and target_arch=="ia32"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/lib32/',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
         ],
       },
     }],

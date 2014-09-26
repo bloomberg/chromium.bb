@@ -180,7 +180,7 @@ def post_process_deps(build_dir, dependencies):
     # This script is only for adding new binaries that are created as part of
     # the component build.
     ext = os.path.splitext(i)[1]
-    if ext not in ['.dll', '.so', '.dylib']:
+    if ext not in ['.dll', '.nexe', '.so', '.dylib']:
       return False
 
     # Check for execute access and strip directories. This gets rid of all the
