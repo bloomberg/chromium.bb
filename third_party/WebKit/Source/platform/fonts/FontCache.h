@@ -118,7 +118,7 @@ public:
 #endif
 
 #if OS(ANDROID)
-    static AtomicString getGenericFamilyNameForScript(const AtomicString& familyName, UScriptCode);
+    static AtomicString getGenericFamilyNameForScript(const AtomicString& familyName, const FontDescription&);
 #else
     struct PlatformFallbackFont {
         String name;

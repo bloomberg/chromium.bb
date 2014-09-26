@@ -463,6 +463,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
 void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, RenderStyle* documentStyle)
 {
     FontDescription fontDescription = FontDescription();
+    fontDescription.setLocale(documentStyle->locale());
     fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
 
     setFontFamilyToStandard(fontDescription, m_document);
