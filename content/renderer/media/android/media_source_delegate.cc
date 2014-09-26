@@ -81,13 +81,12 @@ MediaSourceDelegate::~MediaSourceDelegate() {
   DCHECK(!video_stream_);
 }
 
-void MediaSourceDelegate::Destroy() {
+void MediaSourceDelegate::Stop(const base::Closure& stop_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
 
   if (!chunk_demuxer_) {
     DCHECK(!demuxer_client_);
-    delete this;
     return;
   }
 
@@ -100,12 +99,11 @@ void MediaSourceDelegate::Destroy() {
 
   chunk_demuxer_->Shutdown();
 
-  // |this| will be transferred to the callback StopDemuxer() and
-  // OnDemuxerStopDone(). They own |this| and OnDemuxerStopDone() will delete
-  // it when called, hence using base::Unretained(this) is safe here.
-  media_task_runner_->PostTask(FROM_HERE,
-                        base::Bind(&MediaSourceDelegate::StopDemuxer,
-                        base::Unretained(this)));
+  // Continue to stop objects on the media thread.
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &MediaSourceDelegate::StopDemuxer, base::Unretained(this), stop_cb));
 }
 
 bool MediaSourceDelegate::IsVideoEncrypted() {
@@ -122,7 +120,8 @@ base::Time MediaSourceDelegate::GetTimelineOffset() const {
   return chunk_demuxer_->GetTimelineOffset();
 }
 
-void MediaSourceDelegate::StopDemuxer() {
+void MediaSourceDelegate::StopDemuxer(const base::Closure& stop_cb) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(chunk_demuxer_);
 
@@ -142,11 +141,9 @@ void MediaSourceDelegate::StopDemuxer() {
   chunk_demuxer_->Stop();
   chunk_demuxer_.reset();
 
-  // The callback DeleteSelf() owns |this| and will delete it when called.
-  // Hence using base::Unretained(this) is safe here.
-  media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaSourceDelegate::DeleteSelf, base::Unretained(this)));
+  // |this| may be destroyed at this point in time as a result of running
+  // |stop_cb|.
+  stop_cb.Run();
 }
 
 void MediaSourceDelegate::InitializeMediaSource(
@@ -628,12 +625,6 @@ void MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams() {
   seeking_ = false;
   doing_browser_seek_ = false;
   demuxer_client_->DemuxerSeekDone(demuxer_client_id_, browser_seek_time_);
-}
-
-void MediaSourceDelegate::DeleteSelf() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
-  delete this;
 }
 
 void MediaSourceDelegate::NotifyDemuxerReady() {

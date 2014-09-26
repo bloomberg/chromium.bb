@@ -47,20 +47,12 @@ class MediaSourceDelegate : public media::DemuxerHost {
       UpdateNetworkStateCB;
   typedef base::Callback<void(const base::TimeDelta&)> DurationChangeCB;
 
-  // Helper class used by scoped_ptr to destroy an instance of
-  // MediaSourceDelegate.
-  class Destroyer {
-   public:
-    inline void operator()(void* media_source_delegate) const {
-      static_cast<MediaSourceDelegate*>(media_source_delegate)->Destroy();
-    }
-  };
-
   MediaSourceDelegate(
       RendererDemuxerAndroid* demuxer_client,
       int demuxer_client_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<media::MediaLog> media_log);
+  virtual ~MediaSourceDelegate();
 
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
   // this object after this call.
@@ -101,8 +93,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   void OnReadFromDemuxer(media::DemuxerStream::Type type);
 
-  // Called by the Destroyer to destroy an instance of this object.
-  void Destroy();
+  // Must be called explicitly before |this| can be destroyed.
+  void Stop(const base::Closure& stop_cb);
 
   // Called on the main thread to check whether the video stream is encrypted.
   bool IsVideoEncrypted();
@@ -111,9 +103,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   base::Time GetTimelineOffset() const;
 
  private:
-  // This is private to enforce use of the Destroyer.
-  virtual ~MediaSourceDelegate();
-
   // Methods inherited from DemuxerHost.
   virtual void AddBufferedTimeRange(base::TimeDelta start,
                                     base::TimeDelta end) OVERRIDE;
@@ -146,15 +135,14 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void ResetVideoDecryptingDemuxerStream();
   void FinishResettingDecryptingDemuxerStreams();
 
-  // Helper for deleting |this| on the main thread.
-  void DeleteSelf();
-
   void OnDemuxerOpened();
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
   void NotifyDemuxerReady();
 
-  void StopDemuxer();
+  // Stops and clears objects on the media thread.
+  void StopDemuxer(const base::Closure& stop_cb);
+
   void InitializeDemuxer();
   void SeekInternal(const base::TimeDelta& seek_time);
   // Reads an access unit from the demuxer stream |stream| and stores it in

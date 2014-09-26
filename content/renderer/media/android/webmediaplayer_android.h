@@ -455,9 +455,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   bool force_use_overlay_embedded_video_;
 #endif  // defined(VIDEO_HOLE)
 
-  scoped_ptr<MediaSourceDelegate,
-             MediaSourceDelegate::Destroyer> media_source_delegate_;
-
   MediaPlayerHostMsg_Initialize_Type player_type_;
 
   // Whether the browser is currently connected to a remote media player.
@@ -502,6 +499,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Tracks the most recent media time update and provides interpolated values
   // as playback progresses.
   media::TimeDeltaInterpolator interpolator_;
+
+  scoped_ptr<MediaSourceDelegate> media_source_delegate_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
