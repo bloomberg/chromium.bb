@@ -163,6 +163,28 @@ Are Variadic macros nonstandard?</a></td>
 
 <p>This section lists features that are not allowed to be used yet.
 
+<table id="banned_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature or Library</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td>Rvalue References (and Move Semantics)</td>
+<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
+<td>Reference that only binds to a temporary object</td>
+<td>TODO: documentation link</td>
+<td>To be revisited in the future.  Allowed in exceptional cases where approved by the OWNERS of src/styleguide/c++/.</td>
+</tr>
+
+</tbody>
+</table>
+
 <h3 id="blacklist_banned">C++11 Banned Features</h3>
 
 <p>This section will list C++11 features that are not allowed in the Chromium
@@ -411,14 +433,6 @@ Non-static data members</a></td>
 sequences, easing parsing in regex expressions, for example</td>
 <td>TODO: documentation link</td>
 <td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Rvalue References (and Move Semantics)</td>
-<td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
-<td>Reference that only binds to a temporary object</td>
-<td>TODO: documentation link</td>
-<td></td>
 </tr>
 
 <tr>
