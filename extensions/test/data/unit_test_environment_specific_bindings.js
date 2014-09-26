@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var nativesPromise = requireAsync('testNatives');
 var sendRequestNatives = requireNative('sendRequest');
 
 function registerHooks(api) {
@@ -10,19 +9,19 @@ function registerHooks(api) {
   var apiFunctions = api.apiFunctions;
 
   apiFunctions.setHandleRequest('notifyPass', function() {
-    nativesPromise.then(function(natives) {
+    requireAsync('testNatives').then(function(natives) {
       natives.NotifyPass();
     });
   });
 
   apiFunctions.setHandleRequest('notifyFail', function(message) {
-    nativesPromise.then(function(natives) {
+    requireAsync('testNatives').then(function(natives) {
       natives.NotifyFail(message);
     });
   });
 
   apiFunctions.setHandleRequest('log', function() {
-    nativesPromise.then(function(natives) {
+    requireAsync('testNatives').then(function(natives) {
       natives.Log($Array.join(arguments, ' '));
     });
   });
