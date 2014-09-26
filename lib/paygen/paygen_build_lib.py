@@ -844,13 +844,21 @@ class _PaygenBuild(object):
       A (possibly empty) list of payload URIs.
     """
     if version in self._version_to_full_test_payloads:
+      # Serve from cache, if possible.
       return self._version_to_full_test_payloads[version]
 
     payload_search_uri = gspaths.ChromeosReleases.PayloadUri(
         self._build.channel, self._build.board, version, '*',
         bucket=self._build.bucket)
-    full_test_payloads = [u for u in urilib.ListFiles(payload_search_uri)
-                          if not u.endswith('.log')]
+
+    payload_candidate = urilib.ListFiles(payload_search_uri)
+
+    # We create related files for each payload that have the payload name
+    # plus these extensions. Skip these files.
+    NOT_PAYLOAD = ('.json', '.log')
+    full_test_payloads = [u for u in payload_candidate
+                          if not any([u.endswith(n) for n in NOT_PAYLOAD])]
+    # Store in cache.
     self._version_to_full_test_payloads[version] = full_test_payloads
     return full_test_payloads
 
