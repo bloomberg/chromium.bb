@@ -32,8 +32,13 @@ cvox.ConsoleTts.prototype.speak = function(textString, queueMode, properties) {
     var logStr = 'Speak';
     if (queueMode == cvox.AbstractTts.QUEUE_MODE_FLUSH) {
       logStr += ' (I)';
+    } else if (queueMode == cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH) {
+      logStr += ' (C)';
     } else {
       logStr += ' (Q)';
+    }
+    if (properties && properties.category) {
+      logStr += ' category=' + properties.category;
     }
     logStr += ' "' + textString + '"';
     window['console']['log'](logStr);
