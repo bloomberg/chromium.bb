@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
@@ -360,6 +361,7 @@ class MediaResourceGetter {
         return info.getType();
     }
 
+    @SuppressLint("SdCardPath")
     private List<String> getRawAcceptableDirectories(Context context) {
         List<String> result = new ArrayList<String>();
         result.add("/mnt/sdcard/");
