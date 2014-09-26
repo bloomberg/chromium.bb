@@ -30,7 +30,8 @@ enum SRTPromptHistogramValue {
 };
 
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value) {
-  UMA_HISTOGRAM_ENUMERATION("SRTPrompt", value, SRT_PROMPT_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "SoftwareReporter.PromptUsage", value, SRT_PROMPT_MAX);
 }
 
 }  // namespace

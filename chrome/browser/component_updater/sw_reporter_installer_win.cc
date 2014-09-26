@@ -141,23 +141,23 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
     Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
     if (browser) {
       Profile* profile = browser->profile();
+      // Don't show the prompt again if it's been shown before for this profile.
       DCHECK(profile);
-      // Now that we have a profile, make sure we have a tabbed browser since we
-      // need to anchor the bubble to the toolbar's wrench menu. Create one if
-      // none exist already.
-      if (browser->type() != Browser::TYPE_TABBED) {
-        browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
-        if (!browser)
-          browser = new Browser(Browser::CreateParams(profile, desktop_type));
-      }
       const std::string prompt_version =
           profile->GetPrefs()->GetString(prefs::kSwReporterPromptVersion);
-      // Don't show the prompt again if it's been shown before.
       if (prompt_version.empty()) {
         profile->GetPrefs()->SetString(prefs::kSwReporterPromptVersion,
                                        version);
         profile->GetPrefs()->SetInteger(prefs::kSwReporterPromptReason,
                                         exit_code);
+        // Now that we have a profile, make sure we have a tabbed browser since
+        // we need to anchor the bubble to the toolbar's wrench menu. Create one
+        // if none exist already.
+        if (browser->type() != Browser::TYPE_TABBED) {
+          browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+          if (!browser)
+            browser = new Browser(Browser::CreateParams(profile, desktop_type));
+        }
         GlobalErrorService* global_error_service =
             GlobalErrorServiceFactory::GetForProfile(profile);
         SRTGlobalError* global_error = new SRTGlobalError(global_error_service);
