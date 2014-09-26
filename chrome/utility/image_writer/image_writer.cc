@@ -125,6 +125,7 @@ void ImageWriter::WriteChunk() {
     // aligned writes to devices.
     int bytes_to_write = bytes_read + (kMemoryAlignment - 1) -
                          (bytes_read - 1) % kMemoryAlignment;
+    DCHECK_EQ(0, bytes_to_write % kMemoryAlignment);
     int bytes_written =
         device_file_.Write(bytes_processed_, buffer.get(), bytes_to_write);
 

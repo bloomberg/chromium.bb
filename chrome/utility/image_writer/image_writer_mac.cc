@@ -95,9 +95,15 @@ bool ImageWriter::OpenDevice() {
   // Find the file path to open.
   base::FilePath real_device_path;
   if (device_path_.IsAbsolute()) {
+    // This only occurs for tests where the device path is mocked with a
+    // temporary file.
     real_device_path = device_path_;
   } else {
-    real_device_path = base::FilePath("/dev").Append(device_path_);
+    // Get the raw device file. Writes need to be in multiples of
+    // DAMediaBlockSize (usually 512). This is fine since WriteChunk() writes in
+    // multiples of kMemoryAlignment.
+    real_device_path =
+        base::FilePath("/dev").Append("r" + device_path_.BaseName().value());
   }
 
   // Build the command line.
