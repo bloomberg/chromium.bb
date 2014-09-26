@@ -188,13 +188,22 @@ unsigned WidthIterator::advanceInternal(TextIterator& textIterator, GlyphBuffer*
     while (textIterator.consume(charData.character, charData.clusterLength)) {
         charData.characterOffset = textIterator.currentCharacter();
 
-        const GlyphData glyphData = glyphDataForCharacter(charData, normalizeSpace);
+        GlyphData glyphData = glyphDataForCharacter(charData, normalizeSpace);
+
+        // Some fonts do not have a glyph for zero-width-space,
+        // in that case use the space character and override the width.
+        float width;
+        if (!glyphData.glyph && Character::treatAsZeroWidthSpaceInComplexScript(charData.character)) {
+            charData.character = space;
+            glyphData = glyphDataForCharacter(charData);
+            width = 0;
+        } else {
+            width = characterWidth(charData.character, glyphData);
+        }
+
         Glyph glyph = glyphData.glyph;
         const SimpleFontData* fontData = glyphData.fontData;
         ASSERT(fontData);
-
-        // Now that we have a glyph and font data, get its width.
-        float width = characterWidth(charData.character, glyphData);
 
         if (m_fallbackFonts && lastFontData != fontData && width) {
             lastFontData = fontData;
