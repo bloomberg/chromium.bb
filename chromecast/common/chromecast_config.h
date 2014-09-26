@@ -37,17 +37,20 @@ class ChromecastConfig {
   // Saves configs into configuration file.
   void Save() const;
 
-  // Returns string value for key, if present.
+  // Returns string value for |key|, if present.
   const std::string GetValue(const std::string& key) const;
 
-  // Returns integer value for key, if present.
+  // Returns integer value for |key|, if present.
   const int GetIntValue(const std::string& key) const;
 
-  // Sets new string value for key.
+  // Sets new string value for |key|.
   void SetValue(const std::string& key, const std::string& value) const;
 
-  // Sets new int value for key.
+  // Sets new int value for |key|.
   void SetIntValue(const std::string& key, int value) const;
+
+  // Whether or not a value has been set for |key|.
+  bool HasValue(const std::string& key) const;
 
   scoped_refptr<base::SequencedWorkerPool> worker_pool() const {
     return worker_pool_;

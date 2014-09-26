@@ -138,4 +138,9 @@ void ChromecastConfig::SetIntValue(const std::string& key, int value) const {
   }
 }
 
+bool ChromecastConfig::HasValue(const std::string& key) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return pref_service_->HasPrefPath(key.c_str());
+}
+
 }  // namespace chromecast
