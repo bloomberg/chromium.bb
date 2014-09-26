@@ -48,17 +48,10 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
 
-  // Returns a new CastSocket that connects to |ip_endpoint| with authentication
-  // |channel_auth| and is to be owned by |extension_id|.
-  scoped_ptr<cast_channel::CastSocket> CreateCastSocket(
-      const std::string& extension_id,
-      const net::IPEndPoint& ip_endpoint,
-      cast_channel::ChannelAuthType channel_auth,
-      const base::TimeDelta& timeout);
-
   // Returns a pointer to the Logger member variable.
   // TODO(imcheng): Consider whether it is possible for this class to own the
-  // CastSockets and make this class the sole owner of Logger. Alternatively,
+  // CastSockets and make this class the sole owner of Logger.
+  // Alternatively,
   // consider making Logger not ref-counted by passing a weak
   // reference of Logger to the CastSockets instead.
   scoped_refptr<cast_channel::Logger> GetLogger();
@@ -66,6 +59,10 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // Sets the CastSocket instance to be returned by CreateCastSocket for
   // testing.
   void SetSocketForTest(scoped_ptr<cast_channel::CastSocket> socket_for_test);
+
+  // Returns a test CastSocket instance, if it is defined.
+  // Otherwise returns a scoped_ptr with a NULL ptr value.
+  scoped_ptr<cast_channel::CastSocket> GetSocketForTest();
 
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;

@@ -62,6 +62,17 @@ bool MessageInfoToCastMessage(const MessageInfo& message,
   return message_proto->IsInitialized();
 }
 
+bool IsCastMessageValid(const CastMessage& message_proto) {
+  if (message_proto.namespace_().empty() || message_proto.source_id().empty() ||
+      message_proto.destination_id().empty()) {
+    return false;
+  }
+  return (message_proto.payload_type() == CastMessage_PayloadType_STRING &&
+          message_proto.has_payload_utf8()) ||
+         (message_proto.payload_type() == CastMessage_PayloadType_BINARY &&
+          message_proto.has_payload_binary());
+}
+
 bool CastMessageToMessageInfo(const CastMessage& message_proto,
                               MessageInfo* message) {
   DCHECK(message);

@@ -209,9 +209,8 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
 void CastSocket::PostTaskToStartConnectLoop(int result) {
   DCHECK(CalledOnValidThread());
   DCHECK(connect_loop_callback_.IsCancelled());
-  connect_loop_callback_.Reset(base::Bind(&CastSocket::DoConnectLoop,
-                                          base::Unretained(this),
-                                          result));
+  connect_loop_callback_.Reset(
+      base::Bind(&CastSocket::DoConnectLoop, base::Unretained(this), result));
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          connect_loop_callback_.callback());
 }
@@ -647,8 +646,8 @@ int CastSocket::DoWriteError(int result) {
 void CastSocket::PostTaskToStartReadLoop() {
   DCHECK(CalledOnValidThread());
   DCHECK(read_loop_callback_.IsCancelled());
-  read_loop_callback_.Reset(base::Bind(&CastSocket::StartReadLoop,
-                                       base::Unretained(this)));
+  read_loop_callback_.Reset(
+      base::Bind(&CastSocket::StartReadLoop, base::Unretained(this)));
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          read_loop_callback_.callback());
 }
@@ -862,7 +861,8 @@ void CastSocket::SetWriteState(proto::WriteState write_state) {
 }
 
 CastSocket::WriteRequest::WriteRequest(const net::CompletionCallback& callback)
-  : callback(callback) { }
+    : callback(callback) {
+}
 
 bool CastSocket::WriteRequest::SetContent(const CastMessage& message_proto) {
   DCHECK(!io_buffer.get());
@@ -876,7 +876,9 @@ bool CastSocket::WriteRequest::SetContent(const CastMessage& message_proto) {
   return true;
 }
 
-CastSocket::WriteRequest::~WriteRequest() { }
+CastSocket::WriteRequest::~WriteRequest() {
+}
+
 }  // namespace cast_channel
 }  // namespace core_api
 }  // namespace extensions

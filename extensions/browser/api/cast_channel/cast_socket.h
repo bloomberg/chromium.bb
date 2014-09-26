@@ -47,11 +47,12 @@ class MessageFramer;
 //
 // NOTE: Not called "CastChannel" to reduce confusion with the generated API
 // code.
+// TODO(kmarshall): Inherit from CastSocket and rename to CastSocketImpl.
 class CastSocket : public ApiResource {
  public:
-  // Object to be informed of incoming messages and errors.  The CastSocket that
-  // owns the delegate must not be deleted by it, only by the ApiResourceManager
-  // or in the callback to Close().
+  // Object to be informed of incoming messages and errors.  The CastSocket
+  // that owns the delegate must not be deleted by it, only by the
+  // ApiResourceManager or in the callback to Close().
   class Delegate {
    public:
     // An error occurred on the channel. |last_errors| contains the last errors

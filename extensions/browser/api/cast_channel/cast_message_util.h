@@ -19,6 +19,9 @@ struct MessageInfo;
 bool MessageInfoToCastMessage(const MessageInfo& message,
                               CastMessage* message_proto);
 
+// Checks if the contents of |message_proto| are semantically valid.
+bool IsCastMessageValid(const CastMessage& message_proto);
+
 // Fills |message| from |message_proto| and returns true on success.
 bool CastMessageToMessageInfo(const CastMessage& message_proto,
                               MessageInfo* message);

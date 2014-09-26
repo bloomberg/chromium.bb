@@ -80,8 +80,8 @@ class MockCastSocketDelegate : public CastSocket::Delegate {
                void(const CastSocket* socket,
                     ChannelError error,
                     const LastErrors& last_errors));
-  MOCK_METHOD2(OnMessage, void(const CastSocket* socket,
-                               const MessageInfo& message));
+  MOCK_METHOD2(OnMessage,
+               void(const CastSocket* socket, const MessageInfo& message));
 };
 
 class MockTCPSocket : public net::TCPClientSocket {
@@ -204,8 +204,7 @@ class TestCastSocket : public CastSocket {
     return msg.length() - MessageFramer::MessageHeader::header_size();
   }
 
-  virtual ~TestCastSocket() {
-  }
+  virtual ~TestCastSocket() {}
 
   // Helpers to set mock results for various operations.
   void SetupTcp1Connect(net::IoMode mode, int result) {
