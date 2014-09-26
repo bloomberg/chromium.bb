@@ -7,8 +7,6 @@ package org.chromium.media;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
-import android.hardware.Camera.PreviewCallback;
 import android.opengl.GLES20;
 import android.util.Log;
 import android.view.Surface;
@@ -26,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
  **/
 @JNINamespace("media")
 @SuppressWarnings("deprecation")
-public abstract class VideoCapture implements PreviewCallback {
+public abstract class VideoCapture implements android.hardware.Camera.PreviewCallback {
 
     protected static class CaptureFormat {
         int mWidth;
@@ -59,7 +57,7 @@ public abstract class VideoCapture implements PreviewCallback {
         }
     }
 
-    protected Camera mCamera;
+    protected android.hardware.Camera mCamera;
     protected CaptureFormat mCaptureFormat = null;
     // Lock to mutually exclude execution of OnPreviewFrame {start/stop}Capture.
     protected ReentrantLock mPreviewBufferLock = new ReentrantLock();
@@ -92,13 +90,13 @@ public abstract class VideoCapture implements PreviewCallback {
         Log.d(TAG, "allocate: requested (" + width + "x" + height + ")@" +
                 frameRate + "fps");
         try {
-            mCamera = Camera.open(mId);
+            mCamera = android.hardware.Camera.open(mId);
         } catch (RuntimeException ex) {
             Log.e(TAG, "allocate: Camera.open: " + ex);
             return false;
         }
 
-        Camera.CameraInfo cameraInfo = getCameraInfo(mId);
+        android.hardware.Camera.CameraInfo cameraInfo = getCameraInfo(mId);
         if (cameraInfo == null) {
             mCamera.release();
             mCamera = null;
@@ -111,7 +109,7 @@ public abstract class VideoCapture implements PreviewCallback {
         Log.d(TAG, "allocate: orientation dev=" + mDeviceOrientation +
                   ", cam=" + mCameraOrientation + ", facing=" + mCameraFacing);
 
-        Camera.Parameters parameters = getCameraParameters(mCamera);
+        android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
         if (parameters == null) {
             mCamera = null;
             return false;
@@ -139,12 +137,12 @@ public abstract class VideoCapture implements PreviewCallback {
         Log.d(TAG, "allocate: fps set to " + frameRate);
 
         // Calculate size.
-        List<Camera.Size> listCameraSize =
+        List<android.hardware.Camera.Size> listCameraSize =
                 parameters.getSupportedPreviewSizes();
         int minDiff = Integer.MAX_VALUE;
         int matchedWidth = width;
         int matchedHeight = height;
-        for (Camera.Size size : listCameraSize) {
+        for (android.hardware.Camera.Size size : listCameraSize) {
             int diff = Math.abs(size.width - width) +
                        Math.abs(size.height - height);
             Log.d(TAG, "allocate: supported (" +
@@ -288,7 +286,7 @@ public abstract class VideoCapture implements PreviewCallback {
             int width,
             int height,
             int frameRate,
-            Camera.Parameters cameraParameters);
+            android.hardware.Camera.Parameters cameraParameters);
 
     // Local hook to allow derived classes to configure and plug capture
     // buffers if needed.
@@ -296,7 +294,7 @@ public abstract class VideoCapture implements PreviewCallback {
 
     // Local method to be overriden with the particular setPreviewCallback to be
     // used in the implementations.
-    abstract void setPreviewCallback(Camera.PreviewCallback cb);
+    abstract void setPreviewCallback(android.hardware.Camera.PreviewCallback cb);
 
     @CalledByNative
     public int queryWidth() {
@@ -357,24 +355,25 @@ public abstract class VideoCapture implements PreviewCallback {
             int length,
             int rotation);
 
-    protected static Camera.Parameters getCameraParameters(Camera camera) {
-        Camera.Parameters parameters;
+    protected static android.hardware.Camera.Parameters getCameraParameters(
+            android.hardware.Camera camera) {
+        android.hardware.Camera.Parameters parameters;
         try {
             parameters = camera.getParameters();
         } catch (RuntimeException ex) {
-            Log.e(TAG, "getCameraParameters: Camera.getParameters: " + ex);
+            Log.e(TAG, "getCameraParameters: android.hardware.Camera.getParameters: " + ex);
             camera.release();
             return null;
         }
         return parameters;
     }
 
-    private Camera.CameraInfo getCameraInfo(int id) {
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+    private android.hardware.Camera.CameraInfo getCameraInfo(int id) {
+        android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
         try {
-            Camera.getCameraInfo(id, cameraInfo);
+            android.hardware.Camera.getCameraInfo(id, cameraInfo);
         } catch (RuntimeException ex) {
-            Log.e(TAG, "getCameraInfo: Camera.getCameraInfo: " + ex);
+            Log.e(TAG, "getCameraInfo: android.hardware.Camera.getCameraInfo: " + ex);
             return null;
         }
         return cameraInfo;

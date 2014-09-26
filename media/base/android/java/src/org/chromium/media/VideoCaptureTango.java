@@ -6,7 +6,6 @@ package org.chromium.media;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
-import android.hardware.Camera;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -78,11 +77,11 @@ public class VideoCaptureTango extends VideoCapture {
 
     @Override
     protected void setCaptureParameters(int width, int height, int frameRate,
-            Camera.Parameters cameraParameters) {
+            android.hardware.Camera.Parameters cameraParameters) {
         mCaptureFormat = new CaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
-                                         CAM_PARAMS[mTangoCameraId].mHeight,
-                                         frameRate,
-                                         ImageFormat.YV12);
+                                           CAM_PARAMS[mTangoCameraId].mHeight,
+                                           frameRate,
+                                           ImageFormat.YV12);
         // Connect Tango SuperFrame mode. Available sf modes are "all",
         // "big-rgb", "small-rgb", "depth", "ir".
         cameraParameters.set("sf-mode", "all");
@@ -98,12 +97,12 @@ public class VideoCaptureTango extends VideoCapture {
     }
 
     @Override
-    protected void setPreviewCallback(Camera.PreviewCallback cb) {
+    protected void setPreviewCallback(android.hardware.Camera.PreviewCallback cb) {
         mCamera.setPreviewCallback(cb);
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
+    public void onPreviewFrame(byte[] data, android.hardware.Camera camera) {
         mPreviewBufferLock.lock();
         try {
             if (!mIsRunning) return;
@@ -113,7 +112,7 @@ public class VideoCaptureTango extends VideoCapture {
                 if (rotation != mDeviceOrientation) {
                     mDeviceOrientation = rotation;
                 }
-                if (mCameraFacing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                if (mCameraFacing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK) {
                     rotation = 360 - rotation;
                 }
                 rotation = (mCameraOrientation + rotation) % 360;

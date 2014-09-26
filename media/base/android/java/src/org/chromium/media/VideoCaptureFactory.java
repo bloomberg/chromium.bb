@@ -6,7 +6,6 @@ package org.chromium.media;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.hardware.Camera;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -45,7 +44,7 @@ class VideoCaptureFactory {
 
     static class ChromiumCameraInfo {
         private final int mId;
-        private final Camera.CameraInfo mCameraInfo;
+        private final android.hardware.Camera.CameraInfo mCameraInfo;
         // Special devices have more cameras than usual. Those devices are
         // identified by model & device. Currently only the Tango is supported.
         // Note that these devices have no Camera.CameraInfo.
@@ -91,7 +90,7 @@ class VideoCaptureFactory {
                 if (PackageManager.PERMISSION_GRANTED ==
                         appContext.getPackageManager().checkPermission(
                                 "android.permission.CAMERA", appContext.getPackageName())) {
-                    sNumberOfSystemCameras = Camera.getNumberOfCameras();
+                    sNumberOfSystemCameras = android.hardware.Camera.getNumberOfCameras();
                 } else {
                     sNumberOfSystemCameras = 0;
                     Log.w(TAG, "Missing android.permission.CAMERA permission, "
@@ -126,10 +125,10 @@ class VideoCaptureFactory {
                     return "";
                 }
                 Log.d(TAG, "Camera enumerated: " + (mCameraInfo.facing ==
-                        Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" :
+                        android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" :
                         "back"));
                 return "camera " + mId + ", facing " + (mCameraInfo.facing ==
-                        Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" :
+                        android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" :
                         "back");
             }
         }
@@ -137,18 +136,19 @@ class VideoCaptureFactory {
         @CalledByNative("ChromiumCameraInfo")
         private int getOrientation() {
             if (isSpecialCamera(mId)) {
-                return Camera.CameraInfo.CAMERA_FACING_BACK;
+                return android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK;
             } else {
                 return (mCameraInfo == null ? 0 : mCameraInfo.orientation);
             }
         }
 
-        private Camera.CameraInfo getCameraInfo(int id) {
-            Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        private android.hardware.Camera.CameraInfo getCameraInfo(int id) {
+            android.hardware.Camera.CameraInfo cameraInfo =
+                    new android.hardware.Camera.CameraInfo();
             try {
-                Camera.getCameraInfo(id, cameraInfo);
+                android.hardware.Camera.getCameraInfo(id, cameraInfo);
             } catch (RuntimeException ex) {
-                Log.e(TAG, "getCameraInfo: Camera.getCameraInfo: " + ex);
+                Log.e(TAG, "getCameraInfo: android.hardware.Camera.getCameraInfo: " + ex);
                 return null;
             }
             return cameraInfo;
