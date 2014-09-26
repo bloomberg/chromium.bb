@@ -37,6 +37,10 @@ public class LibraryLoader {
     // One-way switch becomes true when the libraries are loaded.
     private static boolean sLoaded = false;
 
+    // One-way switch becomes true when the Java command line is switched to
+    // native.
+    private static boolean sCommandLineSwitched = false;
+
     // One-way switch becomes true when the libraries are initialized (
     // by calling nativeLibraryLoaded, which forwards to LibraryLoaded(...) in
     // library_loader_hooks.cc).
@@ -216,9 +220,6 @@ public class LibraryLoader {
                         startTime % 10000,
                         stopTime % 10000));
 
-                nativeInitCommandLine(CommandLine.getJavaSwitchesOrNull());
-                CommandLine.enableNativeProxy();
-
                 sLoaded = true;
             }
         } catch (UnsatisfiedLinkError e) {
@@ -235,10 +236,37 @@ public class LibraryLoader {
         }
     }
 
+    // The WebView requires the Command Line to be switched over before
+    // initialization is done. This is okay in the WebView's case since the
+    // JNI is already loaded by this point.
+    public static void switchCommandLineForWebView() {
+        synchronized (sLock) {
+            ensureCommandLineSwitchedAlreadyLocked();
+        }
+    }
+
+    // Switch the CommandLine over from Java to native if it hasn't already been done.
+    // This must happen after the code is loaded and after JNI is ready (since after the
+    // switch the Java CommandLine will delegate all calls the native CommandLine).
+    private static void ensureCommandLineSwitchedAlreadyLocked() {
+        assert sLoaded;
+        if (sCommandLineSwitched) {
+            return;
+        }
+        nativeInitCommandLine(CommandLine.getJavaSwitchesOrNull());
+        CommandLine.enableNativeProxy();
+        sCommandLineSwitched = true;
+    }
+
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
     private static void initializeAlreadyLocked() throws ProcessInitException {
         if (sInitialized) {
             return;
+        }
+
+        // Setup the native command line if necessary.
+        if (!sCommandLineSwitched) {
+            nativeInitCommandLine(CommandLine.getJavaSwitchesOrNull());
         }
 
         if (!nativeLibraryLoaded()) {
@@ -249,6 +277,13 @@ public class LibraryLoader {
         // shouldn't complain from now on (and in fact, it's used by the
         // following calls).
         sInitialized = true;
+
+        // The Chrome JNI is registered by now so we can switch the Java
+        // command line over to delegating to native if it's necessary.
+        if (!sCommandLineSwitched) {
+            CommandLine.enableNativeProxy();
+            sCommandLineSwitched = true;
+        }
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
