@@ -40,14 +40,6 @@ float GetProgress(double t, size_t i, const Keyframes& keyframes) {
   return progress;
 }
 
-scoped_ptr<TimingFunction> CloneTimingFunction(
-    const TimingFunction* timing_function) {
-  DCHECK(timing_function);
-  scoped_ptr<AnimationCurve> curve(timing_function->Clone());
-  return scoped_ptr<TimingFunction>(
-      static_cast<TimingFunction*>(curve.release()));
-}
-
 }  // namespace
 
 Keyframe::Keyframe(double time, scoped_ptr<TimingFunction> timing_function)
@@ -81,7 +73,7 @@ SkColor ColorKeyframe::Value() const { return value_; }
 scoped_ptr<ColorKeyframe> ColorKeyframe::Clone() const {
   scoped_ptr<TimingFunction> func;
   if (timing_function())
-    func = CloneTimingFunction(timing_function());
+    func = timing_function()->Clone();
   return ColorKeyframe::Create(Time(), Value(), func.Pass());
 }
 
@@ -108,7 +100,7 @@ float FloatKeyframe::Value() const {
 scoped_ptr<FloatKeyframe> FloatKeyframe::Clone() const {
   scoped_ptr<TimingFunction> func;
   if (timing_function())
-    func = CloneTimingFunction(timing_function());
+    func = timing_function()->Clone();
   return FloatKeyframe::Create(Time(), Value(), func.Pass());
 }
 
@@ -135,7 +127,7 @@ const TransformOperations& TransformKeyframe::Value() const {
 scoped_ptr<TransformKeyframe> TransformKeyframe::Clone() const {
   scoped_ptr<TimingFunction> func;
   if (timing_function())
-    func = CloneTimingFunction(timing_function());
+    func = timing_function()->Clone();
   return TransformKeyframe::Create(Time(), Value(), func.Pass());
 }
 
@@ -162,7 +154,7 @@ const FilterOperations& FilterKeyframe::Value() const {
 scoped_ptr<FilterKeyframe> FilterKeyframe::Clone() const {
   scoped_ptr<TimingFunction> func;
   if (timing_function())
-    func = CloneTimingFunction(timing_function());
+    func = timing_function()->Clone();
   return FilterKeyframe::Create(Time(), Value(), func.Pass());
 }
 

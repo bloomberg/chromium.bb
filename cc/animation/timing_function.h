@@ -5,24 +5,21 @@
 #ifndef CC_ANIMATION_TIMING_FUNCTION_H_
 #define CC_ANIMATION_TIMING_FUNCTION_H_
 
-#include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
 namespace cc {
 
 // See http://www.w3.org/TR/css3-transitions/.
-class CC_EXPORT TimingFunction : public FloatAnimationCurve {
+class CC_EXPORT TimingFunction {
  public:
   virtual ~TimingFunction();
 
-  // Partial implementation of FloatAnimationCurve.
-  virtual double Duration() const OVERRIDE;
-
-  // The smallest and largest values returned by GetValue for inputs in
-  // [0, 1].
-  virtual void Range(float* min, float* max) const = 0;
+  virtual float GetValue(double t) const = 0;
   virtual float Velocity(double time) const = 0;
+  // The smallest and largest values returned by GetValue for inputs in [0, 1].
+  virtual void Range(float* min, float* max) const = 0;
+  virtual scoped_ptr<TimingFunction> Clone() const = 0;
 
  protected:
   TimingFunction();
@@ -37,12 +34,11 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
                                                       double x2, double y2);
   virtual ~CubicBezierTimingFunction();
 
-  // Partial implementation of FloatAnimationCurve.
+  // TimingFunction implementation.
   virtual float GetValue(double time) const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
-
-  virtual void Range(float* min, float* max) const OVERRIDE;
   virtual float Velocity(double time) const OVERRIDE;
+  virtual void Range(float* min, float* max) const OVERRIDE;
+  virtual scoped_ptr<TimingFunction> Clone() const OVERRIDE;
 
  protected:
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2);
