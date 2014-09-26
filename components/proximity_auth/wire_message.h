@@ -24,6 +24,9 @@ class WireMessage {
       const std::string& serialized_message,
       bool* is_incomplete_message);
 
+  // Returns a serialized representation of |this| message.
+  virtual std::string Serialize() const;
+
   const std::string& permit_id() const { return permit_id_; }
   const std::string& payload() const { return payload_; }
 

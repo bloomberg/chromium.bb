@@ -12,6 +12,7 @@ namespace proximity_auth {
 
 struct RemoteDevice {
   std::string name;
+  std::string bluetooth_address;
 };
 
 }  // namespace proximity_auth

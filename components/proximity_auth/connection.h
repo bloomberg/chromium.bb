@@ -28,7 +28,7 @@ class Connection {
 
   // Constructs a connection to the given |remote_device|.
   explicit Connection(const RemoteDevice& remote_device);
-  ~Connection();
+  virtual ~Connection();
 
   // Returns true iff the connection's status is CONNECTED.
   bool IsConnected() const;
@@ -45,10 +45,6 @@ class Connection {
 
   // Abstract methods that subclasses should implement:
 
-  // Pauses or unpauses the handling of incoming messages.  Pausing allows the
-  // user of the connection to add or remove observers without missing messages.
-  virtual void SetPaused(bool paused) = 0;
-
   // Attempts to connect to the remote device if not already connected.
   virtual void Connect() = 0;
 
@@ -58,17 +54,20 @@ class Connection {
  protected:
   // Sets the connection's status to |status|. If this is different from the
   // previous status, notifies observers of the change in status.
-  void SetStatus(Status status);
+  // Virtual for testing.
+  virtual void SetStatus(Status status);
 
   Status status() const { return status_; }
 
   // Called after attempting to send bytes over the connection, whether the
   // message was successfully sent or not.
-  void OnDidSendMessage(const WireMessage& message, bool success);
+  // Virtual for testing.
+  virtual void OnDidSendMessage(const WireMessage& message, bool success);
 
   // Called when bytes are read from the connection. There should not be a send
   // in progress when this function is called.
-  void OnBytesReceived(const std::string& bytes);
+  // Virtual for testing.
+  virtual void OnBytesReceived(const std::string& bytes);
 
   // Sends bytes over the connection. The implementing class should call
   // OnSendCompleted() once the send succeeds or fails. At most one send will be

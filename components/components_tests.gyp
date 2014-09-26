@@ -655,6 +655,7 @@
                 'copresence/rpc/http_post_unittest.cc',
                 'copresence/rpc/rpc_handler_unittest.cc',
                 'copresence/timed_map_unittest.cc',
+                'proximity_auth/bluetooth_connection_unittest.cc',
                 'proximity_auth/connection_unittest.cc',
                 'proximity_auth/proximity_auth_system_unittest.cc',
                 'proximity_auth/wire_message_unittest.cc',
@@ -666,6 +667,7 @@
 
                 # Dependencies of proxmity_auth
                 'components.gyp:proximity_auth',
+                '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
               ],
             }],
             ['chromeos==1', {

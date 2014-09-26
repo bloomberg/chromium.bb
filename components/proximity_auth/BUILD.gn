@@ -4,6 +4,8 @@
 
 static_library("proximity_auth") {
   sources = [
+    "bluetooth_connection.cc",
+    "bluetooth_connection.h",
     "bluetooth_util.cc",
     "bluetooth_util_chromeos.cc",
     "bluetooth_util.h",
@@ -27,6 +29,7 @@ static_library("proximity_auth") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "bluetooth_connection_unittest.cc",
     "connection_unittest.cc",
     "proximity_auth_system_unittest.cc",
     "wire_message_unittest.cc",
@@ -35,6 +38,7 @@ source_set("unit_tests") {
   deps = [
     ":proximity_auth",
     "//base/test:test_support",
+    "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -111,6 +111,11 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
   return scoped_ptr<WireMessage>(new WireMessage(permit_id, payload));
 }
 
+std::string WireMessage::Serialize() const {
+  // TODO(isherman): Implement.
+  return "This method is not yet implemented.";
+}
+
 WireMessage::WireMessage(const std::string& permit_id,
                          const std::string& payload)
     : permit_id_(permit_id),
