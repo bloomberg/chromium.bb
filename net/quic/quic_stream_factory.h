@@ -160,9 +160,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     return require_confirmation_;
   }
 
-  void set_require_confirmation(bool require_confirmation) {
-    require_confirmation_ = require_confirmation;
-  }
+  void set_require_confirmation(bool require_confirmation);
 
   QuicConnectionHelper* helper() { return helper_.get(); }
 
@@ -292,6 +290,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // (probablistically) prevent two profiles from colliding in their ephemeral
   // port requests.
   uint64 port_seed_;
+
+  // Local address of socket that was created in CreateSession.
+  IPEndPoint local_address_;
+  bool check_persisted_supports_quic_;
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
 

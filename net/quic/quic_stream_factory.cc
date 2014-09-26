@@ -71,6 +71,9 @@ const int32 kServerSecureInitialCongestionWindow = 32;
 // Be conservative, and just use double a typical TCP  ICWND for HTTP.
 const int32 kServerInecureInitialCongestionWindow = 20;
 
+const char kDummyHostname[] = "quic.global.props";
+const uint16 kDummyPort = 0;
+
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
@@ -510,6 +513,7 @@ QuicStreamFactory::QuicStreamFactory(
           always_require_handshake_confirmation),
       disable_connection_pooling_(disable_connection_pooling),
       port_seed_(random_generator_->RandUint64()),
+      check_persisted_supports_quic_(true),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
   crypto_config_.SetDefaults();
@@ -534,6 +538,17 @@ QuicStreamFactory::~QuicStreamFactory() {
     all_sessions_.erase(all_sessions_.begin());
   }
   STLDeleteValues(&active_jobs_);
+}
+
+void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
+  require_confirmation_ = require_confirmation;
+  if (http_server_properties_ && (!(local_address_ == IPEndPoint()))) {
+    // TODO(rtenneti): Delete host_port_pair and persist data in globals.
+    HostPortPair host_port_pair(kDummyHostname, kDummyPort);
+    http_server_properties_->SetSupportsQuic(
+        host_port_pair, !require_confirmation,
+        local_address_.ToStringWithoutPort());
+  }
 }
 
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
@@ -616,7 +631,7 @@ bool QuicStreamFactory::OnResolution(
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
     if (!always_require_handshake_confirmation_)
-      require_confirmation_ = false;
+      set_require_confirmation(false);
 
     // Create all the streams, but do not notify them yet.
     for (RequestSet::iterator it = job_requests_map_[job].begin();
@@ -772,7 +787,7 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
 
 void QuicStreamFactory::OnIPAddressChanged() {
   CloseAllSessions(ERR_NETWORK_CHANGED);
-  require_confirmation_ = true;
+  set_require_confirmation(true);
 }
 
 void QuicStreamFactory::OnCertAdded(const X509Certificate* cert) {
@@ -855,6 +870,18 @@ int QuicStreamFactory::CreateSession(
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_SEND_BUFFER);
     return rv;
+  }
+
+  socket->GetLocalAddress(&local_address_);
+  if (check_persisted_supports_quic_ && http_server_properties_) {
+    check_persisted_supports_quic_ = false;
+    // TODO(rtenneti): Delete host_port_pair and persist data in globals.
+    HostPortPair host_port_pair(kDummyHostname, kDummyPort);
+    SupportsQuic supports_quic(true, local_address_.ToStringWithoutPort());
+    if (http_server_properties_->GetSupportsQuic(
+            host_port_pair).Equals(supports_quic)) {
+      require_confirmation_ = false;
+    }
   }
 
   DefaultPacketWriterFactory packet_writer_factory(socket.get());
