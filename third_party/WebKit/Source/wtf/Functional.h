@@ -425,14 +425,14 @@ template<typename FunctionWrapper, typename FunctionType>
 class UnboundFunctionImpl;
 
 template<typename FunctionWrapper, typename R, typename P1>
-class UnboundFunctionImpl<FunctionWrapper, R(P1)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P1)> {
+class UnboundFunctionImpl<FunctionWrapper, R(P1)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P1)> {
 public:
     UnboundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P1 p1) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P1 p1) override
     {
         return m_functionWrapper(p1);
     }
@@ -442,14 +442,14 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2>
-class UnboundFunctionImpl<FunctionWrapper, R(P1, P2)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2)> {
+class UnboundFunctionImpl<FunctionWrapper, R(P1, P2)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2)> {
 public:
     UnboundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2) override
     {
         return m_functionWrapper(p1, p2);
     }
@@ -459,14 +459,14 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3>
-class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3)> {
+class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3)> {
 public:
     UnboundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3) override
     {
         return m_functionWrapper(p1, p2, p3);
     }
@@ -476,14 +476,14 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4>
-class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3, P4)> {
+class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3, P4)> {
 public:
     UnboundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3, P4 p4) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3, P4 p4) override
     {
         return m_functionWrapper(p1, p2, p3, p4);
     }
@@ -493,14 +493,14 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3, P4, P5)> {
+class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3, P4, P5)> {
 public:
     UnboundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) override
     {
         return m_functionWrapper(p1, p2, p3, p4, p5);
     }
@@ -510,14 +510,14 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3, P4, P5, P6)> {
+class UnboundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P1, P2, P3, P4, P5, P6)> {
 public:
     UnboundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) override
     {
         return m_functionWrapper(p1, p2, p3, p4, p5, p6);
     }
@@ -530,7 +530,7 @@ template<typename FunctionWrapper, typename FunctionType>
 class OneArgPartBoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2>
-class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P2)> {
+class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P2)> {
 public:
     OneArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -538,7 +538,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P2 p2) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P2 p2) override
     {
         return m_functionWrapper(m_p1, p2);
     }
@@ -549,7 +549,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3>
-class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3)> {
+class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3)> {
 public:
     OneArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -557,7 +557,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3) override
     {
         return m_functionWrapper(m_p1, p2, p3);
     }
@@ -568,7 +568,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4>
-class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3, P4)> {
+class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3, P4)> {
 public:
     OneArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -576,7 +576,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3, P4 p4) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3, P4 p4) override
     {
         return m_functionWrapper(m_p1, p2, p3, p4);
     }
@@ -587,7 +587,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3, P4, P5)> {
+class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3, P4, P5)> {
 public:
     OneArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -595,7 +595,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3, P4 p4, P5 p5) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3, P4 p4, P5 p5) override
     {
         return m_functionWrapper(m_p1, p2, p3, p4, p5);
     }
@@ -606,7 +606,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3, P4, P5, P6)> {
+class OneArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P2, P3, P4, P5, P6)> {
 public:
     OneArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -614,7 +614,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) override
     {
         return m_functionWrapper(m_p1, p2, p3, p4, p5, p6);
     }
@@ -628,7 +628,7 @@ template<typename FunctionWrapper, typename FunctionType>
 class TwoArgPartBoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3>
-class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P3)> {
+class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P3)> {
 public:
     TwoArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -637,7 +637,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P3 p3) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P3 p3) override
     {
         return m_functionWrapper(m_p1, m_p2, p3);
     }
@@ -649,7 +649,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4>
-class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P3, P4)> {
+class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P3, P4)> {
 public:
     TwoArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -658,7 +658,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P3 p3, P4 p4) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P3 p3, P4 p4) override
     {
         return m_functionWrapper(m_p1, m_p2, p3, p4);
     }
@@ -670,7 +670,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P3, P4, P5)> {
+class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P3, P4, P5)> {
 public:
     TwoArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -679,7 +679,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P3 p3, P4 p4, P5 p5) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P3 p3, P4 p4, P5 p5) override
     {
         return m_functionWrapper(m_p1, m_p2, p3, p4, p5);
     }
@@ -691,7 +691,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P3, P4, P5, P6)> {
+class TwoArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P3, P4, P5, P6)> {
 public:
     TwoArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -700,7 +700,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P3 p3, P4 p4, P5 p5, P6 p6) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P3 p3, P4 p4, P5 p5, P6 p6) override
     {
         return m_functionWrapper(m_p1, m_p2, p3, p4, p5, p6);
     }
@@ -715,7 +715,7 @@ template<typename FunctionWrapper, typename FunctionType>
 class ThreeArgPartBoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4>
-class ThreeArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P4)> {
+class ThreeArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P4)> {
 public:
     ThreeArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
         : m_functionWrapper(functionWrapper)
@@ -725,7 +725,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P4 p4) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P4 p4) override
     {
         return m_functionWrapper(m_p1, m_p2, m_p3, p4);
     }
@@ -738,7 +738,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class ThreeArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P4, P5)> {
+class ThreeArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P4, P5)> {
 public:
     ThreeArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
         : m_functionWrapper(functionWrapper)
@@ -748,7 +748,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P4 p4, P5 p5) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P4 p4, P5 p5) override
     {
         return m_functionWrapper(m_p1, m_p2, m_p3, p4, p5);
     }
@@ -761,7 +761,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class ThreeArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P4, P5, P6)> {
+class ThreeArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P4, P5, P6)> {
 public:
     ThreeArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
         : m_functionWrapper(functionWrapper)
@@ -771,7 +771,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P4 p4, P5 p5, P6 p6) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P4 p4, P5 p5, P6 p6) override
     {
         return m_functionWrapper(m_p1, m_p2, m_p3, p4, p5, p6);
     }
@@ -787,7 +787,7 @@ template<typename FunctionWrapper, typename FunctionType>
 class FourArgPartBoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class FourArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P5)> {
+class FourArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P5)> {
 public:
     FourArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4)
         : m_functionWrapper(functionWrapper)
@@ -798,7 +798,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P5 p5) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P5 p5) override
     {
         return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, p5);
     }
@@ -812,7 +812,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class FourArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P5, P6)> {
+class FourArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P5, P6)> {
 public:
     FourArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4)
         : m_functionWrapper(functionWrapper)
@@ -823,7 +823,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P5 p5, P6 p6) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P5 p5, P6 p6) override
     {
         return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, p5, p6);
     }
@@ -840,7 +840,7 @@ template<typename FunctionWrapper, typename FunctionType>
 class FiveArgPartBoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class FiveArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType(P6)> {
+class FiveArgPartBoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P6)> {
 public:
     FiveArgPartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5)
         : m_functionWrapper(functionWrapper)
@@ -852,7 +852,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P6 p6) OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()(P6 p6) override
     {
         return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, m_p5, p6);
     }
@@ -870,14 +870,14 @@ template<typename FunctionWrapper, typename FunctionType>
 class BoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R>
-class BoundFunctionImpl<FunctionWrapper, R()> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R()> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     explicit BoundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper();
     }
@@ -887,7 +887,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1>
-class BoundFunctionImpl<FunctionWrapper, R(P1)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1)> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -895,7 +895,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1));
     }
@@ -906,7 +906,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2>
-class BoundFunctionImpl<FunctionWrapper, R(P1, P2)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2)> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -915,7 +915,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2));
     }
@@ -927,7 +927,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3>
-class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
         : m_functionWrapper(functionWrapper)
@@ -937,7 +937,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3));
     }
@@ -950,7 +950,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4>
-class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4)
         : m_functionWrapper(functionWrapper)
@@ -961,7 +961,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4));
     }
@@ -975,7 +975,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5)
         : m_functionWrapper(functionWrapper)
@@ -987,7 +987,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5));
     }
@@ -1002,7 +1002,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> final : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6)
         : m_functionWrapper(functionWrapper)
@@ -1015,7 +1015,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
+    virtual typename FunctionWrapper::ResultType operator()() override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6));
     }

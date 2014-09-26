@@ -10,7 +10,7 @@
 
 namespace WTF {
 
-class TextCodecReplacement FINAL : public TextCodecUTF8 {
+class TextCodecReplacement final : public TextCodecUTF8 {
 public:
     TextCodecReplacement();
 
@@ -18,7 +18,7 @@ public:
     static void registerCodecs(TextCodecRegistrar);
 
 private:
-    virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) OVERRIDE;
+    virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
 
     bool m_sentEOF;
 };

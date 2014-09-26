@@ -33,7 +33,7 @@
 
 namespace WTF {
 
-class Uint8ClampedArray FINAL : public Uint8Array {
+class Uint8ClampedArray final : public Uint8Array {
 public:
     static inline PassRefPtr<Uint8ClampedArray> create(unsigned length);
     static inline PassRefPtr<Uint8ClampedArray> create(const unsigned char* array, unsigned length);
@@ -54,7 +54,7 @@ public:
     inline PassRefPtr<Uint8ClampedArray> subarray(int start) const;
     inline PassRefPtr<Uint8ClampedArray> subarray(int start, int end) const;
 
-    virtual ViewType type() const OVERRIDE
+    virtual ViewType type() const override
     {
         return TypeUint8Clamped;
     }

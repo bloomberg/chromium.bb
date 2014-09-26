@@ -30,16 +30,16 @@
 
 namespace WTF {
 
-    class TextCodecUTF16 FINAL : public TextCodec {
+    class TextCodecUTF16 final : public TextCodec {
     public:
         static void registerEncodingNames(EncodingNameRegistrar);
         static void registerCodecs(TextCodecRegistrar);
 
         TextCodecUTF16(bool littleEndian) : m_littleEndian(littleEndian), m_haveBufferedByte(false) { }
 
-        virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) OVERRIDE;
-        virtual CString encode(const UChar*, size_t length, UnencodableHandling) OVERRIDE;
-        virtual CString encode(const LChar*, size_t length, UnencodableHandling) OVERRIDE;
+        virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
+        virtual CString encode(const UChar*, size_t length, UnencodableHandling) override;
+        virtual CString encode(const LChar*, size_t length, UnencodableHandling) override;
 
     private:
         bool m_littleEndian;

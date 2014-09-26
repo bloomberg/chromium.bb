@@ -33,7 +33,7 @@ namespace WTF {
 
 class ArrayBuffer;
 
-class Int8Array FINAL : public IntegralTypedArrayBase<signed char> {
+class Int8Array final : public IntegralTypedArrayBase<signed char> {
 public:
     static inline PassRefPtr<Int8Array> create(unsigned length);
     static inline PassRefPtr<Int8Array> create(const signed char* array, unsigned length);
@@ -49,7 +49,7 @@ public:
     inline PassRefPtr<Int8Array> subarray(int start) const;
     inline PassRefPtr<Int8Array> subarray(int start, int end) const;
 
-    virtual ViewType type() const OVERRIDE
+    virtual ViewType type() const override
     {
         return TypeInt8;
     }
