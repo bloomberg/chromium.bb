@@ -130,10 +130,8 @@ class SigninManager : public SigninManagerBase {
   bool IsSignoutProhibited() const;
 
   // Add or remove observers for the merge session notification.
-  virtual void AddMergeSessionObserver(
-      MergeSessionHelper::Observer* observer);
-  virtual void RemoveMergeSessionObserver(
-      MergeSessionHelper::Observer* observer);
+  void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
+  void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
 
  protected:
   // Flag saying whether signing out is allowed.

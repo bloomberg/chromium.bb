@@ -38,7 +38,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/referrer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -46,9 +45,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
 
 using content::GpuDataManager;
 

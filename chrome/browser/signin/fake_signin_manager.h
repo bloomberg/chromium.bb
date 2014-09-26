@@ -64,16 +64,6 @@ class FakeSigninManager : public SigninManager {
       OVERRIDE;
 
   virtual void CompletePendingSignin() OVERRIDE;
-
-  virtual void AddMergeSessionObserver(
-      MergeSessionHelper::Observer* observer) OVERRIDE;
-  virtual void RemoveMergeSessionObserver(
-      MergeSessionHelper::Observer* observer) OVERRIDE;
-
-  void NotifyMergeSessionObservers(const GoogleServiceAuthError& error);
-
- private:
-  ObserverList<MergeSessionHelper::Observer, true> merge_session_observer_list_;
 };
 
 #endif  // !defined (OS_CHROMEOS)

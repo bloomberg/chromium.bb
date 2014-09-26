@@ -303,22 +303,15 @@ void StartExplicitSync(const OneClickSigninHelper::StartSyncArgs& args,
       // Redirect/tab closing for inline flow is handled by the sync callback.
       args.callback.Run(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
     } else {
-      // Don't redirect when the visible URL is not a blank page: if the
-      // source is SOURCE_WEBSTORE_INSTALL, |contents| might be showing an app
-      // page that shouldn't be hidden.
-      //
-      // If redirecting, don't do so immediately, otherwise there may be 2
-      // nested navigations and a crash would occur (crbug.com/293261).  Post
-      // the task to the current thread instead.
-      if (signin::IsContinueUrlForWebBasedSigninFlow(
-              contents->GetVisibleURL())) {
-        base::MessageLoopProxy::current()->PostNonNestableTask(
-            FROM_HERE,
-            base::Bind(RedirectToNtpOrAppsPageWithIds,
-                       contents->GetRenderProcessHost()->GetID(),
-                       contents->GetRoutingID(),
-                       args.source));
-      }
+      // Redirect, but don't do so immediately; otherwise there might be two
+      // nested navigations, which would cause a crash: http://crbug.com/293261
+      // Instead, post a task to the current thread.
+      base::MessageLoopProxy::current()->PostNonNestableTask(
+          FROM_HERE,
+          base::Bind(RedirectToNtpOrAppsPageWithIds,
+                     contents->GetRenderProcessHost()->GetID(),
+                     contents->GetRoutingID(),
+                     args.source));
     }
     if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
       chrome::ShowSettingsSubPage(args.browser,
@@ -528,9 +521,8 @@ OneClickSigninHelper::StartSyncArgs::StartSyncArgs(
   DCHECK(session_index.empty() != refresh_token.empty());
   if (untrusted_confirmation_required) {
     confirmation_required = OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN;
-  } else if (source == signin::SOURCE_SETTINGS ||
-             source == signin::SOURCE_WEBSTORE_INSTALL) {
-    // Do not display a status confirmation for webstore installs or re-auth.
+  } else if (source == signin::SOURCE_SETTINGS) {
+    // Do not display a status confirmation for re-auth.
     confirmation_required = OneClickSigninSyncStarter::NO_CONFIRMATION;
   } else {
     confirmation_required = OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
@@ -727,10 +719,6 @@ void OneClickSigninHelper::LogHistogramValue(
       UMA_HISTOGRAM_ENUMERATION("Signin.ExtensionInstallBubbleActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
       break;
-    case signin::SOURCE_WEBSTORE_INSTALL:
-      UMA_HISTOGRAM_ENUMERATION("Signin.WebstoreInstallActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
     case signin::SOURCE_APP_LAUNCHER:
       UMA_HISTOGRAM_ENUMERATION("Signin.AppLauncherActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
@@ -761,7 +749,7 @@ void OneClickSigninHelper::LogHistogramValue(
       break;
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 13,
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 12,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       UMA_HISTOGRAM_ENUMERATION("Signin.UnknownActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
@@ -1212,8 +1200,7 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(
 // static
 void OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
     content::WebContents* contents, signin::Source source) {
-  if (source != signin::SOURCE_SETTINGS &&
-      source != signin::SOURCE_WEBSTORE_INSTALL) {
+  if (source != signin::SOURCE_SETTINGS) {
     RedirectToNtpOrAppsPage(contents, source);
   }
 }
@@ -1555,13 +1542,10 @@ void OneClickSigninHelper::DidStopLoading(
         RedirectToNtpOrAppsPageIfNecessary(web_contents(), source_);
       }
 
-      // Observe the sync service if the Webstore tab or the settings tab
-      // requested a gaia sign in, so that when sign in and sync setup are
-      // successful, we can redirect to the correct URL, or auto-close the gaia
-      // sign in tab.
-      if (original_source == signin::SOURCE_SETTINGS ||
-          (original_source == signin::SOURCE_WEBSTORE_INSTALL &&
-           source_ == signin::SOURCE_SETTINGS)) {
+      // Observe the sync service if the settings tab requested a gaia sign in,
+      // so that when sign in and sync setup are successful, we can redirect to
+      // the correct URL, or auto-close the gaia sign in tab.
+      if (original_source == signin::SOURCE_SETTINGS) {
         // The observer deletes itself once it's done.
         new OneClickSigninSyncObserver(contents, original_continue_url_);
       }

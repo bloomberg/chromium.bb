@@ -176,7 +176,6 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
     } else {
       confirmation_required =
           source == signin::SOURCE_SETTINGS ||
-          source == signin::SOURCE_WEBSTORE_INSTALL ||
           choose_what_to_sync_ ?
               OneClickSigninSyncStarter::NO_CONFIRMATION :
               OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;

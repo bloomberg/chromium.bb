@@ -41932,7 +41932,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="745" label="BLUETOOTHSOCKET_SEND"/>
   <int value="746" label="BLUETOOTHSOCKET_GETINFO"/>
   <int value="747" label="BLUETOOTHSOCKET_GETSOCKETS"/>
-  <int value="748" label="WEBSTOREPRIVATE_SIGNINFUNCTION"/>
+  <int value="748" label="DELETED_WEBSTOREPRIVATE_SIGNINFUNCTION"/>
   <int value="749" label="DELETED_SHELL_CREATEWINDOW"/>
   <int value="750"
       label="FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDSUCCESS"/>
@@ -55989,7 +55989,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="SettingsActions"/>
   <suffix name="StartPageActions"/>
   <suffix name="UnknownActions"/>
-  <suffix name="WebstoreInstallActions"/>
   <affected-histogram name="Signin"/>
 </histogram_suffixes>
 

@@ -32,7 +32,6 @@ enum Source {
   SOURCE_MENU,
   SOURCE_SETTINGS,
   SOURCE_EXTENSION_INSTALL_BUBBLE,
-  SOURCE_WEBSTORE_INSTALL,
   SOURCE_APP_LAUNCHER,
   SOURCE_APPS_PAGE_LINK,
   SOURCE_BOOKMARK_BUBBLE,
@@ -88,13 +87,6 @@ GURL GetLandingURL(const char* option, int value);
 // by default.
 GURL GetPromoURL(Source source, bool auto_close);
 GURL GetPromoURL(Source source, bool auto_close, bool is_constrained);
-
-// As above, but also appends the |continue_url| as a parameter to the URL.
-// A |continue_url| may be set only when not using the web-based sign-in flow.
-GURL GetPromoURLWithContinueURL(Source source,
-                                bool auto_close,
-                                bool is_constrained,
-                                GURL continue_url);
 
 // Returns a sign in promo URL specifically for reauthenticating |account_id|.
 GURL GetReauthURL(Profile* profile, const std::string& account_id);
