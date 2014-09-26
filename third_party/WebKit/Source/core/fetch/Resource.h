@@ -40,7 +40,6 @@
 namespace blink {
 
 struct FetchInitiatorInfo;
-class MemoryCache;
 class CachedMetadata;
 class ResourceClient;
 class ResourcePtrBase;

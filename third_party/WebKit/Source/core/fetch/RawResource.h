@@ -27,7 +27,6 @@
 #include "core/fetch/ResourcePtr.h"
 
 namespace blink {
-class RawResourceCallback;
 class RawResourceClient;
 
 class RawResource FINAL : public Resource {

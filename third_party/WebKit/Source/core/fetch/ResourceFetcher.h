@@ -54,7 +54,6 @@ class XSLStyleSheetResource;
 class Document;
 class DocumentLoader;
 class LocalFrame;
-class FrameLoader;
 class ImageLoader;
 class KURL;
 class ResourceTimingInfo;

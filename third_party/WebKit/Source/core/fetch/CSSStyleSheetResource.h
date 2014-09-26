@@ -35,7 +35,6 @@ namespace blink {
 class CSSParserContext;
 class ResourceClient;
 class StyleSheetContents;
-class TextResourceDecoder;
 
 class CSSStyleSheetResource FINAL : public StyleSheetResource {
 public:

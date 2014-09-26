@@ -31,9 +31,6 @@
 
 namespace blink {
 
-class ResourceFetcher;
-class TextResourceDecoder;
-
 class XSLStyleSheetResource FINAL : public StyleSheetResource {
 public:
     XSLStyleSheetResource(const ResourceRequest&, const String& charset);

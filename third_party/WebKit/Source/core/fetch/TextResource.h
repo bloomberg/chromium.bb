@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class ResourceFetcher;
 class TextResourceDecoder;
 
 class TextResource : public Resource {

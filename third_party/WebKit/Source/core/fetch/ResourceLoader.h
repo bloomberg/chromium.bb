@@ -45,7 +45,6 @@ namespace blink {
 class Resource;
 class KURL;
 class ResourceError;
-class ResourceResponse;
 class ResourceLoaderHost;
 
 class ResourceLoader FINAL : public RefCountedWillBeGarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {

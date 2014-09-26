@@ -61,7 +61,6 @@ namespace blink {
     class HistoryItem;
     class KURL;
     class LocalFrame;
-    class MessageEvent;
     class ResourceError;
     class ResourceRequest;
     class ResourceResponse;

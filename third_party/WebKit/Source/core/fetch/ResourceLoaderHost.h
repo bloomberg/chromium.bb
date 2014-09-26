@@ -37,8 +37,6 @@
 namespace blink {
 
 class Resource;
-class ResourceFetcher;
-class LocalFrame;
 class ResourceLoader;
 class ResourceRequest;
 class ResourceResponse;

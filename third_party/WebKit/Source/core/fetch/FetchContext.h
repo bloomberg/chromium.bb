@@ -42,9 +42,7 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
-class LocalFrame;
 class KURL;
-class Page;
 class ResourceError;
 class ResourceLoader;
 class ResourceResponse;
