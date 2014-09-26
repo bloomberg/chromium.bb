@@ -56,6 +56,8 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
     CHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
     unsafe_image_decoder_ = new ImageDecoder(this, image_data,
                                              ImageDecoder::DEFAULT_CODEC);
+    unsafe_image_decoder_->set_shrink_to_fit(true);
+
     scoped_refptr<base::MessageLoopProxy> task_runner =
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
     unsafe_image_decoder_->Start(task_runner);

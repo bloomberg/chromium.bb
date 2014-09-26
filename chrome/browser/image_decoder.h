@@ -52,6 +52,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   }
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  void set_shrink_to_fit(bool shrink_to_fit) { shrink_to_fit_ = shrink_to_fit; }
 
  private:
   // It's a reference counted object, so destructor is private.
@@ -71,6 +72,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   std::vector<unsigned char> image_data_;
   const ImageCodec image_codec_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  bool shrink_to_fit_; // if needed for IPC msg size limit
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };

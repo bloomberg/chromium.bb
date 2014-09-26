@@ -32,12 +32,20 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   static void PreSandboxStartup();
 
   // Shared with extensions::ExtensionsHandler.
-  static void DecodeImage(const std::vector<unsigned char>& encoded_data);
+  static SkBitmap DecodeImage(const std::vector<unsigned char>& encoded_data,
+                              bool shrink_to_fit);
+  static void DecodeImageAndSend(const std::vector<unsigned char>& encoded_data,
+                                 bool shrink_to_fit);
+
+  static void set_max_ipc_message_size_for_test(int64_t max_message_size) {
+    max_ipc_message_size_ = max_message_size;
+  }
 
  private:
   // IPC message handlers.
   void OnUnpackWebResource(const std::string& resource_data);
-  void OnDecodeImage(const std::vector<unsigned char>& encoded_data);
+  void OnDecodeImage(const std::vector<unsigned char>& encoded_data,
+                     bool shrink_to_fit);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
 
@@ -71,6 +79,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool filter_messages_;
   // A list of message_ids to filter.
   std::set<int> message_id_whitelist_;
+  // Maximum IPC msg size (default to kMaximumMessageSize; override for testing)
+  static int64_t max_ipc_message_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentUtilityClient);
 };

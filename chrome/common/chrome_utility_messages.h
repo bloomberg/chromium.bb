@@ -65,8 +65,9 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_UnpackWebResource,
                      std::string /* JSON data */)
 
 // Tell the utility process to decode the given image data.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_DecodeImage,
-                     std::vector<unsigned char>)  // encoded image contents
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_DecodeImage,
+                     std::vector<unsigned char> /* encoded image contents */,
+                     bool /* shrink image if needed for IPC msg limit */)
 
 // Tell the utility process to decode the given JPEG image data with a robust
 // libjpeg codec.

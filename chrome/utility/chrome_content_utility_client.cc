@@ -18,6 +18,8 @@
 #include "content/public/utility/utility_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
+#include "ipc/ipc_channel.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -69,6 +71,9 @@ void FinishParseMediaMetadata(
 #endif
 
 }  // namespace
+
+int64_t ChromeContentUtilityClient::max_ipc_message_size_ =
+    IPC::Channel::kMaximumMessageSize;
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : filter_messages_(false) {
@@ -173,11 +178,42 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
 }
 
 // static
-void ChromeContentUtilityClient::DecodeImage(
-    const std::vector<unsigned char>& encoded_data) {
-  const SkBitmap& decoded_image = content::DecodeImage(&encoded_data[0],
-                                                       gfx::Size(),
-                                                       encoded_data.size());
+SkBitmap ChromeContentUtilityClient::DecodeImage(
+    const std::vector<unsigned char>& encoded_data, bool shrink_to_fit) {
+  SkBitmap decoded_image = content::DecodeImage(&encoded_data[0],
+                                                gfx::Size(),
+                                                encoded_data.size());
+
+  int64_t struct_size = sizeof(ChromeUtilityHostMsg_DecodeImage_Succeeded);
+  int64_t image_size = decoded_image.computeSize64();
+  int halves = 0;
+  while (struct_size + (image_size >> 2*halves) > max_ipc_message_size_)
+    halves++;
+  if (halves) {
+    if (shrink_to_fit) {
+      // If decoded image is too large for IPC message, shrink it by halves.
+      // This prevents quality loss, and should never overshrink on displays
+      // smaller than 3600x2400.
+      // TODO (Issue 416916): Instead of shrinking, return via shared memory
+      decoded_image = skia::ImageOperations::Resize(
+          decoded_image, skia::ImageOperations::RESIZE_LANCZOS3,
+          decoded_image.width() >> halves, decoded_image.height() >> halves);
+    } else {
+      // Image too big for IPC message, but caller didn't request resize;
+      // pre-delete image so DecodeImageAndSend() will send an error.
+      decoded_image.reset();
+      LOG(ERROR) << "Decoded image too large for IPC message";
+    }
+  }
+
+  return decoded_image;
+}
+
+// static
+void ChromeContentUtilityClient::DecodeImageAndSend(
+    const std::vector<unsigned char>& encoded_data, bool shrink_to_fit){
+  SkBitmap decoded_image = DecodeImage(encoded_data, shrink_to_fit);
+
   if (decoded_image.empty()) {
     Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
   } else {
@@ -204,8 +240,8 @@ void ChromeContentUtilityClient::OnUnpackWebResource(
 }
 
 void ChromeContentUtilityClient::OnDecodeImage(
-    const std::vector<unsigned char>& encoded_data) {
-  DecodeImage(encoded_data);
+    const std::vector<unsigned char>& encoded_data, bool shrink_to_fit) {
+  DecodeImageAndSend(encoded_data, shrink_to_fit);
 }
 
 #if defined(OS_CHROMEOS)

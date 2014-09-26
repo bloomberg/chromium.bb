@@ -19,7 +19,8 @@ ImageDecoder::ImageDecoder(Delegate* delegate,
     : delegate_(delegate),
       image_data_(image_data.begin(), image_data.end()),
       image_codec_(image_codec),
-      task_runner_(NULL) {
+      task_runner_(NULL),
+      shrink_to_fit_(false) {
 }
 
 ImageDecoder::~ImageDecoder() {}
@@ -64,6 +65,7 @@ void ImageDecoder::DecodeImageInSandbox(
     utility_process_host->Send(
         new ChromeUtilityMsg_RobustJPEGDecodeImage(image_data));
   } else {
-    utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
+    utility_process_host->Send(
+        new ChromeUtilityMsg_DecodeImage(image_data, shrink_to_fit_));
   }
 }
