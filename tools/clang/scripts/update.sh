@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=217949
+CLANG_REVISION=216630
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -227,18 +227,6 @@ if ! which ninja > /dev/null; then
   exit 1
 fi
 
-echo Reverting previously patched files
-for i in \
-      "${CLANG_DIR}/test/Index/crash-recovery-modules.m" \
-      "${CLANG_DIR}/unittests/libclang/LibclangTest.cpp" \
-      "${COMPILER_RT_DIR}/lib/asan/asan_rtl.cc" \
-      "${COMPILER_RT_DIR}/test/asan/TestCases/Linux/new_array_cookie_test.cc" \
-      ; do
-  if [[ -e "${i}" ]]; then
-    svn revert "${i}"
-  fi;
-done
-
 echo Getting LLVM r"${CLANG_REVISION}" in "${LLVM_DIR}"
 if ! svn co --force "${LLVM_REPO_URL}/llvm/trunk@${CLANG_REVISION}" \
                     "${LLVM_DIR}"; then
@@ -276,6 +264,7 @@ fi
 
 # Apply patch for tests failing with --disable-pthreads (llvm.org/PR11974)
 pushd "${CLANG_DIR}"
+svn revert test/Index/crash-recovery-modules.m
 cat << 'EOF' |
 --- third_party/llvm/tools/clang/test/Index/crash-recovery-modules.m	(revision 202554)
 +++ third_party/llvm/tools/clang/test/Index/crash-recovery-modules.m	(working copy)
@@ -292,6 +281,7 @@ patch -p4
 popd
 
 pushd "${CLANG_DIR}"
+svn revert unittests/libclang/LibclangTest.cpp
 cat << 'EOF' |
 --- unittests/libclang/LibclangTest.cpp (revision 215949)
 +++ unittests/libclang/LibclangTest.cpp (working copy)
@@ -306,6 +296,40 @@ cat << 'EOF' |
    const char *MFile = "#include \"HeaderFile.h\"\nint main() {"
 EOF
 patch -p0
+popd
+
+# Apply r216684 to fix ASan array cookie instrumentation problem.
+# (See https://code.google.com/p/chromium/issues/detail?id=400849#c17)
+pushd "${COMPILER_RT_DIR}"
+svn revert lib/asan/asan_rtl.cc
+svn revert test/asan/TestCases/Linux/new_array_cookie_test.cc
+cat << 'EOF' |
+--- a/lib/asan/asan_rtl.cc
++++ b/lib/asan/asan_rtl.cc
+@@ -269,7 +269,7 @@ void InitializeFlags(Flags *f, const char *env) {
+   f->allow_reexec = true;
+   f->print_full_thread_history = true;
+   f->poison_heap = true;
+-  f->poison_array_cookie = true;
++  f->poison_array_cookie = false;
+   f->poison_partial = true;
+   // Turn off alloc/dealloc mismatch checker on Mac and Windows for now.
+   // https://code.google.com/p/address-sanitizer/issues/detail?id=131
+diff --git a/test/asan/TestCases/Linux/new_array_cookie_test.cc b/test/asan/TestCases/Linux/new_array_cookie_test.cc
+index 339120b..49545f0 100644
+--- a/test/asan/TestCases/Linux/new_array_cookie_test.cc
++++ b/test/asan/TestCases/Linux/new_array_cookie_test.cc
+@@ -1,6 +1,6 @@
+ // REQUIRES: asan-64-bits
+-// RUN: %clangxx_asan -O0 %s -o %t && not %run %t 2>&1 | FileCheck %s
+-// RUN: %clangxx_asan -O3 %s -o %t && not %run %t 2>&1 | FileCheck %s
++// RUN: %clangxx_asan -O3 %s -o %t
++// RUN                                     %run %t
+ // RUN: ASAN_OPTIONS=poison_array_cookie=1 not %run %t 2>&1  | FileCheck %s
+ // RUN: ASAN_OPTIONS=poison_array_cookie=0 %run %t
+ #include <stdio.h>
+EOF
+patch -p1
 popd
 
 # Echo all commands.
