@@ -25,7 +25,6 @@ from chromite.lib import git
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
-from chromite.lib import portage_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 from chromite.cbuildbot.stages.generic_stages_unittest import patches
@@ -206,7 +205,7 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTest):
       msg = '%s failed the following test:\n%s' % (self._bot_id, ex)
       raise AssertionError(msg)
 
-  def RunAllConfigs(self, task, skip_missing=False):
+  def RunAllConfigs(self, task):
     """Run |task| against all major configurations"""
     with parallel.BackgroundTaskRunner(task) as queue:
       # Loop through all major configuration types and pick one from each.
@@ -217,15 +216,6 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTest):
             # build packages.
             cfg = config.config[bot_id]
             if cfg.boards:
-              # Skip boards w/out a local overlay.  Like when running a
-              # public manifest and testing private-only boards.
-              if skip_missing:
-                try:
-                  for b in cfg.boards:
-                    portage_util.FindPrimaryOverlay(constants.BOTH_OVERLAYS, b)
-                except portage_util.MissingOverlayException:
-                  continue
-
               queue.put([bot_id])
               break
 
