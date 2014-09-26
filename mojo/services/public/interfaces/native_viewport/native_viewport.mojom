@@ -26,11 +26,16 @@ interface NativeViewportClient {
   OnEvent(Event event) => ();
 };
 
-// Connect to this interface before any other connections are made and call
-// UseTestConfig(), blocking on the reply. This will ensure that the correct
-// global initialization is done before subsequent connections.
+// Connect to this interface before any other connections are made to configure
+// the NativeViewport service.
 interface NativeViewportConfig {
+  // Call UseTestConfig() and block on the reply. This will ensure that the
+  // correct global initialization is done before subsequent connections.
   UseTestConfig() => ();
+
+  // Call UseHeadlessConfig() and block on the reply. This will ensure that
+  // the native viewport is later created in headless mode.
+  UseHeadlessConfig() => ();
 };
 
 }

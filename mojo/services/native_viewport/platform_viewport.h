@@ -26,7 +26,7 @@ class PlatformViewport {
    public:
     virtual ~Delegate() {}
 
-    virtual void OnBoundsChanged(const gfx::Rect& size) = 0;
+    virtual void OnBoundsChanged(const gfx::Rect& rect) = 0;
     virtual void OnAcceleratedWidgetAvailable(
         gfx::AcceleratedWidget widget) = 0;
     virtual bool OnEvent(ui::Event* ui_event) = 0;

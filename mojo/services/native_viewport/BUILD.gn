@@ -55,6 +55,8 @@ source_set("lib") {
     "platform_viewport_android.cc",
     "platform_viewport_android.h",
     "platform_viewport_mac.mm",
+    "platform_viewport_headless.cc",
+    "platform_viewport_headless.h",
     "platform_viewport_win.cc",
     "viewport_surface.cc",
     "viewport_surface.h",

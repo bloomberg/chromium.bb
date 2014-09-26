@@ -364,6 +364,8 @@
         'services/native_viewport/native_viewport_impl.h',
         'services/native_viewport/platform_viewport.h',
         'services/native_viewport/platform_viewport_android.cc',
+        'services/native_viewport/platform_viewport_headless.cc',
+        'services/native_viewport/platform_viewport_headless.h',
         'services/native_viewport/platform_viewport_mac.mm',
         'services/native_viewport/platform_viewport_ozone.cc',
         'services/native_viewport/platform_viewport_stub.cc',

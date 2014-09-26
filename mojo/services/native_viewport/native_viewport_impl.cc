@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory.h"
+#include "mojo/services/native_viewport/platform_viewport_headless.h"
 #include "mojo/services/native_viewport/viewport_surface.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
@@ -28,8 +29,11 @@ bool IsRateLimitedEventType(ui::Event* event) {
 
 }  // namespace
 
-NativeViewportImpl::NativeViewportImpl(ApplicationImpl* app)
-    : widget_id_(0u), waiting_for_event_ack_(false), weak_factory_(this) {
+NativeViewportImpl::NativeViewportImpl(ApplicationImpl* app, bool is_headless)
+    : is_headless_(is_headless),
+      widget_id_(0u),
+      waiting_for_event_ack_(false),
+      weak_factory_(this) {
   app->ConnectToService("mojo:mojo_surfaces_service", &surfaces_service_);
   // TODO(jamesr): Should be mojo_gpu_service
   app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
@@ -42,7 +46,10 @@ NativeViewportImpl::~NativeViewportImpl() {
 }
 
 void NativeViewportImpl::Create(SizePtr bounds) {
-  platform_viewport_ = PlatformViewport::Create(this);
+  if (is_headless_)
+    platform_viewport_ = PlatformViewportHeadless::Create(this);
+  else
+    platform_viewport_ = PlatformViewport::Create(this);
   gfx::Rect rect = gfx::Rect(bounds.To<gfx::Size>());
   platform_viewport_->Init(rect);
   OnBoundsChanged(rect);

@@ -26,6 +26,7 @@ class NativeViewportAppDelegate
       : share_group_(new gfx::GLShareGroup),
         mailbox_manager_(new gpu::gles2::MailboxManager),
         is_test_(false),
+        is_headless_(false),
         is_initialized_(false) {}
   virtual ~NativeViewportAppDelegate() {}
 
@@ -36,8 +37,14 @@ class NativeViewportAppDelegate
       : app_delegate_(app_delegate) {}
 
     virtual void UseTestConfig(
-        const mojo::Callback<void()>& callback) OVERRIDE {
+        const Callback<void()>& callback) OVERRIDE {
       app_delegate_->is_test_ = true;
+      callback.Run();
+    }
+
+    virtual void UseHeadlessConfig(
+        const Callback<void()>& callback) OVERRIDE {
+      app_delegate_->is_headless_ = true;
       callback.Run();
     }
 
@@ -70,7 +77,7 @@ class NativeViewportAppDelegate
       is_initialized_ = true;
     }
 #endif
-    BindToRequest(new NativeViewportImpl(app_), &request);
+    BindToRequest(new NativeViewportImpl(app_, is_headless_), &request);
   }
 
   // InterfaceFactory<Gpu> implementation.
@@ -90,6 +97,7 @@ class NativeViewportAppDelegate
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   bool is_test_;
+  bool is_headless_;
   bool is_initialized_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewportAppDelegate);
 };

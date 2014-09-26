@@ -24,7 +24,7 @@ class ViewportSurface;
 class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
                            public PlatformViewport::Delegate {
  public:
-  explicit NativeViewportImpl(ApplicationImpl* app);
+  NativeViewportImpl(ApplicationImpl* app, bool is_headless);
   virtual ~NativeViewportImpl();
 
   // InterfaceImpl<NativeViewport> implementation.
@@ -45,6 +45,7 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   void AckEvent();
 
  private:
+  bool is_headless_;
   scoped_ptr<PlatformViewport> platform_viewport_;
   scoped_ptr<ViewportSurface> viewport_surface_;
   uint64_t widget_id_;
