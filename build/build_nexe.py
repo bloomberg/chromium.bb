@@ -485,7 +485,8 @@ class Builder(object):
     default_no_nacl_goma = True if pynacl.platform.IsWindows() else False
     if (arch not in ['x86-32', 'x86-64', 'pnacl']
         or toolname not in ['newlib', 'glibc']
-        or IsEnvFlagTrue('NO_NACL_GOMA', default=default_no_nacl_goma)):
+        or IsEnvFlagTrue('NO_NACL_GOMA', default=default_no_nacl_goma)
+        or IsEnvFlagTrue('GOMA_DISABLED')):
       return {}
 
     goma_config = {}
