@@ -456,7 +456,15 @@ class Builder(object):
 
   def CleanOutput(self, out):
     if IsFile(out):
-      RemoveFile(out)
+      # Since you cannot remove a file opened by somebody else on Windows,
+      # we will retry removal.
+      for _ in range(5):
+        try:
+          RemoveFile(out)
+          return
+        except WindowsError:
+          pass
+        time.sleep(1)
 
   def FixWindowsPath(self, path):
     # The windows version of the nacl toolchain returns badly
