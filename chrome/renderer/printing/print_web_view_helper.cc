@@ -784,6 +784,10 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
       is_loading_(false),
       is_scripted_preview_delayed_(false),
       weak_ptr_factory_(this) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePrintPreview)) {
+    DisablePreview();
+  }
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}

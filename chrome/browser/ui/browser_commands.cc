@@ -853,19 +853,27 @@ void ShowWebsiteSettings(Browser* browser,
       web_contents, url, ssl);
 }
 
-
 void Print(Browser* browser) {
 #if defined(ENABLE_PRINTING)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
+
 #if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(contents);
-  print_view_manager->PrintPreviewNow(false);
-#else
+  if (!browser->profile()->GetPrefs()->GetBoolean(
+          prefs::kPrintPreviewDisabled)) {
+    print_view_manager->PrintPreviewNow(false);
+    return;
+  }
+#else   // ENABLE_FULL_PRINTING
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(contents);
+#endif  // ENABLE_FULL_PRINTING
+
+#if !defined(DISABLE_BASIC_PRINTING)
   print_view_manager->PrintNow();
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // DISABLE_BASIC_PRINTING
+
 #endif  // defined(ENABLE_PRINTING)
 }
 
