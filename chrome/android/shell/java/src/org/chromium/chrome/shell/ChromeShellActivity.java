@@ -37,7 +37,6 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -141,18 +140,14 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
             public boolean onShowCustomView(View view) {
                 if (mTabManager == null) return false;
                 boolean success = super.onShowCustomView(view);
-                if (!CommandLine.getInstance().hasSwitch(
-                        ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
-                    mTabManager.setOverlayVideoMode(true);
-                }
+                mTabManager.setOverlayVideoMode(true);
                 return success;
             }
 
             @Override
             public void onDestroyContentVideoView() {
                 super.onDestroyContentVideoView();
-                if (mTabManager != null && !CommandLine.getInstance().hasSwitch(
-                        ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                if (mTabManager != null) {
                     mTabManager.setOverlayVideoMode(false);
                 }
             }

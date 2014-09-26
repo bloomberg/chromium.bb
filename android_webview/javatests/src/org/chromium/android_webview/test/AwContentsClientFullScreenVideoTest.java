@@ -5,19 +5,15 @@
 package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.MediumTest;
-import android.view.KeyEvent;
-import android.view.View;
 
 import junit.framework.Assert;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
-import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content.common.ContentSwitches;
 
 /**
  * Test WebChromeClient::onShow/HideCustomView.
@@ -60,26 +56,6 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    public void testOnShowAndHideCustomViewWithBackKeyLegacy() throws Throwable {
-        // When html controls are enabled we skip this test because pressing the back key
-        // moves away from the current activity instead of exiting fullscreen mode.
-        if (areHtmlControlsEnabled())
-            return;
-
-        doOnShowAndHideCustomViewTest(new Runnable() {
-            @Override
-            public void run() {
-                View customView = mContentsClient.getCustomView();
-                customView.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                customView.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-            }
-        });
-    }
-
-    @MediumTest
-    @Feature({"AndroidWebView"})
     public void testOnShowAndHideCustomViewWithJavascript() throws Throwable {
         doOnShowAndHideCustomViewTest(new Runnable() {
             @Override
@@ -92,9 +68,6 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testOnShowCustomViewAndPlayWithHtmlControl() throws Throwable {
-        if (!areHtmlControlsEnabled())
-            return;
-
         doOnShowCustomViewTest();
         Assert.assertFalse(DOMUtils.hasVideoEnded(
                 mContentViewCore, VideoTestWebServer.VIDEO_ID));
@@ -128,11 +101,6 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
         Assert.assertTrue(fullScreenErrorObserver.waitForEvent(500));
         Assert.assertFalse(mContentsClient.wasCustomViewShownCalled());
-    }
-
-    private static boolean areHtmlControlsEnabled() {
-        return !CommandLine.getInstance().hasSwitch(
-                ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE);
     }
 
     private void doOnShowAndHideCustomViewTest(final Runnable existFullscreen)

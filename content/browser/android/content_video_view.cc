@@ -249,16 +249,13 @@ gfx::NativeView ContentVideoView::GetNativeView() {
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
   JNIEnv* env = AttachCurrentThread();
-  bool legacyMode = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableOverlayFullscreenVideoSubtitle);
   return JavaObjectWeakGlobalRef(
       env,
       Java_ContentVideoView_createContentVideoView(
           env,
           content_view_core->GetContext().obj(),
           reinterpret_cast<intptr_t>(this),
-          content_view_core->GetContentVideoViewClient().obj(),
-          legacyMode).obj());
+          content_view_core->GetContentVideoViewClient().obj()).obj());
 }
 
 void ContentVideoView::CreatePowerSaveBlocker() {
@@ -268,7 +265,6 @@ void ContentVideoView::CreatePowerSaveBlocker() {
     // container view that was created for embedded video. The WebView cannot
     // reuse that so we create a new blocker instead.
     if (power_save_blocker_) return;
-
     power_save_blocker_ = PowerSaveBlocker::Create(
         PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
         "Playing video").Pass();

@@ -380,10 +380,6 @@ const char kEnableOneCopy[]                 = "enable-one-copy";
 // Enables use of hardware overlay for fullscreen video playback. Android only.
 const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
 
-// Disables blink subtitle and media control on top of overlay fullscreen video.
-const char kDisableOverlayFullscreenVideoSubtitle[] =
-    "disable-overlay-fullscreen-video-subtitle";
-
 // Forward overscroll event data from the renderer to the browser.
 const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 

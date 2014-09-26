@@ -70,10 +70,6 @@ public abstract class ContentSwitches {
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
-    // Native switch - content_switches::kDisableOverlayFullscreenVideoSubtitle
-    public static final String DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE =
-            "disable-overlay-fullscreen-video-subtitle";
-
     // Native switch - gfx_switches::kForceDeviceScaleFactor
     public static final String FORCE_DEVICE_SCALE_FACTOR =
             "force-device-scale-factor";

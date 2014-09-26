@@ -116,7 +116,6 @@ extern const char kEnableMemoryBenchmarking[];
 CONTENT_EXPORT extern const char kEnableNetworkInformation[];
 CONTENT_EXPORT extern const char kEnableOneCopy[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
-CONTENT_EXPORT extern const char kDisableOverlayFullscreenVideoSubtitle[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnablePinch[];
 CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
