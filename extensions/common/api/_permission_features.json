@@ -133,7 +133,7 @@
   ],
   "u2fDevices": [
     {
-      "channel": "dev",
+      "channel": "stable",
       "extension_types": ["extension", "platform_app"],
       "whitelist": [
         "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
