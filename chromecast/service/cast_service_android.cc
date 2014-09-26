@@ -4,9 +4,7 @@
 
 #include "chromecast/service/cast_service_android.h"
 
-#include "base/callback.h"
 #include "chromecast/android/chromecast_config_android.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace chromecast {
 

@@ -37,6 +37,8 @@ struct DefaultCommandLineSwitch {
 DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kDisableApplicationCache, "" },
   { switches::kDisablePlugins, "" },
+  // Always enable HTMLMediaElement logs.
+  { switches::kBlinkPlatformLogChannels, "Media"},
   { NULL, NULL },  // Termination
 };
 

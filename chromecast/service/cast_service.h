@@ -12,7 +12,7 @@ namespace base {
 class ThreadChecker;
 }
 
-namespace content{
+namespace content {
 class BrowserContext;
 }
 

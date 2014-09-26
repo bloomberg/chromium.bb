@@ -24,7 +24,7 @@ class CastServiceSimple : public CastService {
   virtual ~CastServiceSimple();
 
  protected:
-  // CastService implementation.
+  // CastService implementation:
   virtual void Initialize() OVERRIDE;
   virtual void StartInternal() OVERRIDE;
   virtual void StopInternal() OVERRIDE;
