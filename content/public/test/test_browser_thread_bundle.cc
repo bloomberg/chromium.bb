@@ -24,7 +24,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // pool via PostTaskAndReply are able to reply back to the originating thread.
   // Thus we must flush the blocking pool while the browser threads still exist.
   base::RunLoop().RunUntilIdle();
-  BrowserThreadImpl::FlushThreadPoolHelper();
+  BrowserThreadImpl::FlushThreadPoolHelperForTesting();
 
   // To ensure a clean teardown, each thread's message loop must be flushed
   // just before the thread is destroyed. But destroying a fake thread does not
@@ -46,7 +46,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // This is the point at which we normally shut down the thread pool. So flush
   // it again in case any shutdown tasks have been posted to the pool from the
   // threads above.
-  BrowserThreadImpl::FlushThreadPoolHelper();
+  BrowserThreadImpl::FlushThreadPoolHelperForTesting();
   base::RunLoop().RunUntilIdle();
   ui_thread_.reset();
   base::RunLoop().RunUntilIdle();

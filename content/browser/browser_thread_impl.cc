@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread_delegate.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -141,11 +142,12 @@ void BrowserThreadImpl::ShutdownThreadPool() {
 }
 
 // static
-void BrowserThreadImpl::FlushThreadPoolHelper() {
+void BrowserThreadImpl::FlushThreadPoolHelperForTesting() {
   // We don't want to create a pool if none exists.
   if (g_globals == NULL)
     return;
   g_globals.Get().blocking_pool->FlushForTesting();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
 }
 
 void BrowserThreadImpl::Init() {

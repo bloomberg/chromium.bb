@@ -61,7 +61,7 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // For testing.
   friend class ContentTestSuiteBaseListener;
   friend class TestBrowserThreadBundle;
-  static void FlushThreadPoolHelper();
+  static void FlushThreadPoolHelperForTesting();
 
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.

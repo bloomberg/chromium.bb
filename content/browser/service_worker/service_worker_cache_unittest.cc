@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -79,12 +78,6 @@ class ServiceWorkerCacheTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    base::RunLoop().RunUntilIdle();
-    disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-    base::RunLoop().RunUntilIdle();
-    cache_ = NULL;
-    base::RunLoop().RunUntilIdle();
-    disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
