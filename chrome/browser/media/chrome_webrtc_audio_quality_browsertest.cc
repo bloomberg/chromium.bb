@@ -29,6 +29,8 @@
 static const base::FilePath::CharType kReferenceFile[] =
 #if defined (OS_WIN)
     FILE_PATH_LITERAL("human-voice-win.wav");
+#elif defined (OS_MACOSX)
+    FILE_PATH_LITERAL("human-voice-mac.wav");
 #else
     FILE_PATH_LITERAL("human-voice-linux.wav");
 #endif
@@ -39,6 +41,8 @@ static const base::FilePath::CharType kReferenceFile[] =
 static const char kReferenceFileRelativeUrl[] =
 #if defined (OS_WIN)
     "resources/human-voice-win.wav";
+#elif defined (OS_MACOSX)
+    "resources/human-voice-mac.wav";
 #else
     "resources/human-voice-linux.wav";
 #endif
@@ -69,6 +73,21 @@ static const char kMainWebrtcTestHtmlPage[] =
 //
 // Note: the volume for ALL your input devices will be forced to 100% by
 //       running this test on Linux.
+//
+// On Mac:
+// 1. Get SoundFlower: http://rogueamoeba.com/freebies/soundflower/download.php
+// 2. Install it + reboot.
+// 3. Install MacPorts (http://www.macports.org/).
+// 4. Install sox: sudo port install sox.
+// 5. In Sound Preferences, set both input and output to Soundflower (2ch).
+//    Note: You will no longer hear audio on this machine, and it will no
+//    longer use any built-in mics.
+// 6. Ensure the output volume is max and the input volume at about 20%.
+// 7. Try launching chrome as the target user on the target machine, try
+//    playing, say, a YouTube video, and record with 'rec test.wav trim 0 5'.
+//    Stop the video in chrome and try playing back the file; you should hear
+//    a recording of the video (note; if you play back on the target machine
+//    you must revert the changes in step 3 first).
 //
 // On Windows 7:
 // 1. Control panel > Sound > Manage audio devices.
@@ -163,6 +182,21 @@ class AudioRecorder {
     command_line.AppendArgPath(output_file);
     command_line.AppendArg("/DURATION");
     command_line.AppendArg(duration_in_hms);
+#elif defined(OS_MACOSX)
+    command_line.SetProgram(base::FilePath("rec"));
+    command_line.AppendArg("-b");
+    command_line.AppendArg("16");
+    command_line.AppendArg("-q");
+    command_line.AppendArgPath(output_file);
+    command_line.AppendArg("trim");
+    command_line.AppendArg("0");
+    command_line.AppendArg(base::StringPrintf("%d", duration_sec));
+    command_line.AppendArg("rate");
+    command_line.AppendArg("16k");
+    if (mono) {
+      command_line.AppendArg("remix");
+      command_line.AppendArg("-");
+    }
 #else
     int num_channels = mono ? 1 : 2;
     command_line.SetProgram(base::FilePath("arecord"));
@@ -201,6 +235,8 @@ bool ForceMicrophoneVolumeTo100Percent() {
     LOG(ERROR) << "Failed to set source volume: output was " << result;
     return false;
   }
+#elif defined(OS_MACOSX)
+  // TODO(phoglund): implement.
 #else
   // Just force the volume of, say the first 5 devices. A machine will rarely
   // have more input sources than that. This is way easier than finding the
@@ -297,6 +333,9 @@ bool RunPesq(const base::FilePath& reference_file,
 #if defined(OS_WIN)
   base::FilePath pesq_path =
       test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq.exe"));
+#elif defined(OS_MACOSX)
+  base::FilePath pesq_path =
+      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq_mac"));
 #else
   base::FilePath pesq_path =
       test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq"));
