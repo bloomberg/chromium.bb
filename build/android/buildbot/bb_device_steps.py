@@ -284,11 +284,11 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
          flunk_on_failure=flunk_on_failure)
 
 
-def RunWebkitLint(target):
+def RunWebkitLint():
   """Lint WebKit's TestExpectation files."""
   bb_annotations.PrintNamedStep('webkit_lint')
   RunCmd([SrcPath(os.path.join(BK_SCRIPTS_DIR, 'lint-test-expectations')),
-          '--target', target])
+          '--android'])
 
 
 def RunWebkitLayoutTests(options):
@@ -494,7 +494,7 @@ def RunInstrumentationTests(options):
 
 def RunWebkitTests(options):
   RunTestSuites(options, ['webkit_unit_tests', 'blink_heap_unittests'])
-  RunWebkitLint(options.target)
+  RunWebkitLint()
 
 
 def RunGPUTests(options):
