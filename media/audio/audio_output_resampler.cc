@@ -40,7 +40,7 @@ class OnMoreDataConverter
   // Clears |source_callback_| and flushes the resampler.
   void Stop();
 
-  bool started() { return source_callback_ != NULL; }
+  bool started() { return source_callback_ != nullptr; }
 
  private:
   // AudioConverter::InputCallback implementation.
@@ -237,7 +237,7 @@ bool AudioOutputResampler::StartStream(
     AudioOutputProxy* stream_proxy) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  OnMoreDataConverter* resampler_callback = NULL;
+  OnMoreDataConverter* resampler_callback = nullptr;
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
   if (it == callbacks_.end()) {
     resampler_callback = new OnMoreDataConverter(params_, output_params_);
@@ -299,7 +299,7 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
                                          const AudioParameters& output_params)
     : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
                 output_params.GetBytesPerSecond()),
-      source_callback_(NULL),
+      source_callback_(nullptr),
       input_bytes_per_second_(input_params.GetBytesPerSecond()),
       audio_converter_(input_params, output_params, false) {}
 
@@ -322,7 +322,7 @@ void OnMoreDataConverter::Start(
 
 void OnMoreDataConverter::Stop() {
   CHECK(source_callback_);
-  source_callback_ = NULL;
+  source_callback_ = nullptr;
   audio_converter_.RemoveInput(this);
 }
 

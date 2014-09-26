@@ -214,10 +214,8 @@ void AudioStreamSanitizer::AddOutputBuffer(
 
 int AudioStreamSanitizer::GetFrameCount() const {
   int frame_count = 0;
-  for (BufferQueue::const_iterator it = output_buffers_.begin();
-       it != output_buffers_.end(); ++it) {
-    frame_count += (*it)->frame_count();
-  }
+  for (const auto& buffer : output_buffers_)
+    frame_count += buffer->frame_count();
   return frame_count;
 }
 
@@ -451,7 +449,7 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
 
 void AudioSplicer::CrossfadePostSplice(
     scoped_ptr<AudioBus> pre_splice_bus,
-    scoped_refptr<AudioBuffer> crossfade_buffer) {
+    const scoped_refptr<AudioBuffer>& crossfade_buffer) {
   // Use the calculated timestamp and duration to ensure there's no extra gaps
   // or overlaps to process when adding the buffer to |output_sanitizer_|.
   const AudioTimestampHelper& output_ts_helper =

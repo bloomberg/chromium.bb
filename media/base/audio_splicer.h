@@ -85,7 +85,7 @@ class MEDIA_EXPORT AudioSplicer {
   //
   // |post_splice_sanitizer_| will be empty after this operation.
   void CrossfadePostSplice(scoped_ptr<AudioBus> pre_splice_bus,
-                           scoped_refptr<AudioBuffer> crossfade_buffer);
+                           const scoped_refptr<AudioBuffer>& crossfade_buffer);
 
   // Reset the splice and splice end timestamps.
   void reset_splice_timestamps() {

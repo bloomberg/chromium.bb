@@ -94,11 +94,8 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
 void AudioRendererMixer::OnRenderError() {
   // Call each mixer input and signal an error.
   base::AutoLock auto_lock(lock_);
-  for (ErrorCallbackList::const_iterator it = error_callbacks_.begin();
-       it != error_callbacks_.end();
-       ++it) {
-    it->Run();
-  }
+  for (const auto& cb : error_callbacks_)
+    cb.Run();
 }
 
 }  // namespace media
