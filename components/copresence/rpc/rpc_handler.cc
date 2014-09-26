@@ -103,85 +103,20 @@ BroadcastScanConfiguration GetBroadcastScanConfig(const T& msg) {
   return BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
 }
 
-// This method will extract token exchange strategies
-// from the publishes and subscribes in a report request.
-// TODO(ckehoe): Delete this when the server supports
-// BroadcastScanConfiguration.
-BroadcastScanConfiguration ExtractTokenExchangeStrategy(
-    const ReportRequest& request) {
-  bool broadcast_only = false;
-  bool scan_only = false;
-
-  // Strategies for publishes.
-  if (request.has_manage_messages_request()) {
-    const RepeatedPtrField<PublishedMessage>& messages =
-        request.manage_messages_request().message_to_publish();
-    for (int i = 0; i < messages.size(); ++i) {
-      BroadcastScanConfiguration config =
-          GetBroadcastScanConfig(messages.Get(i));
-      broadcast_only = broadcast_only || config == BROADCAST_ONLY;
-      scan_only = scan_only || config == SCAN_ONLY;
-      if (config == BROADCAST_AND_SCAN || (broadcast_only && scan_only))
-        return BROADCAST_AND_SCAN;
-    }
-  }
-
-  // Strategies for subscriptions.
-  if (request.has_manage_subscriptions_request()) {
-    const RepeatedPtrField<Subscription> subscriptions =
-        request.manage_subscriptions_request().subscription();
-    for (int i = 0; i < subscriptions.size(); ++i) {
-      BroadcastScanConfiguration config =
-          GetBroadcastScanConfig(subscriptions.Get(i));
-      broadcast_only = broadcast_only || config == BROADCAST_ONLY;
-      scan_only = scan_only || config == SCAN_ONLY;
-      if (config == BROADCAST_AND_SCAN || (broadcast_only && scan_only))
-        return BROADCAST_AND_SCAN;
-    }
-  }
-
-  if (broadcast_only)
-    return BROADCAST_ONLY;
-  if (scan_only)
-    return SCAN_ONLY;
-
-  // If nothing else is specified, default to both broadcast and scan.
-  return BROADCAST_AND_SCAN;
-}
-
-// TODO(rkc): Fix this hack once the server supports setting strategies per
-// operation.
-bool ExtractIsAudibleStrategy(const ReportRequest& request) {
-  if (request.has_manage_messages_request()) {
-    const RepeatedPtrField<PublishedMessage> messages =
-        request.manage_messages_request().message_to_publish();
-    for (int i = 0; i < messages.size(); ++i) {
-      const PublishedMessage& msg = messages.Get(i);
-      if (msg.has_token_exchange_strategy() &&
-          msg.token_exchange_strategy().has_use_audible() &&
-          msg.token_exchange_strategy().use_audible()) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
   scoped_ptr<DeviceState> state(new DeviceState);
 
-  TokenTechnology* token_technology =
+  TokenTechnology* ultrasound =
       state->mutable_capabilities()->add_token_technology();
-  token_technology->set_medium(AUDIO_ULTRASOUND_PASSBAND);
-  if (ExtractIsAudibleStrategy(request))
-    token_technology->set_medium(AUDIO_AUDIBLE_DTMF);
+  ultrasound->set_medium(AUDIO_ULTRASOUND_PASSBAND);
+  ultrasound->add_instruction_type(TRANSMIT);
+  ultrasound->add_instruction_type(RECEIVE);
 
-  BroadcastScanConfiguration config =
-      ExtractTokenExchangeStrategy(request);
-  if (config == BROADCAST_ONLY || config == BROADCAST_AND_SCAN)
-    token_technology->add_instruction_type(TRANSMIT);
-  if (config == SCAN_ONLY || config == BROADCAST_AND_SCAN)
-    token_technology->add_instruction_type(RECEIVE);
+  TokenTechnology* audible =
+      state->mutable_capabilities()->add_token_technology();
+  audible->set_medium(AUDIO_AUDIBLE_DTMF);
+  audible->add_instruction_type(TRANSMIT);
+  audible->add_instruction_type(RECEIVE);
 
   return state.Pass();
 }
@@ -276,25 +211,6 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
       GetDeviceCapabilities(*request).release());
 
   AddPlayingTokens(request.get());
-
-  // TODO(ckehoe): Currently the server supports only BROADCAST_AND_SCAN.
-  // Remove this once b/16715253 is fixed.
-  if (request->has_manage_messages_request()) {
-    RepeatedPtrField<PublishedMessage>* messages = request
-        ->mutable_manage_messages_request()->mutable_message_to_publish();
-    for (int i = 0; i < messages->size(); ++i) {
-      messages->Mutable(i)->mutable_token_exchange_strategy()
-          ->set_broadcast_scan_configuration(BROADCAST_AND_SCAN);
-    }
-  }
-  if (request->has_manage_subscriptions_request()) {
-    RepeatedPtrField<Subscription>* subscriptions =
-        request->mutable_manage_subscriptions_request()->mutable_subscription();
-    for (int i = 0; i < subscriptions->size(); ++i) {
-      subscriptions->Mutable(i)->mutable_token_exchange_strategy()
-          ->set_broadcast_scan_configuration(BROADCAST_AND_SCAN);
-    }
-  }
 
   SendServerRequest(kReportRequestRpcName,
                     app_id,

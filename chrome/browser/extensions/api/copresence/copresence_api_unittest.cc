@@ -12,6 +12,8 @@
 #include "components/copresence/public/copresence_manager.h"
 
 using base::ListValue;
+using copresence::AUDIBLE;
+using copresence::AUDIO_CONFIGURATION_UNKNOWN;
 using copresence::BROADCAST_ONLY;
 using copresence::CopresenceDelegate;
 using copresence::CopresenceManager;
@@ -164,12 +166,15 @@ TEST_F(CopresenceApiUnittest, Publish) {
   EXPECT_EQ("Knock Knock!", message.message().payload());
   EXPECT_EQ(BROADCAST_ONLY,
             message.token_exchange_strategy().broadcast_scan_configuration());
+  EXPECT_EQ(AUDIO_CONFIGURATION_UNKNOWN,
+            message.token_exchange_strategy().audio_configuration());
 }
 
 TEST_F(CopresenceApiUnittest, Subscribe) {
   scoped_ptr<SubscribeOperation> subscribe(CreateSubscribe("sub"));
   subscribe->strategies.reset(new Strategy);
   subscribe->strategies->only_broadcast.reset(new bool(true));  // Not default
+  subscribe->strategies->audible.reset(new bool(true)); // Not default
 
   scoped_ptr<Operation> operation(new Operation);
   operation->subscribe = subscribe.Pass();
@@ -185,9 +190,11 @@ TEST_F(CopresenceApiUnittest, Subscribe) {
   EXPECT_EQ("sub", subscription.id());
   EXPECT_EQ(1000, subscription.ttl_millis());
   EXPECT_EQ("joke", subscription.message_type().type());
-  copresence::BroadcastScanConfiguration strategy =
+  copresence::BroadcastScanConfiguration broadcast_scan =
       subscription.token_exchange_strategy().broadcast_scan_configuration();
-  EXPECT_EQ(BROADCAST_ONLY, strategy);
+  EXPECT_EQ(BROADCAST_ONLY, broadcast_scan);
+  EXPECT_EQ(AUDIBLE,
+            subscription.token_exchange_strategy().audio_configuration());
 }
 
 TEST_F(CopresenceApiUnittest, DefaultStrategies) {

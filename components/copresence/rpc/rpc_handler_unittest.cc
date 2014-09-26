@@ -27,20 +27,6 @@ namespace {
 
 const char kChromeVersion[] = "Chrome Version String";
 
-void AddMessageWithStrategy(ReportRequest* report,
-                            BroadcastScanConfiguration strategy) {
-  report->mutable_manage_messages_request()->add_message_to_publish()
-      ->mutable_token_exchange_strategy()->set_broadcast_scan_configuration(
-          strategy);
-}
-
-void AddSubscriptionWithStrategy(ReportRequest* report,
-                                 BroadcastScanConfiguration strategy) {
-  report->mutable_manage_subscriptions_request()->add_subscription()
-      ->mutable_token_exchange_strategy()->set_broadcast_scan_configuration(
-          strategy);
-}
-
 void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
                              const std::string& message_string,
                              SubscribedMessage* message_proto) {
@@ -199,54 +185,6 @@ TEST_F(RpcHandlerTest, Initialize) {
   Identity identity = registration->device_identifiers().registrant();
   EXPECT_EQ(CHROME, identity.type());
   EXPECT_FALSE(identity.chrome_id().empty());
-}
-
-TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
-  // Empty request.
-  rpc_handler_.SendReportRequest(make_scoped_ptr(new ReportRequest));
-  EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
-  const TokenTechnology* token_technology = &GetTokenTechnologyFromReport();
-  EXPECT_EQ(AUDIO_ULTRASOUND_PASSBAND, token_technology->medium());
-  EXPECT_EQ(TRANSMIT, token_technology->instruction_type(0));
-  EXPECT_EQ(RECEIVE, token_technology->instruction_type(1));
-
-  // Request with broadcast only.
-  scoped_ptr<ReportRequest> report(new ReportRequest);
-  AddMessageWithStrategy(report.get(), BROADCAST_ONLY);
-  rpc_handler_.SendReportRequest(report.Pass());
-  token_technology = &GetTokenTechnologyFromReport();
-  EXPECT_EQ(1, token_technology->instruction_type_size());
-  EXPECT_EQ(TRANSMIT, token_technology->instruction_type(0));
-  EXPECT_FALSE(GetReportSent()->has_manage_subscriptions_request());
-
-  // Request with scan only.
-  report.reset(new ReportRequest);
-  AddSubscriptionWithStrategy(report.get(), SCAN_ONLY);
-  AddSubscriptionWithStrategy(report.get(), SCAN_ONLY);
-  rpc_handler_.SendReportRequest(report.Pass());
-  token_technology = &GetTokenTechnologyFromReport();
-  EXPECT_EQ(1, token_technology->instruction_type_size());
-  EXPECT_EQ(RECEIVE, token_technology->instruction_type(0));
-  EXPECT_FALSE(GetReportSent()->has_manage_messages_request());
-
-  // Request with both scan and broadcast only (conflict).
-  report.reset(new ReportRequest);
-  AddMessageWithStrategy(report.get(), SCAN_ONLY);
-  AddMessageWithStrategy(report.get(), BROADCAST_ONLY);
-  AddSubscriptionWithStrategy(report.get(), BROADCAST_ONLY);
-  rpc_handler_.SendReportRequest(report.Pass());
-  token_technology = &GetTokenTechnologyFromReport();
-  EXPECT_EQ(TRANSMIT, token_technology->instruction_type(0));
-  EXPECT_EQ(RECEIVE, token_technology->instruction_type(1));
-
-  // Request with broadcast and scan.
-  report.reset(new ReportRequest);
-  AddMessageWithStrategy(report.get(), SCAN_ONLY);
-  AddSubscriptionWithStrategy(report.get(), BROADCAST_AND_SCAN);
-  rpc_handler_.SendReportRequest(report.Pass());
-  token_technology = &GetTokenTechnologyFromReport();
-  EXPECT_EQ(TRANSMIT, token_technology->instruction_type(0));
-  EXPECT_EQ(RECEIVE, token_technology->instruction_type(1));
 }
 
 TEST_F(RpcHandlerTest, CreateRequestHeader) {
