@@ -320,9 +320,9 @@ void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
 
 void MediaControlOverlayPlayButtonElement::updateDisplayType()
 {
-    if (mediaElement().shouldShowControls() && mediaElement().togglePlayStateWillPlay()) {
+    if (mediaElement().shouldShowControls() && mediaElement().togglePlayStateWillPlay())
         show();
-    } else
+    else
         hide();
 }
 

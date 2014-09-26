@@ -23,6 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef VTTElement_h
+#define VTTElement_h
+
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -83,3 +86,4 @@ DEFINE_ELEMENT_TYPE_CASTS(VTTElement, isVTTElement());
 
 } // namespace blink
 
+#endif // VTTElement_h

@@ -74,8 +74,7 @@ typedef Vector<CueInterval> CueList;
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
-class HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject
-{
+class HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
 public:
@@ -146,7 +145,7 @@ public:
     bool ended() const;
     bool autoplay() const;
     bool loop() const;
-    void setLoop(bool b);
+    void setLoop(bool);
     void play();
     void pause();
     void requestRemotePlayback();

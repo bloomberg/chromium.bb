@@ -169,10 +169,11 @@ void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track)
         tracks = &m_addTrackTracks;
         for (size_t i = 0; i < m_inbandTracks.size(); ++i)
             m_inbandTracks[i]->invalidateTrackIndex();
-    } else if (track->trackType() == TextTrack::InBand)
+    } else if (track->trackType() == TextTrack::InBand) {
         tracks = &m_inbandTracks;
-    else
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     size_t index = tracks->find(track);
     if (index == kNotFound)
@@ -186,9 +187,9 @@ void TextTrackList::append(PassRefPtrWillBeRawPtr<TextTrack> prpTrack)
 {
     RefPtrWillBeRawPtr<TextTrack> track = prpTrack;
 
-    if (track->trackType() == TextTrack::AddTrack)
+    if (track->trackType() == TextTrack::AddTrack) {
         m_addTrackTracks.append(track);
-    else if (track->trackType() == TextTrack::TrackElement) {
+    } else if (track->trackType() == TextTrack::TrackElement) {
         // Insert tracks added for <track> element in tree order.
         size_t index = static_cast<LoadableTextTrack*>(track.get())->trackElementIndex();
         m_elementTracks.insert(index, track);
@@ -196,8 +197,9 @@ void TextTrackList::append(PassRefPtrWillBeRawPtr<TextTrack> prpTrack)
         // Insert tracks added for in-band in the media file order.
         size_t index = static_cast<InbandTextTrack*>(track.get())->inbandTrackIndex();
         m_inbandTracks.insert(index, track);
-    } else
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     invalidateTrackIndexesAfterTrack(track.get());
 

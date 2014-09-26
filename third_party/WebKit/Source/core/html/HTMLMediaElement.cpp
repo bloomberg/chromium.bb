@@ -537,11 +537,11 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == controlsAttr) {
         configureMediaControls();
     } else if (name == preloadAttr) {
-        if (equalIgnoringCase(value, "none"))
+        if (equalIgnoringCase(value, "none")) {
             m_preload = MediaPlayer::None;
-        else if (equalIgnoringCase(value, "metadata"))
+        } else if (equalIgnoringCase(value, "metadata")) {
             m_preload = MediaPlayer::MetaData;
-        else {
+        } else {
             // The spec does not define an "invalid value default" but "auto" is suggested as the
             // "missing value default", so use it for everything except "none" and "metadata"
             m_preload = MediaPlayer::Auto;
@@ -699,17 +699,16 @@ String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySy
     String canPlay;
 
     // 4.8.10.3
-    switch (support)
-    {
-        case WebMimeRegistry::IsNotSupported:
-            canPlay = emptyString();
-            break;
-        case WebMimeRegistry::MayBeSupported:
-            canPlay = "maybe";
-            break;
-        case WebMimeRegistry::IsSupported:
-            canPlay = "probably";
-            break;
+    switch (support) {
+    case WebMimeRegistry::IsNotSupported:
+        canPlay = emptyString();
+        break;
+    case WebMimeRegistry::MayBeSupported:
+        canPlay = "maybe";
+        break;
+    case WebMimeRegistry::IsSupported:
+        canPlay = "probably";
+        break;
     }
 
     WTF_LOG(Media, "HTMLMediaElement::canPlayType(%p, %s, %s) -> %s", this, mimeType.utf8().data(), keySystem.utf8().data(), canPlay.utf8().data());
@@ -1223,9 +1222,10 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // flag set, and missed cues is empty, then abort these steps.
     bool activeSetChanged = missedCuesSize;
 
-    for (size_t i = 0; !activeSetChanged && i < previousCuesSize; ++i)
+    for (size_t i = 0; !activeSetChanged && i < previousCuesSize; ++i) {
         if (!currentCues.contains(previousCues[i]) && previousCues[i].data()->isActive())
             activeSetChanged = true;
+    }
 
     for (size_t i = 0; i < currentCuesSize; ++i) {
         currentCues[i].data()->updateDisplayTree(movieTime);
@@ -1364,9 +1364,10 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     for (size_t i = 0; i < currentCuesSize; ++i)
         currentCues[i].data()->setIsActive(true);
 
-    for (size_t i = 0; i < previousCuesSize; ++i)
+    for (size_t i = 0; i < previousCuesSize; ++i) {
         if (!currentCues.contains(previousCues[i]))
             previousCues[i].data()->setIsActive(false);
+    }
 
     // Update the current active cues.
     m_currentlyActiveCues = currentCues;
@@ -1770,9 +1771,9 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
     m_tracksAreReady = tracksAreReady;
 
-    if (tracksAreReady)
+    if (tracksAreReady) {
         m_readyState = newState;
-    else {
+    } else {
         // If a media file has text tracks the readyState may not progress beyond HAVE_FUTURE_DATA until
         // the text tracks are ready, regardless of the state of the media file.
         if (newState <= HAVE_METADATA)
@@ -2981,7 +2982,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'src' is %s", this, urlForLoggingMedia(mediaURL).utf8().data());
 #endif
         if (mediaURL.isEmpty())
-            goto check_again;
+            goto checkAgain;
 
         type = source->type();
         // FIXME(82965): Add support for keySystem in <source> and set system from source.
@@ -2993,17 +2994,17 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
                 WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'type' is '%s' - key system is '%s'", this, type.utf8().data(), system.utf8().data());
 #endif
             if (!supportsType(ContentType(type), system))
-                goto check_again;
+                goto checkAgain;
         }
 
         // Is it safe to load this url?
         if (!isSafeToLoadURL(mediaURL, actionIfInvalid))
-            goto check_again;
+            goto checkAgain;
 
         // Making it this far means the <source> looks reasonable.
         canUseSourceElement = true;
 
-check_again:
+checkAgain:
         if (!canUseSourceElement && actionIfInvalid == Complain && source)
             source->scheduleErrorEvent();
     }
@@ -3147,9 +3148,9 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
             // for the media element's current media controller.
             updateMediaController();
         }
-    }
-    else
+    } else {
         m_sentEndEvent = false;
+    }
 
     updatePlayState();
 }
@@ -3434,9 +3435,9 @@ void HTMLMediaElement::userCancelledLoad()
     if (m_readyState == HAVE_NOTHING) {
         m_networkState = NETWORK_EMPTY;
         scheduleEvent(EventTypeNames::emptied);
-    }
-    else
+    } else {
         m_networkState = NETWORK_IDLE;
+    }
 
     // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);

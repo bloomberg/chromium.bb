@@ -128,8 +128,9 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // Notify the player when the poster image URL changes.
         if (webMediaPlayer())
             webMediaPlayer()->setPoster(posterImageURL());
-    } else
+    } else {
         HTMLMediaElement::parseAttribute(name, value);
+    }
 }
 
 bool HTMLVideoElement::supportsFullscreen() const

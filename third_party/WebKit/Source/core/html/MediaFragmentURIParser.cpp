@@ -198,7 +198,7 @@ bool MediaFragmentURIParser::parseNPTFragment(const LChar* timeString, unsigned 
 {
     unsigned offset = 0;
     if (length >= nptIdentiferLength && timeString[0] == 'n' && timeString[1] == 'p' && timeString[2] == 't' && timeString[3] == ':')
-            offset += nptIdentiferLength;
+        offset += nptIdentiferLength;
 
     if (offset == length)
         return false;
@@ -206,9 +206,9 @@ bool MediaFragmentURIParser::parseNPTFragment(const LChar* timeString, unsigned 
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
     // If a single number only is given, this corresponds to the begin time except if it is preceded
     // by a comma that would in this case indicate the end time.
-    if (timeString[offset] == ',')
+    if (timeString[offset] == ',') {
         startTime = 0;
-    else {
+    } else {
         if (!parseNPTTime(timeString, length, offset, startTime))
             return false;
     }
@@ -235,8 +235,8 @@ bool MediaFragmentURIParser::parseNPTFragment(const LChar* timeString, unsigned 
 
 bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString, unsigned length, unsigned& offset, double& time)
 {
-    enum Mode { minutes, hours };
-    Mode mode = minutes;
+    enum Mode { Minutes, Hours };
+    Mode mode = Minutes;
 
     if (offset >= length || !isASCIIDigit(timeString[offset]))
         return false;
@@ -280,7 +280,7 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString, unsigned leng
     if (digits1.length() < 2)
         return false;
     if (digits1.length() > 2)
-        mode = hours;
+        mode = Hours;
 
     // Collect the next sequence of 0-9 after ':'
     if (offset >= length || timeString[offset++] != ':')
@@ -294,7 +294,7 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString, unsigned leng
 
     // Detect whether this timestamp includes hours.
     int value3;
-    if (mode == hours || (offset < length && timeString[offset] == ':')) {
+    if (mode == Hours || (offset < length && timeString[offset] == ':')) {
         if (offset >= length || timeString[offset++] != ':')
             return false;
         if (offset >= length || !isASCIIDigit(timeString[offset]))
