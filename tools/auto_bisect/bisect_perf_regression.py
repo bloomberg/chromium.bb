@@ -36,7 +36,6 @@ import copy
 import datetime
 import errno
 import hashlib
-import math
 import optparse
 import os
 import re
@@ -50,12 +49,12 @@ import zipfile
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.path.pardir, 'telemetry'))
 
+from bisect_results import BisectResults
 import bisect_utils
 import builder
 import math_utils
 import request_build
 import source_control as source_control_module
-import ttest
 from telemetry.util import cloud_storage
 
 # Below is the map of "depot" names to information about each depot. Each depot
@@ -271,42 +270,6 @@ def _AddAdditionalDepotInfo(depot_info):
   global DEPOT_NAMES
   DEPOT_DEPS_NAME = dict(DEPOT_DEPS_NAME.items() + depot_info.items())
   DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
-
-
-def ConfidenceScore(good_results_lists, bad_results_lists):
-  """Calculates a confidence score.
-
-  This score is a percentage which represents our degree of confidence in the
-  proposition that the good results and bad results are distinct groups, and
-  their differences aren't due to chance alone.
-
-
-  Args:
-    good_results_lists: A list of lists of "good" result numbers.
-    bad_results_lists: A list of lists of "bad" result numbers.
-
-  Returns:
-    A number in the range [0, 100].
-  """
-  # If there's only one item in either list, this means only one revision was
-  # classified good or bad; this isn't good enough evidence to make a decision.
-  # If an empty list was passed, that also implies zero confidence.
-  if len(good_results_lists) <= 1 or len(bad_results_lists) <= 1:
-    return 0.0
-
-  # Flatten the lists of results lists.
-  sample1 = sum(good_results_lists, [])
-  sample2 = sum(bad_results_lists, [])
-
-  # If there were only empty lists in either of the lists (this is unexpected
-  # and normally shouldn't happen), then we also want to return 0.
-  if not sample1 or not sample2:
-    return 0.0
-
-  # The p-value is approximately the probability of obtaining the given set
-  # of good and bad values just by chance.
-  _, _, p_value = ttest.WelchsTTest(sample1, sample2)
-  return 100.0 * (1.0 - p_value)
 
 
 def GetSHA1HexDigest(contents):
@@ -865,44 +828,36 @@ def _PrintStepTime(revision_data_sorted):
       seconds=int(step_perf_time_avg))
 
 
-def _FindOtherRegressions(revision_data_sorted, bad_greater_than_good):
-  """Compiles a list of other possible regressions from the revision data.
+class DepotDirectoryRegistry(object):
 
-  Args:
-    revision_data_sorted: Sorted list of (revision, revision data) pairs.
-    bad_greater_than_good: Whether the result value at the "bad" revision is
-        numerically greater than the result value at the "good" revision.
+  def __init__(self, src_cwd):
+    self.depot_cwd = {}
+    for depot in DEPOT_NAMES:
+      # The working directory of each depot is just the path to the depot, but
+      # since we're already in 'src', we can skip that part.
+      path_in_src = DEPOT_DEPS_NAME[depot]['src'][4:]
+      self.AddDepot(depot, os.path.join(src_cwd, path_in_src))
 
-  Returns:
-    A list of [current_rev, previous_rev, confidence] for other places where
-    there may have been a regression.
-  """
-  other_regressions = []
-  previous_values = []
-  previous_id = None
-  for current_id, current_data in revision_data_sorted:
-    current_values = current_data['value']
-    if current_values:
-      current_values = current_values['values']
-      if previous_values:
-        confidence = ConfidenceScore(previous_values, [current_values])
-        mean_of_prev_runs = math_utils.Mean(sum(previous_values, []))
-        mean_of_current_runs = math_utils.Mean(current_values)
+    self.AddDepot('chromium', src_cwd)
+    self.AddDepot('cros', os.path.join(src_cwd, 'tools', 'cros'))
 
-        # Check that the potential regression is in the same direction as
-        # the overall regression. If the mean of the previous runs < the
-        # mean of the current runs, this local regression is in same
-        # direction.
-        prev_less_than_current = mean_of_prev_runs < mean_of_current_runs
-        is_same_direction = (prev_less_than_current if
-            bad_greater_than_good else not prev_less_than_current)
+  def AddDepot(self, depot_name, depot_dir):
+    self.depot_cwd[depot_name] = depot_dir
 
-        # Only report potential regressions with high confidence.
-        if is_same_direction and confidence > 50:
-          other_regressions.append([current_id, previous_id, confidence])
-      previous_values.append(current_values)
-      previous_id = current_id
-  return other_regressions
+  def GetDepotDir(self, depot_name):
+    if depot_name in self.depot_cwd:
+      return self.depot_cwd[depot_name]
+    else:
+      assert False, ('Unknown depot [ %s ] encountered. Possibly a new one '
+                     'was added without proper support?' % depot_name)
+
+  def ChangeToDepotDir(self, depot_name):
+    """Given a depot, changes to the appropriate working directory.
+
+    Args:
+      depot_name: The name of the depot (see DEPOT_NAMES).
+    """
+    os.chdir(self.GetDepotDir(depot_name))
 
 
 class BisectPerformanceMetrics(object):
@@ -922,17 +877,11 @@ class BisectPerformanceMetrics(object):
     # where the bisect script is running from. Instead, it's the src/ directory
     # inside the bisect/ directory which is created before running.
     self.src_cwd = os.getcwd()
-    self.cros_cwd = os.path.join(os.getcwd(), '..', 'cros')
-    self.depot_cwd = {}
+
+    self.depot_registry = DepotDirectoryRegistry(self.src_cwd)
     self.cleanup_commands = []
     self.warnings = []
     self.builder = builder.Builder.FromOpts(opts)
-
-    for depot in DEPOT_NAMES:
-      # The working directory of each depot is just the path to the depot, but
-      # since we're already in 'src', we can skip that part.
-      self.depot_cwd[depot] = os.path.join(
-          self.src_cwd, DEPOT_DEPS_NAME[depot]['src'][4:])
 
   def PerformCleanup(self):
     """Performs cleanup when script is finished."""
@@ -954,7 +903,7 @@ class BisectPerformanceMetrics(object):
       revision_range_end = bad_revision
 
       cwd = os.getcwd()
-      self.ChangeToDepotWorkingDirectory('cros')
+      self.depot_registry.ChangeToDepotDir('cros')
 
       # Print the commit timestamps for every commit in the revision time
       # range. We'll sort them and bisect by that. There is a remote chance that
@@ -974,7 +923,7 @@ class BisectPerformanceMetrics(object):
           [int(o) for o in output.split('\n') if bisect_utils.IsStringInt(o)]))
       revision_work_list = sorted(revision_work_list, reverse=True)
     else:
-      cwd = self._GetDepotDirectory(depot)
+      cwd = self.depot_registry.GetDepotDir(depot)
       revision_work_list = self.source_control.GetRevisionList(bad_revision,
           good_revision, cwd=cwd)
 
@@ -994,8 +943,8 @@ class BisectPerformanceMetrics(object):
       # As of 01/24/2014, V8 trunk descriptions are formatted:
       # "Version 3.X.Y (based on bleeding_edge revision rZ)"
       # So we can just try parsing that out first and fall back to the old way.
-      v8_dir = self._GetDepotDirectory('v8')
-      v8_bleeding_edge_dir = self._GetDepotDirectory('v8_bleeding_edge')
+      v8_dir = self.depot_registry.GetDepotDir('v8')
+      v8_bleeding_edge_dir = self.depot_registry.GetDepotDir('v8_bleeding_edge')
 
       revision_info = self.source_control.QueryRevisionInfo(revision,
           cwd=v8_dir)
@@ -1035,7 +984,7 @@ class BisectPerformanceMetrics(object):
     return None
 
   def _GetNearestV8BleedingEdgeFromTrunk(self, revision, search_forward=True):
-    cwd = self._GetDepotDirectory('v8')
+    cwd = self.depot_registry.GetDepotDir('v8')
     cmd = ['log', '--format=%ct', '-1', revision]
     output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
     commit_time = int(output)
@@ -1097,8 +1046,8 @@ class BisectPerformanceMetrics(object):
           depot_data_src = depot_data.get('src') or depot_data.get('src_old')
           src_dir = deps_data.get(depot_data_src)
           if src_dir:
-            self.depot_cwd[depot_name] = os.path.join(
-                self.src_cwd, depot_data_src[4:])
+            self.depot_registry.AddDepot(depot_name, os.path.join(
+                self.src_cwd, depot_data_src[4:]))
             re_results = rxp.search(src_dir)
             if re_results:
               results[depot_name] = re_results.group('revision')
@@ -1135,7 +1084,7 @@ class BisectPerformanceMetrics(object):
       A dict in the format {depot: revision} if successful, otherwise None.
     """
     cwd = os.getcwd()
-    self.ChangeToDepotWorkingDirectory(depot)
+    self.depot_registry.ChangeToDepotDir(depot)
 
     results = {}
 
@@ -1176,7 +1125,7 @@ class BisectPerformanceMetrics(object):
               self.warnings.append(warningText)
 
           cwd = os.getcwd()
-          self.ChangeToDepotWorkingDirectory('chromium')
+          self.depot_registry.ChangeToDepotDir('chromium')
           cmd = ['log', '-1', '--format=%H',
                  '--author=chrome-release@google.com',
                  '--grep=to %s' % version, 'origin/master']
@@ -1414,7 +1363,7 @@ class BisectPerformanceMetrics(object):
     new_data = None
     if re.search(deps_revision, deps_contents):
       commit_position = self.source_control.GetCommitPosition(
-          git_revision, self._GetDepotDirectory(depot))
+          git_revision, self.depot_registry.GetDepotDir(depot))
       if not commit_position:
         print 'Could not determine commit position for %s' % git_revision
         return None
@@ -1778,7 +1727,7 @@ class BisectPerformanceMetrics(object):
       commit_position = self.source_control.GetCommitPosition(revision)
 
       for d in DEPOT_DEPS_NAME[depot]['depends']:
-        self.ChangeToDepotWorkingDirectory(d)
+        self.depot_registry.ChangeToDepotDir(d)
 
         dependant_rev = self.source_control.ResolveToRevision(
             commit_position, d, DEPOT_DEPS_NAME, -1000)
@@ -1789,7 +1738,7 @@ class BisectPerformanceMetrics(object):
       num_resolved = len(revisions_to_sync)
       num_needed = len(DEPOT_DEPS_NAME[depot]['depends'])
 
-      self.ChangeToDepotWorkingDirectory(depot)
+      self.depot_registry.ChangeToDepotDir(depot)
 
       if not ((num_resolved - 1) == num_needed):
         return None
@@ -1815,7 +1764,7 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     cwd = os.getcwd()
-    self.ChangeToDepotWorkingDirectory('cros')
+    self.depot_registry.ChangeToDepotDir('cros')
     cmd = [bisect_utils.CROS_SDK_PATH, '--delete']
     return_code = bisect_utils.RunProcess(cmd)
     os.chdir(cwd)
@@ -1828,7 +1777,7 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     cwd = os.getcwd()
-    self.ChangeToDepotWorkingDirectory('cros')
+    self.depot_registry.ChangeToDepotDir('cros')
     cmd = [bisect_utils.CROS_SDK_PATH, '--create']
     return_code = bisect_utils.RunProcess(cmd)
     os.chdir(cwd)
@@ -1990,7 +1939,7 @@ class BisectPerformanceMetrics(object):
       True if successful, False otherwise.
     """
     for depot, revision in revisions_to_sync:
-      self.ChangeToDepotWorkingDirectory(depot)
+      self.depot_registry.ChangeToDepotDir(depot)
 
       if sync_client:
         self.PerformPreBuildCleanup()
@@ -2030,25 +1979,6 @@ class BisectPerformanceMetrics(object):
       dist_to_bad_value = abs(current_value['mean'] - known_bad_value['mean'])
 
     return dist_to_good_value < dist_to_bad_value
-
-  def _GetDepotDirectory(self, depot_name):
-    if depot_name == 'chromium':
-      return self.src_cwd
-    elif depot_name == 'cros':
-      return self.cros_cwd
-    elif depot_name in DEPOT_NAMES:
-      return self.depot_cwd[depot_name]
-    else:
-      assert False, ('Unknown depot [ %s ] encountered. Possibly a new one '
-                     'was added without proper support?' % depot_name)
-
-  def ChangeToDepotWorkingDirectory(self, depot_name):
-    """Given a depot, changes to the appropriate working directory.
-
-    Args:
-      depot_name: The name of the depot (see DEPOT_NAMES).
-    """
-    os.chdir(self._GetDepotDirectory(depot_name))
 
   def _FillInV8BleedingEdgeInfo(self, min_revision_data, max_revision_data):
     r1 = self._GetNearestV8BleedingEdgeFromTrunk(min_revision_data['revision'],
@@ -2125,7 +2055,7 @@ class BisectPerformanceMetrics(object):
     """
     # Change into working directory of external library to run
     # subsequent commands.
-    self.ChangeToDepotWorkingDirectory(current_depot)
+    self.depot_registry.ChangeToDepotDir(current_depot)
 
     # V8 (and possibly others) is merged in periodically. Bisecting
     # this directory directly won't give much good info.
@@ -2139,7 +2069,7 @@ class BisectPerformanceMetrics(object):
         return []
 
     if current_depot == 'v8_bleeding_edge':
-      self.ChangeToDepotWorkingDirectory('chromium')
+      self.depot_registry.ChangeToDepotDir('chromium')
 
       shutil.move('v8', 'v8.bak')
       shutil.move('v8_bleeding_edge', 'v8')
@@ -2147,16 +2077,17 @@ class BisectPerformanceMetrics(object):
       self.cleanup_commands.append(['mv', 'v8', 'v8_bleeding_edge'])
       self.cleanup_commands.append(['mv', 'v8.bak', 'v8'])
 
-      self.depot_cwd['v8_bleeding_edge'] = os.path.join(self.src_cwd, 'v8')
-      self.depot_cwd['v8'] = os.path.join(self.src_cwd, 'v8.bak')
+      self.depot_registry.AddDepot('v8_bleeding_edge',
+                                  os.path.join(self.src_cwd, 'v8'))
+      self.depot_registry.AddDepot('v8', os.path.join(self.src_cwd, 'v8.bak'))
 
-      self.ChangeToDepotWorkingDirectory(current_depot)
+      self.depot_registry.ChangeToDepotDir(current_depot)
 
     depot_revision_list = self.GetRevisionList(current_depot,
                                                end_revision,
                                                start_revision)
 
-    self.ChangeToDepotWorkingDirectory('chromium')
+    self.depot_registry.ChangeToDepotDir('chromium')
 
     return depot_revision_list
 
@@ -2262,7 +2193,7 @@ class BisectPerformanceMetrics(object):
       True if the revisions are in the proper order (good earlier than bad).
     """
     if self.source_control.IsGit() and target_depot != 'cros':
-      cwd = self._GetDepotDirectory(target_depot)
+      cwd = self.depot_registry.GetDepotDir(target_depot)
 
       cmd = ['log', '--format=%ct', '-1', good_revision]
       output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
@@ -2329,41 +2260,9 @@ class BisectPerformanceMetrics(object):
       metric: The performance metric to monitor.
 
     Returns:
-      A dict with 2 members, 'revision_data' and 'error'. On success,
-      'revision_data' will contain a dict mapping revision ids to
-      data about that revision. Each piece of revision data consists of a
-      dict with the following keys:
-
-      'passed': Represents whether the performance test was successful at
-          that revision. Possible values include: 1 (passed), 0 (failed),
-          '?' (skipped), 'F' (build failed).
-      'depot': The depot that this revision is from (i.e. WebKit)
-      'external': If the revision is a 'src' revision, 'external' contains
-          the revisions of each of the external libraries.
-      'sort': A sort value for sorting the dict in order of commits.
-
-      For example:
-      {
-        'error':None,
-        'revision_data':
-        {
-          'CL #1':
-          {
-            'passed': False,
-            'depot': 'chromium',
-            'external': None,
-            'sort': 0
-          }
-        }
-      }
-
-      If an error occurred, the 'error' field will contain the message and
-      'revision_data' will be empty.
+      A BisectResults object.
     """
-    results = {
-        'revision_data' : {},
-        'error' : None,
-    }
+    results = BisectResults(self.depot_registry, self.source_control)
 
     # Choose depot to bisect first
     target_depot = 'chromium'
@@ -2373,7 +2272,7 @@ class BisectPerformanceMetrics(object):
       target_depot = 'android-chrome'
 
     cwd = os.getcwd()
-    self.ChangeToDepotWorkingDirectory(target_depot)
+    self.depot_registry.ChangeToDepotDir(target_depot)
 
     # If they passed SVN revisions, we can try match them to git SHA1 hashes.
     bad_revision = self.source_control.ResolveToRevision(
@@ -2383,18 +2282,18 @@ class BisectPerformanceMetrics(object):
 
     os.chdir(cwd)
     if bad_revision is None:
-      results['error'] = 'Couldn\'t resolve [%s] to SHA1.' % bad_revision_in
+      results.error = 'Couldn\'t resolve [%s] to SHA1.' % bad_revision_in
       return results
 
     if good_revision is None:
-      results['error'] = 'Couldn\'t resolve [%s] to SHA1.' % good_revision_in
+      results.error = 'Couldn\'t resolve [%s] to SHA1.' % good_revision_in
       return results
 
     # Check that they didn't accidentally swap good and bad revisions.
     if not self.CheckIfRevisionsInProperOrder(
         target_depot, good_revision, bad_revision):
-      results['error'] = ('bad_revision < good_revision, did you swap these '
-                          'by mistake?')
+      results.error = ('bad_revision < good_revision, did you swap these '
+                       'by mistake?')
       return results
     bad_revision, good_revision = self.NudgeRevisionsIfDEPSChange(
         bad_revision, good_revision, good_revision_in)
@@ -2403,7 +2302,7 @@ class BisectPerformanceMetrics(object):
 
     cannot_bisect = self.CanPerformBisect(good_revision, bad_revision)
     if cannot_bisect:
-      results['error'] = cannot_bisect.get('error')
+      results.error = cannot_bisect.get('error')
       return results
 
     print 'Gathering revision range for bisection.'
@@ -2418,7 +2317,7 @@ class BisectPerformanceMetrics(object):
       # revision_data will store information about a revision such as the
       # depot it came from, the webkit/V8 revision at that time,
       # performance timing, build state, etc...
-      revision_data = results['revision_data']
+      revision_data = results.revision_data
 
       # revision_list is the list we're binary searching through at the moment.
       revision_list = []
@@ -2461,17 +2360,17 @@ class BisectPerformanceMetrics(object):
         bisect_utils.OutputAnnotationStepClosed()
 
       if bad_results[1]:
-        results['error'] = ('An error occurred while building and running '
+        results.error = ('An error occurred while building and running '
             'the \'bad\' reference value. The bisect cannot continue without '
             'a working \'bad\' revision to start from.\n\nError: %s' %
-                bad_results[0])
+            bad_results[0])
         return results
 
       if good_results[1]:
-        results['error'] = ('An error occurred while building and running '
+        results.error = ('An error occurred while building and running '
             'the \'good\' reference value. The bisect cannot continue without '
             'a working \'good\' revision to start from.\n\nError: %s' %
-                good_results[0])
+            good_results[0])
         return results
 
 
@@ -2536,9 +2435,9 @@ class BisectPerformanceMetrics(object):
                 previous_revision)
 
             if not new_revision_list:
-              results['error'] = ('An error occurred attempting to retrieve '
-                                  'revision range: [%s..%s]' %
-                                  (earliest_revision, latest_revision))
+              results.error = ('An error occurred attempting to retrieve '
+                               'revision range: [%s..%s]' %
+                               (earliest_revision, latest_revision))
               return results
 
             _AddRevisionsIntoRevisionData(
@@ -2568,7 +2467,7 @@ class BisectPerformanceMetrics(object):
         next_revision_data = revision_data[next_revision_id]
         next_revision_depot = next_revision_data['depot']
 
-        self.ChangeToDepotWorkingDirectory(next_revision_depot)
+        self.depot_registry.ChangeToDepotDir(next_revision_depot)
 
         if self.opts.output_buildbot_annotations:
           step_name = 'Working on [%s]' % next_revision_id
@@ -2617,18 +2516,14 @@ class BisectPerformanceMetrics(object):
           bisect_utils.OutputAnnotationStepClosed()
     else:
       # Weren't able to sync and retrieve the revision range.
-      results['error'] = ('An error occurred attempting to retrieve revision '
-                          'range: [%s..%s]' % (good_revision, bad_revision))
+      results.error = ('An error occurred attempting to retrieve revision '
+                       'range: [%s..%s]' % (good_revision, bad_revision))
 
     return results
 
-  def _PrintPartialResults(self, results_dict):
-    revision_data = results_dict['revision_data']
-    revision_data_sorted = sorted(revision_data.iteritems(),
-                                  key = lambda x: x[1]['sort'])
-    results_dict = self._GetResultsDict(revision_data, revision_data_sorted)
-
-    self._PrintTestedCommitsTable(revision_data_sorted,
+  def _PrintPartialResults(self, results):
+    results_dict = results.GetResultsDict()
+    self._PrintTestedCommitsTable(results_dict['revision_data_sorted'],
                                   results_dict['first_working_revision'],
                                   results_dict['last_broken_revision'],
                                   100, final_step=False)
@@ -2648,7 +2543,7 @@ class BisectPerformanceMetrics(object):
 
   def _GetViewVCLinkFromDepotAndHash(self, cl, depot):
     info = self.source_control.QueryRevisionInfo(cl,
-        self._GetDepotDirectory(depot))
+        self.depot_registry.GetDepotDir(depot))
     if depot and DEPOT_DEPS_NAME[depot].has_key('viewvc'):
       try:
         # Format is "git-svn-id: svn://....@123456 <other data>"
@@ -2801,125 +2696,6 @@ class BisectPerformanceMetrics(object):
           previous_data['depot'], previous_link)
       print
 
-  def _GetResultsDict(self, revision_data, revision_data_sorted):
-    # Find range where it possibly broke.
-    first_working_revision = None
-    first_working_revision_index = -1
-    last_broken_revision = None
-    last_broken_revision_index = -1
-
-    culprit_revisions = []
-    other_regressions = []
-    regression_size = 0.0
-    regression_std_err = 0.0
-    confidence = 0.0
-
-    for i in xrange(len(revision_data_sorted)):
-      k, v = revision_data_sorted[i]
-      if v['passed'] == 1:
-        if not first_working_revision:
-          first_working_revision = k
-          first_working_revision_index = i
-
-      if not v['passed']:
-        last_broken_revision = k
-        last_broken_revision_index = i
-
-    if last_broken_revision != None and first_working_revision != None:
-      broken_means = []
-      for i in xrange(0, last_broken_revision_index + 1):
-        if revision_data_sorted[i][1]['value']:
-          broken_means.append(revision_data_sorted[i][1]['value']['values'])
-
-      working_means = []
-      for i in xrange(first_working_revision_index, len(revision_data_sorted)):
-        if revision_data_sorted[i][1]['value']:
-          working_means.append(revision_data_sorted[i][1]['value']['values'])
-
-      # Flatten the lists to calculate mean of all values.
-      working_mean = sum(working_means, [])
-      broken_mean = sum(broken_means, [])
-
-      # Calculate the approximate size of the regression
-      mean_of_bad_runs = math_utils.Mean(broken_mean)
-      mean_of_good_runs = math_utils.Mean(working_mean)
-
-      regression_size = 100 * math_utils.RelativeChange(mean_of_good_runs,
-                                                      mean_of_bad_runs)
-      if math.isnan(regression_size):
-        regression_size = 'zero-to-nonzero'
-
-      regression_std_err = math.fabs(math_utils.PooledStandardError(
-          [working_mean, broken_mean]) /
-          max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0
-
-      # Give a "confidence" in the bisect. At the moment we use how distinct the
-      # values are before and after the last broken revision, and how noisy the
-      # overall graph is.
-      confidence = ConfidenceScore(working_means, broken_means)
-
-      culprit_revisions = []
-
-      cwd = os.getcwd()
-      self.ChangeToDepotWorkingDirectory(
-          revision_data[last_broken_revision]['depot'])
-
-      if revision_data[last_broken_revision]['depot'] == 'cros':
-        # Want to get a list of all the commits and what depots they belong
-        # to so that we can grab info about each.
-        cmd = ['repo', 'forall', '-c',
-            'pwd ; git log --pretty=oneline --before=%d --after=%d' % (
-            last_broken_revision, first_working_revision + 1)]
-        output, return_code = bisect_utils.RunProcessAndRetrieveOutput(cmd)
-
-        changes = []
-        assert not return_code, ('An error occurred while running '
-                                 '"%s"' % ' '.join(cmd))
-        last_depot = None
-        cwd = os.getcwd()
-        for l in output.split('\n'):
-          if l:
-            # Output will be in form:
-            # /path_to_depot
-            # /path_to_other_depot
-            # <SHA1>
-            # /path_again
-            # <SHA1>
-            # etc.
-            if l[0] == '/':
-              last_depot = l
-            else:
-              contents = l.split(' ')
-              if len(contents) > 1:
-                changes.append([last_depot, contents[0]])
-        for c in changes:
-          os.chdir(c[0])
-          info = self.source_control.QueryRevisionInfo(c[1])
-          culprit_revisions.append((c[1], info, None))
-      else:
-        for i in xrange(last_broken_revision_index, len(revision_data_sorted)):
-          k, v = revision_data_sorted[i]
-          if k == first_working_revision:
-            break
-          self.ChangeToDepotWorkingDirectory(v['depot'])
-          info = self.source_control.QueryRevisionInfo(k)
-          culprit_revisions.append((k, info, v['depot']))
-      os.chdir(cwd)
-
-      # Check for any other possible regression ranges.
-      other_regressions = _FindOtherRegressions(
-          revision_data_sorted, mean_of_bad_runs > mean_of_good_runs)
-
-    return {
-        'first_working_revision': first_working_revision,
-        'last_broken_revision': last_broken_revision,
-        'culprit_revisions': culprit_revisions,
-        'other_regressions': other_regressions,
-        'regression_size': regression_size,
-        'regression_std_err': regression_std_err,
-        'confidence': confidence,
-    }
-
   def _CheckForWarnings(self, results_dict):
     if len(results_dict['culprit_revisions']) > 1:
       self.warnings.append('Due to build errors, regression range could '
@@ -2941,10 +2717,7 @@ class BisectPerformanceMetrics(object):
     Args:
       bisect_results: The results from a bisection test run.
     """
-    revision_data = bisect_results['revision_data']
-    revision_data_sorted = sorted(revision_data.iteritems(),
-                                  key = lambda x: x[1]['sort'])
-    results_dict = self._GetResultsDict(revision_data, revision_data_sorted)
+    results_dict = bisect_results.GetResultsDict()
 
     self._CheckForWarnings(results_dict)
 
@@ -2953,7 +2726,7 @@ class BisectPerformanceMetrics(object):
 
     print
     print 'Full results of bisection:'
-    for current_id, current_data  in revision_data_sorted:
+    for current_id, current_data  in results_dict['revision_data_sorted']:
       build_status = current_data['passed']
 
       if type(build_status) is bool:
@@ -2981,12 +2754,12 @@ class BisectPerformanceMetrics(object):
         self._PrintRevisionInfo(cl, info, depot)
       if results_dict['other_regressions']:
         self._PrintOtherRegressions(results_dict['other_regressions'],
-                                    revision_data)
-    self._PrintTestedCommitsTable(revision_data_sorted,
+                                    results_dict['revision_data'])
+    self._PrintTestedCommitsTable(results_dict['revision_data_sorted'],
                                   results_dict['first_working_revision'],
                                   results_dict['last_broken_revision'],
                                   results_dict['confidence'])
-    _PrintStepTime(revision_data_sorted)
+    _PrintStepTime(results_dict['revision_data_sorted'])
     self._PrintReproSteps()
     _PrintThankYou()
     if self.opts.output_buildbot_annotations:
@@ -3395,8 +3168,8 @@ def main():
                                        opts.bad_revision,
                                        opts.good_revision,
                                        opts.metric)
-      if bisect_results['error']:
-        raise RuntimeError(bisect_results['error'])
+      if bisect_results.error:
+        raise RuntimeError(bisect_results.error)
       bisect_test.FormatAndPrintResults(bisect_results)
       return 0
     finally:

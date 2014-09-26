@@ -8,6 +8,7 @@ import shutil
 import unittest
 
 import bisect_perf_regression
+import bisect_results
 import source_control as source_control_module
 
 def _GetBisectPerformanceMetricsInstance():
@@ -26,13 +27,19 @@ def _GetBisectPerformanceMetricsInstance():
       bisect_options)
   bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
       source_control, bisect_options)
-  bisect_instance.src_cwd = os.path.abspath(
-      os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
   return bisect_instance
 
 
 class BisectPerfRegressionTest(unittest.TestCase):
   """Test case for other functions and classes in bisect-perf-regression.py."""
+
+  def setUp(self):
+    self.cwd = os.getcwd()
+    os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                          os.path.pardir, os.path.pardir)))
+
+  def tearDown(self):
+    os.chdir(self.cwd)
 
   def _AssertConfidence(self, score, bad_values, good_values):
     """Checks whether the given sets of values have a given confidence score.
@@ -48,7 +55,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     """
     # ConfidenceScore takes a list of lists but these lists are flattened
     # inside the function.
-    confidence = bisect_perf_regression.ConfidenceScore(
+    confidence = bisect_results.ConfidenceScore(
         [[v] for v in bad_values],
         [[v] for v in good_values])
     self.assertEqual(score, confidence)
@@ -304,6 +311,41 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self.assertIsNotNone(updated_content)
     ss = re.compile('["\']%s["\']: ["\']%s["\']' % (deps_key, git_revision))
     self.assertIsNotNone(re.search(ss, updated_content))
+
+
+class DepotDirectoryRegistryTest(unittest.TestCase):
+
+  def setUp(self):
+    self.old_chdir = os.chdir
+    os.chdir = self.mockChdir
+    self.old_depot_names = bisect_perf_regression.DEPOT_NAMES
+    bisect_perf_regression.DEPOT_NAMES = ['mock_depot']
+    self.old_depot_deps_name = bisect_perf_regression.DEPOT_DEPS_NAME
+    bisect_perf_regression.DEPOT_DEPS_NAME = {'mock_depot': {'src': 'src/foo'}}
+
+    self.registry = bisect_perf_regression.DepotDirectoryRegistry('/mock/src')
+    self.cur_dir = None
+
+  def tearDown(self):
+    os.chdir = self.old_chdir
+    bisect_perf_regression.DEPOT_NAMES = self.old_depot_names
+    bisect_perf_regression.DEPOT_DEPS_NAME = self.old_depot_deps_name
+
+  def mockChdir(self, new_dir):
+    self.cur_dir = new_dir
+
+  def testReturnsCorrectResultForChrome(self):
+    self.assertEqual(self.registry.GetDepotDir('chromium'), '/mock/src')
+
+  def testReturnsCorrectResultForChromeOS(self):
+    self.assertEqual(self.registry.GetDepotDir('cros'), '/mock/src/tools/cros')
+
+  def testUsesDepotSpecToInitializeRegistry(self):
+    self.assertEqual(self.registry.GetDepotDir('mock_depot'), '/mock/src/foo')
+
+  def testChangedTheDirectory(self):
+    self.registry.ChangeToDepotDir('mock_depot')
+    self.assertEqual(self.cur_dir, '/mock/src/foo')
 
 
 if __name__ == '__main__':
