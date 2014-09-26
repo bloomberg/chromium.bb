@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/article_entry.h"
@@ -92,9 +93,8 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* DomDistillerServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // TODO(cjhopman): Do we want this to be
-  // GetBrowserContextRedirectedInIncognito?
-  return context;
+  // Makes normal profile and off-the-record profile use same service instance.
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace dom_distiller

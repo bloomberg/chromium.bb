@@ -34,8 +34,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
+#include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
@@ -85,8 +84,6 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/dom_distiller/content/dom_distiller_viewer_source.h"
-#include "components/dom_distiller/core/url_constants.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -249,24 +246,6 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   }
   NOTREACHED();
   return std::string();
-}
-
-// Setup URLDataSource for the chrome-distiller:// scheme for the given
-// |profile|.
-void RegisterDomDistillerViewerSource(Profile* profile) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableDomDistiller)) {
-    dom_distiller::DomDistillerServiceFactory* dom_distiller_service_factory =
-        dom_distiller::DomDistillerServiceFactory::GetInstance();
-    // The LazyDomDistillerService deletes itself when the profile is destroyed.
-    dom_distiller::LazyDomDistillerService* lazy_service =
-        new dom_distiller::LazyDomDistillerService(
-            profile, dom_distiller_service_factory);
-    content::URLDataSource::Add(
-        profile,
-        new dom_distiller::DomDistillerViewerSource(
-            lazy_service, dom_distiller::kDomDistillerScheme));
-  }
 }
 
 PrefStore* CreateExtensionPrefStore(Profile* profile,

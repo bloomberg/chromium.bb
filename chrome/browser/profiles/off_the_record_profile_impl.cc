@@ -17,6 +17,7 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -160,6 +161,10 @@ void OffTheRecordProfileImpl::Init() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
 #endif
+
+  // The DomDistillerViewerSource is not a normal WebUI so it must be registered
+  // as a URLDataSource early.
+  RegisterDomDistillerViewerSource(this);
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {

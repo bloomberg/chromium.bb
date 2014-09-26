@@ -331,6 +331,8 @@
       'browser/dom_distiller/dom_distiller_service_factory_android.h',
       'browser/dom_distiller/lazy_dom_distiller_service.cc',
       'browser/dom_distiller/lazy_dom_distiller_service.h',
+      'browser/dom_distiller/profile_utils.cc',
+      'browser/dom_distiller/profile_utils.h',
       'browser/dom_distiller/tab_utils.cc',
       'browser/dom_distiller/tab_utils.h',
       'browser/dom_distiller/tab_utils_android.cc',
