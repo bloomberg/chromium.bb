@@ -29,6 +29,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 
 #if defined(OS_ANDROID)
 
@@ -262,5 +263,27 @@ ResultExpr RestrictClockID() {
                  clockid == CLOCK_THREAD_CPUTIME_ID,
              Allow()).Else(CrashSIGSYS());
 }
+
+ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
+  switch (sysno) {
+    case __NR_sched_getaffinity:
+    case __NR_sched_getattr:
+    case __NR_sched_getparam:
+    case __NR_sched_getscheduler:
+    case __NR_sched_rr_get_interval:
+    case __NR_sched_setaffinity:
+    case __NR_sched_setattr:
+    case __NR_sched_setparam:
+    case __NR_sched_setscheduler: {
+      const Arg<pid_t> pid(0);
+      return If(pid == 0 || pid == target_pid, Allow())
+          .Else(RewriteSchedSIGSYS());
+    }
+    default:
+      NOTREACHED();
+      return CrashSIGSYS();
+  }
+}
+
 
 }  // namespace sandbox.

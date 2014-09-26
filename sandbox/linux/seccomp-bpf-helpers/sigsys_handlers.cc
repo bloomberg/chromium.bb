@@ -6,12 +6,16 @@
 
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 
+#include <sys/syscall.h>
 #include <unistd.h>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 
 #if defined(__mips__)
 // __NR_Linux, is defined in <asm/unistd.h>.
@@ -206,6 +210,40 @@ intptr_t SIGSYSFutexFailure(const struct arch_seccomp_data& args,
     _exit(1);
 }
 
+intptr_t SIGSYSSchedHandler(const struct arch_seccomp_data& args,
+                            void* aux) {
+  switch (args.nr) {
+    case __NR_sched_getaffinity:
+    case __NR_sched_getattr:
+    case __NR_sched_getparam:
+    case __NR_sched_getscheduler:
+    case __NR_sched_rr_get_interval:
+    case __NR_sched_setaffinity:
+    case __NR_sched_setattr:
+    case __NR_sched_setparam:
+    case __NR_sched_setscheduler:
+      const pid_t tid = syscall(__NR_gettid);
+      // The first argument is the pid.  If is our thread id, then replace it
+      // with 0, which is equivalent and allowed by the policy.
+      if (args.args[0] == static_cast<uint64_t>(tid)) {
+        return Syscall::Call(args.nr,
+                             0,
+                             static_cast<intptr_t>(args.args[1]),
+                             static_cast<intptr_t>(args.args[2]),
+                             static_cast<intptr_t>(args.args[3]),
+                             static_cast<intptr_t>(args.args[4]),
+                             static_cast<intptr_t>(args.args[5]));
+      }
+      break;
+  }
+
+  CrashSIGSYS_Handler(args, aux);
+
+  // Should never be reached.
+  RAW_CHECK(false);
+  return -ENOSYS;
+}
+
 bpf_dsl::ResultExpr CrashSIGSYS() {
   return bpf_dsl::Trap(CrashSIGSYS_Handler, NULL);
 }
@@ -228,6 +266,10 @@ bpf_dsl::ResultExpr CrashSIGSYSKill() {
 
 bpf_dsl::ResultExpr CrashSIGSYSFutex() {
   return bpf_dsl::Trap(SIGSYSFutexFailure, NULL);
+}
+
+bpf_dsl::ResultExpr RewriteSchedSIGSYS() {
+  return bpf_dsl::Trap(SIGSYSSchedHandler, NULL);
 }
 
 const char* GetErrorMessageContentForTests() {

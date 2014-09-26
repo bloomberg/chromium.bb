@@ -75,6 +75,17 @@ bpf_dsl::ResultExpr RestrictGetSetpriority(pid_t target_pid);
 // On Chrome OS, base::TimeTicks::kClockSystemTrace is also allowed.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictClockID();
 
+// Restricts |pid| for sched_* syscalls which take a pid as the first argument.
+// We only allow calling these syscalls if the pid argument is equal to the pid
+// of the sandboxed process or 0 (indicating the current thread).  The following
+// syscalls are supported:
+//
+// sched_getaffinity(), sched_getattr(), sched_getparam(), sched_getscheduler(),
+// sched_rr_get_interval(), sched_setaffinity(), sched_setattr(),
+// sched_setparam(), sched_setscheduler()
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictSchedTarget(pid_t target_pid,
+                                                       int sysno);
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_

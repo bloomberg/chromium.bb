@@ -4,9 +4,16 @@
 
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 
+#include <errno.h>
+#include <sched.h>
+#include <sys/syscall.h>
 #include <time.h>
+#include <unistd.h>
 
+#include "base/bind.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -135,6 +142,72 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   clock_gettime(kInitCPUClockID, &ts);
 }
 #endif  // !defined(OS_ANDROID)
+
+class RestrictSchedPolicy : public SandboxBPFDSLPolicy {
+ public:
+  RestrictSchedPolicy() {}
+  virtual ~RestrictSchedPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    switch (sysno) {
+      case __NR_sched_getparam:
+        return RestrictSchedTarget(getpid(), sysno);
+      default:
+        return Allow();
+    }
+  }
+};
+
+void CheckSchedGetParam(pid_t pid, struct sched_param* param) {
+  BPF_ASSERT_EQ(0, sched_getparam(pid, param));
+}
+
+void SchedGetParamThread(base::WaitableEvent* thread_run) {
+  const pid_t pid = getpid();
+  const pid_t tid = syscall(__NR_gettid);
+  BPF_ASSERT_NE(pid, tid);
+
+  struct sched_param current_pid_param;
+  CheckSchedGetParam(pid, &current_pid_param);
+
+  struct sched_param zero_param;
+  CheckSchedGetParam(0, &zero_param);
+
+  struct sched_param tid_param;
+  CheckSchedGetParam(tid, &tid_param);
+
+  BPF_ASSERT_EQ(zero_param.sched_priority, tid_param.sched_priority);
+
+  // Verify that the SIGSYS handler sets errno properly.
+  errno = 0;
+  BPF_ASSERT_EQ(-1, sched_getparam(tid, NULL));
+  BPF_ASSERT_EQ(EINVAL, errno);
+
+  thread_run->Signal();
+}
+
+BPF_TEST_C(ParameterRestrictions,
+           sched_getparam_allowed,
+           RestrictSchedPolicy) {
+  base::WaitableEvent thread_run(true, false);
+  // Run the actual test in a new thread so that the current pid and tid are
+  // different.
+  base::Thread getparam_thread("sched_getparam_thread");
+  BPF_ASSERT(getparam_thread.Start());
+  getparam_thread.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&SchedGetParamThread, &thread_run));
+  BPF_ASSERT(thread_run.TimedWait(base::TimeDelta::FromMilliseconds(5000)));
+  getparam_thread.Stop();
+}
+
+BPF_DEATH_TEST_C(ParameterRestrictions,
+                 sched_getparam_crash_non_zero,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 RestrictSchedPolicy) {
+  const pid_t kInitPID = 1;
+  struct sched_param param;
+  sched_getparam(kInitPID, &param);
+}
 
 }  // namespace
 
