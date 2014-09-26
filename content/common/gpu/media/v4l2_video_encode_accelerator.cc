@@ -292,13 +292,13 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
     profile.max_framerate_numerator = 30;
     profile.max_framerate_denominator = 1;
     profiles.push_back(profile);
-  } else {
-    profile.profile = media::H264PROFILE_MAIN;
-    profile.max_resolution.SetSize(1920, 1088);
-    profile.max_framerate_numerator = 30;
-    profile.max_framerate_denominator = 1;
-    profiles.push_back(profile);
   }
+
+  profile.profile = media::H264PROFILE_MAIN;
+  profile.max_resolution.SetSize(1920, 1088);
+  profile.max_framerate_numerator = 30;
+  profile.max_framerate_denominator = 1;
+  profiles.push_back(profile);
 
   return profiles;
 }
