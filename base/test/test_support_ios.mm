@@ -34,7 +34,7 @@ static char** g_argv;
 - (void) _terminateWithStatus:(int)status;
 @end
 
-#ifdef TARGET_IPHONE_SIMULATOR
+#if TARGET_IPHONE_SIMULATOR
 // Xcode 6 introduced behavior in the iOS Simulator where the software
 // keyboard does not appear if a hardware keyboard is connected. The following
 // declaration allows this behavior to be overriden when the app starts up.
@@ -57,7 +57,7 @@ static char** g_argv;
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
-#ifdef TARGET_IPHONE_SIMULATOR
+#if TARGET_IPHONE_SIMULATOR
   // Xcode 6 introduced behavior in the iOS Simulator where the software
   // keyboard does not appear if a hardware keyboard is connected. The following
   // calls override this behavior by ensuring that the software keyboard is
