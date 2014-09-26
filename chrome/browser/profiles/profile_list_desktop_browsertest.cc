@@ -34,13 +34,8 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
  public:
   ProfileListDesktopBrowserTest() {}
 
-  AvatarMenu* GetAvatarMenu(ProfileInfoCache* cache) {
-    // Reset the menu.
-    avatar_menu_.reset(new AvatarMenu(
-        cache,
-        NULL,
-        browser()));
-    return avatar_menu_.get();
+  scoped_ptr<AvatarMenu> CreateAvatarMenu(ProfileInfoCache* cache) {
+    return scoped_ptr<AvatarMenu>(new AvatarMenu(cache, NULL, browser()));
   }
 
  private:
@@ -68,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
 
-  AvatarMenu* menu = GetAvatarMenu(&cache);
+  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&cache);
   menu->RebuildMenu();
 
   BrowserList* browser_list =
@@ -125,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
   content::RunMessageLoop();
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
 
-  AvatarMenu* menu = GetAvatarMenu(&cache);
+  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&cache);
   menu->RebuildMenu();
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::GetActiveDesktop());

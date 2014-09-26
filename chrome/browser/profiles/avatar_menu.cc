@@ -53,6 +53,9 @@ AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
                        Browser* browser)
     : profile_list_(ProfileList::Create(profile_cache)),
       menu_actions_(AvatarMenuActions::Create()),
+#if defined(ENABLE_MANAGED_USERS)
+      supervised_user_observer_(this),
+#endif
       profile_info_(profile_cache),
       observer_(observer),
       browser_(browser) {
@@ -64,6 +67,15 @@ AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
   // Register this as an observer of the info cache.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllSources());
+
+#if defined(ENABLE_MANAGED_USERS)
+  // Register this as an observer of the SupervisedUserService to be notified
+  // of changes to the custodian info.
+  if (browser_) {
+    supervised_user_observer_.Add(
+        SupervisedUserServiceFactory::GetForProfile(browser_->profile()));
+  }
+#endif
 }
 
 AvatarMenu::~AvatarMenu() {
@@ -234,3 +246,11 @@ void AvatarMenu::Observe(int type,
   if (observer_)
     observer_->OnAvatarMenuChanged(this);
 }
+
+#if defined(ENABLE_MANAGED_USERS)
+void AvatarMenu::OnCustodianInfoChanged() {
+  RebuildMenu();
+  if (observer_)
+    observer_->OnAvatarMenuChanged(this);
+}
+#endif

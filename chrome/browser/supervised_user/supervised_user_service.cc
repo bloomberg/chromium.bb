@@ -195,6 +195,11 @@ bool SupervisedUserService::ProfileIsSupervised() const {
   return profile_->IsSupervised();
 }
 
+void SupervisedUserService::OnCustodianInfoChanged() {
+  FOR_EACH_OBSERVER(
+      SupervisedUserServiceObserver, observer_list_, OnCustodianInfoChanged());
+}
+
 // static
 void SupervisedUserService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -749,6 +754,31 @@ void SupervisedUserService::SetActive(bool active) {
                    base::Unretained(this)));
     pref_change_registrar_.Add(prefs::kSupervisedUserManualURLs,
         base::Bind(&SupervisedUserService::UpdateManualURLs,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianName,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianEmail,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianProfileImageURL,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianProfileURL,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserSecondCustodianName,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserSecondCustodianEmail,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(
+        prefs::kSupervisedUserSecondCustodianProfileImageURL,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserSecondCustodianProfileURL,
+        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
                    base::Unretained(this)));
 
     // Initialize the filter.

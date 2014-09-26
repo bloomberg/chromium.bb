@@ -262,6 +262,8 @@ class SupervisedUserService : public KeyedService,
 
   bool ProfileIsSupervised() const;
 
+  void OnCustodianInfoChanged();
+
 #if defined(ENABLE_EXTENSIONS)
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the

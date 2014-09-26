@@ -11,6 +11,10 @@ class SupervisedUserServiceObserver {
   // content pack is added, or the default fallback behavior is changed.
   virtual void OnURLFilterChanged() {}
 
+  // Called when information about the supervised user's custodian is changed,
+  // e.g. the display name.
+  virtual void OnCustodianInfoChanged() {}
+
  protected:
   virtual ~SupervisedUserServiceObserver() {}
 };
