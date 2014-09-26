@@ -60,9 +60,8 @@ void SVGResourcesCache::addResourcesFromRenderObject(RenderObject* object, const
     HashSet<RenderSVGResourceContainer*> resourceSet;
     resources->buildSetOfResources(resourceSet);
 
-    HashSet<RenderSVGResourceContainer*>::iterator end = resourceSet.end();
-    for (HashSet<RenderSVGResourceContainer*>::iterator it = resourceSet.begin(); it != end; ++it)
-        (*it)->addClient(object);
+    for (auto* resourceContainer : resourceSet)
+        resourceContainer->addClient(object);
 }
 
 void SVGResourcesCache::removeResourcesFromRenderObject(RenderObject* object)
@@ -75,9 +74,8 @@ void SVGResourcesCache::removeResourcesFromRenderObject(RenderObject* object)
     HashSet<RenderSVGResourceContainer*> resourceSet;
     resources->buildSetOfResources(resourceSet);
 
-    HashSet<RenderSVGResourceContainer*>::iterator end = resourceSet.end();
-    for (HashSet<RenderSVGResourceContainer*>::iterator it = resourceSet.begin(); it != end; ++it)
-        (*it)->removeClient(object);
+    for (auto* resourceContainer : resourceSet)
+        resourceContainer->removeClient(object);
 }
 
 static inline SVGResourcesCache* resourcesCacheFromRenderObject(const RenderObject* renderer)
@@ -184,13 +182,12 @@ void SVGResourcesCache::resourceDestroyed(RenderSVGResourceContainer* resource)
     // The resource itself may have clients, that need to be notified.
     cache->removeResourcesFromRenderObject(resource);
 
-        CacheMap::iterator end = cache->m_cache.end();
-        for (CacheMap::iterator it = cache->m_cache.begin(); it != end; ++it) {
-        it->value->resourceDestroyed(resource);
+    for (auto& objectResources : cache->m_cache) {
+        objectResources.value->resourceDestroyed(resource);
 
         // Mark users of destroyed resources as pending resolution based on the id of the old resource.
         Element* resourceElement = resource->element();
-        Element* clientElement = toElement(it->key->node());
+        Element* clientElement = toElement(objectResources.key->node());
         SVGDocumentExtensions& extensions = clientElement->document().accessSVGExtensions();
 
         extensions.addPendingResource(resourceElement->fastGetAttribute(HTMLNames::idAttr), clientElement);
