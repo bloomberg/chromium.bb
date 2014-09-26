@@ -806,6 +806,14 @@ def BuildStepArchiveSDKTools():
 def BuildStepSyncNaClPorts():
   """Pull the pinned revision of naclports from SVN."""
   buildbot_common.BuildStep('Sync naclports')
+
+  # In case a previous svn checkout exists, remove it.
+  # TODO(sbc): remove this once all the build machines
+  # have removed the old checkout
+  if (os.path.exists(NACLPORTS_DIR) and
+      not os.path.exists(os.path.join(NACLPORTS_DIR, '.git'))):
+    buildbot_common.RemoveDir(NACLPORTS_DIR)
+
   if not os.path.exists(NACLPORTS_DIR):
     # checkout new copy of naclports
     cmd = ['git', 'clone', NACLPORTS_URL, 'naclports']
