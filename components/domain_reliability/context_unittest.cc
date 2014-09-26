@@ -25,6 +25,7 @@ typedef std::vector<DomainReliabilityBeacon> BeaconVector;
 
 DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
   DomainReliabilityBeacon beacon;
+  beacon.domain = "localhost";
   beacon.status = "ok";
   beacon.chrome_error = net::OK;
   beacon.server_ip = "127.0.0.1";
@@ -165,7 +166,8 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   // N.B.: Assumes max_delay is 5 minutes.
   const char* kExpectedReport = "{"
       "\"config_version\":\"1\","
-      "\"entries\":[{\"http_response_code\":200,\"protocol\":\"HTTP\","
+      "\"entries\":[{\"domain\":\"localhost\","
+          "\"http_response_code\":200,\"protocol\":\"HTTP\","
           "\"request_age_ms\":300250,\"request_elapsed_ms\":250,"
           "\"resource\":\"always_report\",\"server_ip\":\"127.0.0.1\","
           "\"status\":\"ok\"}],"

@@ -28,6 +28,8 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
 
   // The URL that the beacon is reporting on, if included.
   std::string url;
+  // The domain that the beacon is reporting on, if included.
+  std::string domain;
   // The resource name that the beacon is reporting on, if included.
   std::string resource;
   // Status string (e.g. "ok", "dns.nxdomain", "http.403").

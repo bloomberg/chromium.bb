@@ -19,6 +19,8 @@ Value* DomainReliabilityBeacon::ToValue(base::TimeTicks upload_time) const {
   DictionaryValue* beacon_value = new DictionaryValue();
   if (!url.empty())
     beacon_value->SetString("url", url);
+  if (!domain.empty())
+    beacon_value->SetString("domain", domain);
   if (!resource.empty())
     beacon_value->SetString("resource", resource);
   beacon_value->SetString("status", status);
