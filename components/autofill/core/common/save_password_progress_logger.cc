@@ -159,6 +159,8 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "SSL errors present";
     case SavePasswordProgressLogger::STRING_ONLY_VISIBLE:
       return "only_visible";
+    case SavePasswordProgressLogger::STRING_SHOW_PASSWORD_PROMPT:
+      return "Show password prompt";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

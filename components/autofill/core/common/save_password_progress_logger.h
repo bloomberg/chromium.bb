@@ -98,6 +98,7 @@ class SavePasswordProgressLogger {
     STRING_NO_MATCHING_FORM,
     STRING_SSL_ERRORS_PRESENT,
     STRING_ONLY_VISIBLE,
+    STRING_SHOW_PASSWORD_PROMPT,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

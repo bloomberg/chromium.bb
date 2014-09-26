@@ -54,9 +54,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
 
   // Workaround for scoped_ptr<> lacking a copy constructor.
-  virtual void PromptUserToSavePassword(
+  virtual bool PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> manager) OVERRIDE {
     PromptUserToSavePasswordPtr(manager.release());
+    return false;
   }
   virtual void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> manager) OVERRIDE {

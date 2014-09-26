@@ -150,13 +150,13 @@ void ChromePasswordManagerClient::AutofillResultsComputed() {
   sync_credential_was_filtered_ = false;
 }
 
-void ChromePasswordManagerClient::PromptUserToSavePassword(
+bool ChromePasswordManagerClient::PromptUserToSavePassword(
     scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
   if (!BrowsingDataHelper::IsWebScheme(
       web_contents()->GetLastCommittedURL().scheme())) {
-    return;
+    return false;
   }
 
   if (IsTheHotNewBubbleUIEnabled()) {
@@ -171,6 +171,7 @@ void ChromePasswordManagerClient::PromptUserToSavePassword(
     SavePasswordInfoBarDelegate::Create(
         web_contents(), form_to_save.Pass(), uma_histogram_suffix);
   }
+  return true;
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(

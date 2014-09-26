@@ -22,8 +22,10 @@ bool StubPasswordManagerClient::ShouldFilterAutofillResult(
   return false;
 }
 
-void StubPasswordManagerClient::PromptUserToSavePassword(
-    scoped_ptr<PasswordFormManager> form_to_save) {}
+bool StubPasswordManagerClient::PromptUserToSavePassword(
+    scoped_ptr<PasswordFormManager> form_to_save) {
+  return false;
+}
 
 void StubPasswordManagerClient::AutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> saved_manager) {}

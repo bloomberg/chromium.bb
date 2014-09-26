@@ -487,7 +487,10 @@ void PasswordManager::OnPasswordFormsRendered(
     if (ShouldPromptUserToSavePassword()) {
       if (logger)
         logger->LogMessage(Logger::STRING_DECISION_ASK);
-      client_->PromptUserToSavePassword(provisional_save_manager_.Pass());
+      if (client_->PromptUserToSavePassword(provisional_save_manager_.Pass())) {
+        if (logger)
+          logger->LogMessage(Logger::STRING_SHOW_PASSWORD_PROMPT);
+      }
     } else {
       if (logger)
         logger->LogMessage(Logger::STRING_DECISION_SAVE);

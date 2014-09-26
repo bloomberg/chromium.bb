@@ -46,7 +46,7 @@ class ChromePasswordManagerClient
   virtual bool IsSyncAccountCredential(
       const std::string& username, const std::string& origin) const OVERRIDE;
   virtual void AutofillResultsComputed() OVERRIDE;
-  virtual void PromptUserToSavePassword(
+  virtual bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save) OVERRIDE;
   virtual void AutomaticPasswordSave(
       scoped_ptr<password_manager::PasswordFormManager> saved_form_manager)

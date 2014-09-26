@@ -22,7 +22,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       const std::string& username, const std::string& origin) const OVERRIDE;
   virtual bool ShouldFilterAutofillResult(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual void PromptUserToSavePassword(
+  virtual bool PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> form_to_save) OVERRIDE;
   virtual void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) OVERRIDE;

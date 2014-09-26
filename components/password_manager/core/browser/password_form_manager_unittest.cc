@@ -67,8 +67,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
     return false;
   }
 
-  virtual void PromptUserToSavePassword(
-      scoped_ptr<PasswordFormManager> form_to_save) OVERRIDE {}
   virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
   virtual PasswordStore* GetPasswordStore() OVERRIDE { return password_store_; }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
