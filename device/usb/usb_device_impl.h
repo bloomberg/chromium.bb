@@ -63,7 +63,7 @@ class UsbDeviceImpl : public UsbDevice {
   base::ThreadChecker thread_checker_;
   PlatformUsbDevice platform_device_;
 
-#if defined(OS_LINUX)
+#if defined(USE_UDEV)
   // On Linux these properties are read from sysfs when the device is enumerated
   // to avoid hitting the permission broker on Chrome OS for a real string
   // descriptor request.

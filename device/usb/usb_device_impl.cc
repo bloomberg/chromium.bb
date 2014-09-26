@@ -25,9 +25,9 @@
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX)
+#if defined(USE_UDEV)
 #include "device/udev_linux/udev.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(USE_UDEV)
 
 namespace device {
 
@@ -130,7 +130,7 @@ UsbDeviceImpl::UsbDeviceImpl(
   CHECK(platform_device) << "platform_device cannot be NULL";
   libusb_ref_device(platform_device);
 
-#if defined(OS_LINUX)
+#if defined(USE_UDEV)
   ScopedUdevPtr udev(udev_new());
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev.get()));
 
@@ -322,7 +322,7 @@ const UsbConfigDescriptor& UsbDeviceImpl::GetConfiguration() {
 bool UsbDeviceImpl::GetManufacturer(base::string16* manufacturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#if defined(OS_LINUX)
+#if defined(USE_UDEV)
   if (manufacturer_.empty()) {
     return false;
   }
@@ -353,7 +353,7 @@ bool UsbDeviceImpl::GetManufacturer(base::string16* manufacturer) {
 bool UsbDeviceImpl::GetProduct(base::string16* product) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#if defined(OS_LINUX)
+#if defined(USE_UDEV)
   if (product_.empty()) {
     return false;
   }
@@ -384,7 +384,7 @@ bool UsbDeviceImpl::GetProduct(base::string16* product) {
 bool UsbDeviceImpl::GetSerialNumber(base::string16* serial_number) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#if defined(OS_LINUX)
+#if defined(USE_UDEV)
   if (serial_number_.empty()) {
     return false;
   }
