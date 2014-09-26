@@ -4,6 +4,7 @@
 
 import os
 import re
+import shutil
 import unittest
 
 import bisect_perf_regression
@@ -247,12 +248,18 @@ class BisectPerfRegressionTest(unittest.TestCase):
     This serves as a smoke test to catch errors in the basic execution of the
     script.
     """
-    bisect_instance = _GetBisectPerformanceMetricsInstance()
-    results = bisect_instance.Run(bisect_instance.opts.command,
-                                  bisect_instance.opts.bad_revision,
-                                  bisect_instance.opts.good_revision,
-                                  bisect_instance.opts.metric)
-    bisect_instance.FormatAndPrintResults(results)
+    # Disable rmtree to avoid deleting local trees.
+    old_rmtree = shutil.rmtree
+    try:
+      shutil.rmtree = lambda path, onerror: None
+      bisect_instance = _GetBisectPerformanceMetricsInstance()
+      results = bisect_instance.Run(bisect_instance.opts.command,
+                                    bisect_instance.opts.bad_revision,
+                                    bisect_instance.opts.good_revision,
+                                    bisect_instance.opts.metric)
+      bisect_instance.FormatAndPrintResults(results)
+    finally:
+      shutil.rmtree = old_rmtree
 
   def testGetCommitPosition(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
