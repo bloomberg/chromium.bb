@@ -21,7 +21,7 @@ DEFINE_GLOBAL({{namespace}}QualifiedName, {{tag|symbol}}Tag)
 {% endfor %}
 
 
-{% if namespace != 'HTML' %}
+{% if namespace == 'SVG' %}
 PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
 {
     OwnPtr<const {{namespace}}QualifiedName*[]> tags = adoptArrayPtr(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
