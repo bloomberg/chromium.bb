@@ -50,8 +50,8 @@ var REGEXP_semicolon = /\s*;\s*/;
 
 /**
  * See constructor_()
- * @param {Object|null} opt_data
- * @param {Object} opt_parent
+ * @param {Object|null=} opt_data
+ * @param {Object=} opt_parent
  * @constructor
  */
 function JsEvalContext(opt_data, opt_parent) {
@@ -69,22 +69,23 @@ function JsEvalContext(opt_data, opt_parent) {
  * variables are inherited. Normally the context object of the parent
  * context is the object whose property the parent object is. Null for the
  * context of the root object.
+ * @private
  */
 JsEvalContext.prototype.constructor_ = function(opt_data, opt_parent) {
   var me = this;
 
-  /**
-   * The context for variable definitions in which the jstemplate
-   * expressions are evaluated. Other than for the local context,
-   * which replaces the parent context, variable definitions of the
-   * parent are inherited. The special variable $this points to data_.
-   *
-   * If this instance is recycled from the cache, then the property is
-   * already initialized.
-   *
-   * @type {Object}
-   */
   if (!me.vars_) {
+    /**
+     * The context for variable definitions in which the jstemplate
+     * expressions are evaluated. Other than for the local context,
+     * which replaces the parent context, variable definitions of the
+     * parent are inherited. The special variable $this points to data_.
+     *
+     * If this instance is recycled from the cache, then the property is
+     * already initialized.
+     *
+     * @type {Object}
+     */
     me.vars_ = {};
   }
   if (opt_parent) {
@@ -102,7 +103,7 @@ JsEvalContext.prototype.constructor_ = function(opt_data, opt_parent) {
   /**
    * The current context object is assigned to the special variable
    * $this so it is possible to use it in expressions.
-   * @type Object
+   * @type {Object}
    */
   me.vars_[VAR_this] = opt_data;
 
@@ -123,7 +124,7 @@ JsEvalContext.prototype.constructor_ = function(opt_data, opt_parent) {
    * above, but for the expression context we replace null and
    * undefined by the empty string.
    *
-   * @type {Object|null}
+   * @type {*}
    */
   me.data_ = getDefaultObject(opt_data, STRING_empty);
 
@@ -264,8 +265,7 @@ JsEvalContext.prototype.clone = function(data, index, count) {
  * API they only have to be valid javascript identifier.
  *
  * @param {string} name
- *
- * @param {Object?} value
+ * @param {*} value
  */
 JsEvalContext.prototype.setVariable = function(name, value) {
   this.vars_[name] = value;
@@ -280,7 +280,7 @@ JsEvalContext.prototype.setVariable = function(name, value) {
  *
  * @param {string} name
  *
- * @return {Object?} value
+ * @return {*} value
  */
 JsEvalContext.prototype.getVariable = function(name) {
   return this.vars_[name];

@@ -55,7 +55,12 @@ function jsEval(expr) {
     // function literals in IE.
     // e.g. eval("(function() {})") returns undefined, and not a function
     // object, in IE.
-    return eval('[' + expr + '][0]');
+    var result = eval('[' + expr + '][0]');
+    if (typeof result != 'object') {
+      throw new Error('expression of type Object expected, ' +
+                      typeof result + ' found');
+    }
+    return /** @type {Object} */(result);
   } catch (e) {
     log('EVAL FAILED ' + expr + ': ' + e);
     return null;
@@ -65,8 +70,6 @@ function jsEval(expr) {
 function jsLength(obj) {
   return obj.length;
 }
-
-function assert(obj) {}
 
 /**
  * Copies all properties from second object to the first.  Modifies to.
@@ -82,14 +85,13 @@ function copyProperties(to, from) {
 
 
 /**
- * @param {Object|null|undefined} value The possible value to use.
- * @param {Object} defaultValue The default if the value is not set.
- * @return {Object} The value, if it is
- * defined and not null; otherwise the default
+ * @param {*} value The possible value to use.
+ * @param {*} defaultValue The default if the value is not set.
+ * @return {*} The value, if it is defined and not null; otherwise the default.
  */
 function getDefaultObject(value, defaultValue) {
   if (typeof value != TYPE_undefined && value != null) {
-    return /** @type Object */(value);
+    return value;
   } else {
     return defaultValue;
   }
@@ -112,9 +114,9 @@ function isArray(value) {
 /**
  * Finds a slice of an array.
  *
- * @param {Array} array  Array to be sliced.
+ * @param {Array|Arguments} array  Array to be sliced.
  * @param {number} start  The start of the slice.
- * @param {number} opt_end  The end of the slice (optional).
+ * @param {number=} opt_end  The end of the slice (optional).
  * @return {Array} array  The slice of the array from start to end.
  */
 function arraySlice(array, start, opt_end) {
@@ -125,7 +127,8 @@ function arraySlice(array, start, opt_end) {
   // here because of a bug in the FF and IE implementations of
   // Array.prototype.slice which causes this function to return an empty list
   // if opt_end is not provided.
-  return Function.prototype.call.apply(Array.prototype.slice, arguments);
+  return /** @type {Array} */(
+      Function.prototype.call.apply(Array.prototype.slice, arguments));
 }
 
 
@@ -161,6 +164,7 @@ function arrayClear(array) {
  *
  * @param {Object|null} object  The object that the method call targets.
  * @param {Function} method  The target method.
+ * @param {...*} var_args
  * @return {Function}  Method with the target object bound to it and curried by
  *                     the provided arguments.
  */
@@ -420,7 +424,7 @@ function domRemoveNode(node) {
 /**
  * Remove a child from the specified (parent) node.
  *
- * @param {Element} node  Parent element.
+ * @param {Node} node  Parent element.
  * @param {Node} child  Child node to remove.
  * @return {Node}  Removed node.
  */
