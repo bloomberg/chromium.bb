@@ -58,7 +58,6 @@ public:
     void add(const RuleFeatureSet&);
     void clear();
 
-    void collectFeaturesFromSelector(const CSSSelector&);
     void collectFeaturesFromRuleData(const RuleData&);
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
@@ -105,6 +104,9 @@ public:
     WillBeHeapVector<RuleFeature> siblingRules;
     WillBeHeapVector<RuleFeature> uncommonAttributeRules;
 
+protected:
+    DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
+
 private:
     typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<DescendantInvalidationSet> > InvalidationSetMap;
     typedef WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<DescendantInvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > PseudoTypeInvalidationSetMap;
@@ -138,7 +140,6 @@ private:
     DescendantInvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
     DescendantInvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
     DescendantInvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType);
-    DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);
 

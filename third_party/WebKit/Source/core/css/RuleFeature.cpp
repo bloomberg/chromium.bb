@@ -394,11 +394,6 @@ DescendantInvalidationSet& RuleFeatureSet::ensurePseudoInvalidationSet(CSSSelect
     return *addResult.storedValue->value;
 }
 
-void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
-{
-    collectFeaturesFromSelector(selector, m_metadata, UseSubtreeStyleChange);
-}
-
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata, InvalidationSetMode mode)
 {
     unsigned maxDirectAdjacentSelectors = 0;

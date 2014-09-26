@@ -32,10 +32,25 @@
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 
 #include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
 
 #include "wtf/BitVector.h"
 
 namespace blink {
+
+void SelectRuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
+{
+    for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
+        if (invalidationSetForSelector(*current))
+            continue;
+
+        if (!current->selectorList())
+            continue;
+
+        for (const CSSSelector* selector = current->selectorList()->first(); selector; selector = CSSSelectorList::next(*selector))
+            collectFeaturesFromSelector(*selector);
+    }
+}
 
 bool SelectRuleFeatureSet::checkSelectorsForClassChange(const SpaceSplitString& changedClasses) const
 {
