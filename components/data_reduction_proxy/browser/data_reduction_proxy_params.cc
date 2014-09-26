@@ -27,12 +27,15 @@ namespace {
 
 const char kEnabled[] = "Enabled";
 const char kDefaultOrigin[] = "https://proxy.googlezip.net:443/";
-const char kDevOrigin[] = "http://proxy-dev.googlezip.net:443/";
+const char kDevOrigin[] = "https://proxy-dev.googlezip.net:443/";
 const char kDevFallbackOrigin[] = "http://proxy-dev.googlezip.net:80/";
 const char kDefaultFallbackOrigin[] = "http://compress.googlezip.net:80/";
-const char kDefaultSslOrigin[] = "http://ssl.googlezip.net:1043/";
-const char kDefaultAltOrigin[] = "https://proxy.googlezip.net:443/";
-const char kDefaultAltFallbackOrigin[] = "http://compress.googlezip.net:80/";
+// This is for a proxy that supports HTTP CONNECT to tunnel SSL traffic.
+// The proxy listens on port 443, but uses the HTTP protocol to set up
+// the tunnel, not HTTPS.
+const char kDefaultSslOrigin[] = "http://ssl.googlezip.net:443/";
+const char kDefaultAltOrigin[] = "http://ssl.googlezip.net:80/";
+const char kDefaultAltFallbackOrigin[] = "http://ssl.googlezip.net:80/";
 const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
