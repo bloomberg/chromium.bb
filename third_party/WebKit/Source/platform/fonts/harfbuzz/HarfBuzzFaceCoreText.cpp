@@ -109,6 +109,8 @@ static void releaseTableData(void* userData)
 static hb_blob_t* harfBuzzCoreTextGetTable(hb_face_t* face, hb_tag_t tag, void* userData)
 {
     CGFontRef cgFont = reinterpret_cast<CGFontRef>(userData);
+    if (!cgFont)
+        return 0;
     CFDataRef cfData = CGFontCopyTableForTag(cgFont, tag);
     if (!cfData)
         return 0;
