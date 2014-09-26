@@ -37,21 +37,6 @@
 
 namespace blink {
 
-void SelectRuleFeatureSet::add(const SelectRuleFeatureSet& featureSet)
-{
-    m_cssRuleFeatureSet.add(featureSet.m_cssRuleFeatureSet);
-}
-
-void SelectRuleFeatureSet::clear()
-{
-    m_cssRuleFeatureSet.clear();
-}
-
-void SelectRuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
-{
-    m_cssRuleFeatureSet.collectFeaturesFromSelector(selector);
-}
-
 bool SelectRuleFeatureSet::checkSelectorsForClassChange(const SpaceSplitString& changedClasses) const
 {
     unsigned changedSize = changedClasses.size();

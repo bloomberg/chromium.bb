@@ -424,25 +424,7 @@ bool Internals::hasSelectorForPseudoClassInShadow(Element* host, const String& p
         exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
         return 0;
     }
-
-    const SelectRuleFeatureSet& featureSet = host->shadow()->ensureSelectFeatureSet();
-    if (pseudoClass == "checked")
-        return featureSet.hasSelectorForChecked();
-    if (pseudoClass == "enabled")
-        return featureSet.hasSelectorForEnabled();
-    if (pseudoClass == "disabled")
-        return featureSet.hasSelectorForDisabled();
-    if (pseudoClass == "indeterminate")
-        return featureSet.hasSelectorForIndeterminate();
-    if (pseudoClass == "link")
-        return featureSet.hasSelectorForLink();
-    if (pseudoClass == "target")
-        return featureSet.hasSelectorForTarget();
-    if (pseudoClass == "visited")
-        return featureSet.hasSelectorForVisited();
-
-    ASSERT_NOT_REACHED();
-    return false;
+    return host->shadow()->ensureSelectFeatureSet().hasSelectorForPseudoType(CSSSelector::parsePseudoType(AtomicString(pseudoClass), false));
 }
 
 unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node* node2, ExceptionState& exceptionState) const
