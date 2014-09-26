@@ -25,8 +25,8 @@
 
 // We assume that |size_t| and |off_t| (type for |ftruncate()|) fits in a
 // |uint64_t|.
-COMPILE_ASSERT(sizeof(size_t) <= sizeof(uint64_t), size_t_too_big);
-COMPILE_ASSERT(sizeof(off_t) <= sizeof(uint64_t), off_t_too_big);
+static_assert(sizeof(size_t) <= sizeof(uint64_t), "size_t too big");
+static_assert(sizeof(off_t) <= sizeof(uint64_t), "off_t too big");
 
 namespace mojo {
 namespace embedder {

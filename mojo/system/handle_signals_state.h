@@ -41,8 +41,8 @@ struct MOJO_SYSTEM_IMPL_EXPORT HandleSignalsState
 
   // (Copy and assignment allowed.)
 };
-COMPILE_ASSERT(sizeof(HandleSignalsState) == sizeof(MojoHandleSignalsState),
-               HandleSignalsState_should_add_no_overhead);
+static_assert(sizeof(HandleSignalsState) == sizeof(MojoHandleSignalsState),
+              "HandleSignalsState should add no overhead");
 
 }  // namespace system
 }  // namespace mojo

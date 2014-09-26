@@ -1374,7 +1374,7 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
 
   // Try writing an amount which isn't a multiple of the element size
   // (two-phase).
-  COMPILE_ASSERT(sizeof(int32_t) > 1u, wow_int32_ts_have_size_1);
+  static_assert(sizeof(int32_t) > 1u, "Wow! int32_t's have size 1");
   num_bytes = 1u;
   write_ptr = nullptr;
   EXPECT_EQ(

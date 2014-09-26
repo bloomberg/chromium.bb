@@ -79,11 +79,11 @@ bool HandleTable::AddDispatcherVector(const DispatcherVector& dispatchers,
   DCHECK(handles);
   // TODO(vtl): |std::numeric_limits<size_t>::max()| isn't a compile-time
   // expression in C++03.
-  COMPILE_ASSERT(
+  static_assert(
       static_cast<uint64_t>(kMaxHandleTableSize) + kMaxMessageNumHandles <
           (sizeof(size_t) == 8 ? kuint64max
                                : static_cast<uint64_t>(kuint32max)),
-      addition_may_overflow);
+      "Addition may overflow");
 
   if (handle_to_entry_map_.size() + dispatchers.size() > kMaxHandleTableSize)
     return false;

@@ -38,18 +38,18 @@ STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
 struct MessageInTransit::PrivateStructForCompileAsserts {
   // The size of |Header| must be a multiple of the alignment.
-  COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
-                 sizeof_MessageInTransit_Header_invalid);
+  static_assert(sizeof(Header) % kMessageAlignment == 0,
+                "sizeof(MessageInTransit::Header) invalid");
   // Avoid dangerous situations, but making sure that the size of the "header" +
   // the size of the data fits into a 31-bit number.
-  COMPILE_ASSERT(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
-                     0x7fffffffULL,
-                 kMaxMessageNumBytes_too_big);
+  static_assert(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
+                    0x7fffffffULL,
+                "kMaxMessageNumBytes too big");
 
   // We assume (to avoid extra rounding code) that the maximum message (data)
   // size is a multiple of the alignment.
-  COMPILE_ASSERT(kMaxMessageNumBytes % kMessageAlignment == 0,
-                 kMessageAlignment_not_a_multiple_of_alignment);
+  static_assert(kMaxMessageNumBytes % kMessageAlignment == 0,
+                "kMessageAlignment not a multiple of alignment");
 };
 
 MessageInTransit::View::View(size_t message_size, const void* buffer)

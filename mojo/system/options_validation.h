@@ -37,10 +37,12 @@ class UserOptionsReader {
       : options_reader_(UserPointer<const char>::Reader::NoCheck(),
                         options.template ReinterpretCast<const char>(),
                         GetSizeForReader(options)) {
-    COMPILE_ASSERT(offsetof(Options, struct_size) == 0,
-                   Options_struct_size_not_first_member);
-    // TODO(vtl): With C++11, compile-assert that |sizeof(Options::struct_size)
-    // == sizeof(uint32_t)| somewhere.
+    static_assert(offsetof(Options, struct_size) == 0,
+                  "struct_size not first member of Options");
+    // TODO(vtl): Enable when MSVC supports this (C++11 extended sizeof):
+    //   static_assert(sizeof(Options::struct_size) == sizeof(uint32_t),
+    //                 "Options::struct_size not a uint32_t");
+    // (Or maybe assert that its type is uint32_t?)
   }
 
   bool is_valid() const { return !!options_reader_.GetPointer(); }

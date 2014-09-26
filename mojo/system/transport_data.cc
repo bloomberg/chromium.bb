@@ -22,10 +22,9 @@ namespace system {
 // alignment in order to simplify calculations, even though the actual amount of
 // space needed need not be a multiple of the alignment.
 const size_t kMaxSizePerPlatformHandle = 8;
-COMPILE_ASSERT(kMaxSizePerPlatformHandle %
-                       MessageInTransit::kMessageAlignment ==
-                   0,
-               kMaxSizePerPlatformHandle_not_a_multiple_of_alignment);
+static_assert(kMaxSizePerPlatformHandle % MessageInTransit::kMessageAlignment ==
+                  0,
+              "kMaxSizePerPlatformHandle not a multiple of alignment");
 
 STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherSize;
@@ -48,21 +47,17 @@ const size_t TransportData::kMaxBufferSize =
     kMaxPlatformHandles * kMaxSizePerPlatformHandle;
 
 struct TransportData::PrivateStructForCompileAsserts {
-  // The size of |Header| must be a multiple of the alignment.
-  COMPILE_ASSERT(sizeof(Header) % MessageInTransit::kMessageAlignment == 0,
-                 sizeof_MessageInTransit_Header_invalid);
-
-  // The maximum serialized dispatcher size must be a multiple of the alignment.
-  COMPILE_ASSERT(kMaxSerializedDispatcherSize %
-                         MessageInTransit::kMessageAlignment ==
-                     0,
-                 kMaxSerializedDispatcherSize_not_a_multiple_of_alignment);
-
-  // The size of |HandleTableEntry| must be a multiple of the alignment.
-  COMPILE_ASSERT(sizeof(HandleTableEntry) %
-                         MessageInTransit::kMessageAlignment ==
-                     0,
-                 sizeof_MessageInTransit_HandleTableEntry_invalid);
+  static_assert(sizeof(Header) % MessageInTransit::kMessageAlignment == 0,
+                "sizeof(MessageInTransit::Header) not a multiple of alignment");
+  static_assert(kMaxSerializedDispatcherSize %
+                        MessageInTransit::kMessageAlignment ==
+                    0,
+                "kMaxSerializedDispatcherSize not a multiple of alignment");
+  static_assert(sizeof(HandleTableEntry) %
+                        MessageInTransit::kMessageAlignment ==
+                    0,
+                "sizeof(MessageInTransit::HandleTableEntry) not a multiple of "
+                "alignment");
 };
 
 TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
@@ -140,8 +135,8 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   for (size_t i = 0; i < num_handles; i++) {
     Dispatcher* dispatcher = (*dispatchers)[i].get();
     if (!dispatcher) {
-      COMPILE_ASSERT(Dispatcher::kTypeUnknown == 0,
-                     value_of_Dispatcher_kTypeUnknown_must_be_zero);
+      static_assert(Dispatcher::kTypeUnknown == 0,
+                    "Value of Dispatcher::kTypeUnknown must be 0");
       continue;
     }
 

@@ -169,10 +169,10 @@ TEST(MemoryTest, InvalidDeath) {
   // implementation.
 
   // These tests depend on |int32_t| and |int64_t| having nontrivial alignment.
-  MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int32_t) != 1,
-                      int32_t_does_not_have_to_be_aligned);
-  MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) != 1,
-                      int64_t_does_not_have_to_be_aligned);
+  static_assert(MOJO_ALIGNOF(int32_t) != 1,
+                "int32_t does not require nontrivial alignment");
+  static_assert(MOJO_ALIGNOF(int64_t) != 1,
+                "int64_t does not require nontrivial alignment");
 
   // Null:
   {

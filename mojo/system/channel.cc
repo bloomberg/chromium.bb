@@ -18,9 +18,9 @@
 namespace mojo {
 namespace system {
 
-COMPILE_ASSERT(Channel::kBootstrapEndpointId !=
-                   MessageInTransit::kInvalidEndpointId,
-               kBootstrapEndpointId_is_invalid);
+static_assert(Channel::kBootstrapEndpointId !=
+                  MessageInTransit::kInvalidEndpointId,
+              "kBootstrapEndpointId is invalid");
 
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
     Channel::kBootstrapEndpointId;
