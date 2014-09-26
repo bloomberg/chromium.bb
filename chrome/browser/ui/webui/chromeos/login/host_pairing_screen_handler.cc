@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/host_pairing_screen_handler.h"
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "grit/generated_resources.h"
 
 namespace chromeos {
 
@@ -50,6 +52,27 @@ void HostPairingScreenHandler::Initialize() {
 
 void HostPairingScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
+  // TODO(dzhioev): Move the prefix logic to the base screen handler after
+  // migration.
+  std::string prefix;
+  base::ReplaceChars(kJsScreenPath, ".", "_", &prefix);
+  prefix += "_";
+
+  builder->Add(prefix + "welcomeTitle", IDS_PAIRING_HOST_WELCOME_TITLE);
+  builder->Add(prefix + "welcomeText", IDS_PAIRING_HOST_WELCOME_TEXT);
+  builder->Add(prefix + "confirmationTitle",
+               IDS_PAIRING_HOST_CONFIRMATION_TITLE);
+  builder->Add(prefix + "updatingTitle", IDS_PAIRING_HOST_UPDATING_TITLE);
+  builder->Add(prefix + "updatingText", IDS_PAIRING_HOST_UPDATING_TEXT);
+  builder->Add(prefix + "enrollTitle", IDS_PAIRING_ENROLL_TITLE);
+  builder->Add(prefix + "enrollingTitle",
+               IDS_PAIRING_ENROLLMENT_IN_PROGRESS);
+  builder->Add(prefix + "doneTitle", IDS_PAIRING_HOST_DONE_TITLE);
+  builder->Add(prefix + "doneText", IDS_PAIRING_HOST_DONE_TEXT);
+  builder->Add(prefix + "enrollmentErrorTitle",
+               IDS_PAIRING_ENROLLMENT_ERROR_TITLE);
+  builder->Add(prefix + "errorNeedsRestart",
+               IDS_PAIRING_HOST_EROLLMENT_ERROR_NEEDS_RESTART);
 }
 
 void HostPairingScreenHandler::RegisterMessages() {

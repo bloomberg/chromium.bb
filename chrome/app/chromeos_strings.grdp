@@ -5489,7 +5489,7 @@ All users must sign out to continue.
     Offline
   </message>
 
-  <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
+  <!-- Strings for the "Chromebox for meeting" OOBE UI. -->
   <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL" desc="Cancel button text in the device requisition poup.">
     Cancel
   </message>
@@ -5505,7 +5505,113 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT" desc="Prompt shown in the device requisition shark prompt popup.">
     Are you sure you want to set up this device as a "Shark"?
   </message>
+  <message name="IDS_PAIRING_CONTROLLER_WELCOME" desc="Message shown on 'Chromebox for meetings' controller in the beginning of the setup process.">
+    Welcome to Chromebox for meeting
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_SEARCHING" desc="Message shown on 'Chromebox for meetings' controller when it is searching for host devices.">
+    Searching for nearby Chromeboxes...
+  </message>
+  <message name="IDS_PAIRING_NEED_HELP" desc="Text on the button launching help article about the 'Chromebox for meetings' setup process.">
+    Need help?
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_TROUBLE_CONNECTING" desc="Title of the the dialog giving an advice on how to improve a connection between a host and a controller during the 'Chromebox for meeting' setup process.">
+    Trouble connecting?
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONNECTING_ADVICE" desc="Text in the dialog giving an advice on how to improve a connection between a host and a controller during the 'Chromebox for meeting' setup process.">
+    Please make sure that your Hotrod device is turned on and connected to a TV.
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_ADVICE_GOT_IT" desc="Text on the confirmation button of the dialog giving an advice on how to improve a connection between a host and a controller during the 'Chromebox for meeting' setup process.">
+    OK, got it
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_SELECT_TITLE" desc="Title of the list of nearby 'Chromebox for meeting' devices, that is shown on a controller device during a setup process.">
+    Select a Chromebox to connect to
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONNECT" desc="Text on the button initiating a connection to the choosen device. After a user pressed the button, text changes to 'Connecting...'.">
+    Connect
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONNECTING" desc="Text on the button initiating a connection to the choosen device, after a user pressed it. The initial text is 'Connect'.">
+    Connecting...
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONFIRMATION_TITLE" desc="Title of the page showing the confirmation code on a controller's screen during the 'Chromebox for meeting' setup process.">
+    Pair with Chromebox
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONFIRMATION_QUESTION" desc="Text that is shown near 6-digit confirmation code on a controller's screen during the 'Chromebox for meeting' setup process.">
+    Does this code appear on your Chromebox screen?
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_REJECT_CODE" desc="Text on button, pressing which user reports that he doesn't see confirmation code on host screen.">
+    No, I don't see it
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_ACCEPT_CODE" desc="Text on button, pressing which user reports that he sees confirmation code on host screen and code is correct.">
+    Yes, I see it
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_UPDATE_TITLE" desc="Title of the controller's update page of the 'Chromebox for meeting' setup process.">
+    Updating Chromebox
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_UPDATE_TEXT" desc="Text on the controller's update page of the 'Chromebox for meeting' setup process.">
+    In order to bring you the latest features, your Chromebox needs to update.
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TITLE" desc="Title of the controller page which says that connection with host was lost during the 'Chromebox for meeting' setup process.">
+    Connection to Chromebox lost
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TEXT" desc="Text on the controller page which says that connection with host was lost during the 'Chromebox for meeting' setup process.">
+    Lost connection to your Chromebox. Please move closer, or check your device while we try to reconnect.
+  </message>
+  <message name="IDS_PAIRING_ENROLL_TITLE" desc="Title of the enroll page of the 'Chromebox for meeting' setup process.">
+    Enroll in your organization
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1" desc="First paragraph of text shown on the controller's enroll page of the 'Chromebox for meeting' setup process. Second paragraph is: 'This will only happen once, and your credentials will not be stored.'">
+    Chromebox for meetings needs to know what domain it belongs to. This will require you to sign in to your account.
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_ENROLL_TEXT_2" desc="Second paragraph of text shown on the controller's enroll page of the 'Chromebox for meeting' setup process. First paragraph is: 'Chromebox for meetings needs to know what domain it belongs to. This will require you to sign in to your account.'">
+    This will only happen once, and your credentials will not be stored.
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONTINUE" desc="Text on buttons leading to the next step of the 'Chromebox for meeting' setup process.">
+    Continue
+  </message>
+  <message name="IDS_PAIRING_ENROLLMENT_IN_PROGRESS" desc="Message shown on enroll screens of the 'Chromebox for meeting' setup process.">
+    Enrolling in <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN_NAME">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>...
+  </message>
+  <message name="IDS_PAIRING_ENROLLMENT_ERROR_TITLE" desc="Title of the page shown when enrollment attempt is failed during the 'Chromebox for meeting' setup process.">
+    Unable to enroll
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_ENROLLMENT_ERROR_HOST_RESTARTS" desc="Text on the controller's page shown when enrollment attempt is failed during the 'Chromebox for meeting' setup process.">
+    Please wait while your Chromebox restarts...
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_SUCCESS_TITLE" desc="Title of the final controller's page shown when the 'Chromebox for meeting' setup process is finished.">
+    Success!
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_SUCCESS_TEXT" desc="Text on the final controller's page shown when the 'Chromebox for meeting' setup process is finished.">
+    <ph name="DEVICE_NAME">$1<ex>Chromebox-01</ex></ph> will now appear in the Admin Console
+  </message>
+  <message name="IDS_PAIRING_CONTROLLER_CONTINUE_TO_HANGOUTS" desc="Text on the button, shown on the final controller's page, displayed when the 'Chromebox for meeting' setup process is finished.">
+    Continue to Hangouts
+  </message>
+  <message name="IDS_PAIRING_HOST_WELCOME_TITLE" desc="Title of the host's welcome page of the 'Chromebox for meeting' setup process.">
+    Welcome to Chromebox for meetings!
+  </message>
+  <message name="IDS_PAIRING_HOST_WELCOME_TEXT" desc="Text on the host's welcome page of the 'Chromebox for meeting' setup process.">
+    Turn on your touch controller to set me up
+  </message>
+  <message name="IDS_PAIRING_HOST_CONFIRMATION_TITLE" desc="Title of the host's confirmation page of the 'Chromebox for meeting' setup process. 6-digit confirmation code is displayed below.">
+    Pair with a controller
+  </message>
+  <message name="IDS_PAIRING_HOST_UPDATING_TITLE" desc="Title of the host's update page of the 'Chromebox for meeting' setup process.">
+    Updating Chromebox...
+  </message>
+  <message name="IDS_PAIRING_HOST_UPDATING_TEXT" desc="Update progress shown on the host's update page of the 'Chromebox for meeting' setup process.">
+    <ph name="DOWNLOADED_AMOUNT_MB">$1<ex>13.7</ex></ph> MB / <ph name="TOTAL_AMOUNT_MB">$2<ex>23</ex></ph> MB downloaded
+  </message>
+  <message name="IDS_PAIRING_HOST_DONE_TITLE" desc="Title of the final host's page shown when the 'Chromebox for meeting' setup process is finished.">
+    Congratulations
+  </message>
+  <message name="IDS_PAIRING_HOST_DONE_TEXT" desc="Title of the final host's page shown when the 'Chromebox for meeting' setup process is finished.">
+    You're all set to continue on to Hangouts
+  </message>
+  <message name="IDS_PAIRING_HOST_EROLLMENT_ERROR_NEEDS_RESTART" desc="Text on the host's page of the 'Chromebox for meeting' setup process shown when enrollment attempt is failed.">
+    Chromebox needs to restart...
+  </message>
 
+  <!-- Strings for the le OAuth-based enterprise enrollment page -->
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
     Error when registering the device with the server: <ph name="CLIENT_ERROR">$1<ex>Failed to connect to the server</ex></ph>.
   </message>
