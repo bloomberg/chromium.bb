@@ -635,6 +635,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunTest(FILE_PATH_LITERAL("list-markers.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityMain) {
+  RunTest(FILE_PATH_LITERAL("main.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityMark) {
   RunTest(FILE_PATH_LITERAL("mark.html"));
 }

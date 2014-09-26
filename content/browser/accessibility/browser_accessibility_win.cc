@@ -3549,10 +3549,12 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_LABEL;
       break;
+    case ui::AX_ROLE_MAIN:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      break;
     case ui::AX_ROLE_BANNER:
     case ui::AX_ROLE_COMPLEMENTARY:
     case ui::AX_ROLE_CONTENT_INFO:
-    case ui::AX_ROLE_MAIN:
     case ui::AX_ROLE_NAVIGATION:
     case ui::AX_ROLE_SEARCH:
       ia_role_ = ROLE_SYSTEM_GROUPING;
