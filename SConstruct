@@ -3699,13 +3699,16 @@ TestsUsePublicListMappingsLib(nacl_irt_test_env)
 # We add the following settings after creating nacl_irt_test_env because we
 # don't want them to be inherited by nacl_irt_test_env.
 if nacl_env.Bit('nonsfi_nacl'):
-  # Not-IRT-using non-SFI code uses Linux syscalls directly.  Since this
-  # involves using inline assembly, this requires turning off the PNaCl ABI
-  # checker.
-  nacl_env.SetBits('nonstable_bitcode')
-  nacl_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
-  # Tell the PNaCl translator to link a Linux executable.
-  nacl_env.Append(TRANSLATEFLAGS=['--noirt'])
+  if nacl_env.Bit('pnacl_generate_pexe'):
+    # Not-IRT-using non-SFI code uses Linux syscalls directly.  Since this
+    # involves using inline assembly, this requires turning off the PNaCl ABI
+    # checker.
+    nacl_env.SetBits('nonstable_bitcode')
+    nacl_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
+    # Tell the PNaCl translator to link a Linux executable.
+    nacl_env.Append(TRANSLATEFLAGS=['--noirt'])
+  else:
+    nacl_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,--noirt'])
 
 # If a tests/.../nacl.scons file builds a library, we will just use
 # the one already built in nacl_env instead.

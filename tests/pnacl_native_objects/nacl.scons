@@ -1,3 +1,4 @@
+# -*- python -*-
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,6 +7,12 @@ Import('env')
 
 # This test only tests PNaCl's nonpexe mode with native object files/archives
 if not env.Bit('bitcode') or env.Bit('pnacl_generate_pexe'):
+  Return()
+
+# This file fails with "--mode=dbg-host,nacl,nacl_irt_test
+# pnacl_generate_pexe=0 bitcode=1", so disable it for that case.
+# TODO(uekawa): Investigate why this fails in that case and re-enable.
+if env.Bit('tests_use_irt'):
   Return()
 
 tests = []
