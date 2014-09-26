@@ -143,7 +143,7 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
 }
 
 void HidDeviceManager::UpdateDevices() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  thread_checker_.CalledOnValidThread();
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
 
