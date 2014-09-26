@@ -466,8 +466,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
-#if defined(OS_WIN) && !defined(NDEBUG)
-// Flaky on Webkit Win7 Debug bot: http://crbug.com/417756
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(NDEBUG))
+// Flaky on Windows and on Linux Debug: http://crbug.com/417756
 #define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
     DISABLED_TwoGetUserMediaWithFirstHdSecondVga
 #else
