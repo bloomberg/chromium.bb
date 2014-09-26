@@ -125,7 +125,7 @@ KeyedService* ExtensionSessionsTest::BuildProfileSyncService(
       new ProfileSyncComponentsFactoryMock();
 
   factory->SetLocalDeviceInfoProvider(
-      scoped_ptr<LocalDeviceInfoProvider>(
+      scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
           new browser_sync::LocalDeviceInfoProviderMock(
               kSessionTags[0],
               "machine name",

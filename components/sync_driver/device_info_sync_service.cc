@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/device_info_sync_service.h"
+#include "components/sync_driver/device_info_sync_service.h"
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "sync/api/sync_change.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/time.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 using syncer::ModelType;
 using syncer::SyncChange;
@@ -340,4 +340,4 @@ void DeviceInfoSyncService::DeleteSyncData(const std::string& client_id) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

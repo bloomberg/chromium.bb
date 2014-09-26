@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
 #define CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
 
-#include "chrome/browser/sync/glue/device_info.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
+#include "components/sync_driver/device_info.h"
+#include "components/sync_driver/local_device_info_provider.h"
 
 namespace browser_sync {
 
-class LocalDeviceInfoProviderMock : public LocalDeviceInfoProvider {
+class LocalDeviceInfoProviderMock
+    : public sync_driver::LocalDeviceInfoProvider {
  public:
   // Creates uninitialized provider.
   LocalDeviceInfoProviderMock();
@@ -24,7 +25,7 @@ class LocalDeviceInfoProviderMock : public LocalDeviceInfoProvider {
       const std::string& signin_scoped_device_id);
   virtual ~LocalDeviceInfoProviderMock();
 
-  virtual const DeviceInfo* GetLocalDeviceInfo() const OVERRIDE;
+  virtual const sync_driver::DeviceInfo* GetLocalDeviceInfo() const OVERRIDE;
   virtual std::string GetLocalSyncCacheGUID() const OVERRIDE;
   virtual void Initialize(
       const std::string& cache_guid,
@@ -37,7 +38,7 @@ class LocalDeviceInfoProviderMock : public LocalDeviceInfoProvider {
  private:
   bool is_initialized_;
 
-  scoped_ptr<DeviceInfo> local_device_info_;
+  scoped_ptr<sync_driver::DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;
 };
 

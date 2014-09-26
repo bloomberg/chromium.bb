@@ -6,13 +6,14 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/sync/glue/device_info_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "components/sync_driver/device_info_data_type_controller.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_driver::DataTypeController;
+using sync_driver::DeviceInfoDataTypeController;
 
 namespace browser_sync {
 
@@ -37,6 +38,8 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
         "device_id"));
 
     controller_ = new DeviceInfoDataTypeController(
+        base::MessageLoopProxy::current(),
+        base::Closure(),
         &profile_sync_factory_,
         local_device_.get());
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_H_
-#define CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_H_
+#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_H_
+#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_H_
 
 #include <string>
 
@@ -15,13 +15,11 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 // A class that holds information regarding the properties of a device.
 class DeviceInfo {
  public:
-  typedef base::Callback<void(const std::string&)> GetClientNameCallback;
-
   DeviceInfo(const std::string& guid,
              const std::string& client_name,
              const std::string& chrome_version,
@@ -76,9 +74,6 @@ class DeviceInfo {
   // which extension APIs can expose to third party apps.
   base::DictionaryValue* ToValue();
 
-  // Gets the local device name and passes it as a parameter to callback.
-  static void GetClientName(const GetClientNameCallback& callback);
-
  private:
   const std::string guid_;
 
@@ -101,6 +96,6 @@ class DeviceInfo {
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_H_
+#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_H_

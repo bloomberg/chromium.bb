@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +26,7 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
   SessionDataTypeController(sync_driver::SyncApiComponentFactory* factory,
                             Profile* profile,
                             SyncedWindowDelegatesGetter* synced_window_getter,
-                            LocalDeviceInfoProvider* local_device);
+                            sync_driver::LocalDeviceInfoProvider* local_device);
 
   // NotificationObserver interface.
   virtual void Observe(int type,
@@ -52,8 +52,8 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
   SyncedWindowDelegatesGetter* synced_window_getter_;
   content::NotificationRegistrar notification_registrar_;
 
-  LocalDeviceInfoProvider* const local_device_;
-  scoped_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
+  sync_driver::LocalDeviceInfoProvider* const local_device_;
+  scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription> subscription_;
 
   // Flags that indicate the reason for pending loading models.
   bool waiting_on_session_restore_;

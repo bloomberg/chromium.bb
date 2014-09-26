@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/device_info_data_type_controller.h"
+#include "components/sync_driver/device_info_data_type_controller.h"
 
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/callback.h"
+#include "components/sync_driver/local_device_info_provider.h"
 
-using content::BrowserThread;
-
-namespace browser_sync {
+namespace sync_driver {
 
 DeviceInfoDataTypeController::DeviceInfoDataTypeController(
-    sync_driver::SyncApiComponentFactory* sync_factory,
+    const scoped_refptr<base::MessageLoopProxy>& ui_thread,
+    const base::Closure& error_callback,
+    SyncApiComponentFactory* sync_factory,
     LocalDeviceInfoProvider* local_device_info_provider)
     : UIDataTypeController(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
+          ui_thread,
+          error_callback,
           syncer::DEVICE_INFO,
           sync_factory),
       local_device_info_provider_(local_device_info_provider) {
@@ -39,7 +38,6 @@ bool DeviceInfoDataTypeController::StartModels() {
 }
 
 void DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state_, MODEL_STARTING);
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
 
@@ -47,4 +45,4 @@ void DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded() {
   OnModelLoaded();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

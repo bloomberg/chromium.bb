@@ -9,17 +9,17 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/device_info_tracker.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
+#include "components/sync_driver/device_info_tracker.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "extensions/browser/extension_prefs.h"
 
 using base::DictionaryValue;
-using browser_sync::DeviceInfo;
-using browser_sync::DeviceInfoTracker;
-using browser_sync::LocalDeviceInfoProvider;
+using sync_driver::DeviceInfo;
+using sync_driver::DeviceInfoTracker;
+using sync_driver::LocalDeviceInfoProvider;
 
 namespace extensions {
 

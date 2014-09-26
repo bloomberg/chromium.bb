@@ -5,6 +5,8 @@
 #include "base/bind.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/browser_thread.h"
+#include "sync/util/get_session_name.h"
 #include "ui/base/device_form_factor.h"
 
 namespace browser_sync {
@@ -102,7 +104,7 @@ std::string LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
   return user_agent;
 }
 
-const DeviceInfo*
+const sync_driver::DeviceInfo*
 LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
   return local_device_info_.get();
 }
@@ -111,7 +113,7 @@ std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
   return cache_guid_;
 }
 
-scoped_ptr<LocalDeviceInfoProvider::Subscription>
+scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(!local_device_info_.get());
@@ -123,7 +125,8 @@ void LocalDeviceInfoProviderImpl::Initialize(
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
-  DeviceInfo::GetClientName(
+  syncer::GetSessionName(
+      content::BrowserThread::GetBlockingPool(),
       base::Bind(&LocalDeviceInfoProviderImpl::InitializeContinuation,
                  weak_factory_.GetWeakPtr(),
                  cache_guid,
@@ -136,16 +139,16 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     const std::string& session_name) {
   chrome::VersionInfo version_info;
 
-  local_device_info_.reset(new DeviceInfo(guid,
-                                          session_name,
-                                          version_info.CreateVersionString(),
-                                          MakeUserAgentForSyncApi(version_info),
-                                          GetLocalDeviceType(),
-                                          signin_scoped_device_id));
+  local_device_info_.reset(
+      new sync_driver::DeviceInfo(guid,
+                                  session_name,
+                                  version_info.CreateVersionString(),
+                                  MakeUserAgentForSyncApi(version_info),
+                                  GetLocalDeviceType(),
+                                  signin_scoped_device_id));
 
   // Notify observers.
   callback_list_.Notify();
 }
 
 }  // namespace browser_sync
-

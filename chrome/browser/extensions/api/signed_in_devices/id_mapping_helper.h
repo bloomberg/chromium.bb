@@ -14,9 +14,9 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
-namespace browser_sync {
+namespace sync_driver {
 class DeviceInfo;
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 class Profile;
 
@@ -45,12 +45,12 @@ std::string GetGUIDFromPublicId(
 // The dictionary would have the public id as the key and the
 // device guid as the value.
 void CreateMappingForUnmappedDevices(
-    std::vector<browser_sync::DeviceInfo*>* device_info,
+    std::vector<sync_driver::DeviceInfo*>* device_info,
     base::DictionaryValue* value);
 
 // Gets the device info for a given client id. If the device is not found
 // the returned pointer would be null.
-scoped_ptr<browser_sync::DeviceInfo> GetDeviceInfoForClientId(
+scoped_ptr<sync_driver::DeviceInfo> GetDeviceInfoForClientId(
     const std::string& client_id,
     const std::string& extension_id,
     Profile* profile);

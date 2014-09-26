@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_TRACKER_H_
-#define CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_TRACKER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_
+#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/sync/glue/device_info.h"
+#include "components/sync_driver/device_info.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Interface for tracking synced DeviceInfo.
 class DeviceInfoTracker {
@@ -35,6 +35,6 @@ class DeviceInfoTracker {
   virtual void RemoveObserver(Observer* observer) = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_TRACKER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_

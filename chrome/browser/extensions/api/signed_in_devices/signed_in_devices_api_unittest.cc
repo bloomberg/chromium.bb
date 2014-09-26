@@ -14,16 +14,16 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/pref_names.h"
+#include "components/sync_driver/device_info.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::DeviceInfo;
-using browser_sync::DeviceInfoTracker;
+using sync_driver::DeviceInfo;
+using sync_driver::DeviceInfoTracker;
 using testing::Return;
 
 namespace extensions {

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
 #define CHROME_BROWSER_SYNC_GLUE_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
 
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 
 class Profile;

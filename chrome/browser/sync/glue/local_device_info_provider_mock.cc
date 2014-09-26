@@ -18,7 +18,7 @@ LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock(
     const std::string& signin_scoped_device_id)
   : is_initialized_(true) {
   local_device_info_.reset(
-      new DeviceInfo(
+      new sync_driver::DeviceInfo(
           guid,
           client_name,
           chrome_version,
@@ -29,7 +29,7 @@ LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock(
 
 LocalDeviceInfoProviderMock::~LocalDeviceInfoProviderMock() {}
 
-const DeviceInfo*
+const sync_driver::DeviceInfo*
 LocalDeviceInfoProviderMock::GetLocalDeviceInfo() const {
   return is_initialized_ ? local_device_info_.get() : NULL;
 }
@@ -43,7 +43,7 @@ void LocalDeviceInfoProviderMock::Initialize(
   // Ignored for the mock provider.
 }
 
-scoped_ptr<LocalDeviceInfoProvider::Subscription>
+scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderMock::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(!is_initialized_);

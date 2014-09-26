@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/browser/sync/glue/device_info.h"
-#include "content/public/browser/browser_thread.h"
-#include "sync/util/get_session_name.h"
+#include "components/sync_driver/device_info.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& client_name,
@@ -112,9 +110,4 @@ void DeviceInfo::set_public_id(std::string id) {
   public_id_ = id;
 }
 
-// static.
-void DeviceInfo::GetClientName(const GetClientNameCallback& callback) {
-  syncer::GetSessionName(content::BrowserThread::GetBlockingPool(), callback);
-}
-
-}  // namespace browser_sync
+}  // namespace sync_driver

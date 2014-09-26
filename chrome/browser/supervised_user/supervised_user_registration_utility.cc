@@ -22,14 +22,15 @@
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_update.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
-#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "sync/util/get_session_name.h"
 
 using base::DictionaryValue;
 
@@ -304,7 +305,8 @@ void SupervisedUserRegistrationUtilityImpl::Register(
             weak_ptr_factory_.GetWeakPtr())));
   }
 
-  browser_sync::DeviceInfo::GetClientName(
+  syncer::GetSessionName(
+      content::BrowserThread::GetBlockingPool(),
       base::Bind(&SupervisedUserRegistrationUtilityImpl::FetchToken,
                  weak_ptr_factory_.GetWeakPtr()));
 }

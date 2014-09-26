@@ -24,7 +24,6 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/glue/device_info_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
@@ -58,6 +57,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/data_type_manager_observer.h"
+#include "components/sync_driver/device_info_data_type_controller.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/proxy_data_type_controller.h"
 #include "components/sync_driver/shared_change_processor.h"
@@ -105,7 +105,6 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChromeReportUnrecoverableError;
-using browser_sync::DeviceInfoDataTypeController;
 using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
@@ -124,6 +123,7 @@ using sync_driver::DataTypeErrorHandler;
 using sync_driver::DataTypeManager;
 using sync_driver::DataTypeManagerImpl;
 using sync_driver::DataTypeManagerObserver;
+using sync_driver::DeviceInfoDataTypeController;
 using sync_driver::ProxyDataTypeController;
 using sync_driver::SharedChangeProcessor;
 using sync_driver::UIDataTypeController;
@@ -189,7 +189,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     ProfileSyncService* pss) {
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   pss->RegisterDataTypeController(new DeviceInfoDataTypeController(
-      this, pss->GetLocalDeviceInfoProvider()));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      base::Bind(&ChromeReportUnrecoverableError),
+      this,
+      pss->GetLocalDeviceInfoProvider()));
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -437,9 +440,9 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
                                                sync_prefs, sync_folder);
 }
 
-scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+scoped_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
-  return scoped_ptr<browser_sync::LocalDeviceInfoProvider>(
+  return scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
       new browser_sync::LocalDeviceInfoProviderImpl());
 }
 

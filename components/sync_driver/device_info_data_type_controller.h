@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // DataTypeController for DEVICE_INFO model type.
-class DeviceInfoDataTypeController : public sync_driver::UIDataTypeController {
+class DeviceInfoDataTypeController : public UIDataTypeController {
  public:
   DeviceInfoDataTypeController(
-      sync_driver::SyncApiComponentFactory* sync_factory,
+      const scoped_refptr<base::MessageLoopProxy>& ui_thread,
+      const base::Closure& error_callback,
+      SyncApiComponentFactory* sync_factory,
       LocalDeviceInfoProvider* local_device_info_provider);
 
  private:
@@ -33,6 +35,6 @@ class DeviceInfoDataTypeController : public sync_driver::UIDataTypeController {
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoDataTypeController);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_

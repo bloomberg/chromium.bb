@@ -22,7 +22,6 @@ class Profile;
 class ProfileSyncService;
 
 namespace browser_sync {
-class LocalDeviceInfoProvider;
 class SyncBackendHost;
 }  // namespace browser_sync
 
@@ -35,6 +34,7 @@ class DataTypeManager;
 class DataTypeManagerObserver;
 class DataTypeStatusTable;
 class GenericChangeProcessor;
+class LocalDeviceInfoProvider;
 class SyncPrefs;
 }  // namespace sync_driver
 
@@ -98,7 +98,7 @@ class ProfileSyncComponentsFactory
       const base::FilePath& sync_folder) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
-  virtual scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+  virtual scoped_ptr<sync_driver::LocalDeviceInfoProvider>
       CreateLocalDeviceInfoProvider() = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.

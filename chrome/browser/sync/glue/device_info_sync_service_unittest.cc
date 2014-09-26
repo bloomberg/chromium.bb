@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sync/glue/device_info_sync_service.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
+#include "components/sync_driver/device_info_sync_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
@@ -14,6 +14,8 @@
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using sync_driver::DeviceInfoSyncService;
+using sync_driver::DeviceInfoTracker;
 using syncer::AttachmentIdList;
 using syncer::AttachmentServiceProxyForTest;
 using syncer::ModelType;

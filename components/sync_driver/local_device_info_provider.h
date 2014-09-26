@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_H_
-#define CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_H_
+#define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_H_
 
 #include <string>
 #include "base/callback_list.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class DeviceInfo;
 
@@ -45,6 +45,6 @@ class LocalDeviceInfoProvider {
       const base::Closure& callback) = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_H_

@@ -9,11 +9,11 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
-#include "chrome/browser/sync/glue/device_info.h"
+#include "components/sync_driver/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::DeviceInfo;
+using sync_driver::DeviceInfo;
 
 namespace extensions {
 bool VerifyDictionary(

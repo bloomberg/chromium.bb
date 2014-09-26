@@ -43,10 +43,10 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));
 
-  virtual scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+  virtual scoped_ptr<sync_driver::LocalDeviceInfoProvider>
       CreateLocalDeviceInfoProvider() OVERRIDE;
   void SetLocalDeviceInfoProvider(
-      scoped_ptr<browser_sync::LocalDeviceInfoProvider> local_device);
+      scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device);
 
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
@@ -75,7 +75,7 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   scoped_ptr<sync_driver::ChangeProcessor> change_processor_;
   // LocalDeviceInfoProvider is initially owned by this class,
   // transferred to caller when CreateLocalDeviceInfoProvider is called.
-  scoped_ptr<browser_sync::LocalDeviceInfoProvider> local_device_;
+  scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__

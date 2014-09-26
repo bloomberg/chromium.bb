@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_SYNC_SERVICE_H_
-#define CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_SYNC_SERVICE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
+#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
 
 #include "base/observer_list.h"
-#include "chrome/browser/sync/glue/device_info_tracker.h"
+#include "components/sync_driver/device_info_tracker.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class LocalDeviceInfoProvider;
 
@@ -103,6 +103,6 @@ class DeviceInfoSyncService : public syncer::SyncableService,
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncService);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DEVICE_INFO_SYNC_SERVICE_H_
+#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_

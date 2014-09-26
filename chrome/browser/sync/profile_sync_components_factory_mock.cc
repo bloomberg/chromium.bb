@@ -49,12 +49,12 @@ ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
                         change_processor_.release());
 }
 
-scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+scoped_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryMock::CreateLocalDeviceInfoProvider() {
   return local_device_.Pass();
 }
 
 void ProfileSyncComponentsFactoryMock::SetLocalDeviceInfoProvider(
-    scoped_ptr<browser_sync::LocalDeviceInfoProvider> local_device) {
+    scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device) {
   local_device_ = local_device.Pass();
 }

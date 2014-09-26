@@ -10,6 +10,9 @@
 #include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using sync_driver::DeviceInfo;
+using sync_driver::LocalDeviceInfoProvider;
+
 namespace browser_sync {
 
 const char kLocalDeviceGuid[] = "foo";

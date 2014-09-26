@@ -109,6 +109,7 @@ include_rules = [
   "+sync/api",  # Sync API files.
   "+sync/internal_api/public/attachments",  # Needed for tests.
   "+sync/protocol",  # Sync protobuf files.
+  "+sync/util",  # Sync utilities like GetSessionName.
   "+third_party/cros_system_api",
   "+win8/util",
 

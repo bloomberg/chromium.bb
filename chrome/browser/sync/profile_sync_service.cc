@@ -42,7 +42,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/favicon_cache.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
@@ -74,6 +73,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/device_info.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
@@ -105,11 +105,13 @@
 
 using browser_sync::NotificationServiceSessionsRouter;
 using browser_sync::ProfileSyncServiceStartBehavior;
+using browser_sync::SessionsSyncManager;
 using browser_sync::SyncBackendHost;
 using sync_driver::ChangeProcessor;
 using sync_driver::DataTypeController;
 using sync_driver::DataTypeManager;
 using sync_driver::DataTypeStatusTable;
+using sync_driver::DeviceInfoSyncService;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::JsBackend;
@@ -451,7 +453,7 @@ ProfileSyncService::GetSyncedWindowDelegatesGetter() const {
   return sessions_sync_manager_->GetSyncedWindowDelegatesGetter();
 }
 
-browser_sync::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
+sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
     const {
   if (!IsDataTypeControllerRunning(syncer::DEVICE_INFO))
     return NULL;
@@ -459,7 +461,7 @@ browser_sync::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
   return device_info_sync_service_.get();
 }
 
-browser_sync::LocalDeviceInfoProvider*
+sync_driver::LocalDeviceInfoProvider*
 ProfileSyncService::GetLocalDeviceInfoProvider() {
   return local_device_.get();
 }
@@ -1121,7 +1123,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &browser_sync::SessionsSyncManager::DoGarbageCollection,
+        &SessionsSyncManager::DoGarbageCollection,
             base::AsWeakPtr(sessions_sync_manager_.get())));
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
