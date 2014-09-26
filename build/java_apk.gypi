@@ -110,6 +110,7 @@
     'strip_stamp': '<(intermediate_dir)/strip.stamp',
     'stripped_libraries_dir': '<(intermediate_dir)/stripped_libraries',
     'strip_additional_stamp': '<(intermediate_dir)/strip_additional.stamp',
+    'version_stamp': '<(intermediate_dir)/version.stamp',
     'javac_includes': [],
     'jar_excluded_classes': [],
     'javac_jar_path': '<(intermediate_dir)/<(_target_name).javac.jar',
@@ -364,6 +365,19 @@
           'includes': ['../build/android/pack_arm_relocations.gypi'],
         },
         {
+          'action_name': 'insert_chromium_version',
+          'variables': {
+            'ordered_libraries_file%': '<(ordered_libraries_file)',
+            'libraries_source_dir%': '<(libraries_source_dir)',
+            'version_string': '<(native_lib_version_name)',
+            'input_paths': [
+              '<(pack_arm_relocations_stamp)',
+            ],
+            'stamp': '<(version_stamp)'
+          },
+          'includes': ['../build/android/insert_chromium_version.gypi'],
+        },
+        {
           'variables': {
             'input_libraries': [
               '<@(additional_bundled_libs)',
@@ -461,8 +475,8 @@
                   'variables': {
                     'inputs': [
                       '<(ordered_libraries_file)',
-                      '<(pack_arm_relocations_stamp)',
                       '<(strip_additional_stamp)',
+                      '<(version_stamp)',
                     ],
                     'input_apk_path': '<(unsigned_apk_path)',
                     'output_apk_path': '<(unsigned_standalone_apk_path)',
@@ -478,8 +492,8 @@
           'variables': {
             'libraries_source_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
             'package_input_paths': [
-              '<(pack_arm_relocations_stamp)',
               '<(strip_additional_stamp)',
+              '<(version_stamp)',
             ],
           },
         }],
