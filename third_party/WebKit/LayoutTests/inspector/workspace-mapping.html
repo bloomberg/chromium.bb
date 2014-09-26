@@ -23,6 +23,7 @@ function test()
     }
 
     function MockProjectDelegate() {}
+    MockProjectDelegate.prototype.url = function() { return ""; }
     MockProjectDelegate.prototype.displayName = function() {};
     MockProjectDelegate.prototype.type = function() { return WebInspector.projectTypes.Network };
 

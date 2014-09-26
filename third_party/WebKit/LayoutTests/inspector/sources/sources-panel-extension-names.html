@@ -1,0 +1,51 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/workspace-test.js"></script>
+<script>
+function test()
+{
+    var contentScriptsNavigatorView = new WebInspector.ContentScriptsNavigatorView();
+    contentScriptsNavigatorView.setWorkspace(WebInspector.workspace);
+    contentScriptsNavigatorView.show(WebInspector.inspectorView.element);
+
+    var mockExecutionContext = {
+        id: 1234567,
+        isPageContext: false,
+        origin: "chrome-extension://113581321345589144",
+        name: "FibExtension"
+    };
+    var mockContentScriptURL = mockExecutionContext.origin + "/script.js";
+
+    InspectorTest.runTestSuite([
+        function testAddFileBeforeExecutionContext(next)
+        {
+            var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+            WebInspector.networkWorkspaceBinding.addFileForURL(mockContentScriptURL, contentProvider, true);
+            InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
+            WebInspector.runtimeModel._executionContextCreated(mockExecutionContext);
+            InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
+            // cleanup after test
+            WebInspector.networkWorkspaceBinding.reset();
+            WebInspector.runtimeModel._executionContextsCleared();
+            next();
+        },
+
+        function testAddExecutionContextBeforeFile(next)
+        {
+            WebInspector.runtimeModel._executionContextCreated(mockExecutionContext);
+            var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+            WebInspector.networkWorkspaceBinding.addFileForURL(mockContentScriptURL, contentProvider, true);
+            InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
+            next();
+        },
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>The test verifies that extension names are resolved properly in navigator view.</p>
+</body>
+</html>
