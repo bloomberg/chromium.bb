@@ -55,11 +55,6 @@ public:
 
         unsigned computeHash() const;
 
-        bool hasOneRef() const
-        {
-            return m_isStatic || RefCounted<QualifiedNameImpl>::hasOneRef();
-        }
-
         void ref()
         {
             if (m_isStatic)
