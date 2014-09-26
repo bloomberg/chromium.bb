@@ -18,8 +18,6 @@ class AthenaChromeAppWindowClient : public AthenaAppWindowClientBase {
 
  private:
   // extensions::AppWindowClient
-  virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
-      OVERRIDE;
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;

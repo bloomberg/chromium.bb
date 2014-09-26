@@ -5,10 +5,7 @@
 #include "athena/extensions/chrome/athena_chrome_app_window_client.h"
 
 #include "athena/extensions/chrome/athena_chrome_app_delegate.h"
-#include "base/memory/singleton.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/app_window/app_window.h"
 
@@ -18,14 +15,6 @@ AthenaChromeAppWindowClient::AthenaChromeAppWindowClient() {
 }
 
 AthenaChromeAppWindowClient::~AthenaChromeAppWindowClient() {
-}
-
-std::vector<content::BrowserContext*>
-AthenaChromeAppWindowClient::GetLoadedBrowserContexts() {
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  return std::vector<content::BrowserContext*>(profiles.begin(),
-                                               profiles.end());
 }
 
 extensions::AppWindow* AthenaChromeAppWindowClient::CreateAppWindow(

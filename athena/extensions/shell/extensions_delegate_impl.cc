@@ -17,8 +17,7 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
   explicit ShellExtensionsDelegate(content::BrowserContext* context)
       : context_(context),
         extension_system_(static_cast<extensions::ShellExtensionSystem*>(
-            extensions::ExtensionSystem::Get(context))),
-        app_window_client_(context) {
+            extensions::ExtensionSystem::Get(context))) {
     extensions::AppWindowClient::Set(&app_window_client_);
   }
 

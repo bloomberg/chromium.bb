@@ -18,8 +18,6 @@ class ShellAppWindowClient : public AppWindowClient {
   virtual ~ShellAppWindowClient();
 
   // AppWindowClient overrides:
-  virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
-      OVERRIDE;
   virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
                                      const Extension* extension) OVERRIDE;
   virtual NativeAppWindow* CreateNativeAppWindow(

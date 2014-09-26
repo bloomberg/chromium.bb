@@ -9,19 +9,10 @@
 
 namespace athena {
 
-AthenaShellAppWindowClient::AthenaShellAppWindowClient(
-    content::BrowserContext* context)
-    : context_(context) {
-  DCHECK(context_);
+AthenaShellAppWindowClient::AthenaShellAppWindowClient() {
 }
 
 AthenaShellAppWindowClient::~AthenaShellAppWindowClient() {
-}
-
-std::vector<content::BrowserContext*>
-AthenaShellAppWindowClient::GetLoadedBrowserContexts() {
-  std::vector<content::BrowserContext*> contexts(1, context_);
-  return contexts;
 }
 
 extensions::AppWindow* AthenaShellAppWindowClient::CreateAppWindow(

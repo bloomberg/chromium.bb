@@ -22,6 +22,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -76,7 +77,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
@@ -258,7 +258,7 @@ ui::BaseWindow* GetBaseWindowForWebContents(
 
   gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
   extensions::AppWindow* app_window =
-      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
           native_window);
   return app_window->GetBaseWindow();
 }

@@ -9,10 +9,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_window_registry_util.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -289,7 +289,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   NSString* name = [notification name];
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
     extensions::AppWindow* appWindow =
-        extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+        AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
             window);
 
     const extensions::Extension* extension = NULL;
@@ -370,7 +370,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 
 - (void)quitCurrentPlatformApp {
   extensions::AppWindow* appWindow =
-      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
   if (appWindow)
     apps::ExtensionAppShimHandler::QuitAppForWindow(appWindow);
@@ -378,7 +378,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 
 - (void)hideCurrentPlatformApp {
   extensions::AppWindow* appWindow =
-      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
   if (appWindow)
     apps::ExtensionAppShimHandler::HideAppForWindow(appWindow);
@@ -386,7 +386,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 
 - (void)focusCurrentPlatformApp {
   extensions::AppWindow* appWindow =
-      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
   if (appWindow)
     apps::ExtensionAppShimHandler::FocusAppForWindow(appWindow);

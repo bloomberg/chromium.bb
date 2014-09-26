@@ -100,18 +100,6 @@ class AppWindowRegistry : public KeyedService {
   // newly created |render_view_host|.
   bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
 
-  // Returns the app window for |window|, looking in all browser contexts.
-  static AppWindow* GetAppWindowForNativeWindowAnyProfile(
-      gfx::NativeWindow window);
-
-  // Returns true if the number of app windows registered across all browser
-  // contexts is non-zero. |window_type_mask| is a bitwise OR filter of
-  // AppWindow::WindowType, or 0 for any window type.
-  static bool IsAppWindowRegisteredInAnyProfile(int window_type_mask);
-
-  // Close all app windows in all profiles.
-  static void CloseAllAppWindows();
-
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
     static AppWindowRegistry* GetForBrowserContext(

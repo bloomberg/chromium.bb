@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -19,14 +20,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/message_center/message_center.h"
-
-using extensions::AppWindowRegistry;
-typedef AppWindowRegistry::AppWindowList AppWindowList;
 
 namespace {
 
@@ -71,11 +67,11 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
 
   // One browser and one app window at this point.
   EXPECT_FALSE(chrome::BrowserIterator().done());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
 
   // On the first quit, show notification.
   EXPECT_FALSE(controller->ShouldQuit());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
       QuitWithAppsController::kQuitWithAppsNotificationID);
   ASSERT_TRUE(notification);
@@ -84,25 +80,25 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   notification->delegate()->Click();
   message_center->RemoveAllNotifications(false);
   EXPECT_FALSE(controller->ShouldQuit());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
       QuitWithAppsController::kQuitWithAppsNotificationID);
   ASSERT_TRUE(notification);
 
   EXPECT_FALSE(chrome::BrowserIterator().done());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
 
   // If notification is closed by user, don't show it next time.
   notification->delegate()->Close(true);
   message_center->RemoveAllNotifications(false);
   EXPECT_FALSE(controller->ShouldQuit());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
       QuitWithAppsController::kQuitWithAppsNotificationID);
   EXPECT_EQ(NULL, notification);
 
   EXPECT_FALSE(chrome::BrowserIterator().done());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
 
   // Quitting should not quit but close all browsers
   content::WindowedNotificationObserver observer(
@@ -112,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   observer.Wait();
 
   EXPECT_TRUE(chrome::BrowserIterator().done());
-  EXPECT_TRUE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
 
   // Trying to quit while there are no browsers always shows notification.
   EXPECT_FALSE(controller->ShouldQuit());
@@ -127,6 +123,6 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
       content::NotificationService::AllSources());
   notification->delegate()->ButtonClick(0);
   message_center->RemoveAllNotifications(false);
-  EXPECT_FALSE(AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
+  EXPECT_FALSE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   quit_observer.Wait();
 }

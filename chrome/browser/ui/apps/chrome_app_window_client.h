@@ -25,8 +25,6 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   friend struct DefaultSingletonTraits<ChromeAppWindowClient>;
 
   // extensions::AppWindowClient
-  virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
-      OVERRIDE;
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;

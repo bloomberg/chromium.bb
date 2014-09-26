@@ -18,12 +18,6 @@ ShellAppWindowClient::ShellAppWindowClient() {
 ShellAppWindowClient::~ShellAppWindowClient() {
 }
 
-std::vector<content::BrowserContext*>
-ShellAppWindowClient::GetLoadedBrowserContexts() {
-  NOTIMPLEMENTED();
-  return std::vector<content::BrowserContext*>();
-}
-
 AppWindow* ShellAppWindowClient::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {

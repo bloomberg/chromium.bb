@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -21,7 +22,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
@@ -86,7 +86,7 @@ void QuitWithAppsController::Click() {
 void QuitWithAppsController::ButtonClick(int button_index) {
   g_browser_process->notification_ui_manager()->CancelById(id());
   if (button_index == kQuitAllAppsButtonIndex) {
-    extensions::AppWindowRegistry::CloseAllAppWindows();
+    AppWindowRegistryUtil::CloseAllAppWindows();
   } else if (button_index == kDontShowAgainButtonIndex) {
     g_browser_process->local_state()->SetBoolean(
         prefs::kNotifyWhenAppsKeepChromeAlive, false);
@@ -113,7 +113,7 @@ bool QuitWithAppsController::ShouldQuit() {
 
   // Quit immediately if there are no windows or the confirmation has been
   // suppressed.
-  if (!extensions::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0))
+  if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0))
     return true;
 
   // If there are browser windows, and this notification has been suppressed for

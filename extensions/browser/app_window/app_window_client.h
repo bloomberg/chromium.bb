@@ -5,8 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CLIENT_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CLIENT_H_
 
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "extensions/browser/app_window/app_window.h"
 
@@ -26,9 +24,6 @@ class NativeAppWindow;
 class AppWindowClient {
  public:
   virtual ~AppWindowClient() {}
-
-  // Get all loaded browser contexts.
-  virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts() = 0;
 
   // Creates a new AppWindow for the app in |extension| for |context|.
   // Caller takes ownership.

@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -87,7 +88,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/filename_util.h"
 #include "ui/base/cocoa/focus_window_set.h"
@@ -433,7 +433,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
   // If there are no windows, quit immediately.
   if (chrome::BrowserIterator().done() &&
-      !extensions::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0)) {
+      !AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0)) {
     return NSTerminateNow;
   }
 

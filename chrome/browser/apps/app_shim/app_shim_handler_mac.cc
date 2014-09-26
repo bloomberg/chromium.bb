@@ -10,13 +10,13 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace apps {
 
@@ -24,7 +24,7 @@ namespace {
 
 void TerminateIfNoAppWindows() {
   bool app_windows_left =
-      extensions::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0);
+      AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0);
   if (!app_windows_left &&
       !AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)
            ->IsAppListVisible()) {

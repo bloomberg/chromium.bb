@@ -12,21 +12,17 @@ namespace athena {
 
 class AthenaShellAppWindowClient : public AthenaAppWindowClientBase {
  public:
-  AthenaShellAppWindowClient(content::BrowserContext* context);
+  AthenaShellAppWindowClient();
   virtual ~AthenaShellAppWindowClient();
 
  private:
   // extensions::AppWindowClient
-  virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
-      OVERRIDE;
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
                                   const base::Closure& callback) OVERRIDE;
   virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;
-
-  content::BrowserContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaShellAppWindowClient);
 };

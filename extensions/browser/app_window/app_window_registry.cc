@@ -15,7 +15,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -202,76 +201,6 @@ bool AppWindowRegistry::HadDevToolsAttached(
     content::RenderViewHost* render_view_host) const {
   std::string key = GetWindowKeyForRenderViewHost(this, render_view_host);
   return key.empty() ? false : inspected_windows_.count(key) != 0;
-}
-
-// static
-AppWindow* AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
-    gfx::NativeWindow window) {
-  std::vector<content::BrowserContext*> contexts =
-      AppWindowClient::Get()->GetLoadedBrowserContexts();
-  for (std::vector<content::BrowserContext*>::const_iterator i =
-           contexts.begin();
-       i != contexts.end();
-       ++i) {
-    AppWindowRegistry* registry =
-        Factory::GetForBrowserContext(*i, false /* create */);
-    if (!registry)
-      continue;
-
-    AppWindow* app_window = registry->GetAppWindowForNativeWindow(window);
-    if (app_window)
-      return app_window;
-  }
-
-  return NULL;
-}
-
-// static
-bool AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
-    int window_type_mask) {
-  std::vector<content::BrowserContext*> contexts =
-      AppWindowClient::Get()->GetLoadedBrowserContexts();
-  for (std::vector<content::BrowserContext*>::const_iterator i =
-           contexts.begin();
-       i != contexts.end();
-       ++i) {
-    AppWindowRegistry* registry =
-        Factory::GetForBrowserContext(*i, false /* create */);
-    if (!registry)
-      continue;
-
-    const AppWindowList& app_windows = registry->app_windows();
-    if (app_windows.empty())
-      continue;
-
-    if (window_type_mask == 0)
-      return true;
-
-    for (const_iterator j = app_windows.begin(); j != app_windows.end(); ++j) {
-      if ((*j)->window_type() & window_type_mask)
-        return true;
-    }
-  }
-
-  return false;
-}
-
-// static
-void AppWindowRegistry::CloseAllAppWindows() {
-  std::vector<content::BrowserContext*> contexts =
-      AppWindowClient::Get()->GetLoadedBrowserContexts();
-  for (std::vector<content::BrowserContext*>::const_iterator i =
-           contexts.begin();
-       i != contexts.end();
-       ++i) {
-    AppWindowRegistry* registry =
-        Factory::GetForBrowserContext(*i, false /* create */);
-    if (!registry)
-      continue;
-
-    while (!registry->app_windows().empty())
-      registry->app_windows().front()->GetBaseWindow()->Close();
-  }
 }
 
 void AppWindowRegistry::OnDevToolsStateChanged(
