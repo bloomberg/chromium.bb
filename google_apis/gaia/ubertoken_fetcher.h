@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -38,6 +39,9 @@ class UbertokenConsumer {
 class UbertokenFetcher : public GaiaAuthConsumer,
                          public OAuth2TokenService::Consumer {
  public:
+  // Maximum number of retries to get the uber-auth token before giving up.
+  static const int kMaxRetries;
+
   UbertokenFetcher(OAuth2TokenService* token_service,
                    UbertokenConsumer* consumer,
                    net::URLRequestContextGetter* request_context);
@@ -59,11 +63,22 @@ class UbertokenFetcher : public GaiaAuthConsumer,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
+  // Request a login-scoped access token from the token service.
+  void RequestAccessToken();
+
+  // Exchanges an oauth2 access token for an uber-auth token.
+  void ExchangeTokens();
+
   OAuth2TokenService* token_service_;
   UbertokenConsumer* consumer_;
   net::URLRequestContextGetter* request_context_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::string account_id_;
+  std::string access_token_;
+  int retry_number_;
+  base::OneShotTimer<UbertokenFetcher> retry_timer_;
+  bool second_access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(UbertokenFetcher);
 };

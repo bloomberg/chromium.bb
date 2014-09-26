@@ -7,10 +7,14 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/rand_util.h"
+#include "base/time/time.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+
+const int UbertokenFetcher::kMaxRetries = 3;
 
 UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
@@ -19,7 +23,9 @@ UbertokenFetcher::UbertokenFetcher(
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       consumer_(consumer),
-      request_context_(request_context) {
+      request_context_(request_context),
+      retry_number_(0),
+      second_access_token_request_(false) {
   DCHECK(token_service);
   DCHECK(consumer);
   DCHECK(request_context);
@@ -29,10 +35,10 @@ UbertokenFetcher::~UbertokenFetcher() {
 }
 
 void UbertokenFetcher::StartFetchingToken(const std::string& account_id) {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  access_token_request_ =
-      token_service_->StartRequest(account_id, scopes, this);
+  DCHECK(!account_id.empty());
+  account_id_ = account_id;
+  second_access_token_request_ = false;
+  RequestAccessToken();
 }
 
 void UbertokenFetcher::OnUberAuthTokenSuccess(const std::string& token) {
@@ -41,6 +47,36 @@ void UbertokenFetcher::OnUberAuthTokenSuccess(const std::string& token) {
 
 void UbertokenFetcher::OnUberAuthTokenFailure(
     const GoogleServiceAuthError& error) {
+  // Retry only transient errors.
+  bool should_retry =
+      error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE;
+  if (should_retry) {
+    if (retry_number_ < kMaxRetries) {
+      // Calculate an exponential backoff with randomness of less than 1 sec.
+      double backoff = base::RandDouble() + (1 << retry_number_);
+      ++retry_number_;
+      retry_timer_.Stop();
+      retry_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromSecondsD(backoff),
+                         this,
+                         &UbertokenFetcher::ExchangeTokens);
+      return;
+    }
+  } else {
+    // The access token is invalid.  Tell the token service.
+    OAuth2TokenService::ScopeSet scopes;
+    scopes.insert(GaiaConstants::kOAuth1LoginScope);
+    token_service_->InvalidateToken(account_id_, scopes, access_token_);
+
+    // In case the access was just stale, try one more time.
+    if (!second_access_token_request_) {
+      second_access_token_request_ = true;
+      RequestAccessToken();
+      return;
+    }
+  }
+
   consumer_->OnUbertokenFailure(error);
 }
 
@@ -48,11 +84,10 @@ void UbertokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
+  DCHECK(!access_token.empty());
+  access_token_ = access_token;
   access_token_request_.reset();
-  gaia_auth_fetcher_.reset(new GaiaAuthFetcher(this,
-                                               GaiaConstants::kChromeSource,
-                                               request_context_));
-  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token);
+  ExchangeTokens();
 }
 
 void UbertokenFetcher::OnGetTokenFailure(
@@ -60,4 +95,22 @@ void UbertokenFetcher::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   access_token_request_.reset();
   consumer_->OnUbertokenFailure(error);
+}
+
+void UbertokenFetcher::RequestAccessToken() {
+  retry_number_ = 0;
+  gaia_auth_fetcher_.reset();
+  retry_timer_.Stop();
+
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(GaiaConstants::kOAuth1LoginScope);
+  access_token_request_ =
+      token_service_->StartRequest(account_id_, scopes, this);
+}
+
+void UbertokenFetcher::ExchangeTokens() {
+  gaia_auth_fetcher_.reset(new GaiaAuthFetcher(this,
+                                               GaiaConstants::kChromeSource,
+                                               request_context_));
+  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }

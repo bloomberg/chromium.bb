@@ -100,13 +100,72 @@ TEST_F(UbertokenFetcherTest, FailureToGetAccessToken) {
   EXPECT_EQ("", consumer_.last_token_);
 }
 
-TEST_F(UbertokenFetcherTest, FailureToGetUberToken) {
+TEST_F(UbertokenFetcherTest, TransientFailureEventualFailure) {
   fetcher_->StartFetchingToken(kTestAccountId);
-  GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+  GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
   fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
-  fetcher_->OnUberAuthTokenFailure(error);
 
+  for (int i = 0; i < UbertokenFetcher::kMaxRetries; ++i) {
+    fetcher_->OnUberAuthTokenFailure(error);
+    EXPECT_EQ(0, consumer_.nb_error_);
+    EXPECT_EQ(0, consumer_.nb_correct_token_);
+    EXPECT_EQ("", consumer_.last_token_);
+  }
+
+  fetcher_->OnUberAuthTokenFailure(error);
   EXPECT_EQ(1, consumer_.nb_error_);
   EXPECT_EQ(0, consumer_.nb_correct_token_);
   EXPECT_EQ("", consumer_.last_token_);
+}
+
+TEST_F(UbertokenFetcherTest, TransientFailureEventualSuccess) {
+  fetcher_->StartFetchingToken(kTestAccountId);
+  GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
+  fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
+
+  for (int i = 0; i < UbertokenFetcher::kMaxRetries; ++i) {
+    fetcher_->OnUberAuthTokenFailure(error);
+    EXPECT_EQ(0, consumer_.nb_error_);
+    EXPECT_EQ(0, consumer_.nb_correct_token_);
+    EXPECT_EQ("", consumer_.last_token_);
+  }
+
+  fetcher_->OnUberAuthTokenSuccess("uberToken");
+  EXPECT_EQ(0, consumer_.nb_error_);
+  EXPECT_EQ(1, consumer_.nb_correct_token_);
+  EXPECT_EQ("uberToken", consumer_.last_token_);
+}
+
+TEST_F(UbertokenFetcherTest, PermanentFailureEventualFailure) {
+  fetcher_->StartFetchingToken(kTestAccountId);
+  fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
+
+  GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+  fetcher_->OnUberAuthTokenFailure(error);
+  EXPECT_EQ(0, consumer_.nb_error_);
+  EXPECT_EQ(0, consumer_.nb_correct_token_);
+  EXPECT_EQ("", consumer_.last_token_);
+
+  fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
+  fetcher_->OnUberAuthTokenFailure(error);
+  EXPECT_EQ(1, consumer_.nb_error_);
+  EXPECT_EQ(0, consumer_.nb_correct_token_);
+  EXPECT_EQ("", consumer_.last_token_);
+}
+
+TEST_F(UbertokenFetcherTest, PermanentFailureEventualSuccess) {
+  fetcher_->StartFetchingToken(kTestAccountId);
+  GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+  fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
+
+  fetcher_->OnUberAuthTokenFailure(error);
+  EXPECT_EQ(0, consumer_.nb_error_);
+  EXPECT_EQ(0, consumer_.nb_correct_token_);
+  EXPECT_EQ("", consumer_.last_token_);
+
+  fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
+  fetcher_->OnUberAuthTokenSuccess("uberToken");
+  EXPECT_EQ(0, consumer_.nb_error_);
+  EXPECT_EQ(1, consumer_.nb_correct_token_);
+  EXPECT_EQ("uberToken", consumer_.last_token_);
 }
