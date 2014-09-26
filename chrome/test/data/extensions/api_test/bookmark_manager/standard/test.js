@@ -341,6 +341,26 @@ var tests = [
     }));
   },
 
+  function setMetaInfoPermanent() {
+    bookmarks.getTree(pass(function(nodes) {
+      var unmodifiableFolder = nodes[0].children[0];
+      bookmarkManager.setMetaInfo(unmodifiableFolder.id, 'meta', 'foo', fail(
+          "Can't modify the root bookmark folders."));
+      bookmarkManager.updateMetaInfo(unmodifiableFolder.id, {a: 'a', b: 'b'},
+          fail("Can't modify the root bookmark folders."));
+    }));
+  },
+
+  function setMetaInfoManaged() {
+    bookmarks.getChildren('4', pass(function(result) {
+      assertTrue(result.length > 0);
+      bookmarkManager.setMetaInfo(result[0].id, 'meta', 'foo', fail(
+          "Can't modify managed bookmarks."));
+      bookmarkManager.updateMetaInfo(result[0].id, {a: 'a', b: 'b'},
+          fail("Can't modify managed bookmarks."));
+    }));
+  },
+
   function updateMetaInfo() {
     bookmarkManager.getMetaInfo(nodeB.id, pass(function(result){
       assertEq({}, result);

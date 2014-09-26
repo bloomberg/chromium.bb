@@ -721,7 +721,15 @@ bool BookmarkManagerPrivateSetMetaInfoFunction::RunOnReady() {
   if (!node)
     return false;
 
+  if (!CanBeModified(node))
+    return false;
+
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  if (model->is_permanent_node(node)) {
+    error_ = bookmark_keys::kModifySpecialError;
+    return false;
+  }
+
   model->SetNodeMetaInfo(node, params->key, params->value);
   return true;
 }
@@ -735,7 +743,15 @@ bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
   if (!node)
     return false;
 
+  if (!CanBeModified(node))
+    return false;
+
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  if (model->is_permanent_node(node)) {
+    error_ = bookmark_keys::kModifySpecialError;
+    return false;
+  }
+
   BookmarkNode::MetaInfoMap new_meta_info(
       params->meta_info_changes.additional_properties);
   if (node->GetMetaInfoMap()) {
