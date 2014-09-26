@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 
+#include <algorithm>
+#include <set>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -430,7 +433,6 @@ void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
 // is used to handle certain action IDs of the file manager.
 bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
                                const std::string& action_id) {
-
   return (extension_id == kFileManagerAppId &&
           (action_id == "view-pdf" ||
            action_id == "view-swf" ||
@@ -449,8 +451,7 @@ bool OpenFilesWithBrowser(Profile* profile,
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const FileSystemURL& file_url = file_urls[i];
     if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
-      const base::FilePath& file_path = file_url.path();
-      num_opened += util::OpenFileWithBrowser(profile, file_path);
+      num_opened += util::OpenFileWithBrowser(profile, file_url) ? 1 : 0;
     }
   }
   return num_opened > 0;

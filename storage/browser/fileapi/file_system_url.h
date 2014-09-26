@@ -86,6 +86,14 @@ class STORAGE_EXPORT FileSystemURL {
   static FileSystemURL CreateForTest(const GURL& origin,
                                      FileSystemType mount_type,
                                      const base::FilePath& virtual_path);
+  static FileSystemURL CreateForTest(const GURL& origin,
+                                     FileSystemType mount_type,
+                                     const base::FilePath& virtual_path,
+                                     const std::string& mount_filesystem_id,
+                                     FileSystemType cracked_type,
+                                     const base::FilePath& cracked_path,
+                                     const std::string& filesystem_id,
+                                     const FileSystemMountOption& mount_option);
 
   // Returns true if this instance represents a valid FileSystem URL.
   bool is_valid() const { return is_valid_; }

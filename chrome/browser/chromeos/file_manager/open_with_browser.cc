@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -129,29 +130,35 @@ GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
 
 }  // namespace
 
-bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
+bool OpenFileWithBrowser(Profile* profile,
+                         const storage::FileSystemURL& file_system_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
+
+  const base::FilePath file_path = file_system_url.path();
 
   // For things supported natively by the browser, we should open it
   // in a tab.
   if (IsViewableInBrowser(file_path) ||
       ShouldBeOpenedWithPlugin(profile, file_path.Extension())) {
-    GURL page_url = net::FilePathToFileURL(file_path);
-    // Override drive resource to point to internal handler instead of file URL.
-    if (drive::util::IsUnderDriveMountPoint(file_path)) {
-      page_url = chromeos::FilePathToExternalFileURL(
-          drive::util::ExtractDrivePath(file_path));
-    }
+    // Use external file URL if it is provided for the file system.
+    GURL page_url = chromeos::FileSystemURLToExternalFileURL(file_system_url);
+    if (page_url.is_empty())
+      page_url = net::FilePathToFileURL(file_path);
+
     OpenNewTab(profile, page_url);
     return true;
   }
 
   if (drive::util::HasHostedDocumentExtension(file_path)) {
-    if (drive::util::IsUnderDriveMountPoint(file_path)) {
-      // The file is on Google Docs. Open with drive URL.
-      GURL url = chromeos::FilePathToExternalFileURL(
-          drive::util::ExtractDrivePath(file_path));
+    if (file_manager::util::IsUnderNonNativeLocalPath(profile, file_path)) {
+      // The file is on a non-native volume. Use external file URL. If the file
+      // is on the drive volume, ExternalFileURLRequestJob redirects the URL to
+      // drive's web interface. Otherwise (e.g. MTP, FSP), the file is just
+      // downloaded in a browser tab.
+      const GURL url =
+          chromeos::FileSystemURLToExternalFileURL(file_system_url);
+      DCHECK(!url.is_empty());
       OpenNewTab(profile, url);
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).

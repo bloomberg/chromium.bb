@@ -32,6 +32,18 @@ class ExternalFileURLUtilTest : public testing::Test {
     return testing_profile_manager_;
   }
 
+  storage::FileSystemURL CreateExpectedURL(const base::FilePath& path) {
+    return storage::FileSystemURL::CreateForTest(
+        GURL("chrome-extension://xxx"),
+        storage::kFileSystemTypeExternal,
+        base::FilePath("drive-test-user-hash").Append(path),
+        "",
+        storage::kFileSystemTypeDrive,
+        base::FilePath(),
+        "",
+        storage::FileSystemMountOption());
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
@@ -39,39 +51,44 @@ class ExternalFileURLUtilTest : public testing::Test {
 
 }  // namespace
 
-TEST(ExternalFileURLUtilTest, FilePathToExternalFileURL) {
-  base::FilePath path;
+TEST_F(ExternalFileURLUtilTest, FilePathToExternalFileURL) {
+  storage::FileSystemURL url;
 
   // Path with alphabets and numbers.
-  path = drive::util::GetDriveMyDriveRootPath().AppendASCII("foo/bar012.txt");
-  EXPECT_EQ(path, ExternalFileURLToFilePath(FilePathToExternalFileURL(path)));
+  url = CreateExpectedURL(base::FilePath("foo/bar012.txt"));
+  EXPECT_EQ(url.virtual_path(),
+            ExternalFileURLToVirtualPath(FileSystemURLToExternalFileURL(url)));
 
   // Path with symbols.
-  path = drive::util::GetDriveMyDriveRootPath().AppendASCII(
-      " !\"#$%&'()*+,-.:;<=>?@[\\]^_`{|}~");
-  EXPECT_EQ(path, ExternalFileURLToFilePath(FilePathToExternalFileURL(path)));
+  url = CreateExpectedURL(base::FilePath(" !\"#$%&'()*+,-.:;<=>?@[\\]^_`{|}~"));
+  EXPECT_EQ(url.virtual_path(),
+            ExternalFileURLToVirtualPath(FileSystemURLToExternalFileURL(url)));
 
   // Path with '%'.
-  path = drive::util::GetDriveMyDriveRootPath().AppendASCII("%19%20%21.txt");
-  EXPECT_EQ(path, ExternalFileURLToFilePath(FilePathToExternalFileURL(path)));
+  url = CreateExpectedURL(base::FilePath("%19%20%21.txt"));
+  EXPECT_EQ(url.virtual_path(),
+            ExternalFileURLToVirtualPath(FileSystemURLToExternalFileURL(url)));
 
   // Path with multi byte characters.
   base::string16 utf16_string;
   utf16_string.push_back(0x307b);  // HIRAGANA_LETTER_HO
   utf16_string.push_back(0x3052);  // HIRAGANA_LETTER_GE
-  path = drive::util::GetDriveMyDriveRootPath().Append(
+  url = CreateExpectedURL(
       base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(utf16_string) + ".txt"));
-  EXPECT_EQ(path, ExternalFileURLToFilePath(FilePathToExternalFileURL(path)));
+  EXPECT_EQ(url.virtual_path().AsUTF8Unsafe(),
+            ExternalFileURLToVirtualPath(FileSystemURLToExternalFileURL(url))
+                .AsUTF8Unsafe());
 }
 
-TEST(ExternalFileURLUtilTest, ParseFileURLWithExternalFileOrigin) {
-  // filesystem:externalfile:/*** is used only internally. It should not parsed
+TEST_F(ExternalFileURLUtilTest, ParseFileURLWithExternalFileOrigin) {
+  // filesystem:externalfile:/xxx is used only internally. It should not parsed
   // directly.
   ASSERT_FALSE(storage::FileSystemURL::CreateForTest(
                    GURL("filesystem:externalfile:/")).is_valid());
-  ASSERT_FALSE(
-      storage::FileSystemURL::CreateForTest(
-          GURL("filesystem:externalfile:/external/drive/file.txt")).is_valid());
+  ASSERT_FALSE(storage::FileSystemURL::CreateForTest(
+                   GURL(
+                       "filesystem:externalfile:/external/drive-test-user-hash/"
+                       "file.txt")).is_valid());
 }
 
 }  // namespace chromeos

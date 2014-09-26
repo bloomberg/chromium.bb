@@ -37,26 +37,6 @@ namespace {
 const char kMimeTypeForRFC822[] = "message/rfc822";
 const char kMimeTypeForMHTML[] = "multipart/related";
 
-// Check if the |url| points a valid location or not.
-bool IsValidURL(const storage::FileSystemURL& url) {
-  switch (url.type()) {
-    case storage::kFileSystemTypeDrive: {
-      const base::FilePath my_drive_path =
-          drive::util::GetDriveMyDriveRootPath();
-      const base::FilePath drive_other_path =
-          drive::util::GetDriveGrandRootPath().Append(
-              drive::util::kDriveOtherDirName);
-      const base::FilePath url_drive_path =
-          drive::util::ExtractDrivePathFromFileSystemUrl(url);
-      return my_drive_path == url_drive_path ||
-             my_drive_path.IsParent(url_drive_path) ||
-             drive_other_path.IsParent(url_drive_path);
-    }
-    default:
-      return false;
-  }
-}
-
 // Helper for obtaining FileSystemContext, FileSystemURL, and mime type on the
 // UI thread.
 class URLHelper {
@@ -96,30 +76,18 @@ class URLHelper {
     DCHECK(context.get());
 
     // Obtain the absolute path in the file system.
-    base::FilePath path = drive::util::GetDriveMountPointPath(profile);
-    drive::util::GetDriveGrandRootPath().AppendRelativePath(
-        ExternalFileURLToFilePath(url_), &path);
-
-    storage::ExternalFileSystemBackend* const backend =
-        context->external_backend();
-    DCHECK(backend);
-
-    // Obtain the virtual path.
-    base::FilePath virtual_path;
-    if (!backend->GetVirtualPath(path, &virtual_path)) {
-      ReplyResult(net::ERR_FILE_NOT_FOUND);
-      return;
-    }
+    const base::FilePath virtual_path = ExternalFileURLToVirtualPath(url_);
 
     // Obtain the file system URL.
     // TODO(hirono): After removing MHTML support, stop to use the special
-
     // drive: scheme and use filesystem: URL directly.  crbug.com/415455
     file_system_url_ = context->CreateCrackedFileSystemURL(
         GURL(std::string(chrome::kExternalFileScheme) + ":"),
         storage::kFileSystemTypeExternal,
         virtual_path);
-    if (!IsValidURL(file_system_url_)) {
+
+    // Check if the obtained path providing external file URL or not.
+    if (FileSystemURLToExternalFileURL(file_system_url_).is_empty()) {
       ReplyResult(net::ERR_INVALID_URL);
       return;
     }

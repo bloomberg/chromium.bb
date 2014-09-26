@@ -12,13 +12,20 @@ namespace base {
 class FilePath;
 }
 
+namespace storage {
+class FileSystemURL;
+}
+
 namespace chromeos {
 
-// Returns the external file resource url formatted as "externalfile:<path>"
-GURL FilePathToExternalFileURL(const base::FilePath& path);
+// Obtains the external file url formatted as "externalfile:<path>" from file
+// path. Returns empty URL if the file system does not provide the external file
+// URL.
+GURL FileSystemURLToExternalFileURL(
+    const storage::FileSystemURL& file_system_url);
 
-// Converts a externalfile: URL back to a path that can be passed to FileSystem.
-base::FilePath ExternalFileURLToFilePath(const GURL& url);
+// Converts a externalfile: URL back to a virtual path of FileSystemURL.
+base::FilePath ExternalFileURLToVirtualPath(const GURL& url);
 
 // Obtains external file URL (e.g. external:drive/root/sample.txt) from file
 // path (e.g. /special/drive-xxx/root/sample.txt), if the |path| points an

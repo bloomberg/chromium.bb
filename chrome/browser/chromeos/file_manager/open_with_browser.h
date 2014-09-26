@@ -11,6 +11,10 @@
 
 class Profile;
 
+namespace storage {
+class FileSystemURL;
+}
+
 namespace file_manager {
 namespace util {
 
@@ -24,7 +28,8 @@ namespace util {
 //   needed.
 //
 // Returns false if failed to open. This happens if the file type is unknown.
-bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path);
+bool OpenFileWithBrowser(Profile* profile,
+                         const storage::FileSystemURL& file_system_url);
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
 bool ShouldBeOpenedWithPlugin(

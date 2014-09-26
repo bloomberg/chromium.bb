@@ -36,6 +36,25 @@ FileSystemURL FileSystemURL::CreateForTest(const GURL& origin,
   return FileSystemURL(origin, mount_type, virtual_path);
 }
 
+FileSystemURL FileSystemURL::CreateForTest(
+    const GURL& origin,
+    FileSystemType mount_type,
+    const base::FilePath& virtual_path,
+    const std::string& mount_filesystem_id,
+    FileSystemType cracked_type,
+    const base::FilePath& cracked_path,
+    const std::string& filesystem_id,
+    const FileSystemMountOption& mount_option) {
+  return FileSystemURL(origin,
+                       mount_type,
+                       virtual_path,
+                       mount_filesystem_id,
+                       cracked_type,
+                       cracked_path,
+                       filesystem_id,
+                       mount_option);
+}
+
 FileSystemURL::FileSystemURL(const GURL& url)
     : mount_type_(kFileSystemTypeUnknown),
       type_(kFileSystemTypeUnknown),
