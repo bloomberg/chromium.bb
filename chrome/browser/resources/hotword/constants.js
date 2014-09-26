@@ -8,9 +8,8 @@ cr.define('hotword.constants', function() {
 /**
  * Hotword data shared module extension's ID.
  * @const {string}
- * TODO(amistry): Replace with real shared module ID.
  */
-var SHARED_MODULE_ID = 'bepbmhgboaologfdajaanbcjmnhjmhfn';
+var SHARED_MODULE_ID = 'lccekmodgklaepjeofjdjpbminllajkg';
 
 /**
  * Path to shared module data.

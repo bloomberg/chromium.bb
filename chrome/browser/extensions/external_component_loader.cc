@@ -50,12 +50,11 @@ void ExternalComponentLoader::StartLoading() {
   if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
     std::string hotwordId = extension_misc::kHotwordExtensionId;
     CommandLine* command_line = CommandLine::ForCurrentProcess();
-    // TODO(amistry): Load the hotword shared module when enabling built-in
-    // hotword detection.
-    if (!command_line->HasSwitch(switches::kEnableExperimentalHotwording)) {
-      prefs_->SetString(hotwordId + ".external_update_url",
-                        extension_urls::GetWebstoreUpdateUrl().spec());
+    if (command_line->HasSwitch(switches::kEnableExperimentalHotwording)) {
+      hotwordId = extension_misc::kHotwordSharedModuleId;
     }
+    prefs_->SetString(hotwordId + ".external_update_url",
+                      extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
   InitBookmarksExperimentState(profile_);

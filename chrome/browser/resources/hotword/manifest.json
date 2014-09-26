@@ -38,10 +38,7 @@
 
   "import": [
     {
-      // TODO(amistry): For now, use a locally modified version of the external
-      // hotword extension. Replace with the ID of the new shared module
-      // containing the hotword detector.
-      "id": "bepbmhgboaologfdajaanbcjmnhjmhfn"
+      "id": "lccekmodgklaepjeofjdjpbminllajkg"
     }
   ],
 

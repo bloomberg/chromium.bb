@@ -384,8 +384,16 @@ bool HotwordService::IsServiceAvailable() {
   ExtensionService* service = system->extension_service();
   // Include disabled extensions (true parameter) since it may not be enabled
   // if the user opted out.
+  std::string extensionId;
+  if (IsExperimentalHotwordingEnabled()) {
+    // TODO(amistry): Handle reloading on language change as the old extension
+    // does.
+    extensionId = extension_misc::kHotwordSharedModuleId;
+  } else {
+    extensionId = extension_misc::kHotwordExtensionId;
+  }
   const extensions::Extension* extension =
-      service->GetExtensionById(extension_misc::kHotwordExtensionId, true);
+      service->GetExtensionById(extensionId, true);
   if (!extension)
     error_message_ = IDS_HOTWORD_GENERIC_ERROR_MESSAGE;
 
