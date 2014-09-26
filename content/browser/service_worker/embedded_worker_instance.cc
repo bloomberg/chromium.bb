@@ -228,6 +228,10 @@ void EmbeddedWorkerInstance::ProcessAllocated(
     int process_id,
     ServiceWorkerStatusCode status) {
   DCHECK_EQ(process_id_, -1);
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "EmbeddedWorkerInstance::ProcessAllocate",
+                         params.get(),
+                         "Status", status);
   if (status != SERVICE_WORKER_OK) {
     status_ = STOPPED;
     callback.Run(status);
@@ -236,10 +240,6 @@ void EmbeddedWorkerInstance::ProcessAllocated(
   const int64 service_worker_version_id = params->service_worker_version_id;
   process_id_ = process_id;
   GURL script_url(params->script_url);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "EmbeddedWorkerInstance::ProcessAllocate",
-                         params.get(),
-                         "Status", status);
   RegisterToWorkerDevToolsManager(
       process_id,
       context_.get(),
