@@ -972,6 +972,13 @@ function VideoControls(containerElement, onMediaError, stringFunction,
   this.initTimeControls(true /* show seek mark */);
   this.initVolumeControls();
 
+  // Create the cast button.
+  this.castButton_ = this.createButton('cast menubutton');
+  this.castButton_.setAttribute('menu', '#cast-menu');
+  this.castButton_.setAttribute(
+      'label', this.stringFunction_('VIDEO_PLAYER_PLAY_ON'));
+  cr.ui.decorate(this.castButton_, cr.ui.MenuButton);
+
   if (opt_fullScreenToggle) {
     this.fullscreenButton_ =
         this.createButton('fullscreen', opt_fullScreenToggle);

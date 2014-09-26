@@ -21,9 +21,9 @@
   color: white;
   flex-grow: 1;
   font-size: 16px;
-  height: 16px;
+  line-height: 45px;
   overflow: hidden;
-  padding: 15px;
+  padding-left: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -67,38 +67,6 @@
   height: 32px;
   min-width: 32px;
   width: 32px;
-}
-
-#video-player > .header > button.cast-button {
-  background-image: -webkit-image-set(
-      url(../images/100/cast_off.png) 1x,
-      url(../images/200/cast_off.png) 2x);
-}
-
-#video-player[casting] > .header > button.cast-button {
-  background-image: -webkit-image-set(
-      url(../images/100/cast_on.png) 1x,
-      url(../images/200/cast_on.png) 2x);
-}
-
-#video-player > .header > button.cast-button:hover {
-  background-image: -webkit-image-set(
-      url(../images/100/cast_off_hover.png) 1x,
-      url(../images/200/cast_off_hover.png) 2x);
-}
-
-#video-player[casting] > .header > button.cast-button:hover {
-  background-image: -webkit-image-set(
-      url(../images/100/cast_on_hover.png) 1x,
-      url(../images/200/cast_on_hover.png) 2x);
-}
-
-#video-player > .header > button.cast-button {
-  display: none;
-}
-
-#video-player[cast-available][castable] > .header > button.cast-button {
-  display: block;
 }
 
 #video-player > .header > button.minimize-button {

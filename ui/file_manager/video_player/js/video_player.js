@@ -217,15 +217,6 @@ VideoPlayer.prototype.prepare = function(videos) {
       }.wrap(null));
   closeButton.addEventListener('mousedown', preventDefault);
 
-  var castButton = document.querySelector('.cast-button');
-  cr.ui.decorate(castButton, cr.ui.MenuButton);
-  castButton.addEventListener(
-      'click',
-      function(event) {
-        event.stopPropagation();
-      }.wrap(null));
-  castButton.addEventListener('mousedown', preventDefault);
-
   var menu = document.querySelector('#cast-menu');
   cr.ui.decorate(menu, cr.ui.Menu);
 

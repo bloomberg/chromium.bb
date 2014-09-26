@@ -4,11 +4,13 @@
 
 .media-button {
   height: 28px;
+  margin: 0 5px;
   position: relative;
   width: 26px;
 }
 
 .media-button > div {
+  background: center center;
   height: 100%;
   opacity: 0;
   pointer-events: none;
@@ -186,11 +188,6 @@
 
 /* Play/pause button. */
 
-.media-button.play {
-  margin-left: -7px;
-  margin-right: -7px;
-}
-
 .media-button.play > .default.normal {
   background-image: -webkit-image-set(
     url('../images/media/media_play.png') 1x,
@@ -304,7 +301,7 @@
 .time-controls > .time {
   cursor: default;
   height: 100%;
-  margin-left: 15px;
+  margin-left: 10px;
   position: relative;
 }
 
@@ -342,7 +339,6 @@
 /* Sound button */
 
 .media-button.sound {
-  margin-left: -4px;
   width: 31px;
 }
 
@@ -432,8 +428,6 @@
 
 .custom-slider.volume {
   height: 100%;
-  margin-left: -4px;
-  margin-right: -4px;
   position: relative;
   width: 60px;
 }
@@ -478,23 +472,58 @@
   font-size: 15px;
   height: 30px;
   opacity: 0.8;
-  padding-left: 15px;
-  padding-right: 15px;
   pointer-events: auto;
 }
 
-.video-controls .time-controls,
-.video-controls .volume-controls {
-  margin-left: 15px;
+/* Cast button. */
+
+.media-button.cast > .default.normal {
+  background-image: -webkit-image-set(
+    url('../images/media/media_chromecast.png') 1x,
+    url('../images/media/2x/media_chromecast.png') 2x);
 }
+
+.media-button.cast > .default.hover {
+  background-image: -webkit-image-set(
+    url('../images/media/media_chromecast_hover.png') 1x,
+    url('../images/media/2x/media_chromecast_hover.png') 2x);
+}
+
+.media-button.cast > .default.active {
+  background-image: -webkit-image-set(
+    url('../images/media/media_chromecast_down.png') 1x,
+    url('../images/media/2x/media_chromecast_down.png') 2x);
+}
+
+#video-player[casting] .media-button.cast > .default.normal {
+  background-image: -webkit-image-set(
+    url('../images/media/media_chromecast_casting.png') 1x,
+    url('../images/media/2x/media_chromecast_casting.png') 2x);
+}
+
+#video-player[casting] .media-button.cast > .default.hover {
+  background-image: -webkit-image-set(
+    url('../images/media/media_chromecast_casting_hover.png') 1x,
+    url('../images/media/2x/media_chromecast_casting_hover.png') 2x);
+}
+
+#video-player[casting] .media-button.cast > .default.active {
+  background-image: -webkit-image-set(
+    url('../images/media/media_chromecast_casting_down.png') 1x,
+    url('../images/media/2x/media_chromecast_casting_down.png') 2x);
+}
+
+.media-button.cast {
+  display: none;
+}
+
+#video-player[cast-available][castable] .media-button.cast {
+  display: block;
+}
+
 
 /* Fullscreen button. */
 /* There is no final decision whether we need a separate icon when toggled. */
-
-.media-button.fullscreen {
-  margin-left: 9px;  /* 15px visible margin - 6px whitespace in the icon. */
-  margin-right: -6px;
-}
 
 .media-button.fullscreen > .normal {
   background-image: -webkit-image-set(
