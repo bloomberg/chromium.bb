@@ -258,7 +258,10 @@ void PepperCompositorHost::UpdateLayer(
           cc::SingleReleaseCallback::Create(
               base::Bind(&PepperCompositorHost::ResourceReleased,
                          weak_factory_.GetWeakPtr(),
-                         new_layer->common.resource_id)));;
+                         new_layer->common.resource_id)));
+      // TODO(penghuang): get a damage region from the application and
+      // pass it to SetNeedsDisplayRect().
+      texture_layer->SetNeedsDisplay();
     }
     texture_layer->SetPremultipliedAlpha(new_layer->texture->premult_alpha);
     gfx::RectF rect = PP_ToGfxRectF(new_layer->texture->source_rect);
@@ -290,6 +293,9 @@ void PepperCompositorHost::UpdateLayer(
                          weak_factory_.GetWeakPtr(),
                          new_layer->common.resource_id,
                          base::Passed(&image_shm))));
+      // TODO(penghuang): get a damage region from the application and
+      // pass it to SetNeedsDisplayRect().
+      image_layer->SetNeedsDisplay();
 
       // ImageData is always premultiplied alpha.
       image_layer->SetPremultipliedAlpha(true);
