@@ -106,10 +106,6 @@ namespace {
 const int kPluginsRefreshThresholdInSeconds = 3;
 #endif
 
-// When two CPU usage queries arrive within this interval, we sample the CPU
-// usage only once and send it as a response for both queries.
-static const int64 kCPUUsageSampleIntervalMs = 900;
-
 const uint32 kFilteredMessageClasses[] = {
   ChildProcessMsgStart,
   DesktopNotificationMsgStart,
@@ -331,7 +327,6 @@ RenderMessageFilter::RenderMessageFilter(
       incognito_(browser_context->IsOffTheRecord()),
       dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
-      cpu_usage_(0),
       audio_manager_(audio_manager),
       media_internals_(media_internals) {
   DCHECK(request_context_.get());
@@ -368,18 +363,6 @@ void RenderMessageFilter::OnChannelClosing() {
 #if defined(OS_ANDROID)
   CompositorImpl::DestroyAllSurfaceTextures(render_process_id_);
 #endif
-}
-
-void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
-  base::ProcessHandle handle = PeerHandle();
-#if defined(OS_MACOSX)
-  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle,
-                                                                    NULL));
-#else
-  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle));
-#endif
-  cpu_usage_ = process_metrics_->GetCPUUsage(); // Initialize CPU usage counters
-  cpu_usage_sample_time_ = base::TimeTicks::Now();
 }
 
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -451,7 +434,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPUUsage, OnGetCPUUsage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
                         OnGetAudioHardwareConfig)
 #if defined(OS_WIN)
@@ -850,16 +832,6 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
-}
-
-void RenderMessageFilter::OnGetCPUUsage(int* cpu_usage) {
-  base::TimeTicks now = base::TimeTicks::Now();
-  int64 since_last_sample_ms = (now - cpu_usage_sample_time_).InMilliseconds();
-  if (since_last_sample_ms > kCPUUsageSampleIntervalMs) {
-    cpu_usage_sample_time_ = now;
-    cpu_usage_ = static_cast<int>(process_metrics_->GetCPUUsage());
-  }
-  *cpu_usage = cpu_usage_;
 }
 
 void RenderMessageFilter::OnGetAudioHardwareConfig(

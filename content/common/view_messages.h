@@ -987,10 +987,6 @@ IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetAudioHardwareConfig,
                             media::AudioParameters /* input parameters */,
                             media::AudioParameters /* output parameters */)
 
-// Asks the browser for CPU usage of the renderer process in percents.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,
-                            int /* CPU usage in percents */)
-
 // Asks the browser for the renderer process memory size stats.
 IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetProcessMemorySizes,
                             size_t /* private_bytes */,

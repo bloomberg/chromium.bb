@@ -173,9 +173,7 @@ namespace content {
 namespace {
 
 const int64 kInitialIdleHandlerDelayMs = 1000;
-const int64 kShortIdleHandlerDelayMs = 1000;
 const int64 kLongIdleHandlerDelayMs = 30*1000;
-const int kIdleCPUUsageThresholdInPercents = 3;
 
 // Maximum allocation size allowed for image scaling filters that
 // require pre-scaling. Skia will fallback to a filter that doesn't
@@ -1003,7 +1001,13 @@ void RenderThreadImpl::IdleHandler() {
                                GetContentClient()->renderer()->
                                    RunIdleHandlerWhenWidgetsHidden();
   if (run_in_foreground_tab) {
-    IdleHandlerInForegroundTab();
+    if (idle_notifications_to_skip_ > 0) {
+      --idle_notifications_to_skip_;
+    } else {
+      base::allocator::ReleaseFreeMemory();
+      base::DiscardableMemory::ReduceMemoryUsage();
+    }
+    ScheduleIdleHandler(kLongIdleHandlerDelayMs);
     return;
   }
 
@@ -1045,42 +1049,6 @@ void RenderThreadImpl::IdleHandler() {
   }
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
-}
-
-void RenderThreadImpl::IdleHandlerInForegroundTab() {
-  // Increase the delay in the same way as in IdleHandler,
-  // but make it periodic by reseting it once it is too big.
-  int64 new_delay_ms = idle_notification_delay_in_ms_ +
-                       1000000 / (idle_notification_delay_in_ms_ + 2000);
-  if (new_delay_ms >= kLongIdleHandlerDelayMs)
-    new_delay_ms = kShortIdleHandlerDelayMs;
-
-  if (idle_notifications_to_skip_ > 0) {
-    idle_notifications_to_skip_--;
-  } else  {
-    int cpu_usage = 0;
-    Send(new ViewHostMsg_GetCPUUsage(&cpu_usage));
-    // Idle notification hint roughly specifies the expected duration of the
-    // idle pause. We set it proportional to the idle timer delay.
-    int idle_hint = static_cast<int>(new_delay_ms / 10);
-    if (cpu_usage < kIdleCPUUsageThresholdInPercents) {
-      base::allocator::ReleaseFreeMemory();
-
-      bool finished_idle_work = true;
-      if (blink::mainThreadIsolate() &&
-          !blink::mainThreadIsolate()->IdleNotification(idle_hint)) {
-        finished_idle_work = false;
-      }
-      if (!base::DiscardableMemory::ReduceMemoryUsage())
-        finished_idle_work = false;
-
-      // V8 finished collecting garbage and discardable memory system has no
-      // more idle work left.
-      if (finished_idle_work)
-        new_delay_ms = kLongIdleHandlerDelayMs;
-    }
-  }
-  ScheduleIdleHandler(new_delay_ms);
 }
 
 int64 RenderThreadImpl::GetIdleNotificationDelayInMs() const {

@@ -101,7 +101,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   // IPC::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -213,8 +212,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnSaveImageFromDataURL(int render_view_id, const std::string& url_str);
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
-
-  void OnGetCPUUsage(int* cpu_usage);
 
   void OnGetAudioHardwareConfig(media::AudioParameters* input_params,
                                 media::AudioParameters* output_params);
@@ -333,13 +330,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   int render_process_id_;
 
   std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
-
-  // Records the last time we sampled CPU usage of the renderer process.
-  base::TimeTicks cpu_usage_sample_time_;
-  // Records the last sampled CPU usage in percents.
-  int cpu_usage_;
-  // Used for sampling CPU usage of the renderer process.
-  scoped_ptr<base::ProcessMetrics> process_metrics_;
 
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
