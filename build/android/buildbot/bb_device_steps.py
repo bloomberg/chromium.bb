@@ -26,7 +26,7 @@ from pylib.gtest import gtest_config
 CHROME_SRC_DIR = bb_utils.CHROME_SRC
 DIR_BUILD_ROOT = os.path.dirname(CHROME_SRC_DIR)
 CHROME_OUT_DIR = bb_utils.CHROME_OUT_DIR
-BK_SCRIPTS_DIR = 'third_party/WebKit/Tools/Scripts'
+BLINK_SCRIPTS_DIR = 'third_party/WebKit/Tools/Scripts'
 
 SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 LOGCAT_DIR = os.path.join(bb_utils.CHROME_OUT_DIR, 'logcat')
@@ -287,8 +287,7 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
 def RunWebkitLint():
   """Lint WebKit's TestExpectation files."""
   bb_annotations.PrintNamedStep('webkit_lint')
-  RunCmd([SrcPath(os.path.join(BK_SCRIPTS_DIR, 'lint-test-expectations')),
-          '--android'])
+  RunCmd([SrcPath(os.path.join(BLINK_SCRIPTS_DIR, 'lint-test-expectations'))])
 
 
 def RunWebkitLayoutTests(options):
@@ -326,7 +325,7 @@ def RunWebkitLayoutTests(options):
         ['--additional-expectations=%s' % os.path.join(CHROME_SRC_DIR, *f)])
 
   exit_code = RunCmd(
-      [SrcPath(os.path.join(BK_SCRIPTS_DIR, 'run-webkit-tests'))] + cmd_args)
+      [SrcPath(os.path.join(BLINK_SCRIPTS_DIR, 'run-webkit-tests'))] + cmd_args)
   if exit_code == 255: # test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
     bb_annotations.PrintMsg('?? (crashed or hung)')
   elif exit_code == 254: # test_run_results.NO_DEVICES_EXIT_STATUS
