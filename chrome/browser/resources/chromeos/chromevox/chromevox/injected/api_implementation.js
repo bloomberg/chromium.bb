@@ -282,7 +282,7 @@ cvox.ApiImplementation.syncToNode = function(
         opt_queueMode,
         null,
         null,
-        'nav');
+        cvox.TtsCategory.NAV);
   }
 
   cvox.ChromeVox.navigationManager.getBraille().write();

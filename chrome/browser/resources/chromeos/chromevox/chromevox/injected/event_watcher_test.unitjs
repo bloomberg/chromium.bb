@@ -736,3 +736,37 @@ TEST_F('CvoxEventWatcherUnitTest', 'ToggleOnKeyUp', function() {
       .waitForCalm(this.assertSpoken, 'Not pressed')
       .waitForCalm(testDone);
 });
+
+/**
+ * Exiting dialog message should not interrupt a live region.
+ */
+TEST_F('CvoxEventWatcherUnitTest', 'ExitDialogWithLiveRegion', function() {
+  this.loadHtml(
+      '<div role="dialog" aria-label="MyAlert">' +
+      '  <h1>Heading</h1>' +
+      '  <button id="initial">Initial focus</button>' +
+      '</div>' +
+      '<div>' +
+      '  <button id="final">Final focus</button>' +
+      '</div>' +
+      '<div id="live" aria-live="polite"></div>');
+
+  // Focus on the button in the dialog.
+  this.setFocus('initial');
+  this.waitForCalm(this.assertSpoken,
+                   'Entered dialog MyAlert Dialog Initial focus Button')
+      .waitForCalm(function() {
+        $('live').innerText = 'Live region changed';
+      })
+      .waitForCalm(function() {
+        this.setFocus('final');
+      })
+      .waitForCalm(function() {
+        var ulist = cvox.ChromeVoxTester.testTts().getSpeechQueueOutput();
+        assertEquals('Live region changed', ulist[0]);
+        assertEquals('Exited dialog.', ulist[1]);
+        assertEquals('Final focus', ulist[2]);
+        assertEquals('Button', ulist[3]);
+        testDone();
+      });
+});

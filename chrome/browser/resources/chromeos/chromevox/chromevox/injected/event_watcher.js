@@ -1325,19 +1325,18 @@ cvox.ChromeVoxEventWatcher.handleDialogFocus = function(target) {
         cvox.ChromeVox.navigationManager.currentDialog)) {
       cvox.ChromeVox.navigationManager.currentDialog = null;
 
-      cvox.ChromeVox.tts.speak(
+      cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_(
           cvox.ChromeVox.msgs.getMsg('exiting_dialog'),
-          cvox.ChromeVoxEventWatcher.queueMode_(),
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+          cvox.TtsCategory.NAV);
       return true;
     }
   } else {
     if (dialog) {
       cvox.ChromeVox.navigationManager.currentDialog = dialog;
-      cvox.ChromeVox.tts.speak(
+      cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_(
           cvox.ChromeVox.msgs.getMsg('entering_dialog'),
-          cvox.ChromeVoxEventWatcher.queueMode_(),
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+          cvox.TtsCategory.NAV);
+
       if (role == 'alertdialog') {
         var dialogDescArray =
             cvox.DescriptionUtil.getFullDescriptionsFromChildren(null, dialog);
@@ -1350,6 +1349,29 @@ cvox.ChromeVoxEventWatcher.handleDialogFocus = function(target) {
     }
   }
   return false;
+};
+
+/**
+ * Speak the given text with the annotation personality and the given
+ * speech queue utterance category.
+ * @param {string} text The text to speak.
+ * @param {string} category The category of text, used by the speech queue
+ *     when flushing all speech from the same category while leaving other
+ *     speech in the queue.
+ * @private
+ */
+cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_ = function(
+    text, category) {
+  var properties = {};
+  var src = cvox.AbstractTts.PERSONALITY_ANNOTATION;
+  for (var key in src) {
+    properties[key] = src[key];
+  }
+  properties['category'] = category;
+  cvox.ChromeVox.tts.speak(
+      text,
+      cvox.ChromeVoxEventWatcher.queueMode_(),
+      properties);
 };
 
 /**

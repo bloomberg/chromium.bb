@@ -738,7 +738,7 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
                              queueMode,
                              opt_callback || null,
                              null,
-                             'nav');
+                             cvox.TtsCategory.NAV);
 
   this.getBraille().write();
 

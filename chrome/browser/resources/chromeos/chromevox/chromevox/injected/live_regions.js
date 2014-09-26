@@ -408,7 +408,7 @@ cvox.LiveRegions.announceChange = function(
   // interrupt other live regions but not anything else.
   navDescriptions.forEach(function(desc) {
     if (!desc.category) {
-      desc.category = 'live';
+      desc.category = cvox.TtsCategory.LIVE;
     }
   });
 
@@ -432,7 +432,7 @@ cvox.LiveRegions.announceChange = function(
     });
     navDescriptions = [new cvox.NavDescription({
       text: allStrings.join(', '),
-      category: 'live'
+      category: cvox.TtsCategory.LIVE
     })];
   }
 

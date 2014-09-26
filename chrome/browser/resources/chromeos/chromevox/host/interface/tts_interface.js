@@ -9,8 +9,23 @@
  *
  */
 
-goog.provide('cvox.TtsInterface');
 goog.provide('cvox.TtsCapturingEventListener');
+goog.provide('cvox.TtsCategory');
+goog.provide('cvox.TtsInterface');
+
+/**
+ * Categories for a speech utterance. This can be used with the
+ * CATEGORY_FLUSH queue mode, which flushes all utterances from a given
+ * category but not other utterances.
+ *
+ * NAV: speech related to explicit navigation, or focus changing.
+ *
+ * @enum {string}
+ */
+cvox.TtsCategory = {
+  LIVE: 'live',
+  NAV: 'nav'
+};
 
 /**
  * @interface
