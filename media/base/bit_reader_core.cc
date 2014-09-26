@@ -51,12 +51,8 @@ int BitReaderCore::PeekBitsMsbAligned(int num_bits, uint64* out) {
   return nbits_;
 }
 
-bool BitReaderCore::SkipBits(int num_bits) {
-  // TODO(dalecurtis): Rewrite to be efficient, see http://crbug.com/376450
+bool BitReaderCore::SkipBitsSmall(int num_bits) {
   DCHECK_GE(num_bits, 0);
-  DVLOG_IF(1, num_bits > 100)
-      << "BitReader::SkipBits inefficient for large skips";
-
   uint64 dummy;
   while (num_bits >= kRegWidthInBits) {
     if (!ReadBitsInternal(kRegWidthInBits, &dummy))
@@ -64,6 +60,39 @@ bool BitReaderCore::SkipBits(int num_bits) {
     num_bits -= kRegWidthInBits;
   }
   return ReadBitsInternal(num_bits, &dummy);
+}
+
+bool BitReaderCore::SkipBits(int num_bits) {
+  DCHECK_GE(num_bits, 0);
+
+  const int remaining_bits = nbits_ + nbits_next_;
+  if (remaining_bits >= num_bits)
+    return SkipBitsSmall(num_bits);
+
+  // Skip first the remaining available bits.
+  num_bits -= remaining_bits;
+  bits_read_ += remaining_bits;
+  nbits_ = 0;
+  reg_ = 0;
+  nbits_next_ = 0;
+  reg_next_ = 0;
+
+  // Next, skip an integer number of bytes.
+  const int nbytes = num_bits / 8;
+  if (nbytes > 0) {
+    const uint8* byte_stream_window;
+    const int window_size =
+        byte_stream_provider_->GetBytes(nbytes, &byte_stream_window);
+    DCHECK_GE(window_size, 0);
+    DCHECK_LE(window_size, nbytes);
+    if (window_size < nbytes)
+      return false;
+    num_bits -= 8 * nbytes;
+    bits_read_ += 8 * nbytes;
+  }
+
+  // Skip the remaining bits.
+  return SkipBitsSmall(num_bits);
 }
 
 int BitReaderCore::bits_read() const {

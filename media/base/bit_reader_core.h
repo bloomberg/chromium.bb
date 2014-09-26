@@ -85,6 +85,11 @@ class MEDIA_EXPORT BitReaderCore {
   int bits_read() const;
 
  private:
+  // This function can skip any number of bits but is more efficient
+  // for small numbers. Return false if the given number of bits cannot be
+  // skipped (not enough bits in the stream), true otherwise.
+  bool SkipBitsSmall(int num_bits);
+
   // Help function used by ReadBits to avoid inlining the bit reading logic.
   bool ReadBitsInternal(int num_bits, uint64* out);
 

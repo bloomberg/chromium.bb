@@ -8,6 +8,13 @@
 
 namespace media {
 
+static void SetBit(uint8* buf, size_t size, size_t bit_pos) {
+  size_t byte_pos = bit_pos / 8;
+  bit_pos -= byte_pos * 8;
+  DCHECK_LT(byte_pos, size);
+  buf[byte_pos] |= (1 << (7 - bit_pos));
+}
+
 TEST(BitReaderTest, NormalOperationTest) {
   uint8 value8;
   uint64 value64;
@@ -62,6 +69,52 @@ TEST(BitReaderTest, SkipBitsTest) {
   EXPECT_FALSE(reader1.SkipBits(100));
   EXPECT_TRUE(reader1.SkipBits(0));
   EXPECT_FALSE(reader1.SkipBits(1));
+}
+
+TEST(BitReaderTest, VariableSkipBitsTest) {
+  uint8 buffer[256] = {0};
+
+  // The test alternates between ReadBits and SkipBits.
+  // The first number is the number of bits to read, the second one is the
+  // number of bits to skip. The number of bits to read was arbitrarily chosen
+  // while the number of bits to skip was chosen so as to cover from small skips
+  // to large skips.
+  const size_t pattern_read_skip[][2] = {
+    {  5,  17 },
+    {  4,  34 },
+    {  0,  44 },
+    {  3,   4 },   // Note: aligned read.
+    {  7,   7 },   // Note: both read&skip cross byte boundary.
+    { 17,  68 },
+    {  7, 102 },
+    {  9, 204 },
+    {  3, 408 } };
+
+  // Set bits to one only for the first and last bit of each read
+  // in the pattern.
+  size_t pos = 0;
+  for (size_t k = 0; k < arraysize(pattern_read_skip); ++k) {
+    const size_t read_bit_count = pattern_read_skip[k][0];
+    if (read_bit_count > 0) {
+      SetBit(buffer, sizeof(buffer), pos);
+      SetBit(buffer, sizeof(buffer), pos + read_bit_count - 1);
+      pos += read_bit_count;
+    }
+    pos += pattern_read_skip[k][1];
+  }
+
+  // Run the test.
+  BitReader bit_reader(buffer, sizeof(buffer));
+  EXPECT_EQ(bit_reader.bits_available(), static_cast<int>(sizeof(buffer) * 8));
+  for (size_t k = 0; k < arraysize(pattern_read_skip); ++k) {
+    const size_t read_bit_count = pattern_read_skip[k][0];
+    if (read_bit_count > 0) {
+      int value;
+      EXPECT_TRUE(bit_reader.ReadBits(read_bit_count, &value));
+      EXPECT_EQ(value, 1 | (1 << (read_bit_count - 1)));
+    }
+    EXPECT_TRUE(bit_reader.SkipBits(pattern_read_skip[k][1]));
+  }
 }
 
 TEST(BitReaderTest, BitsReadTest) {
