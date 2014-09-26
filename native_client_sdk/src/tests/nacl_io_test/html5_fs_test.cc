@@ -470,6 +470,10 @@ TEST_F(Html5FsTest, GetDents) {
   ScopedNode node;
   ASSERT_EQ(0, fs->Open(Path("/file"), O_RDWR, &node));
 
+  struct stat stat;
+  ASSERT_EQ(0, node->GetStat(&stat));
+  ino_t file1_ino = stat.st_ino;
+
   // Should fail for regular files.
   const size_t kMaxDirents = 5;
   dirent dirents[kMaxDirents];
@@ -506,6 +510,11 @@ TEST_F(Html5FsTest, GetDents) {
 
   // Add another file...
   ASSERT_EQ(0, fs->Open(Path("/file2"), O_CREAT, &node));
+  ASSERT_EQ(0, node->GetStat(&stat));
+  ino_t file2_ino = stat.st_ino;
+
+  // These files SHOULD not hash to the same value but COULD.
+  EXPECT_NE(file1_ino, file2_ino);
 
   // Read the root directory again.
   memset(&dirents[0], 0, sizeof(dirents));
@@ -521,6 +530,13 @@ TEST_F(Html5FsTest, GetDents) {
       EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
       EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
       dirnames.insert(dirents[i].d_name);
+
+      if (!strcmp(dirents[i].d_name, "file")) {
+        EXPECT_EQ(dirents[i].d_ino, file1_ino);
+      }
+      if (!strcmp(dirents[i].d_name, "file2")) {
+        EXPECT_EQ(dirents[i].d_ino, file2_ino);
+      }
     }
 
     EXPECT_EQ(1, dirnames.count("file"));

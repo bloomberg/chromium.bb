@@ -29,6 +29,41 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 
 }  // namespace
 
+// Continuing DJB2a hash
+ino_t Html5Fs::HashPathSegment(ino_t hash, const char *str, size_t len) {
+  // First add the path seperator
+  hash = (hash * static_cast<ino_t>(33)) ^ '/';
+  while (len--) {
+    hash = (hash * static_cast<ino_t>(33)) ^ *str++;
+  }
+  return hash;
+}
+
+ino_t Html5Fs::HashPath(const Path& path) {
+  // Prime the DJB2a hash
+  ino_t hash = 5381;
+
+  // Apply a running DJB2a to each part of the path
+  for (size_t segment = 0; segment < path.Size(); segment++) {
+    const char *ptr = path.Part(segment).c_str();
+    size_t len = path.Part(segment).length();
+    hash = HashPathSegment(hash, ptr, len);
+  }
+  return hash;
+}
+
+
+// For HTML5, the INO should be the one used by the system, however PPAPI
+// does not provide access to the real INO.  Instead, since HTML5 does not
+// suport links, we assume that files are unique based on path to the base
+// of the mount.
+void Html5Fs::OnNodeCreated(Node* node) {
+  node->stat_.st_dev = dev_;
+}
+
+void Html5Fs::OnNodeDestroyed(Node* node) {}
+
+
 Error Html5Fs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
                             ScopedNode* out_node) {
   out_node->reset(NULL);
@@ -43,6 +78,10 @@ Error Html5Fs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
 
   ScopedNode node(new Html5FsNode(this, fileref));
   error = node->Init(open_flags);
+
+  // Set the INO based on the path
+  node->stat_.st_ino = HashPath(path);
+
   if (error)
     return error;
 

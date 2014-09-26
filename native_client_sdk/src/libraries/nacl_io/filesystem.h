@@ -95,10 +95,10 @@ class Filesystem : public sdk_util::RefObject {
   Error Filesystem_Ioctl(int request, ...);
 
   // Assumes that |node| is non-NULL.
-  void OnNodeCreated(Node* node);
+  virtual void OnNodeCreated(Node* node);
 
   // Assumes that |node| is non-NULL.
-  void OnNodeDestroyed(Node* node);
+  virtual void OnNodeDestroyed(Node* node);
 
  protected:
   // Device number for the filesystem.

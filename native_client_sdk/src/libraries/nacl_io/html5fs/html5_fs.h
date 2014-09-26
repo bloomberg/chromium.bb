@@ -28,6 +28,12 @@ class Html5Fs : public Filesystem {
 
   PP_Resource filesystem_resource() { return filesystem_resource_; }
 
+  virtual void OnNodeCreated(Node* node);
+  virtual void OnNodeDestroyed(Node* node);
+
+  static ino_t HashPathSegment(ino_t hash, const char *str, size_t len);
+  static ino_t HashPath(const Path& path);
+
  protected:
   static const int REMOVE_DIR = 1;
   static const int REMOVE_FILE = 2;
