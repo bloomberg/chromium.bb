@@ -15,7 +15,7 @@ range.
 
 Example usage using SVN revisions:
 
-./tools/bisect-perf-regression.py -c\
+./tools/bisect_perf_regression.py -c\
   "out/Release/performance_ui_tests --gtest_filter=ShutdownTest.SimpleUserQuit"\
   -g 168222 -b 168232 -m shutdown/simple-user-quit
 
@@ -25,7 +25,7 @@ revision were merged in.
 
 Example usage using git hashes:
 
-./tools/bisect-perf-regression.py -c\
+./tools/bisect_perf_regression.py -c\
   "out/Release/performance_ui_tests --gtest_filter=ShutdownTest.SimpleUserQuit"\
   -g 1f6e67861535121c5c819c16a666f2436c207e7b\
   -b b732f23b4f81c382db0b23b9035f3dadc7d925bb\
@@ -47,14 +47,15 @@ import sys
 import time
 import zipfile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.path.pardir, 'telemetry'))
 
-from auto_bisect import bisect_utils
-from auto_bisect import builder
-from auto_bisect import math_utils
-from auto_bisect import request_build
-from auto_bisect import source_control as source_control_module
-from auto_bisect import ttest
+import bisect_utils
+import builder
+import math_utils
+import request_build
+import source_control as source_control_module
+import ttest
 from telemetry.util import cloud_storage
 
 # Below is the map of "depot" names to information about each depot. Each depot
@@ -149,6 +150,9 @@ DEPOT_DEPS_NAME = {
 }
 
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
+
+# The script is in chromium/src/tools/auto_bisect. Throughout this script,
+# we use paths to other things in the chromium/src repository.
 
 CROS_CHROMEOS_PATTERN = 'chromeos-base/chromeos-chrome'
 
@@ -913,6 +917,10 @@ class BisectPerformanceMetrics(object):
 
     self.opts = opts
     self.source_control = source_control
+
+    # The src directory here is NOT the src/ directory for the repository
+    # where the bisect script is running from. Instead, it's the src/ directory
+    # inside the bisect/ directory which is created before running.
     self.src_cwd = os.getcwd()
     self.cros_cwd = os.path.join(os.getcwd(), '..', 'cros')
     self.depot_cwd = {}
@@ -920,12 +928,11 @@ class BisectPerformanceMetrics(object):
     self.warnings = []
     self.builder = builder.Builder.FromOpts(opts)
 
-    for d in DEPOT_NAMES:
+    for depot in DEPOT_NAMES:
       # The working directory of each depot is just the path to the depot, but
       # since we're already in 'src', we can skip that part.
-
-      self.depot_cwd[d] = os.path.join(
-          self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
+      self.depot_cwd[depot] = os.path.join(
+          self.src_cwd, DEPOT_DEPS_NAME[depot]['src'][4:])
 
   def PerformCleanup(self):
     """Performs cleanup when script is finished."""
@@ -1090,8 +1097,8 @@ class BisectPerformanceMetrics(object):
           depot_data_src = depot_data.get('src') or depot_data.get('src_old')
           src_dir = deps_data.get(depot_data_src)
           if src_dir:
-            self.depot_cwd[depot_name] = os.path.join(self.src_cwd,
-                                                      depot_data_src[4:])
+            self.depot_cwd[depot_name] = os.path.join(
+                self.src_cwd, depot_data_src[4:])
             re_results = rxp.search(src_dir)
             if re_results:
               results[depot_name] = re_results.group('revision')
@@ -1567,11 +1574,14 @@ class BisectPerformanceMetrics(object):
     return self.opts.bisect_mode in [BISECT_MODE_STD_DEV]
 
   def GetCompatibleCommand(self, command_to_run, revision, depot):
-    # Prior to crrev.com/274857 *only* android-chromium-testshell
-    # Then until crrev.com/276628 *both* (android-chromium-testshell and
-    # android-chrome-shell) work. After that rev 276628 *only*
-    # android-chrome-shell works. bisect-perf-regression.py script should
-    # handle these cases and set appropriate browser type based on revision.
+    """Return a possibly modified test command depending on the revision.
+
+    Prior to crrev.com/274857 *only* android-chromium-testshell
+    Then until crrev.com/276628 *both* (android-chromium-testshell and
+    android-chrome-shell) work. After that rev 276628 *only*
+    android-chrome-shell works. The bisect_perf_regression.py script should
+    handle these cases and set appropriate browser type based on revision.
+    """
     if self.opts.target_platform in ['android']:
       # When its a third_party depot, get the chromium revision.
       if depot != 'chromium':
@@ -2283,7 +2293,7 @@ class BisectPerformanceMetrics(object):
       this will contain the field "error", otherwise None.
     """
     if self.opts.target_platform == 'android':
-      revision_to_check = self.source_control.GetCommitPosition(good_revision)
+      good_revision = self.source_control.GetCommitPosition(good_revision)
       if (bisect_utils.IsStringInt(good_revision)
           and good_revision < 265549):
         return {'error': (

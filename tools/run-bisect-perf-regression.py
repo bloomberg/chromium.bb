@@ -5,13 +5,12 @@
 
 """Run Performance Test Bisect Tool
 
-This script is used by a try bot to run the src/tools/bisect-perf-regression.py
-script with the parameters specified in src/tools/auto_bisect/bisect.cfg.
-It will check out a copy of the depot in a subdirectory 'bisect' of the working
-directory provided, and run the bisect-perf-regression.py script there.
+This script is used by a try bot to run the bisect script with the parameters
+specified in the bisect config file. It checks out a copy of the depot in
+a subdirectory 'bisect' of the working directory provided, annd runs the
+bisect scrip there.
 """
 
-import imp
 import optparse
 import os
 import platform
@@ -19,22 +18,20 @@ import subprocess
 import sys
 import traceback
 
+from auto_bisect import bisect_perf_regression
 from auto_bisect import bisect_utils
 from auto_bisect import math_utils
-
-bisect = imp.load_source('bisect-perf-regression',
-    os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),
-        'bisect-perf-regression.py'))
-
 
 CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
 CROS_IP_ENV = 'BISECT_CROS_IP'
 
-# Default config file paths, relative to this script.
-BISECT_REGRESSION_CONFIG = os.path.join('auto_bisect', 'bisect.cfg')
-RUN_TEST_CONFIG = 'run-perf-test.cfg'
-WEBKIT_RUN_TEST_CONFIG = os.path.join(
-    '..', 'third_party', 'WebKit', 'Tools', 'run-perf-test.cfg')
+SCRIPT_DIR = os.path.dirname(__file__)
+SRC_DIR = os.path.join(SCRIPT_DIR, os.path.pardir)
+BISECT_CONFIG_PATH = os.path.join(SCRIPT_DIR, 'auto_bisect', 'bisect.cfg')
+RUN_TEST_CONFIG_PATH = os.path.join(SCRIPT_DIR, 'run-perf-test.cfg')
+WEBKIT_RUN_TEST_CONFIG_PATH = os.path.join(
+    SRC_DIR, 'third_party', 'WebKit', 'Tools', 'run-perf-test.cfg')
+BISECT_SCRIPT_DIR = os.path.join(SCRIPT_DIR, 'auto_bisect')
 
 
 class Goma(object):
@@ -230,26 +227,25 @@ def _CreateBisectOptionsFromConfig(config):
     else:
       opts_dict['target_platform'] = 'android'
 
-  return bisect.BisectOptions.FromDict(opts_dict)
+  return bisect_perf_regression.BisectOptions.FromDict(opts_dict)
 
 
-def _RunPerformanceTest(config, path_to_file):
+def _RunPerformanceTest(config):
   """Runs a performance test with and without the current patch.
 
   Args:
     config: Contents of the config file, a dictionary.
-    path_to_file: Path to the bisect-perf-regression.py script.
 
   Attempts to build and run the current revision with and without the
   current patch, with the parameters passed in.
   """
   # Bisect script expects to be run from the src directory
-  os.chdir(os.path.join(path_to_file, '..'))
+  os.chdir(SRC_DIR)
 
   bisect_utils.OutputAnnotationStepStart('Building With Patch')
 
   opts = _CreateBisectOptionsFromConfig(config)
-  b = bisect.BisectPerformanceMetrics(None, opts)
+  b = bisect_perf_regression.BisectPerformanceMetrics(None, opts)
 
   if bisect_utils.RunGClient(['runhooks']):
     raise RuntimeError('Failed to run gclient runhooks')
@@ -339,17 +335,16 @@ def _RunPerformanceTest(config, path_to_file):
     bisect_utils.OutputAnnotationStepLink('HTML Results', cloud_file_link)
 
 
-def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
+def _SetupAndRunPerformanceTest(config, path_to_goma):
   """Attempts to build and run the current revision with and without the
   current patch, with the parameters passed in.
 
   Args:
     config: The config read from run-perf-test.cfg.
-    path_to_file: Path to the bisect-perf-regression.py script.
     path_to_goma: Path to goma directory.
 
   Returns:
-    The exit code of bisect-perf-regression.py: 0 on success, otherwise 1.
+    An exit code: 0 on success, otherwise 1.
   """
   if platform.release() == 'XP':
     print 'Windows XP is not supported for perf try jobs because it lacks '
@@ -360,7 +355,7 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
       config['use_goma'] = bool(path_to_goma)
       if config['use_goma']:
         config['goma_dir'] = os.path.abspath(path_to_goma)
-      _RunPerformanceTest(config, path_to_file)
+      _RunPerformanceTest(config)
     return 0
   except RuntimeError, e:
     bisect_utils.OutputAnnotationStepClosed()
@@ -369,16 +364,13 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
 
 
 def _RunBisectionScript(
-    config, working_directory, path_to_file, path_to_goma, path_to_extra_src,
-    dry_run):
-  """Attempts to execute bisect-perf-regression.py with the given parameters.
+    config, working_directory, path_to_goma, path_to_extra_src, dry_run):
+  """Attempts to execute the bisect script with the given parameters.
 
   Args:
     config: A dict containing the parameters to pass to the script.
-    working_directory: A working directory to provide to the
-      bisect-perf-regression.py script, where it will store it's own copy of
-      the depot.
-    path_to_file: Path to the bisect-perf-regression.py script.
+    working_directory: A working directory to provide to the bisect script,
+      where it will store it's own copy of the depot.
     path_to_goma: Path to goma directory.
     path_to_extra_src: Path to extra source file.
     dry_run: Do a dry run, skipping sync, build, and performance testing steps.
@@ -388,7 +380,7 @@ def _RunBisectionScript(
   """
   _PrintConfigStep(config)
 
-  cmd = ['python', os.path.join(path_to_file, 'bisect-perf-regression.py'),
+  cmd = ['python', os.path.join(BISECT_SCRIPT_DIR, 'bisect_perf_regression.py'),
          '-c', config['command'],
          '-g', config['good_revision'],
          '-b', config['bad_revision'],
@@ -469,7 +461,7 @@ def _RunBisectionScript(
     return_code = subprocess.call(cmd)
 
   if return_code:
-    print ('Error: bisect-perf-regression.py returned with error %d\n'
+    print ('Error: bisect_perf_regression.py returned with error %d\n'
            % return_code)
 
   return return_code
@@ -525,14 +517,11 @@ def main():
   just run a performance test, depending on the particular config parameters
   specified in the config file.
   """
-
   parser = _OptionParser()
   opts, _ = parser.parse_args()
 
-  current_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
-
   # Use the default config file path unless one was specified.
-  config_path = os.path.join(current_dir, BISECT_REGRESSION_CONFIG)
+  config_path = BISECT_CONFIG_PATH
   if opts.path_to_config:
     config_path = opts.path_to_config
   config = _LoadConfigFile(config_path)
@@ -547,13 +536,13 @@ def main():
       return 1
 
     return _RunBisectionScript(
-        config, opts.working_directory, current_dir,
-        opts.path_to_goma, opts.extra_src, opts.dry_run)
+        config, opts.working_directory, opts.path_to_goma, opts.extra_src,
+        opts.dry_run)
 
   # If it wasn't valid for running a bisect, then maybe the user wanted
   # to run a perf test instead of a bisect job. Try reading any possible
   # perf test config files.
-  perf_cfg_files = [RUN_TEST_CONFIG, WEBKIT_RUN_TEST_CONFIG]
+  perf_cfg_files = [RUN_TEST_CONFIG_PATH, WEBKIT_RUN_TEST_CONFIG_PATH]
   for current_perf_cfg_file in perf_cfg_files:
     if opts.path_to_config:
       path_to_perf_cfg = opts.path_to_config
@@ -566,12 +555,10 @@ def main():
     config_is_valid = _ValidatePerfConfigFile(config)
 
     if config and config_is_valid:
-      return _SetupAndRunPerformanceTest(
-          config, current_dir, opts.path_to_goma)
+      return _SetupAndRunPerformanceTest(config, opts.path_to_goma)
 
   print ('Error: Could not load config file. Double check your changes to '
-         'auto_bisect/bisect.cfg or run-perf-test.cfg for syntax '
-         'errors.\n')
+         'auto_bisect/bisect.cfg or run-perf-test.cfg for syntax errors.\n')
   return 1
 
 

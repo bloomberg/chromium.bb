@@ -86,5 +86,8 @@ def _RunUnitTests(input_api, output_api):
 
 def _RunPyLint(input_api, output_api):
   """Runs unit tests for auto-bisect."""
-  tests = input_api.canned_checks.GetPylint(input_api, output_api)
+  telemetry_path = os.path.join(
+      input_api.PresubmitLocalPath(), os.path.pardir, 'telemetry')
+  tests = input_api.canned_checks.GetPylint(
+      input_api, output_api, extra_paths_list=[telemetry_path])
   return input_api.RunTests(tests)

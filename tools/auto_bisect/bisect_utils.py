@@ -440,7 +440,6 @@ def RunGit(command, cwd=None):
     A tuple of the output and return code.
   """
   command = ['git'] + command
-
   return RunProcessAndRetrieveOutput(command, cwd=cwd)
 
 

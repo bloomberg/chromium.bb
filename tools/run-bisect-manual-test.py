@@ -14,8 +14,8 @@ to setup the sandbox manually before running the script. Otherwise the script
 fails to launch Chrome and exits with an error.
 
 This script serves a similar function to bisect-builds.py, except it uses
-the bisect-perf-regression.py. This means that that it can actually check out
-and build revisions of Chromium that are not available in cloud storage.
+the bisect_perf_regression.py. This means that that it can obtain builds of
+Chromium for revisions where builds aren't available in cloud storage.
 """
 
 import os
@@ -24,26 +24,28 @@ import sys
 
 CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
 CROS_IP_ENV = 'BISECT_CROS_IP'
-_DIR_TOOLS_ROOT = os.path.abspath(os.path.dirname(__file__))
+_TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
+_BISECT_SCRIPT_PATH = os.path.join(
+    _TOOLS_DIR, 'auto_bisect', 'bisect_perf_regression.py')
 
-sys.path.append(os.path.join(_DIR_TOOLS_ROOT, 'telemetry'))
+sys.path.append(os.path.join(_TOOLS_DIR, 'telemetry'))
 from telemetry.core import browser_options
 
 
 def _RunBisectionScript(options):
-  """Attempts to execute src/tools/bisect-perf-regression.py.
+  """Attempts to execute the bisect script (bisect_perf_regression.py).
 
   Args:
     options: The configuration options to pass to the bisect script.
 
   Returns:
-    The exit code of bisect-perf-regression.py: 0 on success, otherwise 1.
+    An exit code; 0 for success, 1 for failure.
   """
   test_command = ('python %s --browser=%s --chrome-root=.' %
-                  (os.path.join(_DIR_TOOLS_ROOT, 'bisect-manual-test.py'),
+                  (os.path.join(_TOOLS_DIR, 'bisect-manual-test.py'),
                    options.browser_type))
 
-  cmd = ['python', os.path.join(_DIR_TOOLS_ROOT, 'bisect-perf-regression.py'),
+  cmd = ['python', _BISECT_SCRIPT_PATH,
          '-c', test_command,
          '-g', options.good_revision,
          '-b', options.bad_revision,
@@ -82,8 +84,7 @@ def _RunBisectionScript(options):
   return_code = subprocess.call(cmd)
 
   if return_code:
-    print ('Error: bisect-perf-regression.py returned with error %d' %
-           return_code)
+    print 'Error: bisect_perf_regression.py had exit code %d.' % return_code
     print
 
   return return_code

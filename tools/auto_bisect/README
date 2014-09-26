@@ -8,17 +8,11 @@ Documentation:
   http://www.chromium.org/developers/bisecting-bugs
   http://www.chromium.org/developers/tree-sheriffs/perf-sheriffs/bisecting-performance-regressions
 
-Overview of bisect-related files:
-  src/tools/run-bisect-perf-regression.py
-     -- the script used to kick off a normal performance regression bisect job.
-  src/tools/auto_bisect/bisect.cfg:
-     -- this file contains parameters for a bisect job, and is read by other
-        modules including run-bisect-perf-regression.py.
-  src/tools/run-bisect-manual-test.py
-     -- a script which is used to manually bisect regressions; this also
-        depends on bisect-perf-regression.py.
-  src/tools/bisect-perf-regression.py
-     -- the main module which the others depend on.
-  src/tools/bisect-manual-test.py
-     -- a helper module used when manually bisect regressions.
+Overview of bisect-related files in src/tools:
+  run-bisect-perf-regression.py -- used to kick off a bisect job
+  prepare-bisect-perf-regression.py -- run before the above to prepare the repo
+  run-bisect-manual-test.py -- used to manually bisect
+  bisect-manual-test.py -- helper module used by run-bisect-manual-test.py
+  auto_bisect/bisect.cfg -- config parameters for a bisect job
+  run-perf-test.cfg -- config parameters running a perf test once
 

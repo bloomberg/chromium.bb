@@ -6,7 +6,7 @@
 
 import os
 
-from . import bisect_utils
+import bisect_utils
 
 CROS_VERSION_PATTERN = 'new version number from %s'
 

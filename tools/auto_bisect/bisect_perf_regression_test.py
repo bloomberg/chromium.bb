@@ -6,10 +6,8 @@ import os
 import re
 import unittest
 
-from auto_bisect import source_control as source_control_module
-
-# Special import necessary because filename contains dash characters.
-bisect_perf_module = __import__('bisect-perf-regression')
+import bisect_perf_regression
+import source_control as source_control_module
 
 def _GetBisectPerformanceMetricsInstance():
   """Returns an instance of the BisectPerformanceMetrics class."""
@@ -22,13 +20,13 @@ def _GetBisectPerformanceMetricsInstance():
     'good_revision': 280000,
     'bad_revision': 280005,
   }
-  bisect_options = bisect_perf_module.BisectOptions.FromDict(options_dict)
+  bisect_options = bisect_perf_regression.BisectOptions.FromDict(options_dict)
   source_control = source_control_module.DetermineAndCreateSourceControl(
       bisect_options)
-  bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+  bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
       source_control, bisect_options)
   bisect_instance.src_cwd = os.path.abspath(
-      os.path.join(os.path.dirname(__file__), os.path.pardir))
+      os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
   return bisect_instance
 
 
@@ -49,7 +47,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     """
     # ConfidenceScore takes a list of lists but these lists are flattened
     # inside the function.
-    confidence = bisect_perf_module.ConfidenceScore(
+    confidence = bisect_perf_regression.ConfidenceScore(
         [[v] for v in bad_values],
         [[v] for v in good_values])
     self.assertEqual(score, confidence)
@@ -128,7 +126,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     }
     # Testing private function.
     # pylint: disable=W0212
-    vars_dict = bisect_perf_module._ParseRevisionsFromDEPSFileManually(
+    vars_dict = bisect_perf_regression._ParseRevisionsFromDEPSFileManually(
         deps_file_contents)
     self.assertEqual(vars_dict, expected_vars_dict)
 
@@ -140,7 +138,8 @@ class BisectPerfRegressionTest(unittest.TestCase):
     metric = ['my_chart', 'my_trace']
     # Testing private function.
     # pylint: disable=W0212
-    values = bisect_perf_module._TryParseResultValuesFromOutput(metric, results)
+    values = bisect_perf_regression._TryParseResultValuesFromOutput(
+        metric, results)
     self.assertEqual(expected_values, values)
 
   def testTryParseResultValuesFromOutput_WithSingleValue(self):
@@ -192,15 +191,15 @@ class BisectPerfRegressionTest(unittest.TestCase):
       Prior to r274857, only android-chromium-testshell works.
       In the range [274857, 276628], both work.
     """
-    bisect_options = bisect_perf_module.BisectOptions()
+    bisect_options = bisect_perf_regression.BisectOptions()
     bisect_options.output_buildbot_annotations = None
     source_control = source_control_module.DetermineAndCreateSourceControl(
         bisect_options)
-    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+    bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
         source_control, bisect_options)
     bisect_instance.opts.target_platform = target_platform
     git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
+        revision, 'chromium', bisect_perf_regression.DEPOT_DEPS_NAME, 100)
     depot = 'chromium'
     command = bisect_instance.GetCompatibleCommand(
         original_command, git_revision, depot)
@@ -268,7 +267,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
   def testGetCommitPositionForV8(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
     v8_rev = '21d700eedcdd6570eff22ece724b63a5eefe78cb'
-    depot_path = os.path.join(bisect_instance.src_cwd, 'src', 'v8')
+    depot_path = os.path.join(bisect_instance.src_cwd, 'v8')
     self.assertEqual(
         23634,
         bisect_instance.source_control.GetCommitPosition(v8_rev, depot_path))
@@ -276,8 +275,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
   def testGetCommitPositionForWebKit(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
     wk_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
-    depot_path = os.path.join(bisect_instance.src_cwd, 'src', 'third_party',
-                              'WebKit')
+    depot_path = os.path.join(bisect_instance.src_cwd, 'third_party', 'WebKit')
     self.assertEqual(
         181660,
         bisect_instance.source_control.GetCommitPosition(wk_rev, depot_path))
@@ -290,7 +288,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     # to search is not changed in DEPS content.
     # TODO (prasadv): Add a separate test to validate the DEPS contents with the
     # format that bisect script expects.
-    deps_contents = bisect_perf_module.ReadStringFromFile(deps_file)
+    deps_contents = bisect_perf_regression.ReadStringFromFile(deps_file)
     deps_key = 'v8_revision'
     depot = 'v8'
     git_revision = 'a12345789a23456789a123456789a123456789'
