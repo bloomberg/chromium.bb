@@ -9233,6 +9233,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Number of retries before a GCM unregistration succeeds.</summary>
 </histogram>
 
+<histogram name="GCM.UserSignedIn" enum="Boolean">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Indicates whether the user was signed in when GCM started up.
+  </summary>
+</histogram>
+
 <histogram name="GCMInvalidations.IncomingMessageStatus"
     enum="GCMInvalidationsIncomingMessageStatus">
   <owner>pavely@chromium.org</owner>

@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_app_handler.h"
@@ -644,6 +645,8 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
   // users.
   if (GCMDriver::IsAllowedForAllUsers())
     gcm_channel_status_syncer_->EnsureStarted();
+
+  UMA_HISTOGRAM_BOOLEAN("GCM.UserSignedIn", signed_in_);
 
   // Note that we need to pass weak pointer again since the existing weak
   // pointer in IOWorker might have been invalidated when check-out occurs.
