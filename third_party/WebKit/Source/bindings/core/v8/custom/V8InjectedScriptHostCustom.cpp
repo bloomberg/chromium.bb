@@ -376,6 +376,9 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsMethodCustom(const v8::Fu
 
 void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    if (info.Length() < 4 || !info[0]->IsFunction() || !info[1]->IsInt32() || !info[2]->IsString())
+        return;
+
     v8::Handle<v8::Value> functionValue = info[0];
     int scopeIndex = info[1]->Int32Value();
     String variableName = toCoreStringWithUndefinedOrNullCheck(info[2]);
@@ -388,12 +391,9 @@ void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Functi
 
 static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& info, String* scriptId, int* lineNumber, int* columnNumber)
 {
-    if (info.Length() < 1)
+    if (info.Length() < 1 || !info[0]->IsFunction())
         return false;
-    v8::Handle<v8::Value> fn = info[0];
-    if (!fn->IsFunction())
-        return false;
-    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(fn);
+    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(info[0]);
     *lineNumber = function->GetScriptLineNumber();
     *columnNumber = function->GetScriptColumnNumber();
     if (*lineNumber == v8::Function::kLineOffsetNotFound || *columnNumber == v8::Function::kLineOffsetNotFound)

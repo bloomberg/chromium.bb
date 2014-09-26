@@ -857,35 +857,23 @@ InjectedScript.prototype = {
      */
     setVariableValue: function(topCallFrame, callFrameId, functionObjectId, scopeNumber, variableName, newValueJsonString)
     {
-        var setter;
-        if (typeof callFrameId === "string") {
-            var callFrame = this._callFrameForId(topCallFrame, callFrameId);
-            if (!callFrame)
-                return "Could not find call frame with given id";
-            setter = bind(callFrame.setVariableValue, callFrame);
-        } else {
-            var parsedFunctionId = this._parseObjectId(/** @type {string} */ (functionObjectId));
-            var func = this._objectForId(parsedFunctionId);
-            if (typeof func !== "function")
-                return "Cannot resolve function by id.";
-            setter = bind(InjectedScriptHost.setFunctionVariableValue, InjectedScriptHost, func);
-        }
-        var newValueJson;
         try {
-            newValueJson = /** @type {!RuntimeAgent.CallArgument} */ (InjectedScriptHost.eval("(" + newValueJsonString + ")"));
-        } catch (e) {
-            return "Failed to parse new value JSON " + newValueJsonString + " : " + e;
-        }
-        var resolvedValue;
-        try {
-            resolvedValue = this._resolveCallArgument(newValueJson);
+            var newValueJson = /** @type {!RuntimeAgent.CallArgument} */ (InjectedScriptHost.eval("(" + newValueJsonString + ")"));
+            var resolvedValue = this._resolveCallArgument(newValueJson);
+            if (typeof callFrameId === "string") {
+                var callFrame = this._callFrameForId(topCallFrame, callFrameId);
+                if (!callFrame)
+                    return "Could not find call frame with given id";
+                callFrame.setVariableValue(scopeNumber, variableName, resolvedValue)
+            } else {
+                var parsedFunctionId = this._parseObjectId(/** @type {string} */ (functionObjectId));
+                var func = this._objectForId(parsedFunctionId);
+                if (typeof func !== "function")
+                    return "Could not resolve function by id";
+                InjectedScriptHost.setFunctionVariableValue(func, scopeNumber, variableName, resolvedValue);
+            }
         } catch (e) {
             return toString(e);
-        }
-        try {
-            setter(scopeNumber, variableName, resolvedValue);
-        } catch (e) {
-            return "Failed to change variable value: " + e;
         }
         return undefined;
     },
