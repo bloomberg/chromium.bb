@@ -41,6 +41,11 @@ extern const char kGen_HelpShort[];
 extern const char kGen_Help[];
 int RunGen(const std::vector<std::string>& args);
 
+extern const char kFormat[];
+extern const char kFormat_HelpShort[];
+extern const char kFormat_Help[];
+int RunFormat(const std::vector<std::string>& args);
+
 extern const char kHelp[];
 extern const char kHelp_HelpShort[];
 extern const char kHelp_Help[];

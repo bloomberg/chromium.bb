@@ -74,9 +74,10 @@ ParserHelper Parser::expressions_[] = {
   {NULL, NULL, -1},                                             // ELSE
   {&Parser::Name, &Parser::IdentifierOrCall, PRECEDENCE_CALL},  // IDENTIFIER
   {NULL, NULL, -1},                                             // COMMA
-  {NULL, NULL, -1},  // UNCLASSIFIED_COMMENT
-  {NULL, NULL, -1},  // LINE_COMMENT
-  {NULL, NULL, -1},  // SUFFIX_COMMENT
+  {NULL, NULL, -1},                   // UNCLASSIFIED_COMMENT
+  {NULL, NULL, -1},                   // LINE_COMMENT
+  {NULL, NULL, -1},                   // SUFFIX_COMMENT
+  {&Parser::BlockComment, NULL, -1},  // BLOCK_COMMENT
 };
 
 Parser::Parser(const std::vector<Token>& tokens, Err* err)
@@ -91,6 +92,8 @@ Parser::Parser(const std::vector<Token>& tokens, Err* err)
         suffix_comment_tokens_.push_back(*i);
         break;
       default:
+        // Note that BLOCK_COMMENTs (top-level standalone comments) are passed
+        // through the real parser.
         tokens_.push_back(*i);
         break;
     }
@@ -230,6 +233,12 @@ scoped_ptr<ParseNode> Parser::Name(Token token) {
   return IdentifierOrCall(scoped_ptr<ParseNode>(), token).Pass();
 }
 
+scoped_ptr<ParseNode> Parser::BlockComment(Token token) {
+  scoped_ptr<BlockCommentNode> comment(new BlockCommentNode());
+  comment->set_comment(token);
+  return comment.PassAs<ParseNode>();
+}
+
 scoped_ptr<ParseNode> Parser::Group(Token token) {
   scoped_ptr<ParseNode> expr = ParseExpression();
   if (has_error())
@@ -249,7 +258,7 @@ scoped_ptr<ParseNode> Parser::Not(Token token) {
 }
 
 scoped_ptr<ParseNode> Parser::List(Token node) {
-  scoped_ptr<ParseNode> list(ParseList(Token::RIGHT_BRACKET, true));
+  scoped_ptr<ParseNode> list(ParseList(node, Token::RIGHT_BRACKET, true));
   if (!has_error() && !at_end())
     Consume(Token::RIGHT_BRACKET, "Expected ']'");
   return list.Pass();
@@ -279,13 +288,14 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
   list->set_end_token(token);
   scoped_ptr<BlockNode> block;
   bool has_arg = false;
-  if (Match(Token::LEFT_PAREN)) {
+  if (LookAhead(Token::LEFT_PAREN)) {
+    Token start_token = Consume();
     // Parsing a function call.
     has_arg = true;
     if (Match(Token::RIGHT_PAREN)) {
       // Nothing, just an empty call.
     } else {
-      list = ParseList(Token::RIGHT_PAREN, false);
+      list = ParseList(start_token, Token::RIGHT_PAREN, false);
       if (has_error())
         return scoped_ptr<ParseNode>();
       Consume(Token::RIGHT_PAREN, "Expected ')' after call");
@@ -368,10 +378,11 @@ scoped_ptr<ParseNode> Parser::DotOperator(scoped_ptr<ParseNode> left,
 }
 
 // Does not Consume the start or end token.
-scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
+scoped_ptr<ListNode> Parser::ParseList(Token start_token,
+                                       Token::Type stop_before,
                                        bool allow_trailing_comma) {
   scoped_ptr<ListNode> list(new ListNode);
-  list->set_begin_token(cur_token());
+  list->set_begin_token(start_token);
   bool just_got_comma = false;
   bool first_time = true;
   while (!LookAhead(stop_before)) {
@@ -395,7 +406,13 @@ scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
           Err(tokens_[tokens_.size() - 1], "Unexpected end of file in list.");
       return scoped_ptr<ListNode>();
     }
-    just_got_comma = Match(Token::COMMA);
+    if (list->contents().back()->AsBlockComment()) {
+      // If there was a comment inside the list, we don't need a comma to the
+      // next item, so pretend we got one, if we're expecting one.
+      just_got_comma = allow_trailing_comma;
+    } else {
+      just_got_comma = Match(Token::COMMA);
+    }
   }
   if (just_got_comma && !allow_trailing_comma) {
     *err_ = Err(cur_token(), "Trailing comma");
@@ -434,6 +451,8 @@ scoped_ptr<ParseNode> Parser::ParseStatement() {
     return ParseBlock().PassAs<ParseNode>();
   } else if (LookAhead(Token::IF)) {
     return ParseCondition();
+  } else if (LookAhead(Token::BLOCK_COMMENT)) {
+    return BlockComment(Consume());
   } else {
     // TODO(scottmg): Is this too strict? Just drop all the testing if we want
     // to allow "pointless" expressions and return ParseExpression() directly.
@@ -527,6 +546,8 @@ void Parser::TraverseOrder(const ParseNode* root,
       // Nothing.
     } else if (const UnaryOpNode* unaryop = root->AsUnaryOp()) {
       TraverseOrder(unaryop->operand(), pre, post);
+    } else if (root->AsBlockComment()) {
+      // Nothing.
     } else {
       CHECK(false) << "Unhandled case in TraverseOrder.";
     }

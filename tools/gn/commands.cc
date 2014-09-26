@@ -39,6 +39,7 @@ const CommandInfoMap& GetCommands() {
     INSERT_COMMAND(Check)
     INSERT_COMMAND(Desc)
     INSERT_COMMAND(Gen)
+    INSERT_COMMAND(Format)
     INSERT_COMMAND(Help)
     INSERT_COMMAND(Ls)
     INSERT_COMMAND(Refs)

@@ -128,6 +128,18 @@ std::vector<Token> Tokenizer::Run() {
                location.line_number() ||
            tokens_.back().location().char_offset() != location.char_offset())) {
         type = Token::LINE_COMMENT;
+        Advance();  // The current \n.
+        // If this comment is separated from the next syntax element, then we
+        // want to tag it as a block comment. This will become a standalone
+        // statement at the parser level to keep this comment separate, rather
+        // than attached to the subsequent statement.
+        while (!at_end() && IsCurrentWhitespace()) {
+          if (IsCurrentNewline()) {
+            type = Token::BLOCK_COMMENT;
+            break;
+          }
+          Advance();
+        }
       } else {
         type = Token::SUFFIX_COMMENT;
       }

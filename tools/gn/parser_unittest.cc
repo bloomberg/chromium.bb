@@ -498,7 +498,7 @@ TEST(Parser, CommentsStandalone) {
     "executable(\"wee\") {}\n";
   const char* expected =
     "BLOCK\n"
-    " +BEFORE_COMMENT(\"# Toplevel comment.\")\n"
+    " BLOCK_COMMENT(# Toplevel comment.)\n"
     " FUNCTION(executable)\n"
     "  LIST\n"
     "   LITERAL(\"wee\")\n"
@@ -611,6 +611,25 @@ TEST(Parser, CommentsSuffixMultiple) {
     "      +SUFFIX_COMMENT(\"# This is a comment,\")\n"
     "      +SUFFIX_COMMENT(\"# and some more,\")\n"
     "      +SUFFIX_COMMENT(\"# then the end.\")\n";
+  DoParserPrintTest(input, expected);
+}
+
+TEST(Parser, CommentsConnectedInList) {
+  const char* input =
+    "defines = [\n"
+    "\n"
+    "  # Connected comment.\n"
+    "  \"WEE\",\n"
+    "  \"BLORPY\",\n"
+    "]\n";
+  const char* expected =
+    "BLOCK\n"
+    " BINARY(=)\n"
+    "  IDENTIFIER(defines)\n"
+    "  LIST\n"
+    "   LITERAL(\"WEE\")\n"
+    "    +BEFORE_COMMENT(\"# Connected comment.\")\n"
+    "   LITERAL(\"BLORPY\")\n";
   DoParserPrintTest(input, expected);
 }
 

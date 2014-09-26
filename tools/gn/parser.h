@@ -54,6 +54,7 @@ class Parser {
   scoped_ptr<ParseNode> Group(Token token);
   scoped_ptr<ParseNode> Not(Token token);
   scoped_ptr<ParseNode> List(Token token);
+  scoped_ptr<ParseNode> BlockComment(Token token);
 
   // |InfixFunc|s used in parsing expressions.
   scoped_ptr<ParseNode> BinaryOperator(scoped_ptr<ParseNode> left, Token token);
@@ -65,7 +66,8 @@ class Parser {
 
   // Helper to parse a comma separated list, optionally allowing trailing
   // commas (allowed in [] lists, not in function calls).
-  scoped_ptr<ListNode> ParseList(Token::Type stop_before,
+  scoped_ptr<ListNode> ParseList(Token start_token,
+                                 Token::Type stop_before,
                                  bool allow_trailing_comma);
 
   scoped_ptr<ParseNode> ParseFile();

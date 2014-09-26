@@ -49,6 +49,7 @@ class Token {
                            // to one below)
     LINE_COMMENT,      // #...\n on a line alone.
     SUFFIX_COMMENT,    // #...\n on a line following other code.
+    BLOCK_COMMENT,     // #...\n line comment, but free-standing.
 
     UNCLASSIFIED_OPERATOR,
 

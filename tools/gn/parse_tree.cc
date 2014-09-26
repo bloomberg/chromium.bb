@@ -47,6 +47,7 @@ const IdentifierNode* ParseNode::AsIdentifier() const { return NULL; }
 const ListNode* ParseNode::AsList() const { return NULL; }
 const LiteralNode* ParseNode::AsLiteral() const { return NULL; }
 const UnaryOpNode* ParseNode::AsUnaryOp() const { return NULL; }
+const BlockCommentNode* ParseNode::AsBlockComment() const { return NULL; }
 
 Comments* ParseNode::comments_mutable() {
   if (!comments_)
@@ -457,14 +458,16 @@ const ListNode* ListNode::AsList() const {
 Value ListNode::Execute(Scope* scope, Err* err) const {
   Value result_value(this, Value::LIST);
   std::vector<Value>& results = result_value.list_value();
-  results.resize(contents_.size());
+  results.reserve(contents_.size());
 
   for (size_t i = 0; i < contents_.size(); i++) {
     const ParseNode* cur = contents_[i];
-    results[i] = cur->Execute(scope, err);
+    if (cur->AsBlockComment())
+      continue;
+    results.push_back(cur->Execute(scope, err));
     if (err->has_error())
       return Value();
-    if (results[i].type() == Value::NONE) {
+    if (results.back().type() == Value::NONE) {
       *err = cur->MakeErrorDescribing(
           "This does not evaluate to a value.",
           "I can't do something with nothing.");
@@ -576,4 +579,34 @@ void UnaryOpNode::Print(std::ostream& out, int indent) const {
   out << IndentFor(indent) << "UNARY(" << op_.value() << ")\n";
   PrintComments(out, indent);
   operand_->Print(out, indent + 1);
+}
+
+// BlockCommentNode ------------------------------------------------------------
+
+BlockCommentNode::BlockCommentNode() {
+}
+
+BlockCommentNode::~BlockCommentNode() {
+}
+
+const BlockCommentNode* BlockCommentNode::AsBlockComment() const {
+  return this;
+}
+
+Value BlockCommentNode::Execute(Scope* scope, Err* err) const {
+  return Value();
+}
+
+LocationRange BlockCommentNode::GetRange() const {
+  return comment_.range();
+}
+
+Err BlockCommentNode::MakeErrorDescribing(const std::string& msg,
+                                          const std::string& help) const {
+  return Err(comment_, msg, help);
+}
+
+void BlockCommentNode::Print(std::ostream& out, int indent) const {
+  out << IndentFor(indent) << "BLOCK_COMMENT(" << comment_.value() << ")\n";
+  PrintComments(out, indent);
 }
