@@ -38,6 +38,7 @@ cvox.BrailleTable.COMMON_DEFS_FILENAME_ = 'cvox-common.cti';
 /**
  * Retrieves a list of all available braille tables.
  * @param {function(!Array.<cvox.BrailleTable.Table>)} callback
+ *     Called asynchronously with an array of tables.
  */
 cvox.BrailleTable.getAll = function(callback) {
   function appendCommonFilename(tables) {
@@ -72,7 +73,7 @@ cvox.BrailleTable.getAll = function(callback) {
  * Finds a table in a list of tables by id.
  * @param {!Array.<cvox.BrailleTable.Table>} tables tables to search in.
  * @param {string} id id of table to find.
- * @return {cvox.BrailleTable.Table}
+ * @return {cvox.BrailleTable.Table} The found table, or null if not found.
  */
 cvox.BrailleTable.forId = function(tables, id) {
   return tables.filter(function(table) { return table.id === id })[0] || null;
