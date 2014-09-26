@@ -101,13 +101,6 @@ namespace {
 
 static bool gModifyRenderTreeStructureAnyState = false;
 
-typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<const RenderObject> > RenderObjectWeakSet;
-RenderObjectWeakSet& renderObjectNeverHadPaintInvalidationSet()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<RenderObjectWeakSet>, set, (adoptPtrWillBeNoop(new RenderObjectWeakSet())));
-    return *set;
-}
-
 } // namespace
 
 using namespace HTMLNames;
@@ -242,9 +235,6 @@ RenderObject::RenderObject(Node* node)
 #endif
     , m_bitfields(node)
 {
-    if (firstPaintInvalidationTrackingEnabled())
-        renderObjectNeverHadPaintInvalidationSet().add(this);
-
 #ifndef NDEBUG
     renderObjectCounter.increment();
 #endif
@@ -253,9 +243,6 @@ RenderObject::RenderObject(Node* node)
 
 RenderObject::~RenderObject()
 {
-    if (firstPaintInvalidationTrackingEnabled())
-        renderObjectNeverHadPaintInvalidationSet().remove(this);
-
     ASSERT(!m_hasAXObject);
 #if ENABLE(OILPAN)
     ASSERT(m_didCallDestroy);
@@ -1088,20 +1075,6 @@ void RenderObject::paint(PaintInfo&, const LayoutPoint&)
 {
 }
 
-void RenderObject::setHadPaintInvalidation()
-{
-    if (firstPaintInvalidationTrackingEnabled())
-        renderObjectNeverHadPaintInvalidationSet().remove(this);
-}
-
-bool RenderObject::hadPaintInvalidation() const
-{
-    if (!firstPaintInvalidationTrackingEnabled())
-        return true;
-
-    return !renderObjectNeverHadPaintInvalidationSet().contains(this);
-}
-
 const RenderLayerModelObject* RenderObject::containerForPaintInvalidation() const
 {
     RELEASE_ASSERT(isRooted());
@@ -1199,13 +1172,13 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     }
 
     if (paintInvalidationContainer->isRenderView()) {
-        toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r);
+        toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
         return;
     }
 
     if (paintInvalidationContainer->view()->usesCompositing()) {
         ASSERT(paintInvalidationContainer->isPaintInvalidationContainer());
-        paintInvalidationContainer->setBackingNeedsPaintInvalidationInRect(r);
+        paintInvalidationContainer->setBackingNeedsPaintInvalidationInRect(r, invalidationReason);
     }
 }
 
@@ -1262,6 +1235,8 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
         return "selection";
     case InvalidationLayer:
         return "layer";
+    case InvalidationRendererInsertion:
+        return "renderer insertion";
     case InvalidationRendererRemoval:
         return "renderer removal";
     case InvalidationPaintRectangle:
@@ -1344,7 +1319,7 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking, const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking)
 {
     if (shouldDoFullPaintInvalidation())
-        return InvalidationFull;
+        return m_bitfields.fullPaintInvalidationReason();
 
     // Presumably a background or a border exists if border-fit:lines was specified.
     if (style()->borderFit() == BorderFitLines)
@@ -3098,16 +3073,28 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
 
 void RenderObject::setShouldDoFullPaintInvalidation(bool b, MarkingBehavior markBehavior)
 {
+    if (b)
+        setShouldDoFullPaintInvalidationWithReason(InvalidationFull, markBehavior);
+    else
+        m_bitfields.setFullPaintInvalidationReason(InvalidationNone);
+}
+
+void RenderObject::setShouldDoFullPaintInvalidationWithReason(InvalidationReason reason, MarkingBehavior markBehavior)
+{
+    // Only full invalidation reasons are allowed.
+    ASSERT(reason != InvalidationNone && reason != InvalidationIncremental);
+
     // RenderText objects don't know how to invalidate paint for themselves, since they don't know how to compute their bounds.
     // Instead the parent fully invalidate when any text needs full paint invalidation.
     if (isText()) {
-        parent()->setShouldDoFullPaintInvalidation(b, markBehavior);
+        parent()->setShouldDoFullPaintInvalidationWithReason(reason, markBehavior);
         return;
     }
 
-    m_bitfields.setShouldDoFullPaintInvalidation(b);
+    if (m_bitfields.fullPaintInvalidationReason() == InvalidationNone)
+        m_bitfields.setFullPaintInvalidationReason(reason);
 
-    if (markBehavior == MarkContainingBlockChain && b) {
+    if (markBehavior == MarkContainingBlockChain) {
         ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
         frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called not during FrameView::updateLayoutAndStyleForPainting().
         markContainingBlockChainForPaintInvalidation();

@@ -192,17 +192,13 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
-void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r) const
+void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, InvalidationReason invalidationReason) const
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
     ASSERT(compositingState() != NotComposited);
 
-    WebInvalidationDebugAnnotations annotations = WebInvalidationDebugAnnotationsNone;
-    if (!hadPaintInvalidation())
-        annotations = WebInvalidationDebugAnnotationsFirstPaint;
-    // FIXME: The callers assume they are calling a const function but this function has a side effect.
-    const_cast<RenderLayerModelObject*>(this)->setHadPaintInvalidation();
+    WebInvalidationDebugAnnotations annotations = invalidationReason == InvalidationRendererInsertion ? WebInvalidationDebugAnnotationsFirstPaint : WebInvalidationDebugAnnotationsNone;
 
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
     if (layer()->groupedMapping()) {
