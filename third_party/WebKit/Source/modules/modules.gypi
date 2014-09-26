@@ -915,7 +915,6 @@
       'webdatabase/InspectorDatabaseResource.h',
       'webdatabase/QuotaTracker.cpp',
       'webdatabase/QuotaTracker.h',
-      'webdatabase/SQLCallbackWrapper.h',
       'webdatabase/SQLError.cpp',
       'webdatabase/SQLError.h',
       'webdatabase/SQLResultSet.cpp',
