@@ -89,7 +89,7 @@ DnsSession::DnsSession(const DnsConfig& config,
       server_index_(0) {
   socket_pool_->Initialize(&config_.nameservers, net_log);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "AsyncDNS.ServerCount", config_.nameservers.size(), 0, 10, 10);
+      "AsyncDNS.ServerCount", config_.nameservers.size(), 0, 10, 11);
   for (size_t i = 0; i < config_.nameservers.size(); ++i) {
     server_stats_.push_back(new ServerStats(config_.timeout,
                                             rtt_buckets_.Pointer()));
@@ -139,7 +139,7 @@ unsigned DnsSession::NextGoodServerIndex(unsigned server_index) {
 
 void DnsSession::RecordServerFailure(unsigned server_index) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "AsyncDNS.ServerFailureIndex", server_index, 0, 10, 10);
+      "AsyncDNS.ServerFailureIndex", server_index, 0, 10, 11);
   ++(server_stats_[server_index]->last_failure_count);
   server_stats_[server_index]->last_failure = base::Time::Now();
 }
