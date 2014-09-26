@@ -182,6 +182,20 @@ void OverrideResponseAsRedirect(
   (*override_response_headers)->RemoveHeader("Location");
   (*override_response_headers)->AddHeader("Location: " +
                                           request->url().spec());
+  std::string http_origin;
+  const net::HttpRequestHeaders& request_headers =
+      request->extra_request_headers();
+  if (request_headers.GetHeader("Origin", &http_origin)) {
+    // If this redirect is used in a cross-origin request, add CORS headers to
+    // make sure that the redirect gets through. Note that the destination URL
+    // is still subject to the usual CORS policy, i.e. the resource will only
+    // be available to web pages if the server serves the response with the
+    // required CORS response headers.
+    (*override_response_headers)->AddHeader(
+        "Access-Control-Allow-Origin: " + http_origin);
+    (*override_response_headers)->AddHeader(
+        "Access-Control-Allow-Credentials: true");
+  }
   // TODO(bengr): Should we pop_back the request->url_chain?
 }
 

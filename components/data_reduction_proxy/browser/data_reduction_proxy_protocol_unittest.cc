@@ -353,6 +353,50 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirect) {
   }
 }
 
+// Tests that the response is correctly overwritten as a redirect with CORS
+// headers when an Origin header is provided in the initial request.
+TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirectCORS) {
+  net::TestURLRequestContext context;
+  const struct {
+    const char* headers;
+    const char* expected_headers;
+  } tests[] = {
+      { "HTTP/1.1 200 0K\n"
+        "Chrome-Proxy: block=1\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n",
+
+        "HTTP/1.1 302 Found\n"
+        "Chrome-Proxy: block=1\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n"
+        "Location: http://www.google.com/\n"
+        "Access-Control-Allow-Origin: http://www.else.com\n"
+        "Access-Control-Allow-Credentials: true\n"
+      },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    std::string headers(tests[i].headers);
+    HeadersToRaw(&headers);
+    scoped_refptr<HttpResponseHeaders> original_response_headers(
+        new HttpResponseHeaders(headers));
+    scoped_refptr<HttpResponseHeaders> override_response_headers;
+    TestDelegate test_delegate;
+    scoped_ptr<net::URLRequest> request(
+        context.CreateRequest(GURL("http://www.google.com/"),
+                              net::DEFAULT_PRIORITY,
+                              NULL,
+                              NULL));
+    request->SetExtraRequestHeaderByName("Origin", "http://www.else.com", true);
+    OverrideResponseAsRedirect(request.get(), original_response_headers.get(),
+                               &override_response_headers);
+    int expected_flags = net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY;
+    EXPECT_EQ(expected_flags, request->load_flags());
+    std::string override_headers;
+    override_response_headers->GetNormalizedHeaders(&override_headers);
+    EXPECT_EQ(std::string(tests[i].expected_headers), override_headers);
+  }
+}
+
 
 // After each test, the proxy retry info will contain zero, one, or two of the
 // data reduction proxies depending on whether no bypass was indicated by the
