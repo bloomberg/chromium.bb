@@ -130,7 +130,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
   power_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 WebContents* RenderViewDevToolsAgentHost::GetWebContents() {
@@ -300,7 +299,6 @@ void RenderViewDevToolsAgentHost::RenderViewDeleted(RenderViewHost* rvh) {
   scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
   HostClosed();
   ClearRenderViewHost();
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
   Release();
 }
 
@@ -348,16 +346,6 @@ void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
 
 void RenderViewDevToolsAgentHost::DidDetachInterstitialPage() {
   overrides_handler_->DidDetachInterstitialPage();
-}
-
-void RenderViewDevToolsAgentHost::TitleWasSet(
-    NavigationEntry* entry, bool explicit_set) {
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
-}
-
-void RenderViewDevToolsAgentHost::NavigationEntryCommitted(
-    const LoadCommittedDetails& load_details) {
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 void RenderViewDevToolsAgentHost::Observe(int type,

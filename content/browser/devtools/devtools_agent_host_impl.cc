@@ -75,10 +75,11 @@ void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
   if (client_) {
     client_->AgentHostClosed(this, true);
     Detach();
+  } else {
+    DevToolsManager::GetInstance()->OnClientAttached();
   }
   client_ = client;
   Attach();
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 void DevToolsAgentHostImpl::DetachClient() {
@@ -87,8 +88,8 @@ void DevToolsAgentHostImpl::DetachClient() {
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   client_ = NULL;
+  DevToolsManager::GetInstance()->OnClientDetached();
   Detach();
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 bool DevToolsAgentHostImpl::IsAttached() {
@@ -124,8 +125,8 @@ void DevToolsAgentHostImpl::HostClosed() {
   // Clear |client_| before notifying it.
   DevToolsAgentHostClient* client = client_;
   client_ = NULL;
+  DevToolsManager::GetInstance()->OnClientDetached();
   client->AgentHostClosed(this, false);
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 void DevToolsAgentHostImpl::SendMessageToClient(const std::string& message) {
@@ -149,9 +150,9 @@ void DevToolsAgentHost::DetachAllClients() {
       // Clear |client_| before notifying it.
       DevToolsAgentHostClient* client = agent_host->client_;
       agent_host->client_ = NULL;
+      DevToolsManager::GetInstance()->OnClientDetached();
       client->AgentHostClosed(agent_host, true);
       agent_host->Detach();
-      DevToolsManager::GetInstance()->AgentHostChanged(protect);
     }
   }
 }

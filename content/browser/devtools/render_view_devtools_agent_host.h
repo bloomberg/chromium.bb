@@ -79,9 +79,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
   virtual void DidDetachInterstitialPage() OVERRIDE;
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) OVERRIDE;
-  virtual void NavigationEntryCommitted(
-      const LoadCommittedDetails& load_details) OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
