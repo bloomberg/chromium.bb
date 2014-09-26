@@ -483,8 +483,11 @@ void MediaSourcePlayer::MediaDecoderCallback(
                      max_presentation_timestamp);
   }
 
-  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM)
+  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
     PlaybackCompleted(is_audio);
+    if (is_clock_manager)
+      interpolator_.StopInterpolating();
+  }
 
   if (pending_event_ != NO_EVENT_PENDING) {
     ProcessPendingEvents();
@@ -592,7 +595,6 @@ void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
 
   if (AudioFinished() && VideoFinished()) {
     playing_ = false;
-    interpolator_.StopInterpolating();
     start_time_ticks_ = base::TimeTicks();
     manager()->OnPlaybackComplete(player_id());
   }
