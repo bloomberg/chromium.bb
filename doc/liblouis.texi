@@ -39,6 +39,8 @@ This manual is for liblouis (version @value{VERSION}, @value{UPDATED}),
 a Braille Translation and Back-Translation Library derived from the
 Linux screen reader @acronym{BRLTTY}. 
 
+@vskip 10pt
+
 @noindent
 Copyright @copyright{} 1999-2006 by the BRLTTY Team.
 
@@ -49,6 +51,11 @@ Copyright @copyright{} 2004-2007 ViewPlus Technologies, Inc.
 @noindent
 Copyright @copyright{} 2007,2009 Abilitiessoft, Inc.
 @uref{www.abilitiessoft.com}.
+
+@noindent
+Copyright @copyright{} 2014 Swiss Library for the Blind, Visually Impaired and Print Disabled.
+
+@vskip 10pt
 
 @quotation
 This file is free software; you can redistribute it and/or modify it
@@ -177,14 +184,26 @@ README file. Please report bugs and oddities to the mailing list,
 This documentation is derived from Chapter 7 of the BRLTTY manual, but
 it has been extensively rewritten to cover new features.
 
-Please read the following copyright and warranty information. Note
-that this information also applies to all source code, tables and
-other files in this distribution of liblouis. It applies similarly to
-the sister library liblouisutdml.
+@section Who is this manual for
 
-Persons who wish to program with liblouis but will not be writing
-translation tables may want to skip ahead to @ref{Programming with
-liblouis}.
+This manual has two main audiences: People who want to write or
+improve a braille translation table and people who want to use the
+braille translator library in their own programs. This manual is
+probably not for people who are looking for some turn-key braille
+translation software.
+
+@section How to read this manual
+
+If you are mostly interested in writing braille translation tables
+then you want to focus on @ref{How to Write Translation Tables} and
+@ref{How to test Translation Tables}. You might want to look at
+@ref{Notes on Back-Translation} if you are interested in
+back-translation. Finally @ref{Test Programs} will show the use of
+interactive tools to tests your braille translation tables.
+
+If you want to use the braille translation library in your own program
+or you are interested in enhancing the braille translation library
+itself then you will want to look at @ref{Programming with liblouis}.
 
 @node Test Programs, How to Write Translation Tables, Introduction, Top
 @chapter Test Programs
