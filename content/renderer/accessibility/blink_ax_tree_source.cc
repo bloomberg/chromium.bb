@@ -75,6 +75,8 @@ std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
     case ui::AX_ROLE_CONTENT_INFO:
     case ui::AX_ROLE_FOOTER:
       return "contentinfo";
+    case ui::AX_ROLE_IMAGE:
+      return "img";
     case ui::AX_ROLE_MAIN:
       return "main";
     case ui::AX_ROLE_NAVIGATION:
