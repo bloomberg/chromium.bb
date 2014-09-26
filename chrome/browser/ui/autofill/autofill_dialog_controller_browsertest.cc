@@ -131,8 +131,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                 GetRequestContext(), this, form_data.origin),
         message_loop_runner_(runner),
         use_validation_(false),
-        weak_ptr_factory_(this),
-        sign_in_user_index_(0U) {
+        sign_in_user_index_(0U),
+        weak_ptr_factory_(this) {
     test_manager_.Init(
         NULL,
         Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
@@ -261,11 +261,11 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   // This is used to control what |CurrentNotifications()| returns for testing.
   std::vector<DialogNotification> notifications_;
 
-  // Allows generation of WeakPtrs, so controller liveness can be tested.
-  base::WeakPtrFactory<TestAutofillDialogController> weak_ptr_factory_;
-
   // The user index that is assigned in IsSignInContinueUrl().
   size_t sign_in_user_index_;
+
+  // Allows generation of WeakPtrs, so controller liveness can be tested.
+  base::WeakPtrFactory<TestAutofillDialogController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
