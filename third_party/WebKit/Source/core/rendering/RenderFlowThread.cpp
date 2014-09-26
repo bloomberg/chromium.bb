@@ -66,7 +66,6 @@ void RenderFlowThread::invalidateRegions()
         return;
     }
 
-    m_multiColumnSetRangeMap.clear();
     setNeedsLayoutAndFullPaintInvalidation();
 
     m_regionsInvalidated = true;
@@ -214,42 +213,6 @@ RenderRegion* RenderFlowThread::lastRegion() const
     if (!hasValidRegionInfo())
         return 0;
     return m_multiColumnSetList.last();
-}
-
-void RenderFlowThread::setRegionRangeForBox(const RenderBox* box, LayoutUnit offsetFromLogicalTopOfFirstPage)
-{
-    if (!hasRegions())
-        return;
-
-    // FIXME: Not right for differing writing-modes.
-    RenderMultiColumnSet* startColumnSet = columnSetAtBlockOffset(offsetFromLogicalTopOfFirstPage);
-    RenderMultiColumnSet* endColumnSet = columnSetAtBlockOffset(offsetFromLogicalTopOfFirstPage + box->logicalHeight());
-    RenderMultiColumnSetRangeMap::iterator it = m_multiColumnSetRangeMap.find(box);
-    if (it == m_multiColumnSetRangeMap.end()) {
-        m_multiColumnSetRangeMap.set(box, RenderMultiColumnSetRange(startColumnSet, endColumnSet));
-        return;
-    }
-
-    // If nothing changed, just bail.
-    RenderMultiColumnSetRange& range = it->value;
-    if (range.startColumnSet() == startColumnSet && range.endColumnSet() == endColumnSet)
-        return;
-
-    range.setRange(startColumnSet, endColumnSet);
-}
-
-void RenderFlowThread::getRegionRangeForBox(const RenderBox* box, RenderMultiColumnSet*& startColumnSet, RenderMultiColumnSet*& endColumnSet) const
-{
-    startColumnSet = 0;
-    endColumnSet = 0;
-    RenderMultiColumnSetRangeMap::const_iterator it = m_multiColumnSetRangeMap.find(box);
-    if (it == m_multiColumnSetRangeMap.end())
-        return;
-
-    const RenderMultiColumnSetRange& range = it->value;
-    startColumnSet = range.startColumnSet();
-    endColumnSet = range.endColumnSet();
-    ASSERT(m_multiColumnSetList.contains(startColumnSet) && m_multiColumnSetList.contains(endColumnSet));
 }
 
 void RenderFlowThread::updateRegionsFlowThreadPortionRect()

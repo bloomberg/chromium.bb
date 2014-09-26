@@ -1405,12 +1405,6 @@ bool RenderBlock::updateImageLoadingPriorities()
     return true;
 }
 
-void RenderBlock::computeRegionRangeForBlock(RenderFlowThread* flowThread)
-{
-    if (flowThread)
-        flowThread->setRegionRangeForBox(this, offsetFromLogicalTopOfFirstPage());
-}
-
 bool RenderBlock::widthAvailableToChildrenHasChanged()
 {
     bool widthAvailableToChildrenHasChanged = m_hasBorderOrPaddingLogicalWidthChanged;

@@ -284,8 +284,6 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
 
         layoutPositionedObjects(relayoutChildren || isDocumentElement());
 
-        computeRegionRangeForBlock(flowThreadContainingBlock());
-
         computeOverflow(oldClientAfterEdge);
     }
 

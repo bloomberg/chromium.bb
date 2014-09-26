@@ -352,8 +352,6 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
 
     layoutPositionedObjects(relayoutChildren || isDocumentElement());
 
-    computeRegionRangeForBlock(flowThreadContainingBlock());
-
     computeOverflow(oldClientAfterEdge);
 
     updateLayerTransformAfterLayout();

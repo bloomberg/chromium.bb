@@ -94,8 +94,6 @@ public:
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
-    void setRegionRangeForBox(const RenderBox*, LayoutUnit offsetFromLogicalTopOfFirstPage);
-
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
@@ -116,8 +114,6 @@ protected:
 
     void updateRegionsFlowThreadPortionRect();
     bool shouldIssuePaintInvalidations(const LayoutRect&) const;
-
-    void getRegionRangeForBox(const RenderBox*, RenderMultiColumnSet*& startColumnSet, RenderMultiColumnSet*& endColumnSet) const;
 
     virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
 
@@ -176,10 +172,6 @@ protected:
         LayoutUnit m_offset;
         RenderRegion* m_result;
     };
-
-    // A maps from RenderBox
-    typedef HashMap<const RenderBox*, RenderMultiColumnSetRange> RenderMultiColumnSetRangeMap;
-    RenderMultiColumnSetRangeMap m_multiColumnSetRangeMap;
 
     // Stack of objects that pushed a LayoutState object on the RenderView. The
     // objects on the stack are the ones that are curently in the process of being

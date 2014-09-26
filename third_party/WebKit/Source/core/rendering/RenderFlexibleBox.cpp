@@ -257,8 +257,6 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
 
         layoutPositionedObjects(relayoutChildren || isDocumentElement());
 
-        computeRegionRangeForBlock(flowThreadContainingBlock());
-
         // FIXME: css3/flexbox/repaint-rtl-column.html seems to issue paint invalidations for more overflow than it needs to.
         computeOverflow(clientLogicalBottomAfterRepositioning());
     }
