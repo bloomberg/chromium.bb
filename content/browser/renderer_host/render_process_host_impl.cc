@@ -675,10 +675,11 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
     }
 
-    return IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateServerFactory(
-                                         channel_mojo_host_.get(), channel_id),
-                                     this,
-                                     runner.get());
+    return IPC::ChannelProxy::Create(
+        IPC::ChannelMojo::CreateServerFactory(
+            channel_mojo_host_->channel_delegate(), channel_id),
+        this,
+        runner.get());
   }
 
   return IPC::ChannelProxy::Create(
@@ -2105,7 +2106,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   MaybeActivateMojo();
 
   if (channel_mojo_host_)
-    channel_mojo_host_->OnClientLaunched(child_process_launcher_->GetHandle());
+    channel_mojo_host_->OnClientLaunched(GetHandle());
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());

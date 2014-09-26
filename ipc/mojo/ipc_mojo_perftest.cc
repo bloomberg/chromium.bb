@@ -33,7 +33,8 @@ public:
       const IPC::ChannelHandle& handle,
       base::TaskRunner* runner) OVERRIDE {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(host_.get(), handle);
+    return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
+                                                 handle);
   }
 
   virtual bool DidStartClient() OVERRIDE {

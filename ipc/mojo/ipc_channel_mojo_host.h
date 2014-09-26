@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "ipc/ipc_export.h"
+#include "ipc/mojo/ipc_channel_mojo.h"
 
 namespace base {
 class TaskRunner;
@@ -16,30 +17,31 @@ class TaskRunner;
 
 namespace IPC {
 
-class ChannelMojo;
-
 // Through ChannelMojoHost, ChannelMojo gets extra information that
 // its client provides, including the child process's process handle. Every
 // server process that uses ChannelMojo must have a ChannelMojoHost
 // instance and call OnClientLaunched().
 class IPC_MOJO_EXPORT ChannelMojoHost {
  public:
-  explicit ChannelMojoHost(scoped_refptr<base::TaskRunner> task_runner);
+  explicit ChannelMojoHost(scoped_refptr<base::TaskRunner> io_task_runner);
   ~ChannelMojoHost();
 
   void OnClientLaunched(base::ProcessHandle process);
+  ChannelMojo::Delegate* channel_delegate() const;
 
  private:
-  friend class ChannelMojo;
+  class ChannelDelegate;
 
-  void OnChannelCreated(ChannelMojo* channel);
-  void OnChannelDestroyed();
-
-  void InvokeOnClientLaunched(base::ProcessHandle process);
+  // Delegate talks to ChannelMojo, whch lives in IO thread, thus
+  // the Delegate should also live and dies in the IO thread as well.
+  class DelegateDeleter {
+   public:
+    void operator()(ChannelDelegate* ptr) const;
+  };
 
   base::WeakPtrFactory<ChannelMojoHost> weak_factory_;
-  scoped_refptr<base::TaskRunner> task_runner_;
-  ChannelMojo* channel_;
+  const scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_ptr<ChannelDelegate, DelegateDeleter> channel_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMojoHost);
 };

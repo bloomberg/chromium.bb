@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "ipc/mojo/ipc_channel_mojo_readers.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "mojo/embedder/embedder.h"
@@ -23,22 +22,22 @@ namespace {
 
 class MojoChannelFactory : public ChannelFactory {
  public:
-  MojoChannelFactory(ChannelMojoHost* host,
+  MojoChannelFactory(ChannelMojo::Delegate* delegate,
                      ChannelHandle channel_handle,
                      Channel::Mode mode)
-      : host_(host), channel_handle_(channel_handle), mode_(mode) {}
+      : delegate_(delegate), channel_handle_(channel_handle), mode_(mode) {}
 
   virtual std::string GetName() const OVERRIDE {
     return channel_handle_.name;
   }
 
   virtual scoped_ptr<Channel> BuildChannel(Listener* listener) OVERRIDE {
-    return ChannelMojo::Create(host_, channel_handle_, mode_, listener)
+    return ChannelMojo::Create(delegate_, channel_handle_, mode_, listener)
         .PassAs<Channel>();
   }
 
  private:
-  ChannelMojoHost* host_;
+  ChannelMojo::Delegate* delegate_;
   ChannelHandle channel_handle_;
   Channel::Mode mode_;
 };
@@ -55,19 +54,20 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 //------------------------------------------------------------------------------
 
 // static
-scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojoHost* host,
+scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojo::Delegate* delegate,
                                             const ChannelHandle& channel_handle,
                                             Mode mode,
                                             Listener* listener) {
-  return make_scoped_ptr(new ChannelMojo(host, channel_handle, mode, listener));
+  return make_scoped_ptr(
+      new ChannelMojo(delegate, channel_handle, mode, listener));
 }
 
 // static
 scoped_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
-    ChannelMojoHost* host,
+    ChannelMojo::Delegate* delegate,
     const ChannelHandle& channel_handle) {
-  return make_scoped_ptr(
-             new MojoChannelFactory(host, channel_handle, Channel::MODE_SERVER))
+  return make_scoped_ptr(new MojoChannelFactory(
+                             delegate, channel_handle, Channel::MODE_SERVER))
       .PassAs<ChannelFactory>();
 }
 
@@ -79,27 +79,37 @@ scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
       .PassAs<ChannelFactory>();
 }
 
-ChannelMojo::ChannelMojo(ChannelMojoHost* host,
+ChannelMojo::ChannelMojo(ChannelMojo::Delegate* delegate,
                          const ChannelHandle& handle,
                          Mode mode,
                          Listener* listener)
-    : host_(host),
-      mode_(mode),
+    : mode_(mode),
       listener_(listener),
       peer_pid_(base::kNullProcessId),
       weak_factory_(this) {
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
   bootstrap_ = MojoBootstrap::Create(handle, mode, this);
-  if (host_)
-    host_->OnChannelCreated(this);
+  if (delegate) {
+    if (delegate->GetIOTaskRunner() ==
+        base::MessageLoop::current()->message_loop_proxy()) {
+      InitDelegate(delegate);
+    } else {
+      delegate->GetIOTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &ChannelMojo::InitDelegate, base::Unretained(this), delegate));
+    }
+  }
 }
 
 ChannelMojo::~ChannelMojo() {
   Close();
+}
 
-  if (host_)
-    host_->OnChannelDestroyed();
+void ChannelMojo::InitDelegate(ChannelMojo::Delegate* delegate) {
+  delegate_ = delegate->ToWeakPtr();
+  delegate_->OnChannelCreated(weak_factory_.GetWeakPtr());
 }
 
 void ChannelMojo::InitControlReader(

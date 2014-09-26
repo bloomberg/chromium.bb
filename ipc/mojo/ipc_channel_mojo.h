@@ -32,8 +32,6 @@ class ClientControlReader;
 class MessageReader;
 }
 
-class ChannelMojoHost;
-
 // Mojo-based IPC::Channel implementation over a platform handle.
 //
 // ChannelMojo builds Mojo MessagePipe using underlying pipe given by
@@ -61,9 +59,17 @@ class ChannelMojoHost;
 class IPC_MOJO_EXPORT ChannelMojo : public Channel,
                                     public MojoBootstrap::Delegate {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual base::WeakPtr<Delegate> ToWeakPtr() = 0;
+    virtual scoped_refptr<base::TaskRunner> GetIOTaskRunner() = 0;
+    virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) = 0;
+  };
+
   // Create ChannelMojo. A bootstrap channel is created as well.
-  // |host| must not be null.
-  static scoped_ptr<ChannelMojo> Create(ChannelMojoHost* host,
+  // |host| must not be null for server channels.
+  static scoped_ptr<ChannelMojo> Create(Delegate* delegate,
                                         const ChannelHandle& channel_handle,
                                         Mode mode,
                                         Listener* listener);
@@ -72,7 +78,7 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
   static scoped_ptr<ChannelFactory> CreateServerFactory(
-      ChannelMojoHost* host,
+      Delegate* delegate,
       const ChannelHandle& channel_handle);
 
   static scoped_ptr<ChannelFactory> CreateClientFactory(
@@ -117,7 +123,7 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   void set_peer_pid(base::ProcessId pid) { peer_pid_ = pid; }
 
  protected:
-  ChannelMojo(ChannelMojoHost* host,
+  ChannelMojo(Delegate* delegate,
               const ChannelHandle& channel_handle,
               Mode mode,
               Listener* listener);
@@ -132,10 +138,11 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   // notifications invoked by them.
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
+  void InitDelegate(ChannelMojo::Delegate* delegate);
   void InitControlReader(mojo::embedder::ScopedPlatformHandle handle);
 
   scoped_ptr<MojoBootstrap> bootstrap_;
-  ChannelMojoHost* const host_;
+  base::WeakPtr<Delegate> delegate_;
   Mode mode_;
   Listener* listener_;
   base::ProcessId peer_pid_;
