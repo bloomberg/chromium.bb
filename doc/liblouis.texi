@@ -113,6 +113,7 @@ Fifth Floor, Boston, MA 02110-1301, USA.
 
 How to Write Translation Tables
 
+* Overview::
 * Hyphenation Tables::
 * Character-Definition Opcodes::
 * Braille Indicator Opcodes::
@@ -144,7 +145,7 @@ Automated Testing of Translation Tables
 Programming with liblouis
 
 * License::
-* Overview::
+* Overview (library)::
 * Data structure of liblouis tables::
 * lou_version::
 * lou_translateString::
@@ -209,10 +210,66 @@ itself then you will want to look at @ref{Programming with liblouis}.
 @node How to Write Translation Tables
 @chapter How to Write Translation Tables
 
+For many languages there is already a translation table, so before
+creating a new table start by looking at existing tables to modify
+them as needed.
+
+Typically, a braille translation table consists of several parts.
+First are header and includes, in which you write what the table is
+for, license information and include tables you need for your table.
+
+Following this, you'll write various translation rules and lastly you
+write special rules to handle certain situations.
+
+A translation rule is composed of at least three parts: the opcode
+(translation command), character(s) and braille dots. An opcode is a
+command you give to a machine or a program to perform something on
+your behalf. In liblouis, an opcode tells it which rule to use when
+translating characters into braille. An operand can be thought of as
+parameters for the translation rule and is composed of two parts: the
+character or word to be translated and the braille dots.
+
+For example, suppose you want to read the word @samp{world} using
+braille dots @samp{456}, followed by the letter @samp{W} all the time.
+Then you'd write:
+
+@example
+always world 456-2456
+@end example
+
+The word @code{always} is an opcode which tells liblouis to always
+honor this translation, that is to say when the word @samp{world} (an
+operand) is encountered, always show braille dots @samp{456} followed
+by the letter @samp{w} (@samp{2456}).
+
+When you write any braille table for any language, we'd recommend
+working from some sort of official standard, and have a device or a
+program in which you can test your work.
+
+@menu
+* Overview::
+* Hyphenation Tables::
+* Character-Definition Opcodes::
+* Braille Indicator Opcodes::
+* Emphasis Opcodes::
+* Special Symbol Opcodes::
+* Special Processing Opcodes::
+* Translation Opcodes::
+* Character-Class Opcodes::
+* Swap Opcodes::
+* The Context and Multipass Opcodes::
+* The correct Opcode::
+* Miscellaneous Opcodes::
+* Deprecated Opcodes::
+@end menu
+
+@node Overview
+@section Overview
+
 Many translation (contraction) tables have already been made up. They
-are included in this distribution in the tables directory and should be
-studied as part of the documentation. The most helpful (and normative)
-are listed in the following table:
+are included in the distribution in the tables directory and can be
+studied as part of the documentation. Some of the more helpful (and
+normative) are listed in the following table:
 
 @table @file
 @item chardefs.cti 
@@ -261,8 +318,8 @@ are described for each opcode, please @pxref{Opcode Index}. With some
 exceptions, opcodes expect a certain number of operands. Any text on
 the line after the last operand is ignored, and may be a comment. A
 few opcodes accept a variable number of operands. In this case a
-number sign begins a comment unless it is preceded by a backslash
-(@samp{\}).
+number sign (@samp{#}) begins a comment unless it is preceded by a
+backslash (@samp{\}).
 
 Here are some examples of table entries.
 
@@ -277,7 +334,7 @@ though some have only one and a few have other types.
 The characters operand consists of any combination of characters and
 escape sequences proceeded and followed by whitespace. Escape
 sequences are used to represent difficult characters. They begin with
-a backslash (`\`). They are:
+a backslash (@samp{\}). They are:
 
 @table @kbd
 @item \
@@ -358,22 +415,6 @@ convenient. Hyphenation tables may be specified either with an
 @code{include} opcode or as part of a table list. They should come after 
 everything else. Character-definition opcodes are necessary for 
 hyphenation tables to work.
-
-@menu
-* Hyphenation Tables::
-* Character-Definition Opcodes::
-* Braille Indicator Opcodes::
-* Emphasis Opcodes::
-* Special Symbol Opcodes::
-* Special Processing Opcodes::
-* Translation Opcodes::
-* Character-Class Opcodes::
-* Swap Opcodes::
-* The Context and Multipass Opcodes::
-* The correct Opcode::
-* Miscellaneous Opcodes::
-* Deprecated Opcodes::
-@end menu
 
 @node Hyphenation Tables
 @section Hyphenation Tables
@@ -1956,7 +1997,7 @@ the doctest directory in the source distribution.
 
 @menu
 * License::
-* Overview::
+* Overview (library)::
 * Data structure of liblouis tables::
 * lou_version::
 * lou_translateString::
