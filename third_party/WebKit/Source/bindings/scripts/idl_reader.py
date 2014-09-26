@@ -39,11 +39,13 @@ from blink_idl_parser import BlinkIDLParser
 from idl_definitions import IdlDefinitions
 from idl_validator import EXTENDED_ATTRIBUTES_RELATIVE_PATH, IDLInvalidExtendedAttributeError, IDLExtendedAttributeValidator
 from interface_dependency_resolver import InterfaceDependencyResolver
+from utilities import idl_filename_to_component
 
 
 class IdlReader(object):
     def __init__(self, interfaces_info=None, outputdir=''):
         self.extended_attribute_validator = IDLExtendedAttributeValidator()
+        self.interfaces_info = interfaces_info
 
         if interfaces_info:
             self.interface_dependency_resolver = InterfaceDependencyResolver(interfaces_info, self)
@@ -53,12 +55,19 @@ class IdlReader(object):
         self.parser = BlinkIDLParser(outputdir=outputdir)
 
     def read_idl_definitions(self, idl_filename):
-        """Returns an IdlDefinitions object for an IDL file, including all dependencies."""
+        """Returns a dictionary whose key is component and value is an IdlDefinitions object for an IDL file, including all dependencies."""
         definitions = self.read_idl_file(idl_filename)
+        component = idl_filename_to_component(idl_filename)
+
         if not self.interface_dependency_resolver:
-            return definitions
-        self.interface_dependency_resolver.resolve_dependencies(definitions)
-        return definitions
+            return {component: definitions}
+
+        # This definitions should have a dictionary. No need to resolve any
+        # dependencies.
+        if not definitions.interfaces:
+            return {component: definitions}
+
+        return self.interface_dependency_resolver.resolve_dependencies(definitions, component)
 
     def read_idl_file(self, idl_filename):
         """Returns an IdlDefinitions object for an IDL file, without any dependencies.

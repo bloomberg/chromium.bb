@@ -193,7 +193,6 @@
     'variables': {
       'static_idl_files': '<(modules_static_idl_files)',
       'generated_idl_files': '<(modules_generated_idl_files)',
-      'component_dir': 'modules',
       'output_file':
         '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
     },

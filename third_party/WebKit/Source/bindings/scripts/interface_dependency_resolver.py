@@ -63,7 +63,7 @@ class InterfaceDependencyResolver(object):
         self.interfaces_info = interfaces_info
         self.reader = reader
 
-    def resolve_dependencies(self, definitions):
+    def resolve_dependencies(self, definitions, component):
         """Resolve dependencies, merging them into IDL definitions of main file.
 
         Dependencies consist of 'partial interface' for the same interface as
@@ -81,10 +81,27 @@ class InterfaceDependencyResolver(object):
 
         Args:
             definitions: IdlDefinitions object, modified in place
+            component:
+                string, describing where the above definitions are defined,
+                'core' or 'modules'. See KNOWN_COMPONENTS in utilities.py
+
+        Returns:
+            A dictionary whose key is component and value is IdlDefinitions
+            object whose dependency is resolved.
+
+        Raises:
+            Exception:
+                A given IdlDefinitions object doesn't have any interfaces,
+                or a given IdlDefinitions object has incorrect referenced
+                interfaces.
         """
+        # FIXME: we need to resolve dependency when we implement partial
+        # dictionary.
         if not definitions.interfaces:
-            # This definitions should have a dictionary. Nothing to do for it.
-            return
+            raise Exception('No need to resolve any dependencies of '
+                            'this definition: %s, because this should '
+                            'have a dictionary.' % definitions.idl_name)
+
         target_interface = next(definitions.interfaces.itervalues())
         interface_name = target_interface.name
         interface_info = self.interfaces_info[interface_name]
@@ -93,18 +110,30 @@ class InterfaceDependencyResolver(object):
             target_interface.extended_attributes.update(
                 interface_info['inherited_extended_attributes'])
 
-        merge_interface_dependencies(definitions,
-                                     target_interface,
-                                     interface_info['dependencies_full_paths'],
-                                     self.reader)
+        resolved_definitions = merge_interface_dependencies(
+            definitions,
+            component,
+            target_interface,
+            interface_info['dependencies_full_paths'],
+            self.reader)
 
         for referenced_interface_name in interface_info['referenced_interfaces']:
             referenced_definitions = self.reader.read_idl_definitions(
                 self.interfaces_info[referenced_interface_name]['full_path'])
-            definitions.update(referenced_definitions)
+
+            if component not in referenced_definitions:
+                raise Exception('This definitions: %s is defined in %s '
+                                'but reference interface:%s is not defined '
+                                'in %s' % (definitions.idl_name,
+                                           component,
+                                           referenced_interface_name,
+                                           component))
+
+            resolved_definitions[component].update(referenced_definitions[component])
+        return resolved_definitions
 
 
-def merge_interface_dependencies(definitions, target_interface, dependency_idl_filenames, reader):
+def merge_interface_dependencies(definitions, component, target_interface, dependency_idl_filenames, reader):
     """Merge dependencies ('partial interface' and 'implements') in dependency_idl_filenames into target_interface.
 
     No return: modifies target_interface in place.
@@ -112,6 +141,8 @@ def merge_interface_dependencies(definitions, target_interface, dependency_idl_f
     # Sort so order consistent, so can compare output from run to run.
     for dependency_idl_filename in sorted(dependency_idl_filenames):
         dependency_definitions = reader.read_idl_file(dependency_idl_filename)
+        # FIXME(crbug.com/358074): should not merge core definitions with
+        # modules definitions.
         dependency_interface = next(dependency_definitions.interfaces.itervalues())
         dependency_interface_basename, _ = os.path.splitext(os.path.basename(dependency_idl_filename))
 
@@ -123,6 +154,12 @@ def merge_interface_dependencies(definitions, target_interface, dependency_idl_f
             # into the target interface, so Code Generator can just iterate
             # over one list (and not need to handle 'implements' itself).
             target_interface.merge(dependency_interface)
+
+    # FIXME: Currently, this function just returns one IdlDefinitions
+    # instance. However, for partial interface modularization, we need to
+    # make this function return multiple definitions, i.e.
+    # { 'core': ..., 'modules': ... }.
+    return {component: definitions}
 
 
 def transfer_extended_attributes(dependency_interface, dependency_interface_basename):

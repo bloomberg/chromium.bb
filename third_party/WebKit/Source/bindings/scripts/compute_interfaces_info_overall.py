@@ -81,7 +81,7 @@ import cPickle as pickle
 import optparse
 import sys
 
-from utilities import read_pickle_files, write_pickle_file
+from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
@@ -170,7 +170,7 @@ def compute_global_type_info():
     callback_interfaces = set()
 
     for interface_name, interface_info in interfaces_info.iteritems():
-        component_dirs[interface_name] = interface_info['component_dir']
+        component_dirs[interface_name] = idl_filename_to_component(interface_info['full_path'])
 
         if interface_info['ancestors']:
             ancestors[interface_name] = interface_info['ancestors']

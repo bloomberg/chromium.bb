@@ -67,7 +67,6 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_static = modules_static_idl_files
   # No generated files currently, will add with constructors
   sources_generated = []
-  component_dir = "modules"
   output_file =
     "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle"
 }

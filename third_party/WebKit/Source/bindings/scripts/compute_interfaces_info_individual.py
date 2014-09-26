@@ -47,7 +47,7 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, is_dictionary_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
+from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, idl_filename_to_component, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, is_dictionary_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -63,14 +63,11 @@ partial_interface_files = defaultdict(lambda: {
 def parse_options():
     usage = 'Usage: %prog [options] [generated1.idl]...'
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--component-dir', help='component directory')
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
     options, args = parser.parse_args()
-    if options.component_dir is None:
-        parser.error('Must specify a component directory using --component-dir.')
     if options.interfaces_info_file is None:
         parser.error('Must specify an output file using --interfaces-info-file.')
     if options.idl_files_list is None:
@@ -114,7 +111,7 @@ def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_p
         paths_dict['include_paths'].append(this_include_path)
 
 
-def compute_info_individual(idl_filename, component_dir):
+def compute_info_individual(idl_filename):
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
 
@@ -139,7 +136,6 @@ def compute_info_individual(idl_filename, component_dir):
     left_interfaces, right_interfaces = get_implements_from_idl(idl_file_contents, interface_name)
 
     interfaces_info[interface_name] = {
-        'component_dir': component_dir,
         'extended_attributes': extended_attributes,
         'full_path': full_path,
         'implemented_as': implemented_as,
@@ -189,7 +185,7 @@ def main():
     # Information is stored in global variables interfaces_info and
     # partial_interface_files.
     for idl_filename in idl_files:
-        compute_info_individual(idl_filename, options.component_dir)
+        compute_info_individual(idl_filename)
 
     write_pickle_file(options.interfaces_info_file,
                       info_individual(),

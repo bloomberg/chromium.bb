@@ -40,7 +40,7 @@ import sys
 
 from code_generator_v8 import CodeGeneratorDictionaryImpl, CodeGeneratorV8
 from idl_reader import IdlReader
-from utilities import read_idl_files_list_from_file, write_file
+from utilities import read_idl_files_list_from_file, write_file, idl_filename_to_component
 
 
 def parse_options():
@@ -104,9 +104,10 @@ class IdlCompiler(object):
 
     def compile_and_write(self, idl_filename):
         interface_name = idl_filename_to_interface_name(idl_filename)
+        component = idl_filename_to_component(idl_filename)
         definitions = self.reader.read_idl_definitions(idl_filename)
         output_code_list = self.code_generator.generate_code(
-            definitions, interface_name)
+            definitions[component], interface_name)
         for output_path, output_code in output_code_list:
             write_file(output_code, output_path, self.only_if_changed)
 

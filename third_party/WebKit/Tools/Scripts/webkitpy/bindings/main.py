@@ -92,16 +92,6 @@ def TemporaryDirectory():
         shutil.rmtree(name)
 
 
-COMPONENT_PATH_PATTERN = re.compile(r'/(core|modules)(/|$)')
-
-
-def detect_component_dir(path):
-    match = COMPONENT_PATH_PATTERN.search(os.path.dirname(path))
-    if match:
-        return match.group(1)
-    raise AssertionError('"%s" is not placed under known component_dir, core or modules.' % path)
-
-
 def generate_interface_dependencies():
     def idl_paths_recursive(directory):
         # This is slow, especially on Windows, due to os.walk making
@@ -133,7 +123,7 @@ def generate_interface_dependencies():
     # for each new component) and doesn't test the code generator any better
     # than using a single component.
     for idl_filename in idl_paths_recursive(source_path):
-        compute_info_individual(idl_filename, detect_component_dir(idl_filename))
+        compute_info_individual(idl_filename)
     info_individuals = [info_individual()]
     # TestDictionary.{h,cpp} are placed under Source/bindings/tests/idls/core.
     # However, IdlCompiler generates TestDictionary.{h,cpp} by using relative_dir.

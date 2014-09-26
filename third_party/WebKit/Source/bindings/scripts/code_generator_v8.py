@@ -78,9 +78,7 @@ from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
-
-
-KNOWN_COMPONENTS = frozenset(['core', 'modules'])
+from utilities import KNOWN_COMPONENTS
 
 
 def render_template(interface_info, header_template, cpp_template,
@@ -201,11 +199,8 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         CodeGeneratorBase.__init__(self, interfaces_info, cache_dir, output_dir)
 
     def output_paths(self, definition_name, interface_info):
-        if interface_info['component_dir'] in KNOWN_COMPONENTS:
-            output_dir = posixpath.join(self.output_dir,
-                                        interface_info['relative_dir'])
-        else:
-            output_dir = self.output_dir
+        output_dir = posixpath.join(self.output_dir,
+                                    interface_info['relative_dir'])
         header_path = posixpath.join(output_dir, '%s.h' % definition_name)
         cpp_path = posixpath.join(output_dir, '%s.cpp' % definition_name)
         return header_path, cpp_path

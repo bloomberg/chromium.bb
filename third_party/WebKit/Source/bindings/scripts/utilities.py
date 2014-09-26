@@ -14,6 +14,9 @@ import string
 import subprocess
 
 
+KNOWN_COMPONENTS = frozenset(['core', 'modules'])
+
+
 class IdlBadFilenameError(Exception):
     """Raised if an IDL filename disagrees with the interface name in the file."""
     pass
@@ -22,6 +25,16 @@ class IdlBadFilenameError(Exception):
 def idl_filename_to_interface_name(idl_filename):
     # interface name is the root of the basename: InterfaceName.idl
     return os.path.splitext(os.path.basename(idl_filename))[0]
+
+
+def idl_filename_to_component(idl_filename):
+    path = os.path.dirname(os.path.realpath(idl_filename))
+    while path:
+        dirname, basename = os.path.split(path)
+        if basename.lower() in KNOWN_COMPONENTS:
+            return basename.lower()
+        path = dirname
+    raise 'Unknown component type for %s' % idl_filename
 
 
 ################################################################################

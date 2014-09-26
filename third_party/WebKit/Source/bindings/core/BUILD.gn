@@ -12,7 +12,6 @@ visibility = [ "//third_party/WebKit/*" ]
 compute_interfaces_info_individual("interfaces_info_individual_core") {
   sources_static = core_static_idl_files
   sources_generated = core_generated_idl_files
-  component_dir = "core"
   output_file =
     "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
 }

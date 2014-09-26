@@ -54,7 +54,6 @@ template("compute_interfaces_info_individual") {
     ]
 
     args = [
-      "--component-dir", invoker.component_dir,
       "--idl-files-list", rebase_path(file_list, root_build_dir),
       "--interfaces-info-file",
       rebase_path(invoker.output_file, root_build_dir),

@@ -61,7 +61,6 @@
     'variables': {
       'static_idl_files': '<(core_static_idl_files)',
       'generated_idl_files': '<(core_generated_idl_files)',
-      'component_dir': 'core',
       'output_file':
         '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
     },
