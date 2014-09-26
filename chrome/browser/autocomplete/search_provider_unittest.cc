@@ -3409,16 +3409,22 @@ TEST_F(SearchProviderTest, AnswersCache) {
   provider_->RegisterDisplayedAnswers(result);
   ASSERT_FALSE(provider_->answers_cache_.empty());
 
-  // Test that DoAnswersQuery retrieves data from cache.
-  AutocompleteInput input(base::ASCIIToUTF16("weather l"),
-                          base::string16::npos, base::string16(), GURL(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, false,
-                          false, true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
-  provider_->DoAnswersQuery(input);
-  EXPECT_EQ(base::ASCIIToUTF16("weather los angeles"),
-            provider_->prefetch_data_.full_query_text);
-  EXPECT_EQ(base::ASCIIToUTF16("2334"), provider_->prefetch_data_.query_type);
+  // Without scored results, no answers will be retrieved.
+  AnswersQueryData answer = provider_->FindAnswersPrefetchData();
+  EXPECT_TRUE(answer.full_query_text.empty());
+  EXPECT_TRUE(answer.query_type.empty());
+
+  // Inject a scored result, which will trigger answer retrieval.
+  base::string16 query = base::ASCIIToUTF16("weather los angeles");
+  SearchSuggestionParser::SuggestResult suggest_result(
+      query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
+      base::string16(), base::string16(), base::string16(), std::string(),
+      std::string(), false, 1200, false, false, query);
+  QueryForInput(ASCIIToUTF16("weather l"), false, false);
+  provider_->transformed_default_history_results_.push_back(suggest_result);
+  answer = provider_->FindAnswersPrefetchData();
+  EXPECT_EQ(base::ASCIIToUTF16("weather los angeles"), answer.full_query_text);
+  EXPECT_EQ(base::ASCIIToUTF16("2334"), answer.query_type);
 }
 
 TEST_F(SearchProviderTest, RemoveExtraAnswers) {

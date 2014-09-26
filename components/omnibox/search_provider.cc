@@ -265,7 +265,26 @@ void SearchProvider::Start(const AutocompleteInput& input,
   input_ = input;
 
   DoHistoryQuery(minimal_changes);
-  DoAnswersQuery(input);
+  // Answers needs scored history results before any suggest query has been
+  // started, since the query for answer-bearing results needs additional
+  // prefetch information based on the highest-scored local history result.
+  if (OmniboxFieldTrial::EnableAnswersInSuggest()) {
+    ScoreHistoryResults(raw_default_history_results_,
+                        false,
+                        &transformed_default_history_results_);
+    ScoreHistoryResults(raw_keyword_history_results_,
+                        true,
+                        &transformed_keyword_history_results_);
+    prefetch_data_ = FindAnswersPrefetchData();
+
+    // Raw results are not needed any more.
+    raw_default_history_results_.clear();
+    raw_keyword_history_results_.clear();
+  } else {
+    transformed_default_history_results_.clear();
+    transformed_keyword_history_results_.clear();
+  }
+
   StartOrStopSuggestQuery(minimal_changes);
   UpdateMatches();
 }
@@ -519,8 +538,8 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   if (minimal_changes)
     return;
 
-  keyword_history_results_.clear();
-  default_history_results_.clear();
+  raw_keyword_history_results_.clear();
+  raw_default_history_results_.clear();
 
   if (OmniboxFieldTrial::SearchHistoryDisable(
       input_.current_page_classification()))
@@ -533,7 +552,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   // Request history for both the keyword and default provider.  We grab many
   // more matches than we'll ultimately clamp to so that if there are several
   // recent multi-word matches who scores are lowered (see
-  // AddHistoryResultsToMap()), they won't crowd out older, higher-scoring
+  // ScoreHistoryResults()), they won't crowd out older, higher-scoring
   // matches.  Note that this doesn't fix the problem entirely, but merely
   // limits it to cases with a very large number of such multi-word matches; for
   // now, this seems OK compared with the complexity of a real fix, which would
@@ -543,8 +562,10 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url) {
     const base::TimeTicks start_time = base::TimeTicks::Now();
-    url_db->GetMostRecentKeywordSearchTerms(default_url->id(), input_.text(),
-        num_matches, &default_history_results_);
+    url_db->GetMostRecentKeywordSearchTerms(default_url->id(),
+                                            input_.text(),
+                                            num_matches,
+                                            &raw_default_history_results_);
     UMA_HISTOGRAM_TIMES(
         "Omnibox.SearchProvider.GetMostRecentKeywordTermsDefaultProviderTime",
         base::TimeTicks::Now() - start_time);
@@ -552,7 +573,9 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (keyword_url) {
     url_db->GetMostRecentKeywordSearchTerms(keyword_url->id(),
-        keyword_input_.text(), num_matches, &keyword_history_results_);
+                                            keyword_input_.text(),
+                                            num_matches,
+                                            &raw_keyword_history_results_);
   }
 }
 
@@ -844,10 +867,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       }
     }
   }
-  AddHistoryResultsToMap(keyword_history_results_, true,
-                         did_not_accept_keyword_suggestion, &map);
-  AddHistoryResultsToMap(default_history_results_, false,
-                         did_not_accept_default_suggestion, &map);
+  AddRawHistoryResultsToMap(true, did_not_accept_keyword_suggestion, &map);
+  AddRawHistoryResultsToMap(false, did_not_accept_default_suggestion, &map);
 
   AddSuggestResultsToMap(keyword_results_.suggest_results,
                          keyword_results_.metadata, &map);
@@ -960,56 +981,56 @@ void SearchProvider::AddNavigationResultsToMatches(
   }
 }
 
-void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
-                                            bool is_keyword,
-                                            int did_not_accept_suggestion,
-                                            MatchMap* map) {
-  if (results.empty())
+void SearchProvider::AddRawHistoryResultsToMap(bool is_keyword,
+                                               int did_not_accept_suggestion,
+                                               MatchMap* map) {
+  const HistoryResults& raw_results =
+      is_keyword ? raw_keyword_history_results_ : raw_default_history_results_;
+  if (!OmniboxFieldTrial::EnableAnswersInSuggest() && raw_results.empty())
     return;
 
   base::TimeTicks start_time(base::TimeTicks::Now());
-  bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
-      (input_.type() == metrics::OmniboxInputType::URL);
-  const base::string16& input_text =
-      is_keyword ? keyword_input_.text() : input_.text();
-  bool input_multiple_words = HasMultipleWords(input_text);
 
-  SearchSuggestionParser::SuggestResults scored_results;
-  if (!prevent_inline_autocomplete && input_multiple_words) {
-    // ScoreHistoryResults() allows autocompletion of multi-word, 1-visit
-    // queries if the input also has multiple words.  But if we were already
-    // scoring a multi-word, multi-visit query aggressively, and the current
-    // input is still a prefix of it, then changing the suggestion suddenly
-    // feels wrong.  To detect this case, first score as if only one word has
-    // been typed, then check if the best result came from aggressive search
-    // history scoring.  If it did, then just keep that score set.  This
-    // 1200 the lowest possible score in CalculateRelevanceForHistory()'s
-    // aggressive-scoring curve.
-    scored_results = ScoreHistoryResults(results, prevent_inline_autocomplete,
-                                         false, input_text, is_keyword);
-    if ((scored_results.front().relevance() < 1200) ||
-        !HasMultipleWords(scored_results.front().suggestion()))
-      scored_results.clear();  // Didn't detect the case above, score normally.
+  // Until Answers becomes default, scoring of history results will still happen
+  // here for non-Answers Chrome, to prevent scoring performance regressions
+  // resulting from moving the scoring code before the suggest request is sent.
+  // For users with Answers enabled, the history results have already been
+  // scored earlier, right after calling DoHistoryQuery().
+  SearchSuggestionParser::SuggestResults local_transformed_results;
+  const SearchSuggestionParser::SuggestResults* transformed_results = NULL;
+  if (!OmniboxFieldTrial::EnableAnswersInSuggest()) {
+    ScoreHistoryResults(raw_results, is_keyword, &local_transformed_results);
+    transformed_results = &local_transformed_results;
+  } else {
+    transformed_results = is_keyword ? &transformed_keyword_history_results_
+                                     : &transformed_default_history_results_;
   }
-  if (scored_results.empty())
-    scored_results = ScoreHistoryResults(results, prevent_inline_autocomplete,
-                                         input_multiple_words, input_text,
-                                         is_keyword);
-  for (SearchSuggestionParser::SuggestResults::const_iterator i(
-           scored_results.begin()); i != scored_results.end(); ++i) {
-    AddMatchToMap(*i, std::string(), did_not_accept_suggestion, true,
-                  providers_.GetKeywordProviderURL() != NULL, map);
-  }
+  DCHECK(transformed_results);
+  AddTransformedHistoryResultsToMap(
+      *transformed_results, did_not_accept_suggestion, map);
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
                       base::TimeTicks::Now() - start_time);
 }
 
-SearchSuggestionParser::SuggestResults SearchProvider::ScoreHistoryResults(
-    const HistoryResults& results,
-    bool base_prevent_inline_autocomplete,
-    bool input_multiple_words,
-    const base::string16& input_text,
-    bool is_keyword) {
+void SearchProvider::AddTransformedHistoryResultsToMap(
+    const SearchSuggestionParser::SuggestResults& transformed_results,
+    int did_not_accept_suggestion,
+    MatchMap* map) {
+  for (SearchSuggestionParser::SuggestResults::const_iterator i(
+           transformed_results.begin());
+       i != transformed_results.end();
+       ++i) {
+    AddMatchToMap(*i, std::string(), did_not_accept_suggestion, true,
+                  providers_.GetKeywordProviderURL() != NULL, map);
+  }
+}
+
+SearchSuggestionParser::SuggestResults
+SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
+                                          bool base_prevent_inline_autocomplete,
+                                          bool input_multiple_words,
+                                          const base::string16& input_text,
+                                          bool is_keyword) {
   SearchSuggestionParser::SuggestResults scored_results;
   // True if the user has asked this exact query previously.
   bool found_what_you_typed_match = false;
@@ -1113,6 +1134,46 @@ SearchSuggestionParser::SuggestResults SearchProvider::ScoreHistoryResults(
   }
 
   return scored_results;
+}
+
+void SearchProvider::ScoreHistoryResults(
+    const HistoryResults& results,
+    bool is_keyword,
+    SearchSuggestionParser::SuggestResults* scored_results) {
+  DCHECK(scored_results);
+  if (results.empty()) {
+    scored_results->clear();
+    return;
+  }
+
+  bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
+      (input_.type() == metrics::OmniboxInputType::URL);
+  const base::string16 input_text = GetInput(is_keyword).text();
+  bool input_multiple_words = HasMultipleWords(input_text);
+
+  if (!prevent_inline_autocomplete && input_multiple_words) {
+    // ScoreHistoryResultsHelper() allows autocompletion of multi-word, 1-visit
+    // queries if the input also has multiple words.  But if we were already
+    // scoring a multi-word, multi-visit query aggressively, and the current
+    // input is still a prefix of it, then changing the suggestion suddenly
+    // feels wrong.  To detect this case, first score as if only one word has
+    // been typed, then check if the best result came from aggressive search
+    // history scoring.  If it did, then just keep that score set.  This
+    // 1200 the lowest possible score in CalculateRelevanceForHistory()'s
+    // aggressive-scoring curve.
+    *scored_results = ScoreHistoryResultsHelper(
+        results, prevent_inline_autocomplete, false, input_text, is_keyword);
+    if ((scored_results->front().relevance() < 1200) ||
+        !HasMultipleWords(scored_results->front().suggestion()))
+      scored_results->clear();  // Didn't detect the case above, score normally.
+  }
+  if (scored_results->empty()) {
+    *scored_results = ScoreHistoryResultsHelper(results,
+                                                prevent_inline_autocomplete,
+                                                input_multiple_words,
+                                                input_text,
+                                                is_keyword);
+  }
 }
 
 void SearchProvider::AddSuggestResultsToMap(
@@ -1356,6 +1417,24 @@ void SearchProvider::RegisterDisplayedAnswers(
   answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
 }
 
-void SearchProvider::DoAnswersQuery(const AutocompleteInput& input) {
-  prefetch_data_ = answers_cache_.GetTopAnswerEntry(input.text());
+AnswersQueryData SearchProvider::FindAnswersPrefetchData() {
+  // Retrieve the top entry from scored history results.
+  MatchMap map;
+  AddTransformedHistoryResultsToMap(transformed_keyword_history_results_,
+                                    TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+                                    &map);
+  AddTransformedHistoryResultsToMap(transformed_default_history_results_,
+                                    TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+                                    &map);
+
+  ACMatches matches;
+  for (MatchMap::const_iterator i(map.begin()); i != map.end(); ++i)
+    matches.push_back(i->second);
+  std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
+
+  // If there is a top scoring entry, find the corresponding answer.
+  if (!matches.empty())
+    return answers_cache_.GetTopAnswerEntry(matches[0].contents);
+
+  return AnswersQueryData();
 }

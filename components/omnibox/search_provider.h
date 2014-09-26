@@ -254,20 +254,34 @@ class SearchProvider : public BaseSearchProvider,
       const SearchSuggestionParser::NavigationResults& navigation_results,
       ACMatches* matches);
 
-  // Adds a match for each result in |results| to |map|. |is_keyword| indicates
-  // whether the results correspond to the keyword provider or default provider.
-  void AddHistoryResultsToMap(const HistoryResults& results,
-                              bool is_keyword,
-                              int did_not_accept_suggestion,
-                              MatchMap* map);
+  // Adds a match for each result in |raw_default_history_results_| or
+  // |raw_keyword_history_results_| to |map|. |is_keyword| indicates
+  // which one of the two.
+  void AddRawHistoryResultsToMap(bool is_keyword,
+                                 int did_not_accept_suggestion,
+                                 MatchMap* map);
+
+  // Adds a match for each transformed result in |results| to |map|.
+  void AddTransformedHistoryResultsToMap(
+      const SearchSuggestionParser::SuggestResults& results,
+      int did_not_accept_suggestion,
+      MatchMap* map);
 
   // Calculates relevance scores for all |results|.
-  SearchSuggestionParser::SuggestResults ScoreHistoryResults(
+  SearchSuggestionParser::SuggestResults ScoreHistoryResultsHelper(
       const HistoryResults& results,
       bool base_prevent_inline_autocomplete,
       bool input_multiple_words,
       const base::string16& input_text,
       bool is_keyword);
+
+  // Calculates relevance scores for |results|, adjusting for boundary
+  // conditions around multi-word queries. (See inline comments in function
+  // definition for more details.)
+  void ScoreHistoryResults(
+      const HistoryResults& results,
+      bool is_keyword,
+      SearchSuggestionParser::SuggestResults* scored_results);
 
   // Adds matches for |results| to |map|.
   void AddSuggestResultsToMap(
@@ -321,9 +335,11 @@ class SearchProvider : public BaseSearchProvider,
   // Obtains a session token, regenerating if necessary.
   std::string GetSessionToken();
 
-  // Answers prefetch handling - finds previously displayed answer matching the
-  // current |input| and sets |prefetch_data_|.
-  void DoAnswersQuery(const AutocompleteInput& input);
+  // Answers prefetch handling - finds the previously displayed answer matching
+  // the current top-scoring history result. If there is a previous answer,
+  // returns the query data associated with it. Otherwise, returns an empty
+  // AnswersQueryData.
+  AnswersQueryData FindAnswersPrefetchData();
 
   // The amount of time to wait before sending a new suggest request after the
   // previous one.  Non-const because some unittests modify this value.
@@ -345,8 +361,13 @@ class SearchProvider : public BaseSearchProvider,
   AutocompleteInput keyword_input_;
 
   // Searches in the user's history that begin with the input text.
-  HistoryResults keyword_history_results_;
-  HistoryResults default_history_results_;
+  HistoryResults raw_keyword_history_results_;
+  HistoryResults raw_default_history_results_;
+
+  // Scored searches in the user's history - based on |keyword_history_results_|
+  // or |default_history_results_| as appropriate.
+  SearchSuggestionParser::SuggestResults transformed_keyword_history_results_;
+  SearchSuggestionParser::SuggestResults transformed_default_history_results_;
 
   // A timer to start a query to the suggest server after the user has stopped
   // typing for long enough.
