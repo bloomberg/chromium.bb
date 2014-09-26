@@ -35,10 +35,6 @@
       "test": "display_unittests",
       "platforms": ["linux"]
     },
-    {
-      "test": "extensions_unittests",
-      "platforms": ["linux", "win", "mac"]
-    },
     "gcm_unit_tests",
     "gfx_unittests",
     "google_apis_unittests",
