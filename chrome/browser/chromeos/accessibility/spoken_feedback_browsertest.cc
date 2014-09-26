@@ -135,6 +135,21 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
+  void PressRepeatedlyUntilUtterance(ui::KeyboardCode key,
+                                     const std::string& expected_utterance) {
+    // This helper function is needed when you want to poll for something
+    // that happens asynchronously. Keep pressing |key|, until
+    // the speech feedback that follows is |expected_utterance|.
+    // Note that this doesn't work if pressing that key doesn't speak anything
+    // at all before the asynchronous event occurred.
+    while (true) {
+      SendKeyPress(key);
+      const std::string& utterance = speech_monitor_.GetNextUtterance();
+      if (utterance == expected_utterance)
+        break;
+    }
+  }
+
   SpeechMonitor speech_monitor_;
 
  private:
@@ -143,7 +158,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, AddBookmark) {
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
@@ -227,7 +242,7 @@ INSTANTIATE_TEST_CASE_P(
                       kTestAsGuestUser));
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableSpokenFeedback) {
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
@@ -235,7 +250,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableSpokenFeedback) {
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
@@ -250,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
@@ -342,8 +357,50 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNavigateAndSelect) {
   EXPECT_EQ("Title", speech_monitor_.GetNextUtterance());
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
+  LoadChromeVoxAndThenNavigateToURL(
+      GURL("data:text/html;charset=utf-8,"
+           "<label>Enter your name <input autofocus></label>"
+           "<p>One</p>"
+           "<h2>Two</h2>"));
+  while (speech_monitor_.GetNextUtterance() != "Enter your name") {
+  }
+  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+
+  // Press the sticky-key sequence: Search Search.
+  SendKeyPress(ui::VKEY_LWIN);
+  SendKeyPress(ui::VKEY_LWIN);
+  EXPECT_EQ("Sticky mode enabled", speech_monitor_.GetNextUtterance());
+
+  // Even once we hear "sticky mode enabled" from the ChromeVox background
+  // page, there's a short window of time when the content script still
+  // hasn't switched to sticky mode. That's why we're focused on a text box.
+  // Keep pressing the '/' key. If sticky mode is off, it will echo the word
+  // "slash". If sticky mode is on, it will open "Find in page". Keep pressing
+  // '/' until we get "Find in page.".
+  PressRepeatedlyUntilUtterance(ui::VKEY_OEM_2, "Find in page.");
+  EXPECT_EQ("Enter a search query.", speech_monitor_.GetNextUtterance());
+
+  // Press Esc to exit Find in Page mode.
+  SendKeyPress(ui::VKEY_ESCAPE);
+  EXPECT_EQ("Exited", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Find in page.", speech_monitor_.GetNextUtterance());
+
+  // Press N H to jump to the next heading. Skip over speech in-between
+  // but make sure we end up at the heading.
+  SendKeyPress(ui::VKEY_N);
+  SendKeyPress(ui::VKEY_H);
+  while (speech_monitor_.GetNextUtterance() != "Two") {
+  }
+  EXPECT_EQ("Heading 2", speech_monitor_.GetNextUtterance());
+
+  // Press the up arrow to go to the previous element.
+  SendKeyPress(ui::VKEY_UP);
+  EXPECT_EQ("One", speech_monitor_.GetNextUtterance());
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
@@ -385,7 +442,7 @@ class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
 };
 
 IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
@@ -428,7 +485,7 @@ class OobeSpokenFeedbackTest : public InProcessBrowserTest {
 // Test is flaky: http://crbug.com/346797
 IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
-  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
   WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
