@@ -595,7 +595,7 @@ static void eg_surf_minify(struct radeon_surface *surf,
     mtile_ps = (mtile_pr * surflevel->nblk_y) / mtileh;
 
     surflevel->offset = offset;
-    surflevel->pitch_bytes = surflevel->nblk_x * bpe * slice_pt;
+    surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
     surflevel->slice_size = mtile_ps * mtileb * slice_pt;
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
@@ -1498,7 +1498,7 @@ static void si_surf_minify_2d(struct radeon_surface *surf,
     /* macro tile per slice */
     mtile_ps = (mtile_pr * surflevel->nblk_y) / yalign;
     surflevel->offset = offset;
-    surflevel->pitch_bytes = surflevel->nblk_x * bpe * slice_pt;
+    surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
     surflevel->slice_size = mtile_ps * mtileb * slice_pt;
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
