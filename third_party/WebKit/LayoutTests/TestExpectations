@@ -1335,10 +1335,6 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 crbug.com/413225 [ Mac ] fast/canvas/canvas-normalize-string.html [ NeedsRebaseline ]
 crbug.com/413225 [ Mac ] virtual/gpu/fast/canvas/canvas-normalize-string.html [ NeedsRebaseline ]
 
-crbug.com/417625 [ Win Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ ImageOnlyFailure ]
-crbug.com/417625 [ Win Linux ] fast/forms/select/listbox-appearance-basic.html [ ImageOnlyFailure ]
-crbug.com/417625 [ Win Linux ] fast/forms/select/menulist-appearance-basic.html [ ImageOnlyFailure ]
-
 crbug.com/416580 [ Win ] svg/custom/external-paintserver-reference.svg [ NeedsRebaseline ]
 crbug.com/416580 [ Win ] svg/custom/linking-base-external-reference.xhtml [ NeedsRebaseline ]
 
