@@ -186,6 +186,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL',
         'GPL (v2)',
         'GPL (v2 or later)',
+        'GPL (v3 or later)',
         'UNKNOWN',  # http://crbug.com/98123
     ],
     'third_party/fontconfig': [
