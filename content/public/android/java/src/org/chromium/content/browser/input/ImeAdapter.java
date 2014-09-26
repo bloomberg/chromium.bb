@@ -74,15 +74,22 @@ public class ImeAdapter {
     }
 
     private class DelayedDismissInput implements Runnable {
-        private final long mNativeImeAdapter;
+        private long mNativeImeAdapter;
 
         DelayedDismissInput(long nativeImeAdapter) {
             mNativeImeAdapter = nativeImeAdapter;
         }
 
+        // http://crbug.com/413744
+        void detach() {
+            mNativeImeAdapter = 0;
+        }
+
         @Override
         public void run() {
-            attach(mNativeImeAdapter, sTextInputTypeNone, sTextInputFlagNone);
+            if (mNativeImeAdapter != 0) {
+                attach(mNativeImeAdapter, sTextInputTypeNone, sTextInputFlagNone);
+            }
             dismissInput(true);
         }
     }
@@ -693,7 +700,10 @@ public class ImeAdapter {
 
     @CalledByNative
     void detach() {
-        if (mDismissInput != null) mHandler.removeCallbacks(mDismissInput);
+        if (mDismissInput != null) {
+            mHandler.removeCallbacks(mDismissInput);
+            mDismissInput.detach();
+        }
         mNativeImeAdapterAndroid = 0;
         mTextInputType = 0;
     }
