@@ -32,6 +32,7 @@
 #define PopupListBox_h
 
 #include "core/dom/Element.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollView.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
@@ -84,7 +85,7 @@ struct PopupItem {
 };
 
 // This class manages the scrollable content inside a <select> popup.
-class PopupListBox FINAL : public ScrollView, public PopupContent {
+class PopupListBox FINAL : public Widget, public ScrollableArea, public PopupContent {
 public:
     static PassRefPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
     {
@@ -93,28 +94,39 @@ public:
 
     // Widget
     virtual void invalidateRect(const IntRect&) OVERRIDE;
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
+    virtual HostWindow* hostWindow() const OVERRIDE;
+    virtual void setFrameRect(const IntRect&) OVERRIDE;
+    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint&) const OVERRIDE;
+    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint&) const OVERRIDE;
 
     // ScrollableArea
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
     virtual bool isActive() const OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
-
-    // ScrollView
-    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
-    virtual HostWindow* hostWindow() const OVERRIDE;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
-    virtual IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
+    virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
+    virtual void setScrollOffset(const IntPoint&) OVERRIDE;
+    virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
+    virtual bool userInputScrollable(ScrollbarOrientation orientation) const OVERRIDE { return orientation == VerticalScrollbar; }
+    virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_verticalScrollbar.get(); }
+    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
+    virtual IntSize contentsSize() const OVERRIDE { return m_contentsSize; }
+    virtual IntPoint scrollPosition() const OVERRIDE { return visibleContentRect().location(); }
+    virtual IntPoint maximumScrollPosition() const OVERRIDE; // The maximum position we can be scrolled to.
+    virtual IntPoint minimumScrollPosition() const OVERRIDE; // The minimum position we can be scrolled to.
+    virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
 
     // PopupListBox methods
 
-    virtual bool handleMouseDownEvent(const PlatformMouseEvent&);
-    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&);
-    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&);
-    virtual bool handleWheelEvent(const PlatformWheelEvent&);
-    virtual bool handleKeyEvent(const PlatformKeyboardEvent&);
-    virtual bool handleTouchEvent(const PlatformTouchEvent&);
-    virtual bool handleGestureEvent(const PlatformGestureEvent&);
+    bool handleMouseDownEvent(const PlatformMouseEvent&);
+    bool handleMouseMoveEvent(const PlatformMouseEvent&);
+    bool handleMouseReleaseEvent(const PlatformMouseEvent&);
+    bool handleWheelEvent(const PlatformWheelEvent&);
+    bool handleKeyEvent(const PlatformKeyboardEvent&);
+    bool handleTouchEvent(const PlatformTouchEvent&);
+    bool handleGestureEvent(const PlatformGestureEvent&);
 
     // Closes the popup
     void abandon();
@@ -169,10 +181,7 @@ public:
     static const int defaultMaxHeight;
 
 protected:
-    // ScrollView
-    virtual void paintContents(GraphicsContext*, const IntRect&) OVERRIDE { }
-    virtual void scrollbarExistenceDidChange() OVERRIDE { }
-    virtual bool scrollContentsFastPath(const IntSize& scrollDelta) OVERRIDE { return false; }
+    virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }
 
 private:
     friend class PopupContainer;
@@ -228,6 +237,17 @@ private:
     // first/last element if m_loopSelectionNavigation is true.
     void selectPreviousRow();
     void selectNextRow();
+
+    int scrollX() const { return scrollPosition().x(); }
+    int scrollY() const { return scrollPosition().y(); }
+    void updateScrollbars(const IntPoint& desiredOffset);
+    void setHasVerticalScrollbar(bool);
+    Scrollbar* scrollbarAtWindowPoint(const IntPoint& windowPoint);
+    IntRect contentsToWindow(const IntRect&) const;
+    void setContentsSize(const IntSize&);
+    void adjustScrollbarExistence();
+    void updateScrollbarGeometry();
+    IntRect windowClipRect() const;
 
     // If the device is a touch screen we increase the height of menu items
     // to make it easier to unambiguously touch them.
@@ -288,6 +308,10 @@ private:
     RefPtrWillBePersistent<Element> m_focusedElement;
 
     PopupContainer* m_container;
+
+    RefPtr<Scrollbar> m_verticalScrollbar;
+    IntSize m_contentsSize;
+    IntPoint m_scrollOffset;
 };
 
 } // namespace blink

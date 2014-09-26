@@ -110,8 +110,6 @@ public:
     // included.
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
     IntSize visibleSize() const { return visibleContentRect().size(); }
-    virtual int visibleWidth() const OVERRIDE FINAL { return visibleContentRect().width(); }
-    virtual int visibleHeight() const OVERRIDE FINAL { return visibleContentRect().height(); }
 
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.

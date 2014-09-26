@@ -221,10 +221,6 @@ void PopupContainer::showPopup(FrameView* view)
     if (!m_listBox->parent())
         m_listBox->setParent(this);
 
-    // Enable scrollbars after the listbox is inserted into the hierarchy,
-    // so it has a proper WidgetClient.
-    m_listBox->setVerticalScrollbarMode(ScrollbarAuto);
-
     m_listBox->scrollToRevealSelection();
 
     invalidate();

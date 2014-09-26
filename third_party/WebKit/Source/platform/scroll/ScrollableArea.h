@@ -165,8 +165,8 @@ public:
     virtual IntPoint maximumScrollPosition() const = 0;
 
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
-    virtual int visibleHeight() const = 0;
-    virtual int visibleWidth() const = 0;
+    virtual int visibleHeight() const { return visibleContentRect().height(); }
+    virtual int visibleWidth() const { return visibleContentRect().width(); }
     virtual IntSize contentsSize() const = 0;
     virtual IntSize overhangAmount() const { return IntSize(); }
     virtual IntPoint lastKnownMousePosition() const { return IntPoint(); }
