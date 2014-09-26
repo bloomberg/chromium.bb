@@ -74,16 +74,16 @@ void GridPainter::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOf
         if (current == previous)
             continue;
 
-        paintChild(current, paintInfo, paintOffset);
+        paintChild(*current, paintInfo, paintOffset);
         previous = current;
     }
 }
 
-void GridPainter::paintChild(RenderBox* child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void GridPainter::paintChild(RenderBox& child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint childPoint = m_renderGrid.flipForWritingModeForChild(child, paintOffset);
-    if (!child->hasSelfPaintingLayer() && !child->isFloating())
-        child->paint(paintInfo, childPoint);
+    LayoutPoint childPoint = m_renderGrid.flipForWritingModeForChild(&child, paintOffset);
+    if (!child.hasSelfPaintingLayer() && !child.isFloating())
+        child.paint(paintInfo, childPoint);
 }
 
 } // namespace blink
