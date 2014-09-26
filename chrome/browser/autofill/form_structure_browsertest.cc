@@ -102,9 +102,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 }
 
 // Heuristics tests timeout on Windows.  See http://crbug.com/85276
-// Also on ChromeOS/Aura. See crbug.com/173621
-// On Linux too. See crbug.com/323093
-#if defined(USE_AURA)
+#if defined(OS_WIN)
 #define MAYBE_DataDrivenHeuristics(n) DISABLED_DataDrivenHeuristics##n
 #else
 #define MAYBE_DataDrivenHeuristics(n) DataDrivenHeuristics##n
@@ -251,8 +249,9 @@ IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
                     kFileNamePattern);
 }
 
+// This test has real failures. http://crbug.com/323093
 IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
-    MAYBE_DataDrivenHeuristics(16)) {
+    DISABLED_DataDrivenHeuristics16) {
   const base::FilePath::CharType kFileNamePattern[] =
       FILE_PATH_LITERAL("16_*.html");
   RunDataDrivenTest(GetInputDirectory(kTestName),
