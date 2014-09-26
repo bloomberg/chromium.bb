@@ -47,7 +47,7 @@ class _PaygenPayload(object):
 
   # GeneratorUri uses these to ensure we don't use generators that are too
   # old to be supported.
-  MINIMUM_GENERATOR_VERSION = '6270.0.0'
+  MINIMUM_GENERATOR_VERSION = '6303.0.0'
   MINIMUM_GENERATOR_URI = (
       'gs://chromeos-releases/canary-channel/x86-mario/%s/au-generator.zip' %
       MINIMUM_GENERATOR_VERSION)
