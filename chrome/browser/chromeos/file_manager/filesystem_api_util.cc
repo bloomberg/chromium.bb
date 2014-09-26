@@ -35,7 +35,8 @@ void GetMimeTypeAfterGetResourceEntryForDrive(
     scoped_ptr<drive::ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error != drive::FILE_ERROR_OK || !entry->has_file_specific_info()) {
+  if (error != drive::FILE_ERROR_OK || !entry->has_file_specific_info() ||
+      entry->file_specific_info().content_mime_type().empty()) {
     callback.Run(false, std::string());
     return;
   }
@@ -50,7 +51,7 @@ void GetMimeTypeAfterGetMetadataForProvidedFileSystem(
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (result != base::File::FILE_OK) {
+  if (result != base::File::FILE_OK || metadata->mime_type.empty()) {
     callback.Run(false, std::string());
     return;
   }
@@ -177,11 +178,13 @@ void GetNonNativeLocalPathMimeType(
     return;
   }
 
-  // As a fallback just return success with an empty mime type value.
+  // We don't have a way to obtain metadata other than drive and FSP. Returns an
+  // error with empty MIME type, that leads fallback guessing mime type from
+  // file extensions.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(callback, true /* success */, std::string()));
+      base::Bind(callback, false /* failure */, std::string()));
 }
 
 void IsNonNativeLocalPathDirectory(
