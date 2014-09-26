@@ -46,6 +46,8 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
         m_elementMember = testingDictionary.elementMember();
     if (testingDictionary.hasElementOrNullMember())
         m_elementOrNullMember = testingDictionary.elementOrNullMember();
+    m_objectMember = testingDictionary.objectMember();
+    m_objectOrNullMemberWithDefault = testingDictionary.objectOrNullMemberWithDefault();
 }
 
 InternalDictionary* DictionaryTest::get()
@@ -75,6 +77,8 @@ InternalDictionary* DictionaryTest::get()
         result->setElementMember(m_elementMember);
     if (m_elementOrNullMember)
         result->setElementOrNullMember(m_elementOrNullMember);
+    result->setObjectMember(m_objectMember);
+    result->setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
     return result;
 }
 
@@ -95,6 +99,8 @@ void DictionaryTest::reset()
     m_enumOrNullMember = String();
     m_elementMember = nullptr;
     m_elementOrNullMember = nullptr;
+    m_objectMember = ScriptValue();
+    m_objectOrNullMemberWithDefault = ScriptValue();
 }
 
 void DictionaryTest::trace(Visitor* visitor)

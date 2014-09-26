@@ -19,6 +19,8 @@ PASS dict.elementOrNullMember is undefined.
 PASS dict.enumMember is undefined.
 PASS dict.enumMemberWithDefault is "foo"
 PASS dict.enumOrNullMember is undefined.
+PASS dict.objectMember is undefined.
+PASS dict.objectOrNullMemberWithDefault is null
 
 Test for setting undefined
 PASS dict.longMember is undefined.
@@ -33,6 +35,8 @@ PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceOrNullMember is undefined.
 PASS dict.elementMember is undefined.
 PASS dict.elementOrNullMember is undefined.
+PASS dict.objectMember is undefined.
+PASS dict.objectOrNullMemberWithDefault is null
 
 Test for setting valid values
 PASS dict.longMember is 1
@@ -50,6 +54,8 @@ PASS dict.elementOrNullMember is undefined.
 PASS dict.enumMember is "foo"
 PASS dict.enumMemberWithDefault is "bar"
 PASS dict.enumOrNullMember is "baz"
+PASS dict.objectMember is testObject1
+PASS dict.objectOrNullMemberWithDefault is testObject2
 
 Test for explicit undefined or null, and missing members
 PASS dict.longMember is undefined.
@@ -62,6 +68,10 @@ PASS dict.invalidMember is undefined.
 
 Test for setting invalid enum value
 PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member enumMember ('invalid') is not a valid enum value..
+
+Test for setting invalid object value
+PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
+PASS dictionaryTest.set({objectMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
 
 Test for passing invalid dictionary values
 PASS dictionaryTest.set(42) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..

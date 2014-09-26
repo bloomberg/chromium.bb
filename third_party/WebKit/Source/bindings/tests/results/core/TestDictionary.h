@@ -8,6 +8,7 @@
 #define TestDictionary_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
@@ -70,6 +71,12 @@ public:
     bool hasElementOrNullMember() const { return m_elementOrNullMember; }
     PassRefPtrWillBeRawPtr<Element> elementOrNullMember() const { return m_elementOrNullMember; }
     void setElementOrNullMember(PassRefPtrWillBeRawPtr<Element> value) { m_elementOrNullMember = value; }
+    bool hasObjectMember() const { return !(m_objectMember.isEmpty() || m_objectMember.isNull() || m_objectMember.isUndefined()); }
+    ScriptValue objectMember() const { return m_objectMember; }
+    void setObjectMember(ScriptValue value) { m_objectMember = value; }
+    bool hasObjectOrNullMember() const { return !(m_objectOrNullMember.isEmpty() || m_objectOrNullMember.isNull() || m_objectOrNullMember.isUndefined()); }
+    ScriptValue objectOrNullMember() const { return m_objectOrNullMember; }
+    void setObjectOrNullMember(ScriptValue value) { m_objectOrNullMember = value; }
 
     void trace(Visitor*);
 
@@ -91,6 +98,8 @@ private:
     Nullable<Vector<String> > m_stringSequenceMember;
     String m_enumMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
+    ScriptValue m_objectMember;
+    ScriptValue m_objectOrNullMember;
 
     friend class V8TestDictionary;
 };

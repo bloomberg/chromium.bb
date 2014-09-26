@@ -22,4 +22,6 @@ enum InternalEnum { "foo", "bar", "baz" };
     InternalEnum? enumOrNullMember;
     Element elementMember;
     Element? elementOrNullMember;
+    object objectMember;
+    object? objectOrNullMemberWithDefault = null;
 };

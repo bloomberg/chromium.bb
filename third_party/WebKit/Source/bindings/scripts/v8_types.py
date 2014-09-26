@@ -417,11 +417,14 @@ def impl_includes_for_type(idl_type, interfaces_info):
                 native_array_element_type, interfaces_info))
         includes_for_type.add('wtf/Vector.h')
 
+    base_idl_type = idl_type.base_type
     if idl_type.is_string_type:
         includes_for_type.add('wtf/text/WTFString.h')
-    if idl_type.base_type in interfaces_info:
+    if base_idl_type in interfaces_info:
         interface_info = interfaces_info[idl_type.base_type]
         includes_for_type.add(interface_info['include_path'])
+    if base_idl_type in INCLUDES_FOR_TYPE:
+        includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
     return includes_for_type
 
 IdlTypeBase.impl_includes_for_type = impl_includes_for_type
@@ -618,7 +621,7 @@ def preprocess_idl_type(idl_type):
     if idl_type.is_enum:
         # Enumerations are internally DOMStrings
         return IdlType('DOMString')
-    if (idl_type.name == 'Any' or idl_type.is_callback_function):
+    if (idl_type.name in ['Any', 'Object'] or idl_type.is_callback_function):
         return IdlType('ScriptValue')
     return idl_type
 
@@ -838,8 +841,9 @@ def cpp_type_has_null_value(idl_type):
     #   a null pointer.
     # - Dictionary types represent null as a null pointer. They are garbage
     #   collected so their type is raw pointer.
+    # - 'Object' type. We use ScriptValue for object type.
     return (idl_type.is_string_type or idl_type.is_wrapper_type or
-            idl_type.is_enum or idl_type.is_dictionary)
+            idl_type.is_enum or idl_type.is_dictionary or idl_type.base_type == 'object')
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 

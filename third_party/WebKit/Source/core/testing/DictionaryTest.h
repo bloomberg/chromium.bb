@@ -6,6 +6,7 @@
 #define DictionaryTest_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
@@ -56,6 +57,8 @@ private:
     String m_enumOrNullMember;
     RefPtrWillBeMember<Element> m_elementMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
+    ScriptValue m_objectMember;
+    ScriptValue m_objectOrNullMemberWithDefault;
 };
 
 } // namespace blink

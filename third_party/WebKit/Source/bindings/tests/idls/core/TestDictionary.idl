@@ -22,4 +22,6 @@ enum TestEnum { "foo", "bar", "baz" };
     sequence<DOMString> stringSequenceMember;
     TestEnum enumMember = "foo";
     Element? elementOrNullMember;
+    object objectMember;
+    object? objectOrNullMember;
 };
