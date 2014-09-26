@@ -477,8 +477,17 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
 
     *msaaSampleCount = 0;
-    if (is3D())
+    if (is3D()) {
+        // If 3d, but the use of the canvas will be for non-accelerated content
+        // (such as -webkit-canvas, then then make a non-accelerated
+        // ImageBuffer. This means copying the internal Image will require a
+        // pixel readback, but that is unavoidable in this case.
+        // FIXME: Actually, avoid setting m_accelerationDisabled at all when
+        // doing GPU-based rasterization.
+        if (m_accelerationDisabled)
+            return adoptPtr(new UnacceleratedImageBufferSurface(size(), opacityMode));
         return adoptPtr(new WebGLImageBufferSurface(size(), opacityMode));
+    }
 
     if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(size(), opacityMode));

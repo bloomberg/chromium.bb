@@ -919,7 +919,7 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas()
     ScopedTexture2DRestorer restorer(this);
 
     drawingBuffer()->commit();
-    if (!(canvas()->buffer())->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), m_savingImage)) {
+    if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), m_savingImage)) {
         canvas()->ensureUnacceleratedImageBuffer();
         if (canvas()->hasImageBuffer())
             drawingBuffer()->paintRenderingResultsToCanvas(canvas()->buffer());
