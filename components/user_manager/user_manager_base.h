@@ -52,6 +52,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                             const std::string& user_id_hash,
                             bool browser_restart) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
+  virtual void SwitchToLastActiveUser() OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& user_id,
                           RemoveUserDelegate* delegate) OVERRIDE;
@@ -368,6 +369,12 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // ID of the user just added to the session that needs to be activated
   // as soon as user's profile is loaded.
   std::string pending_user_switch_;
+
+  // ID of the user that was active in the previous session.
+  // Preference value is stored here before first user signs in
+  // because pref will be overidden once session restore starts.
+  std::string last_session_active_user_;
+  bool last_session_active_user_initialized_;
 
   // TaskRunner for UI thread.
   scoped_refptr<base::TaskRunner> task_runner_;

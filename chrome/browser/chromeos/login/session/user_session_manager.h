@@ -103,9 +103,13 @@ class UserSessionManager
   // and notifies observers.
   void RestoreActiveSessions();
 
-  // Returns true iff browser has been restarted after crash and UserManager
-  // finished restoring user sessions.
+  // Returns true iff browser has been restarted after crash and
+  // UserSessionManager finished restoring user sessions.
   bool UserSessionsRestored() const;
+
+  // Returns true iff browser has been restarted after crash and
+  // user sessions restoration is in progress.
+  bool UserSessionsRestoreInProgress() const;
 
   // Initialize RLZ.
   void InitRlz(Profile* profile);
@@ -256,9 +260,12 @@ class UserSessionManager
 
   // Active user session restoration related members.
 
-  // True is user sessions has been restored after crash.
+  // True if user sessions has been restored after crash.
   // On a normal boot then login into user sessions this will be false.
   bool user_sessions_restored_;
+
+  // True if user sessions restoration after crash is in progress.
+  bool user_sessions_restore_in_progress_;
 
   // User sessions that have to be restored after browser crash.
   // [user_id] > [user_id_hash]

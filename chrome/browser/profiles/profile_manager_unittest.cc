@@ -243,48 +243,6 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
       profile_manager->GetInitialProfileDir()).value();
 }
 
-// Switching the user should switch also the last used user.
-TEST_F(ProfileManagerTest, ActiveProfileChanged) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ASSERT_TRUE(profile_manager);
-
-  // Create and load two profiles.
-  const std::string user_name1 = "user1@example.com";
-  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(user_name1);
-
-  MockObserver mock_observer;
-  EXPECT_CALL(mock_observer, OnProfileCreated(
-      testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
-
-  CreateProfileAsync(profile_manager, user_name1, false, &mock_observer);
-  base::RunLoop().RunUntilIdle();
-
-  chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
-  chromeos::ScopedUserManagerEnabler enabler(user_manager);
-
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kProfileLastUsed, "");
-
-  const user_manager::User* active_user = user_manager->AddUser(user_name1);
-  user_manager->LoginUser(user_name1);
-
-  // None of the calls above should have changed the last user.
-  EXPECT_EQ("", local_state->GetString(prefs::kProfileLastUsed));
-
-  // The FakeUserManager will not switch the user either.
-  user_manager->SwitchActiveUser(user_name1);
-  EXPECT_EQ("", local_state->GetString(prefs::kProfileLastUsed));
-
-  // After triggering the LOGIN_USER_CHANGED observer call ourselves, the user
-  // has changed.
-  profile_manager->Observe(
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      content::NotificationService::AllSources(),
-      content::Details<const user_manager::User>(active_user));
-  EXPECT_EQ("u-" + user_name1 + "-hash",
-      local_state->GetString(prefs::kProfileLastUsed));
-}
-
 #endif
 
 TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {

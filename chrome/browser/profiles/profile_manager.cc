@@ -820,15 +820,6 @@ void ProfileManager::Observe(
 #if defined(OS_CHROMEOS)
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     logged_in_ = true;
-    // Find out what the current user is and update it. This has only to be done
-    // when the profile was already loaded, since otherwise this will be set by
-    // the profile loading process.
-    user_manager::UserManager* manager = user_manager::UserManager::Get();
-    const user_manager::User* user = manager->GetActiveUser();
-    if (user && user->is_profile_created()) {
-      UpdateLastUser(
-          chromeos::ProfileHelper::Get()->GetProfileByUser(user));
-    }
 
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (!command_line.HasSwitch(switches::kTestType)) {

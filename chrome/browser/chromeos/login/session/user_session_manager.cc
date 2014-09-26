@@ -220,6 +220,7 @@ UserSessionManager::UserSessionManager()
     : delegate_(NULL),
       has_auth_cookies_(false),
       user_sessions_restored_(false),
+      user_sessions_restore_in_progress_(false),
       exit_after_session_restore_(false),
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
@@ -300,6 +301,7 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 }
 
 void UserSessionManager::RestoreActiveSessions() {
+  user_sessions_restore_in_progress_ = true;
   DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
       base::Bind(&UserSessionManager::OnRestoreActiveSessions,
                  base::Unretained(this)));
@@ -308,6 +310,11 @@ void UserSessionManager::RestoreActiveSessions() {
 bool UserSessionManager::UserSessionsRestored() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return user_sessions_restored_;
+}
+
+bool UserSessionManager::UserSessionsRestoreInProgress() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  return user_sessions_restore_in_progress_;
 }
 
 void UserSessionManager::InitRlz(Profile* profile) {
@@ -944,6 +951,7 @@ void UserSessionManager::OnRestoreActiveSessions(
 
 void UserSessionManager::RestorePendingUserSessions() {
   if (pending_user_sessions_.empty()) {
+    user_manager::UserManager::Get()->SwitchToLastActiveUser();
     NotifyPendingUserSessionsRestoreFinished();
     return;
   }
@@ -991,6 +999,7 @@ void UserSessionManager::RestorePendingUserSessions() {
 void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   user_sessions_restored_ = true;
+  user_sessions_restore_in_progress_ = false;
   FOR_EACH_OBSERVER(chromeos::UserSessionStateObserver,
                     session_state_observer_list_,
                     PendingUserSessionsRestoreFinished());
