@@ -223,9 +223,9 @@ void TextPainter::paintInternal(int startOffset, int endOffset, int truncationPo
 void TextPainter::paintEmphasisMarkForCombinedText()
 {
     ASSERT(m_combinedText);
-    DEFINE_STATIC_LOCAL(TextRun, objectReplacementCharacterTextRun, (&objectReplacementCharacter, 1));
-    FloatPoint emphasisMarkTextOrigin(m_textBounds.x() + m_textBounds.width() / 2, m_textBounds.y() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
-    TextRunPaintInfo textRunPaintInfo(objectReplacementCharacterTextRun);
+    DEFINE_STATIC_LOCAL(TextRun, placeholderTextRun, (&ideographicFullStop, 1));
+    FloatPoint emphasisMarkTextOrigin(m_textBounds.x(), m_textBounds.y() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
+    TextRunPaintInfo textRunPaintInfo(placeholderTextRun);
     textRunPaintInfo.bounds = m_textBounds;
     m_graphicsContext->concatCTM(InlineTextBox::rotation(m_textBounds, InlineTextBox::Clockwise));
     m_graphicsContext->drawEmphasisMarks(m_combinedText->originalFont(), textRunPaintInfo, m_emphasisMark, emphasisMarkTextOrigin);
