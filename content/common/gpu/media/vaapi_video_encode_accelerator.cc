@@ -112,20 +112,18 @@ VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
   if (cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
     return profiles;
 
-  SupportedProfile profile;
-  profile.profile = media::H264PROFILE_MAIN;
+  std::vector<media::VideoCodecProfile> hw_profiles =
+      VaapiWrapper::GetSupportedEncodeProfiles(
+          x_display_, base::Bind(&ReportToUMA, VAAPI_ERROR));
+
+  media::VideoEncodeAccelerator::SupportedProfile profile;
   profile.max_resolution.SetSize(1920, 1088);
   profile.max_framerate_numerator = kDefaultFramerate;
   profile.max_framerate_denominator = 1;
-  profiles.push_back(profile);
-
-  // This is actually only constrained (see crbug.com/345569).
-  profile.profile = media::H264PROFILE_BASELINE;
-  profiles.push_back(profile);
-
-  profile.profile = media::H264PROFILE_HIGH;
-  profiles.push_back(profile);
-
+  for (size_t i = 0; i < hw_profiles.size(); i++) {
+    profile.profile = hw_profiles[i];
+    profiles.push_back(profile);
+  }
   return profiles;
 }
 

@@ -50,6 +50,11 @@ class CONTENT_EXPORT VaapiWrapper {
       Display* x_display,
       const base::Closure& report_error_to_uma_cb);
 
+  // Return the supported encode profiles.
+  static std::vector<media::VideoCodecProfile> GetSupportedEncodeProfiles(
+      Display* x_display,
+      const base::Closure& report_error_to_uma_cb);
+
   ~VaapiWrapper();
 
   // Create |num_surfaces| backing surfaces in driver for VASurfaces, each
@@ -140,8 +145,15 @@ class CONTENT_EXPORT VaapiWrapper {
   bool Initialize(CodecMode mode,
                   media::VideoCodecProfile profile,
                   Display* x_display,
-                  const base::Closure& report_error__to_uma_cb);
+                  const base::Closure& report_error_to_uma_cb);
   void Deinitialize();
+  bool VaInitialize(Display* x_display,
+                    const base::Closure& report_error_to_uma_cb);
+  bool GetSupportedVaProfiles(std::vector<VAProfile>* profiles);
+  bool IsEntrypointSupported(VAProfile va_profile, VAEntrypoint entrypoint);
+  bool AreAttribsSupported(VAProfile va_profile,
+                           VAEntrypoint entrypoint,
+                           const std::vector<VAConfigAttrib>& required_attribs);
 
   // Execute pending job in hardware and destroy pending buffers. Return false
   // if vaapi driver refuses to accept parameter or slice buffers submitted
