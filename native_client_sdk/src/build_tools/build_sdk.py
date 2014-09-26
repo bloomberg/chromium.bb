@@ -56,8 +56,8 @@ NACL_TOOLCHAINTARS_DIR = os.path.join(NACL_TOOLCHAIN_DIR, '.tars')
 CYGTAR = os.path.join(BUILD_DIR, 'cygtar.py')
 PKGVER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
-NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 1293
+NACLPORTS_URL = 'https://chromium.googlesource.com/external/naclports.git'
+NACLPORTS_REV = '99f2417'
 
 GYPBUILD_DIR = 'gypbuild'
 
@@ -808,13 +808,15 @@ def BuildStepSyncNaClPorts():
   buildbot_common.BuildStep('Sync naclports')
   if not os.path.exists(NACLPORTS_DIR):
     # checkout new copy of naclports
-    cmd = ['svn', 'checkout', '-q', '-r', str(NACLPORTS_REV), NACLPORTS_URL,
-           'naclports']
+    cmd = ['git', 'clone', NACLPORTS_URL, 'naclports']
     buildbot_common.Run(cmd, cwd=os.path.dirname(NACLPORTS_DIR))
   else:
-    # sync existing copy to pinned revision.
-    cmd = ['svn', 'update', '-r', str(NACLPORTS_REV)]
-    buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
+    # checkout new copy of naclports
+    buildbot_common.Run(['git', 'fetch'], cwd=NACLPORTS_DIR)
+
+  # sync to required revision
+  cmd = ['git', 'checkout', str(NACLPORTS_REV)]
+  buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
 
 
 def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
