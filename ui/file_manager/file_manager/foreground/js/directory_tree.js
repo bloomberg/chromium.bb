@@ -407,23 +407,22 @@ DirectoryItem.prototype.activate = function() {
  * A TreeItem which represents a volume. Volume items are displayed as
  * top-level children of DirectoryTree.
  *
- * @param {DirectoryEntry} entry DirectoryEntry of this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
-function VolumeItem(entry, modelItem, tree) {
+function VolumeItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
   item.__proto__ = VolumeItem.prototype;
-  item.decorate(entry, modelItem, tree);
+  item.decorate(modelItem, tree);
   return item;
 }
 
 VolumeItem.prototype = {
   __proto__: cr.ui.TreeItem.prototype,
   get entry() {
-    return this.dirEntry_;
+    return this.volumeInfo_.displayRoot;
   },
   get modelItem() {
     return this.modelItem_;
@@ -460,14 +459,12 @@ VolumeItem.prototype.searchAndSelectByEntry = function(entry) {
 
 /**
  * Decorates this element.
- * @param {DirectoryEntry} entry DirectoryEntry of this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
-VolumeItem.prototype.decorate = function(entry, modelItem, tree) {
+VolumeItem.prototype.decorate = function(modelItem, tree) {
   this.innerHTML = TREE_ITEM_INNTER_HTML;
   this.parentTree_ = tree;
-  this.dirEntry_ = entry;
   this.modelItem_ = modelItem;
   this.volumeInfo_ = modelItem.volumeInfo;
   this.label = modelItem.volumeInfo.label;
@@ -477,7 +474,10 @@ VolumeItem.prototype.decorate = function(entry, modelItem, tree) {
   if (tree.contextMenuForRootItems)
     this.setContextMenu(tree.contextMenuForRootItems);
 
-  this.updateSubDirectories(false /* recursive */);
+  // Populate children of this volume using resolved display root.
+  this.volumeInfo_.resolveDisplayRoot(function(displayRoot) {
+    this.updateSubDirectories(false /* recursive */);
+  }.bind(this));
 };
 
 /**
@@ -499,8 +499,11 @@ VolumeItem.prototype.handleClick = function(e) {
 
   // If the Drive volume is clicked, select one of the children instead of this
   // item itself.
-  if (this.isDrive())
-    this.searchAndSelectByEntry(this.entry);
+  if (this.isDrive()) {
+    this.volumeInfo_.resolveDisplayRoot(function(displayRoot) {
+      this.searchAndSelectByEntry(displayRoot);
+    }.bind(this));
+  }
 };
 
 /**
@@ -509,7 +512,7 @@ VolumeItem.prototype.handleClick = function(e) {
  */
 VolumeItem.prototype.updateSubDirectories = function(recursive) {
   // Drive volume has children including fake entries (offline, recent, etc...).
-  if (this.isDrive() && !this.hasChildren) {
+  if (this.isDrive() && this.entry && !this.hasChildren) {
     var entries = [this.entry];
     if (this.parentTree_.fakeEntriesVisible_) {
       for (var key in this.volumeInfo.fakeEntries)
@@ -577,6 +580,9 @@ VolumeItem.prototype.activate = function() {
       metrics.recordUserAction('FolderShortcut.Navigate');
       directoryModel.changeDirectoryEntry(entry);
     }
+    // In case of failure in resolveDisplayRoot() in the volume's decorate(),
+    // update the volume's children here.
+    this.updateSubDirectories(false);
   }.bind(this);
 
   this.volumeInfo.resolveDisplayRoot(
@@ -661,16 +667,15 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
  * A TreeItem which represents a shortcut for Drive folder.
  * Shortcut items are displayed as top-level children of DirectoryTree.
  *
- * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
-function ShortcutItem(dirEntry, modelItem, tree) {
+function ShortcutItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
   item.__proto__ = ShortcutItem.prototype;
-  item.decorate(dirEntry, modelItem, tree);
+  item.decorate(modelItem, tree);
   return item;
 }
 
@@ -702,15 +707,14 @@ ShortcutItem.prototype.searchAndSelectByEntry = function(entry) {
 
 /**
  * Decorates this element.
- * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
-ShortcutItem.prototype.decorate = function(dirEntry, modelItem, tree) {
+ShortcutItem.prototype.decorate = function(modelItem, tree) {
   this.innerHTML = TREE_ITEM_INNTER_HTML;
   this.parentTree_ = tree;
-  this.label = dirEntry.name;
-  this.dirEntry_ = dirEntry;
+  this.label = modelItem.entry.name;
+  this.dirEntry_ = modelItem.entry;
   this.modelItem_ = modelItem;
 
   var icon = this.querySelector('.icon');
@@ -877,12 +881,13 @@ cr.defineProperty(DirectoryTree, 'contextMenuForRootItems', cr.PropertyKind.JS);
  *     only immediate child directories without arrows.
  */
 DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
-  // First, current items which is not included in the models_[] should be
+  // First, current items which is not included in the dataModel should be
   // removed.
   for (var i = 0; i < this.items.length;) {
     var found = false;
-    for (var j = 0; j < this.models_.length; j++) {
-      if (util.isSameEntry(this.items[i].entry, this.models_[j].entry)) {
+    for (var j = 0; j < this.dataModel.length; j++) {
+      if (NavigationModelItem.isSame(this.items[i].modelItem,
+                                     this.dataModel.item(j))) {
         found = true;
         break;
       }
@@ -896,24 +901,21 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
     }
   }
 
-  // Next, insert items which is in models_[] but not in current items.
+  // Next, insert items which is in dataModel but not in current items.
   var modelIndex = 0;
   var itemIndex = 0;
-  while (modelIndex < this.models_.length) {
+  while (modelIndex < this.dataModel.length) {
     if (itemIndex < this.items.length &&
-        util.isSameEntry(this.items[itemIndex].entry,
-                         this.models_[modelIndex].entry)) {
+        NavigationModelItem.isSame(this.items[itemIndex].modelItem,
+                                   this.dataModel.item(modelIndex))) {
       if (recursive && this.items[itemIndex] instanceof VolumeItem)
         this.items[itemIndex].updateSubDirectories(true);
     } else {
-      var model = this.models_[modelIndex];
-      if (model.modelItem.isVolume) {
-        this.addAt(new VolumeItem(model.entry, model.modelItem, this),
-                   itemIndex);
-      } else {
-        this.addAt(new ShortcutItem(model.entry, model.modelItem, this),
-                   itemIndex);
-      }
+      var modelItem = this.dataModel.item(modelIndex);
+      if (modelItem.isVolume)
+        this.addAt(new VolumeItem(modelItem, this), itemIndex);
+      else
+        this.addAt(new ShortcutItem(modelItem, this), itemIndex);
     }
     itemIndex++;
     modelIndex++;
@@ -1046,33 +1048,9 @@ DirectoryTree.prototype.selectByIndex = function(index) {
  */
 DirectoryTree.prototype.updateSubDirectories = function(
     recursive, opt_callback) {
-  var callback = opt_callback || function() {};
-
-  // Resolves all root entries for model items.
-  var itemPromises = [];
-  for (var i = 0; i < this.dataModel.length; i++) {
-    if (this.dataModel.item(i).isVolume) {
-      // Volume's root entries need to be resolved.
-      itemPromises.push(new Promise(function(resolve, reject) {
-        var modelItem = this.dataModel.item(i);
-        modelItem.volumeInfo.resolveDisplayRoot(function(entry) {
-          resolve({entry: entry, modelItem: modelItem});
-        });
-      }.bind(this)));
-    } else {
-      // Shortcuts' root entries can be obtained immediately.
-      itemPromises.push(Promise.resolve({
-        entry: this.dataModel.item(i).entry,
-        modelItem: this.dataModel.item(i)}));
-    }
-  }
-
-  // Redraws this tree using resolved root entries and volume info.
-  Promise.all(itemPromises).then(function(results) {
-    this.models_ = results;
-    this.redraw(recursive);
-    callback();
-  }.bind(this));
+  this.redraw(recursive);
+  if (opt_callback)
+    opt_callback();
 };
 
 /**

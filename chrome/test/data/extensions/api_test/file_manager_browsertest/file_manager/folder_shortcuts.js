@@ -42,7 +42,7 @@ var DIRECTORY = {
     contents: [ENTRIES.directoryA.getExpectedRow(),
                ENTRIES.directoryD.getExpectedRow()],
     name: 'Drive',
-    navItem: '#tree-item-autogen-id-1',
+    navItem: '#tree-item-autogen-id-2',
     treeItem: TREEITEM_DRIVE
   },
   A: {
