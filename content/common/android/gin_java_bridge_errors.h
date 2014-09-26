@@ -18,6 +18,7 @@ enum GinJavaBridgeError {
   kGinJavaBridgeJavaExceptionRaised,
   kGinJavaBridgeNonAssignableTypes,
   kGinJavaBridgeRenderFrameDeleted,
+  kGinJavaBridgeErrorLast = kGinJavaBridgeRenderFrameDeleted
 };
 
 CONTENT_EXPORT const char* GinJavaBridgeErrorToString(GinJavaBridgeError error);

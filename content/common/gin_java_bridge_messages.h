@@ -17,7 +17,8 @@
 
 // Messages for handling Java objects injected into JavaScript -----------------
 
-IPC_ENUM_TRAITS(content::GinJavaBridgeError)
+IPC_ENUM_TRAITS_MAX_VALUE(content::GinJavaBridgeError,
+                          content::kGinJavaBridgeErrorLast)
 
 // Sent from browser to renderer to add a Java object with the given name.
 // Object IDs are generated on the browser side.
