@@ -492,7 +492,7 @@ bool ChromePasswordManagerClient::IsURLPasswordWebsiteReauth(
 
   // All password sites, including test sites, have autofilling disabled.
   CR_DEFINE_STATIC_LOCAL(RE2, account_dashboard_pattern,
-                         ("passwords(-([a-z]+\\.corp))?\\.google\\.com"));
+                         ("passwords(-([a-z-]+\\.corp))?\\.google\\.com"));
 
   return RE2::FullMatch(GURL(param_value).host(), account_dashboard_pattern);
 }

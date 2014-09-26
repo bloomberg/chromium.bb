@@ -301,7 +301,7 @@ TEST_F(ChromePasswordManagerClientTest,
   // Make sure testing sites are disabled as well.
   NavigateAndCommit(
       GURL("https://accounts.google.com/Login?continue="
-           "https://passwords-testing.corp.google.com/settings&rart=456"));
+           "https://passwords-ac-testing.corp.google.com/settings&rart=456"));
   EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
 
   // Fully qualified domain name is considered a different hostname by GURL.
