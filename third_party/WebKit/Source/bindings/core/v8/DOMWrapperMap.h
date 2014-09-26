@@ -145,9 +145,6 @@ private:
             return reinterpret_cast<KeyType*>(toScriptWrappableBase(data.GetValue()));
         }
 
-        // Dispose traits:
-        // Generally nothing to do, but see below for a specialization for
-        // DomWrapperMap<void>.
         static void Dispose(v8::Isolate* isolate, v8::UniquePersistent<v8::Object> value, KeyType* key) { }
     };
 
