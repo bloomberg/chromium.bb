@@ -503,10 +503,6 @@ bool MediaController::isRestrained() const
     for (MediaElementSequence::const_iterator it = m_mediaElements.begin(); it != m_mediaElements.end(); ++it) {
         HTMLMediaElement* element = *it;
 
-        // and none of its slaved media elements are blocked media elements,
-        if (element->isBlocked())
-            return false;
-
         if (element->isAutoplaying() && element->paused())
             anyAutoplayingAndPaused = true;
 
