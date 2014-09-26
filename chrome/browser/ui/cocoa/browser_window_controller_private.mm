@@ -191,6 +191,7 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat tabStripHeight = NSHeight([tabStripView frame]);
   maxY -= tabStripHeight;
   NSRect tabStripFrame = NSMakeRect(0, maxY, width, tabStripHeight);
+  BOOL requiresRelayout = !NSEqualRects(tabStripFrame, [tabStripView frame]);
 
   // In Yosemite fullscreen, manually add the fullscreen controls to the tab
   // strip.
@@ -201,7 +202,10 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat leftIndent = 0;
   if (!fullscreen || addControlsInFullscreen)
     leftIndent = [[tabStripController_ class] defaultLeftIndentForControls];
-  [tabStripController_ setLeftIndentForControls:leftIndent];
+  if (leftIndent != [tabStripController_ leftIndentForControls]) {
+    [tabStripController_ setLeftIndentForControls:leftIndent];
+    requiresRelayout = YES;
+  }
 
   if (addControlsInFullscreen)
     [tabStripController_ addWindowControls];
@@ -258,14 +262,18 @@ willPositionSheet:(NSWindow*)sheet
   } else if ([self shouldShowAvatar]) {
     rightIndent += NSWidth([avatarButton frame]) + kAvatarRightOffset;
   }
-  [tabStripController_ setRightIndentForControls:rightIndent];
+
+  if (rightIndent != [tabStripController_ rightIndentForControls]) {
+    [tabStripController_ setRightIndentForControls:rightIndent];
+    requiresRelayout = YES;
+  }
 
   // It is undesirable to force tabs relayout when the tap strip's frame did
   // not change, because it will interrupt tab animations in progress.
   // In addition, there appears to be an AppKit bug on <10.9 where interrupting
   // a tab animation resulted in the tab frame being the animator's target
   // frame instead of the interrupting setFrame. (See http://crbug.com/415093)
-  if (!NSEqualRects(tabStripFrame, [tabStripView frame])){
+  if (requiresRelayout) {
     [tabStripView setFrame:tabStripFrame];
     [tabStripController_ layoutTabsWithoutAnimation];
   }
