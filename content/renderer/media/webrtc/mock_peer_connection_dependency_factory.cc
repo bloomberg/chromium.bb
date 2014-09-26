@@ -404,6 +404,8 @@ class MockIceCandidate : public IceCandidateInterface {
       : sdp_mid_(sdp_mid),
         sdp_mline_index_(sdp_mline_index),
         sdp_(sdp) {
+    // Assign an valid address to |candidate_| to pass assert in code.
+    candidate_.set_address(rtc::SocketAddress("127.0.0.1", 5000));
   }
   virtual ~MockIceCandidate() {}
   virtual std::string sdp_mid() const OVERRIDE {
@@ -413,11 +415,7 @@ class MockIceCandidate : public IceCandidateInterface {
     return sdp_mline_index_;
   }
   virtual const cricket::Candidate& candidate() const OVERRIDE {
-    // This function should never be called. It will intentionally crash. The
-    // base class forces us to return a reference.
-    NOTREACHED();
-    cricket::Candidate* candidate = NULL;
-    return *candidate;
+    return candidate_;
   }
   virtual bool ToString(std::string* out) const OVERRIDE {
     *out = sdp_;
@@ -428,6 +426,7 @@ class MockIceCandidate : public IceCandidateInterface {
   std::string sdp_mid_;
   int sdp_mline_index_;
   std::string sdp_;
+  cricket::Candidate candidate_;
 };
 
 MockPeerConnectionDependencyFactory::MockPeerConnectionDependencyFactory()

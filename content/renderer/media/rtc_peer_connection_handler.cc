@@ -390,7 +390,9 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       dependency_factory_(dependency_factory),
       frame_(NULL),
       peer_connection_tracker_(NULL),
-      num_data_channels_created_(0) {
+      num_data_channels_created_(0),
+      num_local_candidates_ipv4_(0),
+      num_local_candidates_ipv6_(0) {
   g_peer_connection_handlers.Get().insert(this);
 }
 
@@ -894,6 +896,18 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
     // to signal end of candidates.
     blink::WebRTCICECandidate null_candidate;
     client_->didGenerateICECandidate(null_candidate);
+
+    UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4LocalCandidates",
+                             num_local_candidates_ipv4_);
+
+    UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6LocalCandidates",
+                             num_local_candidates_ipv6_);
+  } else if (new_state ==
+             webrtc::PeerConnectionInterface::kIceGatheringGathering) {
+    // ICE restarts will change gathering state back to "gathering",
+    // reset the counter.
+    num_local_candidates_ipv6_ = 0;
+    num_local_candidates_ipv4_ = 0;
   }
 
   blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState state =
@@ -968,6 +982,18 @@ void RTCPeerConnectionHandler::OnIceCandidate(
     peer_connection_tracker_->TrackAddIceCandidate(
         this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
 
+  // Only the first m line's first component is tracked to avoid
+  // miscounting when doing BUNDLE or rtcp mux.
+  if (candidate->sdp_mline_index() == 0 &&
+      candidate->candidate().component() == 1) {
+    if (candidate->candidate().address().family() == AF_INET) {
+      num_local_candidates_ipv4_++;
+    } else if (candidate->candidate().address().family() == AF_INET6) {
+      num_local_candidates_ipv6_++;
+    } else {
+      NOTREACHED();
+    }
+  }
   client_->didGenerateICECandidate(web_candidate);
 }
 

@@ -218,6 +218,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Counter for a UMA stat reported at destruction time.
   int num_data_channels_created_;
 
+  // Counter for number of IPv4 and IPv6 local candidates.
+  int num_local_candidates_ipv4_;
+  int num_local_candidates_ipv6_;
+
   // |native_peer_connection_| is the libjingle native PeerConnection object.
   scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
 
