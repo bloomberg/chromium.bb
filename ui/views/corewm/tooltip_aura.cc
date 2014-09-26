@@ -17,18 +17,11 @@
 
 namespace {
 
-const int kTooltipHorizontalPadding = 3;
-
 // Max visual tooltip width. If a tooltip is greater than this width, it will
 // be wrapped.
 const int kTooltipMaxWidthPixels = 400;
 
 const size_t kMaxLines = 10;
-
-// TODO(derat): This padding is needed on Chrome OS devices but seems excessive
-// when running the same binary on a Linux workstation; presumably there's a
-// difference in font metrics.  Rationalize this.
-const int kTooltipVerticalPadding = 2;
 
 // FIXME: get cursor offset from actual cursor size.
 const int kCursorOffsetX = 10;
@@ -60,6 +53,12 @@ TooltipAura::TooltipAura(gfx::ScreenType screen_type)
       tooltip_window_(NULL) {
   label_.set_owned_by_client();
   label_.SetMultiLine(true);
+
+  const int kHorizontalPadding = 3;
+  const int kVerticalPadding = 2;
+  label_.SetBorder(Border::CreateEmptyBorder(
+      kVerticalPadding, kHorizontalPadding,
+      kVerticalPadding, kHorizontalPadding));
 }
 
 TooltipAura::~TooltipAura() {
@@ -151,11 +150,8 @@ int TooltipAura::GetMaxWidth(const gfx::Point& location) const {
 }
 
 void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
-                                   int tooltip_width,
-                                   int tooltip_height) {
-  gfx::Rect tooltip_rect(mouse_pos.x(), mouse_pos.y(), tooltip_width,
-                         tooltip_height);
-
+                                   const gfx::Size& tooltip_size) {
+  gfx::Rect tooltip_rect(mouse_pos, tooltip_size);
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
   gfx::Screen* screen = gfx::Screen::GetScreenByType(screen_type_);
   gfx::Rect display_bounds(screen->GetDisplayNearestPoint(mouse_pos).bounds());
@@ -170,7 +166,7 @@ void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
   // If tooltip is out of bounds on the y axis, we flip it to appear above the
   // mouse cursor instead of below.
   if (tooltip_rect.bottom() > display_bounds.bottom())
-    tooltip_rect.set_y(mouse_pos.y() - tooltip_height);
+    tooltip_rect.set_y(mouse_pos.y() - tooltip_size.height());
 
   tooltip_rect.AdjustToFit(display_bounds);
   widget_->SetBounds(tooltip_rect);
@@ -188,15 +184,13 @@ void TooltipAura::SetText(aura::Window* window,
                           const base::string16& tooltip_text,
                           const gfx::Point& location) {
   tooltip_window_ = window;
-  int max_width, line_count;
+  int max_width = 0;
+  int line_count = 0;
   base::string16 trimmed_text(tooltip_text);
   TrimTooltipToFit(label_.font_list(), GetMaxWidth(location), &trimmed_text,
                    &max_width, &line_count);
   label_.SetText(trimmed_text);
-
-  int width = max_width + 2 * kTooltipHorizontalPadding;
-  int height = label_.GetHeightForWidth(max_width) +
-      2 * kTooltipVerticalPadding;
+  label_.SizeToFit(max_width + label_.GetInsets().width());
 
   if (!widget_) {
     widget_ = CreateTooltipWidget(tooltip_window_);
@@ -204,7 +198,7 @@ void TooltipAura::SetText(aura::Window* window,
     widget_->AddObserver(this);
   }
 
-  SetTooltipBounds(location, width, height);
+  SetTooltipBounds(location, label_.size());
 
   ui::NativeTheme* native_theme = widget_->GetNativeTheme();
   label_.set_background(
