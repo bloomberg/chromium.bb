@@ -24,6 +24,15 @@ import("//build/config/sysroot.gni")
 # when doing manual dynamic linking), set:
 #   ignore_libs = true
 
+declare_args() {
+  # A pkg-config wrapper to call instead of trying to find and call the right
+  # pkg-config directly. Wrappers like this are common in cross-compilation
+  # environments.
+  # Leaving it blank defaults to searching PATH for 'pkg-config' and relying on
+  # the sysroot mechanism to find the right .pc files.
+  pkg_config = ""
+}
+
 template("pkg_config") {
   assert(defined(invoker.packages),
         "Variable |packages| must be defined to be a list in pkg_config.")
@@ -31,6 +40,8 @@ template("pkg_config") {
     if (sysroot != "") {
       # Pass the sysroot if we're using one (it requires the CPU arch also).
       args = ["-s", sysroot, "-a", cpu_arch] + invoker.packages
+    } else if (pkg_config != "") {
+      args = ["-p", pkg_config] + invoker.packages
     } else {
       args = invoker.packages
     }

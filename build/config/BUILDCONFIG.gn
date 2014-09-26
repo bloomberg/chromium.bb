@@ -64,6 +64,13 @@ declare_args() {
 
   # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
+
+  if (os == "chromeos") {
+    # Allows the target toolchain to be injected as arguments. This is needed
+    # to support the CrOS build system which supports per-build-configuration
+    # toolchains.
+    cros_use_custom_toolchain = false
+  }
 }
 
 # =============================================================================
@@ -495,6 +502,9 @@ if (is_win) {
   } else {
     host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
     set_default_toolchain("//build/toolchain/linux:$cpu_arch")
+  }
+  if (is_chromeos && cros_use_custom_toolchain) {
+    set_default_toolchain("//build/toolchain/cros:target")
   }
 } else if (is_mac) {
   host_toolchain = "//build/toolchain/mac:clang"

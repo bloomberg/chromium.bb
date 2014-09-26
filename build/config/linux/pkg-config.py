@@ -101,6 +101,8 @@ def RewritePath(path, strip_prefix, sysroot):
 
 
 parser = OptionParser()
+parser.add_option('-p', action='store', dest='pkg_config', type='string',
+                  default='pkg-config')
 parser.add_option('-v', action='append', dest='strip_out', type='string')
 parser.add_option('-s', action='store', dest='sysroot', type='string')
 parser.add_option('-a', action='store', dest='arch', type='string')
@@ -120,7 +122,7 @@ else:
 
 try:
   flag_string = subprocess.check_output(
-      [ "pkg-config", "--cflags", "--libs-only-l", "--libs-only-L" ] +
+      [ options.pkg_config, "--cflags", "--libs-only-l", "--libs-only-L" ] +
       args, env=os.environ)
   # For now just split on spaces to get the args out. This will break if
   # pkgconfig returns quoted things with spaces in them, but that doesn't seem

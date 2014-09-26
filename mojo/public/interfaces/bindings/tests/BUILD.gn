@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("test_interfaces") {
+  testonly = true
   sources = [
     "math_calculator.mojom",
     "rect.mojom",

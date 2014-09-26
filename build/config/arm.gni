@@ -12,6 +12,14 @@ if (cpu_arch == "arm") {
     # "softfp". An empty string means to use the default one for the
     # arm_version.
     arm_float_abi = ""
+
+    # The ARM variant-specific tuning mode. This will be a string like "armv6"
+    # or "cortex-a15". An empty string means to use the default for the
+    # arm_version.
+    arm_tune = ""
+
+    # Whether to use the neon FPU instruction set or not.
+    arm_use_neon = true
   }
 
   assert(arm_float_abi == "" ||
@@ -21,15 +29,14 @@ if (cpu_arch == "arm") {
 
   if (is_android) {
     arm_use_neon = false
-    arm_optionally_use_neon = true
-  } else {
-    arm_use_neon = true
-    arm_optionally_use_neon = true
   }
+  arm_optionally_use_neon = true
 
   if (arm_version == 6) {
     arm_arch = "armv6"
-    arm_tune = ""
+    if (arm_tune != "") {
+      arm_tune = ""
+    }
     if (arm_float_abi == "") {
       arm_float_abi = "softfp"
     }
@@ -40,10 +47,14 @@ if (cpu_arch == "arm") {
 
   } else if (arm_version == 7) {
     arm_arch = "armv7-a"
-    arm_tune = "generic-armv7-a"
+    if (arm_tune == "") {
+      arm_tune = "generic-armv7-a"
+    }
+
     if (arm_float_abi == "") {
       arm_float_abi = "softfp"
     }
+
     arm_use_thumb = true
 
     if (arm_use_neon) {

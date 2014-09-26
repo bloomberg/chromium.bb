@@ -12,7 +12,11 @@
 #       List of source .mojom files to compile.
 #
 #   deps (optional)
+#
 #   public_deps (optional)
+#
+#   testonly (optional)
+#
 #   visibility (optional)
 template("mojom") {
   assert(defined(invoker.sources),
@@ -106,6 +110,9 @@ template("mojom") {
   source_set(target_name) {
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
+    }
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
     }
     sources = process_file_template(invoker.sources, generator_cpp_outputs)
     data = process_file_template(invoker.sources, generator_js_outputs)
