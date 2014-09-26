@@ -29,7 +29,6 @@
 #define SQLStatement_h
 
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLResultSet.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
@@ -65,8 +64,8 @@ private:
     // to the backend using a raw pointer here.
     RawPtrWillBeMember<SQLStatementBackend> m_backend;
 
-    SQLCallbackWrapper<SQLStatementCallback> m_statementCallbackWrapper;
-    SQLCallbackWrapper<SQLStatementErrorCallback> m_statementErrorCallbackWrapper;
+    CrossThreadPersistentWillBeMember<SQLStatementCallback> m_statementCallback;
+    CrossThreadPersistentWillBeMember<SQLStatementErrorCallback> m_statementErrorCallback;
 };
 
 } // namespace blink

@@ -59,9 +59,9 @@ SQLTransaction::SQLTransaction(Database* db, SQLTransactionCallback* callback,
     VoidCallback* successCallback, SQLTransactionErrorCallback* errorCallback,
     bool readOnly)
     : m_database(db)
-    , m_callbackWrapper(callback, db->executionContext())
-    , m_successCallbackWrapper(successCallback, db->executionContext())
-    , m_errorCallbackWrapper(errorCallback, db->executionContext())
+    , m_callback(callback)
+    , m_successCallback(successCallback)
+    , m_errorCallback(errorCallback)
     , m_executeSqlAllowed(false)
     , m_readOnly(readOnly)
 {
@@ -76,24 +76,24 @@ void SQLTransaction::trace(Visitor* visitor)
 {
     visitor->trace(m_database);
     visitor->trace(m_backend);
-    visitor->trace(m_callbackWrapper);
-    visitor->trace(m_successCallbackWrapper);
-    visitor->trace(m_errorCallbackWrapper);
+    visitor->trace(m_callback);
+    visitor->trace(m_successCallback);
+    visitor->trace(m_errorCallback);
 }
 
 bool SQLTransaction::hasCallback() const
 {
-    return m_callbackWrapper.hasCallback();
+    return m_callback;
 }
 
 bool SQLTransaction::hasSuccessCallback() const
 {
-    return m_successCallbackWrapper.hasCallback();
+    return m_successCallback;
 }
 
 bool SQLTransaction::hasErrorCallback() const
 {
-    return m_errorCallbackWrapper.hasCallback();
+    return m_errorCallback;
 }
 
 void SQLTransaction::setBackend(SQLTransactionBackend* backend)
@@ -139,7 +139,7 @@ void SQLTransaction::requestTransitToState(SQLTransactionState nextState)
 SQLTransactionState SQLTransaction::nextStateForTransactionError()
 {
     ASSERT(m_transactionError);
-    if (m_errorCallbackWrapper.hasCallback())
+    if (hasErrorCallback())
         return SQLTransactionState::DeliverTransactionErrorCallback;
 
     // No error callback, so fast-forward to:
@@ -152,8 +152,7 @@ SQLTransactionState SQLTransaction::deliverTransactionCallback()
     bool shouldDeliverErrorCallback = false;
 
     // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
-    SQLTransactionCallback* callback = m_callbackWrapper.unwrap();
-    if (callback) {
+    if (SQLTransactionCallback* callback = m_callback.release()) {
         m_executeSqlAllowed = true;
         shouldDeliverErrorCallback = !callback->handleEvent(this);
         m_executeSqlAllowed = false;
@@ -174,8 +173,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
 {
     // Spec 4.3.2.10: If exists, invoke error callback with the last
     // error to have occurred in this transaction.
-    SQLTransactionErrorCallback* errorCallback = m_errorCallbackWrapper.unwrap();
-    if (errorCallback) {
+    if (SQLTransactionErrorCallback* errorCallback = m_errorCallback.release()) {
         // If we get here with an empty m_transactionError, then the backend
         // must be waiting in the idle state waiting for this state to finish.
         // Hence, it's thread safe to fetch the backend transactionError without
@@ -191,7 +189,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
         m_transactionError = nullptr;
     }
 
-    clearCallbackWrappers();
+    clearCallbacks();
 
     // Spec 4.3.2.10: Rollback the transaction.
     return SQLTransactionState::CleanupAfterTransactionErrorCallback;
@@ -231,11 +229,10 @@ SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 SQLTransactionState SQLTransaction::deliverSuccessCallback()
 {
     // Spec 4.3.2.8: Deliver success callback.
-    VoidCallback* successCallback = m_successCallbackWrapper.unwrap();
-    if (successCallback)
+    if (VoidCallback* successCallback = m_successCallback.release())
         successCallback->handleEvent();
 
-    clearCallbackWrappers();
+    clearCallbacks();
 
     // Schedule a "post-success callback" step to return control to the database thread in case there
     // are further transactions queued up for this Database
@@ -303,23 +300,22 @@ bool SQLTransaction::computeNextStateAndCleanupIfNeeded()
         return false;
     }
 
-    clearCallbackWrappers();
+    clearCallbacks();
     m_nextState = SQLTransactionState::CleanupAndTerminate;
 
     return true;
 }
 
-void SQLTransaction::clearCallbackWrappers()
+void SQLTransaction::clearCallbacks()
 {
-    // Release the unneeded callbacks, to break reference cycles.
-    m_callbackWrapper.clear();
-    m_successCallbackWrapper.clear();
-    m_errorCallbackWrapper.clear();
+    m_callback.clear();
+    m_successCallback.clear();
+    m_errorCallback.clear();
 }
 
 SQLTransactionErrorCallback* SQLTransaction::releaseErrorCallback()
 {
-    return m_errorCallbackWrapper.unwrap();
+    return m_errorCallback.release();
 }
 
 } // namespace blink

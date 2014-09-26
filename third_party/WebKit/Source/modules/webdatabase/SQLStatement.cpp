@@ -50,8 +50,8 @@ PassOwnPtrWillBeRawPtr<SQLStatement> SQLStatement::create(Database* database,
 
 SQLStatement::SQLStatement(Database* database, SQLStatementCallback* callback,
     SQLStatementErrorCallback* errorCallback)
-    : m_statementCallbackWrapper(callback, database->executionContext())
-    , m_statementErrorCallbackWrapper(errorCallback, database->executionContext())
+    : m_statementCallback(callback)
+    , m_statementErrorCallback(errorCallback)
 {
 }
 
@@ -62,8 +62,8 @@ SQLStatement::~SQLStatement()
 void SQLStatement::trace(Visitor* visitor)
 {
     visitor->trace(m_backend);
-    visitor->trace(m_statementCallbackWrapper);
-    visitor->trace(m_statementErrorCallbackWrapper);
+    visitor->trace(m_statementCallback);
+    visitor->trace(m_statementErrorCallback);
 }
 
 void SQLStatement::setBackend(SQLStatementBackend* backend)
@@ -73,12 +73,12 @@ void SQLStatement::setBackend(SQLStatementBackend* backend)
 
 bool SQLStatement::hasCallback()
 {
-    return m_statementCallbackWrapper.hasCallback();
+    return m_statementCallback;
 }
 
 bool SQLStatement::hasErrorCallback()
 {
-    return m_statementErrorCallbackWrapper.hasCallback();
+    return m_statementErrorCallback;
 }
 
 bool SQLStatement::performCallback(SQLTransaction* transaction)
@@ -88,8 +88,8 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
 
     bool callbackError = false;
 
-    SQLStatementCallback* callback = m_statementCallbackWrapper.unwrap();
-    SQLStatementErrorCallback* errorCallback = m_statementErrorCallbackWrapper.unwrap();
+    SQLStatementCallback* callback = m_statementCallback.release();
+    SQLStatementErrorCallback* errorCallback = m_statementErrorCallback.release();
     SQLErrorData* error = m_backend->sqlError();
 
     // Call the appropriate statement callback and track if it resulted in an error,

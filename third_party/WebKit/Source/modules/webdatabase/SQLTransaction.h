@@ -30,7 +30,6 @@
 #define SQLTransaction_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 #include "platform/heap/Handle.h"
@@ -83,7 +82,7 @@ private:
         VoidCallback* successCallback, SQLTransactionErrorCallback*,
         bool readOnly);
 
-    void clearCallbackWrappers();
+    void clearCallbacks();
 
     // State Machine functions:
     virtual StateFunction stateFunctionFor(SQLTransactionState) OVERRIDE;
@@ -103,9 +102,9 @@ private:
 
     RefPtrWillBeMember<Database> m_database;
     RefPtrWillBeMember<SQLTransactionBackend> m_backend;
-    SQLCallbackWrapper<SQLTransactionCallback> m_callbackWrapper;
-    SQLCallbackWrapper<VoidCallback> m_successCallbackWrapper;
-    SQLCallbackWrapper<SQLTransactionErrorCallback> m_errorCallbackWrapper;
+    CrossThreadPersistentWillBeMember<SQLTransactionCallback> m_callback;
+    CrossThreadPersistentWillBeMember<VoidCallback> m_successCallback;
+    CrossThreadPersistentWillBeMember<SQLTransactionErrorCallback> m_errorCallback;
 
     bool m_executeSqlAllowed;
     OwnPtr<SQLErrorData> m_transactionError;
