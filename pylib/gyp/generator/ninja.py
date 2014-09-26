@@ -213,7 +213,7 @@ class Target:
 #   to the input file name as well as the output target name.
 
 class NinjaWriter:
-  def __init__(self, qualified_target, target_outputs, base_dir, build_dir,
+  def __init__(self, hash_for_rules, target_outputs, base_dir, build_dir,
                output_file, toplevel_build, output_file_name, flavor,
                toplevel_dir=None):
     """
@@ -223,7 +223,7 @@ class NinjaWriter:
     toplevel_dir: path to the toplevel directory
     """
 
-    self.qualified_target = qualified_target
+    self.hash_for_rules = hash_for_rules
     self.target_outputs = target_outputs
     self.base_dir = base_dir
     self.build_dir = build_dir
@@ -591,8 +591,7 @@ class NinjaWriter:
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
-      name = '%s_%s' % (action['action_name'],
-                        hashlib.md5(self.qualified_target).hexdigest())
+      name = '%s_%s' % (action['action_name'], self.hash_for_rules)
       description = self.GenerateDescription('ACTION',
                                              action.get('message', None),
                                              name)
@@ -629,8 +628,7 @@ class NinjaWriter:
         continue
 
       # First write out a rule for the rule action.
-      name = '%s_%s' % (rule['rule_name'],
-                        hashlib.md5(self.qualified_target).hexdigest())
+      name = '%s_%s' % (rule['rule_name'], self.hash_for_rules)
 
       args = rule['action']
       description = self.GenerateDescription(
@@ -2183,6 +2181,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
     build_file = gyp.common.RelativePath(build_file, options.toplevel_dir)
 
+    qualified_target_for_hash = gyp.common.QualifiedTarget(build_file, name,
+                                                           toolset)
+    hash_for_rules = hashlib.md5(qualified_target_for_hash).hexdigest()
+
     base_path = os.path.dirname(build_file)
     obj = 'obj'
     if toolset != 'target':
@@ -2190,7 +2192,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     output_file = os.path.join(obj, base_path, name + '.ninja')
 
     ninja_output = StringIO()
-    writer = NinjaWriter(qualified_target, target_outputs, base_path, build_dir,
+    writer = NinjaWriter(hash_for_rules, target_outputs, base_path, build_dir,
                          ninja_output,
                          toplevel_build, output_file,
                          flavor, toplevel_dir=options.toplevel_dir)
