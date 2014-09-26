@@ -9,6 +9,9 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/pref_names.h"
@@ -137,6 +140,36 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, CtrlClickHomeButton) {
   SendKeyPress(ui::VKEY_CONTROL);
   ui_test_utils::ClickOnView(browser(), VIEW_ID_HOME_BUTTON);
   EXPECT_EQ(tab_count, tab_strip_model->count());
+}
+
+IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
+  EnableStickyKeys();
+
+  OmniboxView* omnibox =
+      browser()->window()->GetLocationBar()->GetOmniboxView();
+
+  // Give the omnibox focus.
+  omnibox->ShowURL();
+
+  // Type 'foo'.
+  SendKeyPress(ui::VKEY_F);
+  SendKeyPress(ui::VKEY_O);
+  SendKeyPress(ui::VKEY_O);
+
+  // Verify the location of the caret.
+  size_t start, end;
+  omnibox->GetSelectionBounds(&start, &end);
+  ASSERT_EQ(3U, start);
+  ASSERT_EQ(3U, end);
+
+  // Hit Home by sequencing Search (left Windows) and Left (arrow).
+  SendKeyPress(ui::VKEY_LWIN);
+  SendKeyPress(ui::VKEY_LEFT);
+
+  // Verify caret moved to the beginning.
+  omnibox->GetSelectionBounds(&start, &end);
+  ASSERT_EQ(0U, start);
+  ASSERT_EQ(0U, end);
 }
 
 }  // namespace chromeos

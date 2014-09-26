@@ -148,6 +148,7 @@ class ASH_EXPORT StickyKeysController {
   scoped_ptr<StickyKeysHandler> altgr_sticky_key_;
   scoped_ptr<StickyKeysHandler> ctrl_sticky_key_;
   scoped_ptr<StickyKeysHandler> mod3_sticky_key_;
+  scoped_ptr<StickyKeysHandler> search_sticky_key_;
 
   scoped_ptr<StickyKeysOverlay> overlay_;
 

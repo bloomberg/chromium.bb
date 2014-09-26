@@ -105,7 +105,7 @@ bool IsISOLevel5ShiftUsedByCurrentInputMethod() {
   return manager->IsISOLevel5ShiftUsedByCurrentInputMethod();
 }
 
-bool IsExtensionCommandRegistered(const ui::KeyEvent& key_event) {
+bool IsExtensionCommandRegistered(ui::KeyboardCode key_code, int flags) {
   // Some keyboard events for ChromeOS get rewritten, such as:
   // Search+Shift+Left gets converted to Shift+Home (BeginDocument).
   // This doesn't make sense if the user has assigned that shortcut
@@ -120,9 +120,9 @@ bool IsExtensionCommandRegistered(const ui::KeyEvent& key_event) {
   if (!profile || !extensions::ExtensionCommandsGlobalRegistry::Get(profile))
     return false;
 
-  int modifiers = key_event.flags() & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                       ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  ui::Accelerator accelerator(key_event.key_code(), modifiers);
+  int modifiers = flags & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                           ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ui::Accelerator accelerator(key_code, modifiers);
   return extensions::ExtensionCommandsGlobalRegistry::Get(profile)
       ->IsRegistered(accelerator);
 }
@@ -383,7 +383,7 @@ bool EventRewriter::RewriteWithKeyboardRemappingsByKeyCode(
 ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     const ui::KeyEvent& key_event,
     scoped_ptr<ui::Event>* rewritten_event) {
-  if (IsExtensionCommandRegistered(key_event))
+  if (IsExtensionCommandRegistered(key_event.key_code(), key_event.flags()))
     return ui::EVENT_REWRITE_CONTINUE;
   if (key_event.source_device_id() != ui::ED_UNKNOWN_DEVICE)
     DeviceKeyPressedOrReleased(key_event.source_device_id());
@@ -395,13 +395,20 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     RewriteNumPadKeys(key_event, &state);
   }
   ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
+  bool is_sticky_key_extension_command = false;
   if (sticky_keys_controller_) {
     status = sticky_keys_controller_->RewriteKeyEvent(
         key_event, state.key_code, &state.flags);
     if (status == ui::EVENT_REWRITE_DISCARD)
       return ui::EVENT_REWRITE_DISCARD;
+    is_sticky_key_extension_command =
+        IsExtensionCommandRegistered(state.key_code, state.flags);
   }
-  if (!(key_event.flags() & ui::EF_FINAL)) {
+
+  // If sticky key rewrites the event, and it matches an extension command, do
+  // not further rewrite the event since it won't match the extension command
+  // thereafter.
+  if (!is_sticky_key_extension_command && !(key_event.flags() & ui::EF_FINAL)) {
     RewriteExtendedKeys(key_event, &state);
     RewriteFunctionKeys(key_event, &state);
   }
