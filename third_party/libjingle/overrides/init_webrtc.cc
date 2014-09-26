@@ -11,8 +11,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "third_party/webrtc/common.h"
-#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "webrtc/base/basictypes.h"
 #include "webrtc/base/logging.h"
 
@@ -55,13 +53,6 @@ bool InitializeWebRtcModule() {
   return true;
 }
 
-webrtc::AudioProcessing* CreateWebRtcAudioProcessing(
-    const webrtc::Config& config) {
-  // libpeerconnection is being compiled as a static lib, use
-  // webrtc::AudioProcessing directly.
-  return webrtc::AudioProcessing::Create(config);
-}
-
 #else  // !LIBPEERCONNECTION_LIB
 
 // When being compiled as a shared library, we need to bridge the gap between
@@ -71,7 +62,6 @@ webrtc::AudioProcessing* CreateWebRtcAudioProcessing(
 // Global function pointers to the factory functions in the shared library.
 CreateWebRtcMediaEngineFunction g_create_webrtc_media_engine = NULL;
 DestroyWebRtcMediaEngineFunction g_destroy_webrtc_media_engine = NULL;
-CreateWebRtcAudioProcessingFunction g_create_webrtc_audio_processing = NULL;
 
 // Returns the full or relative path to the libpeerconnection module depending
 // on what platform we're on.
@@ -145,8 +135,7 @@ bool InitializeWebRtcModule() {
                                    &AddTraceEvent,
                                    &g_create_webrtc_media_engine,
                                    &g_destroy_webrtc_media_engine,
-                                   &init_diagnostic_logging,
-                                   &g_create_webrtc_audio_processing);
+                                   &init_diagnostic_logging);
 
   if (init_ok)
     rtc::SetExtraLoggingInit(init_diagnostic_logging);
@@ -169,14 +158,6 @@ cricket::MediaEngineInterface* CreateWebRtcMediaEngine(
 
 void DestroyWebRtcMediaEngine(cricket::MediaEngineInterface* media_engine) {
   g_destroy_webrtc_media_engine(media_engine);
-}
-
-webrtc::AudioProcessing* CreateWebRtcAudioProcessing(
-    const webrtc::Config& config) {
-  // The same as CreateWebRtcMediaEngine(), we call InitializeWebRtcModule here
-  // for convenience of tests.
-  InitializeWebRtcModule();
-  return g_create_webrtc_audio_processing(config);
 }
 
 #endif  // LIBPEERCONNECTION_LIB

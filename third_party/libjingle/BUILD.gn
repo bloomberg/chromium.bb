@@ -548,7 +548,6 @@ if (enable_webrtc) {
     deps = [
       ":libjingle_webrtc_common",
       "//third_party/webrtc",
-      "//third_party/webrtc/modules/audio_processing",
       "//third_party/webrtc/system_wrappers",
       "//third_party/webrtc/voice_engine",
     ]

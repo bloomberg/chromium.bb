@@ -838,21 +838,6 @@
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
         }],
-        ['enable_webrtc==1 and OS=="mac"', {
-          'variables': {
-            'libpeer_target_type%': 'static_library',
-          },
-          'conditions': [
-            ['libpeer_target_type!="static_library"', {
-              'copies': [{
-                'destination': '<(PRODUCT_DIR)/Libraries',
-                'files': [
-                  '<(PRODUCT_DIR)/libpeerconnection.so',
-                ],
-              }],
-            }],
-          ],
-        }],
         ['enable_webrtc==1 and chromeos==1', {
           'sources': [
             'browser/media/capture/desktop_capture_device_aura_unittest.cc',

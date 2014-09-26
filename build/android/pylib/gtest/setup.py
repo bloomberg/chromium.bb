@@ -118,7 +118,6 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
       '--config-variable', 'component', 'static_library',
       '--config-variable', 'fastbuild', '0',
       '--config-variable', 'icu_use_data_file_flag', '1',
-      '--config-variable', 'libpeer_target_type', 'static_library',
       # TODO(maruel): This may not be always true.
       '--config-variable', 'target_arch', 'arm',
       '--config-variable', 'use_openssl', '0',
