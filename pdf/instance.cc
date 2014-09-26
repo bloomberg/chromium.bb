@@ -587,21 +587,26 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
     }
   }
 
-  if (event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN &&
-      event.GetModifiers() & kDefaultKeyModifier) {
+  if (event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN) {
     pp::KeyboardInputEvent keyboard_event(event);
-    switch (keyboard_event.GetKeyCode()) {
-      case 'A':
-        engine_->SelectAll();
-        return true;
-      case ui::VKEY_OEM_4:
-        // Left bracket.
-        engine_->RotateCounterclockwise();
-        return true;
-      case ui::VKEY_OEM_6:
-        // Right bracket.
-        engine_->RotateClockwise();
-        return true;
+    const uint32 modifier = event.GetModifiers();
+    if (modifier & kDefaultKeyModifier) {
+      switch (keyboard_event.GetKeyCode()) {
+        case 'A':
+          engine_->SelectAll();
+          return true;
+      }
+    } else if (modifier & PP_INPUTEVENT_MODIFIER_CONTROLKEY) {
+      switch (keyboard_event.GetKeyCode()) {
+        case ui::VKEY_OEM_4:
+          // Left bracket.
+          engine_->RotateCounterclockwise();
+          return true;
+        case ui::VKEY_OEM_6:
+          // Right bracket.
+          engine_->RotateClockwise();
+          return true;
+      }
     }
   }
 

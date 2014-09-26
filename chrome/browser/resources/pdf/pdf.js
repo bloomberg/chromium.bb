@@ -235,14 +235,18 @@ PDFViewer.prototype = {
         }
         return;
       case 219:  // left bracket.
-        this.plugin_.postMessage({
-          type: 'rotateCounterclockwise',
-        });
+        if (e.ctrlKey) {
+          this.plugin_.postMessage({
+            type: 'rotateCounterclockwise',
+          });
+        }
         return;
       case 221:  // right bracket.
-        this.plugin_.postMessage({
-          type: 'rotateClockwise',
-        });
+        if (e.ctrlKey) {
+          this.plugin_.postMessage({
+            type: 'rotateClockwise',
+          });
+        }
         return;
     }
   },
