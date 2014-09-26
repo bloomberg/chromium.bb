@@ -42,13 +42,11 @@ const char kIDPrefixCloudPrinter[] = "cloudprint:";
 const char kIDPrefixGcd[] = "gcd:";
 const char kIDPrefixMdns[] = "mdns:";
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
 const char kPrivatAPISetup[] = "/privet/v3/setup/start";
 const char kPrivetKeyWifi[] = "wifi";
 const char kPrivetKeyPassphrase[] = "passphrase";
 const char kPrivetKeySSID[] = "ssid";
 const char kPrivetKeyPassphraseDotted[] = "wifi.passphrase";
-#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 scoped_ptr<Event> MakeDeviceStateChangedEvent(
     const gcd_private::GCDDevice& device) {
@@ -188,8 +186,8 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
   scoped_ptr<local_discovery::wifi::WifiManager> wifi_manager_;
-  PasswordMap wifi_passwords_;
 #endif
+  PasswordMap wifi_passwords_;
 };
 
 class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
@@ -391,7 +389,6 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
                                     const base::DictionaryValue& input,
                                     MessageResponseCallback callback) {
   const base::DictionaryValue* input_actual = &input;
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
   scoped_ptr<base::DictionaryValue> input_cloned;
 
   if (api == kPrivatAPISetup) {
@@ -423,7 +420,6 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
       }
     }
   }
-#endif
 
   GCDSessionMap::iterator found = sessions_.find(session_id);
 
