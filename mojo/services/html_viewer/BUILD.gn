@@ -43,6 +43,8 @@ shared_library("html_viewer") {
   include_dirs = [ "third_party/WebKit" ]
 
   deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/blink",
     "//cc/surfaces",
