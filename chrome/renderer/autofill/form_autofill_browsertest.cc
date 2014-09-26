@@ -258,11 +258,6 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(field_case.should_be_autofilled, element.isAutofilled());
   }
 
-  static void FillFormForAllFieldsWrapper(const FormData& form,
-                                       const WebInputElement& element) {
-    FillFormForAllElements(form, element.form());
-  }
-
   static void FillFormIncludingNonFocusableElementsWrapper(
       const FormData& form,
       const WebFormControlElement& element) {
