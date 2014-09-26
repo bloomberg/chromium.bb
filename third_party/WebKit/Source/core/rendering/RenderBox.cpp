@@ -2027,14 +2027,17 @@ LayoutUnit RenderBox::computeLogicalWidthUsing(SizeType widthType, const Length&
     return logicalWidthResult;
 }
 
-static bool columnFlexItemHasStretchAlignment(const RenderObject* flexitem)
+static bool flexItemHasStretchAlignment(const RenderObject* flexitem)
 {
     RenderObject* parent = flexitem->parent();
-    // auto margins mean we don't stretch. Note that this function will only be used for
-    // widths, so we don't have to check marginBefore/marginAfter.
-    ASSERT(parent->style()->isColumnFlexDirection());
-    if (flexitem->style()->marginStart().isAuto() || flexitem->style()->marginEnd().isAuto())
-        return false;
+    // auto margins mean we don't stretch.
+    if (parent->style()->isColumnFlexDirection()) {
+        if (flexitem->style()->marginStart().isAuto() || flexitem->style()->marginEnd().isAuto())
+            return false;
+    } else {
+        if (flexitem->style()->marginBefore().isAuto() || flexitem->style()->marginAfter().isAuto())
+            return false;
+    }
     return flexitem->style()->alignSelf() == ItemPositionStretch || (flexitem->style()->alignSelf() == ItemPositionAuto && parent->style()->alignItems() == ItemPositionStretch);
 }
 
@@ -2045,7 +2048,7 @@ static bool isStretchingColumnFlexItem(const RenderObject* flexitem)
         return true;
 
     // We don't stretch multiline flexboxes because they need to apply line spacing (align-content) first.
-    if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap && parent->style()->isColumnFlexDirection() && columnFlexItemHasStretchAlignment(flexitem))
+    if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap && parent->style()->isColumnFlexDirection() && flexItemHasStretchAlignment(flexitem))
         return true;
     return false;
 }
@@ -2078,7 +2081,7 @@ bool RenderBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
         // For multiline columns, we need to apply align-content first, so we can't stretch now.
         if (!parent()->style()->isColumnFlexDirection() || parent()->style()->flexWrap() != FlexNoWrap)
             return true;
-        if (!columnFlexItemHasStretchAlignment(this))
+        if (!flexItemHasStretchAlignment(this))
             return true;
     }
 
@@ -2382,11 +2385,13 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
 
     bool includeBorderPadding = isTable();
 
-    if (isHorizontalWritingMode() != cb->isHorizontalWritingMode())
+    if (isHorizontalWritingMode() != cb->isHorizontalWritingMode()) {
         availableHeight = containingBlockChild->containingBlockLogicalWidthForContent();
-    else if (hasOverrideContainingBlockLogicalHeight())
+    } else if (hasOverrideContainingBlockLogicalHeight()) {
         availableHeight = overrideContainingBlockContentLogicalHeight();
-    else if (cb->isTableCell()) {
+    } else if (cb->isFlexItem() && flexItemHasStretchAlignment(cb) && cb->hasOverrideHeight()) {
+        availableHeight = cb->overrideLogicalContentHeight();
+    } else if (cb->isTableCell()) {
         if (!skippedAutoHeightContainingBlock) {
             // Table cells violate what the CSS spec says to do with heights. Basically we
             // don't care if the cell specified a height or not. We just always make ourselves
