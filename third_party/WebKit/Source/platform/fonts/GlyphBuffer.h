@@ -32,6 +32,7 @@
 
 #include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/heap/Heap.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -39,6 +40,7 @@ namespace blink {
 class SimpleFontData;
 
 class GlyphBuffer {
+    STACK_ALLOCATED();
 public:
     GlyphBuffer() : m_hasVerticalAdvances(false) { }
 
