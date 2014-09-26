@@ -456,6 +456,33 @@ namespace dom_distiller {
         }
       };
 
+      class StatisticsInfo {
+       public:
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::StatisticsInfo* message) {
+          const base::DictionaryValue* dict;
+          if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            int field_value;
+            if (!dict->GetInteger("1", &field_value)) {
+              goto error;
+            }
+            message->set_word_count(field_value);
+          }
+          return true;
+
+        error:
+          return false;
+        }
+
+        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::StatisticsInfo& message) {
+          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_word_count()) {
+            dict->SetInteger("1", message.word_count());
+          }
+          return dict.PassAs<base::Value>();
+        }
+      };
+
       class DomDistillerResult {
        public:
         static bool ReadFromValue(const base::Value* json, dom_distiller::proto::DomDistillerResult* message) {
@@ -526,6 +553,15 @@ namespace dom_distiller {
               goto error;
             }
           }
+          if (dict->HasKey("8")) {
+            const base::Value* inner_message_value;
+            if (!dict->Get("8", &inner_message_value)) {
+              goto error;
+            }
+            if (!dom_distiller::proto::json::StatisticsInfo::ReadFromValue(inner_message_value, message->mutable_statistics_info())) {
+              goto error;
+            }
+          }
           return true;
 
         error:
@@ -566,6 +602,11 @@ namespace dom_distiller {
             scoped_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::DebugInfo::WriteToValue(message.debug_info());
             dict->Set("7", inner_message_value.release());
+          }
+          if (message.has_statistics_info()) {
+            scoped_ptr<base::Value> inner_message_value =
+                dom_distiller::proto::json::StatisticsInfo::WriteToValue(message.statistics_info());
+            dict->Set("8", inner_message_value.release());
           }
           return dict.PassAs<base::Value>();
         }

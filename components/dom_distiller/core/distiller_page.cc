@@ -84,35 +84,47 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
             value, distiller_result.get());
     if (!found_content) {
       DVLOG(1) << "Unable to parse DomDistillerResult.";
-    } else if (distiller_result->has_timing_info()) {
-      const dom_distiller::proto::TimingInfo& timing =
-          distiller_result->timing_info();
-      if (timing.has_markup_parsing_time()) {
-        UMA_HISTOGRAM_TIMES(
-            "DomDistiller.Time.MarkupParsing",
-            base::TimeDelta::FromMillisecondsD(timing.markup_parsing_time()));
+    } else {
+      if (distiller_result->has_timing_info()) {
+        const dom_distiller::proto::TimingInfo& timing =
+            distiller_result->timing_info();
+        if (timing.has_markup_parsing_time()) {
+          UMA_HISTOGRAM_TIMES(
+              "DomDistiller.Time.MarkupParsing",
+              base::TimeDelta::FromMillisecondsD(timing.markup_parsing_time()));
+        }
+        if (timing.has_document_construction_time()) {
+          UMA_HISTOGRAM_TIMES(
+              "DomDistiller.Time.DocumentConstruction",
+              base::TimeDelta::FromMillisecondsD(
+                  timing.document_construction_time()));
+        }
+        if (timing.has_article_processing_time()) {
+          UMA_HISTOGRAM_TIMES(
+              "DomDistiller.Time.ArticleProcessing",
+              base::TimeDelta::FromMillisecondsD(
+                  timing.article_processing_time()));
+        }
+        if (timing.has_formatting_time()) {
+          UMA_HISTOGRAM_TIMES(
+              "DomDistiller.Time.Formatting",
+              base::TimeDelta::FromMillisecondsD(timing.formatting_time()));
+        }
+        if (timing.has_total_time()) {
+          UMA_HISTOGRAM_TIMES(
+              "DomDistiller.Time.DistillationTotal",
+              base::TimeDelta::FromMillisecondsD(timing.total_time()));
+        }
       }
-      if (timing.has_document_construction_time()) {
-        UMA_HISTOGRAM_TIMES(
-            "DomDistiller.Time.DocumentConstruction",
-            base::TimeDelta::FromMillisecondsD(
-                timing.document_construction_time()));
-      }
-      if (timing.has_article_processing_time()) {
-        UMA_HISTOGRAM_TIMES(
-            "DomDistiller.Time.ArticleProcessing",
-            base::TimeDelta::FromMillisecondsD(
-                timing.article_processing_time()));
-      }
-      if (timing.has_formatting_time()) {
-        UMA_HISTOGRAM_TIMES(
-            "DomDistiller.Time.Formatting",
-            base::TimeDelta::FromMillisecondsD(timing.formatting_time()));
-      }
-      if (timing.has_total_time()) {
-        UMA_HISTOGRAM_TIMES(
-            "DomDistiller.Time.DistillationTotal",
-            base::TimeDelta::FromMillisecondsD(timing.total_time()));
+      if (distiller_result->has_statistics_info()) {
+        const dom_distiller::proto::StatisticsInfo& statistics =
+            distiller_result->statistics_info();
+        if (statistics.has_word_count()) {
+          UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "DomDistiller.Statistics.WordCount",
+            statistics.word_count(),
+            1, 4000, 50);
+        }
       }
     }
   }

@@ -5113,6 +5113,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.Statistics.WordCount" units="words">
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    Records the number of words in a distilled page. For articles with multiple
+    pages, each page is counted separately.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.Time.ArticleProcessing" units="milliseconds">
   <owner>yfriedman@chromium.org</owner>
   <summary>
