@@ -9971,6 +9971,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.AutoCorrectLevel" enum="IMECorrectionLevel">
+  <owner>shuchen@chromium.org</owner>
+  <summary>The auto-correction level for suggestion engine.</summary>
+</histogram>
+
 <histogram name="InputMethod.Category" enum="InputMethodCategory">
   <owner>shuchen@chromium.org</owner>
   <summary>
@@ -10003,6 +10008,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The breakdown of input method usage by input method IDs. Recorded when the
     user presses keys on physical or on-screen keyboard.
   </summary>
+</histogram>
+
+<histogram name="InputMethod.VirtualKeyboard.BackspaceCount">
+  <owner>shuchen@chromium.org</owner>
+  <summary>
+    The number of times the backspace key was pressed on the virtual keyboard,
+    while the virtual keyboard was alive. Recorded when the virtual keyboard is
+    closed.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.VirtualKeyboard.BackspaceOnLayout"
+    enum="IMEVKLayout">
+  <owner>shuchen@chromium.org</owner>
+  <summary>
+    The layout type of the virtual keyboard, recorded when backspace is pressed.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.VirtualKeyboard.Duration" units="seconds">
+  <owner>shuchen@chromium.org</owner>
+  <summary>How long the virtual keyboard was visible.</summary>
 </histogram>
 
 <histogram name="InputMethod.VirtualKeyboard.InitLatency" units="milliseconds">
@@ -44157,6 +44184,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="Revert">
     Reverts the previous auto-corrected and committed word.
   </int>
+</enum>
+
+<enum name="IMECorrectionLevel" type="int">
+  <int value="0" label="Off"/>
+  <int value="1" label="Modest"/>
+  <int value="2" label="Aggressive"/>
 </enum>
 
 <enum name="IMEVKLayout" type="int">
