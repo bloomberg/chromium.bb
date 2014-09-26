@@ -85,8 +85,10 @@ IPC_ENUM_TRAITS(gfx::FontRenderParams::Hinting)
 IPC_ENUM_TRAITS(gfx::FontRenderParams::SubpixelRendering)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TapMultipleTargetsStrategy,
                           content::TAP_MULTIPLE_TARGETS_STRATEGY_MAX)
-IPC_ENUM_TRAITS(content::StopFindAction)
-IPC_ENUM_TRAITS(content::ThreeDAPIType)
+IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
+                          content::STOP_FIND_ACTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::ThreeDAPIType,
+                          content::THREE_D_API_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
                           media::MediaLogEvent::TYPE_LAST)
