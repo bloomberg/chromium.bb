@@ -1082,9 +1082,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   StartMetricsRecording();
 #endif
 
-  // Create watchdog thread after creating all other threads because it will
-  // watch the other threads and they must be running.
-  browser_process_->watchdog_thread();
+  if (!base::debug::BeingDebugged()) {
+    // Create watchdog thread after creating all other threads because it will
+    // watch the other threads and they must be running.
+    browser_process_->watchdog_thread();
+  }
 
   // Do any initializating in the browser process that requires all threads
   // running.
