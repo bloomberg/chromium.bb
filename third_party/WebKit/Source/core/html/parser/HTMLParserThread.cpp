@@ -32,7 +32,6 @@
 #include "core/html/parser/HTMLParserThread.h"
 
 #include "platform/Task.h"
-#include "platform/TaskSynchronizer.h"
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -65,18 +64,15 @@ void HTMLParserThread::shutdown()
     ASSERT(s_sharedThread);
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (blink::Platform::current()->currentThread() && s_sharedThread->isRunning()) {
-        TaskSynchronizer taskSynchronizer;
-        s_sharedThread->postTask(WTF::bind(&HTMLParserThread::cleanupHTMLParserThread, s_sharedThread, &taskSynchronizer));
-        taskSynchronizer.waitForTaskCompletion();
+        s_sharedThread->postTask(WTF::bind(&HTMLParserThread::cleanupHTMLParserThread, s_sharedThread));
     }
     delete s_sharedThread;
     s_sharedThread = 0;
 }
 
-void HTMLParserThread::cleanupHTMLParserThread(TaskSynchronizer* taskSynchronizer)
+void HTMLParserThread::cleanupHTMLParserThread()
 {
     m_thread->detachGC();
-    taskSynchronizer->taskCompleted();
 }
 
 HTMLParserThread* HTMLParserThread::shared()

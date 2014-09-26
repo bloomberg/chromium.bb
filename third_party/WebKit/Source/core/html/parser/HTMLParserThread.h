@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class TaskSynchronizer;
-
 class HTMLParserThread {
 public:
     static void init();
@@ -55,7 +53,7 @@ private:
     HTMLParserThread();
     ~HTMLParserThread();
     void setupHTMLParserThread();
-    void cleanupHTMLParserThread(TaskSynchronizer*);
+    void cleanupHTMLParserThread();
 
     OwnPtr<WebThreadSupportingGC> m_thread;
 };
