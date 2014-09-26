@@ -148,7 +148,7 @@ class DevServerWrapper(multiprocessing.Process):
     try:
       res = urllib2.urlopen(url, timeout=timeout)
     except (urllib2.HTTPError, httplib.HTTPException) as e:
-      logging.error('Devserver responsded with an error!')
+      logging.error('Devserver responded with an error!')
       raise DevServerResponseError(e)
     except (urllib2.URLError, socket.timeout) as e:
       if not ignore_url_error:
