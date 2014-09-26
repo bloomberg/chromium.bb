@@ -781,25 +781,26 @@ def resolution_tests_methods(effective_overloads):
     # • a sequence type
     # ...
     # • a dictionary
-    try:
-        idl_type, method = next((idl_type, method)
-                                for idl_type, method in idl_types_methods
-                                if (idl_type.native_array_element_type or
-                                    idl_type.is_dictionary or
-                                    idl_type.name == 'Dictionary'))
+    #
+    # FIXME:
+    # We don't strictly follow the algorithm here. The algorithm says "remove
+    # all other entries" if there is "one entry" matching, but we yield all
+    # entries to support following constructors:
+    # [constructor(sequence<DOMString> arg), constructor(Dictionary arg)]
+    # interface I { ... }
+    # (Need to check array types before objects because an array is an object)
+    for idl_type, method in idl_types_methods:
         if idl_type.native_array_element_type:
             # (We test for Array instead of generic Object to type-check.)
             # FIXME: test for Object during resolution, then have type check for
             # Array in overloaded method: http://crbug.com/262383
-            test = '%s->IsArray()' % cpp_value
-        else:
+            yield '%s->IsArray()' % cpp_value, method
+    for idl_type, method in idl_types_methods:
+        if idl_type.is_dictionary or idl_type.name == 'Dictionary':
             # FIXME: should be '{1}->IsObject() && !{1}->IsDate() && !{1}->IsRegExp()'.format(cpp_value)
             # FIXME: the IsDate and IsRegExp checks can be skipped if we've
             # already generated tests for them.
-            test = '%s->IsObject()' % cpp_value
-        yield test, method
-    except StopIteration:
-        pass
+            yield '%s->IsObject()' % cpp_value, method
 
     # (Check for exact type matches before performing automatic type conversion;
     # only needed if distinguishing between primitive types.)

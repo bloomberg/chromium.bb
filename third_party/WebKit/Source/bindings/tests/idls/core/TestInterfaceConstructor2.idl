@@ -40,6 +40,7 @@
     // 2 constructors with same type length, to test overload resolution
     Constructor(DOMString stringArg),
     Constructor(Dictionary dictionaryArg),
+    Constructor(sequence<sequence<DOMString>> stringSequenceSequenceArg),
     Constructor(
         TestInterfaceEmpty testInterfaceEmptyArg,
         long longArg,

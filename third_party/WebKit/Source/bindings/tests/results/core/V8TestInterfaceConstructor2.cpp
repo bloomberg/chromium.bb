@@ -65,6 +65,19 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
+    Vector<Vector<String> > stringSequenceSequenceArg;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringSequenceSequenceArg, toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
+    }
+    RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(stringSequenceSequenceArg);
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    impl->associateWithWrapper(&V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, info.GetIsolate());
+    v8SetReturnValue(info, wrapper);
+}
+
+static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     int longArg;
     V8StringResource<> defaultUndefinedOptionalStringArg;
@@ -106,6 +119,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
     switch (std::min(6, info.Length())) {
     case 1:
+        if (info[0]->IsArray()) {
+            TestInterfaceConstructor2V8Internal::constructor3(info);
+            return;
+        }
         if (info[0]->IsObject()) {
             TestInterfaceConstructor2V8Internal::constructor2(info);
             return;
@@ -117,31 +134,31 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         break;
     case 2:
         if (true) {
-            TestInterfaceConstructor2V8Internal::constructor3(info);
+            TestInterfaceConstructor2V8Internal::constructor4(info);
             return;
         }
         break;
     case 3:
         if (true) {
-            TestInterfaceConstructor2V8Internal::constructor3(info);
+            TestInterfaceConstructor2V8Internal::constructor4(info);
             return;
         }
         break;
     case 4:
         if (true) {
-            TestInterfaceConstructor2V8Internal::constructor3(info);
+            TestInterfaceConstructor2V8Internal::constructor4(info);
             return;
         }
         break;
     case 5:
         if (true) {
-            TestInterfaceConstructor2V8Internal::constructor3(info);
+            TestInterfaceConstructor2V8Internal::constructor4(info);
             return;
         }
         break;
     case 6:
         if (true) {
-            TestInterfaceConstructor2V8Internal::constructor3(info);
+            TestInterfaceConstructor2V8Internal::constructor4(info);
             return;
         }
         break;
