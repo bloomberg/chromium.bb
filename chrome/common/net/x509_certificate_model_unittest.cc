@@ -26,7 +26,7 @@ TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
 
   scoped_refptr<net::X509Certificate> punycode_cert(
       net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "punycodetest.der"));
+                              "punycodetest.pem"));
   ASSERT_TRUE(punycode_cert.get());
   EXPECT_EQ("xn--wgv71a119e.com (日本語.com)",
             x509_certificate_model::GetCertNameOrNickname(
@@ -87,8 +87,8 @@ TEST(X509CertificateModelTest, GetExtensions) {
 
     EXPECT_EQ("Certificate Subject Key ID", extensions[1].name);
     EXPECT_EQ(
-        "notcrit\nKey ID: 2B 88 93 E1 D2 54 50 F4 B8 A4 20 BD B1 79 E6 0B\nAA "
-        "EB EC 1A",
+        "notcrit\nKey ID: BC F7 30 D1 3C C0 F2 79 FA EF 9F C9 6C 5C 93 F3\n8A "
+        "68 AB 83",
         extensions[1].value);
 
     EXPECT_EQ("Certificate Key Usage", extensions[2].name);
@@ -381,22 +381,22 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
     ASSERT_TRUE(cert.get());
     EXPECT_EQ(
         "Modulus (2048 bits):\n"
-        "  AB A3 84 16 05 AE F4 80 85 81 A7 A8 59 FA BB 0E\n"
-        "5E 7B 04 DC C4 44 7A 41 05 37 9D 45 A1 6B DE E8\n"
-        "FE 0F 89 D3 39 78 EB 68 01 4F 15 C0 4B 13 A4 4C\n"
-        "25 95 ED A4 BB D9 AD F7 54 0C F1 33 4E D7 25 88\n"
-        "B0 28 5E 64 01 F0 33 7C 4D 3B D8 5C 48 04 AF 77\n"
-        "52 6F EA 99 B0 07 E6 6D BB 63 9E 33 AD 18 94 30\n"
-        "96 46 F4 41 D6 69 E3 EE 55 DE FA C3 D4 36 D3 D1\n"
-        "71 87 28 3B B8 FC 4B 2D BF 3C E2 FB 8C E8 FA 99\n"
-        "44 0C BD 5D CB E3 A9 F6 0D 3D 1C EB B6 80 1E BE\n"
-        "A5 51 B5 60 04 77 72 47 96 17 0D 8E 44 EE FA C4\n"
-        "5F AB 31 16 DC 68 9A 9F 9A 79 94 04 B9 0F 14 DF\n"
-        "C1 9A FA 37 AB 7F 70 B8 80 DD 48 25 ED BD 43 67\n"
-        "01 C1 32 9D 76 A1 FE C1 64 D8 00 77 73 D1 3F 21\n"
-        "86 92 72 E8 91 36 45 84 8B B7 14 5E B0 32 5C A3\n"
-        "ED 30 DA 36 45 DB DF 55 41 18 CF FE 36 37 ED BB\n"
-        "D3 09 1F D6 D6 91 D2 D8 5F 73 02 52 D3 AA 0D 23\n"
+        "  B6 49 41 E3 42 01 51 A8 7F 3C 7A 71 D3 FB CD 91\n"
+        "35 17 84 1A 8E F6 36 C7 D1 70 1D FA 86 F3 6E BB\n"
+        "76 6F E8 32 2E 37 FD 38 92 3D 68 E4 8A 7D 42 33\n"
+        "14 46 1B DC 04 F6 91 6E 54 40 C4 0A 09 FD EC 2D\n"
+        "62 E2 5E E1 BA 2C 9C C1 B1 60 4C DA C7 F8 22 5C\n"
+        "82 20 65 42 1E 56 77 75 4F EB 90 2C 4A EA 57 0E\n"
+        "22 8D 6C 95 AC 11 EA CC D7 EE F6 70 0D 09 DD A6\n"
+        "35 61 5D C9 76 6D B0 F2 1E BF 30 86 D8 77 52 36\n"
+        "95 97 0E D1 46 C5 ED 81 3D 1B B0 F2 61 95 3C C1\n"
+        "40 38 EF 5F 5D BA 61 9F EF 2B 9C 9F 85 89 74 70\n"
+        "63 D5 76 E8 35 7E CE 01 E1 F3 11 11 90 1C 0D F5\n"
+        "FD 8D CE 10 6C AD 7C 55 1A 21 6F D7 2D F4 78 15\n"
+        "EA 2F 38 BD 91 9E 3C 1D 07 46 F5 43 C1 82 8B AF\n"
+        "12 53 65 19 8A 69 69 66 06 B2 DA 0B FA 2A 00 A1\n"
+        "2A 15 84 49 F1 01 BF 9B 30 06 D0 15 A0 1F 9D 51\n"
+        "91 47 E1 53 5F EF 5E EC C2 61 79 C2 14 9F C4 E3\n"
         "\n"
 #if defined(USE_OPENSSL)
         "  Public Exponent (17 bits):\n"
@@ -412,11 +412,11 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
         net::GetTestCertsDirectory(), "prime256v1-ecdsa-intermediate.pem"));
     ASSERT_TRUE(cert.get());
     EXPECT_EQ(
-        "04 D1 35 14 53 74 2F E1 E4 9B 41 9E 42 9D 10 6B\n"
-        "0B F4 16 8F BC A7 C7 A4 39 09 73 34 CB 87 DF 2F\n"
-        "7E 4A 5F B1 B5 E4 DC 49 41 4E A8 81 34 B5 DA 7D\n"
-        "27 7D 05 C1 BD 0A 29 6D AD A3 5D 37 7B 56 B7 1B\n"
-        "60",
+        "04 DB 98 07 BC 61 DD 2D E6 B3 CC F7 D5 EA F7 A1\n"
+        "0D 28 DE F2 7C 26 97 CA EB D1 DB A3 1E C1 8F E9\n"
+        "E0 1E FE 31 BB AA 4A 5C 85 37 A6 FF 9E 2E 96 23\n"
+        "22 B8 30 5F 8F 22 AE B9 8B 6D 4F BD 4E F3 52 12\n"
+        "D4",
         x509_certificate_model::ProcessSubjectPublicKeyInfo(
             cert->os_cert_handle()));
   }
@@ -427,22 +427,22 @@ TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
   EXPECT_EQ(
-      "A8 58 42 E4 7C B1 46 11 EE 56 B7 09 08 FB 06 44\n"
-      "F0 A9 60 03 F0 05 23 09 3C 36 D6 28 1B E5 D6 61\n"
-      "15 A0 6F DE 69 AC 28 58 05 F1 CE 9B 61 C2 58 B0\n"
-      "5D ED 6C 75 44 E2 68 01 91 59 B1 4F F3 51 F2 23\n"
-      "F6 47 42 41 57 26 4F 87 1E D2 9F 94 3A E2 D0 4E\n"
-      "6F 02 D2 92 76 2C 0A DD 58 93 E1 47 B9 02 A3 3D\n"
-      "75 B4 BA 24 70 87 32 87 CF 76 4E A0 41 8B 86 42\n"
-      "18 55 ED A5 AE 5D 6A 3A 8C 28 70 4C F1 C5 36 6C\n"
-      "EC 01 A9 D6 51 39 32 31 30 24 82 9F 88 D9 F5 C1\n"
-      "09 6B 5A 6B F1 95 D3 9D 3F E0 42 63 FC B7 32 90\n"
-      "55 56 F2 76 1B 71 38 BD BD FB 3B 23 50 46 4C 2C\n"
-      "4E 49 48 52 EA 05 5F 16 F2 98 51 AF 2F 79 36 2A\n"
-      "A0 BA 36 68 1B 29 8B 7B E8 8C EA 73 31 E5 86 D7\n"
-      "2C D8 56 06 43 D7 72 D2 F0 27 4E 64 0A 2B 27 38\n"
-      "36 CD BE C1 33 DB 74 4B 4E 74 BE 21 BD F6 81 66\n"
-      "D2 FD 2B 7F F4 55 36 C0 ED A7 44 CA B1 78 1D 0F",
+      "57 07 29 FB 7F E8 FF B0 E6 D8 58 6A C3 90 A1 38\n"
+      "1C B4 F3 68 B1 EC E8 89 23 24 D7 A8 F2 21 C3 60\n"
+      "E4 A4 49 5C 00 BF DF C7 82 78 80 2B 18 F7 AD DD\n"
+      "D0 62 5E A7 B0 CC F0 AA B4 CE 70 12 59 65 67 76\n"
+      "05 00 18 9A FF C4 2A 17 E3 F1 55 D8 BE 5C 5E EB\n"
+      "CA CB 53 87 10 D5 09 32 36 A7 5E 41 F4 53 DA 7E\n"
+      "56 60 D2 7E 4E 9A A5 08 5F 5D 75 E9 E7 30 CB 22\n"
+      "E9 EF 19 49 83 A5 23 A1 F8 60 4C E5 36 D5 39 78\n"
+      "18 F1 5E BF CE AA 0B 53 81 2C 78 A9 0A 6B DB 13\n"
+      "10 21 14 7F 1B 70 3D 89 1A 40 8A 06 2C 5D 50 19\n"
+      "62 F9 C7 45 89 F2 3D 66 05 3D 7D 75 5B 55 1E 80\n"
+      "42 72 A1 9A 7C 6D 0A 74 F6 EE A6 21 6C 3A 98 FB\n"
+      "77 82 5F F2 6B 56 E6 DD 9B 8E 50 F0 C6 AE FD EA\n"
+      "A6 05 07 A9 26 06 56 B3 B2 D9 B2 37 A0 21 3E 79\n"
+      "06 1F B9 51 BE F4 B1 49 4D 90 B5 33 E5 0E C7 5E\n"
+      "5B 40 C5 6A 04 D1 43 7A 94 6A A4 4F 61 FC 82 E0",
       x509_certificate_model::ProcessRawBitsSignatureWrap(
           cert->os_cert_handle()));
 }
