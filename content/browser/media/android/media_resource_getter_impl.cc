@@ -51,7 +51,13 @@ static void RequestPlatformPathFromBlobURL(
       ChromeBlobStorageContext::GetFor(browser_context);
   scoped_ptr<storage::BlobDataHandle> handle =
       context->context()->GetBlobDataFromPublicURL(url);
-  const std::vector<storage::BlobData::Item> items = handle->data()->items();
+  storage::BlobData* data = handle->data();
+  if (!data) {
+    ReturnResultOnUIThread(callback, "");
+    NOTREACHED();
+    return;
+  }
+  const std::vector<storage::BlobData::Item> items = data->items();
 
   // TODO(qinmin): handle the case when the blob data is not a single file.
   DLOG_IF(WARNING, items.size() != 1u)

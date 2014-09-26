@@ -263,6 +263,11 @@ void MediaPlayerBridge::OnAuthCredentialsRetrieved(
 }
 
 void MediaPlayerBridge::ExtractMediaMetadata(const std::string& url) {
+  if (url.empty()) {
+    OnMediaError(MEDIA_ERROR_FORMAT);
+    return;
+  }
+
   int fd;
   int64 offset;
   int64 size;
