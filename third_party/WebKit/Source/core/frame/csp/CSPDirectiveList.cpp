@@ -611,12 +611,12 @@ void CSPDirectiveList::parseReferrer(const String& name, const String& value)
 
     // value1
     //       ^
-    if (equalIgnoringCase("always", begin, position - begin)) {
+    if (equalIgnoringCase("unsafe-url", begin, position - begin)) {
         m_referrerPolicy = ReferrerPolicyAlways;
-    } else if (equalIgnoringCase("default", begin, position - begin)) {
-        m_referrerPolicy = ReferrerPolicyDefault;
-    } else if (equalIgnoringCase("never", begin, position - begin)) {
+    } else if (equalIgnoringCase("no-referrer", begin, position - begin)) {
         m_referrerPolicy = ReferrerPolicyNever;
+    } else if (equalIgnoringCase("no-referrer-when-downgrade", begin, position - begin)) {
+        m_referrerPolicy = ReferrerPolicyDefault;
     } else if (equalIgnoringCase("origin", begin, position - begin)) {
         m_referrerPolicy = ReferrerPolicyOrigin;
     } else {

@@ -1,4 +1,4 @@
-Test that 'never' works correctly from HTTP to HTTPS.
+Test that 'no-referrer' works correctly from HTTP to HTTPS.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

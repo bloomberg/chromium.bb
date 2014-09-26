@@ -1,8 +1,10 @@
 var ReferrerTest = {
-    ALWAYS: "always",
-    DEFAULT: "default",
-    NEVER: "never",
+    NO_REFERRER: "no-referrer",
+    NO_REFERRER_WHEN_DOWNGRADE: "no-referrer-when-downgrade",
     ORIGIN: "origin",
+    ORIGIN_WHEN_CROSS_ORIGIN: "origin-when-cross-origin",
+    UNSAFE_URL: "unsafe-url",
+
     INVALID: "invalid",
     EMPTY: "",
 
