@@ -886,6 +886,8 @@ public class AwContents {
                 nativeOnDetachedFromWindow(mNativeAwContents);
             }
 
+            mWebContentsObserver.detachFromWebContents();
+            mWebContentsObserver = null;
             mContentViewCore.destroy();
             mContentViewCore = null;
             mNativeAwContents = 0;

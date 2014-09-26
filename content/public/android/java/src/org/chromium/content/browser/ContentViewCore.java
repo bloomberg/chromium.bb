@@ -110,6 +110,16 @@ public class ContentViewCore
     private static final int IS_LONG_PRESS = 1;
     private static final int IS_LONG_TAP = 2;
 
+    private static final ZoomControlsDelegate NO_OP_ZOOM_CONTROLS_DELEGATE =
+            new ZoomControlsDelegate() {
+        @Override
+        public void invokeZoomPicker() {}
+        @Override
+        public void dismissZoomPicker() {}
+        @Override
+        public void updateZoomControls() {}
+    };
+
     // If the embedder adds a JavaScript interface object that contains an indirect reference to
     // the ContentViewCore, then storing a strong ref to the interface object on the native
     // side would prevent garbage collection of the ContentViewCore (as that strong ref would
@@ -603,14 +613,7 @@ public class ContentViewCore
         long viewAndroidNativePointer = mViewAndroid.getNativePointer();
         assert viewAndroidNativePointer != 0;
 
-        mZoomControlsDelegate = new ZoomControlsDelegate() {
-            @Override
-            public void invokeZoomPicker() {}
-            @Override
-            public void dismissZoomPicker() {}
-            @Override
-            public void updateZoomControls() {}
-        };
+        mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
 
         mNativeContentViewCore = nativeInit(
                 nativeWebContents, viewAndroidNativePointer, windowNativePointer,
@@ -779,6 +782,16 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
+        mWebContentsObserver.detachFromWebContents();
+        mWebContentsObserver = null;
+        setSmartClipDataListener(null);
+        setZoomControlsDelegate(null);
+        // TODO(igsolla): address TODO in ContentViewClient because ContentViewClient is not
+        // currently a real Null Object.
+        //
+        // Instead of deleting the client we use the Null Object pattern to avoid null checks
+        // in this class.
+        mContentViewClient = new ContentViewClient();
         mWebContents = null;
         if (mViewAndroid != null) mViewAndroid.destroy();
         mNativeContentViewCore = 0;
@@ -1758,6 +1771,10 @@ public class ContentViewCore
     }
 
     public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
+        if (zoomControlsDelegate == null) {
+            mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
+            return;
+        }
         mZoomControlsDelegate = zoomControlsDelegate;
     }
 

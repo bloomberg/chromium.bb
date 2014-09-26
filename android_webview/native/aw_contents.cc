@@ -300,6 +300,10 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
   AwContentsClientBridgeBase::Disassociate(web_contents_.get());
   contents_client_bridge_.reset();
 
+  // Do not wait until the WebContents are deleted asynchronously to clear
+  // the delegate and stop sending callbacks.
+  web_contents_->SetDelegate(NULL);
+
   // We do not delete AwContents immediately. Some applications try to delete
   // Webview in ShouldOverrideUrlLoading callback, which is a sync IPC from
   // Webkit.
