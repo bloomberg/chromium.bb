@@ -23,10 +23,10 @@ function handleWebSignRequest(sender, request, sendResponse) {
   var sentResponse = false;
   var queuedSignRequest;
 
-  function sendErrorResponse(u2fCode) {
+  function sendErrorResponse(error) {
     sendResponseOnce(sentResponse, queuedSignRequest,
         makeWebErrorResponse(request,
-            mapErrorCodeToGnubbyCodeType(u2fCode, true /* forSign */)),
+            mapErrorCodeToGnubbyCodeType(error.errorCode, true /* forSign */)),
         sendResponse);
   }
 
@@ -57,9 +57,10 @@ function handleU2fSignRequest(sender, request, sendResponse) {
   var sentResponse = false;
   var queuedSignRequest;
 
-  function sendErrorResponse(u2fCode) {
+  function sendErrorResponse(error) {
     sendResponseOnce(sentResponse, queuedSignRequest,
-        makeU2fErrorResponse(request, u2fCode), sendResponse);
+        makeU2fErrorResponse(request, error.errorCode, error.errorMessage),
+        sendResponse);
   }
 
   function sendSuccessResponse(challenge, info, browserData) {
@@ -123,7 +124,7 @@ function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
  * @param {Object} request The web page's sign request.
  * @param {string} signChallengesName The name of the sign challenges value in
  *     the request.
- * @param {function(ErrorCodes)} errorCb Error callback.
+ * @param {function(U2fError)} errorCb Error callback.
  * @param {function(SignChallenge, string, string)} successCb Success callback.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
@@ -132,14 +133,14 @@ function validateAndEnqueueSignRequest(sender, request,
     signChallengesName, errorCb, successCb) {
   var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
   if (!origin) {
-    errorCb(ErrorCodes.BAD_REQUEST);
+    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
   // More closure type inference fail.
   var nonNullOrigin = /** @type {string} */ (origin);
 
   if (!isValidSignRequest(request, signChallengesName)) {
-    errorCb(ErrorCodes.BAD_REQUEST);
+    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
 
@@ -155,7 +156,7 @@ function validateAndEnqueueSignRequest(sender, request,
   // Sanity check
   if (!appId) {
     console.warn(UTIL_fmt('empty sign appId?'));
-    errorCb(ErrorCodes.BAD_REQUEST);
+    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
   var timer = createTimerForRequest(
@@ -197,7 +198,7 @@ function isValidSignRequest(request, signChallengesName) {
  * @param {!Array.<SignChallenge>} signChallenges The sign challenges.
  * @param {Countdown} timer Timeout timer
  * @param {string} origin Signature origin
- * @param {function(ErrorCodes)} errorCb Error callback
+ * @param {function(U2fError)} errorCb Error callback
  * @param {function(SignChallenge, string, string)} successCb Success callback
  * @param {string|undefined} opt_appId The app id for the entire request.
  * @param {string|undefined} opt_tlsChannelId TLS Channel Id
@@ -213,7 +214,7 @@ function QueuedSignRequest(signChallenges, timer, origin, errorCb,
   this.timer_ = timer;
   /** @private {string} */
   this.origin_ = origin;
-  /** @private {function(ErrorCodes)} */
+  /** @private {function(U2fError)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
@@ -261,18 +262,18 @@ QueuedSignRequest.prototype.begin = function(token) {
       this.tlsChannelId_, this.logMsgUrl_);
   if (!this.signer_.setChallenges(this.signChallenges_, this.appId_)) {
     token.complete();
-    this.errorCb_(ErrorCodes.BAD_REQUEST);
+    this.errorCb_({errorCode: ErrorCodes.BAD_REQUEST});
   }
 };
 
 /**
  * Called when this request's signer fails.
- * @param {ErrorCodes} code The failure code reported by the signer.
+ * @param {U2fError} error The failure reported by the signer.
  * @private
  */
-QueuedSignRequest.prototype.signerFailed_ = function(code) {
+QueuedSignRequest.prototype.signerFailed_ = function(error) {
   this.token_.complete();
-  this.errorCb_(code);
+  this.errorCb_(error);
 };
 
 /**
@@ -292,7 +293,7 @@ QueuedSignRequest.prototype.signerSucceeded_ =
  * Creates an object to track signing with a gnubby.
  * @param {Countdown} timer Timer for sign request.
  * @param {string} origin The origin making the request.
- * @param {function(ErrorCodes)} errorCb Called when the sign operation fails.
+ * @param {function(U2fError)} errorCb Called when the sign operation fails.
  * @param {function(SignChallenge, string, string)} successCb Called when the
  *     sign operation succeeds.
  * @param {string=} opt_tlsChannelId the TLS channel ID, if any, of the origin
@@ -306,7 +307,7 @@ function Signer(timer, origin, errorCb, successCb,
   this.timer_ = timer;
   /** @private {string} */
   this.origin_ = origin;
-  /** @private {function(ErrorCodes)} */
+  /** @private {function(U2fError)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
@@ -362,7 +363,11 @@ Signer.prototype.checkAppIds_ = function() {
     appIds = UTIL_unionArrays([this.appId_], appIds);
   }
   if (!appIds || !appIds.length) {
-    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    var error = {
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'missing appId'
+    };
+    this.notifyError_(error);
     return;
   }
   FACTORY_REGISTRY.getOriginChecker().canClaimAppIds(this.origin_, appIds)
@@ -379,7 +384,11 @@ Signer.prototype.checkAppIds_ = function() {
  */
 Signer.prototype.originChecked_ = function(appIds, result) {
   if (!result) {
-    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    var error = {
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'bad appId'
+    };
+    this.notifyError_(error);
     return;
   }
   /** @private {!AppIdChecker} */
@@ -398,11 +407,15 @@ Signer.prototype.originChecked_ = function(appIds, result) {
  */
 Signer.prototype.appIdChecked_ = function(result) {
   if (!result) {
-    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    var error = {
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'bad appId'
+    };
+    this.notifyError_(error);
     return;
   }
   if (!this.doSign_()) {
-    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    this.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
     return;
   }
 };
@@ -463,16 +476,16 @@ Signer.prototype.close = function() {
 };
 
 /**
- * Notifies the caller of error with the given error code.
- * @param {ErrorCodes} code Error code
+ * Notifies the caller of error.
+ * @param {U2fError} error Error.
  * @private
  */
-Signer.prototype.notifyError_ = function(code) {
+Signer.prototype.notifyError_ = function(error) {
   if (this.done_)
     return;
   this.close();
   this.done_ = true;
-  this.errorCb_(code);
+  this.errorCb_(error);
 };
 
 /**
@@ -498,15 +511,15 @@ Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
  */
 Signer.prototype.helperComplete_ = function(helperReply, opt_source) {
   if (helperReply.type != 'sign_helper_reply') {
-    this.notifyError_(ErrorCodes.OTHER_ERROR);
+    this.notifyError_({errorCode: ErrorCodes.OTHER_ERROR});
     return;
   }
   var reply = /** @type {SignHelperReply} */ (helperReply);
 
   if (reply.code) {
-    var reportedError = mapDeviceStatusCodeToErrorCode(reply.code);
+    var reportedError = mapDeviceStatusCodeToU2fError(reply.code);
     console.log(UTIL_fmt('helper reported ' + reply.code.toString(16) +
-        ', returning ' + reportedError));
+        ', returning ' + reportedError.errorCode));
     this.notifyError_(reportedError);
   } else {
     if (this.logMsgUrl_ && opt_source) {

@@ -228,24 +228,27 @@ function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
 }
 
 /**
- * Maps a helper's error code from the DeviceStatusCodes namespace to the
- * ErrorCodes namespace.
+ * Maps a helper's error code from the DeviceStatusCodes namespace to a
+ * U2fError.
  * @param {number} code Error code from DeviceStatusCodes namespace.
- * @return {ErrorCodes} A ErrorCodes error code.
+ * @return {U2fError} An error.
  */
-function mapDeviceStatusCodeToErrorCode(code) {
-  var reportedError = ErrorCodes.OTHER_ERROR;
+function mapDeviceStatusCodeToU2fError(code) {
   switch (code) {
     case DeviceStatusCodes.WRONG_DATA_STATUS:
-      reportedError = ErrorCodes.DEVICE_INELIGIBLE;
-      break;
+      return {errorCode: ErrorCodes.DEVICE_INELIGIBLE};
 
     case DeviceStatusCodes.TIMEOUT_STATUS:
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
-      reportedError = ErrorCodes.TIMEOUT;
-      break;
+      return {errorCode: ErrorCodes.TIMEOUT};
+
+    default:
+      var reportedError = {
+        errorCode: ErrorCodes.OTHER_ERROR,
+        errorMessage: 'device status code: ' + code.toString(16)
+      };
+      return reportedError;
   }
-  return reportedError;
 }
 
 /**
