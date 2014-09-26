@@ -185,9 +185,19 @@ codebase.
 <td><code>constexpr</code></td>
 <td>Compile-time constant expressions</td>
 <td>TODO: documentation link</td>
-<td>Doesn't work in MSVS2013. Reevalute once it does.<a
+<td>Doesn't work in MSVS2013. Reevalute once it does. <a
 href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#constexpr">Google
 Style Guide on <code>constexpr</code></a></td>
+</tr>
+
+<tr>
+<td>Explicit Conversion Operators</td>
+<td><code>explicit operator <i>type</i>() {
+<br />&nbsp;&nbsp;// code<br /> }</code></td>
+<td>Allows conversion operators that cannot be implicitly invoked</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/explicit">
+explicit specifier</a></td>
+<td><a href="https://connect.microsoft.com/VisualStudio/feedback/details/811334/bug-in-vs-2013-support-for-explicit-conversion-operators">Doesn't work in MSVS2013</a>. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/d/msg/chromium-dev/zGF1SrQ-1HQ/BAiC12vwPeEJ">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -343,16 +353,6 @@ and <code>nested_exception</code></td>
 std::exception</a></td>
 <td>Exceptions are banned by the
 <a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Exceptions"> C++ Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Explicit Conversion Operators</td>
-<td><code>explicit operator <i>type</i>() {
-<br />&nbsp;&nbsp;// code<br /> }</code></td>
-<td>Allows conversion operators that cannot be implicitly invoked</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/explicit">
-explicit specifier</a></td>
-<td></td>
 </tr>
 
 <tr>
