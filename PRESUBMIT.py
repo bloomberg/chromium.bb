@@ -1513,6 +1513,7 @@ def GetDefaultTryConfigs(bots=None):
           'url_unittests',
           'net_unittests',
           'sql_unittests',
+          'ui_base_unittests',
           'ui_unittests',
       ],
       'ios_rel_device': ['compile'],

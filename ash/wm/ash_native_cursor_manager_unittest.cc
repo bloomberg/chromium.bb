@@ -184,7 +184,7 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
 }
 
 #if defined(USE_X11)
-// This test is in ash_unittests becuase ui_unittests does not include
+// This test is in ash_unittests becuase ui_base_unittests does not include
 // 2x assets. crbug.com/372541.
 TEST_F(AshNativeCursorManagerTest, CursorLoaderX11Test) {
   const int kCursorId = 1;
