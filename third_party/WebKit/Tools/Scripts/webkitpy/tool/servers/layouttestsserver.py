@@ -48,14 +48,17 @@ class LayoutTestsHTTPServer(BaseHTTPServer.HTTPServer):
 class LayoutTestsServerHTTPRequestHandler(ReflectionHandler):
 
     def do_POST(self):
-        # FIXME : Has to be json object
         json_raw_data = self.rfile.read(int(self.headers.getheader('content-length')))
+        json_data = json.loads(json_raw_data)
+        test_list = ''
+        for each in json_data['tests']:
+            test_list += each + ' '
         filesystem = FileSystem()
         webkit_finder = WebKitFinder(filesystem)
         script_dir = webkit_finder.path_from_webkit_base('Tools', 'Scripts')
         executable_path = script_dir + "/run-webkit-tests"
         cmd = "python " + executable_path + " --no-show-results "
-        cmd += json_raw_data
+        cmd += test_list
         process = subprocess.Popen(cmd, shell=True, cwd=script_dir, env=None, stdout=subprocess.PIPE, stderr=STDOUT)
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
