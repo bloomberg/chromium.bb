@@ -12966,8 +12966,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_CAMERA_BLOCKED" desc="Camera usage status text that is used as tooltip text for the location bar icon and as status text of the media settings bubble when a page is blocked from using the camera.">
       This page has been blocked from accessing your camera.
     </message>
-    <message name="IDS_MEDIASTREAM_SETTING_CHANGED_INFOBAR_MESSAGE" desc="Infobar message for reloading when media (camera, michrophone) settings was changed by user.">
-      New camera and microphone settings will take effect after reloading the page.
+    <message name="IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE" desc="Message that is used to suggest reloading when media (camera, microphone) settings was changed by the user. These settings are immediately effective, but the web page might not know how to deal with the new settings.">
+      This page may need to be reloaded before the new settings take effect.
     </message>
 
     <!-- Proteced media identifier permission infobar -->

@@ -1413,8 +1413,6 @@
       'browser/ui/content_settings/content_setting_image_model.h',
       'browser/ui/content_settings/content_setting_media_menu_model.cc',
       'browser/ui/content_settings/content_setting_media_menu_model.h',
-      'browser/ui/content_settings/media_setting_changed_infobar_delegate.cc',
-      'browser/ui/content_settings/media_setting_changed_infobar_delegate.h',
       'browser/ui/elide_url.cc',
       'browser/ui/elide_url.h',
       'browser/ui/extensions/application_launch.cc',

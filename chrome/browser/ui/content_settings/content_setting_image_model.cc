@@ -248,36 +248,28 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   TabSpecificContentSettings::MicrophoneCameraState state =
       content_settings->GetMicrophoneCameraState();
 
-  switch (state) {
-    case TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED:
-      // If neither the microphone nor the camera stream was accessed then no
-      // icon is displayed in the omnibox.
-      return;
-    case TabSpecificContentSettings::MICROPHONE_ACCESSED:
-      set_icon(IDR_ASK_MEDIA);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_ACCESSED));
-      break;
-    case TabSpecificContentSettings::CAMERA_ACCESSED:
-      set_icon(IDR_ASK_MEDIA);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_CAMERA_ACCESSED));
-      break;
-    case TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED:
-      set_icon(IDR_ASK_MEDIA);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_CAMERA_ALLOWED));
-      break;
-    case TabSpecificContentSettings::MICROPHONE_BLOCKED:
-      set_icon(IDR_BLOCKED_MEDIA);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_BLOCKED));
-      break;
-    case TabSpecificContentSettings::CAMERA_BLOCKED:
-      set_icon(IDR_BLOCKED_MEDIA);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_CAMERA_BLOCKED));
-      break;
-    case TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED:
-      set_icon(IDR_BLOCKED_MEDIA);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_CAMERA_BLOCKED));
-      break;
+  // If neither the microphone nor the camera stream was accessed then no icon
+  // is displayed in the omnibox.
+  if (state == TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
+    return;
+
+  bool is_mic = (state & TabSpecificContentSettings::MICROPHONE_ACCESSED) != 0;
+  bool is_cam = (state & TabSpecificContentSettings::CAMERA_ACCESSED) != 0;
+  DCHECK(is_mic || is_cam);
+
+  int id = IDS_CAMERA_BLOCKED;
+  if (state & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
+               TabSpecificContentSettings::CAMERA_BLOCKED)) {
+    set_icon(IDR_BLOCKED_MEDIA);
+    if (is_mic)
+      id = is_cam ? IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
+  } else {
+    set_icon(IDR_ASK_MEDIA);
+    id = IDS_CAMERA_ACCESSED;
+    if (is_mic)
+      id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;
   }
+  set_tooltip(l10n_util::GetStringUTF8(id));
   set_visible(true);
 }
 

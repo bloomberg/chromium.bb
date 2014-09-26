@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
@@ -19,9 +20,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,6 +47,21 @@ using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
+STATIC_CONST_MEMBER_DEFINITION const
+    TabSpecificContentSettings::MicrophoneCameraState
+    TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED;
+STATIC_CONST_MEMBER_DEFINITION const
+    TabSpecificContentSettings::MicrophoneCameraState
+    TabSpecificContentSettings::MICROPHONE_ACCESSED;
+STATIC_CONST_MEMBER_DEFINITION const
+    TabSpecificContentSettings::MicrophoneCameraState
+    TabSpecificContentSettings::MICROPHONE_BLOCKED;
+STATIC_CONST_MEMBER_DEFINITION const
+    TabSpecificContentSettings::MicrophoneCameraState
+    TabSpecificContentSettings::CAMERA_ACCESSED;
+STATIC_CONST_MEMBER_DEFINITION const
+    TabSpecificContentSettings::MicrophoneCameraState
+    TabSpecificContentSettings::CAMERA_BLOCKED;
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     TabSpecificContentSettings* tab_specific_content_settings)
@@ -71,6 +89,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
       load_plugins_link_enabled_(true),
+      microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED),
       observer_(this) {
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
@@ -272,24 +291,20 @@ bool TabSpecificContentSettings::IsContentAllowed(
 void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
+  DCHECK(type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+         type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
+      << "Media stream settings handled by OnMediaStreamPermissionSet";
   if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
     return;
 
-  // Media is different from other content setting types since it allows new
-  // setting to kick in without reloading the page, and the UI for media is
-  // always reflecting the newest permission setting.
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-#if defined(OS_ANDROID)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-#endif
-      content_allowed_[type] = false;
-      break;
-    default:
-      content_allowed_[type] = true;
-      break;
-  }
+  // TODO(robwu): Should this be restricted to cookies only?
+  // In the past, content_allowed_ was set to false, but this logic was inverted
+  // in https://codereview.chromium.org/13375004 to fix an issue with the cookie
+  // permission UI. This unconditional assignment seems incorrect, because the
+  // flag will now always be true after calling either OnContentBlocked or
+  // OnContentAllowed. Consequently IsContentAllowed will always return true
+  // for every supported setting that is not handled elsewhere.
+  content_allowed_[type] = true;
 
 #if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
@@ -315,23 +330,20 @@ void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
 void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
+  DCHECK(type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+         type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
+      << "Media stream settings handled by OnMediaStreamPermissionSet";
   bool access_changed = false;
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
 #if defined(OS_ANDROID)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-#endif
-      // The setting for media is overwritten here because media does not need
-      // to reload the page to have the new setting kick in. See issue/175993.
-      if (content_blocked_[type]) {
-        content_blocked_[type] = false;
-        access_changed = true;
-      }
-      break;
-    default:
-      break;
+  if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
+    content_blocked_[type]) {
+    // content_allowed_[type] is always set to true in OnContentBlocked, so we
+    // have to use content_blocked_ to detect whether the protected media
+    // setting has changed.
+    content_blocked_[type] = false;
+    access_changed = true;
   }
+#endif
 
   if (!content_allowed_[type]) {
     content_allowed_[type] = true;
@@ -478,25 +490,42 @@ void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
 
 TabSpecificContentSettings::MicrophoneCameraState
 TabSpecificContentSettings::GetMicrophoneCameraState() const {
-  if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
-      IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
-    return MICROPHONE_CAMERA_ACCESSED;
-  } else if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
-    return MICROPHONE_ACCESSED;
-  } else if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
-    return CAMERA_ACCESSED;
-  }
+  return microphone_camera_state_;
+}
 
-  if (IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
-      IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
-    return MICROPHONE_CAMERA_BLOCKED;
-  } else if (IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
-    return MICROPHONE_BLOCKED;
-  } else if (IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
-    return CAMERA_BLOCKED;
-  }
+bool TabSpecificContentSettings::IsMicrophoneCameraStateChanged() const {
+  if ((microphone_camera_state_ & MICROPHONE_ACCESSED) &&
+      ((microphone_camera_state_& MICROPHONE_BLOCKED) ?
+        !IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) :
+        !IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)))
+    return true;
 
-  return MICROPHONE_CAMERA_NOT_ACCESSED;
+  if ((microphone_camera_state_ & CAMERA_ACCESSED) &&
+      ((microphone_camera_state_ & CAMERA_BLOCKED) ?
+        !IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) :
+        !IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)))
+    return true;
+
+  PrefService* prefs =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
+          GetPrefs();
+  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->
+          GetMediaStreamCaptureIndicator();
+
+  if ((microphone_camera_state_ & MICROPHONE_ACCESSED) &&
+      prefs->GetString(prefs::kDefaultAudioCaptureDevice) !=
+      media_stream_selected_audio_device() &&
+      media_indicator->IsCapturingAudio(web_contents()))
+    return true;
+
+  if ((microphone_camera_state_ & CAMERA_ACCESSED) &&
+      prefs->GetString(prefs::kDefaultVideoCaptureDevice) !=
+      media_stream_selected_video_device() &&
+      media_indicator->IsCapturingVideo(web_contents()))
+    return true;
+
+  return false;
 }
 
 void TabSpecificContentSettings::OnMediaStreamPermissionSet(
@@ -504,44 +533,50 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
     const MediaStreamDevicesController::MediaStreamTypeSettingsMap&
         request_permissions) {
   media_stream_access_origin_ = request_origin;
+  MicrophoneCameraState prev_microphone_camera_state = microphone_camera_state_;
+  microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
 
+  PrefService* prefs =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
+      GetPrefs();
   MediaStreamDevicesController::MediaStreamTypeSettingsMap::const_iterator it =
       request_permissions.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
   if (it != request_permissions.end()) {
     media_stream_requested_audio_device_ = it->second.requested_device_id;
-    switch (it->second.permission) {
-      case MediaStreamDevicesController::MEDIA_NONE:
-        NOTREACHED();
-        break;
-      case MediaStreamDevicesController::MEDIA_ALLOWED:
-        OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-        break;
-      // TODO(grunell): UI should show for what reason access has been blocked.
-      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_POLICY:
-      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER_SETTING:
-      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER:
-        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-        break;
-    }
+    media_stream_selected_audio_device_ =
+        media_stream_requested_audio_device_.empty() ?
+            prefs->GetString(prefs::kDefaultAudioCaptureDevice) :
+            media_stream_requested_audio_device_;
+    DCHECK_NE(MediaStreamDevicesController::MEDIA_NONE, it->second.permission);
+    bool mic_allowed =
+        it->second.permission == MediaStreamDevicesController::MEDIA_ALLOWED;
+    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = mic_allowed;
+    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = !mic_allowed;
+    microphone_camera_state_ |=
+        MICROPHONE_ACCESSED | (mic_allowed ? 0 : MICROPHONE_BLOCKED);
   }
 
   it = request_permissions.find(content::MEDIA_DEVICE_VIDEO_CAPTURE);
   if (it != request_permissions.end()) {
     media_stream_requested_video_device_ = it->second.requested_device_id;
-    switch (it->second.permission) {
-      case MediaStreamDevicesController::MEDIA_NONE:
-        NOTREACHED();
-        break;
-      case MediaStreamDevicesController::MEDIA_ALLOWED:
-        OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-        break;
-      // TODO(grunell): UI should show for what reason access has been blocked.
-      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_POLICY:
-      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER_SETTING:
-      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER:
-        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-        break;
-    }
+    media_stream_selected_video_device_ =
+        media_stream_requested_video_device_.empty() ?
+        prefs->GetString(prefs::kDefaultVideoCaptureDevice) :
+        media_stream_requested_video_device_;
+    DCHECK_NE(MediaStreamDevicesController::MEDIA_NONE, it->second.permission);
+    bool cam_allowed =
+        it->second.permission == MediaStreamDevicesController::MEDIA_ALLOWED;
+    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = cam_allowed;
+    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = !cam_allowed;
+    microphone_camera_state_ |=
+        CAMERA_ACCESSED | (cam_allowed ? 0 : CAMERA_BLOCKED);
+  }
+
+  if (microphone_camera_state_ != prev_microphone_camera_state) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+        content::Source<WebContents>(web_contents()),
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -565,6 +600,7 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
     content_allowed_[i] = false;
     content_blockage_indicated_to_user_[i] = false;
   }
+  microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
   load_plugins_link_enabled_ = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
@@ -707,9 +743,20 @@ void TabSpecificContentSettings::OnContentSettingChanged(
       details.primary_pattern().Matches(entry_url)) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    const HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+
+    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+        content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+      const GURL media_origin = media_stream_access_origin();
+      ContentSetting setting = map->GetContentSetting(media_origin,
+                                                      media_origin,
+                                                      content_type,
+                                                      std::string());
+      content_allowed_[content_type] = setting == CONTENT_SETTING_ALLOW;
+      content_blocked_[content_type] = setting == CONTENT_SETTING_BLOCK;
+    }
     RendererContentSettingRules rules;
-    GetRendererContentSettingRules(profile->GetHostContentSettingsMap(),
-                                   &rules);
+    GetRendererContentSettingRules(map, &rules);
     Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
 }

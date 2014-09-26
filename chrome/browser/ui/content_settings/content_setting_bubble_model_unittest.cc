@@ -10,6 +10,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -233,10 +234,243 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
                 url,
                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                 std::string()));
+}
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->RemoveInfoBar(infobar_service->infobar_at(0));
+// Tests whether a changed setting in the setting bubble is displayed again when
+// the bubble is re-opened.
+TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
+  // Required to break dependency on BrowserMainLoop.
+  MediaCaptureDevicesDispatcher::GetInstance()->
+      DisableDeviceEnumerationForTesting();
+
+  WebContentsTester::For(web_contents())->
+      NavigateAndCommit(GURL("https://www.example.com"));
+  GURL url = web_contents()->GetURL();
+
+  HostContentSettingsMap* host_content_settings_map =
+      profile()->GetHostContentSettingsMap();
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromURL(url);
+  ContentSetting setting = CONTENT_SETTING_BLOCK;
+  host_content_settings_map->SetContentSetting(
+        primary_pattern,
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        std::string(),
+        setting);
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Test if the correct radio item is selected for the blocked mediastream
+    // setting.
+    EXPECT_EQ(1, bubble_content.radio_group.default_item);
+    // Change the radio setting.
+    content_setting_bubble_model->OnRadioClicked(0);
+  }
+  // Test that the setting was changed.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                url,
+                url,
+                CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                std::string()));
+
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Test that the reload hint is displayed.
+    EXPECT_FALSE(bubble_content.custom_link_enabled);
+    EXPECT_EQ(bubble_content.custom_link, l10n_util::GetStringUTF8(
+              IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));
+
+    EXPECT_EQ(0, bubble_content.radio_group.default_item);
+    // Restore the radio setting (to block).
+    content_setting_bubble_model->OnRadioClicked(1);
+  }
+  // Test that the media settings were changed again.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                url,
+                url,
+                CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                std::string()));
+
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Test that the reload hint is not displayed any more.
+    EXPECT_FALSE(bubble_content.custom_link_enabled);
+    EXPECT_TRUE(bubble_content.custom_link.empty());
+
+    EXPECT_EQ(1, bubble_content.radio_group.default_item);
+  }
+}
+
+// Tests whether the media menu settings are correctly persisted in the bubble.
+TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
+  // Required to break dependency on BrowserMainLoop.
+  MediaCaptureDevicesDispatcher::GetInstance()->
+      DisableDeviceEnumerationForTesting();
+
+  WebContentsTester::For(web_contents())->
+      NavigateAndCommit(GURL("https://www.example.com"));
+  GURL url = web_contents()->GetURL();
+
+  content::MediaStreamDevices audio_devices;
+  content::MediaStreamDevice fake_audio_device1(
+      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev1", "Fake Audio Device 1");
+  content::MediaStreamDevice fake_audio_device2(
+      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev2", "Fake Audio Device 2");
+  content::MediaStreamDevice fake_audio_device3(
+      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev3", "Fake Audio Device 3");
+  audio_devices.push_back(fake_audio_device1);
+  audio_devices.push_back(fake_audio_device2);
+  audio_devices.push_back(fake_audio_device3);
+  MediaCaptureDevicesDispatcher::GetInstance()->SetTestAudioCaptureDevices(
+      audio_devices);
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    EXPECT_TRUE(bubble_content.custom_link.empty());
+
+    EXPECT_EQ(1U, bubble_content.media_menus.size());
+    EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+              bubble_content.media_menus.begin()->first);
+    EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
+    // The first audio device should be selected by default.
+    EXPECT_TRUE(fake_audio_device1.IsEqual(
+                bubble_content.media_menus.begin()->second.selected_device));
+
+    // Select a different (the second) device.
+    content_setting_bubble_model->OnMediaMenuClicked(
+        content::MEDIA_DEVICE_AUDIO_CAPTURE,
+        fake_audio_device2.id);
+  }
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    EXPECT_EQ(1U, bubble_content.media_menus.size());
+    EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+              bubble_content.media_menus.begin()->first);
+    EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
+    // The second audio device should be selected.
+    EXPECT_TRUE(fake_audio_device2.IsEqual(
+                bubble_content.media_menus.begin()->second.selected_device));
+    // The "settings changed" message should not be displayed when there is no
+    // active capture.
+    EXPECT_FALSE(bubble_content.custom_link_enabled);
+    EXPECT_TRUE(bubble_content.custom_link.empty());
+  }
+
+  // Simulate that an audio stream is being captured.
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->
+        GetMediaStreamCaptureIndicator();
+  scoped_ptr<content::MediaStreamUI> media_stream_ui =
+      indicator->RegisterMediaStream(web_contents(), audio_devices);
+  media_stream_ui->OnStarted(base::Closure());
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Settings not changed yet, so the "settings changed" message should not be
+    // shown.
+    EXPECT_TRUE(bubble_content.custom_link.empty());
+
+    EXPECT_EQ(1U, bubble_content.media_menus.size());
+    EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+              bubble_content.media_menus.begin()->first);
+    EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
+    EXPECT_TRUE(fake_audio_device2.IsEqual(
+                bubble_content.media_menus.begin()->second.selected_device));
+
+    // Select a different different device.
+    content_setting_bubble_model->OnMediaMenuClicked(
+        content::MEDIA_DEVICE_AUDIO_CAPTURE,
+        fake_audio_device3.id);
+  }
+
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Test that the reload hint is displayed.
+    EXPECT_FALSE(bubble_content.custom_link_enabled);
+    EXPECT_EQ(bubble_content.custom_link, l10n_util::GetStringUTF8(
+              IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));
+  }
+
+  // Simulate that yet another audio stream capture request was initiated.
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Test that the reload hint is not displayed any more, because this is a
+    // new permission request.
+    EXPECT_FALSE(bubble_content.custom_link_enabled);
+    EXPECT_TRUE(bubble_content.custom_link.empty());
+
+    // Though the audio menu setting should have persisted.
+    EXPECT_EQ(1U, bubble_content.media_menus.size());
+    EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+              bubble_content.media_menus.begin()->first);
+    EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
+    EXPECT_TRUE(fake_audio_device3.IsEqual(
+                bubble_content.media_menus.begin()->second.selected_device));
+  }
 }
 
 TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
