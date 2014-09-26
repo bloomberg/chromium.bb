@@ -1004,6 +1004,12 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
     controller_->CloseTab(model_index, source);
 }
 
+void TabStrip::ToggleTabAudioMute(Tab* tab) {
+  int model_index = GetModelIndexOfTab(tab);
+  if (IsValidModelIndex(model_index))
+    controller_->ToggleTabAudioMute(model_index);
+}
+
 void TabStrip::ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
                                      ui::MenuSourceType source_type) {

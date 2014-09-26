@@ -16,11 +16,13 @@
 #include "chrome/browser/ui/tabs/tab_resources.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/media_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -48,6 +50,8 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+
+using base::UserMetricsAction;
 
 namespace {
 
@@ -409,8 +413,8 @@ Tab::Tab(TabController* controller)
       loading_animation_frame_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
-      animating_media_state_(TAB_MEDIA_STATE_NONE),
       close_button_(NULL),
+      media_indicator_button_(NULL),
       title_(new views::Label()),
       tab_activated_with_last_tap_down_(false),
       hover_controller_(this),
@@ -509,11 +513,8 @@ void Tab::SetData(const TabRendererData& data) {
     ResetCrashedFavicon();
   }
 
-  if (data_.media_state != old.media_state) {
-    if (data_.media_state != TAB_MEDIA_STATE_NONE)
-      animating_media_state_ = data_.media_state;
-    StartMediaIndicatorAnimation();
-  }
+  if (data_.media_state != old.media_state)
+    GetMediaIndicatorButton()->TransitionToMediaState(data_.media_state);
 
   if (old.mini != data_.mini) {
     StopAndDeleteAnimation(
@@ -642,14 +643,10 @@ void Tab::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void Tab::AnimationCanceled(const gfx::Animation* animation) {
-  if (media_indicator_animation_ == animation)
-    animating_media_state_ = data_.media_state;
   SchedulePaint();
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
-  if (media_indicator_animation_ == animation)
-    animating_media_state_ = data_.media_state;
   SchedulePaint();
 }
 
@@ -657,6 +654,17 @@ void Tab::AnimationEnded(const gfx::Animation* animation) {
 // Tab, views::ButtonListener overrides:
 
 void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  if (media_indicator_button_ && media_indicator_button_->visible()) {
+    if (media_indicator_button_->enabled())
+      content::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
+    else if (data_.media_state == TAB_MEDIA_STATE_AUDIO_PLAYING)
+      content::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
+    else
+      content::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
+  } else {
+    content::RecordAction(UserMetricsAction("CloseTab_NoMediaIndicator"));
+  }
+
   const CloseTabSource source =
       (event.type() == ui::ET_MOUSE_RELEASED &&
        (event.flags() & ui::EF_FROM_TOUCH) == 0) ? CLOSE_TAB_FROM_MOUSE :
@@ -770,19 +778,21 @@ void Tab::Layout() {
   close_button_->SetVisible(showing_close_button_);
 
   showing_media_indicator_ = ShouldShowMediaIndicator();
-  media_indicator_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   if (showing_media_indicator_) {
-    const gfx::Image& media_indicator_image =
-        chrome::GetTabMediaIndicatorImage(animating_media_state_);
-    media_indicator_bounds_.set_width(media_indicator_image.Width());
-    media_indicator_bounds_.set_height(media_indicator_image.Height());
-    media_indicator_bounds_.set_y(
-        lb.y() + (lb.height() - media_indicator_bounds_.height() + 1) / 2);
+    views::ImageButton* const button = GetMediaIndicatorButton();
+    const gfx::Size image_size(button->GetPreferredSize());
     const int right = showing_close_button_ ?
         close_button_->x() + close_button_->GetInsets().left() : lb.right();
-    media_indicator_bounds_.set_x(
-        std::max(lb.x(), right - media_indicator_bounds_.width()));
-    MaybeAdjustLeftForMiniTab(&media_indicator_bounds_);
+    gfx::Rect bounds(
+        std::max(lb.x(), right - image_size.width()),
+        lb.y() + (lb.height() - image_size.height() + 1) / 2,
+        image_size.width(),
+        image_size.height());
+    MaybeAdjustLeftForMiniTab(&bounds);
+    button->SetBoundsRect(bounds);
+    button->SetVisible(true);
+  } else if (media_indicator_button_) {
+    media_indicator_button_->SetVisible(false);
   }
 
   // Size the title to fill the remaining width and use all available height.
@@ -791,7 +801,7 @@ void Tab::Layout() {
     int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
     int title_width = lb.width() - title_left;
     if (showing_media_indicator_) {
-      title_width = media_indicator_bounds_.x() - kViewSpacing - title_left;
+      title_width = media_indicator_button_->x() - kViewSpacing - title_left;
     } else if (close_button_->visible()) {
       // Allow the title to overlay the close button's empty border padding.
       title_width = close_button_->x() + close_button_->GetInsets().left() -
@@ -803,7 +813,6 @@ void Tab::Layout() {
       rect.set_y(lb.y() - (title_height - rect.height()) / 2);
       rect.set_height(title_height);
     }
-    rect.set_x(GetMirroredXForRect(rect));
     title_->SetBoundsRect(rect);
   }
   title_->SetVisible(show_title);
@@ -904,6 +913,11 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
     // selection. Reset it now to handle the case where multiple tabs were
     // selected.
     controller_->SelectTab(this);
+
+    if (media_indicator_button_ && media_indicator_button_->visible() &&
+        media_indicator_button_->bounds().Contains(event.location())) {
+      content::RecordAction(UserMetricsAction("TabMediaIndicator_Clicked"));
+    }
   }
 }
 
@@ -1019,9 +1033,6 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 
   if (show_icon)
     PaintIcon(canvas);
-
-  if (show_media_indicator)
-    PaintMediaIndicator(canvas);
 
   // If the close button color has changed, generate a new one.
   if (!close_button_color_ || title_color != close_button_color_) {
@@ -1341,28 +1352,6 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   }
 }
 
-void Tab::PaintMediaIndicator(gfx::Canvas* canvas) {
-  if (media_indicator_bounds_.IsEmpty() || !media_indicator_animation_)
-    return;
-
-  gfx::Rect bounds = media_indicator_bounds_;
-  bounds.set_x(GetMirroredXForRect(bounds));
-
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  double opaqueness = media_indicator_animation_->GetCurrentValue();
-  if (data_.media_state == TAB_MEDIA_STATE_NONE)
-    opaqueness = 1.0 - opaqueness;  // Fading out, not in.
-  paint.setAlpha(opaqueness * SK_AlphaOPAQUE);
-
-  const gfx::ImageSkia& media_indicator_image =
-      *(chrome::GetTabMediaIndicatorImage(animating_media_state_).
-            ToImageSkia());
-  DrawIconAtLocation(canvas, media_indicator_image, 0,
-                     bounds.x(), bounds.y(), media_indicator_image.width(),
-                     media_indicator_image.height(), true, paint);
-}
-
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
                                   TabRendererData::NetworkState state) {
   static bool initialized = false;
@@ -1439,13 +1428,15 @@ int Tab::IconCapacity() const {
 bool Tab::ShouldShowIcon() const {
   return chrome::ShouldTabShowFavicon(
       IconCapacity(), data().mini, IsActive(), data().show_icon,
-      animating_media_state_);
+      media_indicator_button_ ? media_indicator_button_->showing_media_state() :
+                                data_.media_state);
 }
 
 bool Tab::ShouldShowMediaIndicator() const {
   return chrome::ShouldTabShowMediaIndicator(
       IconCapacity(), data().mini, IsActive(), data().show_icon,
-      animating_media_state_);
+      media_indicator_button_ ? media_indicator_button_->showing_media_state() :
+                                data_.media_state);
 }
 
 bool Tab::ShouldShowCloseBox() const {
@@ -1500,13 +1491,6 @@ bool Tab::IsPerformingCrashAnimation() const {
   return crash_icon_animation_.get() && data_.IsCrashed();
 }
 
-void Tab::StartMediaIndicatorAnimation() {
-  media_indicator_animation_ =
-      chrome::CreateTabMediaIndicatorFadeAnimation(data_.media_state);
-  media_indicator_animation_->set_delegate(this);
-  media_indicator_animation_->Start();
-}
-
 void Tab::ScheduleIconPaint() {
   gfx::Rect bounds = favicon_bounds_;
   if (bounds.IsEmpty())
@@ -1544,6 +1528,14 @@ void Tab::GetTabIdAndFrameId(views::Widget* widget,
     *tab_id = IDR_THEME_TAB_BACKGROUND;
     *frame_id = IDR_THEME_FRAME;
   }
+}
+
+MediaIndicatorButton* Tab::GetMediaIndicatorButton() {
+  if (!media_indicator_button_) {
+    media_indicator_button_ = new MediaIndicatorButton();
+    AddChildView(media_indicator_button_);  // Takes ownership.
+  }
+  return media_indicator_button_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

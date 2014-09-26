@@ -45319,6 +45319,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="370486304" label="enable-origin-chip-on-srp"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
+  <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="455698038"

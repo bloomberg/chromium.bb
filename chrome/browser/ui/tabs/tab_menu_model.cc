@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/grit/generated_resources.h"
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
@@ -34,6 +35,23 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     AddItemWithStringId(
         TabStripModel::CommandTogglePinned,
         will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
+  }
+  if (chrome::IsTabAudioMutingFeatureEnabled()) {
+    if (affects_multiple_tabs) {
+      const bool will_mute = !chrome::AreAllTabsMuted(
+          *tab_strip, tab_strip->selection_model().selected_indices());
+      AddItemWithStringId(
+          TabStripModel::CommandToggleTabAudioMuted,
+          will_mute ? IDS_TAB_CXMENU_AUDIO_MUTE_TABS :
+              IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS);
+    } else {
+      const bool will_mute =
+          !chrome::IsTabAudioMuted(tab_strip->GetWebContentsAt(index));
+      AddItemWithStringId(
+          TabStripModel::CommandToggleTabAudioMuted,
+          will_mute ? IDS_TAB_CXMENU_AUDIO_MUTE_TAB :
+              IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB);
+    }
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   if (affects_multiple_tabs) {

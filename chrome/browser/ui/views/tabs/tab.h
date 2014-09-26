@@ -20,6 +20,7 @@
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
+class MediaIndicatorButton;
 class TabController;
 
 namespace gfx {
@@ -45,11 +46,13 @@ class Tab : public gfx::AnimationDelegate,
             public views::MaskedTargeterDelegate,
             public views::View {
  public:
-  // The menu button's class name.
+  // The Tab's class name.
   static const char kViewClassName[];
 
   explicit Tab(TabController* controller);
   virtual ~Tab();
+
+  TabController* controller() const { return controller_; }
 
   // Used to set/check whether this Tab is being animated closed.
   void set_closing(bool closing) { closing_ = closing; }
@@ -225,9 +228,8 @@ class Tab : public gfx::AnimationDelegate,
                                                  int tab_id);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
 
-  // Paints the favicon and media indicator icon, mirrored for RTL if needed.
+  // Paints the favicon, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
-  void PaintMediaIndicator(gfx::Canvas* canvas);
 
   // Invoked if data_.network_state changes, or the network_state is not none.
   void AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
@@ -264,10 +266,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
 
-  // Starts the media indicator fade-in/out animation. There's no stop method
-  // because this is not a continuous animation.
-  void StartMediaIndicatorAnimation();
-
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
 
@@ -278,6 +276,9 @@ class Tab : public gfx::AnimationDelegate,
   void GetTabIdAndFrameId(views::Widget* widget,
                           int* tab_id,
                           int* frame_id) const;
+
+  // Returns |media_indicator_button_|, creating it on-demand.
+  MediaIndicatorButton* GetMediaIndicatorButton();
 
   // Performs a one-time initialization of static resources such as tab images.
   static void InitTabResources();
@@ -301,7 +302,7 @@ class Tab : public gfx::AnimationDelegate,
                              const gfx::ImageSkia& image);
 
   // The controller, never NULL.
-  TabController* controller_;
+  TabController* const controller_;
 
   TabRendererData data_;
 
@@ -335,14 +336,10 @@ class Tab : public gfx::AnimationDelegate,
   // Crash icon animation (in place of favicon).
   scoped_ptr<gfx::LinearAnimation> crash_icon_animation_;
 
-  // Media indicator fade-in/out animation (i.e., only on show/hide, not a
-  // continuous animation).
-  scoped_ptr<gfx::Animation> media_indicator_animation_;
-  TabMediaState animating_media_state_;
-
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;
+  MediaIndicatorButton* media_indicator_button_;  // NULL until first use.
   views::Label* title_;
 
   bool tab_activated_with_last_tap_down_;
@@ -351,7 +348,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
-  gfx::Rect media_indicator_bounds_;
 
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;

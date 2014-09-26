@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/tabs/tab.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/tabs/media_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
@@ -33,6 +35,7 @@ class FakeTabController : public TabController {
   virtual void ToggleSelected(Tab* tab) OVERRIDE {}
   virtual void AddSelectionFromAnchorTo(Tab* tab) OVERRIDE {}
   virtual void CloseTab(Tab* tab, CloseTabSource source) OVERRIDE {}
+  virtual void ToggleTabAudioMute(Tab* tab) OVERRIDE {}
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
                                      ui::MenuSourceType source_type) OVERRIDE {}
@@ -71,14 +74,26 @@ class FakeTabController : public TabController {
   DISALLOW_COPY_AND_ASSIGN(FakeTabController);
 };
 
-class TabTest : public views::ViewsTestBase {
+class TabTest : public views::ViewsTestBase,
+                public ::testing::WithParamInterface<bool> {
  public:
   TabTest() {}
   virtual ~TabTest() {}
 
-  static void DisableMediaIndicatorAnimation(Tab* tab) {
-    tab->media_indicator_animation_.reset();
-    tab->animating_media_state_ = tab->data_.media_state;
+  bool testing_for_rtl_locale() const { return GetParam(); }
+
+  virtual void SetUp() OVERRIDE {
+    if (testing_for_rtl_locale()) {
+      original_locale_ = base::i18n::GetConfiguredLocale();
+      base::i18n::SetICUDefaultLocale("he");
+    }
+    views::ViewsTestBase::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    views::ViewsTestBase::TearDown();
+    if (testing_for_rtl_locale())
+      base::i18n::SetICUDefaultLocale(original_locale_);
   }
 
   static void CheckForExpectedLayoutAndVisibilityOfElements(const Tab& tab) {
@@ -159,20 +174,21 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(tab.favicon_bounds_.bottom(), contents_bounds.bottom());
     }
     if (tab.ShouldShowIcon() && tab.ShouldShowMediaIndicator())
-      EXPECT_LE(tab.favicon_bounds_.right(), tab.media_indicator_bounds_.x());
+      EXPECT_LE(tab.favicon_bounds_.right(), GetMediaIndicatorBounds(tab).x());
     if (tab.ShouldShowMediaIndicator()) {
       if (tab.title_->width() > 0) {
         EXPECT_LE(tab.title_->bounds().right(),
-                  tab.media_indicator_bounds_.x());
+                  GetMediaIndicatorBounds(tab).x());
       }
-      EXPECT_LE(tab.media_indicator_bounds_.right(), contents_bounds.right());
-      EXPECT_LE(contents_bounds.y(), tab.media_indicator_bounds_.y());
-      EXPECT_LE(tab.media_indicator_bounds_.bottom(), contents_bounds.bottom());
+      EXPECT_LE(GetMediaIndicatorBounds(tab).right(), contents_bounds.right());
+      EXPECT_LE(contents_bounds.y(), GetMediaIndicatorBounds(tab).y());
+      EXPECT_LE(GetMediaIndicatorBounds(tab).bottom(),
+                contents_bounds.bottom());
     }
     if (tab.ShouldShowMediaIndicator() && tab.ShouldShowCloseBox()) {
       // Note: The media indicator can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
-      EXPECT_LE(tab.media_indicator_bounds_.right(),
+      EXPECT_LE(GetMediaIndicatorBounds(tab).right(),
                 tab.close_button_->bounds().x() +
                     tab.close_button_->GetInsets().left());
     }
@@ -189,9 +205,25 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(tab.close_button_->bounds().bottom(), contents_bounds.bottom());
     }
   }
+
+ private:
+  static gfx::Rect GetMediaIndicatorBounds(const Tab& tab) {
+    if (!tab.media_indicator_button_) {
+      ADD_FAILURE();
+      return gfx::Rect();
+    }
+    return tab.media_indicator_button_->bounds();
+  }
+
+  std::string original_locale_;
 };
 
-TEST_F(TabTest, HitTestTopPixel) {
+TEST_P(TabTest, HitTestTopPixel) {
+  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
+    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
+    return;
+  }
+
   Widget widget;
   Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -221,10 +253,15 @@ TEST_F(TabTest, HitTestTopPixel) {
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(tab.width() - 1, 0)));
 }
 
-TEST_F(TabTest, LayoutAndVisibilityOfElements) {
+TEST_P(TabTest, LayoutAndVisibilityOfElements) {
+  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
+    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
+    return;
+  }
+
   static const TabMediaState kMediaStatesToTest[] = {
     TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
-    TAB_MEDIA_STATE_AUDIO_PLAYING
+    TAB_MEDIA_STATE_AUDIO_PLAYING, TAB_MEDIA_STATE_AUDIO_MUTING
   };
 
   FakeTabController controller;
@@ -253,12 +290,6 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
         data.media_state = media_state;
         tab.SetData(data);
 
-        // Disable the media indicator animation so that the layout/visibility
-        // logic can be tested effectively.  If the animation was left enabled,
-        // the ShouldShowMediaIndicator() method would return true during
-        // fade-out transitions.
-        DisableMediaIndicatorAnimation(&tab);
-
         // Test layout for every width from standard to minimum.
         gfx::Rect bounds(gfx::Point(0, 0), Tab::GetStandardSize());
         int min_width;
@@ -282,7 +313,12 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
 
 // Regression test for http://crbug.com/226253. Calling Layout() more than once
 // shouldn't change the insets of the close button.
-TEST_F(TabTest, CloseButtonLayout) {
+TEST_P(TabTest, CloseButtonLayout) {
+  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
+    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
+    return;
+  }
+
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
   tab.SetBounds(0, 0, 100, 50);
@@ -298,3 +334,11 @@ TEST_F(TabTest, CloseButtonLayout) {
   // Also make sure the close button is sized as large as the tab.
   EXPECT_EQ(50, tab.close_button_->bounds().height());
 }
+
+// Test in both a LTR and a RTL locale.  Note: The fact that the UI code is
+// configured for an RTL locale does *not* change how the coordinates are
+// examined in the tests above because views::View and friends are supposed to
+// auto-mirror the widgets when painting.  Thus, what we're testing here is that
+// there's no code in Tab that will erroneously subvert this automatic
+// coordinate translation.  http://crbug.com/384179
+INSTANTIATE_TEST_CASE_P(, TabTest, ::testing::Values(false, true));

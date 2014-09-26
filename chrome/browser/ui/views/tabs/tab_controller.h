@@ -44,6 +44,9 @@ class TabController {
   // Closes the tab.
   virtual void CloseTab(Tab* tab, CloseTabSource source) = 0;
 
+  // Toggles whether tab-wide audio muting is active.
+  virtual void ToggleTabAudioMute(Tab* tab) = 0;
+
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,

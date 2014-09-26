@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 #define CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+
+class TabStripModel;
 
 namespace content {
 class WebContents;
@@ -23,7 +27,8 @@ enum TabMediaState {
   TAB_MEDIA_STATE_NONE,
   TAB_MEDIA_STATE_RECORDING,  // Audio/Video being recorded, consumed by tab.
   TAB_MEDIA_STATE_CAPTURING,  // Tab contents being captured.
-  TAB_MEDIA_STATE_AUDIO_PLAYING  // Audible audio is playing from the tab.
+  TAB_MEDIA_STATE_AUDIO_PLAYING,  // Audible audio is playing from the tab.
+  TAB_MEDIA_STATE_AUDIO_MUTING,  // Tab audio is being muted.
 };
 
 namespace chrome {
@@ -67,6 +72,12 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents);
 // |media_state|.  Uses the global ui::ResourceBundle shared instance.
 const gfx::Image& GetTabMediaIndicatorImage(TabMediaState media_state);
 
+// Returns the cached image, to be shown by the media indicator button for mouse
+// hover/pressed, when the indicator is in the given |media_state|.  Uses the
+// global ui::ResourceBundle shared instance.
+const gfx::Image& GetTabMediaIndicatorAffordanceImage(
+    TabMediaState media_state);
+
 // Returns a non-continuous Animation that performs a fade-in or fade-out
 // appropriate for the given |next_media_state|.  This is used by the tab media
 // indicator to alert the user that recording, tab capture, or audio playback
@@ -78,6 +89,21 @@ scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(
 // by a break, followed by a localized string describing the |media_state|.
 base::string16 AssembleTabTooltipText(const base::string16& title,
                                       TabMediaState media_state);
+
+// Returns true if the experimental tab audio mute feature is enabled.
+bool IsTabAudioMutingFeatureEnabled();
+
+// Returns true if audio mute can be activated/deactivated for the given
+// |contents|.
+bool CanToggleAudioMute(content::WebContents* contents);
+
+// Indicates/Sets whether all audio output from |contents| is muted.
+bool IsTabAudioMuted(content::WebContents* contents);
+void SetTabAudioMuted(content::WebContents* contents, bool mute);
+
+// Returns true if the tabs at the |indices| in |tab_strip| are all muted.
+bool AreAllTabsMuted(const TabStripModel& tab_strip,
+                     const std::vector<int>& indices);
 
 }  // namespace chrome
 

@@ -79,6 +79,9 @@ void FakeBaseTabStripController::AddSelectionFromAnchorTo(int index) {
 void FakeBaseTabStripController::CloseTab(int index, CloseTabSource source) {
 }
 
+void FakeBaseTabStripController::ToggleTabAudioMute(int index) {
+}
+
 void FakeBaseTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,

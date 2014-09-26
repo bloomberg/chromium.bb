@@ -2209,6 +2209,8 @@
       'browser/ui/views/tab_modal_confirm_dialog_views.h',
       'browser/ui/views/tabs/browser_tab_strip_controller.cc',
       'browser/ui/views/tabs/browser_tab_strip_controller.h',
+      'browser/ui/views/tabs/media_indicator_button.cc',
+      'browser/ui/views/tabs/media_indicator_button.h',
       'browser/ui/views/tabs/stacked_tab_strip_layout.cc',
       'browser/ui/views/tabs/stacked_tab_strip_layout.h',
       'browser/ui/views/tabs/tab.cc',

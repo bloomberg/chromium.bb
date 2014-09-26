@@ -58,6 +58,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void ToggleSelected(int model_index) OVERRIDE;
   virtual void AddSelectionFromAnchorTo(int model_index) OVERRIDE;
   virtual void CloseTab(int model_index, CloseTabSource source) OVERRIDE;
+  virtual void ToggleTabAudioMute(int model_index) OVERRIDE;
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
                                      ui::MenuSourceType source_type) OVERRIDE;

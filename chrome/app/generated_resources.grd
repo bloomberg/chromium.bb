@@ -6525,6 +6525,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION" desc="Description of the flag that enables the website settings manager in chrome://settings.">
         Enables the website settings manager on the settings page.
       </message>
+      <message name="IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_NAME" desc="Name of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
+        Enable tab audio muting UI control.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_DESCRIPTION" desc="Description of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
+        When enabled, the audio indicators in the tab strip double as tab audio mute controls.  This also adds commands in the tab context menu for quickly muting multiple selected tabs.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -8506,6 +8512,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_UNPIN_TABS" desc="The label of the tab context menu item for unpinning multiple tab.">
           Unpin tabs
         </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="The label of the tab context menu item for muting a single tab.">
+          Mute tab
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TABS" desc="The label of the tab context menu item for muting more than one tab.">
+          Mute tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="The label of the tab context menu item for unmuting a single tab.">
+          Unmute tab
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS" desc="The label of the tab context menu item for unmuting more than one tab.">
+          Unmute tabs
+        </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
@@ -8543,6 +8561,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_TAB_CXMENU_UNPIN_TABS" desc="In Title Case: The label of the tab context menu item for unpinning multiple tabs.">
           Unpin Tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="In Title Case: The label of the tab context menu item for muting a single tab.">
+          Mute Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TABS" desc="In Title Case: The label of the tab context menu item for muting more than one tab.">
+          Mute Tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="In Title Case: The label of the tab context menu item for unmuting a single tab.">
+          Unmute Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS" desc="In Title Case: The label of the tab context menu item for unmuting more than one tab.">
+          Unmute Tabs
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
@@ -14382,6 +14412,9 @@ Do you accept?
     </message>
     <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
       This tab is playing audio.
+    </message>
+    <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_MUTING" desc="Extra tool tip text, when all tab audio output is muted.">
+      This tab's audio is being muted.
     </message>
 
     <!-- ProcessSingleton -->

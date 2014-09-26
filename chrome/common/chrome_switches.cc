@@ -615,6 +615,9 @@ const char kEnableSyncSyncedNotifications[] =
 // Enables synced articles.
 const char kEnableSyncArticles[]            = "enable-sync-articles";
 
+// Enables user control over muting tab audio from the tab strip.
+const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
+
 // Enables fanciful thumbnail processing. Used with NTP for
 // instant-extended-api, where thumbnails are generally smaller.
 const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";

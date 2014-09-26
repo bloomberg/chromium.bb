@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/popup_manager.h"
@@ -919,6 +920,15 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return false;
     }
 
+    case CommandToggleTabAudioMuted: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      for (size_t i = 0; i < indices.size(); ++i) {
+        if (!chrome::CanToggleAudioMute(GetWebContentsAt(indices[i])))
+          return false;
+      }
+      return true;
+    }
+
     case CommandBookmarkAllTabs:
       return browser_defaults::bookmarks_enabled &&
           delegate_->CanBookmarkAllTabs();
@@ -1022,6 +1032,20 @@ void TabStripModel::ExecuteContextMenuCommand(
           if (!IsAppTab(indices[i - 1]))
             SetTabPinned(indices[i - 1], false);
         }
+      }
+      break;
+    }
+
+    case CommandToggleTabAudioMuted: {
+      const std::vector<int>& indices = GetIndicesForCommand(context_index);
+      const bool mute = !chrome::AreAllTabsMuted(*this, indices);
+      if (mute)
+        content::RecordAction(UserMetricsAction("TabContextMenu_MuteTabs"));
+      else
+        content::RecordAction(UserMetricsAction("TabContextMenu_UnmuteTabs"));
+      for (std::vector<int>::const_iterator i = indices.begin();
+           i != indices.end(); ++i) {
+        chrome::SetTabAudioMuted(GetWebContentsAt(*i), mute);
       }
       break;
     }

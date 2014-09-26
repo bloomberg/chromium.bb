@@ -1926,6 +1926,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
                           kEnableDataReductionProxyAlt)
   },
+#if defined(USE_AURA)
+  {
+    "enable-tab-audio-muting",
+    IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_NAME,
+    IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableTabAudioMuting)
+  },
+#endif  // defined(USE_AURA)
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

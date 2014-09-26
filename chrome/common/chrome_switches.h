@@ -177,6 +177,7 @@ extern const char kEnableSuggestionsService[];
 extern const char kEnableSupervisedUserBlacklist[];
 extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
+extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableTranslateNewUX[];
 extern const char kEnableUserAlternateProtocolPorts[];

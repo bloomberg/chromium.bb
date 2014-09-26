@@ -213,6 +213,7 @@ class TabStrip : public views::View,
   virtual void ToggleSelected(Tab* tab) OVERRIDE;
   virtual void AddSelectionFromAnchorTo(Tab* tab) OVERRIDE;
   virtual void CloseTab(Tab* tab, CloseTabSource source) OVERRIDE;
+  virtual void ToggleTabAudioMute(Tab* tab) OVERRIDE;
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
                                      ui::MenuSourceType source_type) OVERRIDE;

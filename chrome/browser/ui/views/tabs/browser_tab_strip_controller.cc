@@ -300,6 +300,11 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
+void BrowserTabStripController::ToggleTabAudioMute(int model_index) {
+  content::WebContents* const contents = model_->GetWebContentsAt(model_index);
+  chrome::SetTabAudioMuted(contents, !chrome::IsTabAudioMuted(contents));
+}
+
 void BrowserTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,
