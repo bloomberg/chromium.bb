@@ -65,14 +65,20 @@ public class InputMethodManagerWrapper {
     /**
      * @see android.view.inputmethod.InputMethodManager#isWatchingCursor(View)
      */
+    @SuppressWarnings("deprecation")
     public boolean isWatchingCursor(View view) {
+        // TODO(aurimas): InputMethodManager.isWatchingCursor() was deprecated in L. Fix
+        // this once the final Android L SDK is released.
         return getInputMethodManager().isWatchingCursor(view);
     }
 
     /**
      * @see android.view.inputmethod.InputMethodManager#updateCursor(View, int, int, int, int)
      */
+    @SuppressWarnings("deprecation")
     public void updateCursor(View view, int left, int top, int right, int bottom) {
+        // TODO(aurimas): InputMethodManager.updateCursor() was deprecated in L. Fix
+        // this once the final Android L SDK is released.
         getInputMethodManager().updateCursor(view, left, top, right, bottom);
     }
 }
