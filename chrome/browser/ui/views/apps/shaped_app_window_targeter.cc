@@ -18,5 +18,9 @@ ShapedAppWindowTargeter::~ShapedAppWindowTargeter() {
 bool ShapedAppWindowTargeter::GetHitTestMask(aura::Window* window,
                                              gfx::Path* mask) const {
   SkRegion* shape = app_window_->shape();
-  return shape ? shape->getBoundaryPath(mask) : false;
+  if (!shape)
+    return false;
+
+  shape->getBoundaryPath(mask);
+  return true;
 }
