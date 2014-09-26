@@ -1,6 +1,6 @@
 [req]
 default_bits       = 2048
-default_md         = sha1
+default_md         = sha256
 string_mask        = utf8only
 prompt             = no
 encrypt_key        = no

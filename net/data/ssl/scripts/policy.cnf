@@ -8,7 +8,7 @@ preserve   = yes
 [CA_root]
 dir           = ${ENV::CA_DIR}
 key_size      = 2048
-algo          = sha1
+algo          = sha256
 database      = $dir/${ENV::CA_NAME}-index.txt
 new_certs_dir = $dir
 serial        = $dir/${ENV::CA_NAME}-serial
@@ -17,7 +17,7 @@ private_key   = $dir/${ENV::CA_NAME}.key
 RANDFILE      = $dir/.rand
 default_days     = 3650
 default_crl_days = 30
-default_md       = sha1
+default_md       = sha256
 policy           = policy_anything
 unique_subject   = no
 copy_extensions  = copy
@@ -49,7 +49,7 @@ emailAddress           = optional
 
 [req]
 default_bits       = 2048
-default_md         = sha1
+default_md         = sha256
 string_mask        = utf8only
 prompt             = no
 encrypt_key        = no

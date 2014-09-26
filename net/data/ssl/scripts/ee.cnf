@@ -3,7 +3,7 @@ KEY_SIZE = 2048
 
 [req]
 default_bits       = ${ENV::KEY_SIZE}
-default_md         = sha1
+default_md         = sha256
 string_mask        = utf8only
 prompt             = no
 encrypt_key        = no
@@ -25,8 +25,15 @@ CN = Duplicate
 O  = Bar
 CN = Duplicate
 
+[req_punycode_dn]
+CN = xn--wgv71a119e.com
+
 [req_extensions]
 subjectAltName = IP:127.0.0.1
+
+[req_punycode]
+basicConstraints = critical, CA:true
+subjectAltName   = @punycode_san
 
 [req_san_sanity]
 basicConstraints = critical, CA:true
@@ -50,3 +57,8 @@ CN=127.0.0.3
 DNS.1 = www.example.org
 DNS.2 = mail.example.org
 DNS.3 = mail.example.com
+
+[punycode_san]
+DNS.1 = xn--wgv71a119e.com
+DNS.2 = *.xn--wgv71a119e.com
+DNS.3 = blahblahblahblah.com

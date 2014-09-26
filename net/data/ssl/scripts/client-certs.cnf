@@ -13,7 +13,7 @@ serial          = $dir/${ENV::ID}-serial
 certificate     = $dir/${ENV::ID}.pem
 private_key     = $dir/${ENV::ID}.key
 RANDFILE        = $dir/rand
-default_md      = sha1
+default_md      = sha256
 default_days    = 3650
 policy          = policy_anything
 unique_subject  = no
@@ -31,7 +31,7 @@ emailAddress           = optional
 
 [req]
 default_bits       = 2048
-default_md         = sha1
+default_md         = sha256
 string_mask        = utf8only
 prompt             = no
 encrypt_key        = no
