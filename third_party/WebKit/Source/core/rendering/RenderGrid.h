@@ -127,7 +127,6 @@ private:
     LayoutUnit gridAreaBreadthForChild(const RenderBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
 
     virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    void paintChild(RenderBox*, PaintInfo&, const LayoutPoint&);
 
 #if ENABLE(ASSERT)
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);
