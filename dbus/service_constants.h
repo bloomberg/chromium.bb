@@ -393,6 +393,7 @@ const char kPortalDetectionFailedStatusProperty[] =
 const char kSavedIPConfigProperty[] = "SavedIPConfig";
 const char kStaticIPConfigProperty[] = "StaticIPConfig";
 const char kLinkMonitorDisableProperty[] = "LinkMonitorDisable";
+const char kSecurityClassProperty[] = "SecurityClass";
 
 // Flimflam provider property names.
 const char kProviderHostProperty[] = "Provider.Host";
