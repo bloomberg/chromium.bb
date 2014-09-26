@@ -62,9 +62,9 @@
         ['OS=="android"', {
           'sources!': [
             'webmediaplayer_impl.cc',
+            'webmediaplayer_impl.h',
           ],
-        },
-       ],
+        }],
       ],
     },
     {
