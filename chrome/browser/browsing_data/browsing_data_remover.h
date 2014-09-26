@@ -93,9 +93,6 @@ class BrowsingDataRemover
 #if defined(OS_ANDROID)
     REMOVE_APP_BANNER_DATA = 1 << 15,
 #endif
-#if !defined(OS_ANDROID)
-    REMOVE_GCM = 1 << 16,
-#endif
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
@@ -111,9 +108,6 @@ class BrowsingDataRemover
                        REMOVE_WEBSQL |
 #if defined(OS_ANDROID)
                        REMOVE_APP_BANNER_DATA |
-#endif
-#if !defined(OS_ANDROID)
-                       REMOVE_GCM |
 #endif
                        REMOVE_CHANNEL_IDS,
 

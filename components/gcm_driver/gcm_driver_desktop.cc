@@ -384,18 +384,13 @@ void GCMDriverDesktop::OnSignedIn() {
   EnsureStarted();
 }
 
-void GCMDriverDesktop::OnSignedOut() {
-  signed_in_ = false;
-
-  // When sign-in enforcement is dropped, we will no longer wipe out the GCM
-  // data when the user signs out.
-  if (!GCMDriver::IsAllowedForAllUsers())
-    Purge();
-}
-
 void GCMDriverDesktop::Purge() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
+  // We still proceed with the check-out logic even if the check-in is not
+  // initiated in the current session. This will make sure that all the
+  // persisted data written previously will get purged.
+  signed_in_ = false;
   RemoveCachedData();
 
   io_thread_->PostTask(FROM_HERE,
@@ -638,6 +633,7 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
   if (app_handlers().empty())
     return GCMClient::UNKNOWN_ERROR;
 
+  // TODO(jianli): To be removed when sign-in enforcement is dropped.
   if (!signed_in_ && !GCMDriver::IsAllowedForAllUsers())
     return GCMClient::NOT_SIGNED_IN;
 

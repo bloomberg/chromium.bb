@@ -35,8 +35,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -47,7 +45,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/domain_reliability/service.h"
-#include "components/gcm_driver/gcm_driver.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -541,15 +538,6 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_APP_BANNER_DATA) {
     profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
         CONTENT_SETTINGS_TYPE_APP_BANNER);
-  }
-#endif
-
-#if !defined(OS_ANDROID)
-  if (remove_mask & REMOVE_GCM) {
-    gcm::GCMProfileService* gcm_profile_service =
-        gcm::GCMProfileServiceFactory::GetForProfile(profile_);
-    if (gcm_profile_service)
-      gcm_profile_service->driver()->Purge();
   }
 #endif
 

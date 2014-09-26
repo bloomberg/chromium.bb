@@ -25,9 +25,6 @@ void FakeGCMDriver::RemoveAppHandler(const std::string& app_id) {
 void FakeGCMDriver::OnSignedIn() {
 }
 
-void FakeGCMDriver::OnSignedOut() {
-}
-
 void FakeGCMDriver::Purge() {
 }
 
