@@ -87,6 +87,7 @@ const char kOldZoomFactor[] = "oldZoomFactor";
 const char kNewZoomFactor[] = "newZoomFactor";
 
 // Internal parameters/properties on events.
+const char kInternalBaseURLForDataURL[] = "baseUrlForDataUrl";
 const char kInternalCurrentEntryIndex[] = "currentEntryIndex";
 const char kInternalEntryCount[] = "entryCount";
 const char kInternalProcessId[] = "processId";

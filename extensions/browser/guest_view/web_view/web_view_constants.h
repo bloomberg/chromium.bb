@@ -91,6 +91,7 @@ extern const char kOldZoomFactor[];
 extern const char kNewZoomFactor[];
 
 // Internal parameters/properties on events.
+extern const char kInternalBaseURLForDataURL[];
 extern const char kInternalCurrentEntryIndex[];
 extern const char kInternalEntryCount[];
 extern const char kInternalProcessId[];

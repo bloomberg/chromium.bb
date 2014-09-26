@@ -302,7 +302,8 @@ WebViewEvents.prototype.handleLoadAbortEvent = function(event, webViewEvent) {
 };
 
 WebViewEvents.prototype.handleLoadCommitEvent = function(event, webViewEvent) {
-  this.webViewInternal.onLoadCommit(event.currentEntryIndex, event.entryCount,
+  this.webViewInternal.onLoadCommit(event.baseUrlForDataUrl,
+                                    event.currentEntryIndex, event.entryCount,
                                     event.processId, event.url,
                                     event.isTopLevel);
   this.webViewInternal.dispatchEvent(webViewEvent);

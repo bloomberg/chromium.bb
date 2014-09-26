@@ -292,7 +292,11 @@ WebViewInternal.prototype.validateExecuteCodeCall  = function() {
  */
 WebViewInternal.prototype.executeScript = function(var_args) {
   this.validateExecuteCodeCall();
-  var args = $Array.concat([this.guestInstanceId, this.src],
+  var webview_src = this.src;
+  if (this.baseUrlForDataUrl != '') {
+    webview_src = this.baseUrlForDataUrl;
+  }
+  var args = $Array.concat([this.guestInstanceId, webview_src],
                            $Array.slice(arguments));
   $Function.apply(WebView.executeScript, null, args);
 };
@@ -302,7 +306,11 @@ WebViewInternal.prototype.executeScript = function(var_args) {
  */
 WebViewInternal.prototype.insertCSS = function(var_args) {
   this.validateExecuteCodeCall();
-  var args = $Array.concat([this.guestInstanceId, this.src],
+  var webview_src = this.src;
+  if (this.baseUrlForDataUrl != '') {
+    webview_src = this.baseUrlForDataUrl;
+  }
+  var args = $Array.concat([this.guestInstanceId, webview_src],
                            $Array.slice(arguments));
   $Function.apply(WebView.insertCSS, null, args);
 };
@@ -726,7 +734,9 @@ WebViewInternal.prototype.setupEventProperty = function(eventName) {
 
 // Updates state upon loadcommit.
 WebViewInternal.prototype.onLoadCommit = function(
-    currentEntryIndex, entryCount, processId, url, isTopLevel) {
+    baseUrlForDataUrl, currentEntryIndex, entryCount,
+    processId, url, isTopLevel) {
+  this.baseUrlForDataUrl = baseUrlForDataUrl;
   this.currentEntryIndex = currentEntryIndex;
   this.entryCount = entryCount;
   this.processId = processId;

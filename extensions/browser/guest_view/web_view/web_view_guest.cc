@@ -661,6 +661,12 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
+  args->SetString(webview::kInternalBaseURLForDataURL,
+                  web_contents()
+                      ->GetController()
+                      .GetLastCommittedEntry()
+                      ->GetBaseURLForDataURL()
+                      .spec());
   args->SetInteger(webview::kInternalCurrentEntryIndex,
                    web_contents()->GetController().GetCurrentEntryIndex());
   args->SetInteger(webview::kInternalEntryCount,
