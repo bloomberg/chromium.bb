@@ -40,7 +40,6 @@ static void OutputThunk(
     CVImageBufferRef image_buffer,
     CMTime presentation_time_stamp,
     CMTime presentation_duration) {
-  // TODO(sandersd): Implement flush-before-delete to guarantee validity.
   VTVideoDecodeAccelerator* vda =
       reinterpret_cast<VTVideoDecodeAccelerator*>(decompression_output_refcon);
   int32_t bitstream_id = reinterpret_cast<intptr_t>(source_frame_refcon);
@@ -55,6 +54,16 @@ VTVideoDecodeAccelerator::DecodedFrame::DecodedFrame(
 }
 
 VTVideoDecodeAccelerator::DecodedFrame::~DecodedFrame() {
+}
+
+VTVideoDecodeAccelerator::PendingAction::PendingAction(
+    Action action,
+    int32_t bitstream_id)
+    : action(action),
+      bitstream_id(bitstream_id) {
+}
+
+VTVideoDecodeAccelerator::PendingAction::~PendingAction() {
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(CGLContextObj cgl_context)
@@ -160,7 +169,6 @@ void VTVideoDecodeAccelerator::ConfigureDecoder(
       image_config, kCVPixelBufferOpenGLCompatibilityKey, kCFBooleanTrue);
 
   // TODO(sandersd): Check if the session is already compatible.
-  // TODO(sandersd): Flush.
   session_.reset();
   CHECK(!VTDecompressionSessionCreate(
       kCFAllocatorDefault,
@@ -171,6 +179,8 @@ void VTVideoDecodeAccelerator::ConfigureDecoder(
       session_.InitializeInto()));
 
   // If the size has changed, trigger a request for new picture buffers.
+  // TODO(sandersd): Move to SendPictures(), and use this just as a hint for an
+  // upcoming size change.
   gfx::Size new_coded_size(coded_dimensions.width, coded_dimensions.height);
   if (coded_size_ != new_coded_size) {
     coded_size_ = new_coded_size;
@@ -183,8 +193,8 @@ void VTVideoDecodeAccelerator::ConfigureDecoder(
 
 void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
   DCHECK(CalledOnValidThread());
-  // TODO(sandersd): Test what happens if bitstream buffers are passed to VT out
-  // of order.
+  CHECK_GE(bitstream.id(), 0) << "Negative bitstream_id";
+  pending_bitstream_ids_.push(bitstream.id());
   decoder_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
       &VTVideoDecodeAccelerator::DecodeTask, base::Unretained(this),
       bitstream));
@@ -235,6 +245,17 @@ void VTVideoDecodeAccelerator::DecodeTask(
   // TODO(sandersd): Reinitialize when there are new parameter sets.
   if (!session_)
     ConfigureDecoder(config_nalu_data_ptrs, config_nalu_data_sizes);
+
+  // If there are no non-configuration units, immediately return an empty
+  // (ie. dropped) frame. It is an error to create a MemoryBlock with zero
+  // size.
+  if (!data_size) {
+    gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &VTVideoDecodeAccelerator::OutputTask,
+        weak_this_factory_.GetWeakPtr(),
+        DecodedFrame(bitstream.id(), NULL)));
+    return;
+  }
 
   // 3. Allocate a memory-backed CMBlockBuffer for the translated data.
   base::ScopedCFTypeRef<CMBlockBufferRef> data;
@@ -311,7 +332,7 @@ void VTVideoDecodeAccelerator::Output(
 void VTVideoDecodeAccelerator::OutputTask(DecodedFrame frame) {
   DCHECK(CalledOnValidThread());
   decoded_frames_.push(frame);
-  SendPictures();
+  ProcessDecodedFrames();
 }
 
 void VTVideoDecodeAccelerator::SizeChangedTask(gfx::Size coded_size) {
@@ -332,10 +353,11 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     texture_ids_[pictures[i].id()] = pictures[i].texture_id();
   }
 
-  // Pictures are not marked as uncleared until this method returns. They will
-  // become broken if they are used before that happens.
+  // Pictures are not marked as uncleared until after this method returns, and
+  // they will be broken if they are used before that happens. So, schedule
+  // future work after that happens.
   gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VTVideoDecodeAccelerator::SendPictures,
+      &VTVideoDecodeAccelerator::ProcessDecodedFrames,
       weak_this_factory_.GetWeakPtr()));
 }
 
@@ -344,61 +366,186 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DCHECK_EQ(CFGetRetainCount(picture_bindings_[picture_id]), 1);
   picture_bindings_.erase(picture_id);
   available_picture_ids_.push(picture_id);
-  SendPictures();
+  ProcessDecodedFrames();
 }
 
-// TODO(sandersd): Proper error reporting instead of CHECKs.
-void VTVideoDecodeAccelerator::SendPictures() {
+void VTVideoDecodeAccelerator::CompleteAction(Action action) {
   DCHECK(CalledOnValidThread());
-  if (available_picture_ids_.empty() || decoded_frames_.empty())
-    return;
+  switch (action) {
+    case ACTION_FLUSH:
+      client_->NotifyFlushDone();
+      break;
+    case ACTION_RESET:
+      client_->NotifyResetDone();
+      break;
+    case ACTION_DESTROY:
+      delete this;
+      break;
+  }
+}
+
+void VTVideoDecodeAccelerator::CompleteActions(int32_t bitstream_id) {
+  DCHECK(CalledOnValidThread());
+  while (!pending_actions_.empty() &&
+         pending_actions_.front().bitstream_id == bitstream_id) {
+    CompleteAction(pending_actions_.front().action);
+    pending_actions_.pop();
+  }
+}
+
+void VTVideoDecodeAccelerator::ProcessDecodedFrames() {
+  DCHECK(CalledOnValidThread());
+
+  while (!decoded_frames_.empty()) {
+    if (pending_actions_.empty()) {
+      // No pending actions; send frames normally.
+      SendPictures(pending_bitstream_ids_.back());
+      return;
+    }
+
+    int32_t next_action_bitstream_id = pending_actions_.front().bitstream_id;
+    int32_t last_sent_bitstream_id = -1;
+    switch (pending_actions_.front().action) {
+      case ACTION_FLUSH:
+        // Send frames normally.
+        last_sent_bitstream_id = SendPictures(next_action_bitstream_id);
+        break;
+
+      case ACTION_RESET:
+        // Drop decoded frames.
+        while (!decoded_frames_.empty() &&
+               last_sent_bitstream_id != next_action_bitstream_id) {
+          last_sent_bitstream_id = decoded_frames_.front().bitstream_id;
+          decoded_frames_.pop();
+          DCHECK_EQ(pending_bitstream_ids_.front(), last_sent_bitstream_id);
+          pending_bitstream_ids_.pop();
+          client_->NotifyEndOfBitstreamBuffer(last_sent_bitstream_id);
+        }
+        break;
+
+      case ACTION_DESTROY:
+        // Drop decoded frames, without bookkeeping.
+        while (!decoded_frames_.empty()) {
+          last_sent_bitstream_id = decoded_frames_.front().bitstream_id;
+          decoded_frames_.pop();
+        }
+
+        // Handle completing the action specially, as it is important not to
+        // access |this| after calling CompleteAction().
+        if (last_sent_bitstream_id == next_action_bitstream_id)
+          CompleteAction(ACTION_DESTROY);
+
+        // Either |this| was deleted or no more progress can be made.
+        return;
+    }
+
+    // If we ran out of buffers (or pictures), no more progress can be made
+    // until more frames are decoded.
+    if (last_sent_bitstream_id != next_action_bitstream_id)
+      return;
+
+    // Complete all actions pending for this |bitstream_id|, then loop to see
+    // if progress can be made on the next action.
+    CompleteActions(next_action_bitstream_id);
+  }
+}
+
+int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!decoded_frames_.empty());
+
+  if (available_picture_ids_.empty())
+    return -1;
 
   gfx::ScopedCGLSetCurrentContext scoped_set_current_context(cgl_context_);
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
 
-  while (!available_picture_ids_.empty() && !decoded_frames_.empty()) {
-    int32_t picture_id = available_picture_ids_.front();
-    available_picture_ids_.pop();
+  int32_t last_sent_bitstream_id = -1;
+  while (!available_picture_ids_.empty() &&
+         !decoded_frames_.empty() &&
+         last_sent_bitstream_id != up_to_bitstream_id) {
     DecodedFrame frame = decoded_frames_.front();
     decoded_frames_.pop();
-    IOSurfaceRef surface = CVPixelBufferGetIOSurface(frame.image_buffer);
+    DCHECK_EQ(pending_bitstream_ids_.front(), frame.bitstream_id);
+    pending_bitstream_ids_.pop();
+    int32_t picture_id = available_picture_ids_.front();
+    available_picture_ids_.pop();
 
-    gfx::ScopedTextureBinder
-        texture_binder(GL_TEXTURE_RECTANGLE_ARB, texture_ids_[picture_id]);
-    CHECK(!CGLTexImageIOSurface2D(
-        cgl_context_,                 // ctx
-        GL_TEXTURE_RECTANGLE_ARB,     // target
-        GL_RGB,                       // internal_format
-        texture_size_.width(),        // width
-        texture_size_.height(),       // height
-        GL_YCBCR_422_APPLE,           // format
-        GL_UNSIGNED_SHORT_8_8_APPLE,  // type
-        surface,                      // io_surface
-        0));                          // plane
+    CVImageBufferRef image_buffer = frame.image_buffer.get();
+    if (image_buffer) {
+      IOSurfaceRef surface = CVPixelBufferGetIOSurface(image_buffer);
 
-    picture_bindings_[picture_id] = frame.image_buffer;
-    client_->PictureReady(media::Picture(
-        picture_id, frame.bitstream_id, gfx::Rect(texture_size_)));
+      // TODO(sandersd): Find out why this sometimes fails due to no GL context.
+      gfx::ScopedTextureBinder
+          texture_binder(GL_TEXTURE_RECTANGLE_ARB, texture_ids_[picture_id]);
+      CHECK(!CGLTexImageIOSurface2D(
+          cgl_context_,                 // ctx
+          GL_TEXTURE_RECTANGLE_ARB,     // target
+          GL_RGB,                       // internal_format
+          texture_size_.width(),        // width
+          texture_size_.height(),       // height
+          GL_YCBCR_422_APPLE,           // format
+          GL_UNSIGNED_SHORT_8_8_APPLE,  // type
+          surface,                      // io_surface
+          0));                          // plane
+
+      picture_bindings_[picture_id] = frame.image_buffer;
+      client_->PictureReady(media::Picture(
+          picture_id, frame.bitstream_id, gfx::Rect(texture_size_)));
+    }
+
     client_->NotifyEndOfBitstreamBuffer(frame.bitstream_id);
+    last_sent_bitstream_id = frame.bitstream_id;
   }
 
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
+  return last_sent_bitstream_id;
+}
+
+void VTVideoDecodeAccelerator::FlushTask() {
+  DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  CHECK(!VTDecompressionSessionFinishDelayedFrames(session_));
+}
+
+void VTVideoDecodeAccelerator::QueueAction(Action action) {
+  DCHECK(CalledOnValidThread());
+  if (pending_bitstream_ids_.empty()) {
+    // If there are no pending frames, all actions complete immediately.
+    CompleteAction(action);
+  } else {
+    // Otherwise, queue the action.
+    pending_actions_.push(PendingAction(action, pending_bitstream_ids_.back()));
+
+    // Request a flush to make sure the action will eventually complete.
+    decoder_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
+        &VTVideoDecodeAccelerator::FlushTask, base::Unretained(this)));
+
+    // See if we can make progress now that there is a new pending action.
+    ProcessDecodedFrames();
+  }
 }
 
 void VTVideoDecodeAccelerator::Flush() {
   DCHECK(CalledOnValidThread());
-  // TODO(sandersd): Trigger flush, sending frames.
+  QueueAction(ACTION_FLUSH);
 }
 
 void VTVideoDecodeAccelerator::Reset() {
   DCHECK(CalledOnValidThread());
-  // TODO(sandersd): Trigger flush, discarding frames.
+  QueueAction(ACTION_RESET);
 }
 
 void VTVideoDecodeAccelerator::Destroy() {
   DCHECK(CalledOnValidThread());
-  // TODO(sandersd): Trigger flush, discarding frames, and wait for them.
-  delete this;
+  // Drop any other pending actions.
+  while (!pending_actions_.empty())
+    pending_actions_.pop();
+  // Return all bitstream buffers.
+  while (!pending_bitstream_ids_.empty()) {
+    client_->NotifyEndOfBitstreamBuffer(pending_bitstream_ids_.front());
+    pending_bitstream_ids_.pop();
+  }
+  QueueAction(ACTION_DESTROY);
 }
 
 bool VTVideoDecodeAccelerator::CanDecodeOnIOThread() {
