@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
@@ -39,12 +40,10 @@ class AboutSigninInternals
    public:
     // |info| will contain the dictionary of signin_status_ values as indicated
     // in the comments for GetSigninStatus() below.
-    virtual void OnSigninStateChanged(
-        scoped_ptr<base::DictionaryValue> info) = 0;
+    virtual void OnSigninStateChanged(const base::DictionaryValue* info) = 0;
 
     // Notification that the cookie accounts are ready to be displayed.
-    virtual void OnCookieAccountsFetched(
-        scoped_ptr<base::DictionaryValue> info) = 0;
+    virtual void OnCookieAccountsFetched(const base::DictionaryValue* info) = 0;
   };
 
   AboutSigninInternals(ProfileOAuth2TokenService* token_service,

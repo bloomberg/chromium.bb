@@ -220,10 +220,11 @@ void AboutSigninInternals::Shutdown() {
 }
 
 void AboutSigninInternals::NotifyObservers() {
+  scoped_ptr<base::DictionaryValue> signin_status_value =
+      signin_status_.ToValue(client_->GetProductVersion());
   FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
                     signin_observers_,
-                    OnSigninStateChanged(
-                        signin_status_.ToValue(client_->GetProductVersion())));
+                    OnSigninStateChanged(signin_status_value.get()));
 }
 
 scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
@@ -295,7 +296,8 @@ void AboutSigninInternals::OnCookieChanged(
 }
 
 void AboutSigninInternals::GetCookieAccountsAsync() {
-  if (!gaia_fetcher_) {
+  // Don't bother calling /ListAccounts if no one will observe the response.
+  if (!gaia_fetcher_ && signin_observers_.might_have_observers()) {
     // There is no list account request in flight.
     gaia_fetcher_.reset(new GaiaAuthFetcher(
         this, GaiaConstants::kChromeSource, client_->GetURLRequestContext()));
@@ -324,9 +326,9 @@ void AboutSigninInternals::OnListAccountsFailure(
 
 void AboutSigninInternals::OnListAccountsComplete(
     std::vector<std::pair<std::string, bool> >& gaia_accounts) {
-  scoped_ptr<base::DictionaryValue> signin_status(new base::DictionaryValue());
+  base::DictionaryValue signin_status;
   base::ListValue* cookie_info = new base::ListValue();
-  signin_status->Set("cookie_info", cookie_info);
+  signin_status.Set("cookie_info", cookie_info);
 
   for (size_t i = 0; i < gaia_accounts.size(); ++i) {
     AddCookieEntry(cookie_info,
@@ -340,7 +342,7 @@ void AboutSigninInternals::OnListAccountsComplete(
   // Update the observers that the cookie's accounts are updated.
   FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
                     signin_observers_,
-                    OnCookieAccountsFetched(signin_status.Pass()));
+                    OnCookieAccountsFetched(&signin_status));
 }
 
 AboutSigninInternals::TokenInfo::TokenInfo(

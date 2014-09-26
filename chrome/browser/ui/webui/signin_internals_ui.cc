@@ -79,13 +79,13 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
 }
 
 void SignInInternalsUI::OnSigninStateChanged(
-    scoped_ptr<base::DictionaryValue> info) {
+    const base::DictionaryValue* info) {
   web_ui()->CallJavascriptFunction(
       "chrome.signin.onSigninInfoChanged.fire", *info);
 }
 
 void SignInInternalsUI::OnCookieAccountsFetched(
-    scoped_ptr<base::DictionaryValue> info) {
+    const base::DictionaryValue* info) {
   web_ui()->CallJavascriptFunction(
       "chrome.signin.onCookieAccountsFetched.fire", *info);
 }

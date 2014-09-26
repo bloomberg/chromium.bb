@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -26,12 +25,11 @@ class SignInInternalsUI : public content::WebUIController,
                                           const base::ListValue& args) OVERRIDE;
 
   // AboutSigninInternals::Observer::OnSigninStateChanged implementation.
-  virtual void OnSigninStateChanged(
-      scoped_ptr<base::DictionaryValue> info) OVERRIDE;
+  virtual void OnSigninStateChanged(const base::DictionaryValue* info) OVERRIDE;
 
   // Notification that the cookie accounts are ready to be displayed.
   virtual void OnCookieAccountsFetched(
-      scoped_ptr<base::DictionaryValue> info) OVERRIDE;
+      const base::DictionaryValue* info) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignInInternalsUI);
