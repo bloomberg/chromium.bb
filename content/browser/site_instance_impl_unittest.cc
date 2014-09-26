@@ -568,10 +568,13 @@ static SiteInstanceImpl* CreateSiteInstance(BrowserContext* browser_context,
 // Test to ensure that pages that require certain privileges are grouped
 // in processes with similar pages.
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
-  // This test shouldn't run with --site-per-process mode, since it doesn't
-  // allow render process reuse, which this test explicitly exercises.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+  // This test shouldn't run with --site-per-process or
+  // --enable-strict-site-isolation modes, since they don't allow render
+  // process reuse, which this test explicitly exercises.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSitePerProcess) ||
+      command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
     return;
 
   // On Android by default the number of renderer hosts is unlimited and process
