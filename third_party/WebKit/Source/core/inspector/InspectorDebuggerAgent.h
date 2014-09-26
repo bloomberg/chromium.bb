@@ -190,6 +190,10 @@ public:
         virtual void debuggerWasDisabled() = 0;
         virtual void stepInto() = 0;
         virtual void didPause() = 0;
+        virtual bool canPauseOnPromiseEvent() = 0;
+        virtual void didCreatePromise() = 0;
+        virtual void didResolvePromise() = 0;
+        virtual void didRejectPromise() = 0;
     };
     void setListener(Listener* listener) { m_listener = listener; }
 

@@ -191,6 +191,14 @@ bool ScriptDebugServer::canBreakProgram()
 
 void ScriptDebugServer::breakProgram()
 {
+    if (isPaused()) {
+        ASSERT(!m_runningNestedMessageLoop);
+        v8::Handle<v8::Value> exception;
+        v8::Handle<v8::Array> hitBreakpoints;
+        handleProgramBreak(m_pausedScriptState.get(), m_executionState, exception, hitBreakpoints);
+        return;
+    }
+
     if (!canBreakProgram())
         return;
 
@@ -427,7 +435,7 @@ void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::
 void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
 {
     // Don't allow nested breaks.
-    if (isPaused())
+    if (m_runningNestedMessageLoop)
         return;
 
     ScriptDebugListener* listener = getDebugListenerForContext(pausedScriptState->context());

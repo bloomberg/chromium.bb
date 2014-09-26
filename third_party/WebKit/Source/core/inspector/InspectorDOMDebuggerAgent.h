@@ -119,6 +119,10 @@ private:
     virtual void debuggerWasDisabled() OVERRIDE;
     virtual void stepInto() OVERRIDE;
     virtual void didPause() OVERRIDE;
+    virtual bool canPauseOnPromiseEvent() OVERRIDE;
+    virtual void didCreatePromise() OVERRIDE;
+    virtual void didResolvePromise() OVERRIDE;
+    virtual void didRejectPromise() OVERRIDE;
     void disable();
 
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);

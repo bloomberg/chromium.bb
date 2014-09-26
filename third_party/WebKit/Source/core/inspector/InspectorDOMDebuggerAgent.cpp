@@ -63,6 +63,9 @@ static const char animationFrameFiredEventName[] = "animationFrameFired";
 static const char setTimerEventName[] = "setTimer";
 static const char clearTimerEventName[] = "clearTimer";
 static const char timerFiredEventName[] = "timerFired";
+static const char newPromiseEventName[] = "newPromise";
+static const char promiseResolvedEventName[] = "promiseResolved";
+static const char promiseRejectedEventName[] = "promiseRejected";
 static const char windowCloseEventName[] = "close";
 static const char customElementCallbackName[] = "customElementCallback";
 static const char webglErrorFiredEventName[] = "webglErrorFired";
@@ -478,6 +481,32 @@ void InspectorDOMDebuggerAgent::didRemoveTimer(ExecutionContext*, int)
 void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(timerFiredEventName, 0), false);
+}
+
+bool InspectorDOMDebuggerAgent::canPauseOnPromiseEvent()
+{
+    if (m_pauseInNextEventListener)
+        return true;
+    RefPtr<JSONObject> eventListenerBreakpoints = m_state->getObject(DOMDebuggerAgentState::eventListenerBreakpoints);
+    JSONObject::iterator end = eventListenerBreakpoints->end();
+    return eventListenerBreakpoints->find(String(instrumentationEventCategoryType) + newPromiseEventName) != end
+        || eventListenerBreakpoints->find(String(instrumentationEventCategoryType) + promiseResolvedEventName) != end
+        || eventListenerBreakpoints->find(String(instrumentationEventCategoryType) + promiseRejectedEventName) != end;
+}
+
+void InspectorDOMDebuggerAgent::didCreatePromise()
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(newPromiseEventName, 0), true);
+}
+
+void InspectorDOMDebuggerAgent::didResolvePromise()
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(promiseResolvedEventName, 0), true);
+}
+
+void InspectorDOMDebuggerAgent::didRejectPromise()
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(promiseRejectedEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::didRequestAnimationFrame(Document*, int)

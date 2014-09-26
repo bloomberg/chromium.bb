@@ -1,0 +1,75 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var resolve;
+    var reject;
+
+    var p = new Promise(function(res, rej) {
+        resolve = res;
+    });
+    p.then(function() {
+    });
+
+    var q = new Promise(function(res, rej) {
+        reject = rej;
+    });
+    q.then(function() {
+    });
+
+    resolve(42);
+    reject(new Error("err"));
+}
+
+var test = function()
+{
+    var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+    var numberOfPauses = 6;
+
+    WebInspector.inspectorView.showPanel("sources");
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        pane._setBreakpoint("instrumentation:newPromise");
+        pane._setBreakpoint("instrumentation:promiseResolved");
+        pane._setBreakpoint("instrumentation:promiseRejected");
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+    {
+        var eventName = (auxData && auxData.eventName || "").replace(/^instrumentation:/, "");
+        InspectorTest.addResult("\nPaused on " + eventName);
+        InspectorTest.captureStackTrace(callFrames);
+
+        if (--numberOfPauses)
+            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        else
+            InspectorTest.resumeExecution(step2);
+    }
+
+    function step2()
+    {
+        pane._removeBreakpoint("instrumentation:newPromise");
+        pane._removeBreakpoint("instrumentation:promiseResolved");
+        pane._removeBreakpoint("instrumentation:promiseRejected");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that debugger will stop on Promise events.
+</p>
+
+</body>
+</html>

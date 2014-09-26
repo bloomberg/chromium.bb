@@ -927,13 +927,23 @@ void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* contex
 
 bool InspectorDebuggerAgent::v8PromiseEventsEnabled() const
 {
-    return promiseTracker().isEnabled();
+    return promiseTracker().isEnabled() || (m_listener && m_listener->canPauseOnPromiseEvent());
 }
 
 void InspectorDebuggerAgent::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status)
 {
-    ASSERT(promiseTracker().isEnabled());
-    promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
+    if (promiseTracker().isEnabled())
+        promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
+    if (!m_listener)
+        return;
+    if (!parentPromise.IsEmpty() && parentPromise->IsObject())
+        return;
+    if (status < 0)
+        m_listener->didRejectPromise();
+    else if (status > 0)
+        m_listener->didResolvePromise();
+    else
+        m_listener->didCreatePromise();
 }
 
 void InspectorDebuggerAgent::pause(ErrorString*)

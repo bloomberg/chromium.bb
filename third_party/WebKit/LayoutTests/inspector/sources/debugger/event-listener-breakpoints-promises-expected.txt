@@ -1,0 +1,28 @@
+Tests that debugger will stop on Promise events.
+
+Set timer for test function.
+
+Paused on newPromise
+Call stack:
+    0) testFunction (event-listener-breakpoints-promises.html:12)
+
+Paused on newPromise
+Call stack:
+    0) testFunction (event-listener-breakpoints-promises.html:15)
+
+Paused on newPromise
+Call stack:
+    0) testFunction (event-listener-breakpoints-promises.html:18)
+
+Paused on newPromise
+Call stack:
+    0) testFunction (event-listener-breakpoints-promises.html:21)
+
+Paused on promiseResolved
+Call stack:
+    0) testFunction (event-listener-breakpoints-promises.html:24)
+
+Paused on promiseRejected
+Call stack:
+    0) testFunction (event-listener-breakpoints-promises.html:25)
+
