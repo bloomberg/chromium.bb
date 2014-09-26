@@ -164,6 +164,10 @@ bool CanPerformEarlyRestart() {
   if (controller->auth_mode() != LoginPerformer::AUTH_MODE_INTERNAL)
     return false;
 
+  // No early restart if Easy unlock key needs to be updated.
+  if (UserSessionManager::GetInstance()->NeedsToUpdateEasyUnlockKeys())
+    return false;
+
   return true;
 }
 
@@ -453,6 +457,14 @@ void LoginUtilsImpl::OnRlzInitialized() {
 #endif
 
 void LoginUtilsImpl::AttemptRestart(Profile* profile) {
+  if (UserSessionManager::GetInstance()
+          ->CheckEasyUnlockKeyOps(
+              base::Bind(&LoginUtilsImpl::AttemptRestart,
+                         base::Unretained(this),
+                         profile))) {
+    return;
+  }
+
   if (UserSessionManager::GetInstance()->GetSigninSessionRestoreStrategy() !=
       OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR) {
     chrome::AttemptRestart();

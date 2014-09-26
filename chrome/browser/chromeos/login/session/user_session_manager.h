@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -143,11 +144,17 @@ class UserSessionManager
 
   // Changes browser locale (selects best suitable locale from different
   // user settings). Returns true if callback will be called.
-  // Returns true if callback will be called.
   bool RespectLocalePreference(
       Profile* profile,
       const user_manager::User* user,
       scoped_ptr<locale_util::SwitchLanguageCallback> callback) const;
+
+  // Returns true if Easy unlock keys needs to be updated.
+  bool NeedsToUpdateEasyUnlockKeys() const;
+
+  // Returns true if there are pending Easy unlock key operations and
+  // |callback| will be invoked when it is done.
+  bool CheckEasyUnlockKeyOps(const base::Closure& callback);
 
   void AddSessionStateObserver(chromeos::UserSessionStateObserver* observer);
   void RemoveSessionStateObserver(chromeos::UserSessionStateObserver* observer);
@@ -248,6 +255,9 @@ class UserSessionManager
   // Update Easy unlock cryptohome keys using the pairing data in user prefs.
   void UpdateEasyUnlockKeys(Profile* user_profile);
 
+  // Callback invoked when Easy unlock key operations are finished.
+  void OnEasyUnlockKeyOpsFinished(bool success);
+
   UserSessionManagerDelegate* delegate_;
 
   // Authentication/user context.
@@ -299,6 +309,8 @@ class UserSessionManager
 
   // Manages Easy unlock cryptohome keys.
   scoped_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;
+  bool running_easy_unlock_key_ops_;
+  base::Closure easy_unlock_key_ops_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };

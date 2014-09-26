@@ -223,7 +223,8 @@ UserSessionManager::UserSessionManager()
       user_sessions_restore_in_progress_(false),
       exit_after_session_restore_(false),
       session_restore_strategy_(
-          OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
+          OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
+      running_easy_unlock_key_ops_(false) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
@@ -446,6 +447,25 @@ bool UserSessionManager::RespectLocalePreference(
                               false /* login_layouts_only */,
                               callback.Pass());
 
+  return true;
+}
+
+bool UserSessionManager::NeedsToUpdateEasyUnlockKeys() const {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kEnableEasySignin) &&
+         !user_context_.GetUserID().empty() &&
+         user_context_.GetUserType() == user_manager::USER_TYPE_REGULAR &&
+         user_context_.GetKey() && !user_context_.GetKey()->GetSecret().empty();
+}
+
+bool UserSessionManager::CheckEasyUnlockKeyOps(const base::Closure& callback) {
+  if (!running_easy_unlock_key_ops_)
+    return false;
+
+  // Assumes only one deferred callback is needed.
+  DCHECK(easy_unlock_key_ops_finished_callback_.is_null());
+
+  easy_unlock_key_ops_finished_callback_ = callback;
   return true;
 }
 
@@ -793,6 +813,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCRLSetFetcher(user);
   }
 
+  UpdateEasyUnlockKeys(profile);
+  user_context_.ClearSecrets();
+
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
   // UserSessionManager::PrepareProfile() has set |delegate_| when Chrome is
@@ -801,9 +824,6 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile);
-
-  UpdateEasyUnlockKeys(profile);
-  user_context_.ClearSecrets();
 }
 
 void UserSessionManager::InitSessionRestoreStrategy() {
@@ -1029,15 +1049,26 @@ void UserSessionManager::UpdateEasyUnlockKeys(Profile* user_profile) {
   if (EasyUnlockService::Get(user_profile))
     device_list = EasyUnlockService::Get(user_profile)->GetRemoteDevices();
 
+  running_easy_unlock_key_ops_ = true;
   if (device_list) {
     easy_unlock_key_manager_->RefreshKeys(
         user_context_,
         *device_list,
-        EasyUnlockKeyManager::RefreshKeysCallback());
+        base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
+                   AsWeakPtr()));
   } else {
     easy_unlock_key_manager_->RemoveKeys(
-        user_context_, 0, EasyUnlockKeyManager::RemoveKeysCallback());
+        user_context_,
+        0,
+        base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
+                   AsWeakPtr()));
   }
+}
+
+void UserSessionManager::OnEasyUnlockKeyOpsFinished(bool success) {
+  running_easy_unlock_key_ops_ = false;
+  if (!easy_unlock_key_ops_finished_callback_.is_null())
+    easy_unlock_key_ops_finished_callback_.Run();
 }
 
 void UserSessionManager::ActiveUserChanged(
