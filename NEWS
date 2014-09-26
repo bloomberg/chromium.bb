@@ -4,6 +4,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Braille table improvements
 - Updates and correction to Hungarian braille tables, thanks to Hammer
   Attila.
+** Documentation updates
+- The documentation has been restructured to be more beginner friendly
+  and a short introduction to translation table writing has been added.
+  Thanks to Joseph Lee and Christian Egli
 
 * Noteworthy changes in release 2.6.0 (2014-9-1)
 This is the first release by the new maintainer team. A lot of work by
