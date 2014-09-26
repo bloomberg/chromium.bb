@@ -35,7 +35,6 @@ class PortForwardingController {
   void OnPrefsChange();
 
   void UpdateConnections();
-  void ShutdownConnections();
 
   Profile* profile_;
   PrefService* pref_service_;

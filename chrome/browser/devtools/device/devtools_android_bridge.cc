@@ -187,11 +187,12 @@ class ProtocolCommand
  private:
   virtual void OnSocketOpened() OVERRIDE;
   virtual void OnFrameRead(const std::string& message) OVERRIDE;
-  virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
+  virtual void OnSocketClosed() OVERRIDE;
+  virtual ~ProtocolCommand();
 
   const std::string command_;
   const base::Closure callback_;
-  scoped_refptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
+  scoped_ptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolCommand);
 };
@@ -202,9 +203,8 @@ ProtocolCommand::ProtocolCommand(
     const std::string& command,
     const base::Closure callback)
     : command_(command),
-      callback_(callback){
-  web_socket_ = browser->CreateWebSocket(debug_url, this);
-  web_socket_->Connect();
+      callback_(callback),
+      web_socket_(browser->CreateWebSocket(debug_url, this)) {
 }
 
 void ProtocolCommand::OnSocketOpened() {
@@ -212,14 +212,16 @@ void ProtocolCommand::OnSocketOpened() {
 }
 
 void ProtocolCommand::OnFrameRead(const std::string& message) {
-  web_socket_->Disconnect();
+  delete this;
 }
 
-void ProtocolCommand::OnSocketClosed(bool closed_by_device) {
-  if (!callback_.is_null()) {
-    callback_.Run();
-  }
+void ProtocolCommand::OnSocketClosed() {
   delete this;
+}
+
+ProtocolCommand::~ProtocolCommand() {
+  if (!callback_.is_null())
+    callback_.Run();
 }
 
 }  // namespace
@@ -292,14 +294,15 @@ class AgentHostDelegate
       const std::string& message) OVERRIDE;
   virtual void OnSocketOpened() OVERRIDE;
   virtual void OnFrameRead(const std::string& message) OVERRIDE;
-  virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
+  virtual void OnSocketClosed() OVERRIDE;
 
   const std::string id_;
+  scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser_;
+  const std::string debug_url_;
   bool socket_opened_;
-  bool detached_;
   bool is_web_view_;
   std::vector<std::string> pending_messages_;
-  scoped_refptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
+  scoped_ptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
   content::DevToolsAgentHost* agent_host_;
   content::DevToolsExternalAgentProxy* proxy_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
@@ -328,10 +331,10 @@ AgentHostDelegate::AgentHostDelegate(
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
     const std::string& debug_url)
     : id_(id),
+      browser_(browser),
+      debug_url_(debug_url),
       socket_opened_(false),
-      detached_(false),
       is_web_view_(browser->IsWebView()),
-      web_socket_(browser->CreateWebSocket(debug_url, this)),
       agent_host_(NULL),
       proxy_(NULL) {
   g_host_delegates.Get()[id] = this;
@@ -339,20 +342,17 @@ AgentHostDelegate::AgentHostDelegate(
 
 AgentHostDelegate::~AgentHostDelegate() {
   g_host_delegates.Get().erase(id_);
-  web_socket_->ClearDelegate();
 }
 
 void AgentHostDelegate::Attach(content::DevToolsExternalAgentProxy* proxy) {
   proxy_ = proxy;
   content::RecordAction(base::UserMetricsAction(is_web_view_ ?
       "DevTools_InspectAndroidWebView" : "DevTools_InspectAndroidPage"));
-  web_socket_->Connect();
+  web_socket_.reset(browser_->CreateWebSocket(debug_url_, this));
 }
 
 void AgentHostDelegate::Detach() {
-  detached_ = true;
-  if (socket_opened_)
-    web_socket_->Disconnect();
+  web_socket_.reset();
 }
 
 void AgentHostDelegate::SendMessageToBackend(const std::string& message) {
@@ -363,11 +363,6 @@ void AgentHostDelegate::SendMessageToBackend(const std::string& message) {
 }
 
 void AgentHostDelegate::OnSocketOpened() {
-  if (detached_) {
-    web_socket_->Disconnect();
-    return;
-  }
-
   socket_opened_ = true;
   for (std::vector<std::string>::iterator it = pending_messages_.begin();
        it != pending_messages_.end(); ++it) {
@@ -381,8 +376,8 @@ void AgentHostDelegate::OnFrameRead(const std::string& message) {
       proxy_->DispatchOnClientHost(message);
 }
 
-void AgentHostDelegate::OnSocketClosed(bool closed_by_device) {
-  if (proxy_ && closed_by_device)
+void AgentHostDelegate::OnSocketClosed() {
+  if (proxy_)
     proxy_->ConnectionClosed();
 }
 
@@ -621,7 +616,7 @@ DevToolsAndroidBridge::RemoteBrowser::GetAgentHost() {
       "adb:" + device_->serial() + ":" + socket_, this, kBrowserTargetSocket);
 }
 
-scoped_refptr<DevToolsAndroidBridge::AndroidWebSocket>
+DevToolsAndroidBridge::AndroidWebSocket*
 DevToolsAndroidBridge::RemoteBrowser::CreateWebSocket(
     const std::string& url,
     DevToolsAndroidBridge::AndroidWebSocket::Delegate* delegate) {
