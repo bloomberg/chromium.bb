@@ -1,0 +1,2 @@
+Tests that getMatchedCSSRules with dirty distribution doesn't crash.
+
