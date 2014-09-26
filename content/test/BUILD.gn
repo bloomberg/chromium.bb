@@ -117,7 +117,7 @@ static_library("test_support") {
     }
 
     if (!is_android && !is_ios) {
-      #deps += [ "//third_party/libvpx" ]  TODO(GYP)
+      deps += [ "//third_party/libvpx" ]
     }
 
     if (is_android) {
