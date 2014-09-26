@@ -77,7 +77,7 @@ class PerfControl(object):
     self._device.RunShellCommand(script, as_root=True)
 
   def _AllCpusAreOnline(self):
-    for cpu in range(self._num_cpu_cores):
+    for cpu in range(1, self._num_cpu_cores):
       online_path = PerfControl._CPU_ONLINE_FMT % cpu
       # TODO(epenner): Investigate why file may be missing
       # (http://crbug.com/397118)
