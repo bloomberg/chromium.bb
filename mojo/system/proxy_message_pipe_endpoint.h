@@ -18,21 +18,15 @@ class ChannelEndpoint;
 class LocalMessagePipeEndpoint;
 class MessagePipe;
 
-// A |ProxyMessagePipeEndpoint| connects an end of a |MessagePipe| to a
-// |Channel|, over which it transmits and receives data (to/from another
-// |ProxyMessagePipeEndpoint|). So a |MessagePipe| with one endpoint local and
-// the other endpoint remote consists of a |LocalMessagePipeEndpoint| and a
+// A |ProxyMessagePipeEndpoint| is an endpoint which delegates everything to a
+// |ChannelEndpoint|, which may be co-owned by a |Channel|. Like any
+// |MessagePipeEndpoint|, a |ProxyMessagePipeEndpoint| is owned by a
+// |MessagePipe|.
+//
+// For example, a |MessagePipe| with one endpoint local and the other endpoint
+// remote consists of a |LocalMessagePipeEndpoint| and a
 // |ProxyMessagePipeEndpoint|, with only the local endpoint being accessible via
 // a |MessagePipeDispatcher|.
-//
-// Like any |MessagePipeEndpoint|, a |ProxyMessagePipeEndpoint| is owned by a
-// |MessagePipe|.
-//  - A |ProxyMessagePipeEndpoint| starts out *detached*, i.e., not associated
-//    to any |Channel|. When *attached*, it gets a reference to a |Channel| and
-//    is assigned a local ID. A |ProxyMessagePipeEndpoint| must be detached
-//    before destruction; this is done inside |Close()|.
-//  - When attached, a |ProxyMessagePipeEndpoint| starts out not running. When
-//    run, it gets a remote ID.
 class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
@@ -43,15 +37,8 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   virtual Type GetType() const OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
-  virtual void OnRemove() OVERRIDE;
 
  private:
-  void Detach();
-
-  // TODO(vtl): Get rid of this.
-  bool is_attached() const { return !!channel_endpoint_.get(); }
-
-  // This should only be set if we're attached.
   scoped_refptr<ChannelEndpoint> channel_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);

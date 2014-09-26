@@ -20,7 +20,7 @@ ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
 }
 
 ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
-  DCHECK(!is_attached());
+  channel_endpoint_->DetachFromMessagePipe();
 }
 
 MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
@@ -28,9 +28,6 @@ MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
 }
 
 bool ProxyMessagePipeEndpoint::OnPeerClose() {
-  if (is_attached())
-    Detach();
-
   return false;
 }
 
@@ -42,17 +39,6 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
   DCHECK(channel_endpoint_.get());
   LOG_IF(WARNING, !channel_endpoint_->EnqueueMessage(message.Pass()))
       << "Failed to write enqueue message to channel";
-}
-
-void ProxyMessagePipeEndpoint::OnRemove() {
-  Detach();
-}
-
-void ProxyMessagePipeEndpoint::Detach() {
-  DCHECK(is_attached());
-
-  channel_endpoint_->DetachFromMessagePipe();
-  channel_endpoint_ = nullptr;
 }
 
 }  // namespace system

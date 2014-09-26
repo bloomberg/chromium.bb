@@ -192,7 +192,6 @@ void MessagePipe::OnRemove(unsigned port) {
   if (!endpoints_[port])
     return;
 
-  endpoints_[port]->OnRemove();
   if (endpoints_[destination_port]) {
     if (!endpoints_[destination_port]->OnPeerClose())
       endpoints_[destination_port].reset();

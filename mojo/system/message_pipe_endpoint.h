@@ -75,7 +75,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // implementation for a local endpoint needs not override these methods, since
   // they should never be called.
   virtual void Attach(ChannelEndpoint* channel_endpoint);
-  virtual void OnRemove();
 
  protected:
   MessagePipeEndpoint() {}

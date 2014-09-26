@@ -52,9 +52,5 @@ void MessagePipeEndpoint::Attach(ChannelEndpoint* /*channel_endpoint*/) {
   NOTREACHED();
 }
 
-void MessagePipeEndpoint::OnRemove() {
-  NOTREACHED();
-}
-
 }  // namespace system
 }  // namespace mojo
