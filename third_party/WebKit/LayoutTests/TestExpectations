@@ -1318,10 +1318,6 @@ crbug.com/416846 inspector/elements/styles/styles-add-new-rule.html [ Pass Failu
 
 crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failure ]
 
-# Need to rebased after https://codereview.chromium.org/567543002/
-crbug.com/413225 [ Mac ] fast/canvas/canvas-normalize-string.html [ NeedsRebaseline ]
-crbug.com/413225 [ Mac ] virtual/gpu/fast/canvas/canvas-normalize-string.html [ NeedsRebaseline ]
-
 crbug.com/416580 [ Win ] svg/custom/external-paintserver-reference.svg [ NeedsRebaseline ]
 crbug.com/416580 [ Win ] svg/custom/linking-base-external-reference.xhtml [ NeedsRebaseline ]
 
