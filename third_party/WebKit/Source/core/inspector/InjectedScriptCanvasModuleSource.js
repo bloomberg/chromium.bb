@@ -4581,7 +4581,7 @@ InjectedCanvasModule.prototype = {
      */
     _parseStringId: function(stringId)
     {
-        return InjectedScriptHost.eval("(" + stringId + ")");
+        return /** @type {?} */ (InjectedScriptHost.eval("(" + stringId + ")"));
     }
 }
 

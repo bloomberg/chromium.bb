@@ -28,8 +28,8 @@
  */
 
 /**
- * @param {InjectedScriptHost} InjectedScriptHost
- * @param {Window} inspectedWindow
+ * @param {!InjectedScriptHostClass} InjectedScriptHost
+ * @param {!Window} inspectedWindow
  * @param {number} injectedScriptId
  */
 (function (InjectedScriptHost, inspectedWindow, injectedScriptId) {
@@ -353,7 +353,7 @@ InjectedScript.prototype = {
      */
     _parseObjectId: function(objectId)
     {
-        return nullifyObjectProto(InjectedScriptHost.eval("(" + objectId + ")"));
+        return nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + objectId + ")")));
     },
 
     /**
@@ -378,7 +378,7 @@ InjectedScript.prototype = {
      */
     dispatch: function(methodName, args)
     {
-        var argsArray = InjectedScriptHost.eval("(" + args + ")");
+        var argsArray = /** @type {!Array.<*>} */ (InjectedScriptHost.eval("(" + args + ")"));
         var result = InjectedScriptHost.callFunction(this[methodName], this, argsArray);
         if (typeof result === "undefined") {
             inspectedWindow.console.error("Web Inspector error: InjectedScript.%s returns undefined", methodName);
@@ -461,11 +461,11 @@ InjectedScript.prototype = {
         var func = this._objectForId(parsedFunctionId);
         if (typeof func !== "function")
             return "Cannot resolve function by id.";
-        var details = nullifyObjectProto(InjectedScriptHost.functionDetails(func));
+        var details = nullifyObjectProto(/** @type {!DebuggerAgent.FunctionDetails} */ (InjectedScriptHost.functionDetails(func)));
         if ("rawScopes" in details) {
             var objectGroupName = this._idToObjectGroupName[parsedFunctionId.id];
-            var rawScopes = details.rawScopes;
-            delete details.rawScopes;
+            var rawScopes = details["rawScopes"];
+            delete details["rawScopes"];
             var scopes = [];
             for (var i = 0; i < rawScopes.length; ++i)
                 scopes[i] = InjectedScript.CallFrameProxy._createScopeJson(rawScopes[i].type, rawScopes[i].object, objectGroupName);
@@ -625,10 +625,10 @@ InjectedScript.prototype = {
 
         if (args) {
             var resolvedArgs = [];
-            args = InjectedScriptHost.eval(args);
-            for (var i = 0; i < args.length; ++i) {
+            var callArgs = /** @type {!Array.<!RuntimeAgent.CallArgument>} */ (InjectedScriptHost.eval(args));
+            for (var i = 0; i < callArgs.length; ++i) {
                 try {
-                    resolvedArgs[i] = this._resolveCallArgument(args[i]);
+                    resolvedArgs[i] = this._resolveCallArgument(callArgs[i]);
                 } catch (e) {
                     return toString(e);
                 }
@@ -765,9 +765,9 @@ InjectedScript.prototype = {
             return wrappedResult;
         } finally {
             if (injectCommandLineAPI)
-                delete inspectedWindow.__commandLineAPI;
+                delete inspectedWindow["__commandLineAPI"];
             if (injectScopeChain)
-                delete inspectedWindow.__scopeChainForEval;
+                delete inspectedWindow["__scopeChainForEval"];
         }
     },
 
@@ -804,7 +804,7 @@ InjectedScript.prototype = {
      */
     evaluateOnCallFrame: function(topCallFrame, asyncCallStacks, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.eval("(" + callFrameId + ")"));
+        var parsedCallFrameId = nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + callFrameId + ")")));
         var callFrame = this._callFrameForParsedId(topCallFrame, parsedCallFrameId, asyncCallStacks);
         if (!callFrame)
             return "Could not find call frame with given id";
@@ -872,7 +872,7 @@ InjectedScript.prototype = {
         }
         var newValueJson;
         try {
-            newValueJson = InjectedScriptHost.eval("(" + newValueJsonString + ")");
+            newValueJson = /** @type {!RuntimeAgent.CallArgument} */ (InjectedScriptHost.eval("(" + newValueJsonString + ")"));
         } catch (e) {
             return "Failed to parse new value JSON " + newValueJsonString + " : " + e;
         }
@@ -897,7 +897,7 @@ InjectedScript.prototype = {
      */
     _callFrameForId: function(topCallFrame, callFrameId)
     {
-        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.eval("(" + callFrameId + ")"));
+        var parsedCallFrameId = nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + callFrameId + ")")));
         return this._callFrameForParsedId(topCallFrame, parsedCallFrameId, []);
     },
 
@@ -972,7 +972,7 @@ InjectedScript.prototype = {
             inspectedWindow.console.error("Web Inspector error: A function was expected for module %s evaluation", name);
             return null;
         }
-        var module = InjectedScriptHost.callFunction(moduleFunction, inspectedWindow, [InjectedScriptHost, inspectedWindow, injectedScriptId, this]);
+        var module = /** @type {!Object} */ (InjectedScriptHost.callFunction(moduleFunction, inspectedWindow, [InjectedScriptHost, inspectedWindow, injectedScriptId, this]));
         this._modules[name] = module;
         return module;
     },
@@ -1064,7 +1064,7 @@ InjectedScript.prototype = {
 
         if (isSymbol(obj)) {
             try {
-                return InjectedScriptHost.callFunction(Symbol.prototype.toString, obj) || "Symbol";
+                return /** @type {string} */ (InjectedScriptHost.callFunction(Symbol.prototype.toString, obj)) || "Symbol";
             } catch (e) {
                 return "Symbol";
             }
@@ -1387,7 +1387,7 @@ InjectedScript.RemoteObject.prototype = {
 /**
  * @constructor
  * @param {number} ordinal
- * @param {!Object} callFrame
+ * @param {!JavaScriptCallFrame} callFrame
  * @param {number} asyncOrdinal
  */
 InjectedScript.CallFrameProxy = function(ordinal, callFrame, asyncOrdinal)
@@ -1403,7 +1403,7 @@ InjectedScript.CallFrameProxy = function(ordinal, callFrame, asyncOrdinal)
 
 InjectedScript.CallFrameProxy.prototype = {
     /**
-     * @param {!Object} callFrame
+     * @param {!JavaScriptCallFrame} callFrame
      * @return {!Array.<!DebuggerAgent.Scope>}
      */
     _wrapScopeChain: function(callFrame)
@@ -1709,7 +1709,7 @@ CommandLineAPIImpl.prototype = {
 
     /**
      * @param {!Node} node
-     * @return {!{type: string, listener: function(), useCapture: boolean, remove: function()}|undefined}
+     * @return {!Array.<!{type: string, listener: function(), useCapture: boolean, remove: function()}>|undefined}
      */
     getEventListeners: function(node)
     {
