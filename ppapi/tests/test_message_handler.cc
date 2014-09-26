@@ -184,7 +184,8 @@ void FakeDestroy(PP_Instance instance, void* user_data) {}
 TestMessageHandler::TestMessageHandler(TestingInstance* instance)
     : TestCase(instance),
       ppb_messaging_if_(NULL),
-      handler_thread_(instance) {
+      handler_thread_(instance),
+      message_received_(instance->pp_instance()) {
 }
 
 TestMessageHandler::~TestMessageHandler() {
@@ -202,11 +203,22 @@ bool TestMessageHandler::Init() {
 void TestMessageHandler::RunTests(const std::string& filter) {
   RUN_TEST(RegisterErrorConditions, filter);
   RUN_TEST(PostMessageAndAwaitResponse, filter);
+  RUN_TEST(Exceptions, filter);
 }
 
 void TestMessageHandler::HandleMessage(const pp::Var& message_data) {
-  // All messages should go to the background thread message handler.
-  assert(false);
+  if (instance()->current_test_name() == "Exceptions") {
+    // For TestPostMessageAndAwaitResponse(), all messages should go to the
+    // background thread message handler.
+    assert(false);
+  } else {
+    if (message_data.is_string()) {
+      last_message_ = message_data.AsString();
+    } else {
+      last_message_ = "message_data was not a string!";
+    }
+    message_received_.Signal();
+  }
 }
 
 std::string TestMessageHandler::TestRegisterErrorConditions() {
@@ -244,6 +256,7 @@ std::string TestMessageHandler::TestRegisterErrorConditions() {
 std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
   EchoingMessageHandler handler(instance(),
                                 handler_thread_.message_loop());
+  // Test doing a sync call before the handler is registered.
   handler.Register();
   std::string js_code("var plugin = document.getElementById('plugin');\n");
   js_code += "var result = undefined;\n";
@@ -269,6 +282,59 @@ std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
   instance_->EvalScript(js_code);
   instance_->EvalScript("plugin.postMessage('FINISHED_TEST');\n");
   handler.WaitForTestFinishedMessage();
+  handler.Unregister();
+  ASSERT_SUBTEST_SUCCESS(handler.WaitForDestroy());
+
+  PASS();
+}
+
+std::string TestMessageHandler::TestExceptions() {
+  EchoingMessageHandler handler(instance(),
+                                handler_thread_.message_loop());
+  {
+    // First, try sending a blocking message when there is no handler
+    // registered. It should throw an exception.
+    std::string js_code(
+        "var plugin = document.getElementById('plugin');\n"
+        "var caught_exception = false;\n"
+        "try {\n"
+        "  plugin.postMessageAndAwaitResponse('Hello!');\n"
+        "} catch (err) {\n"
+        "  caught_exception = true;\n"
+        "}\n"
+        "plugin.postMessage(caught_exception ? 'SUCCESS' : 'FAIL');\n");
+    instance_->EvalScript(js_code);
+    message_received_.Wait();
+    ASSERT_EQ("SUCCESS", last_message_);
+  }
+  handler.Register();
+  {
+    // Now that a handler is registered, try requesting and sending a
+    // FileSystem. It should throw an exception. The file system is opened
+    // asynchronously. What *should* happen is that it opens successfully, then
+    // we try to send it via postMessageAndAwaitResponse, which fails with an
+    // exception. The test could fail either because the filesystem doesn't
+    // open or because postMessageAndAwaitResponse doesn't throw an exception.
+    std::string js_code(
+        "var plugin = document.getElementById('plugin');\n"
+        "function gotFileSystem(fs) {\n"
+        "  var caught_exception = false;\n"
+        "  try {\n"
+        "    plugin.postMessageAndAwaitResponse(fs);\n"
+        "  } catch (err) {\n"
+        "    caught_exception = true;\n"
+        "  }\n"
+        "  plugin.postMessage(caught_exception ? 'SUCCESS' : 'FAIL');\n"
+        "}\n"
+        "function fileSystemError() {\n"
+        "  plugin.postMessage('Failed to open filesystem');\n"
+        "}\n"
+        "window.webkitRequestFileSystem(\n"
+        "    window.Temporary, 1024, gotFileSystem, fileSystemError)\n");
+    instance_->EvalScript(js_code);
+    message_received_.Wait();
+    ASSERT_EQ("SUCCESS", last_message_);
+  }
   handler.Unregister();
   ASSERT_SUBTEST_SUCCESS(handler.WaitForDestroy());
 

@@ -87,6 +87,7 @@ pp::InstancePrivate {
   void LogTest(const std::string& test_name,
                const std::string& error_message,
                PP_TimeTicks start_time);
+  const std::string& current_test_name() { return current_test_name_; }
 
   // Appends an error message to the log.
   void AppendError(const std::string& message);
@@ -149,6 +150,8 @@ pp::InstancePrivate {
 
   // Owning pointer to the current test case. Valid after Init has been called.
   TestCase* current_case_;
+
+  std::string current_test_name_;
 
   // A filter to use when running tests. This is passed to 'RunTests', which
   // runs only tests whose name contains test_filter_ as a substring.

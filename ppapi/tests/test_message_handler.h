@@ -10,6 +10,7 @@
 
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/tests/test_case.h"
+#include "ppapi/tests/test_utils.h"
 #include "ppapi/utility/threading/simple_thread.h"
 
 class TestMessageHandler : public TestCase {
@@ -25,9 +26,14 @@ class TestMessageHandler : public TestCase {
 
   std::string TestRegisterErrorConditions();
   std::string TestPostMessageAndAwaitResponse();
+  std::string TestExceptions();
 
   const PPB_Messaging_1_2* ppb_messaging_if_;
   pp::SimpleThread handler_thread_;
+
+  // For TestExceptions():
+  NestedEvent message_received_;
+  std::string last_message_;
 };
 
 #endif  // PPAPI_TESTS_TEST_MESSAGE_HANDLER_H_

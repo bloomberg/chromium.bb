@@ -124,6 +124,8 @@ void TestingInstance::SetCookie(const std::string& name,
 void TestingInstance::LogTest(const std::string& test_name,
                               const std::string& error_message,
                               PP_TimeTicks start_time) {
+  current_test_name_ = test_name;
+
   // Compute the time to run the test and save it in a string for logging:
   PP_TimeTicks end_time(pp::Module::Get()->core()->GetTimeTicks());
   std::ostringstream number_stream;
@@ -164,6 +166,8 @@ void TestingInstance::LogTest(const std::string& test_name,
   test_time.append(time_string);
   test_time.append(" seconds.");
   LogTestTime(test_time);
+
+  current_test_name_.clear();
 }
 
 void TestingInstance::AppendError(const std::string& message) {
