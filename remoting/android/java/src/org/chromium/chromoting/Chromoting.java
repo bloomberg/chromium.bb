@@ -96,6 +96,13 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
      */
     boolean mTriedNewAuthToken;
 
+    /**
+     * Flag to track whether a call to AccountManager.getAuthToken() is currently pending.
+     * This avoids infinitely-nested calls in case onStart() gets triggered a second time
+     * while a token is being fetched.
+     */
+    private boolean mWaitingForAuthToken = false;
+
     /** Shows a warning explaining that a Google account is required, then closes the activity. */
     private void showNoAccountsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -292,16 +299,27 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     }
 
     private void refreshHostList() {
+        if (mWaitingForAuthToken) {
+            return;
+        }
+
         mTriedNewAuthToken = false;
         setHostListProgressVisible(true);
 
         // The refresh button simply makes use of the currently-chosen account.
+        requestAuthToken();
+    }
+
+    private void requestAuthToken() {
         AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
+        mWaitingForAuthToken = true;
     }
 
     @Override
     public void run(AccountManagerFuture<Bundle> future) {
         Log.i("auth", "User finished with auth dialogs");
+        mWaitingForAuthToken = false;
+
         Bundle result = null;
         String explanation = null;
         try {
@@ -316,6 +334,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         }
 
         if (result == null) {
+            setHostListProgressVisible(false);
             if (explanation != null) {
                 Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
             }
@@ -387,7 +406,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             Log.w("auth", "Requesting renewal of rejected auth token");
             authenticator.invalidateAuthToken(mAccount.type, mToken);
             mToken = null;
-            authenticator.getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
+            requestAuthToken();
 
             // We're not in an error state *yet*.
             return;
