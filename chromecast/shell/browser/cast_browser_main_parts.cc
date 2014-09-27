@@ -19,6 +19,7 @@
 #include "chromecast/shell/browser/webui/webui_cast.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_change_notifier_factory_android.h"
@@ -35,6 +36,12 @@ struct DefaultCommandLineSwitch {
 };
 
 DefaultCommandLineSwitch g_default_switches[] = {
+#if defined(OS_ANDROID)
+  { switches::kMediaDrmEnableNonCompositing, ""},
+  { switches::kEnableOverlayFullscreenVideo, ""},
+  { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
+  { switches::kDisableGestureRequirementForMediaPlayback, ""},
+#endif
   { switches::kDisableApplicationCache, "" },
   { switches::kDisablePlugins, "" },
   // Always enable HTMLMediaElement logs.
