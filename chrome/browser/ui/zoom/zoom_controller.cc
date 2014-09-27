@@ -79,9 +79,10 @@ bool ZoomController::SetZoomLevel(double zoom_level) {
 bool ZoomController::SetZoomLevelByExtension(
     double zoom_level,
     const scoped_refptr<const extensions::Extension>& extension) {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
   bool is_normal_page =
-      web_contents()->GetController().GetLastCommittedEntry()->GetPageType() ==
-      content::PAGE_TYPE_NORMAL;
+      entry && entry->GetPageType() == content::PAGE_TYPE_NORMAL;
   // Cannot zoom in disabled mode. Also, don't allow changing zoom level on
   // a crashed tab, an error page or an interstitial page.
   if (zoom_mode_ == ZOOM_MODE_DISABLED ||
@@ -134,9 +135,6 @@ bool ZoomController::SetZoomLevelByExtension(
     zoom_map->SetTemporaryZoomLevel(
         render_process_id, render_view_id, zoom_level);
   } else {
-    content::NavigationEntry* entry =
-        web_contents()->GetController().GetLastCommittedEntry();
-
     if (!entry) {
       last_extension_ = NULL;
       return false;
