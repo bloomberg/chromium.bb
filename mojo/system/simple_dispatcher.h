@@ -30,15 +30,15 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   void HandleSignalsStateChangedNoLock();
 
   // |Dispatcher| protected methods:
-  virtual void CancelAllWaitersNoLock() OVERRIDE;
+  virtual void CancelAllWaitersNoLock() override;
   virtual MojoResult AddWaiterImplNoLock(
       Waiter* waiter,
       MojoHandleSignals signals,
       uint32_t context,
-      HandleSignalsState* signals_state) OVERRIDE;
+      HandleSignalsState* signals_state) override;
   virtual void RemoveWaiterImplNoLock(
       Waiter* waiter,
-      HandleSignalsState* signals_state) OVERRIDE;
+      HandleSignalsState* signals_state) override;
 
  private:
   // Protected by |lock()|:

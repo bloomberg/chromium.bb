@@ -27,8 +27,8 @@ class CoreTestBase : public testing::Test {
   CoreTestBase();
   virtual ~CoreTestBase();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   // |info| must remain alive until the returned handle is closed.

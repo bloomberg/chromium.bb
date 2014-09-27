@@ -54,7 +54,7 @@ class SimpleWaiterThread : public base::SimpleThread {
   Waiter* waiter() { return &waiter_; }
 
  private:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   MojoResult* const result_;
   uint32_t* const context_;
@@ -82,7 +82,7 @@ class WaiterThread : public base::SimpleThread {
   virtual ~WaiterThread();
 
  private:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   const scoped_refptr<Dispatcher> dispatcher_;
   const MojoHandleSignals handle_signals_;

@@ -61,7 +61,7 @@ class WaitingThread : public base::SimpleThread {
   Waiter* waiter() { return &waiter_; }
 
  private:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     test::Stopwatch stopwatch;
     MojoResult result;
     uint32_t context = static_cast<uint32_t>(-1);

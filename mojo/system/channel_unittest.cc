@@ -35,7 +35,7 @@ class ChannelTest : public testing::Test {
         init_result_(TRISTATE_UNKNOWN) {}
   virtual ~ChannelTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&ChannelTest::SetUpOnIOThread, base::Unretained(this)));
@@ -121,39 +121,39 @@ class MockRawChannelOnInitFails : public RawChannel {
   virtual ~MockRawChannelOnInitFails() {}
 
   // |RawChannel| public methods:
-  virtual size_t GetSerializedPlatformHandleSize() const OVERRIDE { return 0; }
+  virtual size_t GetSerializedPlatformHandleSize() const override { return 0; }
 
  private:
   // |RawChannel| protected methods:
-  virtual IOResult Read(size_t*) OVERRIDE {
+  virtual IOResult Read(size_t*) override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual IOResult ScheduleRead() OVERRIDE {
+  virtual IOResult ScheduleRead() override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
   virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t,
-      const void*) OVERRIDE {
+      const void*) override {
     CHECK(false);
     return embedder::ScopedPlatformHandleVectorPtr();
   }
-  virtual IOResult WriteNoLock(size_t*, size_t*) OVERRIDE {
+  virtual IOResult WriteNoLock(size_t*, size_t*) override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual IOResult ScheduleWriteNoLock() OVERRIDE {
+  virtual IOResult ScheduleWriteNoLock() override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual bool OnInit() OVERRIDE {
+  virtual bool OnInit() override {
     EXPECT_FALSE(on_init_called_);
     on_init_called_ = true;
     return false;
   }
   virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer>,
-                                scoped_ptr<WriteBuffer>) OVERRIDE {
+                                scoped_ptr<WriteBuffer>) override {
     CHECK(false);
   }
 

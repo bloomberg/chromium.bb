@@ -27,15 +27,15 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBuffer
       ScopedPlatformHandle platform_handle);
 
   // |PlatformSharedBuffer| implementation:
-  virtual size_t GetNumBytes() const OVERRIDE;
+  virtual size_t GetNumBytes() const override;
   virtual scoped_ptr<PlatformSharedBufferMapping> Map(size_t offset,
-                                                      size_t length) OVERRIDE;
-  virtual bool IsValidMap(size_t offset, size_t length) OVERRIDE;
+                                                      size_t length) override;
+  virtual bool IsValidMap(size_t offset, size_t length) override;
   virtual scoped_ptr<PlatformSharedBufferMapping> MapNoCheck(
       size_t offset,
-      size_t length) OVERRIDE;
-  virtual ScopedPlatformHandle DuplicatePlatformHandle() OVERRIDE;
-  virtual ScopedPlatformHandle PassPlatformHandle() OVERRIDE;
+      size_t length) override;
+  virtual ScopedPlatformHandle DuplicatePlatformHandle() override;
+  virtual ScopedPlatformHandle PassPlatformHandle() override;
 
  private:
   explicit SimplePlatformSharedBuffer(size_t num_bytes);
@@ -71,8 +71,8 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSharedBufferMapping
  public:
   virtual ~SimplePlatformSharedBufferMapping();
 
-  virtual void* GetBase() const OVERRIDE;
-  virtual size_t GetLength() const OVERRIDE;
+  virtual void* GetBase() const override;
+  virtual size_t GetLength() const override;
 
  private:
   friend class SimplePlatformSharedBuffer;

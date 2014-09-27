@@ -75,14 +75,14 @@ class RawChannelTest : public testing::Test {
   RawChannelTest() : io_thread_(base::TestIOThread::kManualStart) {}
   virtual ~RawChannelTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     embedder::PlatformChannelPair channel_pair;
     handles[0] = channel_pair.PassServerHandle();
     handles[1] = channel_pair.PassClientHandle();
     io_thread_.Start();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     io_thread_.Stop();
     handles[0].reset();
     handles[1].reset();
@@ -109,10 +109,10 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
   // |RawChannel::Delegate| implementation:
   virtual void OnReadMessage(
       const MessageInTransit::View& /*message_view*/,
-      embedder::ScopedPlatformHandleVectorPtr /*platform_handles*/) OVERRIDE {
+      embedder::ScopedPlatformHandleVectorPtr /*platform_handles*/) override {
     CHECK(false);  // Should not get called.
   }
-  virtual void OnError(Error error) OVERRIDE {
+  virtual void OnError(Error error) override {
     // We'll get a read (shutdown) error when the connection is closed.
     CHECK_EQ(error, ERROR_READ_SHUTDOWN);
   }
@@ -225,7 +225,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
       const MessageInTransit::View& message_view,
-      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE {
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) override {
     EXPECT_FALSE(platform_handles);
 
     size_t position;
@@ -251,7 +251,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
     if (should_signal)
       done_event_.Signal();
   }
-  virtual void OnError(Error error) OVERRIDE {
+  virtual void OnError(Error error) override {
     // We'll get a read (shutdown) error when the connection is closed.
     CHECK_EQ(error, ERROR_READ_SHUTDOWN);
   }
@@ -319,7 +319,7 @@ class RawChannelWriterThread : public base::SimpleThread {
   virtual ~RawChannelWriterThread() { Join(); }
 
  private:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     static const int kMaxRandomMessageSize = 25000;
 
     while (left_to_write_-- > 0) {
@@ -343,7 +343,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
       const MessageInTransit::View& message_view,
-      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE {
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) override {
     EXPECT_FALSE(platform_handles);
 
     EXPECT_LT(count_, expected_count_);
@@ -355,7 +355,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
     if (count_ >= expected_count_)
       done_event_.Signal();
   }
-  virtual void OnError(Error error) OVERRIDE {
+  virtual void OnError(Error error) override {
     // We'll get a read (shutdown) error when the connection is closed.
     CHECK_EQ(error, ERROR_READ_SHUTDOWN);
   }
@@ -432,7 +432,7 @@ class ErrorRecordingRawChannelDelegate
 
   virtual ~ErrorRecordingRawChannelDelegate() {}
 
-  virtual void OnError(Error error) OVERRIDE {
+  virtual void OnError(Error error) override {
     switch (error) {
       case ERROR_READ_SHUTDOWN:
         ASSERT_TRUE(expecting_read_error_);
@@ -567,7 +567,7 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
       const MessageInTransit::View& message_view,
-      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE {
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) override {
     EXPECT_FALSE(platform_handles);
     EXPECT_FALSE(did_shutdown_);
     EXPECT_TRUE(
@@ -576,7 +576,7 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
     did_shutdown_ = true;
     done_event_.Signal();
   }
-  virtual void OnError(Error /*error*/) OVERRIDE {
+  virtual void OnError(Error /*error*/) override {
     CHECK(false);  // Should not get called.
   }
 
@@ -624,10 +624,10 @@ class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
       const MessageInTransit::View& /*message_view*/,
-      embedder::ScopedPlatformHandleVectorPtr /*platform_handles*/) OVERRIDE {
+      embedder::ScopedPlatformHandleVectorPtr /*platform_handles*/) override {
     CHECK(false);  // Should not get called.
   }
-  virtual void OnError(Error error) OVERRIDE {
+  virtual void OnError(Error error) override {
     EXPECT_FALSE(did_shutdown_);
     if (error != shutdown_on_error_type_)
       return;

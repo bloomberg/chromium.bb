@@ -531,7 +531,7 @@ class WriterThread : public base::SimpleThread {
   virtual ~WriterThread() { Join(); }
 
  private:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     // Make some data to write.
     unsigned char buffer[kMaxMessageSize];
     for (size_t i = 0; i < kMaxMessageSize; i++)
@@ -584,7 +584,7 @@ class ReaderThread : public base::SimpleThread {
   virtual ~ReaderThread() { Join(); }
 
  private:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     unsigned char buffer[kMaxMessageSize];
     Waiter w;
     HandleSignalsState hss;

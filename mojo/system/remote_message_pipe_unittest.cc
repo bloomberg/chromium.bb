@@ -45,14 +45,14 @@ class RemoteMessagePipeTest : public testing::Test {
   RemoteMessagePipeTest() : io_thread_(base::TestIOThread::kAutoStart) {}
   virtual ~RemoteMessagePipeTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
                    base::Unretained(this)));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,

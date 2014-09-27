@@ -24,7 +24,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
   embedder::ScopedPlatformHandle PassPlatformHandle();
 
   // |Dispatcher| public methods:
-  virtual Type GetType() const OVERRIDE;
+  virtual Type GetType() const override;
 
   // The "opposite" of |SerializeAndClose()|. (Typically this is called by
   // |Dispatcher::Deserialize()|.)
@@ -38,17 +38,17 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
   virtual ~PlatformHandleDispatcher();
 
   // |Dispatcher| protected methods:
-  virtual void CloseImplNoLock() OVERRIDE;
+  virtual void CloseImplNoLock() override;
   virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
+  CreateEquivalentDispatcherAndCloseImplNoLock() override;
   virtual void StartSerializeImplNoLock(Channel* channel,
                                         size_t* max_size,
-                                        size_t* max_platform_handles) OVERRIDE;
+                                        size_t* max_platform_handles) override;
   virtual bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) OVERRIDE;
+      embedder::PlatformHandleVector* platform_handles) override;
 
   embedder::ScopedPlatformHandle platform_handle_;
 

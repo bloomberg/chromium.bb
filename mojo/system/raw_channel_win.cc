@@ -75,7 +75,7 @@ class RawChannelWin : public RawChannel {
   virtual ~RawChannelWin();
 
   // |RawChannel| public methods:
-  virtual size_t GetSerializedPlatformHandleSize() const OVERRIDE;
+  virtual size_t GetSerializedPlatformHandleSize() const override;
 
  private:
   // RawChannelIOHandler receives OS notifications for I/O completion. It must
@@ -111,7 +111,7 @@ class RawChannelWin : public RawChannel {
     // detached from the owner.
     virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                                DWORD bytes_transferred,
-                               DWORD error) OVERRIDE;
+                               DWORD error) override;
 
     // Must be called on the I/O thread under |owner_->write_lock()|.
     // After this call, the owner must not make any further calls on this
@@ -160,17 +160,17 @@ class RawChannelWin : public RawChannel {
   };
 
   // |RawChannel| private methods:
-  virtual IOResult Read(size_t* bytes_read) OVERRIDE;
-  virtual IOResult ScheduleRead() OVERRIDE;
+  virtual IOResult Read(size_t* bytes_read) override;
+  virtual IOResult ScheduleRead() override;
   virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
-      const void* platform_handle_table) OVERRIDE;
+      const void* platform_handle_table) override;
   virtual IOResult WriteNoLock(size_t* platform_handles_written,
-                               size_t* bytes_written) OVERRIDE;
-  virtual IOResult ScheduleWriteNoLock() OVERRIDE;
-  virtual bool OnInit() OVERRIDE;
+                               size_t* bytes_written) override;
+  virtual IOResult ScheduleWriteNoLock() override;
+  virtual bool OnInit() override;
   virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
-                                scoped_ptr<WriteBuffer> write_buffer) OVERRIDE;
+                                scoped_ptr<WriteBuffer> write_buffer) override;
 
   // Passed to |io_handler_| during initialization.
   embedder::ScopedPlatformHandle handle_;

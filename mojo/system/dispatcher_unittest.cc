@@ -23,14 +23,14 @@ class TrivialDispatcher : public Dispatcher {
  public:
   TrivialDispatcher() {}
 
-  virtual Type GetType() const OVERRIDE { return kTypeUnknown; }
+  virtual Type GetType() const override { return kTypeUnknown; }
 
  private:
   friend class base::RefCountedThreadSafe<TrivialDispatcher>;
   virtual ~TrivialDispatcher() {}
 
   virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+  CreateEquivalentDispatcherAndCloseImplNoLock() override {
     lock().AssertAcquired();
     return scoped_refptr<Dispatcher>(new TrivialDispatcher());
   }
@@ -160,7 +160,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
   virtual ~ThreadSafetyStressThread() { Join(); }
 
  private:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     event_->Wait();
 
     waiter_.Init();

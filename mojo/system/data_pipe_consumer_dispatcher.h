@@ -26,34 +26,34 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
   void Init(scoped_refptr<DataPipe> data_pipe);
 
   // |Dispatcher| public methods:
-  virtual Type GetType() const OVERRIDE;
+  virtual Type GetType() const override;
 
  private:
   virtual ~DataPipeConsumerDispatcher();
 
   // |Dispatcher| protected methods:
-  virtual void CancelAllWaitersNoLock() OVERRIDE;
-  virtual void CloseImplNoLock() OVERRIDE;
+  virtual void CancelAllWaitersNoLock() override;
+  virtual void CloseImplNoLock() override;
   virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
+  CreateEquivalentDispatcherAndCloseImplNoLock() override;
   virtual MojoResult ReadDataImplNoLock(UserPointer<void> elements,
                                         UserPointer<uint32_t> num_bytes,
-                                        MojoReadDataFlags flags) OVERRIDE;
+                                        MojoReadDataFlags flags) override;
   virtual MojoResult BeginReadDataImplNoLock(
       UserPointer<const void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
-      MojoReadDataFlags flags) OVERRIDE;
-  virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read) OVERRIDE;
-  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const OVERRIDE;
+      MojoReadDataFlags flags) override;
+  virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read) override;
+  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
   virtual MojoResult AddWaiterImplNoLock(
       Waiter* waiter,
       MojoHandleSignals signals,
       uint32_t context,
-      HandleSignalsState* signals_state) OVERRIDE;
+      HandleSignalsState* signals_state) override;
   virtual void RemoveWaiterImplNoLock(
       Waiter* waiter,
-      HandleSignalsState* signals_state) OVERRIDE;
-  virtual bool IsBusyNoLock() const OVERRIDE;
+      HandleSignalsState* signals_state) override;
+  virtual bool IsBusyNoLock() const override;
 
   // Protected by |lock()|:
   scoped_refptr<DataPipe> data_pipe_;  // This will be null if closed.

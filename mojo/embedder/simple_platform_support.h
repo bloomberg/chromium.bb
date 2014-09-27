@@ -22,10 +22,10 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport : public PlatformSupport {
   SimplePlatformSupport() {}
   virtual ~SimplePlatformSupport() {}
 
-  virtual PlatformSharedBuffer* CreateSharedBuffer(size_t num_bytes) OVERRIDE;
+  virtual PlatformSharedBuffer* CreateSharedBuffer(size_t num_bytes) override;
   virtual PlatformSharedBuffer* CreateSharedBufferFromHandle(
       size_t num_bytes,
-      ScopedPlatformHandle platform_handle) OVERRIDE;
+      ScopedPlatformHandle platform_handle) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimplePlatformSupport);

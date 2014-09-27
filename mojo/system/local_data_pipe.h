@@ -30,40 +30,40 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
   virtual ~LocalDataPipe();
 
   // |DataPipe| implementation:
-  virtual void ProducerCloseImplNoLock() OVERRIDE;
+  virtual void ProducerCloseImplNoLock() override;
   virtual MojoResult ProducerWriteDataImplNoLock(
       UserPointer<const void> elements,
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_write,
-      uint32_t min_num_bytes_to_write) OVERRIDE;
+      uint32_t min_num_bytes_to_write) override;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       UserPointer<void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
-      uint32_t min_num_bytes_to_write) OVERRIDE;
+      uint32_t min_num_bytes_to_write) override;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
-      uint32_t num_bytes_written) OVERRIDE;
+      uint32_t num_bytes_written) override;
   virtual HandleSignalsState ProducerGetHandleSignalsStateImplNoLock()
-      const OVERRIDE;
-  virtual void ConsumerCloseImplNoLock() OVERRIDE;
+      const override;
+  virtual void ConsumerCloseImplNoLock() override;
   virtual MojoResult ConsumerReadDataImplNoLock(
       UserPointer<void> elements,
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_read,
-      uint32_t min_num_bytes_to_read) OVERRIDE;
+      uint32_t min_num_bytes_to_read) override;
   virtual MojoResult ConsumerDiscardDataImplNoLock(
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_discard,
-      uint32_t min_num_bytes_to_discard) OVERRIDE;
+      uint32_t min_num_bytes_to_discard) override;
   virtual MojoResult ConsumerQueryDataImplNoLock(
-      UserPointer<uint32_t> num_bytes) OVERRIDE;
+      UserPointer<uint32_t> num_bytes) override;
   virtual MojoResult ConsumerBeginReadDataImplNoLock(
       UserPointer<const void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
-      uint32_t min_num_bytes_to_read) OVERRIDE;
+      uint32_t min_num_bytes_to_read) override;
   virtual MojoResult ConsumerEndReadDataImplNoLock(
-      uint32_t num_bytes_read) OVERRIDE;
+      uint32_t num_bytes_read) override;
   virtual HandleSignalsState ConsumerGetHandleSignalsStateImplNoLock()
-      const OVERRIDE;
+      const override;
 
   void EnsureBufferNoLock();
   void DestroyBufferNoLock();

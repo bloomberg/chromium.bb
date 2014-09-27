@@ -43,7 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
   // |Dispatcher| public methods:
-  virtual Type GetType() const OVERRIDE;
+  virtual Type GetType() const override;
 
   // Creates a |MessagePipe| with a local endpoint (at port 0) and a proxy
   // endpoint, and creates/initializes a |MessagePipeDispatcher| (attached to
@@ -73,37 +73,37 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   unsigned GetPortNoLock() const;
 
   // |Dispatcher| protected methods:
-  virtual void CancelAllWaitersNoLock() OVERRIDE;
-  virtual void CloseImplNoLock() OVERRIDE;
+  virtual void CancelAllWaitersNoLock() override;
+  virtual void CloseImplNoLock() override;
   virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
+  CreateEquivalentDispatcherAndCloseImplNoLock() override;
   virtual MojoResult WriteMessageImplNoLock(
       UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
-      MojoWriteMessageFlags flags) OVERRIDE;
+      MojoWriteMessageFlags flags) override;
   virtual MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
                                            UserPointer<uint32_t> num_bytes,
                                            DispatcherVector* dispatchers,
                                            uint32_t* num_dispatchers,
-                                           MojoReadMessageFlags flags) OVERRIDE;
-  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const OVERRIDE;
+                                           MojoReadMessageFlags flags) override;
+  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
   virtual MojoResult AddWaiterImplNoLock(
       Waiter* waiter,
       MojoHandleSignals signals,
       uint32_t context,
-      HandleSignalsState* signals_state) OVERRIDE;
+      HandleSignalsState* signals_state) override;
   virtual void RemoveWaiterImplNoLock(
       Waiter* waiter,
-      HandleSignalsState* signals_state) OVERRIDE;
+      HandleSignalsState* signals_state) override;
   virtual void StartSerializeImplNoLock(Channel* channel,
                                         size_t* max_size,
-                                        size_t* max_platform_handles) OVERRIDE;
+                                        size_t* max_platform_handles) override;
   virtual bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) OVERRIDE;
+      embedder::PlatformHandleVector* platform_handles) override;
 
   // Protected by |lock()|:
   scoped_refptr<MessagePipe> message_pipe_;  // This will be null if closed.

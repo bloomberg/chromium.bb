@@ -132,8 +132,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // |RawChannel::Delegate| implementation (only called on the creation thread):
   virtual void OnReadMessage(
       const MessageInTransit::View& message_view,
-      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE;
-  virtual void OnError(Error error) OVERRIDE;
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) override;
+  virtual void OnError(Error error) override;
 
   // Helpers for |OnReadMessage| (only called on the creation thread):
   void OnReadMessageForDownstream(
