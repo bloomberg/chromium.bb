@@ -56,6 +56,12 @@
           'target_name': 'ui_unittests_apk',
           'type': 'none',
           'dependencies': [
+            # TODO(tfarina): This is a layer violation and should be removed.
+            # crbug.com/176960
+            # For now this is here as a temporary band-aid to fix the clobber
+            # issue we are seeing when running this target on Android.
+            # crbug.com/374490
+            '../../chrome/chrome_resources.gyp:packed_resources',
             'ui_unittests',
           ],
           'variables': {
@@ -67,6 +73,12 @@
           'target_name': 'ui_base_unittests_apk',
           'type': 'none',
           'dependencies': [
+            # TODO(tfarina): This is a layer violation and should be removed.
+            # crbug.com/176960
+            # For now this is here as a temporary band-aid to fix the clobber
+            # issue we are seeing when running this target on Android.
+            # crbug.com/374490
+            '../../chrome/chrome_resources.gyp:packed_resources',
             'ui_base_unittests',
           ],
           'variables': {
