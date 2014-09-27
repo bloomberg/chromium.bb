@@ -202,7 +202,7 @@ void FakeGaia::Initialize() {
 
   // Handles /ListAccounts GAIA call.
   REGISTER_RESPONSE_HANDLER(
-      gaia_urls->list_accounts_url(), HandleListAccounts);
+      gaia_urls->ListAccountsURLWithSource(std::string()), HandleListAccounts);
 
   // Handles /GetUserInfo GAIA call.
   REGISTER_RESPONSE_HANDLER(

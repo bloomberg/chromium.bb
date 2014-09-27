@@ -788,7 +788,8 @@ TEST_F(GaiaAuthFetcherTest, ListAccounts) {
 
   GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  MockFetcher mock_fetcher(GaiaUrls::GetInstance()->list_accounts_url(),
+  MockFetcher mock_fetcher(
+      GaiaUrls::GetInstance()->ListAccountsURLWithSource(std::string()),
       status, net::HTTP_OK, cookies_, data, net::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }
@@ -802,7 +803,8 @@ TEST_F(GaiaAuthFetcherTest, GetCheckConnectionInfo) {
   GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
-      GaiaUrls::GetInstance()->get_check_connection_info_url(),
+      GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
+          std::string()),
       status, net::HTTP_OK, cookies_, data, net::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }

@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 
@@ -77,6 +78,7 @@ void GaiaWebAuthFlow::Start() {
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
                                                 this,
+                                                GaiaConstants::kChromeSource,
                                                 profile_->GetRequestContext()));
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }

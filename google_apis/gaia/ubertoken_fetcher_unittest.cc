@@ -52,6 +52,7 @@ class UbertokenFetcherTest : public testing::Test {
         base::MessageLoopProxy::current());
     fetcher_.reset(new UbertokenFetcher(&token_service_,
                                         &consumer_,
+                                        GaiaConstants::kChromeSource,
                                         request_context_getter_.get()));
   }
 

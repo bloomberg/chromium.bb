@@ -389,7 +389,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
       const std::string& data,
       const net::URLRequestStatus& status);
 
-  // These fields are common to GaiaAuthFetcher, same every request
+  // These fields are common to GaiaAuthFetcher, same every request.
   GaiaAuthConsumer* const consumer_;
   net::URLRequestContextGetter* const getter_;
   std::string source_;

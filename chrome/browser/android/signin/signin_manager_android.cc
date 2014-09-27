@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "jni/SigninManager_jni.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -251,7 +252,8 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     merge_session_helper_.reset(new MergeSessionHelper(
-        token_service, profile_->GetRequestContext(), this));
+        token_service, GaiaConstants::kChromeSource,
+        profile_->GetRequestContext(), this));
     merge_session_helper_->LogIn(signin_manager->GetAuthenticatedAccountId());
   }
 }

@@ -21,6 +21,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
@@ -350,7 +351,8 @@ void SigninManager::CompletePendingSignin() {
 
   if (client_->ShouldMergeSigninCredentialsIntoCookieJar()) {
     merge_session_helper_.reset(new MergeSessionHelper(
-        token_service_, client_->GetURLRequestContext(), NULL));
+        token_service_, GaiaConstants::kChromeSource,
+        client_->GetURLRequestContext(), NULL));
   }
 
   DCHECK(!temp_refresh_token_.empty());

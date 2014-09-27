@@ -61,6 +61,7 @@ AccountReconcilor::AccountReconcilor(ProfileOAuth2TokenService* token_service,
       signin_manager_(signin_manager),
       client_(client),
       merge_session_helper_(token_service_,
+                            GaiaConstants::kReconcilorSource,
                             client->GetURLRequestContext(),
                             this),
       registered_with_token_service_(false),
@@ -243,12 +244,8 @@ void AccountReconcilor::StartReconcile() {
 void AccountReconcilor::GetAccountsFromCookie(
     GetAccountsFromCookieCallback callback) {
   get_gaia_accounts_callbacks_.push_back(callback);
-  if (!gaia_fetcher_) {
-    // There is no list account request in flight.
-    gaia_fetcher_.reset(new GaiaAuthFetcher(
-        this, GaiaConstants::kChromeSource, client_->GetURLRequestContext()));
-    gaia_fetcher_->StartListAccounts();
-  }
+  if (!gaia_fetcher_)
+    MayBeDoNextListAccounts();
 }
 
 void AccountReconcilor::StartFetchingExternalCcResult() {
@@ -302,7 +299,8 @@ void AccountReconcilor::OnListAccountsFailure(
 void AccountReconcilor::MayBeDoNextListAccounts() {
   if (!get_gaia_accounts_callbacks_.empty()) {
     gaia_fetcher_.reset(new GaiaAuthFetcher(
-        this, GaiaConstants::kChromeSource, client_->GetURLRequestContext()));
+        this, GaiaConstants::kReconcilorSource,
+        client_->GetURLRequestContext()));
     gaia_fetcher_->StartListAccounts();
   }
 }

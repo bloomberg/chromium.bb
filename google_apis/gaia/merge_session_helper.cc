@@ -43,7 +43,7 @@ void MergeSessionHelper::ExternalCcResultFetcher::Start() {
   CleanupTransientState();
   results_.clear();
   gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
+      new GaiaAuthFetcher(this, helper_->source_,
                           helper_->request_context()));
   gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 }
@@ -152,11 +152,13 @@ void MergeSessionHelper::ExternalCcResultFetcher::CleanupTransientState() {
 
 MergeSessionHelper::MergeSessionHelper(
     OAuth2TokenService* token_service,
+    const std::string& source,
     net::URLRequestContextGetter* request_context,
     Observer* observer)
     : token_service_(token_service),
       request_context_(request_context),
-      result_fetcher_(this) {
+      result_fetcher_(this),
+      source_(source) {
   if (observer)
     AddObserver(observer);
 }
@@ -262,7 +264,8 @@ bool MergeSessionHelper::StillFetchingExternalCcResult() {
 void MergeSessionHelper::StartLogOutUrlFetch() {
   DCHECK(accounts_.front().empty());
   VLOG(1) << "MergeSessionHelper::StartLogOutUrlFetch";
-  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url());
+  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url().Resolve(
+          base::StringPrintf("?source=%s", source_.c_str())));
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_);
@@ -273,7 +276,7 @@ void MergeSessionHelper::OnUbertokenSuccess(const std::string& uber_token) {
   VLOG(1) << "MergeSessionHelper::OnUbertokenSuccess"
           << " account=" << accounts_.front();
   gaia_auth_fetcher_.reset(new GaiaAuthFetcher(this,
-                                               GaiaConstants::kChromeSource,
+                                               source_,
                                                request_context_));
 
   // It's possible that not all external checks have completed.
@@ -314,6 +317,7 @@ void MergeSessionHelper::StartFetching() {
           << accounts_.front();
   uber_token_fetcher_.reset(new UbertokenFetcher(token_service_,
                                                  this,
+                                                 source_,
                                                  request_context_));
   uber_token_fetcher_->StartFetchingToken(accounts_.front());
 }

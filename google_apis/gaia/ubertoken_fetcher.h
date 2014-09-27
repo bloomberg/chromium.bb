@@ -44,6 +44,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
 
   UbertokenFetcher(OAuth2TokenService* token_service,
                    UbertokenConsumer* consumer,
+                   const std::string& source,
                    net::URLRequestContextGetter* request_context);
   virtual ~UbertokenFetcher();
 
@@ -71,6 +72,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
 
   OAuth2TokenService* token_service_;
   UbertokenConsumer* consumer_;
+  std::string source_;
   net::URLRequestContextGetter* request_context_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;

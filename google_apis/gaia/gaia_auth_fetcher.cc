@@ -185,9 +185,10 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       uberauth_token_gurl_(GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
           base::StringPrintf(kUberAuthTokenURLFormat, source.c_str()))),
       oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()),
-      list_accounts_gurl_(GaiaUrls::GetInstance()->list_accounts_url()),
+      list_accounts_gurl_(
+          GaiaUrls::GetInstance()->ListAccountsURLWithSource(source)),
       get_check_connection_info_url_(
-          GaiaUrls::GetInstance()->get_check_connection_info_url()),
+          GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(source)),
       client_login_to_oauth2_gurl_(
           GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
       fetch_pending_(false) {}

@@ -12,6 +12,7 @@ namespace GaiaConstants {
 // Gaia sources for accounting
 extern const char kChromeOSSource[];
 extern const char kChromeSource[];
+extern const char kReconcilorSource[];
 
 // Gaia services for requesting
 extern const char kGaiaService[];  // uber token

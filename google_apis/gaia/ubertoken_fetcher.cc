@@ -19,10 +19,12 @@ const int UbertokenFetcher::kMaxRetries = 3;
 UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
     UbertokenConsumer* consumer,
+    const std::string& source,
     net::URLRequestContextGetter* request_context)
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       consumer_(consumer),
+      source_(source),
       request_context_(request_context),
       retry_number_(0),
       second_access_token_request_(false) {
@@ -110,7 +112,7 @@ void UbertokenFetcher::RequestAccessToken() {
 
 void UbertokenFetcher::ExchangeTokens() {
   gaia_auth_fetcher_.reset(new GaiaAuthFetcher(this,
-                                               GaiaConstants::kChromeSource,
+                                               source_,
                                                request_context_));
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }

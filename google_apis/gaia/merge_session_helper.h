@@ -103,6 +103,7 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   };
 
   MergeSessionHelper(OAuth2TokenService* token_service,
+                     const std::string& source,
                      net::URLRequestContextGetter* request_context,
                      Observer* observer);
   virtual ~MergeSessionHelper();
@@ -185,6 +186,9 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   // List of observers to notify when merge session completes.
   // Makes sure list is empty on destruction.
   ObserverList<Observer, true> observer_list_;
+
+  // Source to use with GAIA endpoints for accounting.
+  std::string source_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionHelper);
 };

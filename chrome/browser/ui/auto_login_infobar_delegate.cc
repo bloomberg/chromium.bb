@@ -87,6 +87,7 @@ AutoLoginRedirector::AutoLoginRedirector(
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
                                                 this,
+                                                GaiaConstants::kChromeSource,
                                                 profile->GetRequestContext()));
   ubertoken_fetcher_->StartFetchingToken(
       signin_manager->GetAuthenticatedAccountId());

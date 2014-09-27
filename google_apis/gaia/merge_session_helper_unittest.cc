@@ -50,7 +50,8 @@ class InstrumentedMergeSessionHelper : public MergeSessionHelper {
   InstrumentedMergeSessionHelper(
       OAuth2TokenService* token_service,
       net::URLRequestContextGetter* request_context) :
-    MergeSessionHelper(token_service, request_context, NULL) {
+    MergeSessionHelper(token_service, GaiaConstants::kChromeSource,
+                       request_context, NULL) {
     total++;
   }
 

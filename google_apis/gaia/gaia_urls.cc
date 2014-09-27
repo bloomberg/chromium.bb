@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/google_api_keys.h"
 
@@ -194,20 +195,12 @@ const GURL& GaiaUrls::oauth1_login_url() const {
   return oauth1_login_url_;
 }
 
-const GURL& GaiaUrls::list_accounts_url() const {
-  return list_accounts_url_;
-}
-
 const GURL& GaiaUrls::embedded_signin_url() const {
   return embedded_signin_url_;
 }
 
 const GURL& GaiaUrls::add_account_url() const {
   return add_account_url_;
-}
-
-const GURL& GaiaUrls::get_check_connection_info_url() const {
-  return get_check_connection_info_url_;
 }
 
 const std::string& GaiaUrls::oauth2_chrome_client_id() const {
@@ -244,4 +237,21 @@ const GURL& GaiaUrls::oauth2_revoke_url() const {
 
 const GURL& GaiaUrls::gaia_login_form_realm() const {
   return gaia_url_;
+}
+
+GURL GaiaUrls::ListAccountsURLWithSource(const std::string& source) {
+  if (source.empty()) {
+    return list_accounts_url_;
+  } else {
+    std::string query = list_accounts_url_.query();
+    return list_accounts_url_.Resolve(
+        base::StringPrintf("?source=%s&%s", source.c_str(), query.c_str()));
+  }
+}
+
+GURL GaiaUrls::GetCheckConnectionInfoURLWithSource(const std::string& source) {
+  return source.empty()
+      ? get_check_connection_info_url_
+      : get_check_connection_info_url_.Resolve(
+            base::StringPrintf("?source=%s", source.c_str()));
 }
