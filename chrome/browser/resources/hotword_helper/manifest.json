@@ -30,6 +30,10 @@
       "*://*.google.fr/*",
       "*://*.google.de/*",
       "chrome://newtab/"
+    ],
+    "ids": [
+      // Test extension.
+      "cpfhkdbjfdgdebcjlifoldbijinjfifp"
     ]
   },
 

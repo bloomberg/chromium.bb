@@ -1244,6 +1244,7 @@
         'browser/extensions/extension_websocket_apitest.cc',
         'browser/extensions/extension_webui_apitest.cc',
         'browser/extensions/gpu_browsertest.cc',
+        'browser/extensions/hotword_browsertest.cc',
         'browser/extensions/isolated_app_browsertest.cc',
         'browser/extensions/lazy_background_page_apitest.cc',
         'browser/extensions/lazy_background_page_test_util.h',
