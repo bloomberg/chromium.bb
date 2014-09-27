@@ -516,7 +516,17 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 // for a BeginMainFrame+activation to complete before it times out and draws
 // any asynchronous animation and scroll/pinch updates.
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT1("cc", "Scheduler::BeginImplFrame", "args", args.AsValue());
+  bool main_thread_is_in_high_latency_mode =
+      state_machine_.MainThreadIsInHighLatencyMode();
+  TRACE_EVENT2("cc",
+               "Scheduler::BeginImplFrame",
+               "args",
+               args.AsValue(),
+               "main_thread_is_high_latency",
+               main_thread_is_in_high_latency_mode);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+                 "MainThreadLatency",
+                 main_thread_is_in_high_latency_mode);
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
@@ -528,7 +538,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   begin_impl_frame_args_.deadline -= draw_duration_estimate;
 
   if (!state_machine_.impl_latency_takes_priority() &&
-      state_machine_.MainThreadIsInHighLatencyMode() &&
+      main_thread_is_in_high_latency_mode &&
       CanCommitAndActivateBeforeDeadline()) {
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
   }

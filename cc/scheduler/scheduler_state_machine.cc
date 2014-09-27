@@ -703,6 +703,9 @@ void SchedulerStateMachine::UpdateStateOnManageTiles() {
 }
 
 void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
+  TRACE_EVENT_INSTANT0("cc",
+                       "Scheduler: SkipNextBeginMainFrameToReduceLatency",
+                       TRACE_EVENT_SCOPE_THREAD);
   skip_next_begin_main_frame_to_reduce_latency_ = true;
 }
 
