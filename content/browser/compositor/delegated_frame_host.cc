@@ -361,12 +361,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     }
     last_output_surface_id_ = output_surface_id;
   }
-  bool modified_layers = false;
   ui::Compositor* compositor = client_->GetCompositor();
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
-    modified_layers = true;
   } else {
     if (use_surfaces_) {
       if (!surface_factory_) {
@@ -386,7 +384,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         surface_factory_->Create(surface_id_, frame_size);
         client_->GetLayer()->SetShowSurface(surface_id_, frame_size_in_dip);
         current_surface_size_ = frame_size;
-        modified_layers = true;
       }
       scoped_ptr<cc::CompositorFrame> compositor_frame =
           make_scoped_ptr(new cc::CompositorFrame());
@@ -426,7 +423,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       } else {
         frame_provider_->SetFrameData(frame_data.Pass());
       }
-      modified_layers = true;
     }
   }
   released_front_lock_ = NULL;
