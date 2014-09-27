@@ -56,6 +56,21 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const Rende
     FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
     paintInvalidationRect.inflate(object->style()->outlineWidth());
 
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+        // Compute accumulated SVG transform and apply to local paint rect.
+        AffineTransform transform = paintInvalidationState->svgTransform() * object->localToParentTransform();
+        paintInvalidationRect = transform.mapRect(paintInvalidationRect);
+        // FIXME: These are quirks carried forward from RenderSVGRoot::computeFloatRectForPaintInvalidation.
+        LayoutRect rect;
+        if (!paintInvalidationRect.isEmpty())
+            rect = enclosingIntRect(paintInvalidationRect);
+        // Offset by SVG root paint offset and apply clipping as needed.
+        rect.move(paintInvalidationState->paintOffset());
+        if (paintInvalidationState->isClipped())
+            rect.intersect(paintInvalidationState->clipRect());
+        return rect;
+    }
+
     object->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
     return enclosingLayoutRect(paintInvalidationRect);
 }
@@ -70,6 +85,13 @@ void SVGRenderSupport::computeFloatRectForPaintInvalidation(const RenderObject* 
 void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
 {
     transformState.applyTransform(object->localToParentTransform());
+
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+        // |svgTransform| contains localToBorderBoxTransform mentioned below.
+        transformState.applyTransform(paintInvalidationState->svgTransform());
+        transformState.move(paintInvalidationState->paintOffset());
+        return;
+    }
 
     RenderObject* parent = object->parent();
 

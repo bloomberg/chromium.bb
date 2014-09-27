@@ -125,11 +125,20 @@ void RenderSVGModelObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
     quads.append(localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())));
 }
 
-InvalidationReason RenderSVGModelObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
+void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
+    ASSERT(!needsLayout());
 
-    return RenderObject::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    // If we didn't need paint invalidation then our children don't need as well.
+    // Skip walking down the tree as everything should be fine below us.
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
+        return;
+
+    invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+    clearPaintInvalidationState(paintInvalidationState);
+
+    PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this);
+    invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 }
 
 } // namespace blink

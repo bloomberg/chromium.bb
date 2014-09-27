@@ -68,6 +68,7 @@ public:
 
     // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS box coordinates.
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }
+    bool shouldApplyViewportClip() const;
 
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE { return children(); }
@@ -109,7 +110,6 @@ private:
     virtual bool canBeSelectionLeaf() const OVERRIDE { return false; }
     virtual bool canHaveChildren() const OVERRIDE { return true; }
 
-    bool shouldApplyViewportClip() const;
     void updateCachedBoundaries();
     void buildLocalToBorderBoxTransform();
 
