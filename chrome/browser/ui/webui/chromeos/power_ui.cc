@@ -187,7 +187,6 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
 
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUIPowerHost);
-  html->SetUseJsonJSFormatV2();
 
   html->AddLocalizedString("titleText", IDS_ABOUT_POWER_TITLE);
   html->AddLocalizedString("showButton", IDS_ABOUT_POWER_SHOW_BUTTON);

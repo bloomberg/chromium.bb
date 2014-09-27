@@ -36,7 +36,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl
       const base::DictionaryValue& localized_strings) OVERRIDE;
   virtual void AddBoolean(const std::string& name, bool value) OVERRIDE;
   virtual void SetJsonPath(const std::string& path) OVERRIDE;
-  virtual void SetUseJsonJSFormatV2() OVERRIDE;
   virtual void AddResourcePath(const std::string &path,
                                int resource_id) OVERRIDE;
   virtual void SetDefaultResource(int resource_id) OVERRIDE;
@@ -88,7 +87,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   // specific resources like "favicon/34" getting sent to this source.
   std::string source_name_;
   int default_resource_;
-  bool json_js_format_v2_;
   std::string json_path_;
   std::map<std::string, int> path_to_idr_map_;
   base::DictionaryValue localized_strings_;

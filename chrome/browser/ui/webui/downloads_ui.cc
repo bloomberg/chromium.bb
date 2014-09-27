@@ -88,7 +88,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("downloads.css", IDR_DOWNLOADS_CSS);
   source->AddResourcePath("downloads.js", IDR_DOWNLOADS_JS);
   source->SetDefaultResource(IDR_DOWNLOADS_HTML);
-  source->SetUseJsonJSFormatV2();
 
   return source;
 }

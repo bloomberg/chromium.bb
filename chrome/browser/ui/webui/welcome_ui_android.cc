@@ -34,7 +34,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   // Set up the chrome://welcome source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIWelcomeHost);
-  html_source->SetUseJsonJSFormatV2();
 
   // Localized strings.
   html_source->AddLocalizedString("title",

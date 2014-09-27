@@ -13,7 +13,7 @@
           '../../../../ui/webui/resources/js/cr/ui/focus_manager.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_outline_manager.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
-          '../../../../ui/webui/resources/js/local_strings.js',
+          '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/util.js',
         ],
         'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],

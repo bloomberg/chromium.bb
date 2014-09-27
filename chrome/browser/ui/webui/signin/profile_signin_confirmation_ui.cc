@@ -18,7 +18,6 @@ ProfileSigninConfirmationUI::ProfileSigninConfirmationUI(content::WebUI* web_ui)
   : ConstrainedWebDialogUI(web_ui) {
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIProfileSigninConfirmationHost);
-  html_source->SetUseJsonJSFormatV2();
 
   html_source->AddLocalizedString(
       "createProfileButtonText",

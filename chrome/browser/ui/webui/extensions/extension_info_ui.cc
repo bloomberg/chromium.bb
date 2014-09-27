@@ -35,7 +35,6 @@ ExtensionInfoUI::ExtensionInfoUI(content::WebUI* web_ui, const GURL& url)
                               IDS_EXTENSION_SCRIPT_POPUP_IS_RUNNING);
   source_->AddLocalizedString("lastUpdated",
                               IDS_EXTENSION_SCRIPT_POPUP_LAST_UPDATED);
-  source_->SetUseJsonJSFormatV2();
   source_->SetJsonPath("strings.js");
 
   source_->AddResourcePath("extension_info.css", IDR_EXTENSION_INFO_CSS);

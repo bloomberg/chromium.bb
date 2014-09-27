@@ -77,7 +77,6 @@ void StartPageUI::InitDataSource() {
   scoped_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIAppListStartPageHost));
 
-  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
 
   source->AddResourcePath("start_page.css", IDR_APP_LIST_START_PAGE_CSS);

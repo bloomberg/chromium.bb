@@ -67,7 +67,6 @@ void AssertPluginEnabled(bool did_enable) {
 content::WebUIDataSource* CreatePluginsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPluginsHost);
-  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
   source->AddLocalizedString("pluginsDetailsModeLink",

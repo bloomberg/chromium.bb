@@ -971,7 +971,6 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   webui::SetFontAndTextDirection(&load_time_data);
   load_time_data.Set("jstemplateData", root.release());
 
-  webui::UseVersion2 version2;
   std::string data;
   webui::AppendJsonJS(&load_time_data, &data);
   callback_.Run(base::RefCountedString::TakeString(&data));

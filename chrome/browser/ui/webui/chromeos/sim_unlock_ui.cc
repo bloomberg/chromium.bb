@@ -330,9 +330,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SIM_UNLOCK_HTML));
 
-  webui::UseVersion2 version2;
   std::string full_html = webui::GetI18nTemplateHtml(html, &strings);
-
   callback.Run(base::RefCountedString::TakeString(&full_html));
 }
 

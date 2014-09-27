@@ -150,7 +150,6 @@ void ContextualSearchPromoSourceAndroid::SendHtmlWithStrings(
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
          IDR_CONTEXTUAL_SEARCH_PROMO_HTML));
-  webui::UseVersion2 version;
   std::string response(webui::GetI18nTemplateHtml(html, &strings_data));
   callback.Run(base::RefCountedString::TakeString(&response));
 }

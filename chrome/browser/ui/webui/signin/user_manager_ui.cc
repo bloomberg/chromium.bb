@@ -47,7 +47,6 @@ content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
     const base::DictionaryValue& localized_strings) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUserManagerHost);
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath(kStringsJSPath);
 

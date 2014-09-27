@@ -357,7 +357,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     const char* js_cache_probe =
         "try {\n"
         "    domAutomationController.send(\n"
-        "        'staleLoadButton' in templateData ? 'yes' : 'no');\n"
+        "        loadTimeData.valueExists('staleLoadButton') ? 'yes' : 'no');\n"
         "} catch (e) {\n"
         "    domAutomationController.send(e.message);\n"
         "}\n";

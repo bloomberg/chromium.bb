@@ -60,7 +60,6 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
-  html->SetUseJsonJSFormatV2();
 
   html->AddLocalizedString("titleText", IDS_NETWORK_TITLE);
   html->AddLocalizedString("autoRefreshText", IDS_NETWORK_AUTO_REFRESH);

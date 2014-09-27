@@ -216,7 +216,6 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   base::StringPiece html(ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML));
 
-  webui::UseVersion2 version;
   return webui::GetI18nTemplateHtml(html, &strings);
 }
 

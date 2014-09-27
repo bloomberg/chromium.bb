@@ -58,7 +58,6 @@ content::WebUIDataSource* CreateVoiceSearchUiHtmlSource() {
   html_source->AddLocalizedString("voiceSearchLongTitle",
                                   IDS_VOICESEARCH_TITLE_MESSAGE);
 
-  html_source->SetUseJsonJSFormatV2();
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath("about_voicesearch.js",
                                IDR_ABOUT_VOICESEARCH_JS);

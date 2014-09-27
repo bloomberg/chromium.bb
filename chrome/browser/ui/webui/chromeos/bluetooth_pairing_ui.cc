@@ -33,7 +33,6 @@ BluetoothPairingUI::BluetoothPairingUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBluetoothPairingHost);
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_BLUETOOTH_PAIR_DEVICE_HTML);

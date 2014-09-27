@@ -169,7 +169,6 @@ function parseSystemLog(text) {
   }
 
   var templateData = {'details': details};
-  i18nTemplate.process(document, templateData);
   jstProcess(new JsEvalContext(templateData), $('t'));
 
   collapseMultiLineStrings();

@@ -338,8 +338,6 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
                     l10n_util::GetStringUTF16(IDS_OK));
   webui::SetFontAndTextDirection(&strings);
 
-  webui::UseVersion2 version_2;
-
   // The webui differs based on whether the network is activated or not. If the
   // network is activated, the webui goes straight to portal. Otherwise the
   // webui is used for activation flow.

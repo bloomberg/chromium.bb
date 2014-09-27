@@ -42,7 +42,6 @@ content::WebUIDataSource* CreateSlowUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISlowHost);
 
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("slowDisable", IDS_SLOW_DISABLE);
   source->AddLocalizedString("slowEnable", IDS_SLOW_ENABLE);
   source->AddLocalizedString("slowDescription", IDS_SLOW_DESCRIPTION);

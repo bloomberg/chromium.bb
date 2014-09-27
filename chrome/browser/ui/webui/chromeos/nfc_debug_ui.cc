@@ -676,8 +676,7 @@ NfcDebugUI::NfcDebugUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new NfcDebugMessageHandler());
 
   content::WebUIDataSource* html_source =
-    content::WebUIDataSource::Create(chrome::kChromeUINfcDebugHost);
-  html_source->SetUseJsonJSFormatV2();
+      content::WebUIDataSource::Create(chrome::kChromeUINfcDebugHost);
 
   html_source->AddLocalizedString("titleText", IDS_NFC_DEBUG_TITLE);
   html_source->AddLocalizedString("notSupportedText",

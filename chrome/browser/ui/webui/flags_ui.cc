@@ -53,7 +53,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIFlagsHost);
 
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
   source->AddLocalizedString("flagsTableTitle", IDS_FLAGS_TABLE_TITLE);
   source->AddLocalizedString("flagsNoExperimentsAvailable",

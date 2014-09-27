@@ -20,7 +20,6 @@ ChargerReplacementUI::ChargerReplacementUI(content::WebUI* web_ui)
   ChargerReplacementHandler::GetLocalizedValues(&localized_strings);
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIChargerReplacementHost);
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_CHARGER_REPLACEMENT_HTML);

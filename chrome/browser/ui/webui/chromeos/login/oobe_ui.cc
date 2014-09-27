@@ -82,7 +82,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     const std::string& display_type) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath(kStringsJSPath);
 

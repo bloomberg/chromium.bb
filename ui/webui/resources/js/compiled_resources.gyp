@@ -28,13 +28,6 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     },
     {
-      'target_name': 'local_strings',
-      'variables': {
-        'externs': ['template_data_externs.js'],
-      },
-      'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
-    },
-    {
       'target_name': 'parse_html_subset',
       'variables': {
         'externs': ['<(CLOSURE_DIR)/externs/pending_compiler_externs.js'],

@@ -29,7 +29,6 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->AddResourcePath("device.png", IDR_LOCAL_DISCOVERY_DEVICE_PNG);
   source->AddResourcePath("printer.png", IDR_LOCAL_DISCOVERY_PRINTER_PNG);
 
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("serviceRegister",
                              IDS_LOCAL_DISCOVERY_SERVICE_REGISTER);
   source->AddLocalizedString("manageDevice", IDS_LOCAL_DISCOVERY_MANAGE_DEVICE);

@@ -27,7 +27,6 @@ if (window.top.location != window.location)
 // Re-renders the error page using |strings| as the dictionary of values.
 // Used by NetErrorTabHelper to update DNS error pages with probe results.
 function updateForDnsProbe(strings) {
-  i18nTemplate.process(document, strings);
   var context = new JsEvalContext(strings);
   jstProcess(context, $('t'));
 }

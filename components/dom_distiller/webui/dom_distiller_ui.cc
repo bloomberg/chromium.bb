@@ -28,7 +28,6 @@ DomDistillerUi::DomDistillerUi(content::WebUI* web_ui,
                           IDR_ABOUT_DOM_DISTILLER_CSS);
   source->AddResourcePath("about_dom_distiller.js", IDR_ABOUT_DOM_DISTILLER_JS);
 
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("domDistillerTitle",
                              IDS_DOM_DISTILLER_WEBUI_TITLE);
   source->AddLocalizedString("addArticleUrl",

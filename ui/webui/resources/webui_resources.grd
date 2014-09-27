@@ -14,7 +14,6 @@ without changes to the corresponding grd file. -->
   <release seq="1">
     <includes>
       <include name="IDR_WEBUI_I18N_PROCESS_JS" file="js/i18n_process.js" type="BINDATA" />
-      <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js" type="BINDATA" />
       <include name="IDR_WEBUI_I18N_TEMPLATE2_JS" file="js/i18n_template2.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
 
@@ -356,8 +355,6 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_WEBUI_JS_LOAD_TIME_DATA"
                  file="js/load_time_data.js" type="chrome_html" />
-      <structure name="IDR_WEBUI_JS_LOCAL_STRINGS"
-                 file="js/local_strings.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_MEDIA_COMMON"
                  file="js/media_common.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_PARSE_HTML_SUBSET"

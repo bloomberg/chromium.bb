@@ -40,7 +40,6 @@ namespace {
 content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIWebRtcLogsHost);
-  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("webrtcLogsTitle", IDS_WEBRTC_LOGS_TITLE);
   source->AddLocalizedString("webrtcLogCountFormat",

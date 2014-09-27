@@ -31,7 +31,6 @@ content::WebUIDataSource* CreateExtensionsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsFrameHost);
 
-  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("extensions.js", IDR_EXTENSIONS_JS);
   source->AddResourcePath("extension_command_list.js",

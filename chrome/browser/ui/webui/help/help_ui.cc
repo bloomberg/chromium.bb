@@ -19,7 +19,6 @@ content::WebUIDataSource* CreateAboutPageHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIHelpFrameHost);
 
   source->SetJsonPath("strings.js");
-  source->SetUseJsonJSFormatV2();
   source->AddResourcePath("help.js", IDR_HELP_JS);
   source->AddResourcePath("help_page.js", IDR_HELP_PAGE_JS);
   source->AddResourcePath("channel_change_page.js", IDR_CHANNEL_CHANGE_PAGE_JS);

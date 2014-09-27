@@ -22,7 +22,6 @@ content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
       content::WebUIDataSource::Create(host);
 
   // Localized strings.
-  html_source->SetUseJsonJSFormatV2();
   html_source->AddLocalizedString("general", IDS_CERT_INFO_GENERAL_TAB_LABEL);
   html_source->AddLocalizedString("details", IDS_CERT_INFO_DETAILS_TAB_LABEL);
   html_source->AddLocalizedString("close", IDS_CLOSE);

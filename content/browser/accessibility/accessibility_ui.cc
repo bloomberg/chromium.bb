@@ -134,7 +134,6 @@ AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://accessibility source.
   WebUIDataSource* html_source =
       WebUIDataSource::Create(kChromeUIAccessibilityHost);
-  html_source->SetUseJsonJSFormatV2();
 
   web_ui->RegisterMessageCallback(
       "toggleAccessibility",

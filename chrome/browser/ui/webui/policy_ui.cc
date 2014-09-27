@@ -119,7 +119,6 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   source->AddLocalizedString("unset", IDS_POLICY_UNSET);
   source->AddLocalizedString("unknown", IDS_POLICY_UNKNOWN);
 
-  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
 
   // Add required resources.

@@ -40,7 +40,6 @@ namespace {
 content::WebUIDataSource* CreateCrashesUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICrashesHost);
-  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
   source->AddLocalizedString("crashesTitle", IDS_CRASHES_TITLE);

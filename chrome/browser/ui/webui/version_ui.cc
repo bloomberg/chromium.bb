@@ -115,7 +115,6 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddLocalizedString("variations_name",
                                   IDS_ABOUT_VERSION_VARIATIONS);
 
-  html_source->SetUseJsonJSFormatV2();
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath("version.js", IDR_ABOUT_VERSION_JS);
   html_source->AddResourcePath("about_version.css", IDR_ABOUT_VERSION_CSS);

@@ -110,7 +110,6 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
           new InternalDataSource(this)),
       source_name_(source_name),
       default_resource_(-1),
-      json_js_format_v2_(false),
       add_csp_(true),
       object_src_set_(false),
       frame_src_set_(false),
@@ -149,10 +148,6 @@ void WebUIDataSourceImpl::AddBoolean(const std::string& name, bool value) {
 
 void WebUIDataSourceImpl::SetJsonPath(const std::string& path) {
   json_path_ = path;
-}
-
-void WebUIDataSourceImpl::SetUseJsonJSFormatV2() {
-  json_js_format_v2_ = true;
 }
 
 void WebUIDataSourceImpl::AddResourcePath(const std::string &path,
@@ -242,10 +237,6 @@ void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
   std::string template_data;
   if (!disable_set_font_strings_)
     webui::SetFontAndTextDirection(&localized_strings_);
-
-  scoped_ptr<webui::UseVersion2> version2;
-  if (json_js_format_v2_)
-    version2.reset(new webui::UseVersion2);
 
   webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));

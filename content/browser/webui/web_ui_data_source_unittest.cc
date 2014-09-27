@@ -93,7 +93,7 @@ TEST_F(WebUIDataSourceTest, EmptyStrings) {
   source()->SetJsonPath("strings.js");
   StartDataRequest("strings.js");
   std::string result(result_data_->front_as<char>(), result_data_->size());
-  EXPECT_NE(result.find("var templateData = {"), std::string::npos);
+  EXPECT_NE(result.find("loadTimeData.data = {"), std::string::npos);
   EXPECT_NE(result.find("};"), std::string::npos);
 }
 

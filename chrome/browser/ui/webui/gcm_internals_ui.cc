@@ -294,7 +294,6 @@ GCMInternalsUI::GCMInternalsUI(content::WebUI* web_ui)
   // Set up the chrome://gcm-internals source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIGCMInternalsHost);
-  html_source->SetUseJsonJSFormatV2();
 
   html_source->SetJsonPath("strings.js");
 

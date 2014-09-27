@@ -107,7 +107,6 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   // Set up the chrome://set-time source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISetTimeHost);
-  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("setTimeTitle", IDS_SET_TIME_TITLE);
   source->AddLocalizedString("prompt", IDS_SET_TIME_PROMPT);

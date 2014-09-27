@@ -278,7 +278,6 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
   // chrome://identity-internals source.
   content::WebUIDataSource* html_source =
     content::WebUIDataSource::Create(chrome::kChromeUIIdentityInternalsHost);
-  html_source->SetUseJsonJSFormatV2();
 
   // Localized strings
   html_source->AddLocalizedString("tokenCacheHeader",

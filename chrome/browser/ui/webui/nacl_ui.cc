@@ -53,7 +53,6 @@ content::WebUIDataSource* CreateNaClUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINaClHost);
 
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("loadingMessage", IDS_NACL_LOADING_MESSAGE);
   source->AddLocalizedString("naclLongTitle", IDS_NACL_TITLE_MESSAGE);
   source->SetJsonPath("strings.js");

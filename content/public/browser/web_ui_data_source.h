@@ -56,10 +56,6 @@ class WebUIDataSource {
   // Sets the path which will return the JSON strings.
   virtual void SetJsonPath(const std::string& path) = 0;
 
-  // Sets the data source to use a slightly different format for json data. Some
-  // day this should become the default.
-  virtual void SetUseJsonJSFormatV2() = 0;
-
   // Adds a mapping between a path name and a resource to return.
   virtual void AddResourcePath(const std::string& path, int resource_id) = 0;
 

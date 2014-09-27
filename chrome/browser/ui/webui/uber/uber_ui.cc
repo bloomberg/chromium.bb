@@ -37,7 +37,6 @@ content::WebUIDataSource* CreateUberHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUberHost);
 
-  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("uber.js", IDR_UBER_JS);
   source->AddResourcePath("uber_utils.js", IDR_UBER_UTILS_JS);
@@ -78,7 +77,6 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUberFrameHost);
 
-  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("uber_frame.js", IDR_UBER_FRAME_JS);
   source->SetDefaultResource(IDR_UBER_FRAME_HTML);
