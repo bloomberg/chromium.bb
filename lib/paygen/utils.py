@@ -32,13 +32,6 @@ TWO_GIGS = ONE_GIG * 2 # Two gigs in bytes
 YES = 'yes'
 NO = 'no'
 
-# This is updated to be True or False whenever CheckLoas is run.
-_LoasActive = None
-
-
-class LoasMissing(Exception):
-  """Raised when LOAS is required but missing."""
-
 
 class CommandFailedException(Exception):
   """Exception gets thrown for a command that fails to execute."""
@@ -259,66 +252,6 @@ def FindLineInFile(filename, keyword):
     for line in file_buffer:
       if keyword in line:
         return line
-
-
-def loas_required(func):
-  """Call given func if LOAS is active, otherwise error out."""
-  def f(*args, **kwargs):
-    """Function wrapper."""
-    if CheckLoas(accept_previous_check=True):
-      return func(*args, **kwargs)
-
-    raise LoasMissing('LOAS is required to call %s.%s' %
-                      (func.__module__, func.__name__))
-
-  f.__name__ = func.__name__
-  f.__doc__ = func.__doc__
-  f.__module__ = func.__module__
-  return f
-
-
-def CheckLoas(accept_previous_check=True):
-  """Check whether LOAS (prodaccess) is active now.
-
-  Also update _LoasActive to be True or False if a call to loas_check has to
-  be made.
-
-  Args:
-    accept_previous_check: If True, then accept the result of a previous
-      call to CheckLoas, if available.
-
-  Returns:
-    True if LOAS is active, False otherwise.
-  """
-  # pylint: disable-msg=W0603
-  global _LoasActive
-
-  if accept_previous_check and _LoasActive is not None:
-    return _LoasActive
-
-  try:
-    result = RunCommand(
-        '/usr/bin/loas_check', error_ok=True, return_result=True,
-        redirect_stdout=True, redirect_stderr=True)
-  except OSError:
-    # If the check command can't be found, assume false.
-    return False
-
-  _LoasActive = result.returncode == 0
-  return _LoasActive
-
-
-def CheckAndRunLoas():
-  """Check if loas is running, if not run prodaccess."""
-  # pylint: disable-msg=W0603
-  global _LoasActive
-
-  if not CheckLoas():
-    prodaccess_cmd = '/usr/local/symlinks/prodaccess'
-    RunCommand(prodaccess_cmd)
-
-    # Clear any previously saved LOAS state.
-    _LoasActive = None
 
 
 def GetProjectsFromManifest(manifest_file):
