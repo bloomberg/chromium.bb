@@ -117,6 +117,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   cc::DelegatedFrameProvider* FrameProviderForTesting() const {
     return frame_provider_.get();
   }
+  cc::SurfaceId SurfaceIdForTesting() const { return surface_id_; }
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
     OnCompositingDidCommit(compositor);
   }

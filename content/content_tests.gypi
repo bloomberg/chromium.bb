@@ -750,6 +750,7 @@
             'content.gyp:content_resources',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../cc/cc.gyp:cc',
+            '../cc/cc.gyp:cc_surfaces',
             '../cc/cc_tests.gyp:cc_test_support',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gpu',

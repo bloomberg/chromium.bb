@@ -433,11 +433,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();
 
-  if (modified_layers && !damage_rect_in_dip.IsEmpty()) {
-    // TODO(jbauman): Need to always tell the window observer about the
-    // damage.
+  if (!damage_rect_in_dip.IsEmpty())
     client_->GetLayer()->OnDelegatedFrameDamage(damage_rect_in_dip);
-  }
 
   pending_delegated_ack_count_++;
 
@@ -457,6 +454,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
                    AsWeakPtr(),
                    output_surface_id));
+  } else {
+    AddOnCommitCallbackAndDisableLocks(base::Closure());
   }
   DidReceiveFrameFromRenderer(damage_rect);
   if (frame_provider_.get() || !surface_id_.is_null())
@@ -939,7 +938,8 @@ void DelegatedFrameHost::AddOnCommitCallbackAndDisableLocks(
     compositor->AddObserver(this);
 
   can_lock_compositor_ = NO_PENDING_COMMIT;
-  on_compositing_did_commit_callbacks_.push_back(callback);
+  if (!callback.is_null())
+    on_compositing_did_commit_callbacks_.push_back(callback);
 }
 
 void DelegatedFrameHost::AddedToWindow() {
