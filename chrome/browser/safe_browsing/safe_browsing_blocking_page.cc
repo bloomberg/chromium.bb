@@ -689,7 +689,7 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
   // Fill in the shared values.
   base::DictionaryValue load_time_data;
   webui::SetFontAndTextDirection(&load_time_data);
-  load_time_data.SetBoolean("ssl", false);
+  load_time_data.SetString("type", "SAFEBROWSING");
   load_time_data.SetString(
       "tabTitle", l10n_util::GetStringUTF16(IDS_SAFEBROWSING_V3_TITLE));
   load_time_data.SetString(
