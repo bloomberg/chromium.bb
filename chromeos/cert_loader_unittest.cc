@@ -19,6 +19,9 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// http://crbug.com/418369
+#ifndef NDEBUG
+
 namespace chromeos {
 namespace {
 
@@ -172,8 +175,6 @@ class CertLoaderTest : public testing::Test,
   size_t certificates_loaded_events_count_;
 };
 
-// http://crbug.com/418369
-#ifndef NDEBUG
 TEST_F(CertLoaderTest, Basic) {
   EXPECT_FALSE(cert_loader_->CertificatesLoading());
   EXPECT_FALSE(cert_loader_->certificates_loaded());
@@ -315,7 +316,8 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 
-#endif
-
 }  // namespace
 }  // namespace chromeos
+
+#endif
+
