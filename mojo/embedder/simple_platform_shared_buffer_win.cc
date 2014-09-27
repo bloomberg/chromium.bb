@@ -75,7 +75,7 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
                                   real_length);
   if (!real_base) {
     PLOG(ERROR) << "MapViewOfFile";
-    return scoped_ptr<PlatformSharedBufferMapping>();
+    return nullptr;
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
