@@ -114,8 +114,10 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @param {!Array.<!Object.<{type: string=, is_default: boolean=}>>} options
-     * @return {Object.<{type: string=, is_default: boolean=}>} Default color
+     * @param {!Array.<!Object.<{type: (string|undefined),
+     *                           is_default: (boolean|undefined)}>>} options
+     * @return {Object.<{type: (string|undefined),
+     *                   is_default: (boolean|undefined)}>} Default color
      *     option of the given list.
      * @private
      */

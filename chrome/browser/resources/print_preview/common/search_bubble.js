@@ -8,6 +8,7 @@ cr.define('print_preview', function() {
   /**
    * Encapsulated handling of a search bubble.
    * @constructor
+   * @extends {HTMLDivElement}
    */
   function SearchBubble(text) {
     var el = cr.doc.createElement('div');

@@ -55,7 +55,7 @@ cr.define('print_preview', function() {
 
     /**
      * Cache used for constant lookup of destinations by origin and id.
-     * @type {object.<string, !print_preview.Destination>}
+     * @type {Object.<string, !print_preview.Destination>}
      * @private
      */
     this.destinationMap_ = {};
@@ -92,7 +92,7 @@ cr.define('print_preview', function() {
 
     /**
      * Used to fetch cloud-based print destinations.
-     * @type {print_preview.CloudPrintInterface}
+     * @type {cloudprint.CloudPrintInterface}
      * @private
      */
     this.cloudPrintInterface_ = null;
@@ -271,7 +271,7 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether a search for cloud destinations is in progress.
      */
     get isCloudDestinationSearchInProgress() {
-      return this.cloudPrintInterface_ &&
+      return !!this.cloudPrintInterface_ &&
              this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
     },
 
@@ -343,7 +343,7 @@ cr.define('print_preview', function() {
 
     /**
      * Sets the destination store's Google Cloud Print interface.
-     * @param {!print_preview.CloudPrintInterface} cloudPrintInterface Interface
+     * @param {!cloudprint.CloudPrintInterface} cloudPrintInterface Interface
      *     to set.
      */
     setCloudPrintInterface: function(cloudPrintInterface) {
@@ -384,7 +384,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {!print_preview.Destination} destination Destination to select.
+     * @param {print_preview.Destination} destination Destination to select.
      */
     selectDestination: function(destination) {
       this.isInAutoSelectMode_ = false;
@@ -834,7 +834,7 @@ cr.define('print_preview', function() {
      * Called when the Google Cloud Print interface fails to lookup a
      * destination. Selects another destination if the failed destination was
      * the initial destination.
-     * @param {object} event Contains the ID of the destination that was failed
+     * @param {Object} event Contains the ID of the destination that was failed
      *     to be looked up.
      * @private
      */
@@ -864,7 +864,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when a Privet printer is added to the local network.
-     * @param {object} event Contains information about the added printer.
+     * @param {Object} event Contains information about the added printer.
      * @private
      */
     onPrivetPrinterAdded_: function(event) {
@@ -880,7 +880,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when capabilities for a privet printer are set.
-     * @param {object} event Contains the capabilities and printer ID.
+     * @param {Object} event Contains the capabilities and printer ID.
      * @private
      */
     onPrivetCapabilitiesSet_: function(event) {
@@ -910,8 +910,8 @@ cr.define('print_preview', function() {
     /**
      * Returns key to be used with {@code destinationMap_}.
      * @param {!print_preview.Destination.Origin} origin Destination origin.
-     * @return {string} id Destination id.
-     * @return {string} account User account destination is registered for.
+     * @param {string} id Destination id.
+     * @param {string} account User account destination is registered for.
      * @private
      */
     getDestinationKey_: function(origin, id, account) {

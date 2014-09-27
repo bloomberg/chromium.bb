@@ -9,6 +9,7 @@ cr.define('print_preview', function() {
    * FocusManager implementation specialized for Print Preview, which ensures
    * that Print Preview itself does not receive focus when an overlay is shown.
    * @constructor
+   * @extends {cr.ui.FocusManager}
    */
   function PrintPreviewFocusManager() {
   };

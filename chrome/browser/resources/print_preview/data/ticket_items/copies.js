@@ -27,7 +27,7 @@ cr.define('print_preview.ticket_items', function() {
       if (/[^\d]+/.test(value)) {
         return false;
       }
-      var copies = parseInt(value);
+      var copies = parseInt(value, 10);
       if (copies > 999 || copies < 1) {
         return false;
       }
@@ -41,7 +41,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {number} The number of copies indicated by the ticket item. */
     getValueAsNumber: function() {
-      return parseInt(this.getValue());
+      return parseInt(this.getValue(), 10);
     },
 
     /** @override */

@@ -268,7 +268,7 @@ cr.define('print_preview', function() {
      * @param {!print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
-     * @param {print_preview.CloudPrintInterface} cloudPrintInterface Interface
+     * @param {cloudprint.CloudPrintInterface} cloudPrintInterface Interface
      *     to Google Cloud Print.
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {boolean=} opt_isOpenPdfInPreview Whether to open the PDF in the
@@ -922,12 +922,12 @@ cr.define('print_preview', function() {
       return this.documentTitle_;
     },
 
-    /** @return {bool} Whether the document has selection. */
+    /** @return {boolean} Whether the document has selection. */
     get documentHasSelection() {
       return this.documentHasSelection_;
     },
 
-    /** @return {bool} Whether selection only should be printed. */
+    /** @return {boolean} Whether selection only should be printed. */
     get selectionOnly() {
       return this.selectionOnly_;
     },

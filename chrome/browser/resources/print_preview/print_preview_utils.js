@@ -56,8 +56,8 @@ function areRangesEqual(array1, array2) {
 /**
  * Removes duplicate elements from |inArray| and returns a new array.
  * |inArray| is not affected. It assumes that |inArray| is already sorted.
- * @param {Array.<number>} inArray The array to be processed.
- * @return {Array.<number>} The array after processing.
+ * @param {!Array.<number>} inArray The array to be processed.
+ * @return {!Array.<number>} The array after processing.
  */
 function removeDuplicates(inArray) {
   var out = [];
@@ -93,16 +93,17 @@ function removeDuplicates(inArray) {
  * Example: "-" is valid, assuming |totalPageCount| >= 1.
  * Example: "1-4dsf, 11" is invalid regardless of |totalPageCount|.
  * @param {string} pageRangeText The text to be checked.
- * @param {number} totalPageCount The total number of pages.
+ * @param {number=} opt_totalPageCount The total number of pages.
  * @return {Array.<{from: number, to: number}>} An array of page range objects.
  */
-function pageRangeTextToPageRanges(pageRangeText, totalPageCount) {
+function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
   if (pageRangeText == '') {
     return [];
   }
 
   var MAX_PAGE_NUMBER = 1000000000;
-  totalPageCount = totalPageCount ? totalPageCount : MAX_PAGE_NUMBER;
+  var totalPageCount = opt_totalPageCount ? opt_totalPageCount :
+                                            MAX_PAGE_NUMBER;
 
   var regex = /^\s*([0-9]*)\s*-\s*([0-9]*)\s*$/;
   var parts = pageRangeText.split(/,/);
@@ -161,8 +162,8 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
 }
 
 /**
- * @param {Array.<number>} pageList The list to be processed.
- * @return {Array.<number>} The contents of |pageList| in ascending order and
+ * @param {!Array.<number>} pageList The list to be processed.
+ * @return {!Array.<number>} The contents of |pageList| in ascending order and
  *     without any duplicates. |pageList| is not affected.
  */
 function pageListToPageSet(pageList) {

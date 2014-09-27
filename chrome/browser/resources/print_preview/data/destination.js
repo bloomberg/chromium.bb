@@ -2,6 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * The CDD (Cloud Device Description) describes the capabilities of a print
+ * destination.
+ *
+ * @typedef {{
+ *   version: string,
+ *   printer: {
+ *     vendor_capability: !Array.<{Object}>,
+ *     collate: ({default: (boolean|undefined)}|undefined),
+ *     color: ({
+ *       option: !Array.<{
+ *         type: (string|undefined),
+ *         vendor_id: (string|undefined),
+ *         custom_display_name: (string|undefined),
+ *         is_default: (boolean|undefined)
+ *       }>
+ *     }|undefined),
+ *     copies: ({default: (number|undefined),
+ *               max: (number|undefined)}|undefined),
+ *     duplex: ({option: !Array.<{type: (string|undefined),
+ *                               is_default: (boolean|undefined)}>}|undefined),
+ *     page_orientation: ({
+ *       option: !Array.<{type: (string|undefined),
+ *                        is_default: (boolean|undefined)}>
+ *     }|undefined)
+ *   }
+ * }}
+ */
+print_preview.Cdd;
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -114,7 +146,7 @@ cr.define('print_preview', function() {
      * {@code null} if terms-of-service does not apply to the print destination.
      * @private {?boolean}
      */
-    this.isTosAccepted_ = opt_params && opt_params.isTosAccepted;
+    this.isTosAccepted_ = !!(opt_params && opt_params.isTosAccepted);
 
     /**
      * Cloud ID for Privet printers.
@@ -149,6 +181,7 @@ cr.define('print_preview', function() {
    */
   Destination.Type = {
     GOOGLE: 'google',
+    GOOGLE_PROMOTED: 'google_promoted',
     LOCAL: 'local',
     MOBILE: 'mobile'
   };
@@ -423,43 +456,15 @@ cr.define('print_preview', function() {
      *     {@code false} otherwise.
      */
     matches: function(query) {
-      return this.displayName_.match(query) ||
+      return !!this.displayName_.match(query) ||
           this.extraPropertiesToMatch.some(function(property) {
             return property.match(query);
           });
     }
   };
 
-  /**
-   * The CDD (Cloud Device Description) describes the capabilities of a print
-   * destination.
-   *
-   * @typedef {{
-   *   version: string,
-   *   printer: {
-   *     vendor_capability: !Array.<{Object}>,
-   *     collate: {default: boolean=}=,
-   *     color: {
-   *       option: !Array.<{
-   *         type: string=,
-   *         vendor_id: string=,
-   *         custom_display_name: string=,
-   *         is_default: boolean=
-   *       }>
-   *     }=,
-   *     copies: {default: number=, max: number=}=,
-   *     duplex: {option: !Array.<{type: string=, is_default: boolean=}>}=,
-   *     page_orientation: {
-   *       option: !Array.<{type: string=, is_default: boolean=}>
-   *     }=
-   *   }
-   * }}
-   */
-  var Cdd = Object;
-
   // Export
   return {
     Destination: Destination,
-    Cdd: Cdd
   };
 });

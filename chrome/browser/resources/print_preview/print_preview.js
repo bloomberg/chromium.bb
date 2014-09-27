@@ -181,11 +181,6 @@ cr.define('print_preview', function() {
         this.printTicketStore_);
     this.addChild(this.advancedSettings_);
 
-    /**
-     * Component representing more/less settings button.
-     * @type {!print_preview.MoreSettings}
-     * @private
-     */
     var settingsSections = [
         this.destinationSettings_,
         this.pageSettings_,
@@ -196,6 +191,11 @@ cr.define('print_preview', function() {
         this.colorSettings_,
         this.otherOptionsSettings_,
         this.advancedOptionsSettings_];
+    /**
+     * Component representing more/less settings button.
+     * @type {!print_preview.MoreSettings}
+     * @private
+     */
     this.moreSettings_ = new print_preview.MoreSettings(
         this.destinationStore_, settingsSections);
     this.addChild(this.moreSettings_);
@@ -349,11 +349,11 @@ cr.define('print_preview', function() {
           this.onManipulateSettingsForTest_.bind(this));
 
       this.tracker.add(
-          $('system-dialog-link'),
+          getRequiredElement('system-dialog-link'),
           'click',
           this.openSystemPrintDialog_.bind(this));
       this.tracker.add(
-          $('cloud-print-dialog-link'),
+          getRequiredElement('cloud-print-dialog-link'),
           'click',
           this.onCloudPrintDialogLinkClick_.bind(this));
       if ($('open-pdf-in-preview-link')) {
@@ -597,7 +597,7 @@ cr.define('print_preview', function() {
         this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
         return;
       }
-      setIsVisible($('system-dialog-throbber'), true);
+      setIsVisible(getRequiredElement('system-dialog-throbber'), true);
       this.setIsEnabled_(false);
       this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
       this.nativeLayer_.startShowSystemDialog();
@@ -640,7 +640,8 @@ cr.define('print_preview', function() {
       $('document-title').innerText = settings.documentTitle;
       this.isSystemDialogAvailable_ = !settings.hidePrintWithSystemDialogLink &&
                                       !settings.isInAppKioskMode;
-      setIsVisible($('system-dialog-link'), this.shouldShowSystemDialogLink_());
+      setIsVisible(getRequiredElement('system-dialog-link'),
+                   this.shouldShowSystemDialogLink_());
     },
 
     /**
@@ -815,7 +816,7 @@ cr.define('print_preview', function() {
       assert(this.uiState_ == PrintPreview.UiState_.READY,
              'Trying to open pdf in preview when not in ready state: ' +
                  this.uiState_);
-      setIsVisible($('open-preview-app-throbber'), true);
+      setIsVisible(getRequiredElement('open-preview-app-throbber'), true);
       this.previewArea_.showCustomMessage(
           loadTimeData.getString('openingPDFInPreview'));
       this.printDocumentOrOpenPdfPreview_(true /*isPdfPreview*/);
@@ -1151,7 +1152,7 @@ cr.define('print_preview', function() {
       assert(this.uiState_ == PrintPreview.UiState_.READY,
              'Opening Google Cloud Print dialog when not in ready state: ' +
                  this.uiState_);
-      setIsVisible($('cloud-print-dialog-throbber'), true);
+      setIsVisible(getRequiredElement('cloud-print-dialog-throbber'), true);
       this.setIsEnabled_(false);
       this.uiState_ = PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG;
       this.printIfReady_();
@@ -1165,10 +1166,10 @@ cr.define('print_preview', function() {
     onDestinationSelect_: function() {
       var selectedDest = this.destinationStore_.selectedDestination;
       setIsVisible(
-          $('cloud-print-dialog-link'),
+          getRequiredElement('cloud-print-dialog-link'),
           selectedDest && !cr.isChromeOS && !selectedDest.isLocal);
       setIsVisible(
-          $('system-dialog-link'),
+          getRequiredElement('system-dialog-link'),
           this.shouldShowSystemDialogLink_());
       if (selectedDest && this.isInKioskAutoPrintMode_) {
         this.onPrintButtonClick_();

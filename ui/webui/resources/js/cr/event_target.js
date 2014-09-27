@@ -13,6 +13,7 @@ cr.define('cr', function() {
    * Creates a new EventTarget. This class implements the DOM level 2
    * EventTarget interface and can be used wherever those are used.
    * @constructor
+   * @implements {EventTarget}
    */
   function EventTarget() {
   }

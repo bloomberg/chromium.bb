@@ -51,7 +51,7 @@ cr.define('print_preview', function() {
   SearchBox.prototype = {
     __proto__: print_preview.Component.prototype,
 
-    /** @param {string} query New query to set the search box's query to. */
+    /** @param {?string} query New query to set the search box's query to. */
     setQuery: function(query) {
       query = query || '';
       this.input_.value = query.trim();
@@ -73,7 +73,8 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
-      this.tracker.add(this.input_, 'input', this.onInputInput_.bind(this));
+      this.tracker.add(assert(this.input_), 'input',
+                       this.onInputInput_.bind(this));
     },
 
     /** @override */

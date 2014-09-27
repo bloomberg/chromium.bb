@@ -15,7 +15,7 @@
  * The type of the internal tracking entry. TODO(dbeam): move this back to
  * EventTracker.Entry when https://github.com/google/closure-compiler/issues/544
  * is fixed.
- * @typedef {{node: !Node,
+ * @typedef {{target: !EventTarget,
  *            eventType: string,
  *            listener: Function,
  *            capture: boolean}}
@@ -39,32 +39,32 @@ function EventTracker() {
 
 EventTracker.prototype = {
   /**
-   * Add an event listener - replacement for Node.addEventListener.
-   * @param {!Node} node The DOM node to add a listener to.
+   * Add an event listener - replacement for EventTarget.addEventListener.
+   * @param {!EventTarget} target The DOM target to add a listener to.
    * @param {string} eventType The type of event to subscribe to.
    * @param {EventListener|Function} listener The listener to add.
    * @param {boolean=} opt_capture Whether to invoke during the capture phase.
    */
-  add: function(node, eventType, listener, opt_capture) {
+  add: function(target, eventType, listener, opt_capture) {
     var capture = !!opt_capture;
     var h = {
-      node: node,
+      target: target,
       eventType: eventType,
       listener: listener,
       capture: capture,
     };
     this.listeners_.push(h);
-    node.addEventListener(eventType, listener, capture);
+    target.addEventListener(eventType, listener, capture);
   },
 
   /**
    * Remove any specified event listeners added with this EventTracker.
-   * @param {!Node} node The DOM node to remove a listener from.
+   * @param {!EventTarget} target The DOM target to remove a listener from.
    * @param {?string} eventType The type of event to remove.
    */
-  remove: function(node, eventType) {
+  remove: function(target, eventType) {
     this.listeners_ = this.listeners_.filter(function(h) {
-      if (h.node == node && (!eventType || (h.eventType == eventType))) {
+      if (h.target == target && (!eventType || (h.eventType == eventType))) {
         EventTracker.removeEventListener_(h);
         return false;
       }
@@ -88,5 +88,5 @@ EventTracker.prototype = {
  * @private
  */
 EventTracker.removeEventListener_ = function(h) {
-  h.node.removeEventListener(h.eventType, h.listener, h.capture);
+  h.target.removeEventListener(h.eventType, h.listener, h.capture);
 };

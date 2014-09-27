@@ -123,7 +123,7 @@ cr.define('print_preview', function() {
       var precision = MeasurementSystem.Precision_[this.unitType_];
       var roundedValue = Math.round(value / precision) * precision;
       // Truncate
-      return roundedValue.toFixed(
+      return +roundedValue.toFixed(
           MeasurementSystem.DecimalPlaces_[this.unitType_]);
     },
 

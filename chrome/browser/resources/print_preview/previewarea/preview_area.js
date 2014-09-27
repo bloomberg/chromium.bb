@@ -230,7 +230,7 @@ cr.define('print_preview', function() {
     /**
      * Processes a keyboard event that could possibly be used to change state of
      * the preview plugin.
-     * @param {MouseEvent} e Mouse event to process.
+     * @param {KeyboardEvent} e Keyboard event to process.
      */
     handleDirectionalKeyEvent: function(e) {
       // Make sure the PDF plugin is there.

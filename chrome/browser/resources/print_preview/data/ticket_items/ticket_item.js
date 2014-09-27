@@ -22,6 +22,7 @@ cr.define('print_preview.ticket_items', function() {
    *     changes in the document. Since this is a common dependency of ticket
    *     items, it's handled in the base class.
    * @constructor
+   * @extends {cr.EventTarget}
    */
   function TicketItem(appState, field, destinationStore, documentInfo) {
     cr.EventTarget.call(this);
@@ -35,7 +36,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /**
      * Field of the app state to update when ticket item is updated.
-     * @type {print_preview.AppState.Field}
+     * @type {?print_preview.AppState.Field}
      * @private
      */
     this.field_ = field || null;
@@ -148,7 +149,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @return {!Object} Default value of the ticket item if no value was set by
+     * @return {?} Default value of the ticket item if no value was set by
      *     the user.
      * @protected
      */
@@ -157,7 +158,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @return {!Object} Default value of the ticket item if the capability is
+     * @return {?} Default value of the ticket item if the capability is
      *     not available.
      * @protected
      */

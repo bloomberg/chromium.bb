@@ -124,7 +124,7 @@ cr.define('print_preview', function() {
   /**
    * Destination Search specific usage statistics context.
    * @constructor
-   * @implements {MetricsContext}
+   * @extends {print_preview.MetricsContext}
    */
   function DestinationSearchMetricsContext() {
     MetricsContext.call(
@@ -140,7 +140,7 @@ cr.define('print_preview', function() {
   /**
    * GCP promotion specific usage statistics context.
    * @constructor
-   * @implements {MetricsContext}
+   * @extends {print_preview.MetricsContext}
    */
   function GcpPromoMetricsContext() {
     MetricsContext.call(this,
@@ -155,7 +155,7 @@ cr.define('print_preview', function() {
   /**
    * Print settings UI specific usage statistics context.
    * @constructor
-   * @implements {MetricsContext}
+   * @extends {print_preview.MetricsContext}
    */
   function PrintSettingsUiMetricsContext() {
     MetricsContext.call(
