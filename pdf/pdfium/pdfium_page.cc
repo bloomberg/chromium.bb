@@ -305,7 +305,7 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(
             size_t buffer_size =
                 FPDFAction_GetURIPath(engine_->doc(), action, NULL, 0);
             if (buffer_size > 1) {
-              void* data = WriteInto(&target->url, buffer_size);
+              void* data = WriteInto(&target->url, buffer_size + 1);
               FPDFAction_GetURIPath(engine_->doc(), action, data, buffer_size);
             }
           }
@@ -389,7 +389,7 @@ void PDFiumPage::CalculateLinks() {
     int url_length = FPDFLink_GetURL(links, i, NULL, 0);
     if (url_length > 1) {  // WriteInto needs at least 2 characters.
       unsigned short* data =
-          reinterpret_cast<unsigned short*>(WriteInto(&url, url_length));
+          reinterpret_cast<unsigned short*>(WriteInto(&url, url_length + 1));
       FPDFLink_GetURL(links, i, data, url_length);
     }
     Link link;

@@ -3394,8 +3394,8 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
   base::string16 creator;
   size_t buffer_bytes = FPDF_GetMetaText(doc, "Creator", NULL, 0);
   if (buffer_bytes > 1) {
-    FPDF_GetMetaText(doc, "Creator", WriteInto(&creator, buffer_bytes),
-                     buffer_bytes);
+    FPDF_GetMetaText(
+        doc, "Creator", WriteInto(&creator, buffer_bytes + 1), buffer_bytes);
   }
   bool use_bitmap = false;
   if (StartsWith(creator, L"cairo", false))
