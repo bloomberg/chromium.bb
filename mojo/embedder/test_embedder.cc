@@ -42,7 +42,7 @@ namespace embedder {
 namespace test {
 
 void InitWithSimplePlatformSupport() {
-  Init(make_scoped_ptr(new SimplePlatformSupport()));
+  Init(scoped_ptr<PlatformSupport>(new SimplePlatformSupport()));
 }
 
 bool Shutdown() {
