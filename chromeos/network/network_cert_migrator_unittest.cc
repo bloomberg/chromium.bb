@@ -27,6 +27,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+// http://crbug.com/418369
+#ifndef NDEBUG
+
 namespace chromeos {
 
 namespace {
@@ -307,8 +310,6 @@ class NetworkCertMigratorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NetworkCertMigratorTest);
 };
 
-// http://crbug.com/418369
-#ifndef NDEBUG
 TEST_F(NetworkCertMigratorTest, MigrateNssOnInitialization) {
   // Add a new network for migration before the handlers are initialized.
   SetupWifiWithNss();
@@ -506,6 +507,6 @@ TEST_F(NetworkCertMigratorTest, MigrateIpsecCertIdWrongSlotId) {
   EXPECT_EQ(test_client_cert_slot_id_, slot_id);
 }
 
-#endif
-
 }  // namespace chromeos
+
+#endif
