@@ -452,9 +452,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DriveAppMapping::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
-#if !defined(USE_ATHENA)
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
-#endif
   first_run::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);

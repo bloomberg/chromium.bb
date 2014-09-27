@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/ui.gni")
 
 gypi_values = exec_script(
     "//build/gypi_to_gn.py",
@@ -18,9 +17,6 @@ if (is_chromeos) {
 }
 if (enable_webrtc) {
   sources += gypi_values.webrtc_schema_files
-}
-if (!use_athena) {
-  sources += gypi_values.non_athena_schema_files
 }
 
 

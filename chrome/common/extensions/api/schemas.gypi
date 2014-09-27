@@ -29,6 +29,7 @@
       'copresence.idl',
       'copresence_private.idl',
       'debugger.json',
+      'desktop_capture.json',
       'developer_private.idl',
       'dial.idl',
       'downloads.idl',
@@ -72,12 +73,15 @@
       'push_messaging.idl',
       'reading_list_private.json',
       'screenlock_private.idl',
+      'sessions.json',
       'signed_in_devices.idl',
       'streams_private.idl',
       'synced_notifications_private.idl',
       'sync_file_system.idl',
       'system_indicator.idl',
       'system_private.json',
+      'tab_capture.idl',
+      'tabs.json',
       'terminal_private.json',
       'types.json',
       'virtual_keyboard_private.json',
@@ -88,6 +92,7 @@
       'webrtc_audio_private.idl',
       'webrtc_logging_private.idl',
       'webstore_private.json',
+      'windows.json',
     ],
     'main_schema_include_rules': [
       'extensions/common/api:extensions::core_api::%(namespace)s',
@@ -103,15 +108,7 @@
       'principals_private.idl',
       'top_sites.json',
     ],
-    # APIs that are causing crashes on athena.
-    # TODO(oshima): Fix crashes and add them back. crbug.com/414340.
-    'non_athena_schema_files': [
-      'desktop_capture.json',
-      'sessions.json',
-      'tab_capture.idl',
-      'tabs.json',
-      'windows.json',
-    ],
+
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
       'accessibility_features.json',
@@ -163,11 +160,6 @@
       ['chromeos==1', {
         'schema_files': [
           '<@(chromeos_schema_files)',
-        ],
-      }],
-      ['use_athena==0', {
-        'schema_files': [
-          '<@(non_athena_schema_files)',
         ],
       }],
       ['enable_extensions==1 and enable_webrtc==1', {

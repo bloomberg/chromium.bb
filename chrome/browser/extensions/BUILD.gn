@@ -104,11 +104,6 @@ static_library("extensions") {
       "api/tabs/ash_panel_contents.h",
     ]
   }
-  if (!use_athena) {
-    sources += rebase_path(
-        gypi_values.chrome_browser_extensions_non_athena_sources,
-        ".", "//chrome")
-  }
 
   if (is_linux) {
     configs += [ "//build/config/linux:fontconfig" ]
