@@ -20,7 +20,7 @@ Gtk2EventLoop* Gtk2EventLoop::GetInstance() {
 }
 
 Gtk2EventLoop::Gtk2EventLoop() {
-  gdk_event_handler_set(GdkEventTrampoline, this, NULL);
+  gdk_event_handler_set(DispatchGdkEvent, NULL, NULL);
 }
 
 Gtk2EventLoop::~Gtk2EventLoop() {
@@ -29,12 +29,7 @@ Gtk2EventLoop::~Gtk2EventLoop() {
 }
 
 // static
-void Gtk2EventLoop::GdkEventTrampoline(GdkEvent* event, gpointer data) {
-  Gtk2EventLoop* loop = reinterpret_cast<Gtk2EventLoop*>(data);
-  loop->DispatchGdkEvent(event);
-}
-
-void Gtk2EventLoop::DispatchGdkEvent(GdkEvent* gdk_event) {
+void Gtk2EventLoop::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
   switch (gdk_event->type) {
     case GDK_KEY_PRESS:
     case GDK_KEY_RELEASE:
@@ -47,6 +42,7 @@ void Gtk2EventLoop::DispatchGdkEvent(GdkEvent* gdk_event) {
   gtk_main_do_event(gdk_event);
 }
 
+// static
 void Gtk2EventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // This function translates GdkEventKeys into XKeyEvents and puts them to
   // the X event queue.

@@ -25,10 +25,8 @@ class Gtk2EventLoop {
   Gtk2EventLoop();
   ~Gtk2EventLoop();
 
-  static void GdkEventTrampoline(GdkEvent* event, gpointer data);
-
-  void DispatchGdkEvent(GdkEvent* gdk_event);
-  void ProcessGdkEventKey(const GdkEventKey& gdk_event_key);
+  static void DispatchGdkEvent(GdkEvent* gdk_event, gpointer);
+  static void ProcessGdkEventKey(const GdkEventKey& gdk_event_key);
 
   DISALLOW_COPY_AND_ASSIGN(Gtk2EventLoop);
 };
