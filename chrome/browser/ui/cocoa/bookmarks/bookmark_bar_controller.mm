@@ -2806,7 +2806,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // The button being removed is in the OTS (off-the-side) and the OTS
     // menu is showing so we need to remove the button.
     NSInteger index = buttonIndex - displayedButtonCount_;
-    [folderController_ removeButton:index animate:YES];
+    [folderController_ removeButton:index animate:animate];
   }
 }
 
