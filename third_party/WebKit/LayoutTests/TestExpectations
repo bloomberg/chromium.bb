@@ -1321,3 +1321,5 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 crbug.com/417752 [ Linux ] storage/websql/sql-error-codes.html [ Pass Failure ]
 
 crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Crash Timeout ]
+
+crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [ Pass Failure ]
