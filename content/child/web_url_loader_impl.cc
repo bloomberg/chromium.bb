@@ -486,6 +486,8 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   new_request.setFirstPartyForCookies(
       redirect_info.new_first_party_for_cookies);
   new_request.setDownloadToFile(request_.downloadToFile());
+  new_request.setRequestContext(request_.requestContext());
+  new_request.setFrameType(request_.frameType());
 
   new_request.setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
                               referrer_policy_);
