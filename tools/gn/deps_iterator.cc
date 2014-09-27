@@ -6,23 +6,22 @@
 
 #include "tools/gn/target.h"
 
-DepsIterator::DepsIterator(const Target* t) : current_index_(0) {
-  vect_stack_[0] = &t->public_deps();
-  vect_stack_[1] = &t->private_deps();
-  vect_stack_[2] = &t->data_deps();
-
-  if (vect_stack_[0]->empty())
-    Advance();
+DepsIterator::DepsIterator() : current_index_(0) {
+  vect_stack_[0] = nullptr;
+  vect_stack_[1] = nullptr;
+  vect_stack_[2] = nullptr;
 }
 
-// Iterate over the public and private linked deps, but not the data deps.
-DepsIterator::DepsIterator(const Target* t, LinkedOnly) : current_index_(0) {
-  vect_stack_[0] = &t->public_deps();
-  vect_stack_[1] = &t->private_deps();
-  vect_stack_[2] = NULL;
+DepsIterator::DepsIterator(const LabelTargetVector* a,
+                           const LabelTargetVector* b,
+                           const LabelTargetVector* c)
+    : current_index_(0) {
+  vect_stack_[0] = a;
+  vect_stack_[1] = b;
+  vect_stack_[2] = c;
 
-  if (vect_stack_[0]->empty())
-    Advance();
+  if (vect_stack_[0] && vect_stack_[0]->empty())
+    operator++();
 }
 
 // Advance to the next position. This assumes there are more vectors.
@@ -30,7 +29,7 @@ DepsIterator::DepsIterator(const Target* t, LinkedOnly) : current_index_(0) {
 // For internal use, this function tolerates an initial index equal to the
 // length of the current vector. In this case, it will advance to the next
 // one.
-void DepsIterator::Advance() {
+DepsIterator& DepsIterator::operator++() {
   DCHECK(vect_stack_[0]);
 
   current_index_++;
@@ -38,11 +37,20 @@ void DepsIterator::Advance() {
     // Advance to next vect. Shift the elements left by one.
     vect_stack_[0] = vect_stack_[1];
     vect_stack_[1] = vect_stack_[2];
-    vect_stack_[2] = NULL;
+    vect_stack_[2] = nullptr;
 
     current_index_ = 0;
 
     if (vect_stack_[0] && vect_stack_[0]->empty())
-      Advance();
+      operator++();
   }
+  return *this;
+}
+
+DepsIteratorRange::DepsIteratorRange(const DepsIterator& b)
+    : begin_(b),
+      end_() {
+}
+
+DepsIteratorRange::~DepsIteratorRange() {
 }

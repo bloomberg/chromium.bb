@@ -51,8 +51,8 @@ void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
 }
 
 void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result) {
-  for (DepsIterator iter(target); !iter.done(); iter.Advance())
-    RecursiveCollectDeps(iter.target(), result);
+  for (const auto& pair : target->GetDeps(Target::DEPS_ALL))
+    RecursiveCollectDeps(pair.ptr, result);
 }
 
 // Prints dependencies of the given target (not the target itself). If the
@@ -65,8 +65,8 @@ void RecursivePrintDeps(const Target* target,
                         int indent_level) {
   // Combine all deps into one sorted list.
   std::vector<LabelTargetPair> sorted_deps;
-  for (DepsIterator iter(target); !iter.done(); iter.Advance())
-    sorted_deps.push_back(iter.pair());
+  for (const auto& pair : target->GetDeps(Target::DEPS_ALL))
+    sorted_deps.push_back(pair);
   std::sort(sorted_deps.begin(), sorted_deps.end(),
             LabelPtrLabelLess<Target>());
 
@@ -140,8 +140,8 @@ void PrintDeps(const Target* target, bool display_header) {
           "\nDirect dependencies "
           "(try also \"--all\", \"--tree\", or even \"--all --tree\"):\n");
     }
-    for (DepsIterator iter(target); !iter.done(); iter.Advance())
-      deps.push_back(iter.label());
+    for (const auto& pair : target->GetDeps(Target::DEPS_ALL))
+      deps.push_back(pair.label);
   }
 
   std::sort(deps.begin(), deps.end());

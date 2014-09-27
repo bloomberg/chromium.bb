@@ -27,12 +27,9 @@ typedef std::multimap<const Target*, const Target*> DepMap;
 
 // Populates the reverse dependency map for the targets in the Setup.
 void FillDepMap(Setup* setup, DepMap* dep_map) {
-  std::vector<const Target*> targets =
-      setup->builder()->GetAllResolvedTargets();
-
-  for (size_t target_i = 0; target_i < targets.size(); target_i++) {
-    for (DepsIterator iter(targets[target_i]); !iter.done(); iter.Advance())
-      dep_map->insert(std::make_pair(iter.target(), targets[target_i]));
+  for (const auto& target : setup->builder()->GetAllResolvedTargets()) {
+    for (const auto& dep_pair : target->GetDeps(Target::DEPS_ALL))
+      dep_map->insert(std::make_pair(dep_pair.ptr, target));
   }
 }
 

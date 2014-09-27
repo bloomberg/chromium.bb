@@ -481,14 +481,13 @@ bool Builder::ResolveForwardDependentConfigs(Target* target, Err* err) {
 
   // Assume that the lists are small so that brute-force n^2 is appropriate.
   for (size_t config_i = 0; config_i < configs.size(); config_i++) {
-    for (DepsIterator dep_iter(target, DepsIterator::LINKED_ONLY);
-         !dep_iter.done(); dep_iter.Advance()) {
-      if (configs[config_i].label == dep_iter.label()) {
-        DCHECK(dep_iter.target());  // Should already be resolved.
+    for (const auto& dep_pair : target->GetDeps(Target::DEPS_LINKED)) {
+      if (configs[config_i].label == dep_pair.label) {
+        DCHECK(dep_pair.ptr);  // Should already be resolved.
         // UniqueVector's contents are constant so uniqueness is preserved, but
         // we want to update this pointer which doesn't change uniqueness
         // (uniqueness in this vector is determined by the label only).
-        const_cast<LabelTargetPair&>(configs[config_i]).ptr = dep_iter.target();
+        const_cast<LabelTargetPair&>(configs[config_i]).ptr = dep_pair.ptr;
         break;
       }
     }

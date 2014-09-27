@@ -32,9 +32,8 @@ void NinjaActionTargetWriter::Run() {
   // operating on the result of that previous step, so we need to be sure to
   // serialize these.
   std::vector<const Target*> extra_hard_deps;
-  for (DepsIterator iter(target_, DepsIterator::LINKED_ONLY);
-       !iter.done(); iter.Advance())
-    extra_hard_deps.push_back(iter.target());
+  for (const auto& pair : target_->GetDeps(Target::DEPS_LINKED))
+    extra_hard_deps.push_back(pair.ptr);
 
   // For ACTIONs this is a bit inefficient since it creates an input dep
   // stamp file even though we're only going to use it once. It would save a

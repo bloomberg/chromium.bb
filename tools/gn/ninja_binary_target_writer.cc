@@ -375,26 +375,21 @@ void NinjaBinaryTargetWriter::GetDeps(
     UniqueVector<OutputFile>* extra_object_files,
     UniqueVector<const Target*>* linkable_deps,
     UniqueVector<const Target*>* non_linkable_deps) const {
-  const UniqueVector<const Target*>& inherited =
-      target_->inherited_libraries();
-
   // Normal public/private deps.
-  for (DepsIterator iter(target_, DepsIterator::LINKED_ONLY); !iter.done();
-       iter.Advance()) {
-    ClassifyDependency(iter.target(), extra_object_files,
+  for (const auto& pair : target_->GetDeps(Target::DEPS_LINKED)) {
+    ClassifyDependency(pair.ptr, extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
 
   // Inherited libraries.
-  for (size_t i = 0; i < inherited.size(); i++) {
-    ClassifyDependency(inherited[i], extra_object_files,
+  for (const auto& inherited_target : target_->inherited_libraries()) {
+    ClassifyDependency(inherited_target, extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
 
   // Data deps.
-  const LabelTargetVector& data_deps = target_->data_deps();
-  for (size_t i = 0; i < data_deps.size(); i++)
-    non_linkable_deps->push_back(data_deps[i].ptr);
+  for (const auto& data_dep_pair : target_->data_deps())
+    non_linkable_deps->push_back(data_dep_pair.ptr);
 }
 
 void NinjaBinaryTargetWriter::ClassifyDependency(

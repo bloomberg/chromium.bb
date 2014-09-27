@@ -30,11 +30,9 @@ void MergePublicConfigsFrom(const Target* from_target,
 void MergeAllDependentConfigsFrom(const Target* from_target,
                                   UniqueVector<LabelConfigPair>* dest,
                                   UniqueVector<LabelConfigPair>* all_dest) {
-  const UniqueVector<LabelConfigPair>& all =
-      from_target->all_dependent_configs();
-  for (size_t i = 0; i < all.size(); i++) {
-    all_dest->push_back(all[i]);
-    dest->push_back(all[i]);
+  for (const auto& pair : from_target->all_dependent_configs()) {
+    all_dest->push_back(pair);
+    dest->push_back(pair);
   }
 }
 
@@ -154,6 +152,16 @@ bool Target::IsFinal() const {
          (output_type_ == STATIC_LIBRARY && complete_static_lib_);
 }
 
+DepsIteratorRange Target::GetDeps(DepsIterationType type) const {
+  if (type == DEPS_LINKED) {
+    return DepsIteratorRange(DepsIterator(
+        &public_deps_, &private_deps_, nullptr));
+  }
+  // All deps.
+  return DepsIteratorRange(DepsIterator(
+      &public_deps_, &private_deps_, &data_deps_));
+}
+
 std::string Target::GetComputedOutputName(bool include_prefix) const {
   DCHECK(toolchain_)
       << "Toolchain must be specified before getting the computed output name.";
@@ -203,9 +211,8 @@ bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
 
 void Target::PullDependentTargetInfo() {
   // Gather info from our dependents we need.
-  for (DepsIterator iter(this, DepsIterator::LINKED_ONLY); !iter.done();
-       iter.Advance()) {
-    const Target* dep = iter.target();
+  for (const auto& pair : GetDeps(DEPS_LINKED)) {
+    const Target* dep = pair.ptr;
     MergeAllDependentConfigsFrom(dep, &configs_, &all_dependent_configs_);
     MergePublicConfigsFrom(dep, &configs_);
 
@@ -230,12 +237,12 @@ void Target::PullDependentTargetInfo() {
 
 void Target::PullForwardedDependentConfigs() {
   // Pull public configs from each of our dependency's public deps.
-  for (size_t dep = 0; dep < public_deps_.size(); dep++)
-    PullForwardedDependentConfigsFrom(public_deps_[dep].ptr);
+  for (const auto& dep : public_deps_)
+    PullForwardedDependentConfigsFrom(dep.ptr);
 
   // Forward public configs if explicitly requested.
-  for (size_t dep = 0; dep < forward_dependent_configs_.size(); dep++) {
-    const Target* from_target = forward_dependent_configs_[dep].ptr;
+  for (const auto& dep : forward_dependent_configs_) {
+    const Target* from_target = dep.ptr;
 
     // The forward_dependent_configs_ must be in the deps (public or private)
     // already, so we don't need to bother copying to our configs, only
@@ -257,18 +264,17 @@ void Target::PullForwardedDependentConfigsFrom(const Target* from) {
 }
 
 void Target::PullRecursiveHardDeps() {
-  for (DepsIterator iter(this, DepsIterator::LINKED_ONLY); !iter.done();
-       iter.Advance()) {
-    if (iter.target()->hard_dep())
-      recursive_hard_deps_.insert(iter.target());
+  for (const auto& pair : GetDeps(DEPS_LINKED)) {
+    if (pair.ptr->hard_dep())
+      recursive_hard_deps_.insert(pair.ptr);
 
     // Android STL doesn't like insert(begin, end) so do it manually.
     // TODO(brettw) this can be changed to
     // insert(iter.target()->begin(), iter.target()->end())
     // when Android uses a better STL.
     for (std::set<const Target*>::const_iterator cur =
-             iter.target()->recursive_hard_deps().begin();
-         cur != iter.target()->recursive_hard_deps().end(); ++cur)
+             pair.ptr->recursive_hard_deps().begin();
+         cur != pair.ptr->recursive_hard_deps().end(); ++cur)
       recursive_hard_deps_.insert(*cur);
   }
 }
@@ -333,8 +339,8 @@ void Target::FillOutputFiles() {
 }
 
 bool Target::CheckVisibility(Err* err) const {
-  for (DepsIterator iter(this); !iter.done(); iter.Advance()) {
-    if (!Visibility::CheckItemVisibility(this, iter.target(), err))
+  for (const auto& pair : GetDeps(DEPS_ALL)) {
+    if (!Visibility::CheckItemVisibility(this, pair.ptr, err))
       return false;
   }
   return true;
@@ -347,9 +353,9 @@ bool Target::CheckTestonly(Err* err) const {
     return true;
 
   // Verify no deps have "testonly" set.
-  for (DepsIterator iter(this); !iter.done(); iter.Advance()) {
-    if (iter.target()->testonly()) {
-      *err = MakeTestOnlyError(this, iter.target());
+  for (const auto& pair : GetDeps(DEPS_ALL)) {
+    if (pair.ptr->testonly()) {
+      *err = MakeTestOnlyError(this, pair.ptr);
       return false;
     }
   }
@@ -364,17 +370,17 @@ bool Target::CheckNoNestedStaticLibs(Err* err) const {
     return true;
 
   // Verify no deps are static libraries.
-  for (DepsIterator iter(this); !iter.done(); iter.Advance()) {
-    if (iter.target()->output_type() == Target::STATIC_LIBRARY) {
-      *err = MakeStaticLibDepsError(this, iter.target());
+  for (const auto& pair : GetDeps(DEPS_ALL)) {
+    if (pair.ptr->output_type() == Target::STATIC_LIBRARY) {
+      *err = MakeStaticLibDepsError(this, pair.ptr);
       return false;
     }
   }
 
   // Verify no inherited libraries are static libraries.
-  for (size_t i = 0; i < inherited_libraries().size(); ++i) {
-    if (inherited_libraries()[i]->output_type() == Target::STATIC_LIBRARY) {
-      *err = MakeStaticLibDepsError(this, inherited_libraries()[i]);
+  for (const auto& lib : inherited_libraries()) {
+    if (lib->output_type() == Target::STATIC_LIBRARY) {
+      *err = MakeStaticLibDepsError(this, lib);
       return false;
     }
   }

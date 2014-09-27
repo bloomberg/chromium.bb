@@ -23,6 +23,7 @@
 #include "tools/gn/source_file.h"
 #include "tools/gn/unique_vector.h"
 
+class DepsIteratorRange;
 class InputFile;
 class Settings;
 class Token;
@@ -41,6 +42,12 @@ class Target : public Item {
     ACTION,
     ACTION_FOREACH,
   };
+
+  enum DepsIterationType {
+    DEPS_ALL,  // Iterates through all public, private, and data deps.
+    DEPS_LINKED,  // Iterates through all non-data dependencies.
+  };
+
   typedef std::vector<SourceFile> FileList;
   typedef std::vector<std::string> StringVector;
 
@@ -124,6 +131,11 @@ class Target : public Item {
            output_type_ == ACTION_FOREACH ||
            output_type_ == COPY_FILES;
   }
+
+  // Returns the iterator range which can be used in range-based for loops
+  // to iterate over multiple types of deps in one loop:
+  //   for (const auto& pair : target->GetDeps(Target::DEPS_ALL)) ...
+  DepsIteratorRange GetDeps(DepsIterationType type) const;
 
   // Linked private dependencies.
   const LabelTargetVector& private_deps() const { return private_deps_; }

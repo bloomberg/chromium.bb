@@ -120,9 +120,8 @@ bool BinaryTargetGenerator::FillAllowCircularIncludesFrom() {
   // Validate that all circular includes entries are in the deps.
   for (size_t circular_i = 0; circular_i < circular.size(); circular_i++) {
     bool found_dep = false;
-    for (DepsIterator iter(target_, DepsIterator::LINKED_ONLY);
-         !iter.done(); iter.Advance()) {
-      if (iter.label() == circular[circular_i]) {
+    for (const auto& dep_pair : target_->GetDeps(Target::DEPS_LINKED)) {
+      if (dep_pair.label == circular[circular_i]) {
         found_dep = true;
         break;
       }

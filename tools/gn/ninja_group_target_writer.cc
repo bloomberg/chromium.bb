@@ -22,14 +22,13 @@ void NinjaGroupTargetWriter::Run() {
   // A group rule just generates a stamp file with dependencies on each of
   // the deps and data_deps in the group.
   std::vector<OutputFile> output_files;
-  for (DepsIterator iter(target_, DepsIterator::LINKED_ONLY);
-       !iter.done(); iter.Advance())
-    output_files.push_back(iter.target()->dependency_output_file());
+  for (const auto& pair : target_->GetDeps(Target::DEPS_LINKED))
+    output_files.push_back(pair.ptr->dependency_output_file());
 
   std::vector<OutputFile> data_output_files;
   const LabelTargetVector& data_deps = target_->data_deps();
-  for (size_t i = 0; i < data_deps.size(); i++)
-    data_output_files.push_back(data_deps[i].ptr->dependency_output_file());
+  for (const auto& pair : data_deps)
+    data_output_files.push_back(pair.ptr->dependency_output_file());
 
   WriteStampForTarget(output_files, data_output_files);
 }
