@@ -1422,15 +1422,13 @@ bool GLRenderer::SetupQuadForAntialiasing(
   gfx::PointF top_left = tile_rect.origin();
   gfx::PointF top_right = tile_rect.top_right();
 
-  // Map points to device space.
+  // Map points to device space. We ignore |clipped|, since the result of
+  // |MapPoint()| still produces a valid point to draw the quad with. When
+  // clipped, the point will be outside of the viewport. See crbug.com/416367.
   bottom_right = MathUtil::MapPoint(device_transform, bottom_right, &clipped);
-  DCHECK(!clipped);
   bottom_left = MathUtil::MapPoint(device_transform, bottom_left, &clipped);
-  DCHECK(!clipped);
   top_left = MathUtil::MapPoint(device_transform, top_left, &clipped);
-  DCHECK(!clipped);
   top_right = MathUtil::MapPoint(device_transform, top_right, &clipped);
-  DCHECK(!clipped);
 
   LayerQuad::Edge bottom_edge(bottom_right, bottom_left);
   LayerQuad::Edge left_edge(bottom_left, top_left);
