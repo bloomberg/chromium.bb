@@ -226,6 +226,8 @@
         'shell/browser/cast_download_manager_delegate.h',
         'shell/browser/cast_http_user_agent_settings.cc',
         'shell/browser/cast_http_user_agent_settings.h',
+        'shell/browser/cast_network_delegate.cc',
+        'shell/browser/cast_network_delegate.h',
         'shell/browser/devtools/cast_dev_tools_delegate.cc',
         'shell/browser/devtools/cast_dev_tools_delegate.h',
         'shell/browser/devtools/remote_debugging_server.cc',
@@ -249,6 +251,7 @@
           ],
         }, {
           'sources': [
+            'shell/browser/cast_network_delegate_simple.cc',
             'shell/browser/devtools/remote_debugging_server_simple.cc',
             'shell/browser/webui/webui_cast_simple.cc',
             'shell/renderer/key_systems_cast_simple.cc',

@@ -103,9 +103,13 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   InitializeWebUI();
 
-  cast_browser_process_->SetCastService(
-      CastService::Create(cast_browser_process_->browser_context(),
-                          url_request_context_factory_->GetSystemGetter()));
+  cast_browser_process_->SetCastService(CastService::Create(
+      cast_browser_process_->browser_context(),
+      url_request_context_factory_->GetSystemGetter(),
+      url_request_context_factory_->app_network_delegate()));
+
+  // Initializing network delegates must happen after Cast service is created.
+  url_request_context_factory_->InitializeNetworkDelegates();
   cast_browser_process_->cast_service()->Start();
 }
 

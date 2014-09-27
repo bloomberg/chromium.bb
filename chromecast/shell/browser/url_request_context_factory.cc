@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
 #include "chromecast/shell/browser/cast_http_user_agent_settings.h"
+#include "chromecast/shell/browser/cast_network_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -133,7 +134,9 @@ class URLRequestContextFactory::MainURLRequestContextGetter
 };
 
 URLRequestContextFactory::URLRequestContextFactory()
-    : system_dependencies_initialized_(false),
+    : app_network_delegate_(CastNetworkDelegate::Create()),
+      system_network_delegate_(CastNetworkDelegate::Create()),
+      system_dependencies_initialized_(false),
       main_dependencies_initialized_(false),
       media_dependencies_initialized_(false) {
 }
@@ -324,6 +327,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_context->set_job_factory(system_job_factory_.get());
   system_context->set_cookie_store(
       content::CreateCookieStore(content::CookieStoreConfig()));
+  system_context->set_network_delegate(system_network_delegate_.get());
   return system_context;
 }
 
@@ -396,7 +400,15 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   main_context->set_http_transaction_factory(
       main_transaction_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
+  main_context->set_network_delegate(app_network_delegate_.get());
   return main_context;
+}
+
+void URLRequestContextFactory::InitializeNetworkDelegates() {
+  app_network_delegate_->Initialize(false);
+  LOG(INFO) << "Initialized app network delegate.";
+  system_network_delegate_->Initialize(false);
+  LOG(INFO) << "Initialized system network delegate.";
 }
 
 }  // namespace shell

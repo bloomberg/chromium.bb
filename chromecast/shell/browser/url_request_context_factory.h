@@ -17,6 +17,7 @@ class URLRequestJobFactory;
 
 namespace chromecast {
 namespace shell {
+class CastNetworkDelegate;
 
 class URLRequestContextFactory {
  public:
@@ -42,6 +43,14 @@ class URLRequestContextFactory {
       content::URLRequestInterceptorScopedVector request_interceptors);
   net::URLRequestContextGetter* GetMainGetter();
   net::URLRequestContextGetter* GetMediaGetter();
+
+  CastNetworkDelegate* app_network_delegate() const {
+    return app_network_delegate_.get();
+  }
+
+  // Initialize the CastNetworkDelegate objects. This needs to be done
+  // after the CastService is created, but before any URL requests are made.
+  void InitializeNetworkDelegates();
 
  private:
   class URLRequestContextGetter;
@@ -72,6 +81,8 @@ class URLRequestContextFactory {
   scoped_refptr<net::URLRequestContextGetter> system_getter_;
   scoped_refptr<net::URLRequestContextGetter> media_getter_;
   scoped_refptr<net::URLRequestContextGetter> main_getter_;
+  scoped_ptr<CastNetworkDelegate> app_network_delegate_;
+  scoped_ptr<CastNetworkDelegate> system_network_delegate_;
 
   // Shared objects for all contexts.
   // The URLRequestContextStorage class is not used as owner to these objects

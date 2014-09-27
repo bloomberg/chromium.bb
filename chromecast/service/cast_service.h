@@ -21,6 +21,9 @@ class URLRequestContextGetter;
 }
 
 namespace chromecast {
+namespace shell {
+class CastNetworkDelegate;
+}
 
 class CastService {
  public:
@@ -32,7 +35,8 @@ class CastService {
   // getter doesn't do.
   static CastService* Create(
       content::BrowserContext* browser_context,
-      net::URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter,
+      shell::CastNetworkDelegate* network_delegate);
 
   virtual ~CastService();
 
