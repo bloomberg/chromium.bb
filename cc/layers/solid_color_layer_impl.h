@@ -24,7 +24,8 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
       SharedQuadState* shared_quad_state,
       const gfx::Size& content_bounds,
       const gfx::Transform& target_space_transform,
-      SkColor color);
+      SkColor color,
+      AppendQuadsData* append_quads_data);
 
   virtual ~SolidColorLayerImpl();
 

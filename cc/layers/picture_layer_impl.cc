@@ -171,7 +171,8 @@ void PictureLayerImpl::AppendQuads(
         shared_quad_state,
         content_bounds(),
         draw_properties().target_space_transform,
-        pile_->solid_color());
+        pile_->solid_color(),
+        append_quads_data);
     return;
   }
 

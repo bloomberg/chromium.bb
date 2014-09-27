@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "cc/layers/append_quads_data.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/occlusion_tracker.h"
 
@@ -32,7 +33,8 @@ void SolidColorLayerImpl::AppendSolidQuads(
     SharedQuadState* shared_quad_state,
     const gfx::Size& content_bounds,
     const gfx::Transform& target_space_transform,
-    SkColor color) {
+    SkColor color,
+    AppendQuadsData* append_quads_data) {
   Occlusion occlusion =
       occlusion_tracker.GetCurrentOcclusionForLayer(target_space_transform);
 
@@ -50,6 +52,9 @@ void SolidColorLayerImpl::AppendSolidQuads(
           occlusion.GetUnoccludedContentRect(quad_rect);
       if (visible_quad_rect.IsEmpty())
         continue;
+
+      append_quads_data->visible_content_area +=
+          visible_quad_rect.width() * visible_quad_rect.height();
 
       SolidColorDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -75,7 +80,8 @@ void SolidColorLayerImpl::AppendQuads(
                    shared_quad_state,
                    content_bounds(),
                    draw_properties().target_space_transform,
-                   background_color());
+                   background_color(),
+                   append_quads_data);
 }
 
 const char* SolidColorLayerImpl::LayerTypeAsString() const {
