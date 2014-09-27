@@ -5113,6 +5113,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.PageHasDistilledData"
+    enum="BooleanHasDistilledData">
+  <owner>kuan@chromium.org</owner>
+  <summary>Records whether a page has distilled data.</summary>
+</histogram>
+
 <histogram name="DomDistiller.Statistics.WordCount" units="words">
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -39122,6 +39128,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanHasCrc" type="int">
   <int value="0" label="No CRC"/>
   <int value="1" label="Has CRC"/>
+</enum>
+
+<enum name="BooleanHasDistilledData" type="int">
+  <int value="0" label="No distilled data"/>
+  <int value="1" label="Has distilled data"/>
 </enum>
 
 <enum name="BooleanHit" type="int">

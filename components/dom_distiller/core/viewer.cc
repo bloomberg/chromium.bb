@@ -9,6 +9,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -92,6 +93,7 @@ const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
 void EnsureNonEmptyTitleAndContent(std::string* title, std::string* content) {
   if (title->empty())
     *title = l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE);
+  UMA_HISTOGRAM_BOOLEAN("DomDistiller.PageHasDistilledData", !content->empty());
   if (content->empty()) {
     *content = l10n_util::GetStringUTF8(
         IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
