@@ -43,7 +43,8 @@ PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
 
 scoped_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation());
+  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation())
+      .PassAs<LayerImpl>();
 }
 
 void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {

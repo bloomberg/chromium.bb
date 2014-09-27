@@ -183,7 +183,8 @@ void DelegatedRendererLayerImpl::ClearRenderPasses() {
 
 scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return DelegatedRendererLayerImpl::Create(tree_impl, id());
+  return DelegatedRendererLayerImpl::Create(
+      tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void DelegatedRendererLayerImpl::ReleaseResources() {

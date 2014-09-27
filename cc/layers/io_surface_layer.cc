@@ -26,7 +26,7 @@ void IOSurfaceLayer::SetIOSurfaceProperties(uint32_t io_surface_id,
 
 scoped_ptr<LayerImpl> IOSurfaceLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return IOSurfaceLayerImpl::Create(tree_impl, layer_id_);
+  return IOSurfaceLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
 bool IOSurfaceLayer::HasDrawableContent() const {

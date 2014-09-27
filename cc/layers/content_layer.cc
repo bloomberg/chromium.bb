@@ -99,7 +99,8 @@ LayerUpdater* ContentLayer::Updater() const {
 void ContentLayer::CreateUpdaterIfNeeded() {
   if (updater_.get())
     return;
-  scoped_ptr<LayerPainter> painter = ContentLayerPainter::Create(client_);
+  scoped_ptr<LayerPainter> painter =
+      ContentLayerPainter::Create(client_).PassAs<LayerPainter>();
   if (layer_tree_host()->settings().per_tile_painting_enabled) {
     updater_ = BitmapSkPictureContentLayerUpdater::Create(
         painter.Pass(),

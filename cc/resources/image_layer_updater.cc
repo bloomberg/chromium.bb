@@ -29,7 +29,7 @@ scoped_refptr<ImageLayerUpdater> ImageLayerUpdater::Create() {
 
 scoped_ptr<LayerUpdater::Resource> ImageLayerUpdater::CreateResource(
     PrioritizedResourceManager* manager) {
-  return make_scoped_ptr(
+  return scoped_ptr<LayerUpdater::Resource>(
       new Resource(this, PrioritizedResource::Create(manager)));
 }
 

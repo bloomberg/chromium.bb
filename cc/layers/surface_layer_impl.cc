@@ -19,7 +19,7 @@ SurfaceLayerImpl::~SurfaceLayerImpl() {}
 
 scoped_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SurfaceLayerImpl::Create(tree_impl, id());
+  return SurfaceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void SurfaceLayerImpl::SetSurfaceId(SurfaceId surface_id) {

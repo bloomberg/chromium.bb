@@ -146,40 +146,6 @@ def CheckTodos(input_api, output_api):
       items=errors)]
   return []
 
-def CheckScopedPtr(input_api, output_api,
-                   white_list=CC_SOURCE_FILES, black_list=None):
-  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
-  source_file_filter = lambda x: input_api.FilterSourceFile(x,
-                                                            white_list,
-                                                            black_list)
-  errors = []
-  for f in input_api.AffectedSourceFiles(source_file_filter):
-    for line_number, line in f.ChangedContents():
-      # Disallow:
-      # return scoped_ptr<T>(foo);
-      # bar = scoped_ptr<T>(foo);
-      # But allow:
-      # return scoped_ptr<T[]>(foo);
-      # bar = scoped_ptr<T[]>(foo);
-      if re.search(r'(=|\breturn)\s*scoped_ptr<.*?(?<!])>\([^)]+\)', line):
-        errors.append(output_api.PresubmitError(
-          ('%s:%d uses explicit scoped_ptr constructor. ' +
-           'Use make_scoped_ptr() instead.') % (f.LocalPath(), line_number)))
-      # Disallow:
-      # return scoped_ptr<T>();
-      # bar = scoped_ptr<T>();
-      if re.search(r'(=|\breturn)\s*scoped_ptr<.*?>\(\)', line):
-        errors.append(output_api.PresubmitError(
-          '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
-          (f.LocalPath(), line_number)))
-      # Disallow:
-      # foo.PassAs<T>();
-      if re.search(r'\bPassAs<.*?>\(\)', line):
-        errors.append(output_api.PresubmitError(
-          '%s:%d uses PassAs<T>(). Use Pass() instead.' %
-          (f.LocalPath(), line_number)))
-  return errors
-
 def FindUnquotedQuote(contents, pos):
   match = re.search(r"(?<!\\)(?P<quote>\")", contents[pos:])
   return -1 if not match else match.start("quote") + pos
@@ -320,7 +286,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckPassByValue(input_api, output_api)
   results += CheckChangeLintsClean(input_api, output_api)
   results += CheckTodos(input_api, output_api)
-  results += CheckScopedPtr(input_api, output_api)
   results += CheckNamespace(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api)
   results += FindUselessIfdefs(input_api, output_api)

@@ -166,7 +166,7 @@ LayerTreeHost::~LayerTreeHost() {
 
   BreakSwapPromises(SwapPromise::COMMIT_FAILS);
 
-  overhang_ui_resource_ = nullptr;
+  overhang_ui_resource_.reset();
 
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
@@ -366,7 +366,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
         pending_page_scale_animation_->use_anchor,
         pending_page_scale_animation_->scale,
         pending_page_scale_animation_->duration);
-    pending_page_scale_animation_ = nullptr;
+    pending_page_scale_animation_.reset();
   }
 
   if (!ui_resource_request_queue_.empty()) {

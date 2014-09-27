@@ -41,11 +41,11 @@ int AddOpacityTransition(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(),
-                        id,
-                        AnimationIdProvider::NextGroupId(),
-                        Animation::Opacity));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(),
+      id,
+      AnimationIdProvider::NextGroupId(),
+      Animation::Opacity));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(animation.Pass());
@@ -70,11 +70,11 @@ int AddAnimatedTransform(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(),
-                        id,
-                        AnimationIdProvider::NextGroupId(),
-                        Animation::Transform));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(),
+      id,
+      AnimationIdProvider::NextGroupId(),
+      Animation::Transform));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(animation.Pass());
@@ -120,7 +120,10 @@ int AddAnimatedFilter(Target* target,
   int id = AnimationIdProvider::NextAnimationId();
 
   scoped_ptr<Animation> animation(Animation::Create(
-      curve.Pass(), id, AnimationIdProvider::NextGroupId(), Animation::Filter));
+      curve.PassAs<AnimationCurve>(),
+      id,
+      AnimationIdProvider::NextGroupId(),
+      Animation::Filter));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(animation.Pass());
@@ -144,7 +147,7 @@ float FakeFloatAnimationCurve::GetValue(double now) const {
 }
 
 scoped_ptr<AnimationCurve> FakeFloatAnimationCurve::Clone() const {
-  return make_scoped_ptr(new FakeFloatAnimationCurve);
+  return make_scoped_ptr(new FakeFloatAnimationCurve).PassAs<AnimationCurve>();
 }
 
 FakeTransformTransition::FakeTransformTransition(double duration)
@@ -175,7 +178,8 @@ bool FakeTransformTransition::MaximumScale(float* max_scale) const {
 }
 
 scoped_ptr<AnimationCurve> FakeTransformTransition::Clone() const {
-  return make_scoped_ptr(new FakeTransformTransition(*this));
+  return make_scoped_ptr(new FakeTransformTransition(*this))
+      .PassAs<AnimationCurve>();
 }
 
 
@@ -238,7 +242,8 @@ gfx::Vector2dF FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
 }
 
 scoped_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
-  return make_scoped_ptr(new FakeFloatTransition(*this));
+  return make_scoped_ptr(new FakeFloatTransition(*this))
+      .PassAs<AnimationCurve>();
 }
 
 int AddOpacityTransitionToController(LayerAnimationController* controller,

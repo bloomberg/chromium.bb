@@ -309,9 +309,9 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   if (pending_tree_)
     pending_tree_->Shutdown();
   active_tree_->Shutdown();
-  recycle_tree_ = nullptr;
-  pending_tree_ = nullptr;
-  active_tree_ = nullptr;
+  recycle_tree_.reset();
+  pending_tree_.reset();
+  active_tree_.reset();
   DestroyTileManager();
 }
 
@@ -446,7 +446,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 
   // Easing constants experimentally determined.
   scoped_ptr<TimingFunction> timing_function =
-      CubicBezierTimingFunction::Create(.8, 0, .3, .9);
+      CubicBezierTimingFunction::Create(.8, 0, .3, .9).PassAs<TimingFunction>();
 
   page_scale_animation_ =
       PageScaleAnimation::Create(scroll_total,
@@ -506,7 +506,7 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
 scoped_ptr<SwapPromiseMonitor>
 LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
-  return make_scoped_ptr(
+  return scoped_ptr<SwapPromiseMonitor>(
       new LatencyInfoSwapPromiseMonitor(latency, NULL, this));
 }
 
@@ -1171,16 +1171,16 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   active_tree_ = LayerTreeImpl::create(this);
   if (pending_tree_)
     pending_tree_->DetachLayerTree();
-  pending_tree_ = nullptr;
+  pending_tree_.reset();
   if (recycle_tree_)
     recycle_tree_->DetachLayerTree();
-  recycle_tree_ = nullptr;
+  recycle_tree_.reset();
 }
 
 void LayerTreeHostImpl::ResetRecycleTreeForTesting() {
   if (recycle_tree_)
     recycle_tree_->DetachLayerTree();
-  recycle_tree_ = nullptr;
+  recycle_tree_.reset();
 }
 
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
@@ -2041,10 +2041,10 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
 }
 
 void LayerTreeHostImpl::DestroyTileManager() {
-  tile_manager_ = nullptr;
-  resource_pool_ = nullptr;
-  staging_resource_pool_ = nullptr;
-  raster_worker_pool_ = nullptr;
+  tile_manager_.reset();
+  resource_pool_.reset();
+  staging_resource_pool_.reset();
+  raster_worker_pool_.reset();
 }
 
 bool LayerTreeHostImpl::UsePendingTreeForSync() const {
@@ -2077,10 +2077,10 @@ bool LayerTreeHostImpl::InitializeRenderer(
   ReleaseTreeResources();
 
   // Note: order is important here.
-  renderer_ = nullptr;
+  renderer_.reset();
   DestroyTileManager();
-  resource_provider_ = nullptr;
-  output_surface_ = nullptr;
+  resource_provider_.reset();
+  output_surface_.reset();
 
   if (!output_surface->BindToClient(this))
     return false;
@@ -2142,7 +2142,7 @@ void LayerTreeHostImpl::DeferredInitialize() {
   DCHECK(output_surface_->context_provider());
 
   ReleaseTreeResources();
-  renderer_ = nullptr;
+  renderer_.reset();
   DestroyTileManager();
 
   resource_provider_->InitializeGL();
@@ -2160,7 +2160,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   DCHECK(output_surface_->context_provider());
 
   ReleaseTreeResources();
-  renderer_ = nullptr;
+  renderer_.reset();
   DestroyTileManager();
 
   resource_provider_->InitializeSoftware();
@@ -2428,7 +2428,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       curve->SetInitialValue(current_offset);
 
       scoped_ptr<Animation> animation =
-          Animation::Create(curve.Pass(),
+          Animation::Create(curve.PassAs<AnimationCurve>(),
                             AnimationIdProvider::NextAnimationId(),
                             AnimationIdProvider::NextGroupId(),
                             Animation::ScrollOffset);
@@ -2992,7 +2992,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   SetNeedsRedraw();
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
-    page_scale_animation_ = nullptr;
+    page_scale_animation_.reset();
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();
   } else {

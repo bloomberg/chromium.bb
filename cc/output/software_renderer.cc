@@ -107,7 +107,7 @@ void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
 void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::FinishDrawingFrame");
-  current_framebuffer_lock_ = nullptr;
+  current_framebuffer_lock_.reset();
   current_canvas_ = NULL;
   root_canvas_ = NULL;
 
@@ -150,7 +150,7 @@ void SoftwareRenderer::Finish() {}
 
 void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   DCHECK(!output_surface_->HasExternalStencilTest());
-  current_framebuffer_lock_ = nullptr;
+  current_framebuffer_lock_.reset();
   current_canvas_ = root_canvas_;
 }
 
@@ -158,6 +158,7 @@ bool SoftwareRenderer::BindFramebufferToTexture(
     DrawingFrame* frame,
     const ScopedResource* texture,
     const gfx::Rect& target_rect) {
+  current_framebuffer_lock_.reset();
   current_framebuffer_lock_ = make_scoped_ptr(
       new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));

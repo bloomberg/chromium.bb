@@ -33,7 +33,8 @@ DelegatedRendererLayer::~DelegatedRendererLayer() {
 
 scoped_ptr<LayerImpl> DelegatedRendererLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return DelegatedRendererLayerImpl::Create(tree_impl, layer_id_);
+  return DelegatedRendererLayerImpl::Create(
+      tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
 void DelegatedRendererLayer::SetLayerTreeHost(LayerTreeHost* host) {

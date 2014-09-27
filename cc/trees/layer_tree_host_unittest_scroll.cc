@@ -1121,7 +1121,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
                             base::Unretained(&input_handler_client)));
 
   layer_tree_host->DidStopFlinging();
-  layer_tree_host = nullptr;
+  layer_tree_host.reset();
   impl_thread.Stop();
   EXPECT_TRUE(received_stop_flinging);
 }

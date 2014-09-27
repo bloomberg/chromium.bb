@@ -379,7 +379,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
-    return FakeOutputSurface::Create3d();
+    return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
   }
 
   void DrawOneFrame() {
@@ -415,8 +415,9 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
 }
 
 TEST_F(LayerTreeHostImplTest, CanDrawIncompleteFrames) {
-  CreateHostImpl(DefaultSettings(),
-                 FakeOutputSurface::CreateAlwaysDrawAndSwap3d());
+  scoped_ptr<FakeOutputSurface> output_surface(
+      FakeOutputSurface::CreateAlwaysDrawAndSwap3d());
+  CreateHostImpl(DefaultSettings(), output_surface.PassAs<OutputSurface>());
 
   bool always_draw = true;
   CheckNotifyCalledIfCanDrawChanged(always_draw);
@@ -526,9 +527,12 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
       TestWebGraphicsContext3D::Create();
   context_owned->set_context_lost(true);
 
+  scoped_ptr<FakeOutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.Pass()));
+
   // Initialization will fail.
-  EXPECT_FALSE(CreateHostImpl(
-      DefaultSettings(), FakeOutputSurface::Create3d(context_owned.Pass())));
+  EXPECT_FALSE(CreateHostImpl(DefaultSettings(),
+                              output_surface.PassAs<OutputSurface>()));
 
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
@@ -1325,7 +1329,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
   scroll->AddChild(contents.Pass());                                          \
   root->AddChild(scroll.Pass());                                              \
   scrollbar->SetScrollLayerAndClipLayerByIds(2, 1);                           \
-  root->AddChild(scrollbar.Pass());                                           \
+  root->AddChild(scrollbar.PassAs<LayerImpl>());                              \
                                                                               \
   host_impl_->active_tree()->SetRootLayer(root.Pass());                       \
   host_impl_->active_tree()->SetViewportLayersFromIds(                        \
@@ -1493,7 +1497,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   scroll->AddChild(contents.Pass());
   root->AddChild(scroll.Pass());
   scrollbar->SetScrollLayerAndClipLayerByIds(2, 1);
-  root->AddChild(scrollbar.Pass());
+  root->AddChild(scrollbar.PassAs<LayerImpl>());
 
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
@@ -1607,7 +1611,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
 class DidDrawCheckLayer : public LayerImpl {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new DidDrawCheckLayer(tree_impl, id));
+    return scoped_ptr<LayerImpl>(new DidDrawCheckLayer(tree_impl, id));
   }
 
   virtual bool WillDraw(DrawMode draw_mode, ResourceProvider* provider)
@@ -1833,12 +1837,13 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
                                       bool had_incomplete_tile,
                                       bool animating,
                                       ResourceProvider* resource_provider) {
-    return make_scoped_ptr(new MissingTextureAnimatingLayer(tree_impl,
-                                                            id,
-                                                            tile_missing,
-                                                            had_incomplete_tile,
-                                                            animating,
-                                                            resource_provider));
+    return scoped_ptr<LayerImpl>(
+        new MissingTextureAnimatingLayer(tree_impl,
+                                         id,
+                                         tile_missing,
+                                         had_incomplete_tile,
+                                         animating,
+                                         resource_provider));
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
@@ -3635,8 +3640,9 @@ class BlendStateCheckLayer : public LayerImpl {
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl,
                                       int id,
                                       ResourceProvider* resource_provider) {
-    return make_scoped_ptr(
-        new BlendStateCheckLayer(tree_impl, id, resource_provider));
+    return scoped_ptr<LayerImpl>(new BlendStateCheckLayer(tree_impl,
+                                                          id,
+                                                          resource_provider));
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
@@ -3948,9 +3954,10 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   scoped_ptr<OutputSurface> CreateFakeOutputSurface(bool always_draw) {
     if (always_draw) {
-      return FakeOutputSurface::CreateAlwaysDrawAndSwap3d();
+      return FakeOutputSurface::CreateAlwaysDrawAndSwap3d()
+          .PassAs<OutputSurface>();
     }
-    return FakeOutputSurface::Create3d();
+    return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
   }
 
   void SetupActiveTreeLayers() {
@@ -4230,7 +4237,7 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
 class FakeDrawableLayerImpl: public LayerImpl {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new FakeDrawableLayerImpl(tree_impl, id));
+    return scoped_ptr<LayerImpl>(new FakeDrawableLayerImpl(tree_impl, id));
   }
  protected:
   FakeDrawableLayerImpl(LayerTreeImpl* tree_impl, int id)
@@ -4400,7 +4407,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
 class FakeLayerWithQuads : public LayerImpl {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new FakeLayerWithQuads(tree_impl, id));
+    return scoped_ptr<LayerImpl>(new FakeLayerWithQuads(tree_impl, id));
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
@@ -4514,13 +4521,15 @@ class MockContextHarness {
 TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
   scoped_ptr<MockContext> mock_context_owned(new MockContext);
   MockContext* mock_context = mock_context_owned.get();
+
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      mock_context_owned.PassAs<TestWebGraphicsContext3D>()));
   MockContextHarness harness(mock_context);
 
   // Run test case
   LayerTreeSettings settings = DefaultSettings();
   settings.partial_swap_enabled = false;
-  CreateHostImpl(settings,
-                 FakeOutputSurface::Create3d(mock_context_owned.Pass()));
+  CreateHostImpl(settings, output_surface.Pass());
   SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
 
   // Without partial swap, and no clipping, no scissor is set.
@@ -4551,11 +4560,13 @@ TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
 TEST_F(LayerTreeHostImplTest, PartialSwap) {
   scoped_ptr<MockContext> context_owned(new MockContext);
   MockContext* mock_context = context_owned.get();
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   MockContextHarness harness(mock_context);
 
   LayerTreeSettings settings = DefaultSettings();
   settings.partial_swap_enabled = true;
-  CreateHostImpl(settings, FakeOutputSurface::Create3d(context_owned.Pass()));
+  CreateHostImpl(settings, output_surface.Pass());
   SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
 
   // The first frame is not a partially-swapped one.
@@ -4738,7 +4749,7 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   video_layer->SetBounds(gfx::Size(10, 10));
   video_layer->SetContentBounds(gfx::Size(10, 10));
   video_layer->SetDrawsContent(true);
-  root_layer->AddChild(video_layer.Pass());
+  root_layer->AddChild(video_layer.PassAs<LayerImpl>());
 
   scoped_ptr<IOSurfaceLayerImpl> io_surface_layer =
       IOSurfaceLayerImpl::Create(host_impl_->active_tree(), 5);
@@ -4746,7 +4757,7 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   io_surface_layer->SetContentBounds(gfx::Size(10, 10));
   io_surface_layer->SetDrawsContent(true);
   io_surface_layer->SetIOSurfaceProperties(1, gfx::Size(10, 10));
-  root_layer->AddChild(io_surface_layer.Pass());
+  root_layer->AddChild(io_surface_layer.PassAs<LayerImpl>());
 
   host_impl_->active_tree()->SetRootLayer(root_layer.Pass());
 
@@ -4781,11 +4792,13 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
       new MockDrawQuadsToFillScreenContext);
   MockDrawQuadsToFillScreenContext* mock_context = mock_context_owned.get();
 
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      mock_context_owned.PassAs<TestWebGraphicsContext3D>()));
+
   // Run test case
   LayerTreeSettings settings = DefaultSettings();
   settings.partial_swap_enabled = false;
-  CreateHostImpl(settings,
-                 FakeOutputSurface::Create3d(mock_context_owned.Pass()));
+  CreateHostImpl(settings, output_surface.Pass());
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
   host_impl_->active_tree()->set_background_color(SK_ColorWHITE);
 
@@ -4854,7 +4867,7 @@ class LayerTreeHostImplTestWithDelegatingRenderer
     : public LayerTreeHostImplTest {
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
-    return FakeOutputSurface::CreateDelegating3d();
+    return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
   }
 
   void DrawFrameAndTestDamage(const gfx::RectF& expected_damage) {
@@ -4909,9 +4922,9 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
   child->SetBounds(gfx::Size(1, 1));
   child->SetContentBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
-  root->AddChild(child.Pass());
+  root->AddChild(child.PassAs<LayerImpl>());
 
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->SetRootLayer(root.PassAs<LayerImpl>());
 
   // Draw a frame. In the first frame, the entire viewport should be damaged.
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
@@ -4981,7 +4994,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
   scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
       FakeMaskLayerImpl::Create(host_impl_->active_tree(), 4);
   FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
-  content_layer->SetMaskLayer(scoped_mask_layer.Pass());
+  content_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
 
   gfx::Size root_size(100, 100);
   root->SetBounds(root_size);
@@ -5110,7 +5123,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
   scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
       FakeMaskLayerImpl::Create(host_impl_->active_tree(), 4);
   FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
-  content_layer->SetMaskLayer(scoped_mask_layer.Pass());
+  content_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
 
   gfx::Size root_size(100, 100);
   root->SetBounds(root_size);
@@ -5261,7 +5274,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
   scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
       FakeMaskLayerImpl::Create(host_impl_->active_tree(), 4);
   FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
-  replica_layer->SetMaskLayer(scoped_mask_layer.Pass());
+  replica_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
 
   gfx::Size root_size(100, 100);
   root->SetBounds(root_size);
@@ -5413,7 +5426,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
   scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
       FakeMaskLayerImpl::Create(host_impl_->active_tree(), 5);
   FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
-  replica_layer->SetMaskLayer(scoped_mask_layer.Pass());
+  replica_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
 
   gfx::Size root_size(100, 100);
   root->SetBounds(root_size);
@@ -5533,7 +5546,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
   scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
       FakeMaskLayerImpl::Create(host_impl_->active_tree(), 6);
   FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
-  content_layer->SetMaskLayer(scoped_mask_layer.Pass());
+  content_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
 
   gfx::Size root_size(100, 100);
   root->SetBounds(root_size);
@@ -5634,7 +5647,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   scoped_ptr<FakePictureLayerImpl> scoped_content_layer =
       FakePictureLayerImpl::CreateWithPile(host_impl_->pending_tree(), 3, pile);
   LayerImpl* content_layer = scoped_content_layer.get();
-  scrolling_layer->AddChild(scoped_content_layer.Pass());
+  scrolling_layer->AddChild(scoped_content_layer.PassAs<LayerImpl>());
   content_layer->SetBounds(content_layer_bounds);
   content_layer->SetDrawsContent(true);
 
@@ -5782,8 +5795,8 @@ TEST_F(LayerTreeHostImplTest,
   video_layer->SetBounds(gfx::Size(10, 10));
   video_layer->SetContentBounds(gfx::Size(10, 10));
   video_layer->SetDrawsContent(true);
-  root_layer->AddChild(video_layer.Pass());
-  SetupRootLayerImpl(root_layer.Pass());
+  root_layer->AddChild(video_layer.PassAs<LayerImpl>());
+  SetupRootLayerImpl(root_layer.PassAs<LayerImpl>());
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -5808,11 +5821,12 @@ class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
             delegated_rendering));
     output_surface_ = output_surface.get();
 
-    EXPECT_TRUE(CreateHostImpl(DefaultSettings(), output_surface.Pass()));
+    EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
+                               output_surface.PassAs<OutputSurface>()));
 
     scoped_ptr<SolidColorLayerImpl> root_layer =
         SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
-    SetupRootLayerImpl(root_layer.Pass());
+    SetupRootLayerImpl(root_layer.PassAs<LayerImpl>());
 
     onscreen_context_provider_ = TestContextProvider::Create();
   }
@@ -6010,7 +6024,7 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
       TestWebGraphicsContext3D::Create();
   TestWebGraphicsContext3D* context3d = context.get();
   scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
-  CreateHostImpl(DefaultSettings(), output_surface.Pass());
+  CreateHostImpl(DefaultSettings(), output_surface.PassAs<OutputSurface>());
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
@@ -6054,7 +6068,8 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   scoped_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   TestWebGraphicsContext3D* context3d = context.get();
-  CreateHostImpl(DefaultSettings(), FakeOutputSurface::Create3d());
+  scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
+  CreateHostImpl(DefaultSettings(), output_surface.PassAs<OutputSurface>());
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
@@ -6083,8 +6098,9 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
 
-  CreateHostImpl(DefaultSettings(),
-                 FakeOutputSurface::Create3d(context_provider));
+  CreateHostImpl(
+      DefaultSettings(),
+      FakeOutputSurface::Create3d(context_provider).PassAs<OutputSurface>());
 
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
 
@@ -6104,7 +6120,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
-  host_impl_ = nullptr;
+  host_impl_.reset();
 
   // The CopyOutputResult's callback was cancelled, the CopyOutputResult
   // released, and the texture deleted.
@@ -6436,7 +6452,7 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
 
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->SetRootLayer(root.PassAs<LayerImpl>());
 
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_->output_surface());
@@ -6476,7 +6492,7 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
 
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->SetRootLayer(root.PassAs<LayerImpl>());
 
   // Ensure the default frame selection bounds are empty.
   FakeOutputSurface* fake_output_surface =
@@ -7110,7 +7126,7 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
       FakePictureLayerImpl::Create(pending_tree, 10);
   pending_layer->DoPostCommitInitializationIfNeeded();
   FakePictureLayerImpl* raw_pending_layer = pending_layer.get();
-  pending_tree->SetRootLayer(pending_layer.Pass());
+  pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
   ASSERT_EQ(raw_pending_layer, pending_tree->root_layer());
 
   EXPECT_EQ(0u, raw_pending_layer->did_become_active_call_count());
@@ -7121,7 +7137,7 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
       FakePictureLayerImpl::Create(pending_tree, 11);
   mask_layer->DoPostCommitInitializationIfNeeded();
   FakePictureLayerImpl* raw_mask_layer = mask_layer.get();
-  raw_pending_layer->SetMaskLayer(mask_layer.Pass());
+  raw_pending_layer->SetMaskLayer(mask_layer.PassAs<LayerImpl>());
   ASSERT_EQ(raw_mask_layer, raw_pending_layer->mask_layer());
 
   EXPECT_EQ(1u, raw_pending_layer->did_become_active_call_count());
@@ -7136,8 +7152,8 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
       FakePictureLayerImpl::Create(pending_tree, 13);
   replica_mask_layer->DoPostCommitInitializationIfNeeded();
   FakePictureLayerImpl* raw_replica_mask_layer = replica_mask_layer.get();
-  replica_layer->SetMaskLayer(replica_mask_layer.Pass());
-  raw_pending_layer->SetReplicaLayer(replica_layer.Pass());
+  replica_layer->SetMaskLayer(replica_mask_layer.PassAs<LayerImpl>());
+  raw_pending_layer->SetReplicaLayer(replica_layer.PassAs<LayerImpl>());
   ASSERT_EQ(raw_replica_mask_layer,
             raw_pending_layer->replica_layer()->mask_layer());
 

@@ -209,7 +209,8 @@ TEST(OutputSurfaceTest, SoftwareOutputDeviceBackbufferManagement) {
 
   // TestOutputSurface now owns software_output_device and has responsibility to
   // free it.
-  TestOutputSurface output_surface(make_scoped_ptr(software_output_device));
+  scoped_ptr<TestSoftwareOutputDevice> p(software_output_device);
+  TestOutputSurface output_surface(p.PassAs<SoftwareOutputDevice>());
 
   EXPECT_EQ(0, software_output_device->ensure_backbuffer_count());
   EXPECT_EQ(0, software_output_device->discard_backbuffer_count());

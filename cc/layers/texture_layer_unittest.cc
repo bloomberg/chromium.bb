@@ -185,7 +185,7 @@ class TextureLayerTest : public testing::Test {
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
 
     layer_tree_host_->SetRootLayer(NULL);
-    layer_tree_host_ = nullptr;
+    layer_tree_host_.reset();
   }
 
   scoped_ptr<MockLayerTreeHost> layer_tree_host_;
@@ -422,7 +422,9 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
         SingleReleaseCallback::Create(test_data_.release_mailbox1_)).Pass();
   }
 
-  void ReleaseMainRef() { main_ref_ = nullptr; }
+  void ReleaseMainRef() {
+    main_ref_.reset();
+  }
 
   void CreateImplRef(scoped_ptr<SingleReleaseCallbackImpl>* impl_ref) {
     *impl_ref = main_ref_->holder()->GetCallbackForImplThread();
@@ -930,7 +932,8 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
   virtual void SetUp() {
     TextureLayerTest::SetUp();
     layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
-    EXPECT_TRUE(host_impl_.InitializeRenderer(FakeOutputSurface::Create3d()));
+    EXPECT_TRUE(host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   }
 
   bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {

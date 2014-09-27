@@ -49,8 +49,9 @@ scoped_ptr<Proxy> ThreadProxy::Create(
     LayerTreeHost* layer_tree_host,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  return make_scoped_ptr(
-      new ThreadProxy(layer_tree_host, main_task_runner, impl_task_runner));
+  return make_scoped_ptr(new ThreadProxy(layer_tree_host,
+                                         main_task_runner,
+                                         impl_task_runner)).PassAs<Proxy>();
 }
 
 ThreadProxy::ThreadProxy(
@@ -962,7 +963,7 @@ void ThreadProxy::ScheduledActionCommit() {
 
   // Complete all remaining texture updates.
   impl().current_resource_update_controller->Finalize();
-  impl().current_resource_update_controller = nullptr;
+  impl().current_resource_update_controller.reset();
 
   if (impl().animations_frozen_until_next_draw) {
     impl().animation_time = std::max(
@@ -1248,10 +1249,10 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   DCHECK(IsMainThreadBlocked());
   layer_tree_host()->DeleteContentsTexturesOnImplThread(
       impl().layer_tree_host_impl->resource_provider());
-  impl().current_resource_update_controller = nullptr;
+  impl().current_resource_update_controller.reset();
   impl().layer_tree_host_impl->SetNeedsBeginFrame(false);
-  impl().scheduler = nullptr;
-  impl().layer_tree_host_impl = nullptr;
+  impl().scheduler.reset();
+  impl().layer_tree_host_impl.reset();
   impl().weak_factory.InvalidateWeakPtrs();
   // We need to explicitly cancel the notifier, since it isn't using weak ptrs.
   // TODO(vmpstr): We should see if we can make it use weak ptrs and still keep

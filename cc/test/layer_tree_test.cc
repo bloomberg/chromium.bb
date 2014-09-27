@@ -55,8 +55,10 @@ class ThreadProxyForTest : public ThreadProxy {
       LayerTreeHost* host,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-    return make_scoped_ptr(new ThreadProxyForTest(
-        test_hooks, host, main_task_runner, impl_task_runner));
+    return make_scoped_ptr(
+               new ThreadProxyForTest(
+                   test_hooks, host, main_task_runner, impl_task_runner))
+        .PassAs<Proxy>();
   }
 
   virtual ~ThreadProxyForTest() {}
@@ -349,12 +351,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* host_impl_client) OVERRIDE {
     return LayerTreeHostImplForTesting::Create(
-        test_hooks_,
-        settings(),
-        host_impl_client,
-        proxy(),
-        shared_bitmap_manager_.get(),
-        rendering_stats_instrumentation());
+               test_hooks_,
+               settings(),
+               host_impl_client,
+               proxy(),
+               shared_bitmap_manager_.get(),
+               rendering_stats_instrumentation()).PassAs<LayerTreeHostImpl>();
   }
 
   virtual void SetNeedsCommit() OVERRIDE {
@@ -652,7 +654,7 @@ void LayerTreeTest::RunTest(bool threaded,
   timeout_.Cancel();
 
   ASSERT_FALSE(layer_tree_host_.get());
-  client_ = nullptr;
+  client_.reset();
   if (timed_out_) {
     FAIL() << "Test timed out";
     return;
@@ -676,7 +678,7 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
               output_surface->capabilities().delegated_rendering);
   }
   output_surface_ = output_surface.get();
-  return output_surface.Pass();
+  return output_surface.PassAs<OutputSurface>();
 }
 
 scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface(
@@ -705,7 +707,7 @@ int LayerTreeTest::LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl)
 void LayerTreeTest::DestroyLayerTreeHost() {
   if (layer_tree_host_ && layer_tree_host_->root_layer())
     layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
-  layer_tree_host_ = nullptr;
+  layer_tree_host_.reset();
 }
 
 }  // namespace cc

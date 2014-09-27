@@ -71,7 +71,7 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
   // Overridden from RasterizerTaskClient:
   virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource) OVERRIDE {
-    return nullptr;
+    return scoped_ptr<RasterBuffer>();
   }
   virtual void ReleaseBufferForRaster(
       scoped_ptr<RasterBuffer> buffer) OVERRIDE {}
@@ -119,7 +119,8 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d().Pass());
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
     tile_manager()->SetRasterizerForTesting(g_fake_rasterizer.Pointer());
   }
 
@@ -165,7 +166,7 @@ class TileManagerPerfTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
-    pending_tree->SetRootLayer(pending_layer.Pass());
+    pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
 
     pending_root_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -361,7 +362,7 @@ class TileManagerPerfTest : public testing::Test {
               host_impl_.pending_tree(), next_id, picture_pile_);
       layer->SetBounds(layer_bounds);
       layers.push_back(layer.get());
-      pending_root_layer_->AddChild(layer.Pass());
+      pending_root_layer_->AddChild(layer.PassAs<LayerImpl>());
 
       FakePictureLayerImpl* fake_layer =
           static_cast<FakePictureLayerImpl*>(layers.back());

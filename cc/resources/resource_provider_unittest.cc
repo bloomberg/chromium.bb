@@ -389,15 +389,16 @@ class ResourceProviderTest
         context3d_ = context3d.get();
 
         scoped_refptr<TestContextProvider> context_provider =
-            TestContextProvider::Create(context3d.Pass());
+            TestContextProvider::Create(
+                context3d.PassAs<TestWebGraphicsContext3D>());
 
         output_surface_ = FakeOutputSurface::Create3d(context_provider);
 
         scoped_ptr<ResourceProviderContext> child_context_owned =
             ResourceProviderContext::Create(shared_data_.get());
         child_context_ = child_context_owned.get();
-        child_output_surface_ =
-            FakeOutputSurface::Create3d(child_context_owned.Pass());
+        child_output_surface_ = FakeOutputSurface::Create3d(
+            child_context_owned.PassAs<TestWebGraphicsContext3D>());
         break;
       }
       case ResourceProvider::Bitmap:
@@ -1152,8 +1153,8 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
       ResourceProviderContext::Create(shared_data_.get()));
 
   FakeOutputSurfaceClient child_output_surface_client;
-  scoped_ptr<OutputSurface> child_output_surface(
-      FakeOutputSurface::Create3d(child_context_owned.Pass()));
+  scoped_ptr<OutputSurface> child_output_surface(FakeOutputSurface::Create3d(
+      child_context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(child_output_surface->BindToClient(&child_output_surface_client));
 
   scoped_ptr<ResourceProvider> child_resource_provider(
@@ -1455,7 +1456,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
 
     // Destroy the parent resource provider. The resource that's left should be
     // lost at this point, and returned.
-    resource_provider_ = nullptr;
+    resource_provider_.reset();
     ASSERT_EQ(1u, returned_to_child.size());
     if (GetParam() == ResourceProvider::GLTexture) {
       EXPECT_NE(0u, returned_to_child[0].sync_point);
@@ -1632,8 +1633,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     TextureStateTrackingContext* child_context = child_context_owned.get();
 
     FakeOutputSurfaceClient child_output_surface_client;
-    scoped_ptr<OutputSurface> child_output_surface(
-        FakeOutputSurface::Create3d(child_context_owned.Pass()));
+    scoped_ptr<OutputSurface> child_output_surface(FakeOutputSurface::Create3d(
+        child_context_owned.PassAs<TestWebGraphicsContext3D>()));
     CHECK(child_output_surface->BindToClient(&child_output_surface_client));
     scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
         new TestSharedBitmapManager());
@@ -1652,8 +1653,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     TextureStateTrackingContext* parent_context = parent_context_owned.get();
 
     FakeOutputSurfaceClient parent_output_surface_client;
-    scoped_ptr<OutputSurface> parent_output_surface(
-        FakeOutputSurface::Create3d(parent_context_owned.Pass()));
+    scoped_ptr<OutputSurface> parent_output_surface(FakeOutputSurface::Create3d(
+        parent_context_owned.PassAs<TestWebGraphicsContext3D>()));
     CHECK(parent_output_surface->BindToClient(&parent_output_surface_client));
 
     scoped_ptr<ResourceProvider> parent_resource_provider(
@@ -2204,7 +2205,7 @@ TEST_P(ResourceProviderTest, Shutdown) {
   EXPECT_EQ(0u, release_sync_point);
   EXPECT_FALSE(lost_resource);
 
-  child_resource_provider_ = nullptr;
+  child_resource_provider_.reset();
 
   if (GetParam() == ResourceProvider::GLTexture) {
     EXPECT_LE(sync_point, release_sync_point);
@@ -2231,7 +2232,7 @@ TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
   EXPECT_EQ(0u, release_sync_point);
   EXPECT_FALSE(lost_resource);
 
-  child_resource_provider_ = nullptr;
+  child_resource_provider_.reset();
 
   // Since the resource is in the parent, the child considers it lost.
   EXPECT_EQ(0u, release_sync_point);
@@ -2267,7 +2268,7 @@ TEST_P(ResourceProviderTest, LostContext) {
   EXPECT_EQ(NULL, main_thread_task_runner);
 
   resource_provider_->DidLoseOutputSurface();
-  resource_provider_ = nullptr;
+  resource_provider_.reset();
 
   EXPECT_LE(sync_point, release_sync_point);
   EXPECT_TRUE(lost_resource);
@@ -2284,8 +2285,8 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2371,8 +2372,8 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2426,8 +2427,8 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2485,8 +2486,8 @@ TEST_P(ResourceProviderTest, TextureHint) {
   context->set_support_texture_usage(true);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2610,8 +2611,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2695,8 +2696,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2770,8 +2771,8 @@ TEST_P(ResourceProviderTest,
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2829,8 +2830,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -2957,8 +2958,8 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   AllocationTrackingContext3D* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -3037,8 +3038,8 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
   context->set_support_texture_usage(true);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -3097,8 +3098,8 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
   context->set_support_texture_usage(true);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -3151,8 +3152,8 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
   AllocationTrackingContext3D* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(2, 2);
@@ -3198,8 +3199,8 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   AllocationTrackingContext3D* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(2, 2);
@@ -3245,8 +3246,8 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
   AllocationTrackingContext3D* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(2, 2);
@@ -3287,8 +3288,8 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   AllocationTrackingContext3D* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   const int kWidth = 2;
@@ -3397,8 +3398,8 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   context_owned->set_support_sync_query(true);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   ASSERT_TRUE(output_surface->BindToClient(&output_surface_client));
 
   const int kWidth = 2;
@@ -3489,7 +3490,8 @@ void InitializeGLAndCheck(ContextSharedData* shared_data,
   ResourceProviderContext* context = context_owned.get();
 
   scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create(context_owned.Pass());
+      TestContextProvider::Create(
+          context_owned.PassAs<TestWebGraphicsContext3D>());
   output_surface->InitializeAndSetContext3d(context_provider);
   resource_provider->InitializeGL();
 
@@ -3541,8 +3543,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   context_owned->set_support_compressed_texture_etc1(true);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(4, 4);
@@ -3577,8 +3579,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1SetPixels) {
   context_owned->set_support_compressed_texture_etc1(true);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(4, 4);
@@ -3632,8 +3634,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
   TextureIdAllocationTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());

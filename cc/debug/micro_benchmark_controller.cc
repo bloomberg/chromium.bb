@@ -28,16 +28,19 @@ scoped_ptr<MicroBenchmark> CreateBenchmark(
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
   if (name == "invalidation_benchmark") {
-    return make_scoped_ptr(new InvalidationBenchmark(value.Pass(), callback));
+    return scoped_ptr<MicroBenchmark>(
+        new InvalidationBenchmark(value.Pass(), callback));
   } else if (name == "picture_record_benchmark") {
-    return make_scoped_ptr(new PictureRecordBenchmark(value.Pass(), callback));
+    return scoped_ptr<MicroBenchmark>(
+        new PictureRecordBenchmark(value.Pass(), callback));
   } else if (name == "rasterize_and_record_benchmark") {
-    return make_scoped_ptr(
+    return scoped_ptr<MicroBenchmark>(
         new RasterizeAndRecordBenchmark(value.Pass(), callback));
   } else if (name == "unittest_only_benchmark") {
-    return make_scoped_ptr(new UnittestOnlyBenchmark(value.Pass(), callback));
+    return scoped_ptr<MicroBenchmark>(
+        new UnittestOnlyBenchmark(value.Pass(), callback));
   }
-  return nullptr;
+  return scoped_ptr<MicroBenchmark>();
 }
 
 class IsDonePredicate {

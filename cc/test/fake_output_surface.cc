@@ -105,7 +105,7 @@ bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
     client_ = client;
     if (memory_policy_to_set_at_bind_) {
       client_->SetMemoryPolicy(*memory_policy_to_set_at_bind_.get());
-      memory_policy_to_set_at_bind_ = nullptr;
+      memory_policy_to_set_at_bind_.reset();
     }
     return true;
   } else {

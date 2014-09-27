@@ -14,7 +14,7 @@ FakeContentLayerImpl::~FakeContentLayerImpl() {}
 
 scoped_ptr<LayerImpl> FakeContentLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakeContentLayerImpl::Create(tree_impl, id());
+  return FakeContentLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 bool FakeContentLayerImpl::HaveResourceForTileAt(int i, int j) {

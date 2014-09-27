@@ -46,7 +46,8 @@ class PictureLayerImplPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
   virtual void SetUp() OVERRIDE {
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
   }
 
   void SetupPendingTree(const gfx::Size& layer_bounds,
@@ -60,7 +61,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithPile(pending_tree, 7, pile);
     pending_layer->SetDrawsContent(true);
-    pending_tree->SetRootLayer(pending_layer.Pass());
+    pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(7));

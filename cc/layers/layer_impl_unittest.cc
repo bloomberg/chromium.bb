@@ -86,7 +86,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
-  EXPECT_TRUE(host_impl.InitializeRenderer(FakeOutputSurface::Create3d()));
+  EXPECT_TRUE(host_impl.InitializeRenderer(
+      FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   scoped_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl.active_tree(), 1);
   scoped_ptr<LayerImpl> root_ptr =
@@ -246,7 +247,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
-  EXPECT_TRUE(host_impl.InitializeRenderer(FakeOutputSurface::Create3d()));
+  EXPECT_TRUE(host_impl.InitializeRenderer(
+      FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   host_impl.active_tree()->SetRootLayer(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* root = host_impl.active_tree()->root_layer();
@@ -355,7 +357,8 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
-  EXPECT_TRUE(host_impl.InitializeRenderer(FakeOutputSurface::Create3d()));
+  EXPECT_TRUE(host_impl.InitializeRenderer(
+      FakeOutputSurface::Create3d().PassAs<OutputSurface>()));
   scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
 
   for (int contents_opaque = 0; contents_opaque < 2; ++contents_opaque) {

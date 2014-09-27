@@ -184,7 +184,7 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
   result->SetInteger("total_picture_layers_off_screen",
                      rasterize_results_.total_picture_layers_off_screen);
 
-  NotifyDone(result.Pass());
+  NotifyDone(result.PassAs<base::Value>());
 }
 
 void RasterizeAndRecordBenchmarkImpl::Run(LayerImpl* layer) {

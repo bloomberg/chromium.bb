@@ -502,7 +502,7 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   Buffer* buffer = buffers.get(bound_buffer_);
   if (context_lost_) {
-    buffer->pixels = nullptr;
+    buffer->pixels.reset();
     return;
   }
 
@@ -541,7 +541,7 @@ GLboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
   base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
-  buffers.get(bound_buffer_)->pixels = nullptr;
+  buffers.get(bound_buffer_)->pixels.reset();
   return true;
 }
 

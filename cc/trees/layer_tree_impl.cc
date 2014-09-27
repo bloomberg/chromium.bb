@@ -108,9 +108,7 @@ LayerTreeImpl::~LayerTreeImpl() {
   DCHECK(layers_with_copy_output_request_.empty());
 }
 
-void LayerTreeImpl::Shutdown() {
-  root_layer_ = nullptr;
-}
+void LayerTreeImpl::Shutdown() { root_layer_.reset(); }
 
 void LayerTreeImpl::ReleaseResources() {
   if (root_layer_)
@@ -122,8 +120,8 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
     inner_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
   if (outer_viewport_scroll_layer_)
     outer_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
-  inner_viewport_scroll_delegate_proxy_ = nullptr;
-  outer_viewport_scroll_delegate_proxy_ = nullptr;
+  inner_viewport_scroll_delegate_proxy_.reset();
+  outer_viewport_scroll_delegate_proxy_.reset();
 
   root_layer_ = layer.Pass();
   currently_scrolling_layer_ = NULL;
@@ -183,8 +181,8 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
     inner_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
   if (outer_viewport_scroll_layer_)
     outer_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
-  inner_viewport_scroll_delegate_proxy_ = nullptr;
-  outer_viewport_scroll_delegate_proxy_ = nullptr;
+  inner_viewport_scroll_delegate_proxy_.reset();
+  outer_viewport_scroll_delegate_proxy_.reset();
   inner_viewport_scroll_layer_ = NULL;
   outer_viewport_scroll_layer_ = NULL;
   page_scale_layer_ = NULL;
@@ -785,17 +783,19 @@ LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
   switch (settings().scrollbar_animator) {
     case LayerTreeSettings::LinearFade: {
       return ScrollbarAnimationControllerLinearFade::Create(
-          scrolling_layer, layer_tree_host_impl_, delay, duration);
+                 scrolling_layer, layer_tree_host_impl_, delay, duration)
+          .PassAs<ScrollbarAnimationController>();
     }
     case LayerTreeSettings::Thinning: {
       return ScrollbarAnimationControllerThinning::Create(
-          scrolling_layer, layer_tree_host_impl_, delay, duration);
+                 scrolling_layer, layer_tree_host_impl_, delay, duration)
+          .PassAs<ScrollbarAnimationController>();
     }
     case LayerTreeSettings::NoAnimator:
       NOTREACHED();
       break;
   }
-  return nullptr;
+  return scoped_ptr<ScrollbarAnimationController>();
 }
 
 void LayerTreeImpl::DidAnimateScrollOffset() {
@@ -881,8 +881,8 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
       InnerViewportScrollLayer()->SetScrollOffsetDelegate(NULL);
     if (OuterViewportScrollLayer())
       OuterViewportScrollLayer()->SetScrollOffsetDelegate(NULL);
-    inner_viewport_scroll_delegate_proxy_ = nullptr;
-    outer_viewport_scroll_delegate_proxy_ = nullptr;
+    inner_viewport_scroll_delegate_proxy_.reset();
+    outer_viewport_scroll_delegate_proxy_.reset();
   }
 
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;

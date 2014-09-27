@@ -21,7 +21,7 @@ PictureImageLayer::~PictureImageLayer() {
 
 scoped_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureImageLayerImpl::Create(tree_impl, id());
+  return PictureImageLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 bool PictureImageLayer::HasDrawableContent() const {

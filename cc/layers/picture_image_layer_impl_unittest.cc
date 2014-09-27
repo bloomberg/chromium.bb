@@ -43,7 +43,8 @@ class PictureImageLayerImplTest : public testing::Test {
                    &shared_bitmap_manager_) {
     tiling_client_.SetTileSize(ImplSidePaintingSettings().default_tile_size);
     host_impl_.CreatePendingTree();
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
   }
 
   scoped_ptr<TestablePictureImageLayerImpl> CreateLayer(int id,
@@ -125,7 +126,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   EXPECT_EQ(1.f, pending_layer->tilings()->tiling_at(0)->contents_scale());
 
   // Push to active layer.
-  host_impl_.pending_tree()->SetRootLayer(pending_layer.Pass());
+  host_impl_.pending_tree()->SetRootLayer(pending_layer.PassAs<LayerImpl>());
   host_impl_.ActivateSyncTree();
   TestablePictureImageLayerImpl* active_layer =
       static_cast<TestablePictureImageLayerImpl*>(

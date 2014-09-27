@@ -62,7 +62,7 @@ BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater() {}
 scoped_ptr<LayerUpdater::Resource>
 BitmapSkPictureContentLayerUpdater::CreateResource(
     PrioritizedResourceManager* manager) {
-  return make_scoped_ptr(
+  return scoped_ptr<LayerUpdater::Resource>(
       new Resource(this, PrioritizedResource::Create(manager)));
 }
 

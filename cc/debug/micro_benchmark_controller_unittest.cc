@@ -33,9 +33,9 @@ class MicroBenchmarkControllerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    layer_tree_host_impl_ = nullptr;
-    layer_tree_host_ = nullptr;
-    impl_proxy_ = nullptr;
+    layer_tree_host_impl_.reset();
+    layer_tree_host_.reset();
+    impl_proxy_.reset();
   }
 
   FakeLayerTreeHostClient layer_tree_host_client_;
@@ -126,7 +126,7 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkImplRan) {
   // Schedule a main thread benchmark.
   int id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
-      settings.Pass(),
+      settings.PassAs<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_GT(id, 0);
 
@@ -147,8 +147,8 @@ TEST_F(MicroBenchmarkControllerTest, SendMessage) {
   // Send valid message to invalid benchmark (id = 0)
   scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue);
   message->SetBoolean("can_handle", true);
-  bool message_handled =
-      layer_tree_host_->SendMessageToMicroBenchmark(0, message.Pass());
+  bool message_handled = layer_tree_host_->SendMessageToMicroBenchmark(
+      0, message.PassAs<base::Value>());
   EXPECT_FALSE(message_handled);
 
   // Schedule a benchmark
@@ -160,17 +160,17 @@ TEST_F(MicroBenchmarkControllerTest, SendMessage) {
   EXPECT_GT(id, 0);
 
   // Send valid message to valid benchmark
-  message = make_scoped_ptr(new base::DictionaryValue);
+  message = scoped_ptr<base::DictionaryValue>(new base::DictionaryValue);
   message->SetBoolean("can_handle", true);
-  message_handled =
-      layer_tree_host_->SendMessageToMicroBenchmark(id, message.Pass());
+  message_handled = layer_tree_host_->SendMessageToMicroBenchmark(
+      id, message.PassAs<base::Value>());
   EXPECT_TRUE(message_handled);
 
   // Send invalid message to valid benchmark
-  message = make_scoped_ptr(new base::DictionaryValue);
+  message = scoped_ptr<base::DictionaryValue>(new base::DictionaryValue);
   message->SetBoolean("can_handle", false);
-  message_handled =
-      layer_tree_host_->SendMessageToMicroBenchmark(id, message.Pass());
+  message_handled = layer_tree_host_->SendMessageToMicroBenchmark(
+      id, message.PassAs<base::Value>());
   EXPECT_FALSE(message_handled);
 }
 

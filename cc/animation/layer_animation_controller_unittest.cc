@@ -516,8 +516,8 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   curve->AddKeyframe(
       TransformKeyframe::Create(1, operations, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::Transform));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::Transform));
   animation->set_is_impl_only(true);
   controller_impl->AddAnimation(animation.Pass());
 
@@ -568,8 +568,8 @@ TEST(LayerAnimationControllerTest, FilterTransition) {
   curve->AddKeyframe(
       FilterKeyframe::Create(1, end_filters, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::Filter));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::Filter));
   controller->AddAnimation(animation.Pass());
 
   controller->Animate(kInitialTickTime);
@@ -617,8 +617,8 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   curve->AddKeyframe(
       FilterKeyframe::Create(1, end_filters, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::Filter));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::Filter));
   animation->set_is_impl_only(true);
   controller_impl->AddAnimation(animation.Pass());
 
@@ -670,8 +670,8 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
           target_value,
           EaseInOutTimingFunction::Create().Pass()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
   animation->set_needs_synchronized_start_time(true);
   controller->AddAnimation(animation.Pass());
 
@@ -752,8 +752,8 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
           target_value,
           EaseInOutTimingFunction::Create().Pass()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
   animation->set_needs_synchronized_start_time(true);
   controller->AddAnimation(animation.Pass());
 
@@ -828,8 +828,8 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
   curve->SetInitialValue(initial_value);
   double duration_in_seconds = curve->Duration();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
   animation->set_is_impl_only(true);
   controller_impl->AddAnimation(animation.Pass());
 
@@ -1483,8 +1483,8 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   curve1->AddKeyframe(TransformKeyframe::Create(
       1.0, operations1, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 1, 1, Animation::Transform));
   controller_impl->AddAnimation(animation.Pass());
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve2(
@@ -1497,7 +1497,8 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       1.0, operations2, scoped_ptr<TimingFunction>()));
 
-  animation = Animation::Create(curve2.Pass(), 2, 2, Animation::Transform);
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 2, 2, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
   gfx::BoxF box(1.f, 2.f, -1.f, 3.f, 4.f, 5.f);
@@ -1532,7 +1533,8 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   operations3.AppendMatrix(transform3);
   curve3->AddKeyframe(TransformKeyframe::Create(
       1.0, operations3, scoped_ptr<TimingFunction>()));
-  animation = Animation::Create(curve3.Pass(), 3, 3, Animation::Transform);
+  animation = Animation::Create(
+      curve3.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
   EXPECT_FALSE(controller_impl->TransformAnimationBoundsForBox(box, &bounds));
 }
@@ -1805,8 +1807,8 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
   curve1->AddKeyframe(TransformKeyframe::Create(
       1.0, operations1, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 2, 2, Animation::Transform));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 2, 2, Animation::Transform));
   controller_impl->AddAnimation(animation.Pass());
 
   // Translations don't affect scale.
@@ -1822,7 +1824,8 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       1.0, operations2, scoped_ptr<TimingFunction>()));
 
-  animation = Animation::Create(curve2.Pass(), 3, 3, Animation::Transform);
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
   EXPECT_TRUE(controller_impl->HasAnimationThatAffectsScale());
@@ -1859,8 +1862,8 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   curve1->AddKeyframe(TransformKeyframe::Create(
       1.0, operations1, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 2, 2, Animation::Transform));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 2, 2, Animation::Transform));
   controller_impl->AddAnimation(animation.Pass());
 
   // The only transform animation we've added is a translation.
@@ -1876,7 +1879,8 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       1.0, operations2, scoped_ptr<TimingFunction>()));
 
-  animation = Animation::Create(curve2.Pass(), 3, 3, Animation::Transform);
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
   // A scale animation is not a translation.
@@ -1908,8 +1912,8 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
   curve1->AddKeyframe(TransformKeyframe::Create(
       1.0, operations1, scoped_ptr<TimingFunction>()));
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 1, 1, Animation::Transform));
   controller_impl->AddAnimation(animation.Pass());
 
   EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
@@ -1925,7 +1929,8 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       1.0, operations2, scoped_ptr<TimingFunction>()));
 
-  animation = Animation::Create(curve2.Pass(), 2, 2, Animation::Transform);
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 2, 2, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
   EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
@@ -1941,7 +1946,8 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
   curve3->AddKeyframe(TransformKeyframe::Create(
       1.0, operations3, scoped_ptr<TimingFunction>()));
 
-  animation = Animation::Create(curve3.Pass(), 3, 3, Animation::Transform);
+  animation = Animation::Create(
+      curve3.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
   EXPECT_FALSE(controller_impl->MaximumScale(&max_scale));

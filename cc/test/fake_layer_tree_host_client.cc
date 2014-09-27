@@ -27,15 +27,17 @@ void FakeLayerTreeHostClient::RequestNewOutputSurface(bool fallback) {
   if (use_software_rendering_) {
     if (use_delegating_renderer_) {
       surface = FakeOutputSurface::CreateDelegatingSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice));
+                    make_scoped_ptr(new SoftwareOutputDevice))
+                    .PassAs<OutputSurface>();
     } else {
       surface = FakeOutputSurface::CreateSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice));
+                    make_scoped_ptr(new SoftwareOutputDevice))
+                    .PassAs<OutputSurface>();
     }
   } else if (use_delegating_renderer_) {
-    surface = FakeOutputSurface::CreateDelegating3d();
+    surface = FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
   } else {
-    surface = FakeOutputSurface::Create3d();
+    surface = FakeOutputSurface::Create3d().PassAs<OutputSurface>();
   }
   host_->SetOutputSurface(surface.Pass());
 }

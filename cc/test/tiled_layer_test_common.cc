@@ -58,7 +58,7 @@ void FakeLayerUpdater::SetRectToInvalidate(const gfx::Rect& rect,
 
 scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::CreateResource(
     PrioritizedResourceManager* manager) {
-  return make_scoped_ptr(
+  return scoped_ptr<LayerUpdater::Resource>(
       new Resource(this, PrioritizedResource::Create(manager)));
 }
 

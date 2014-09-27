@@ -89,7 +89,7 @@ const char* PictureLayerImpl::LayerTypeAsString() const {
 
 scoped_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id());
+  return PictureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {

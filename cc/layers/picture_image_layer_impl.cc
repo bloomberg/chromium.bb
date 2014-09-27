@@ -24,7 +24,7 @@ const char* PictureImageLayerImpl::LayerTypeAsString() const {
 
 scoped_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureImageLayerImpl::Create(tree_impl, id());
+  return PictureImageLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void PictureImageLayerImpl::GetDebugBorderProperties(

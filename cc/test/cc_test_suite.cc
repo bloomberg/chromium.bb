@@ -29,7 +29,7 @@ void CCTestSuite::Initialize() {
 }
 
 void CCTestSuite::Shutdown() {
-  message_loop_ = nullptr;
+  message_loop_.reset();
 
   base::TestSuite::Shutdown();
 }

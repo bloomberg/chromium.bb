@@ -693,7 +693,7 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Size& s) {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
   res->SetDouble("width", s.width());
   res->SetDouble("height", s.height());
-  return res.Pass();
+  return res.PassAs<base::Value>();
 }
 
 scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Rect& r) {
@@ -702,7 +702,7 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Rect& r) {
   res->AppendInteger(r.y());
   res->AppendInteger(r.width());
   res->AppendInteger(r.height());
-  return res.Pass();
+  return res.PassAs<base::Value>();
 }
 
 bool MathUtil::FromValue(const base::Value* raw_value, gfx::Rect* out_rect) {
@@ -730,7 +730,7 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::PointF& pt) {
   scoped_ptr<base::ListValue> res(new base::ListValue());
   res->AppendDouble(pt.x());
   res->AppendDouble(pt.y());
-  return res.Pass();
+  return res.PassAs<base::Value>();
 }
 
 void MathUtil::AddToTracedValue(const gfx::Size& s,

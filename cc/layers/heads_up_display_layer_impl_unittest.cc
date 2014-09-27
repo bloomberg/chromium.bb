@@ -36,7 +36,8 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   TestSharedBitmapManager shared_bitmap_manager;
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
   host_impl.CreatePendingTree();
-  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  host_impl.InitializeRenderer(
+      FakeOutputSurface::Create3d().PassAs<OutputSurface>());
   scoped_ptr<HeadsUpDisplayLayerImpl> layer =
     HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer->SetContentBounds(gfx::Size(100, 100));

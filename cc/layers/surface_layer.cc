@@ -24,7 +24,7 @@ void SurfaceLayer::SetSurfaceId(SurfaceId surface_id) {
 }
 
 scoped_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return SurfaceLayerImpl::Create(tree_impl, id());
+  return SurfaceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 bool SurfaceLayer::HasDrawableContent() const {

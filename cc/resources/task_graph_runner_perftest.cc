@@ -49,7 +49,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     task_graph_runner_ = make_scoped_ptr(new TaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE { task_graph_runner_ = nullptr; }
+  virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
 
   void AfterTest(const std::string& test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult

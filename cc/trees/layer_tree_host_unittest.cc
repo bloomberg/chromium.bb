@@ -1664,7 +1664,8 @@ bool EvictionTestLayer::Update(ResourceUpdateQueue* queue,
 
 scoped_ptr<LayerImpl> EvictionTestLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return EvictionTestLayerImpl::Create(tree_impl, layer_id_);
+  return EvictionTestLayerImpl::Create(tree_impl, layer_id_)
+      .PassAs<LayerImpl>();
 }
 
 void EvictionTestLayer::PushPropertiesTo(LayerImpl* layer_impl) {
@@ -1902,7 +1903,7 @@ class LayerTreeHostWithProxy : public LayerTreeHost {
       : LayerTreeHost(client, NULL, settings) {
     proxy->SetLayerTreeHost(this);
     client->SetLayerTreeHost(this);
-    InitializeForTesting(proxy.Pass());
+    InitializeForTesting(proxy.PassAs<Proxy>());
   }
 };
 
@@ -2475,10 +2476,13 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = mock_context_owned.get();
 
-    if (delegating_renderer())
-      return FakeOutputSurface::CreateDelegating3d(mock_context_owned.Pass());
-    else
-      return FakeOutputSurface::Create3d(mock_context_owned.Pass());
+    if (delegating_renderer()) {
+      return FakeOutputSurface::CreateDelegating3d(
+          mock_context_owned.PassAs<TestWebGraphicsContext3D>());
+    } else {
+      return FakeOutputSurface::Create3d(
+          mock_context_owned.PassAs<TestWebGraphicsContext3D>());
+    }
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -2864,7 +2868,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   // Must clear all resources before exiting.
   void ClearResources() {
     for (int i = 0; i < num_ui_resources_; i++)
-      ui_resources_[i] = nullptr;
+      ui_resources_[i].reset();
   }
 
   void CreateResource() {
@@ -2897,7 +2901,8 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE {
-    return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
+    return PushPropertiesCountingLayerImpl::Create(tree_impl, id()).
+        PassAs<LayerImpl>();
   }
 
   size_t push_properties_count() const { return push_properties_count_; }
@@ -2928,7 +2933,8 @@ class PushPropertiesCountingLayer : public Layer {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE {
-    return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
+    return PushPropertiesCountingLayerImpl::Create(tree_impl, id()).
+        PassAs<LayerImpl>();
   }
 
   void SetDrawsContent(bool draws_content) { SetIsDrawable(draws_content); }
@@ -4728,7 +4734,7 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        ui_resource_ = nullptr;
+        ui_resource_.reset();
         EndTest();
         break;
     }

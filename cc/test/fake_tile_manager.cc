@@ -51,7 +51,7 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
   // Overridden from RasterizerTaskClient:
   virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource) OVERRIDE {
-    return nullptr;
+    return scoped_ptr<RasterBuffer>();
   }
   virtual void ReleaseBufferForRaster(
       scoped_ptr<RasterBuffer> buffer) OVERRIDE {}

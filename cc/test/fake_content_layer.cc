@@ -32,7 +32,7 @@ FakeContentLayer::~FakeContentLayer() {}
 
 scoped_ptr<LayerImpl> FakeContentLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakeContentLayerImpl::Create(tree_impl, layer_id_);
+  return FakeContentLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
 bool FakeContentLayer::Update(ResourceUpdateQueue* queue,

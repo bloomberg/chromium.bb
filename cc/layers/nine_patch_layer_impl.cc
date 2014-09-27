@@ -22,7 +22,7 @@ NinePatchLayerImpl::~NinePatchLayerImpl() {}
 
 scoped_ptr<LayerImpl> NinePatchLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return NinePatchLayerImpl::Create(tree_impl, id());
+  return NinePatchLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {

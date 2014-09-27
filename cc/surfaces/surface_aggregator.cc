@@ -355,7 +355,7 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   contained_surfaces_[surface_id] = surface->frame_index();
   const CompositorFrame* root_surface_frame = surface->GetEligibleFrame();
   if (!root_surface_frame)
-    return nullptr;
+    return scoped_ptr<CompositorFrame>();
   TRACE_EVENT0("cc", "SurfaceAggregator::Aggregate");
 
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);

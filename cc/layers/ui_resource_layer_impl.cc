@@ -29,7 +29,7 @@ UIResourceLayerImpl::~UIResourceLayerImpl() {}
 
 scoped_ptr<LayerImpl> UIResourceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return UIResourceLayerImpl::Create(tree_impl, id());
+  return UIResourceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void UIResourceLayerImpl::PushPropertiesTo(LayerImpl* layer) {

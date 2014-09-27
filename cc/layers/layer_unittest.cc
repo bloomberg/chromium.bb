@@ -78,7 +78,7 @@ class LayerTest : public testing::Test {
     grand_child3_ = NULL;
 
     layer_tree_host_->SetRootLayer(NULL);
-    layer_tree_host_ = nullptr;
+    layer_tree_host_.reset();
   }
 
   void VerifyTestTreeInitialState() const {
@@ -1144,7 +1144,10 @@ static bool AddTestAnimation(Layer* layer) {
                                            0.7f,
                                            scoped_ptr<TimingFunction>()));
   scoped_ptr<Animation> animation =
-      Animation::Create(curve.Pass(), 0, 0, Animation::Opacity);
+      Animation::Create(curve.PassAs<AnimationCurve>(),
+                        0,
+                        0,
+                        Animation::Opacity);
 
   return layer->AddAnimation(animation.Pass());
 }

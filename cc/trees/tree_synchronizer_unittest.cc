@@ -56,7 +56,7 @@ class MockLayer : public Layer {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE {
-    return MockLayerImpl::Create(tree_impl, layer_id_);
+    return MockLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
   }
 
   virtual void PushPropertiesTo(LayerImpl* layer_impl) OVERRIDE {

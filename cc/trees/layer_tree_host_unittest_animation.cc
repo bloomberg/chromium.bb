@@ -1044,8 +1044,8 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
             ScrollOffsetAnimationCurve::Create(
                 gfx::Vector2dF(500.f, 550.f),
                 EaseInOutTimingFunction::Create()));
-        scoped_ptr<Animation> animation(
-            Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+        scoped_ptr<Animation> animation(Animation::Create(
+            curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
         animation->set_needs_synchronized_start_time(true);
         bool animation_added = scroll_layer_->AddAnimation(animation.Pass());
         bool impl_scrolling_supported =

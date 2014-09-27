@@ -112,7 +112,8 @@ LayerTestCommon::LayerImplTest::LayerImplTest()
       root_layer_impl_(LayerImpl::Create(host_->host_impl()->active_tree(), 1)),
       render_pass_(RenderPass::Create()) {
   scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
-  host_->host_impl()->InitializeRenderer(FakeOutputSurface::Create3d());
+  host_->host_impl()->InitializeRenderer(
+      output_surface.PassAs<OutputSurface>());
 }
 
 LayerTestCommon::LayerImplTest::~LayerImplTest() {}

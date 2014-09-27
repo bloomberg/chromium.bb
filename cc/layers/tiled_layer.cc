@@ -98,7 +98,7 @@ TiledLayer::TiledLayer()
 TiledLayer::~TiledLayer() {}
 
 scoped_ptr<LayerImpl> TiledLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return TiledLayerImpl::Create(tree_impl, id());
+  return TiledLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void TiledLayer::UpdateTileSizeAndTilingOption() {
@@ -277,7 +277,7 @@ UpdatableTile* TiledLayer::CreateTile(int i, int j) {
   tile->managed_resource()->SetDimensions(tiler_->tile_size(), texture_format_);
 
   UpdatableTile* added_tile = tile.get();
-  tiler_->AddTile(tile.Pass(), i, j);
+  tiler_->AddTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
 
   added_tile->dirty_rect = tiler_->TileRect(added_tile);
 

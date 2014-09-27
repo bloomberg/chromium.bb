@@ -46,7 +46,7 @@ class LayerPerfTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     layer_tree_host_->SetRootLayer(NULL);
-    layer_tree_host_ = nullptr;
+    layer_tree_host_.reset();
   }
 
   FakeImplProxy proxy_;

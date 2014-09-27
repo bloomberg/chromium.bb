@@ -29,7 +29,7 @@ PictureLayer::~PictureLayer() {
 }
 
 scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id());
+  return PictureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {

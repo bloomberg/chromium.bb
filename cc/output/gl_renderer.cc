@@ -145,7 +145,7 @@ class GLRenderer::ScopedUseGrContext {
   static scoped_ptr<ScopedUseGrContext> Create(GLRenderer* renderer,
                                                DrawingFrame* frame) {
     if (!renderer->output_surface_->context_provider()->GrContext())
-      return nullptr;
+      return scoped_ptr<ScopedUseGrContext>();
     return make_scoped_ptr(new ScopedUseGrContext(renderer, frame));
   }
 
@@ -968,7 +968,7 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
   UseRenderPass(frame, target_render_pass);
 
   if (!using_background_texture)
-    return nullptr;
+    return scoped_ptr<ScopedResource>();
   return background_texture.Pass();
 }
 
@@ -2165,7 +2165,7 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
     pending_sync_queries_.push_back(current_sync_query_.Pass());
   }
 
-  current_framebuffer_lock_ = nullptr;
+  current_framebuffer_lock_.reset();
   swap_buffer_rect_.Union(gfx::ToEnclosingRect(frame->root_damage_rect));
 
   GLC(gl_, gl_->Disable(GL_BLEND));
@@ -2643,7 +2643,7 @@ bool GLRenderer::UseScopedTexture(DrawingFrame* frame,
 }
 
 void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
-  current_framebuffer_lock_ = nullptr;
+  current_framebuffer_lock_.reset();
   output_surface_->BindFramebuffer();
 
   if (output_surface_->HasExternalStencilTest()) {
@@ -2659,7 +2659,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
                                           const gfx::Rect& target_rect) {
   DCHECK(texture->id());
 
-  current_framebuffer_lock_ = nullptr;
+  current_framebuffer_lock_.reset();
 
   SetStencilEnabled(false);
   GLC(gl_, gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_));
@@ -3080,7 +3080,7 @@ GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
 }
 
 void GLRenderer::CleanupSharedObjects() {
-  shared_geometry_ = nullptr;
+  shared_geometry_.reset();
 
   for (int i = 0; i < NumTexCoordPrecisions; ++i) {
     for (int j = 0; j < NumSamplerTypes; ++j) {

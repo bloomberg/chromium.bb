@@ -38,7 +38,8 @@ scoped_ptr<Renderer> CreateRenderer<DelegatingRenderer>(
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
   return DelegatingRenderer::Create(
-      client, settings, output_surface, resource_provider);
+             client, settings, output_surface, resource_provider)
+      .PassAs<Renderer>();
 }
 
 template <>
@@ -48,7 +49,8 @@ scoped_ptr<Renderer> CreateRenderer<GLRenderer>(
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
   return GLRenderer::Create(
-      client, settings, output_surface, resource_provider, NULL, 0);
+             client, settings, output_surface, resource_provider, NULL, 0)
+      .PassAs<Renderer>();
 }
 
 template <typename T>

@@ -22,7 +22,8 @@ FakeDelegatedRendererLayerImpl::~FakeDelegatedRendererLayerImpl() {}
 
 scoped_ptr<LayerImpl> FakeDelegatedRendererLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakeDelegatedRendererLayerImpl::Create(tree_impl, id());
+  return FakeDelegatedRendererLayerImpl::Create(
+      tree_impl, id()).PassAs<LayerImpl>();
 }
 
 static ResourceProvider::ResourceId AddResourceToFrame(

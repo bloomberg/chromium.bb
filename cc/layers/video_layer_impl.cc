@@ -59,7 +59,8 @@ VideoLayerImpl::~VideoLayerImpl() {
 
 scoped_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(new VideoLayerImpl(tree_impl, id(), video_rotation_));
+  VideoLayerImpl* impl = new VideoLayerImpl(tree_impl, id(), video_rotation_);
+  return scoped_ptr<LayerImpl>(impl);
 }
 
 void VideoLayerImpl::PushPropertiesTo(LayerImpl* layer) {
@@ -89,7 +90,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
 
   if (!frame_.get()) {
     // Drop any resources used by the updater if there is no frame to display.
-    updater_ = nullptr;
+    updater_.reset();
 
     provider_client_impl_->ReleaseLock();
     return false;
@@ -357,7 +358,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
 }
 
 void VideoLayerImpl::ReleaseResources() {
-  updater_ = nullptr;
+  updater_.reset();
 }
 
 void VideoLayerImpl::SetNeedsRedraw() {
