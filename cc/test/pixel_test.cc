@@ -131,7 +131,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
                                  output_surface_.get(),
                                  resource_provider_.get(),
                                  texture_mailbox_deleter_.get(),
-                                 0).PassAs<DirectRenderer>();
+                                 0);
 }
 
 void PixelTest::ForceExpandedViewport(const gfx::Size& surface_expansion) {
@@ -169,10 +169,8 @@ void PixelTest::SetUpSoftwareRenderer() {
                                                 false,
                                                 1,
                                                 false);
-  renderer_ =
-      SoftwareRenderer::Create(
-          this, &settings_, output_surface_.get(), resource_provider_.get())
-          .PassAs<DirectRenderer>();
+  renderer_ = SoftwareRenderer::Create(
+      this, &settings_, output_surface_.get(), resource_provider_.get());
 }
 
 }  // namespace cc

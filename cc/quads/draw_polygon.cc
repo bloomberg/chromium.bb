@@ -76,7 +76,7 @@ DrawPolygon::~DrawPolygon() {
 }
 
 scoped_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
-  DrawPolygon* new_polygon = new DrawPolygon();
+  scoped_ptr<DrawPolygon> new_polygon(new DrawPolygon());
   new_polygon->order_index_ = order_index_;
   new_polygon->original_ref_ = original_ref_;
   new_polygon->points_.reserve(points_.size());
@@ -84,7 +84,7 @@ scoped_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
   new_polygon->normal_.set_x(normal_.x());
   new_polygon->normal_.set_y(normal_.y());
   new_polygon->normal_.set_z(normal_.z());
-  return scoped_ptr<DrawPolygon>(new_polygon);
+  return new_polygon.Pass();
 }
 
 float DrawPolygon::SignedPointDistance(const gfx::Point3F& point) const {

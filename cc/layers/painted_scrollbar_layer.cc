@@ -23,7 +23,7 @@ namespace cc {
 scoped_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PaintedScrollbarLayerImpl::Create(
-      tree_impl, id(), scrollbar_->Orientation()).PassAs<LayerImpl>();
+      tree_impl, id(), scrollbar_->Orientation());
 }
 
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
@@ -156,8 +156,8 @@ void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   // When the LTH is set to null or has changed, then this layer should remove
   // all of its associated resources.
   if (!host || host != layer_tree_host()) {
-    track_resource_.reset();
-    thumb_resource_.reset();
+    track_resource_ = nullptr;
+    thumb_resource_ = nullptr;
   }
 
   ContentsScalingLayer::SetLayerTreeHost(host);
@@ -214,9 +214,8 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
 
   if (track_rect_.IsEmpty() || scaled_track_rect.IsEmpty()) {
     if (track_resource_) {
-      track_resource_.reset();
-      if (thumb_resource_)
-        thumb_resource_.reset();
+      track_resource_ = nullptr;
+      thumb_resource_ = nullptr;
       SetNeedsPushProperties();
       updated = true;
     }
@@ -224,7 +223,7 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
   }
 
   if (!has_thumb_ && thumb_resource_) {
-    thumb_resource_.reset();
+    thumb_resource_ = nullptr;
     SetNeedsPushProperties();
   }
 

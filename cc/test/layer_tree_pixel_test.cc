@@ -47,8 +47,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
       software_output_device->set_surface_expansion_size(
           surface_expansion_size);
       output_surface = make_scoped_ptr(
-          new PixelTestOutputSurface(
-              software_output_device.PassAs<SoftwareOutputDevice>()));
+          new PixelTestOutputSurface(software_output_device.Pass()));
       break;
     }
 
@@ -61,7 +60,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
   }
 
   output_surface->set_surface_expansion_size(surface_expansion_size);
-  return output_surface.PassAs<OutputSurface>();
+  return output_surface.Pass();
 }
 
 void LayerTreePixelTest::CommitCompleteOnThread(LayerTreeHostImpl* impl) {
@@ -229,7 +228,7 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
     const TextureMailbox& texture_mailbox) {
   DCHECK(texture_mailbox.IsTexture());
   if (!texture_mailbox.IsTexture())
-    return scoped_ptr<SkBitmap>();
+    return nullptr;
 
   scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();

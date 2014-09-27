@@ -7852,9 +7852,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AnimationScaleFactorTrackingLayerImpl* child_raw = child.get();
   AnimationScaleFactorTrackingLayerImpl* grand_child_raw = grand_child.get();
 
-  child->AddChild(grand_child.PassAs<LayerImpl>());
-  parent->AddChild(child.PassAs<LayerImpl>());
-  grand_parent->AddChild(parent.PassAs<LayerImpl>());
+  child->AddChild(grand_child.Pass());
+  parent->AddChild(child.Pass());
+  grand_parent->AddChild(parent.Pass());
 
   SetLayerPropertiesForTesting(grand_parent.get(),
                                identity_matrix,

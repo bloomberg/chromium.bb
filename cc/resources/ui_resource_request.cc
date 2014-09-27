@@ -26,7 +26,7 @@ UIResourceRequest& UIResourceRequest::operator=(
   if (request.bitmap_) {
     bitmap_ = make_scoped_ptr(new UIResourceBitmap(*request.bitmap_.get()));
   } else {
-    bitmap_.reset();
+    bitmap_ = nullptr;
   }
 
   return *this;

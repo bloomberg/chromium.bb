@@ -80,12 +80,12 @@ void RasterizeAndRecordBenchmark::RecordRasterResults(
 
   results_->MergeDictionary(results);
 
-  NotifyDone(results_.PassAs<base::Value>());
+  NotifyDone(results_.Pass());
 }
 
 scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::MessageLoopProxy> origin_loop) {
-  return scoped_ptr<MicroBenchmarkImpl>(new RasterizeAndRecordBenchmarkImpl(
+  return make_scoped_ptr(new RasterizeAndRecordBenchmarkImpl(
       origin_loop,
       settings_.get(),
       base::Bind(&RasterizeAndRecordBenchmark::RecordRasterResults,

@@ -38,8 +38,7 @@ static scoped_ptr<TimingFunction> EaseOutWithInitialVelocity(double velocity) {
   const double v2 = velocity * velocity;
   const double x1 = std::sqrt(r2 / (v2 + 1));
   const double y1 = std::sqrt(r2 * v2 / (v2 + 1));
-  return CubicBezierTimingFunction::Create(x1, y1, 0.58, 1)
-      .PassAs<TimingFunction>();
+  return CubicBezierTimingFunction::Create(x1, y1, 0.58, 1);
 }
 
 }  // namespace
@@ -98,7 +97,7 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
   curve_clone->initial_value_ = initial_value_;
   curve_clone->total_animation_duration_ = total_animation_duration_;
   curve_clone->last_retarget_ = last_retarget_;
-  return curve_clone.PassAs<AnimationCurve>();
+  return curve_clone.Pass();
 }
 
 void ScrollOffsetAnimationCurve::UpdateTarget(

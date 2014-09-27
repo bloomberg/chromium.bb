@@ -26,8 +26,7 @@ scoped_ptr<Proxy> SingleThreadProxy::Create(
     LayerTreeHostSingleThreadClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   return make_scoped_ptr(
-             new SingleThreadProxy(layer_tree_host, client, main_task_runner))
-      .PassAs<Proxy>();
+      new SingleThreadProxy(layer_tree_host, client, main_task_runner));
 }
 
 SingleThreadProxy::SingleThreadProxy(
@@ -314,8 +313,8 @@ void SingleThreadProxy::Stop() {
         blocking_main_thread_task_runner());
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resource_provider());
-    scheduler_on_impl_thread_.reset();
-    layer_tree_host_impl_.reset();
+    scheduler_on_impl_thread_ = nullptr;
+    layer_tree_host_impl_ = nullptr;
   }
   layer_tree_host_ = NULL;
 }

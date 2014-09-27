@@ -174,6 +174,7 @@ class RasterWorkerPoolTest
     DCHECK(raster_worker_pool_);
     raster_worker_pool_->AsRasterizer()->SetClient(this);
   }
+
   virtual void TearDown() OVERRIDE {
     raster_worker_pool_->AsRasterizer()->Shutdown();
     raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();

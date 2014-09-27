@@ -49,7 +49,7 @@ void TextureLayerImpl::SetTextureMailbox(
 
 scoped_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return TextureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return TextureLayerImpl::Create(tree_impl, id());
 }
 
 void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
@@ -83,7 +83,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
           resource_provider->CreateResourceFromTextureMailbox(
               texture_mailbox_, release_callback_.Pass());
       DCHECK(external_texture_resource_);
-      texture_copy_.reset();
+      texture_copy_ = nullptr;
       valid_texture_copy_ = false;
     }
     if (external_texture_resource_)
@@ -194,7 +194,7 @@ SimpleEnclosedRegion TextureLayerImpl::VisibleContentOpaqueRegion() const {
 
 void TextureLayerImpl::ReleaseResources() {
   FreeTextureMailbox();
-  texture_copy_.reset();
+  texture_copy_ = nullptr;
   external_texture_resource_ = 0;
   valid_texture_copy_ = false;
 }
@@ -248,7 +248,7 @@ void TextureLayerImpl::FreeTextureMailbox() {
                              layer_tree_impl()->BlockingMainThreadTaskRunner());
     }
     texture_mailbox_ = TextureMailbox();
-    release_callback_.reset();
+    release_callback_ = nullptr;
   } else if (external_texture_resource_) {
     DCHECK(!own_mailbox_);
     ResourceProvider* resource_provider =

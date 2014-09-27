@@ -55,7 +55,7 @@ class LayerTestCommon {
     T* AddChildToRoot() {
       scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(), 2);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      root_layer_impl_->AddChild(layer.Pass());
       return ptr;
     }
 
@@ -63,7 +63,7 @@ class LayerTestCommon {
     T* AddChildToRoot(const A& a) {
       scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(), 2, a);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      root_layer_impl_->AddChild(layer.Pass());
       return ptr;
     }
 
@@ -72,7 +72,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), 2, a, b);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      root_layer_impl_->AddChild(layer.Pass());
       return ptr;
     }
 
@@ -81,7 +81,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), 2, a, b, c, d);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      root_layer_impl_->AddChild(layer.Pass());
       return ptr;
     }
 
@@ -99,7 +99,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), 2, a, b, c, d, e);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      root_layer_impl_->AddChild(layer.Pass());
       return ptr;
     }
 

@@ -556,8 +556,8 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   ClearCountingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -608,8 +608,8 @@ TEST_F(GLRendererTest, TransparentBackground) {
   ClearCountingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -653,8 +653,8 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   ClearCountingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::CreateOffscreen(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateOffscreen(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -732,8 +732,8 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
       new VisibilityChangeIsLastCallTrackingContext);
   VisibilityChangeIsLastCallTrackingContext* context = context_owned.get();
 
-  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create(
-      context_owned.PassAs<TestWebGraphicsContext3D>());
+  scoped_refptr<TestContextProvider> provider =
+      TestContextProvider::Create(context_owned.Pass());
 
   provider->support()->SetSurfaceVisibleCallback(base::Bind(
       &VisibilityChangeIsLastCallTrackingContext::set_last_call_was_visibility,
@@ -811,8 +811,8 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   TextureStateTrackingContext* context = context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -902,8 +902,8 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   NoClearRootRenderPassMockContext* mock_context = mock_context_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      mock_context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(mock_context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -1000,8 +1000,8 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
       new ScissorTestOnClearCheckingContext);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -1098,8 +1098,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<NonReshapableOutputSurface> output_surface(
-      new NonReshapableOutputSurface(
-          context_owned.PassAs<TestWebGraphicsContext3D>()));
+      new NonReshapableOutputSurface(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
   output_surface->set_fixed_size(gfx::Size(100, 100));
 
@@ -1290,8 +1289,8 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
       new FlippedScissorAndViewportContext);
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(new NonReshapableOutputSurface(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  scoped_ptr<OutputSurface> output_surface(
+      new NonReshapableOutputSurface(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(

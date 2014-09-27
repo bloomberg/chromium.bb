@@ -85,7 +85,7 @@ DrawableTile* TiledLayerImpl::TileAt(int i, int j) const {
 DrawableTile* TiledLayerImpl::CreateTile(int i, int j) {
   scoped_ptr<DrawableTile> tile(DrawableTile::Create());
   DrawableTile* added_tile = tile.get();
-  tiler_->AddTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
+  tiler_->AddTile(tile.Pass(), i, j);
 
   return added_tile;
 }
@@ -98,7 +98,7 @@ void TiledLayerImpl::GetDebugBorderProperties(SkColor* color,
 
 scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return TiledLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return TiledLayerImpl::Create(tree_impl, id());
 }
 
 void TiledLayerImpl::AsValueInto(base::debug::TracedValue* state) const {

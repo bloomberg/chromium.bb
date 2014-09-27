@@ -113,8 +113,8 @@ class LayerTreeHostNoMessageLoopTest
 
   void TearDownLayerTreeHost() {
     // Explicit teardown to make failures easier to debug.
-    layer_tree_host_.reset();
-    root_layer_ = NULL;
+    layer_tree_host_ = nullptr;
+    root_layer_ = nullptr;
   }
 
   // All protected member variables are accessed only on |no_loop_thread_|.

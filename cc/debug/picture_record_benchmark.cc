@@ -80,7 +80,7 @@ void PictureRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
     results->Append(result.release());
   }
 
-  NotifyDone(results.PassAs<base::Value>());
+  NotifyDone(results.Pass());
 }
 
 void PictureRecordBenchmark::Run(Layer* layer) {

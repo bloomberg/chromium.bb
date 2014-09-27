@@ -50,7 +50,7 @@ BitmapContentLayerUpdater::~BitmapContentLayerUpdater() {}
 
 scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::CreateResource(
     PrioritizedResourceManager* manager) {
-  return scoped_ptr<LayerUpdater::Resource>(
+  return make_scoped_ptr(
       new Resource(this, PrioritizedResource::Create(manager)));
 }
 

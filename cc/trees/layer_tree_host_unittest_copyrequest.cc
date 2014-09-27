@@ -592,7 +592,7 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
         // Now destroy the CopyOutputResult, releasing the texture inside back
         // to the compositor.
         EXPECT_TRUE(result_);
-        result_.reset();
+        result_ = nullptr;
 
         // Check that it is released.
         ImplThreadTaskRunner()->PostTask(

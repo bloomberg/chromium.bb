@@ -14,19 +14,19 @@ namespace {
 
 template <class Keyframe>
 void InsertKeyframe(scoped_ptr<Keyframe> keyframe,
-                    ScopedPtrVector<Keyframe>& keyframes) {
+                    ScopedPtrVector<Keyframe>* keyframes) {
   // Usually, the keyframes will be added in order, so this loop would be
   // unnecessary and we should skip it if possible.
-  if (!keyframes.empty() && keyframe->Time() < keyframes.back()->Time()) {
-    for (size_t i = 0; i < keyframes.size(); ++i) {
-      if (keyframe->Time() < keyframes[i]->Time()) {
-        keyframes.insert(keyframes.begin() + i, keyframe.Pass());
+  if (!keyframes->empty() && keyframe->Time() < keyframes->back()->Time()) {
+    for (size_t i = 0; i < keyframes->size(); ++i) {
+      if (keyframe->Time() < keyframes->at(i)->Time()) {
+        keyframes->insert(keyframes->begin() + i, keyframe.Pass());
         return;
       }
     }
   }
 
-  keyframes.push_back(keyframe.Pass());
+  keyframes->push_back(keyframe.Pass());
 }
 
 template <class Keyframes>
@@ -169,7 +169,7 @@ KeyframedColorAnimationCurve::~KeyframedColorAnimationCurve() {}
 
 void KeyframedColorAnimationCurve::AddKeyframe(
     scoped_ptr<ColorKeyframe> keyframe) {
-  InsertKeyframe(keyframe.Pass(), keyframes_);
+  InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
 double KeyframedColorAnimationCurve::Duration() const {
@@ -177,11 +177,11 @@ double KeyframedColorAnimationCurve::Duration() const {
 }
 
 scoped_ptr<AnimationCurve> KeyframedColorAnimationCurve::Clone() const {
-  scoped_ptr<KeyframedColorAnimationCurve> to_return(
-      KeyframedColorAnimationCurve::Create());
+  scoped_ptr<KeyframedColorAnimationCurve> to_return =
+      KeyframedColorAnimationCurve::Create();
   for (size_t i = 0; i < keyframes_.size(); ++i)
     to_return->AddKeyframe(keyframes_[i]->Clone());
-  return to_return.PassAs<AnimationCurve>();
+  return to_return.Pass();
 }
 
 SkColor KeyframedColorAnimationCurve::GetValue(double t) const {
@@ -216,7 +216,7 @@ KeyframedFloatAnimationCurve::~KeyframedFloatAnimationCurve() {}
 
 void KeyframedFloatAnimationCurve::AddKeyframe(
     scoped_ptr<FloatKeyframe> keyframe) {
-  InsertKeyframe(keyframe.Pass(), keyframes_);
+  InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
 double KeyframedFloatAnimationCurve::Duration() const {
@@ -224,11 +224,11 @@ double KeyframedFloatAnimationCurve::Duration() const {
 }
 
 scoped_ptr<AnimationCurve> KeyframedFloatAnimationCurve::Clone() const {
-  scoped_ptr<KeyframedFloatAnimationCurve> to_return(
-      KeyframedFloatAnimationCurve::Create());
+  scoped_ptr<KeyframedFloatAnimationCurve> to_return =
+      KeyframedFloatAnimationCurve::Create();
   for (size_t i = 0; i < keyframes_.size(); ++i)
     to_return->AddKeyframe(keyframes_[i]->Clone());
-  return to_return.PassAs<AnimationCurve>();
+  return to_return.Pass();
 }
 
 float KeyframedFloatAnimationCurve::GetValue(double t) const {
@@ -261,7 +261,7 @@ KeyframedTransformAnimationCurve::~KeyframedTransformAnimationCurve() {}
 
 void KeyframedTransformAnimationCurve::AddKeyframe(
     scoped_ptr<TransformKeyframe> keyframe) {
-  InsertKeyframe(keyframe.Pass(), keyframes_);
+  InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
 double KeyframedTransformAnimationCurve::Duration() const {
@@ -269,11 +269,11 @@ double KeyframedTransformAnimationCurve::Duration() const {
 }
 
 scoped_ptr<AnimationCurve> KeyframedTransformAnimationCurve::Clone() const {
-  scoped_ptr<KeyframedTransformAnimationCurve> to_return(
-      KeyframedTransformAnimationCurve::Create());
+  scoped_ptr<KeyframedTransformAnimationCurve> to_return =
+      KeyframedTransformAnimationCurve::Create();
   for (size_t i = 0; i < keyframes_.size(); ++i)
     to_return->AddKeyframe(keyframes_[i]->Clone());
-  return to_return.PassAs<AnimationCurve>();
+  return to_return.Pass();
 }
 
 // Assumes that (*keyframes).front()->Time() < t < (*keyframes).back()-Time().
@@ -376,7 +376,7 @@ KeyframedFilterAnimationCurve::~KeyframedFilterAnimationCurve() {}
 
 void KeyframedFilterAnimationCurve::AddKeyframe(
     scoped_ptr<FilterKeyframe> keyframe) {
-  InsertKeyframe(keyframe.Pass(), keyframes_);
+  InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
 double KeyframedFilterAnimationCurve::Duration() const {
@@ -384,11 +384,11 @@ double KeyframedFilterAnimationCurve::Duration() const {
 }
 
 scoped_ptr<AnimationCurve> KeyframedFilterAnimationCurve::Clone() const {
-  scoped_ptr<KeyframedFilterAnimationCurve> to_return(
-      KeyframedFilterAnimationCurve::Create());
+  scoped_ptr<KeyframedFilterAnimationCurve> to_return =
+      KeyframedFilterAnimationCurve::Create();
   for (size_t i = 0; i < keyframes_.size(); ++i)
     to_return->AddKeyframe(keyframes_[i]->Clone());
-  return to_return.PassAs<AnimationCurve>();
+  return to_return.Pass();
 }
 
 FilterOperations KeyframedFilterAnimationCurve::GetValue(double t) const {

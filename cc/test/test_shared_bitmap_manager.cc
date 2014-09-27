@@ -25,7 +25,7 @@ scoped_ptr<SharedBitmap> TestSharedBitmapManager::AllocateSharedBitmap(
   memory->CreateAndMapAnonymous(size.GetArea() * 4);
   SharedBitmapId id = SharedBitmap::GenerateId();
   bitmap_map_[id] = memory.get();
-  return scoped_ptr<SharedBitmap>(
+  return make_scoped_ptr(
       new SharedBitmap(memory.release(), id, base::Bind(&FreeSharedBitmap)));
 }
 
@@ -34,8 +34,8 @@ scoped_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
     const SharedBitmapId& id) {
   base::AutoLock lock(lock_);
   if (bitmap_map_.find(id) == bitmap_map_.end())
-    return scoped_ptr<SharedBitmap>();
-  return scoped_ptr<SharedBitmap>(
+    return nullptr;
+  return make_scoped_ptr(
       new SharedBitmap(bitmap_map_[id], id, base::Bind(&IgnoreSharedBitmap)));
 }
 
@@ -44,7 +44,7 @@ scoped_ptr<SharedBitmap> TestSharedBitmapManager::GetBitmapForSharedMemory(
   base::AutoLock lock(lock_);
   SharedBitmapId id = SharedBitmap::GenerateId();
   bitmap_map_[id] = memory;
-  return scoped_ptr<SharedBitmap>(
+  return make_scoped_ptr(
       new SharedBitmap(memory, id, base::Bind(&IgnoreSharedBitmap)));
 }
 

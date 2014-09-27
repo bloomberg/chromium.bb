@@ -1102,9 +1102,9 @@ void ResourceProvider::CleanUpGLIfNeeded() {
   }
 #endif  // DCHECK_IS_ON
 
-  texture_uploader_.reset();
-  texture_id_allocator_.reset();
-  buffer_id_allocator_.reset();
+  texture_uploader_ = nullptr;
+  texture_id_allocator_ = nullptr;
+  buffer_id_allocator_ = nullptr;
   gl->Finish();
 }
 

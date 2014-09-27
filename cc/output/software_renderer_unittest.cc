@@ -128,7 +128,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
       shared_quad_state, outer_rect, outer_rect, SK_ColorYELLOW, false);
 
   RenderPassList list;
-  list.push_back(root_render_pass.PassAs<RenderPass>());
+  list.push_back(root_render_pass.Pass());
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
@@ -224,7 +224,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                      false);
 
   RenderPassList list;
-  list.push_back(root_render_pass.PassAs<RenderPass>());
+  list.push_back(root_render_pass.Pass());
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
@@ -298,7 +298,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   quad->visible_rect = visible_rect;
 
   RenderPassList list;
-  list.push_back(root_render_pass.PassAs<RenderPass>());
+  list.push_back(root_render_pass.Pass());
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(tile_size);

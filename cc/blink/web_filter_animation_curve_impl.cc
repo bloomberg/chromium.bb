@@ -46,8 +46,7 @@ void WebFilterAnimationCurveImpl::add(const WebFilterKeyframe& keyframe,
   curve_->AddKeyframe(cc::FilterKeyframe::Create(
       keyframe.time(),
       filter_operations,
-      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)
-          .PassAs<cc::TimingFunction>()));
+      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
 }
 
 scoped_ptr<cc::AnimationCurve>
