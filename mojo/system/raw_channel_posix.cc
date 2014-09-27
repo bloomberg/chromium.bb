@@ -479,7 +479,7 @@ void RawChannelPosix::WaitToWrite() {
 // static
 scoped_ptr<RawChannel> RawChannel::Create(
     embedder::ScopedPlatformHandle handle) {
-  return scoped_ptr<RawChannel>(new RawChannelPosix(handle.Pass()));
+  return make_scoped_ptr(new RawChannelPosix(handle.Pass()));
 }
 
 }  // namespace system
