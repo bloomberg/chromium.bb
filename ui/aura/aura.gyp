@@ -111,6 +111,7 @@
         '../wm/public/transient_window_client.h',
         '../wm/public/window_move_client.cc',
         '../wm/public/window_move_client.h',
+        '../wm/public/window_types.h',
       ],
       'conditions': [
         ['use_x11==1', {

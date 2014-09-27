@@ -93,7 +93,6 @@
         'core/wm_core_switches.h',
         'core/wm_state.cc',
         'core/wm_state.h',
-        'public/window_types.h',
         'wm_export.h',
       ],
     },

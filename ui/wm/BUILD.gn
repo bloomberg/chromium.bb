@@ -67,7 +67,6 @@ component("wm") {
     "core/wm_core_switches.h",
     "core/wm_state.cc",
     "core/wm_state.h",
-    "public/window_types.h",
     "wm_export.h",
   ]
 
@@ -87,9 +86,6 @@ component("wm") {
     "//ui/gfx/geometry",
     "//ui/resources",
   ]
-
-  # http://crbug.com/408650 Circular dependency between this target and Aura.
-  allow_circular_includes_from = [ "//ui/aura" ]
 }
 
 static_library("test_support") {
