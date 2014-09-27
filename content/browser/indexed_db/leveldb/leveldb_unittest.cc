@@ -51,7 +51,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   put_value = value;
   leveldb::Status status = leveldb->Put(key, &put_value);
   EXPECT_TRUE(status.ok());
-  leveldb.Pass();
+  leveldb.reset();
   EXPECT_FALSE(leveldb);
 
   LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
@@ -61,7 +61,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(found);
   EXPECT_EQ(value, got_value);
-  leveldb.Pass();
+  leveldb.reset();
   EXPECT_FALSE(leveldb);
 
   base::FilePath file_path = temp_directory.path().AppendASCII("CURRENT");
