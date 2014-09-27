@@ -39,7 +39,7 @@ class PrioritizedResourceTest : public testing::Test {
 
   virtual ~PrioritizedResourceTest() {
     DebugScopedSetImplThread impl_thread(&proxy_);
-    resource_provider_.reset();
+    resource_provider_ = nullptr;
   }
 
   size_t TexturesMemorySize(size_t texture_count) {
@@ -277,7 +277,7 @@ TEST_F(PrioritizedResourceTest, ReduceWastedMemory) {
   EXPECT_EQ(TexturesMemorySize(20), resource_manager->MemoryUseBytes());
 
   // Destroy one texture, not enough is wasted to cause cleanup.
-  textures[0] = scoped_ptr<PrioritizedResource>();
+  textures[0] = nullptr;
   PrioritizeTexturesAndBackings(resource_manager.get());
   {
     DebugScopedSetImplThreadAndMainThreadBlocked
@@ -290,7 +290,7 @@ TEST_F(PrioritizedResourceTest, ReduceWastedMemory) {
   // Destroy half the textures, leaving behind the backings. Now a cleanup
   // should happen.
   for (size_t i = 0; i < kMaxTextures / 2; ++i)
-    textures[i] = scoped_ptr<PrioritizedResource>();
+    textures[i] = nullptr;
   PrioritizeTexturesAndBackings(resource_manager.get());
   {
     DebugScopedSetImplThreadAndMainThreadBlocked
@@ -357,7 +357,7 @@ TEST_F(PrioritizedResourceTest, InUseNotWastedMemory) {
   // sent to a parent compositor though, so they should not be considered wasted
   // and a cleanup should not happen.
   for (size_t i = 0; i < kMaxTextures / 2; ++i)
-    textures[i] = scoped_ptr<PrioritizedResource>();
+    textures[i] = nullptr;
   PrioritizeTexturesAndBackings(resource_manager.get());
   {
     DebugScopedSetImplThreadAndMainThreadBlocked
@@ -565,7 +565,7 @@ TEST_F(PrioritizedResourceTest, EvictingTexturesInParent) {
 
   // Drop all the textures. Now we have backings that can be recycled.
   for (size_t i = 0; i < 8; ++i)
-    textures[0].reset();
+    textures[0] = nullptr;
   PrioritizeTexturesAndBackings(resource_manager.get());
 
   // The next commit finishes.
@@ -728,7 +728,7 @@ TEST_F(PrioritizedResourceTest, ResourceManagerDestroyedFirst) {
         impl_thread_and_main_thread_blocked(&proxy_);
     resource_manager->ClearAllMemory(resource_provider());
   }
-  resource_manager.reset();
+  resource_manager = nullptr;
 
   EXPECT_FALSE(texture->can_acquire_backing_texture());
   EXPECT_FALSE(texture->have_backing_texture());
@@ -758,7 +758,7 @@ TEST_F(PrioritizedResourceTest, TextureMovedToNewManager) {
         impl_thread_and_main_thread_blocked(&proxy_);
     resource_manager_one->ClearAllMemory(resource_provider());
   }
-  resource_manager_one.reset();
+  resource_manager_one = nullptr;
 
   EXPECT_FALSE(texture->can_acquire_backing_texture());
   EXPECT_FALSE(texture->have_backing_texture());

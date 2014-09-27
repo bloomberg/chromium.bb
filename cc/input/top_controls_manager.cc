@@ -180,9 +180,7 @@ gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
 }
 
 void TopControlsManager::ResetAnimations() {
-  if (top_controls_animation_)
-    top_controls_animation_.reset();
-
+  top_controls_animation_ = nullptr;
   animation_direction_ = NO_ANIMATION;
 }
 

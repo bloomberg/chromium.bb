@@ -140,8 +140,8 @@ class TiledLayerTest : public testing::Test {
 
     DebugScopedSetImplThreadAndMainThreadBlocked
     impl_thread_and_main_thread_blocked(proxy_);
-    resource_provider_.reset();
-    host_impl_.reset();
+    resource_provider_ = nullptr;
+    host_impl_ = nullptr;
   }
 
   void ResourceManagerClearAllMemory(
@@ -1665,10 +1665,8 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
       : FakeTiledLayer(manager) {
     scoped_ptr<TrackingLayerPainter> painter(TrackingLayerPainter::Create());
     tracking_layer_painter_ = painter.get();
-    layer_updater_ =
-        BitmapContentLayerUpdater::Create(painter.PassAs<LayerPainter>(),
-                                          &stats_instrumentation_,
-                                          0);
+    layer_updater_ = BitmapContentLayerUpdater::Create(
+        painter.Pass(), &stats_instrumentation_, 0);
   }
 
   TrackingLayerPainter* tracking_layer_painter() const {

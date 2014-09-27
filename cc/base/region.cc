@@ -127,7 +127,7 @@ scoped_ptr<base::Value> Region::AsValue() const {
     result->AppendInteger(rect.width());
     result->AppendInteger(rect.height());
   }
-  return result.PassAs<base::Value>();
+  return result.Pass();
 }
 
 void Region::AsValueInto(base::debug::TracedValue* result) const {

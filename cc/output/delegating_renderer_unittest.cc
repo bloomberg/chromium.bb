@@ -22,7 +22,7 @@ class DelegatingRendererTest : public LayerTreeTest {
     scoped_ptr<FakeOutputSurface> output_surface =
         FakeOutputSurface::CreateDelegating3d();
     output_surface_ = output_surface.get();
-    return output_surface.PassAs<OutputSurface>();
+    return output_surface.Pass();
   }
 
  protected:

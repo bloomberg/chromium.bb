@@ -34,7 +34,7 @@ TEST(TextureMailboxDeleterTest, Destroy) {
 
   // When the deleter is destroyed, it immediately drops its ref on the
   // ContextProvider, and deletes the texture.
-  deleter.reset();
+  deleter = nullptr;
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
 

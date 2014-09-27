@@ -50,8 +50,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(
-      new FakePictureLayerImpl(tree_impl, id())).PassAs<LayerImpl>();
+  return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id()));
 }
 
 void FakePictureLayerImpl::AppendQuads(

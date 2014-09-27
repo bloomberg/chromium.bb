@@ -57,7 +57,7 @@ scoped_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(
   if (!create_impl_benchmark_)
     return make_scoped_ptr<MicroBenchmarkImpl>(NULL);
 
-  return scoped_ptr<MicroBenchmarkImpl>(new UnittestOnlyBenchmarkImpl(
+  return make_scoped_ptr(new UnittestOnlyBenchmarkImpl(
       origin_loop,
       NULL,
       base::Bind(&UnittestOnlyBenchmark::RecordImplResults,

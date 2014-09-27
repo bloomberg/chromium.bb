@@ -22,7 +22,7 @@ FakePictureLayer::~FakePictureLayer() {}
 
 scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakePictureLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
+  return FakePictureLayerImpl::Create(tree_impl, layer_id_);
 }
 
 bool FakePictureLayer::Update(ResourceUpdateQueue* queue,

@@ -38,7 +38,7 @@ void IOSurfaceLayerImpl::DestroyResource() {
 
 scoped_ptr<LayerImpl> IOSurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return IOSurfaceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return IOSurfaceLayerImpl::Create(tree_impl, id());
 }
 
 void IOSurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {

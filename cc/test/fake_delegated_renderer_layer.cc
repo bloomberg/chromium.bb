@@ -16,8 +16,7 @@ FakeDelegatedRendererLayer::~FakeDelegatedRendererLayer() {}
 
 scoped_ptr<LayerImpl> FakeDelegatedRendererLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakeDelegatedRendererLayerImpl::Create(
-      tree_impl, layer_id_).PassAs<LayerImpl>();
+  return FakeDelegatedRendererLayerImpl::Create(tree_impl, layer_id_);
 }
 
 }  // namespace cc

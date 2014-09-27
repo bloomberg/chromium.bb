@@ -25,7 +25,7 @@ BspTree::BspTree(ScopedPtrDeque<DrawPolygon>* list) {
   if (list->size() == 0)
     return;
 
-  root_ = scoped_ptr<BspNode>(new BspNode(list->take_front()));
+  root_ = make_scoped_ptr(new BspNode(list->take_front()));
   BuildTree(root_.get(), list);
 }
 
@@ -90,7 +90,7 @@ void BspTree::BuildTree(BspNode* node,
 
   // Build the back subtree using the front of the back_list as our splitter.
   if (back_list.size() > 0) {
-    node->back_child = scoped_ptr<BspNode>(new BspNode(back_list.take_front()));
+    node->back_child = make_scoped_ptr(new BspNode(back_list.take_front()));
     BuildTree(node->back_child.get(), &back_list);
   }
 

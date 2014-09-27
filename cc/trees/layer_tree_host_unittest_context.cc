@@ -86,7 +86,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
-      return scoped_ptr<FakeOutputSurface>();
+      return nullptr;
     }
 
     scoped_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
@@ -363,7 +363,7 @@ class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE {
     EXPECT_TRUE(false);
-    return scoped_ptr<OutputSurface>();
+    return nullptr;
   }
 
   virtual void DidInitializeOutputSurface() OVERRIDE { EXPECT_TRUE(false); }
@@ -878,8 +878,8 @@ class LayerTreeHostContextTestDontUseLostResources
     pass->AppendOneOfEveryQuadType(child_resource_provider_.get(),
                                    RenderPassId(2, 1));
 
-    frame_data->render_pass_list.push_back(pass_for_quad.PassAs<RenderPass>());
-    frame_data->render_pass_list.push_back(pass.PassAs<RenderPass>());
+    frame_data->render_pass_list.push_back(pass_for_quad.Pass());
+    frame_data->render_pass_list.push_back(pass.Pass());
 
     delegated_resource_collection_ = new DelegatedFrameResourceCollection;
     delegated_frame_provider_ = new DelegatedFrameProvider(
@@ -1256,7 +1256,7 @@ class UIResourceLostAfterCommit : public UIResourceLostTestSimple {
         break;
       case 4:
         // Release resource before ending the test.
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         EndTest();
         break;
       case 5:
@@ -1316,7 +1316,7 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         // Currently one resource has been created.
         test_id0_ = ui_resource_->id();
         // Delete this resource.
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         // Create another resource.
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
         test_id1_ = ui_resource_->id();
@@ -1327,7 +1327,7 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         break;
       case 3:
         // Clear the manager of resources.
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         PostSetNeedsCommitToMainThread();
         break;
       case 4:
@@ -1337,7 +1337,7 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         // Sanity check the UIResourceId should not be 0.
         EXPECT_NE(0, test_id0_);
         // Usually ScopedUIResource are deleted from the manager in their
-        // destructor (so usually ui_resource_.reset()).  But here we need
+        // destructor (so usually ui_resource_ = nullptr).  But here we need
         // ui_resource_ for the next step, so call DeleteUIResource directly.
         layer_tree_host()->DeleteUIResource(test_id0_);
         // Delete the resouce and then lose the context.
@@ -1345,7 +1345,7 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         break;
       case 5:
         // Release resource before ending the test.
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         EndTest();
         break;
       case 6:
@@ -1409,12 +1409,12 @@ class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
         break;
       case 3:
         test_id_ = ui_resource_->id();
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         PostSetNeedsCommitToMainThread();
         break;
       case 5:
         // Release resource before ending the test.
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         EndTest();
         break;
       case 6:
@@ -1505,7 +1505,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         break;
       case 3:
         // Release resource before ending the test.
-        ui_resource_.reset();
+        ui_resource_ = nullptr;
         EndTest();
         break;
       case 4:

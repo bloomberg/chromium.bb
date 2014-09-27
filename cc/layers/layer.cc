@@ -620,7 +620,7 @@ void Layer::AddScrollChild(Layer* child) {
 void Layer::RemoveScrollChild(Layer* child) {
   scroll_children_->erase(child);
   if (scroll_children_->empty())
-    scroll_children_.reset();
+    scroll_children_ = nullptr;
   SetNeedsCommit();
 }
 
@@ -650,7 +650,7 @@ void Layer::AddClipChild(Layer* child) {
 void Layer::RemoveClipChild(Layer* child) {
   clip_children_->erase(child);
   if (clip_children_->empty())
-    clip_children_.reset();
+    clip_children_ = nullptr;
   SetNeedsCommit();
 }
 
@@ -1085,7 +1085,7 @@ void Layer::CreateRenderSurface() {
 }
 
 void Layer::ClearRenderSurface() {
-  draw_properties_.render_surface.reset();
+  draw_properties_.render_surface = nullptr;
 }
 
 void Layer::ClearRenderSurfaceLayerList() {

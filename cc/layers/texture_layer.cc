@@ -55,7 +55,7 @@ void TextureLayer::ClearTexture() {
 }
 
 scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return TextureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return TextureLayerImpl::Create(tree_impl, id());
 }
 
 void TextureLayer::SetFlipped(bool flipped) {
@@ -130,7 +130,7 @@ void TextureLayer::SetTextureMailboxInternal(
     holder_ref_ =
         TextureMailboxHolder::Create(mailbox, release_callback.Pass());
   } else {
-    holder_ref_.reset();
+    holder_ref_ = nullptr;
   }
   needs_set_mailbox_ = true;
   // If we are within a commit, no need to do it again immediately after.
@@ -296,7 +296,7 @@ scoped_ptr<TextureLayer::TextureMailboxHolder::MainThreadReference>
 TextureLayer::TextureMailboxHolder::Create(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback) {
-  return scoped_ptr<MainThreadReference>(new MainThreadReference(
+  return make_scoped_ptr(new MainThreadReference(
       new TextureMailboxHolder(mailbox, release_callback.Pass())));
 }
 
@@ -326,7 +326,7 @@ void TextureLayer::TextureMailboxHolder::InternalRelease() {
   if (!--internal_references_) {
     release_callback_->Run(sync_point_, is_lost_);
     mailbox_ = TextureMailbox();
-    release_callback_.reset();
+    release_callback_ = nullptr;
   }
 }
 

@@ -20,9 +20,9 @@ scoped_ptr<cc::TimingFunction> CreateTimingFunction(
     case blink::WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut:
       return cc::EaseInOutTimingFunction::Create();
     case blink::WebCompositorAnimationCurve::TimingFunctionTypeLinear:
-      return scoped_ptr<cc::TimingFunction>();
+      return nullptr;
   }
-  return scoped_ptr<cc::TimingFunction>();
+  return nullptr;
 }
 
 }  // namespace cc_blink

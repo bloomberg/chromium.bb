@@ -121,13 +121,8 @@ struct OcclusionTrackerTestMainThreadTypes {
     return make_scoped_refptr(new ContentLayerType());
   }
 
-  static LayerPtrType PassLayerPtr(ContentLayerPtrType* layer) {
-    LayerPtrType ref(*layer);
-    *layer = NULL;
-    return ref;
-  }
-
-  static LayerPtrType PassLayerPtr(LayerPtrType* layer) {
+  template <typename T>
+  static LayerPtrType PassLayerPtr(T* layer) {
     LayerPtrType ref(*layer);
     *layer = NULL;
     return ref;
@@ -156,12 +151,9 @@ struct OcclusionTrackerTestImplThreadTypes {
   }
   static int next_layer_impl_id;
 
-  static LayerPtrType PassLayerPtr(LayerPtrType* layer) {
+  template <typename T>
+  static LayerPtrType PassLayerPtr(T* layer) {
     return layer->Pass();
-  }
-
-  static LayerPtrType PassLayerPtr(ContentLayerPtrType* layer) {
-    return layer->PassAs<LayerType>();
   }
 
   static void DestroyLayer(LayerPtrType* layer) { layer->reset(); }
@@ -286,7 +278,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   void DestroyLayers() {
     Types::DestroyLayer(&root_);
-    render_surface_layer_list_.reset();
+    render_surface_layer_list_ = nullptr;
     render_surface_layer_list_impl_.clear();
     replica_layers_.clear();
     mask_layers_.clear();

@@ -520,8 +520,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(
-        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
+    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
@@ -566,7 +565,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
-    pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
+    pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -941,7 +940,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   scoped_ptr<FakePictureLayerImpl> pending_child =
       FakePictureLayerImpl::CreateWithPile(
           host_impl_.pending_tree(), 2, pending_pile);
-  pending_layer_->AddChild(pending_child.PassAs<LayerImpl>());
+  pending_layer_->AddChild(pending_child.Pass());
 
   FakePictureLayerImpl* pending_child_layer =
       static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0]);
@@ -1074,7 +1073,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
     pending_layer->SetDrawsContent(true);
     pending_layer->DoPostCommitInitializationIfNeeded();
     pending_layer->set_has_valid_tile_priorities(true);
-    pending_layer_->AddChild(pending_layer.PassAs<LayerImpl>());
+    pending_layer_->AddChild(pending_layer.Pass());
   }
 
   host_impl_.BuildRasterQueue(&queue, SAME_PRIORITY_FOR_BOTH_TREES);
@@ -1123,7 +1122,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
     pending_layer->SetDrawsContent(true);
     pending_layer->DoPostCommitInitializationIfNeeded();
     pending_layer->set_has_valid_tile_priorities(true);
-    pending_layer_->AddChild(pending_layer.PassAs<LayerImpl>());
+    pending_layer_->AddChild(pending_layer.Pass());
   }
 
   host_impl_.BuildEvictionQueue(&queue, SAME_PRIORITY_FOR_BOTH_TREES);

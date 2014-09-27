@@ -24,7 +24,7 @@ NinePatchLayer::~NinePatchLayer() {}
 
 scoped_ptr<LayerImpl> NinePatchLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return NinePatchLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return NinePatchLayerImpl::Create(tree_impl, id());
 }
 
 void NinePatchLayer::SetBorder(const gfx::Rect& border) {

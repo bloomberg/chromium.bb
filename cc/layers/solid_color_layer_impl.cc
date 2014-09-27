@@ -24,7 +24,7 @@ SolidColorLayerImpl::~SolidColorLayerImpl() {}
 
 scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SolidColorLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return SolidColorLayerImpl::Create(tree_impl, id());
 }
 
 void SolidColorLayerImpl::AppendSolidQuads(

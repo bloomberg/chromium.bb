@@ -76,8 +76,7 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(
-        FakeOutputSurface::Create3d().PassAs<OutputSurface>());
+    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
@@ -145,7 +144,7 @@ class PictureLayerImplTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
-    pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
+    pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -1294,8 +1293,8 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
-  host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
-      context.Pass()).PassAs<OutputSurface>());
+  host_impl_.InitializeRenderer(
+      FakeOutputSurface::Create3d(context.Pass()).Pass());
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
@@ -1341,8 +1340,8 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
-  host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
-      context.Pass()).PassAs<OutputSurface>());
+  host_impl_.InitializeRenderer(
+      FakeOutputSurface::Create3d(context.Pass()).Pass());
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   ASSERT_LE(1u, pending_layer_->tilings()->num_tilings());
@@ -1860,7 +1859,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   scoped_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pending_pile);
   pending_layer->SetDrawsContent(true);
-  pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
+  pending_tree->SetRootLayer(pending_layer.Pass());
 
   pending_layer_ = static_cast<FakePictureLayerImpl*>(
       host_impl_.pending_tree()->LayerById(id_));
@@ -2215,10 +2214,9 @@ class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
   virtual void InitializeRenderer() OVERRIDE {
     bool delegated_rendering = false;
-    host_impl_.InitializeRenderer(
-        FakeOutputSurface::CreateDeferredGL(
-            scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
-            delegated_rendering).PassAs<OutputSurface>());
+    host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
+        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
+        delegated_rendering));
   }
 
   virtual void SetUp() OVERRIDE {
@@ -3502,7 +3500,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
   mask->SetDrawsContent(true);
 
   FakePictureLayerImpl* pending_mask_content = mask.get();
-  layer_with_mask->SetMaskLayer(mask.PassAs<LayerImpl>());
+  layer_with_mask->SetMaskLayer(mask.Pass());
 
   scoped_ptr<FakePictureLayerImpl> child_of_layer_with_mask =
       FakePictureLayerImpl::Create(host_impl_.pending_tree(), 4);
@@ -3511,9 +3509,9 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
   child_of_layer_with_mask->SetContentBounds(bounds);
   child_of_layer_with_mask->SetDrawsContent(true);
 
-  layer_with_mask->AddChild(child_of_layer_with_mask.PassAs<LayerImpl>());
+  layer_with_mask->AddChild(child_of_layer_with_mask.Pass());
 
-  root->AddChild(layer_with_mask.PassAs<LayerImpl>());
+  root->AddChild(layer_with_mask.Pass());
 
   host_impl_.pending_tree()->SetRootLayer(root.Pass());
 
@@ -3527,8 +3525,7 @@ class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
   PictureLayerImplTestWithDelegatingRenderer() : PictureLayerImplTest() {}
 
   virtual void InitializeRenderer() OVERRIDE {
-    host_impl_.InitializeRenderer(
-        FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>());
+    host_impl_.InitializeRenderer(FakeOutputSurface::CreateDelegating3d());
   }
 };
 

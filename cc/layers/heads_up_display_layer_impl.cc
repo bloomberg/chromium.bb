@@ -78,7 +78,7 @@ HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
 
 scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return HeadsUpDisplayLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return HeadsUpDisplayLayerImpl::Create(tree_impl, id());
 }
 
 void HeadsUpDisplayLayerImpl::AcquireResource(

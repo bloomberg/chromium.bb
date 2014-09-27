@@ -19,8 +19,7 @@ scoped_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
                                               thumb_thickness_,
                                               track_start_,
                                               is_left_side_vertical_scrollbar_,
-                                              kIsOverlayScrollbar)
-      .PassAs<LayerImpl>();
+                                              kIsOverlayScrollbar);
 }
 
 scoped_refptr<SolidColorScrollbarLayer> SolidColorScrollbarLayer::Create(

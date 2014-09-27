@@ -42,30 +42,25 @@ void CubicBezierTimingFunction::Range(float* min, float* max) const {
 }
 
 scoped_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
-  return make_scoped_ptr(new CubicBezierTimingFunction(*this))
-      .PassAs<TimingFunction>();
+  return make_scoped_ptr(new CubicBezierTimingFunction(*this));
 }
 
 // These numbers come from
 // http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
 scoped_ptr<TimingFunction> EaseTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(
-      0.25, 0.1, 0.25, 1.0).PassAs<TimingFunction>();
+  return CubicBezierTimingFunction::Create(0.25, 0.1, 0.25, 1.0);
 }
 
 scoped_ptr<TimingFunction> EaseInTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(
-      0.42, 0.0, 1.0, 1.0).PassAs<TimingFunction>();
+  return CubicBezierTimingFunction::Create(0.42, 0.0, 1.0, 1.0);
 }
 
 scoped_ptr<TimingFunction> EaseOutTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(
-      0.0, 0.0, 0.58, 1.0).PassAs<TimingFunction>();
+  return CubicBezierTimingFunction::Create(0.0, 0.0, 0.58, 1.0);
 }
 
 scoped_ptr<TimingFunction> EaseInOutTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(
-      0.42, 0.0, 0.58, 1).PassAs<TimingFunction>();
+  return CubicBezierTimingFunction::Create(0.42, 0.0, 0.58, 1);
 }
 
 }  // namespace cc

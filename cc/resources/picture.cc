@@ -412,7 +412,7 @@ scoped_ptr<base::Value> Picture::AsValue() const {
   base::Base64Encode(std::string(serialized_picture.get(), serialized_size),
                      &b64_picture);
   res->SetString("skp64", b64_picture);
-  return res.PassAs<base::Value>();
+  return res.Pass();
 }
 
 void Picture::EmitTraceSnapshot() const {

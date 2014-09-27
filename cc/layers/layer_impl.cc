@@ -119,7 +119,7 @@ scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
       return ret.Pass();
     }
   }
-  return scoped_ptr<LayerImpl>();
+  return nullptr;
 }
 
 void LayerImpl::SetParent(LayerImpl* parent) {
@@ -246,7 +246,7 @@ void LayerImpl::CreateRenderSurface() {
 }
 
 void LayerImpl::ClearRenderSurface() {
-  draw_properties_.render_surface.reset();
+  draw_properties_.render_surface = nullptr;
 }
 
 void LayerImpl::ClearRenderSurfaceLayerList() {
@@ -1324,7 +1324,7 @@ void LayerImpl::DidBecomeActive() {
 
   bool need_scrollbar_animation_controller = scrollable() && scrollbars_;
   if (!need_scrollbar_animation_controller) {
-    scrollbar_animation_controller_.reset();
+    scrollbar_animation_controller_ = nullptr;
     return;
   }
 
@@ -1358,7 +1358,7 @@ void LayerImpl::RemoveScrollbar(ScrollbarLayerImplBase* layer) {
 
   scrollbars_->erase(layer);
   if (scrollbars_->empty())
-    scrollbars_.reset();
+    scrollbars_ = nullptr;
 }
 
 bool LayerImpl::HasScrollbar(ScrollbarOrientation orientation) const {

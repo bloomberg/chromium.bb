@@ -105,7 +105,7 @@ scoped_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
     LayerType* layer,
     LayerTreeImpl* tree_impl) {
   if (!layer)
-    return scoped_ptr<LayerImpl>();
+    return nullptr;
 
   scoped_ptr<LayerImpl> layer_impl =
       ReuseOrCreateLayerImpl(new_layers, old_layers, layer, tree_impl);
