@@ -40,6 +40,39 @@ namespace {
 base::LazyInstance<base::ThreadLocalPointer<struct __CFSet> >::Leaky
     thread_pdf_docs = LAZY_INSTANCE_INITIALIZER;
 
+// Rotate a page by |num_rotations| * 90 degrees, counter-clockwise.
+void RotatePage(CGContextRef context, const CGRect rect, int num_rotations) {
+  switch (num_rotations) {
+    case 0:
+      break;
+    case 1:
+      // After rotating by 90 degrees with the axis at the origin, the page
+      // content is now "off screen". Shift it right to move it back on screen.
+      CGContextTranslateCTM(context, rect.size.width, 0);
+      // Rotates counter-clockwise by 90 degrees.
+      CGContextRotateCTM(context, M_PI_2);
+      break;
+    case 2:
+      // After rotating by 180 degrees with the axis at the origin, the page
+      // content is now "off screen". Shift it right and up to move it back on
+      // screen.
+      CGContextTranslateCTM(context, rect.size.width, rect.size.height);
+      // Rotates counter-clockwise by 90 degrees.
+      CGContextRotateCTM(context, M_PI);
+      break;
+    case 3:
+      // After rotating by 270 degrees with the axis at the origin, the page
+      // content is now "off screen". Shift it right to move it back on screen.
+      CGContextTranslateCTM(context, 0, rect.size.height);
+      // Rotates counter-clockwise by 90 degrees.
+      CGContextRotateCTM(context, -M_PI_2);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  };
+}
+
 }  // namespace
 
 namespace printing {
@@ -182,6 +215,7 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
   }
   CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
   CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFCropBox);
+  int pdf_src_rotation = CGPDFPageGetRotationAngle(pdf_page);
   float scaling_factor = 1.0;
   const bool source_is_landscape =
         (source_rect.size.width > source_rect.size.height);
@@ -224,13 +258,21 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
   // i.e. the origin offset translation happens first.
   // Origin is at bottom-left.
   CGContextTranslateCTM(context, x_offset, y_offset);
+
+  int num_rotations = 0;
   if (rotate) {
-    // After rotating by 90 degrees with the axis at the origin, the page
-    // content is now "off screen". Shift it right to move it back on screen.
-    CGContextTranslateCTM(context, rect.size.width, 0);
-    // Rotates counter-clockwise by 90 degrees.
-    CGContextRotateCTM(context, M_PI_2);
+    if (pdf_src_rotation == 0 || pdf_src_rotation == 270) {
+      num_rotations = 1;
+    } else {
+      num_rotations = 3;
+    }
+  } else {
+    if (pdf_src_rotation == 180 || pdf_src_rotation == 270) {
+      num_rotations = 2;
+    }
   }
+  RotatePage(context, rect, num_rotations);
+
   CGContextScaleCTM(context, scaling_factor, scaling_factor);
   CGContextTranslateCTM(context, x_origin_offset, y_origin_offset);
 
