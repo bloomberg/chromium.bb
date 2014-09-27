@@ -96,7 +96,7 @@ EXTRA_ENV = {
                           # using the -isystem flag.
 
   'ISYSTEM_BUILTIN':
-    '${BASE_USR}/local/include ' +
+    '${BASE_USR}/usr/include ' +
     '${ISYSTEM_CLANG} ' +
     '${ISYSTEM_CXX} ' +
     '${BASE_USR}/include ' +
