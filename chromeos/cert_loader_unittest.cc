@@ -172,6 +172,8 @@ class CertLoaderTest : public testing::Test,
   size_t certificates_loaded_events_count_;
 };
 
+// http://crbug.com/418369
+#ifndef NDEBUG
 TEST_F(CertLoaderTest, Basic) {
   EXPECT_FALSE(cert_loader_->CertificatesLoading());
   EXPECT_FALSE(cert_loader_->certificates_loaded());
@@ -312,6 +314,8 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
+
+#endif
 
 }  // namespace
 }  // namespace chromeos
