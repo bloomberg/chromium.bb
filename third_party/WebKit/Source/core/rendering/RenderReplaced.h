@@ -44,6 +44,10 @@ public:
     // http://www.w3.org/TR/CSS2/visudet.html#inline-replaced-width
     static const int defaultWidth;
     static const int defaultHeight;
+    virtual bool canHaveChildren() const OVERRIDE { return false; }
+    bool shouldPaint(PaintInfo&, const LayoutPoint&);
+    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) { }
+    LayoutRect localSelectionRect(bool checkWhetherSelected = true) const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
@@ -70,17 +74,12 @@ protected:
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
     virtual void intrinsicSizeChanged();
 
-    bool shouldPaint(PaintInfo&, const LayoutPoint&);
-    LayoutRect localSelectionRect(bool checkWhetherSelected = true) const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
     virtual RenderBox* embeddedContentBox() const { return 0; }
 
 private:
     virtual const char* renderName() const OVERRIDE { return "RenderReplaced"; }
 
-    virtual bool canHaveChildren() const OVERRIDE { return false; }
-
     virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) { }
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE;
 
