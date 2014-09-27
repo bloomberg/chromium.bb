@@ -137,7 +137,7 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
   // return null either.
   if (real_base == MAP_FAILED || !real_base) {
     PLOG(ERROR) << "mmap";
-    return nullptr;
+    return scoped_ptr<PlatformSharedBufferMapping>();
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
