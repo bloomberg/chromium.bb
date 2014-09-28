@@ -1307,15 +1307,12 @@ chrome_pfq.add_config('link_freon-chrome-pfq',
   hw_tests=[],
   # This build can't run vm_tests, bug 387507
   vm_tests=[],
-  usepkg_toolchain=False,
-  usepkg_build_packages=False,
 )
 
 chrome_pfq.add_config('rush-chrome-pfq',
   non_testable_builder,
   boards=['rush'],
   usepkg_toolchain=False,
-  usepkg_build_packages=False,
 )
 
 chrome_try = _config(
@@ -2014,7 +2011,6 @@ internal_paladin.add_config('link_freon-paladin',
   vm_tests=[],
   important=False,
   paladin_builder_name='link_freon paladin',
-  usepkg_build_packages=False,
 )
 
 internal_paladin.add_config('stumpy_moblab-paladin',
