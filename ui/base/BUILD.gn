@@ -701,15 +701,14 @@ if (is_android) {
 
 # TODO(GYP): Make this work on Android and reenable it.
 if (!is_android) {
+# TODO(tfarina): Rename this target to ui_base_unittests.
+# In order to do this we will need to keep this target, add a dummy
+# ui_base_unittests target that just points to ui_unittests, change
+# buildbot code to reference the new 'ui_base_unittests' target.
+# After buildbot is updated, we can make the changes in Chromium and
+# remove 'ui_unittests' target. crbug.com/331829
 # GYP version: ui/base/ui_base_tests.gyp:ui_unittests
-test("unittests") {
-  # TODO(tfarina): Rename this target to ui_base_unittests.
-  # In order to do this we will need to keep this target, add a dummy
-  # ui_base_unittests target that just points to ui_unittests, change
-  # buildbot code to reference the new 'ui_base_unittests' target.
-  # After buildbot is updated, we can make the changes in Chromium and
-  # remove 'ui_unittests' target. crbug.com/331829
-  output_name = "ui_unittests"
+test("ui_unittests") {
   sources = [
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",

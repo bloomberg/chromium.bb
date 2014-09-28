@@ -273,8 +273,7 @@ executable("bench") {
   }
 }
 
-test("unittests") {
-  output_name = "aura_unittests"
+test("aura_unittests") {
   sources = [
     "gestures/gesture_recognizer_unittest.cc",
     "test/run_all_unittests.cc",
