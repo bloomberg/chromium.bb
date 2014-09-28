@@ -294,11 +294,11 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
   ui_test_utils::NavigateToURL(browser, url);
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(url, contents->GetURL());
+  EXPECT_EQ(url, contents->GetURL());
   base::string16 spec16 = base::UTF8ToUTF16(url.spec());
   base::string16 title =
       l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_BLOCKED, spec16);
-  ASSERT_NE(title, contents->GetTitle());
+  EXPECT_NE(title, contents->GetTitle());
 }
 
 // Verifies that access to the given url |spec| is blocked.
@@ -307,21 +307,21 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   ui_test_utils::NavigateToURL(browser, url);
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(url, contents->GetURL());
+  EXPECT_EQ(url, contents->GetURL());
   base::string16 spec16 = base::UTF8ToUTF16(url.spec());
   base::string16 title =
       l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_BLOCKED, spec16);
-  ASSERT_EQ(title, contents->GetTitle());
+  EXPECT_EQ(title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
   bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents,
       "var textContent = document.body.textContent;"
       "var hasError = textContent.indexOf('ERR_BLOCKED_BY_ADMINISTRATOR') >= 0;"
       "domAutomationController.send(hasError);",
       &result));
-  ASSERT_TRUE(result);
+  EXPECT_TRUE(result);
 }
 
 // Downloads a file named |file| and expects it to be saved to |dir|, which
@@ -2099,7 +2099,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   }
 
   // Verify that "bbb.com" opens before applying the blacklist.
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), kURLS[1]));
+  CheckCanOpenURL(browser(), kURLS[1]);
 
   // Set a blacklist.
   base::ListValue blacklist;
@@ -2110,10 +2110,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), kURLS[0]));
-  for (size_t i = 1; i < arraysize(kURLS); ++i) {
-    EXPECT_NO_FATAL_FAILURE(CheckURLIsBlocked(browser(), kURLS[i]));
-  }
+  CheckCanOpenURL(browser(), kURLS[0]);
+  for (size_t i = 1; i < arraysize(kURLS); ++i)
+    CheckURLIsBlocked(browser(), kURLS[i]);
 
   // Whitelist some sites of bbb.com.
   base::ListValue whitelist;
@@ -2123,9 +2122,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
                POLICY_SCOPE_USER, whitelist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
-  EXPECT_NO_FATAL_FAILURE(CheckURLIsBlocked(browser(), kURLS[1]));
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), kURLS[2]));
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), kURLS[3]));
+  CheckURLIsBlocked(browser(), kURLS[1]);
+  CheckCanOpenURL(browser(), kURLS[2]);
+  CheckCanOpenURL(browser(), kURLS[3]);
 
   {
     base::RunLoop loop;
@@ -2137,7 +2136,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
+#if defined(OS_MACOSX)
+// http://crbug.com/339240
+#define MAYBE_FileURLBlacklist DISABLED_FileURLBlacklist
+#else
+#define MAYBE_FileURLBlacklist FileURLBlacklist
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   // Check that FileURLs can be blacklisted and DisabledSchemes works together
   // with URLblacklisting and URLwhitelisting.
 
@@ -2148,8 +2153,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   const std::string file_path1 = base_path + "title1.html";
   const std::string file_path2 = folder_path + "basic.html";
 
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), file_path1.c_str()));
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), file_path2.c_str()));
+  CheckCanOpenURL(browser(), file_path1.c_str());
+  CheckCanOpenURL(browser(), file_path2.c_str());
 
   // Set a blacklist for all the files.
   base::ListValue blacklist;
@@ -2160,8 +2165,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
-  EXPECT_NO_FATAL_FAILURE(CheckURLIsBlocked(browser(), file_path1.c_str()));
-  EXPECT_NO_FATAL_FAILURE(CheckURLIsBlocked(browser(), file_path2.c_str()));
+  CheckURLIsBlocked(browser(), file_path1.c_str());
+  CheckURLIsBlocked(browser(), file_path2.c_str());
 
   // Replace the URLblacklist with disabling the file scheme.
   blacklist.Remove(base::StringValue("file://*"), NULL);
@@ -2197,8 +2202,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
-  EXPECT_NO_FATAL_FAILURE(CheckCanOpenURL(browser(), file_path1.c_str()));
-  EXPECT_NO_FATAL_FAILURE(CheckURLIsBlocked(browser(), file_path2.c_str()));
+  CheckCanOpenURL(browser(), file_path1.c_str());
+  CheckURLIsBlocked(browser(), file_path2.c_str());
 }
 
 #if !defined(OS_MACOSX)
