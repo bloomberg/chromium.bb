@@ -36,6 +36,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       // TODO(tsepez): Enable this by default once http://crbug.com/356815
       // and http://crbug.com/356816 are fixed.
       options_.check_enum_last_value = true;
+    } else if (args[i] == "strict-virtual-specifiers") {
+      options_.strict_virtual_specifiers = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";

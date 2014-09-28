@@ -5,6 +5,7 @@
 #include "FindBadConstructsConsumer.h"
 
 #include "clang/Frontend/CompilerInstance.h"
+#include "clang/AST/Attr.h"
 #include "clang/Lex/Lexer.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -15,9 +16,15 @@ namespace chrome_checker {
 namespace {
 
 const char kMethodRequiresOverride[] =
-    "[chromium-style] Overriding method must be marked with OVERRIDE.";
-const char kMethodRequiresVirtual[] =
-    "[chromium-style] Overriding method must have \"virtual\" keyword.";
+    "[chromium-style] Overriding method must be marked with 'override' or "
+    "'final'.";
+const char kRedundantVirtualSpecifier[] =
+    "[chromium-style] %0 is redundant; %1 implies %0.";
+// http://llvm.org/bugs/show_bug.cgi?id=21051 has been filed to make this a
+// Clang warning.
+const char kBaseMethodVirtualAndFinal[] =
+    "[chromium-style] The virtual method does not override anything and is "
+    "final; consider making it non-virtual.";
 const char kNoExplicitDtor[] =
     "[chromium-style] Classes that are ref-counted should have explicit "
     "destructors that are declared protected or private.";
@@ -59,22 +66,47 @@ const Type* UnwrapType(const Type* type) {
   return type;
 }
 
+FixItHint FixItRemovalForVirtual(const SourceManager& manager,
+                                 const CXXMethodDecl* method) {
+  // Unfortunately, there doesn't seem to be a good way to determine the
+  // location of the 'virtual' keyword. It's available in Declarator, but that
+  // isn't accessible from the AST. So instead, make an educated guess that the
+  // first token is probably the virtual keyword. Strictly speaking, this
+  // doesn't have to be true, but it probably will be.
+  // TODO(dcheng): Add a warning to force virtual to always appear first ;-)
+  SourceRange range(method->getLocStart());
+  // Get the spelling loc just in case it was expanded from a macro.
+  SourceRange spelling_range(manager.getSpellingLoc(range.getBegin()));
+  // Sanity check that the text looks like virtual.
+  StringRef text = clang::Lexer::getSourceText(
+      CharSourceRange::getTokenRange(spelling_range), manager, LangOptions());
+  if (text.trim() != "virtual")
+    return FixItHint();
+  return FixItHint::CreateRemoval(range);
+}
+
 }  // namespace
 
 FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
                                                      const Options& options)
     : ChromeClassTester(instance), options_(options) {
-  // Register warning/error messages.
+  // Messages for virtual method specifiers.
   diag_method_requires_override_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kMethodRequiresOverride);
-  diag_method_requires_virtual_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kMethodRequiresVirtual);
+  diag_redundant_virtual_specifier_ =
+      diagnostic().getCustomDiagID(getErrorLevel(), kRedundantVirtualSpecifier);
+  diag_base_method_virtual_and_final_ =
+      diagnostic().getCustomDiagID(getErrorLevel(), kBaseMethodVirtualAndFinal);
+
+  // Messages for destructors.
   diag_no_explicit_dtor_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kNoExplicitDtor);
   diag_public_dtor_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kPublicDtor);
   diag_protected_non_virtual_dtor_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kProtectedNonVirtualDtor);
+
+  // Miscellaneous messages.
   diag_weak_ptr_factory_order_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kWeakPtrFactoryOrder);
   diag_bad_enum_last_value_ =
@@ -103,8 +135,7 @@ void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
 
   bool warn_on_inline_bodies = !implementation_file;
 
-  // Check that all virtual methods are marked accordingly with both
-  // virtual and OVERRIDE.
+  // Check that all virtual methods are annotated with override or final.
   CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
 
   CheckRefCountedDtors(record_location, record);
@@ -250,35 +281,6 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
   }
 }
 
-void FindBadConstructsConsumer::CheckVirtualMethod(const CXXMethodDecl* method,
-                                                   bool warn_on_inline_bodies) {
-  if (!method->isVirtual())
-    return;
-
-  if (!method->isVirtualAsWritten()) {
-    SourceLocation loc = method->getTypeSpecStartLoc();
-    if (isa<CXXDestructorDecl>(method))
-      loc = method->getInnerLocStart();
-    SourceManager& manager = instance().getSourceManager();
-    FullSourceLoc full_loc(loc, manager);
-    SourceLocation spelling_loc = manager.getSpellingLoc(loc);
-    diagnostic().Report(full_loc, diag_method_requires_virtual_)
-        << FixItHint::CreateInsertion(spelling_loc, "virtual ");
-  }
-
-  // Virtual methods should not have inline definitions beyond "{}". This
-  // only matters for header files.
-  if (warn_on_inline_bodies && method->hasBody() && method->hasInlineBody()) {
-    if (CompoundStmt* cs = dyn_cast<CompoundStmt>(method->getBody())) {
-      if (cs->size()) {
-        emitWarning(cs->getLBracLoc(),
-                    "virtual methods with non-empty bodies shouldn't be "
-                    "declared inline.");
-      }
-    }
-  }
-}
-
 bool FindBadConstructsConsumer::InTestingNamespace(const Decl* record) {
   return GetNamespace(record).find("testing") != std::string::npos;
 }
@@ -300,47 +302,16 @@ bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
   return false;
 }
 
-void FindBadConstructsConsumer::CheckOverriddenMethod(
-    const CXXMethodDecl* method) {
-  if (!method->size_overridden_methods() || method->getAttr<OverrideAttr>())
-    return;
-
-  if (isa<CXXDestructorDecl>(method) || method->isPure())
-    return;
-
-  if (IsMethodInBannedOrTestingNamespace(method))
-    return;
-
-  SourceManager& manager = instance().getSourceManager();
-  SourceRange type_info_range =
-      method->getTypeSourceInfo()->getTypeLoc().getSourceRange();
-  FullSourceLoc loc(type_info_range.getBegin(), manager);
-
-  // Build the FixIt insertion point after the end of the method definition,
-  // including any const-qualifiers and attributes, and before the opening
-  // of the l-curly-brace (if inline) or the semi-color (if a declaration).
-  SourceLocation spelling_end =
-      manager.getSpellingLoc(type_info_range.getEnd());
-  if (spelling_end.isValid()) {
-    SourceLocation token_end =
-        Lexer::getLocForEndOfToken(spelling_end, 0, manager, LangOptions());
-    diagnostic().Report(token_end, diag_method_requires_override_)
-        << FixItHint::CreateInsertion(token_end, " OVERRIDE");
-  } else {
-    diagnostic().Report(loc, diag_method_requires_override_);
-  }
-}
-
-// Makes sure there is a "virtual" keyword on virtual methods.
-//
-// Gmock objects trigger these for each MOCK_BLAH() macro used. So we have a
-// trick to get around that. If a class has member variables whose types are
-// in the "testing" namespace (which is how gmock works behind the scenes),
-// there's a really high chance we won't care about these errors
+// Checks that virtual methods are correctly annotated, and have no body in a
+// header file.
 void FindBadConstructsConsumer::CheckVirtualMethods(
     SourceLocation record_location,
     CXXRecordDecl* record,
     bool warn_on_inline_bodies) {
+  // Gmock objects trigger these for each MOCK_BLAH() macro used. So we have a
+  // trick to get around that. If a class has member variables whose types are
+  // in the "testing" namespace (which is how gmock works behind the scenes),
+  // there's a really high chance we won't care about these errors
   for (CXXRecordDecl::field_iterator it = record->field_begin();
        it != record->field_end();
        ++it) {
@@ -363,9 +334,96 @@ void FindBadConstructsConsumer::CheckVirtualMethods(
     } else if (isa<CXXDestructorDecl>(*it) &&
                !record->hasUserDeclaredDestructor()) {
       // Ignore non-user-declared destructors.
+    } else if (!it->isVirtual()) {
+      continue;
     } else {
-      CheckVirtualMethod(*it, warn_on_inline_bodies);
-      CheckOverriddenMethod(*it);
+      CheckVirtualSpecifiers(*it);
+      if (warn_on_inline_bodies)
+        CheckVirtualBodies(*it);
+    }
+  }
+}
+
+// Makes sure that virtual methods use the most appropriate specifier. If a
+// virtual method overrides a method from a base class, only the override
+// specifier should be used. If the method should not be overridden by derived
+// classes, only the final specifier should be used.
+void FindBadConstructsConsumer::CheckVirtualSpecifiers(
+    const CXXMethodDecl* method) {
+  bool is_override = method->size_overridden_methods() > 0;
+  bool has_virtual = method->isVirtualAsWritten();
+  OverrideAttr* override_attr = method->getAttr<OverrideAttr>();
+  FinalAttr* final_attr = method->getAttr<FinalAttr>();
+
+  if (method->isPure())
+    return;
+
+  if (IsMethodInBannedOrTestingNamespace(method))
+    return;
+
+  if (isa<CXXDestructorDecl>(method) && !options_.strict_virtual_specifiers)
+    return;
+
+  SourceManager& manager = instance().getSourceManager();
+
+  // Complain if a method is annotated virtual && (override || final).
+  if (has_virtual && (override_attr || final_attr) &&
+      options_.strict_virtual_specifiers) {
+    diagnostic().Report(method->getLocStart(),
+                        diag_redundant_virtual_specifier_)
+        << "'virtual'"
+        << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
+        << FixItRemovalForVirtual(manager, method);
+  }
+
+  // Complain if a method is an override and is not annotated with override or
+  // final.
+  if (is_override && !override_attr && !final_attr) {
+    SourceRange type_info_range =
+        method->getTypeSourceInfo()->getTypeLoc().getSourceRange();
+    FullSourceLoc loc(type_info_range.getBegin(), manager);
+
+    // Build the FixIt insertion point after the end of the method definition,
+    // including any const-qualifiers and attributes, and before the opening
+    // of the l-curly-brace (if inline) or the semi-color (if a declaration).
+    SourceLocation spelling_end =
+        manager.getSpellingLoc(type_info_range.getEnd());
+    if (spelling_end.isValid()) {
+      SourceLocation token_end =
+          Lexer::getLocForEndOfToken(spelling_end, 0, manager, LangOptions());
+      diagnostic().Report(token_end, diag_method_requires_override_)
+          << FixItHint::CreateInsertion(token_end, " override");
+    } else {
+      diagnostic().Report(loc, diag_method_requires_override_);
+    }
+  }
+
+  if (final_attr && override_attr && options_.strict_virtual_specifiers) {
+    diagnostic().Report(override_attr->getLocation(),
+                        diag_redundant_virtual_specifier_)
+        << override_attr << final_attr
+        << FixItHint::CreateRemoval(override_attr->getRange());
+  }
+
+  if (final_attr && !is_override && options_.strict_virtual_specifiers) {
+    diagnostic().Report(method->getLocStart(),
+                        diag_base_method_virtual_and_final_)
+        << FixItRemovalForVirtual(manager, method)
+        << FixItHint::CreateRemoval(final_attr->getRange());
+  }
+}
+
+void FindBadConstructsConsumer::CheckVirtualBodies(
+    const CXXMethodDecl* method) {
+  // Virtual methods should not have inline definitions beyond "{}". This
+  // only matters for header files.
+  if (method->hasBody() && method->hasInlineBody()) {
+    if (CompoundStmt* cs = dyn_cast<CompoundStmt>(method->getBody())) {
+      if (cs->size()) {
+        emitWarning(cs->getLBracLoc(),
+                    "virtual methods with non-empty bodies shouldn't be "
+                    "declared inline.");
+      }
     }
   }
 }

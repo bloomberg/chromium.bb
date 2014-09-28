@@ -33,7 +33,7 @@ do_testcase() {
     flags="${flags} -isysroot $(xcrun --show-sdk-path) -stdlib=libstdc++"
   fi
 
-  local output="$("${CLANG_PATH}" -c -Wno-c++11-extensions \
+  local output="$("${CLANG_PATH}" -fsyntax-only -Wno-c++11-extensions \
       -Xclang -load -Xclang "${PLUGIN_PATH}" \
       -Xclang -add-plugin -Xclang find-bad-constructs ${flags} ${1} 2>&1)"
   local diffout="$(echo "${output}" | diff - "${2}")"
@@ -44,6 +44,10 @@ do_testcase() {
     echo "FAIL: ${1}"
     echo "Output of compiler:"
     echo "${output}"
+    cat > ${2}-actual << EOF
+${output}
+EOF
+
     echo "Expected output:"
     cat "${2}"
     echo

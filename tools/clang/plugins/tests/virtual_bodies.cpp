@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "virtual_methods.h"
+#include "virtual_bodies.h"
 
 // Shouldn't warn about method usage in the implementation file.
 class VirtualMethodsInImplementation {
@@ -26,9 +26,12 @@ class ConcreteVirtualMethodsInImplementation
 };
 
 // Fill in the implementations
-void VirtualMethodsInHeaders::MethodHasNoArguments() {}
-void WarnOnMissingVirtual::MethodHasNoArguments() {}
-void VirtualMethodsInImplementation::MethodHasNoArguments() {}
+void VirtualMethodsInHeaders::MethodHasNoArguments() {
+}
+void WarnOnMissingVirtual::MethodHasNoArguments() {
+}
+void VirtualMethodsInImplementation::MethodHasNoArguments() {
+}
 
 int main() {
   ConcreteVirtualMethodsInHeaders one;

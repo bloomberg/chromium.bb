@@ -32,6 +32,7 @@ class VirtualMethodsInHeadersTesting : public VirtualMethodsInHeaders {
  public:
   // Don't complain about no virtual testing methods.
   void MethodHasNoArguments();
+
  private:
   testing::TestStruct tester_;
 };

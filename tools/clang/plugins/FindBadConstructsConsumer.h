@@ -36,10 +36,10 @@ class FindBadConstructsConsumer : public ChromeClassTester {
                             const Options& options);
 
   // ChromeClassTester overrides:
-  virtual void CheckChromeClass(clang::SourceLocation record_location,
-                                clang::CXXRecordDecl* record);
-  virtual void CheckChromeEnum(clang::SourceLocation enum_location,
-                               clang::EnumDecl* enum_decl);
+  void CheckChromeClass(clang::SourceLocation record_location,
+                        clang::CXXRecordDecl* record) override;
+  void CheckChromeEnum(clang::SourceLocation enum_location,
+                       clang::EnumDecl* enum_decl) override;
 
  private:
   // The type of problematic ref-counting pattern that was encountered.
@@ -48,16 +48,14 @@ class FindBadConstructsConsumer : public ChromeClassTester {
   void CheckCtorDtorWeight(clang::SourceLocation record_location,
                            clang::CXXRecordDecl* record);
 
-  void CheckVirtualMethod(const clang::CXXMethodDecl* method,
-                          bool warn_on_inline_bodies);
-
   bool InTestingNamespace(const clang::Decl* record);
   bool IsMethodInBannedOrTestingNamespace(const clang::CXXMethodDecl* method);
 
-  void CheckOverriddenMethod(const clang::CXXMethodDecl* method);
   void CheckVirtualMethods(clang::SourceLocation record_location,
                            clang::CXXRecordDecl* record,
                            bool warn_on_inline_bodies);
+  void CheckVirtualSpecifiers(const clang::CXXMethodDecl* method);
+  void CheckVirtualBodies(const clang::CXXMethodDecl* method);
 
   void CountType(const clang::Type* type,
                  int* trivial_member,
@@ -85,7 +83,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
   const Options options_;
 
   unsigned diag_method_requires_override_;
-  unsigned diag_method_requires_virtual_;
+  unsigned diag_redundant_virtual_specifier_;
+  unsigned diag_base_method_virtual_and_final_;
   unsigned diag_no_explicit_dtor_;
   unsigned diag_public_dtor_;
   unsigned diag_protected_non_virtual_dtor_;
