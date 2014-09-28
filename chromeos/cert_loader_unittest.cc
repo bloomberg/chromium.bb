@@ -20,7 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // http://crbug.com/418369
-#ifndef NDEBUG
+#ifdef NDEBUG
 
 namespace chromeos {
 namespace {

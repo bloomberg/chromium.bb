@@ -28,7 +28,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 // http://crbug.com/418369
-#ifndef NDEBUG
+#ifdef NDEBUG
 
 namespace chromeos {
 
