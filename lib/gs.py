@@ -773,9 +773,9 @@ class GSContext(object):
 
     return ret
 
-  def DU(self, path, **kwargs):
-    """Returns size of an object."""
-    return self.DoCommand(['du', path], redirect_stdout=True, **kwargs)
+  def GetSize(self, path, **kwargs):
+    """Returns size of a single object."""
+    return self.Stat(path, **kwargs).content_length
 
   def Move(self, src_path, dest_path, **kwargs):
     """Move/rename to/from GS bucket.

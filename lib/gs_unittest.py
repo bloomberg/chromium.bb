@@ -166,6 +166,42 @@ class VersionTest(AbstractGSContextTest):
                       'gsutil_version')
 
 
+class GetSizeTest(AbstractGSContextTest):
+  """Tests GetSize functionality."""
+
+  GETSIZE_PATH = 'gs://abc/1'
+
+  def _GetSize(self, ctx, path, **kwargs):
+    return ctx.GetSize(path, **kwargs)
+
+  def GetSize(self, ctx=None, **kwargs):
+    if ctx is None:
+      ctx = self.ctx
+    return self._GetSize(ctx, self.GETSIZE_PATH, **kwargs)
+
+  def testBasic(self):
+    """Simple test."""
+    self.gs_mock.AddCmdResult(['stat', self.GETSIZE_PATH],
+                              output=StatTest.STAT_OUTPUT)
+    self.assertEqual(self.GetSize(), 74)
+
+
+class UnmockedGetSizeTest(cros_test_lib.TempDirTestCase):
+  """Tests GetSize functionality w/out mocks."""
+
+  @cros_test_lib.NetworkTest()
+  def testBasic(self):
+    """Simple test."""
+    ctx = gs.GSContext()
+
+    local_file = os.path.join(self.tempdir, 'foo')
+    osutils.WriteFile(local_file, '!' * 5)
+
+    with gs.TemporaryURL('chromite.getsize') as tempuri:
+      ctx.Copy(local_file, tempuri)
+      self.assertEqual(ctx.GetSize(tempuri), 5)
+
+
 class LSTest(AbstractGSContextTest):
   """Tests LS/List functionality."""
 
@@ -1023,6 +1059,10 @@ class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
   def testGetGeneration(self):
     """Test GetGeneration in dry_run mode."""
     self.assertEqual(self.ctx.GetGeneration('gs://foo/bar'), (0, 0))
+
+  def testGetSize(self):
+    """Test GetSize in dry_run mode."""
+    self.assertEqual(self.ctx.GetSize('gs://foo/bar'), 0)
 
   def testGetTrackerFilenames(self):
     """Test GetTrackerFilenames in dry_run mode."""
