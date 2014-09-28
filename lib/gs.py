@@ -628,7 +628,7 @@ class GSContext(object):
         raise GSCommandError(e.msg, e.result, e.exception)
 
   def Copy(self, src_path, dest_path, acl=None, recursive=False,
-           skip_symlinks=True, **kwargs):
+           skip_symlinks=True, auto_compress=False, **kwargs):
     """Copy to/from GS bucket.
 
     Canned ACL permissions can be specified on the gsutil cp command line.
@@ -643,6 +643,7 @@ class GSContext(object):
       acl: One of the google storage canned_acls to apply.
       recursive: Whether to copy recursively.
       skip_symlinks: Skip symbolic links when copying recursively.
+      auto_compress: Automatically compress with gzip when uploading.
 
     Returns:
       Return the CommandResult from the run.
@@ -660,6 +661,14 @@ class GSContext(object):
       cmd.append('-r')
       if skip_symlinks:
         cmd.append('-e')
+
+    if auto_compress:
+      # Pass the suffix without the '.' as that is what gsutil wants.
+      suffix = os.path.splitext(src_path)[1]
+      if not suffix:
+        raise ValueError('src file "%s" needs an extension to compress' %
+                         (src_path,))
+      cmd += ['-z', suffix[1:]]
 
     acl = self.acl if acl is None else acl
     if acl is not None:

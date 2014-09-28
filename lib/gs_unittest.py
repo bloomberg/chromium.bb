@@ -403,6 +403,72 @@ class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
     self._Copy(self.ctx, self.tempdir, self.GIVEN_REMOTE, recursive=True)
     self.gs_mock.assertCommandContains(['cp', '-r'])
 
+  def testCompress(self):
+    """Test auto_compress behavior."""
+    path = os.path.join(self.tempdir, 'ok.txt')
+    self._Copy(self.ctx, path, self.GIVEN_REMOTE, auto_compress=True)
+    self.gs_mock.assertCommandContains(['-z', 'txt'], expected=True)
+
+  def testCompressNoExt(self):
+    """Test auto_compress w/bad src path."""
+    path = os.path.join(self.tempdir, 'bad.dir/bad-file')
+    self.assertRaises(ValueError, self._Copy, self.ctx, path,
+                      self.GIVEN_REMOTE, auto_compress=True)
+
+
+class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
+  """Tests Copy functionality w/out mocks."""
+
+  @cros_test_lib.NetworkTest()
+  def testNormal(self):
+    """Test normal upload/download behavior."""
+    ctx = gs.GSContext()
+
+    content = 'foooooooooooooooo!@!'
+
+    local_src_file = os.path.join(self.tempdir, 'src.txt')
+    local_dst_file = os.path.join(self.tempdir, 'dst.txt')
+
+    osutils.WriteFile(local_src_file, content)
+
+    with gs.TemporaryURL('chromite.cp') as tempuri:
+      # Upload the file.
+      ctx.Copy(local_src_file, tempuri)
+
+      # Verify the size is what we expect.
+      self.assertEqual(ctx.GetSize(tempuri), os.path.getsize(local_src_file))
+
+      # Copy it back down and verify the content is unchanged.
+      ctx.Copy(tempuri, local_dst_file)
+      new_content = osutils.ReadFile(local_dst_file)
+      self.assertEqual(content, new_content)
+
+  @cros_test_lib.NetworkTest()
+  def testCompress(self):
+    """Test auto_compress behavior."""
+    ctx = gs.GSContext()
+
+    # Need a string that compresses well.
+    content = ('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+               'zzzzzlkasjdf89j2;3o4kqmnioruasddfv89uxdp;foiasjdf0892qn5kln')
+
+    local_src_file = os.path.join(self.tempdir, 'src.txt')
+    local_dst_file = os.path.join(self.tempdir, 'dst.txt')
+
+    osutils.WriteFile(local_src_file, content)
+
+    with gs.TemporaryURL('chromite.cp') as tempuri:
+      # Upload & compress the file.
+      ctx.Copy(local_src_file, tempuri, auto_compress=True)
+
+      # Verify the size is smaller (because it's compressed).
+      self.assertLess(ctx.GetSize(tempuri), os.path.getsize(local_src_file))
+
+      # Copy it back down and verify the content is decompressed & unchanged.
+      ctx.Copy(tempuri, local_dst_file)
+      new_content = osutils.ReadFile(local_dst_file)
+      self.assertEqual(content, new_content)
+
 
 class CopyIntoTest(CopyTest):
   """Test CopyInto functionality."""
