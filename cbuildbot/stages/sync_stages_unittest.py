@@ -125,7 +125,7 @@ class MockPatch(mock.MagicMock):
     return constants.DEFAULT_CQ_READY_FIELDS.get(field, 0) == value
 
 
-class BaseCQTest(generic_stages_unittest.StageTest):
+class BaseCQTestCase(generic_stages_unittest.StageTest):
   """Helper class for testing the CommitQueueSync stage"""
   PALADIN_BOT_ID = None
   MANIFEST_CONTENTS = '<manifest/>'
@@ -164,7 +164,7 @@ class BaseCQTest(generic_stages_unittest.StageTest):
     self._Prepare()
 
   def _Prepare(self, bot_id=None, **kwargs):
-    super(BaseCQTest, self)._Prepare(bot_id, **kwargs)
+    super(BaseCQTestCase, self)._Prepare(bot_id, **kwargs)
 
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
 
@@ -217,7 +217,7 @@ class BaseCQTest(generic_stages_unittest.StageTest):
       self.sync_stage.HandleSkip()
 
 
-class SlaveCQSyncTest(BaseCQTest):
+class SlaveCQSyncTest(BaseCQTestCase):
   """Tests the CommitQueueSync stage for the paladin slaves."""
   BOT_ID = 'x86-alex-paladin'
 
@@ -229,12 +229,9 @@ class SlaveCQSyncTest(BaseCQTest):
     self.ReloadPool()
 
 
-class MasterCQSyncTest(BaseCQTest):
-  """Tests the CommitQueueSync stage for the paladin masters.
+class MasterCQSyncTestCase(BaseCQTestCase):
+  """Helper class for testing the CommitQueueSync stage masters."""
 
-  Tests in this class should apply both to the paladin masters and to the
-  Pre-CQ Launcher.
-  """
   BOT_ID = 'master-paladin'
 
   def setUp(self):
@@ -245,32 +242,45 @@ class MasterCQSyncTest(BaseCQTest):
     self.PatchObject(lkgm_manager.LKGMManager, 'CreateFromManifest',
                      return_value=self.manifest_path, autospec=True)
 
-  def testCommitNonManifestChange(self, **kwargs):
+  def _testCommitNonManifestChange(self, **kwargs):
     """Test the commit of a non-manifest change."""
     # Setting tracking_branch=foo makes this a non-manifest change.
     kwargs.setdefault('committed', True)
     self.PerformSync(tracking_branch='foo', **kwargs)
 
-  def testFailedCommitOfNonManifestChange(self):
+  def _testFailedCommitOfNonManifestChange(self):
     """Test that the commit of a non-manifest change fails."""
-    self.testCommitNonManifestChange(committed=False)
+    self._testCommitNonManifestChange(committed=False)
 
-  def testCommitManifestChange(self, **kwargs):
+  def _testCommitManifestChange(self, **kwargs):
     """Test committing a change to a project that's part of the manifest."""
     self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
                      side_effect=lambda x, _: (x, []))
     self.PerformSync(**kwargs)
 
-  def testDefaultSync(self):
+  def _testDefaultSync(self):
     """Test basic ability to sync with standard options."""
     self.PerformSync()
 
 
-class ExtendedMasterCQSyncTest(MasterCQSyncTest):
-  """Additional tests for the CommitQueueSync stage.
+class MasterCQSyncTest(MasterCQSyncTestCase):
+  """Tests the CommitQueueSync stage for the paladin masters."""
 
-  These only apply to the paladin master and not to any other stages.
-  """
+  def testCommitNonManifestChange(self):
+    """See MasterCQSyncTestCase"""
+    self._testCommitNonManifestChange()
+
+  def testFailedCommitOfNonManifestChange(self):
+    """See MasterCQSyncTestCase"""
+    self._testFailedCommitOfNonManifestChange()
+
+  def testCommitManifestChange(self):
+    """See MasterCQSyncTestCase"""
+    self._testCommitManifestChange()
+
+  def testDefaultSync(self):
+    """See MasterCQSyncTestCase"""
+    self._testDefaultSync()
 
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
@@ -280,7 +290,7 @@ class ExtendedMasterCQSyncTest(MasterCQSyncTest):
 
   def testTreeClosureBlocksCommit(self):
     """Test that tree closures block commits."""
-    self.assertRaises(SystemExit, self.testCommitNonManifestChange,
+    self.assertRaises(SystemExit, self._testCommitNonManifestChange,
                       tree_open=False)
 
   def testTreeThrottleUsesAlternateGerritQuery(self):
@@ -330,8 +340,9 @@ class CLStatusMock(partial_mock.PartialMock):
     self.status_count[change] = self.status_count.get(change, 0) + 1
 
 
-class PreCQLauncherStageTest(MasterCQSyncTest):
+class PreCQLauncherStageTest(MasterCQSyncTestCase):
   """Tests for the PreCQLauncherStage."""
+
   BOT_ID = 'pre-cq-launcher'
   STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
   STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
@@ -351,15 +362,35 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
 
     self.sync_stage = sync_stages.PreCQLauncherStage(self._run)
 
+  def testCommitNonManifestChange(self):
+    """See MasterCQSyncTestCase"""
+    self._PrepareValidationPoolMock()
+    self._testCommitNonManifestChange()
+
+  def testFailedCommitOfNonManifestChange(self):
+    """See MasterCQSyncTestCase"""
+    self._PrepareValidationPoolMock()
+    self._testFailedCommitOfNonManifestChange()
+
+  def testCommitManifestChange(self):
+    """See MasterCQSyncTestCase"""
+    self._PrepareValidationPoolMock()
+    self._testCommitManifestChange()
+
+  def testDefaultSync(self):
+    """See MasterCQSyncTestCase"""
+    self._PrepareValidationPoolMock()
+    self._testDefaultSync()
+
   def testTreeClosureIsOK(self):
     """Test that tree closures block commits."""
     self._PrepareValidationPoolMock()
-    self.testCommitNonManifestChange(tree_open=False)
+    self._testCommitNonManifestChange(tree_open=False)
 
   def testLaunchTrybot(self):
     """Test launching a trybot."""
     self._PrepareValidationPoolMock()
-    self.testCommitManifestChange()
+    self._testCommitManifestChange()
     self.assertEqual(self.pre_cq.status.values(), [self.STATUS_LAUNCHING])
     self.assertEqual(self.pre_cq.calls.keys(), [self.STATUS_LAUNCHING])
 
@@ -371,7 +402,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     LAUNCHING, WAITING, and FAILED |launching|, |waiting|, and |failed| times
     respectively.
     """
-    self.testCommitManifestChange(runs=runs)
+    self._testCommitManifestChange(runs=runs)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0), launching)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_WAITING, 0), waiting)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), failed)
