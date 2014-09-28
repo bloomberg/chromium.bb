@@ -897,8 +897,8 @@ def TemporaryURL(prefix):
   url = '%s/chromite-temp/%s/%s/%s' % (constants.TRASH_BUCKET, prefix,
                                        getpass.getuser(), md5.hexdigest())
   ctx = GSContext()
-  ctx.Remove(url, ignore_missing=True)
+  ctx.Remove(url, ignore_missing=True, recurse=True)
   try:
     yield url
   finally:
-    ctx.Remove(url, ignore_missing=True)
+    ctx.Remove(url, ignore_missing=True, recurse=True)
