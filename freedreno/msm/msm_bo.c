@@ -26,6 +26,10 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "msm_priv.h"
 
 static int bo_allocate(struct msm_bo *msm_bo)

@@ -26,6 +26,10 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <assert.h>
 
 #include "freedreno_ringbuffer.h"
