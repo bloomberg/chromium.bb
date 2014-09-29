@@ -55,8 +55,7 @@ struct ResponseReadContext {
 // Streams data from a blob and writes it to a given disk_cache::Entry.
 class BlobReader : public net::URLRequest::Delegate {
  public:
-  typedef base::Callback<void(disk_cache::ScopedEntryPtr, bool)>
-      EntryBoolCallback;
+  typedef base::Callback<void(bool)> BoolCallback;
 
   BlobReader(disk_cache::ScopedEntryPtr entry)
       : cache_entry_offset_(0),
@@ -68,7 +67,7 @@ class BlobReader : public net::URLRequest::Delegate {
 
   void StreamBlobToCache(net::URLRequestContext* request_context,
                          scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                         const EntryBoolCallback& callback) {
+                         const BoolCallback& callback) {
     callback_ = callback;
     blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
         blob_data_handle.Pass(), request_context, this);
@@ -102,7 +101,7 @@ class BlobReader : public net::URLRequest::Delegate {
 
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
     if (!request->status().is_success()) {
-      callback_.Run(entry_.Pass(), false);
+      callback_.Run(false);
       return;
     }
     ReadFromBlob();
@@ -119,12 +118,12 @@ class BlobReader : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE {
     if (!request->status().is_success()) {
-      callback_.Run(entry_.Pass(), false);
+      callback_.Run(false);
       return;
     }
 
     if (bytes_read == 0) {
-      callback_.Run(entry_.Pass(), true);
+      callback_.Run(true);
       return;
     }
 
@@ -145,7 +144,7 @@ class BlobReader : public net::URLRequest::Delegate {
 
   void DidWriteDataToEntry(int expected_bytes, int rv) {
     if (rv != expected_bytes) {
-      callback_.Run(entry_.Pass(), false);
+      callback_.Run(false);
       return;
     }
 
@@ -157,29 +156,51 @@ class BlobReader : public net::URLRequest::Delegate {
   int cache_entry_offset_;
   disk_cache::ScopedEntryPtr entry_;
   scoped_ptr<net::URLRequest> blob_request_;
-  EntryBoolCallback callback_;
+  BoolCallback callback_;
   scoped_refptr<net::IOBufferWithSize> buffer_;
   base::WeakPtrFactory<BlobReader> weak_ptr_factory_;
 };
 
+// The state needed to pass between ServiceWorkerCache::Put callbacks.
+struct PutContext {
+  PutContext(scoped_ptr<ServiceWorkerFetchRequest> request,
+             scoped_ptr<ServiceWorkerResponse> response,
+             scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+             const ServiceWorkerCache::ErrorCallback& callback,
+             net::URLRequestContext* request_context)
+      : request(request.Pass()),
+        response(response.Pass()),
+        blob_data_handle(blob_data_handle.Pass()),
+        callback(callback),
+        request_context(request_context),
+        cache_entry(NULL) {}
+  ~PutContext() {
+    if (cache_entry)
+      cache_entry->Close();
+  }
+
+  // Input parameters to the Put function.
+  scoped_ptr<ServiceWorkerFetchRequest> request;
+  scoped_ptr<ServiceWorkerResponse> response;
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  ServiceWorkerCache::ErrorCallback callback;
+
+  net::URLRequestContext* request_context;
+
+  // This isn't a scoped_ptr because the disk_cache needs an Entry** as input to
+  // CreateEntry.
+  disk_cache::Entry* cache_entry;
+
+  DISALLOW_COPY_AND_ASSIGN(PutContext);
+};
+
 // Put callbacks
-void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
-                       scoped_ptr<ServiceWorkerResponse> response,
-                       const ServiceWorkerCache::ErrorCallback& callback,
-                       scoped_ptr<disk_cache::Entry*> entryptr,
-                       scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                       net::URLRequestContext* request_context,
-                       int rv);
-void PutDidWriteHeaders(scoped_ptr<ServiceWorkerResponse> response,
-                        const ServiceWorkerCache::ErrorCallback& callback,
-                        disk_cache::ScopedEntryPtr entry,
-                        scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                        net::URLRequestContext* request_context,
+void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
+void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                         int expected_bytes,
                         int rv);
-void PutDidWriteBlobToCache(const ServiceWorkerCache::ErrorCallback& callback,
+void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
                             scoped_ptr<BlobReader> blob_reader,
-                            disk_cache::ScopedEntryPtr entry,
                             bool success);
 
 // Match callbacks
@@ -229,28 +250,22 @@ void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
                             base::WeakPtr<ServiceWorkerCache> cache,
                             int rv);
 
-void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
-                       scoped_ptr<ServiceWorkerResponse> response,
-                       const ServiceWorkerCache::ErrorCallback& callback,
-                       scoped_ptr<disk_cache::Entry*> entryptr,
-                       scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                       net::URLRequestContext* request_context,
-                       int rv) {
+void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv) {
   if (rv != net::OK) {
-    callback.Run(ServiceWorkerCache::ErrorTypeExists);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeExists);
     return;
   }
 
-  DCHECK(entryptr);
-  disk_cache::ScopedEntryPtr entry(*entryptr);
+  DCHECK(put_context->cache_entry);
 
   ServiceWorkerRequestResponseHeaders headers;
-  headers.set_method(request->method);
+  headers.set_method(put_context->request->method);
 
-  headers.set_status_code(response->status_code);
-  headers.set_status_text(response->status_text);
-  for (ServiceWorkerHeaderMap::const_iterator it = request->headers.begin();
-       it != request->headers.end();
+  headers.set_status_code(put_context->response->status_code);
+  headers.set_status_text(put_context->response->status_text);
+  for (ServiceWorkerHeaderMap::const_iterator it =
+           put_context->request->headers.begin();
+       it != put_context->request->headers.end();
        ++it) {
     ServiceWorkerRequestResponseHeaders::HeaderMap* header_map =
         headers.add_request_headers();
@@ -258,8 +273,9 @@ void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
     header_map->set_value(it->second);
   }
 
-  for (ServiceWorkerHeaderMap::const_iterator it = response->headers.begin();
-       it != response->headers.end();
+  for (ServiceWorkerHeaderMap::const_iterator it =
+           put_context->response->headers.begin();
+       it != put_context->response->headers.end();
        ++it) {
     ServiceWorkerRequestResponseHeaders::HeaderMap* header_map =
         headers.add_response_headers();
@@ -269,7 +285,7 @@ void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   scoped_ptr<std::string> serialized(new std::string());
   if (!headers.SerializeToString(serialized.get())) {
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage);
     return;
   }
 
@@ -277,16 +293,10 @@ void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
       new net::StringIOBuffer(serialized.Pass()));
 
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
-  disk_cache::Entry* tmp_entry_ptr = entry.get();
+  disk_cache::Entry* tmp_entry_ptr = put_context->cache_entry;
 
-  net::CompletionCallback write_headers_callback =
-      base::Bind(PutDidWriteHeaders,
-                 base::Passed(response.Pass()),
-                 callback,
-                 base::Passed(entry.Pass()),
-                 base::Passed(blob_data_handle.Pass()),
-                 request_context,
-                 buffer->size());
+  net::CompletionCallback write_headers_callback = base::Bind(
+      PutDidWriteHeaders, base::Passed(put_context.Pass()), buffer->size());
 
   rv = tmp_entry_ptr->WriteData(INDEX_HEADERS,
                                 0 /* offset */,
@@ -299,50 +309,53 @@ void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
     write_headers_callback.Run(rv);
 }
 
-void PutDidWriteHeaders(scoped_ptr<ServiceWorkerResponse> response,
-                        const ServiceWorkerCache::ErrorCallback& callback,
-                        disk_cache::ScopedEntryPtr entry,
-                        scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                        net::URLRequestContext* request_context,
+void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                         int expected_bytes,
                         int rv) {
   if (rv != expected_bytes) {
-    entry->Doom();
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage);
+    put_context->cache_entry->Doom();
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage);
     return;
   }
 
   // The metadata is written, now for the response content. The data is streamed
   // from the blob into the cache entry.
 
-  if (response->blob_uuid.empty()) {
-    callback.Run(ServiceWorkerCache::ErrorTypeOK);
+  if (put_context->response->blob_uuid.empty()) {
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK);
     return;
   }
 
-  DCHECK(blob_data_handle);
+  DCHECK(put_context->blob_data_handle);
 
+  disk_cache::ScopedEntryPtr entry(put_context->cache_entry);
+  put_context->cache_entry = NULL;
   scoped_ptr<BlobReader> reader(new BlobReader(entry.Pass()));
+
   BlobReader* reader_ptr = reader.get();
 
-  reader_ptr->StreamBlobToCache(
-      request_context,
-      blob_data_handle.Pass(),
-      base::Bind(
-          PutDidWriteBlobToCache, callback, base::Passed(reader.Pass())));
+  // Grab some pointers before passing put_context in Bind.
+  net::URLRequestContext* request_context = put_context->request_context;
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle =
+      put_context->blob_data_handle.Pass();
+
+  reader_ptr->StreamBlobToCache(request_context,
+                                blob_data_handle.Pass(),
+                                base::Bind(PutDidWriteBlobToCache,
+                                           base::Passed(put_context.Pass()),
+                                           base::Passed(reader.Pass())));
 }
 
-void PutDidWriteBlobToCache(const ServiceWorkerCache::ErrorCallback& callback,
+void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
                             scoped_ptr<BlobReader> blob_reader,
-                            disk_cache::ScopedEntryPtr entry,
                             bool success) {
   if (!success) {
-    entry->Doom();
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage);
+    put_context->cache_entry->Doom();
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage);
     return;
   }
 
-  callback.Run(ServiceWorkerCache::ErrorTypeOK);
+  put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK);
 }
 
 void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
@@ -669,6 +682,8 @@ struct ServiceWorkerCache::KeysContext {
   // Used for enumerating cache entries.
   scoped_ptr<disk_cache::Backend::Iterator> backend_iterator;
   disk_cache::Entry* enumerated_entry;
+
+  DISALLOW_COPY_AND_ASSIGN(KeysContext);
 };
 
 // static
@@ -699,7 +714,6 @@ void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
                              scoped_ptr<ServiceWorkerResponse> response,
                              const ErrorCallback& callback) {
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
-
   if (!response->blob_uuid.empty()) {
     if (!blob_storage_context_) {
       callback.Run(ErrorTypeStorage);
@@ -857,20 +871,17 @@ void ServiceWorkerCache::PutImpl(
     return;
   }
 
-  scoped_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*);
+  scoped_ptr<PutContext> put_context(new PutContext(request.Pass(),
+                                                    response.Pass(),
+                                                    blob_data_handle.Pass(),
+                                                    callback,
+                                                    request_context_));
 
-  disk_cache::Entry** entry_ptr = entry.get();
-
-  ServiceWorkerFetchRequest* request_ptr = request.get();
+  disk_cache::Entry** entry_ptr = &put_context->cache_entry;
+  ServiceWorkerFetchRequest* request_ptr = put_context->request.get();
 
   net::CompletionCallback create_entry_callback =
-      base::Bind(PutDidCreateEntry,
-                 base::Passed(request.Pass()),
-                 base::Passed(response.Pass()),
-                 callback,
-                 base::Passed(entry.Pass()),
-                 base::Passed(blob_data_handle.Pass()),
-                 request_context_);
+      base::Bind(PutDidCreateEntry, base::Passed(put_context.Pass()));
 
   int rv = backend_->CreateEntry(
       request_ptr->url.spec(), entry_ptr, create_entry_callback);
