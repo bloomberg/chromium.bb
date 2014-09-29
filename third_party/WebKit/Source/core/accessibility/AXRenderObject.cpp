@@ -313,8 +313,16 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isHTMLInputElement(node)) {
         HTMLInputElement& input = toHTMLInputElement(*node);
         const AtomicString& type = input.type();
-        if (type == InputTypeNames::checkbox)
+        if (type == InputTypeNames::button) {
+            if (node->parentElement() && isHTMLMenuElement(node->parentElement()))
+                return MenuItemRole;
+            return buttonRoleType();
+        }
+        if (type == InputTypeNames::checkbox) {
+            if (node->parentElement() && isHTMLMenuElement(node->parentElement()))
+                return CheckBoxMenuItemRole;
             return CheckBoxRole;
+        }
         if (type == InputTypeNames::radio)
             return RadioButtonRole;
         if (input.isTextButton())
