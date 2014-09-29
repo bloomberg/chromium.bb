@@ -184,12 +184,6 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      {
-        "test": "net_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       "mojo_apps_js_unittests",
       "mojo_common_unittests",
       "mojo_js_unittests",
@@ -198,6 +192,12 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
@@ -234,50 +234,57 @@
   },
   "Win 7 Tests x64 (1)": {
     "gtest_tests": [
-      "interactive_ui_tests",
+      "accessibility_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        }
+      },
+      "app_list_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
+      "chrome_elf_unittests",
+      "components_unittests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "courgette_unittests",
       "crypto_unittests",
+      "extensions_unittests",
       "gcm_unit_tests",
+      "gfx_unittests",
       "google_apis_unittests",
       "gpu_unittests",
-      "url_unittests",
+      "installer_util_unittests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        }
+      },
+      "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      "ppapi_unittests",
-      "printing_unittests",
-      "remoting_unittests",
-      "sbox_unittests",
-      "sbox_integration_tests",
-      {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
-      "content_browsertests",
-      "installer_util_unittests"
-    ]
-  },
-  "Win 7 Tests x64 (2)": {
-    "gtest_tests": [
-      "accessibility_unittests",
-      "base_unittests",
-      "chrome_elf_unittests",
-      "net_unittests",
-      "app_list_unittests",
-      "sync_integration_tests",
-      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
-    ]
-  },
-  "Win 7 Tests x64 (3)": {
-    "gtest_tests": [
-      "components_unittests",
-      "gfx_unittests",
-      "content_unittests",
-      "extensions_unittests",
-      "ui_unittests",
-      "views_unittests",
-      "wm_unittests",
-      "ipc_tests",
       "mojo_apps_js_unittests",
       "mojo_common_unittests",
       "mojo_js_unittests",
@@ -286,10 +293,43 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
-      "sync_unit_tests",
-      "unit_tests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sbox_unittests",
+      "sbox_integration_tests",
+      {
+        "test": "sync_integration_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "sql_unittests",
-      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+      "sync_unit_tests",
+      "ui_unittests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "url_unittests",
+      "views_unittests",
+      "wm_unittests"
+    ]
+  },
+  "Win 7 Tests x64 (2)": {
+    "gtest_tests": [
+    ]
+  },
+  "Win 7 Tests x64 (3)": {
+    "gtest_tests": [
     ]
   },
   "Win7 Tests (dbg)(1)": {
