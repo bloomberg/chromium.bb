@@ -62,7 +62,7 @@ class RegisterAppTaskTest : public testing::Test {
         new SyncEngineContext(
             fake_drive_service.PassAs<drive::DriveServiceInterface>(),
             drive_uploader.Pass(),
-            NULL,
+            nullptr,
             base::ThreadTaskRunnerHandle::Get(),
             base::ThreadTaskRunnerHandle::Get()));
 
@@ -78,7 +78,7 @@ class RegisterAppTaskTest : public testing::Test {
 
  protected:
   scoped_ptr<LevelDBWrapper> OpenLevelDB() {
-    leveldb::DB* db = NULL;
+    leveldb::DB* db = nullptr;
     leveldb::Options options;
     options.create_if_missing = true;
     options.env = in_memory_env_.get();

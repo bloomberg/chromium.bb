@@ -227,7 +227,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
                      token_service,
                      request_context.get(),
                      make_scoped_ptr(new DriveServiceFactory()),
-                     NULL /* env_override */));
+                     nullptr /* env_override */));
 
   sync_engine->Initialize();
   return sync_engine.Pass();
@@ -758,7 +758,7 @@ SyncEngine::SyncEngine(
       token_service_(token_service),
       request_context_(request_context),
       drive_service_factory_(drive_service_factory.Pass()),
-      remote_change_processor_(NULL),
+      remote_change_processor_(nullptr),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       has_refresh_token_(false),
       network_available_(false),

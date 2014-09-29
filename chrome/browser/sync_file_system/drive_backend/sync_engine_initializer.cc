@@ -198,7 +198,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
 
     if (!sync_root_folder_ || LessOnCreationTime(*entry, *sync_root_folder_)) {
       sync_root_folder_.reset(entry);
-      *itr = NULL;
+      *itr = nullptr;
     }
   }
 

@@ -304,7 +304,7 @@ void LocalToRemoteSyncer::ContinueAsBackgroundTask(
     }
 
     if (!metadata_database()->FindTrackerByTrackerID(
-            remote_file_tracker_->tracker_id(), NULL)) {
+            remote_file_tracker_->tracker_id(), nullptr)) {
       SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
       return;
     }

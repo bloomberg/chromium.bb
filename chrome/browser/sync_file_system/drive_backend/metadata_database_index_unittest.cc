@@ -31,7 +31,8 @@ scoped_ptr<DatabaseContents> CreateTestDatabaseContents() {
       test_util::CreateFolderMetadata("sync_root_folder_id",
                                       "Chrome Syncable FileSystem");
   scoped_ptr<FileTracker> sync_root_tracker =
-      test_util::CreateTracker(*sync_root_metadata, kSyncRootTrackerID, NULL);
+      test_util::CreateTracker(*sync_root_metadata, kSyncRootTrackerID,
+                               nullptr);
 
   scoped_ptr<FileMetadata> app_root_metadata =
       test_util::CreateFolderMetadata("app_root_folder_id", "app_id");
@@ -79,7 +80,7 @@ class MetadataDatabaseIndexTest : public testing::Test {
 
  private:
   void InitializeLevelDB() {
-    leveldb::DB* db = NULL;
+    leveldb::DB* db = nullptr;
     leveldb::Options options;
     options.create_if_missing = true;
     options.max_open_files = 0;  // Use minimum.
@@ -99,13 +100,13 @@ class MetadataDatabaseIndexTest : public testing::Test {
 
 TEST_F(MetadataDatabaseIndexTest, GetEntryTest) {
   FileTracker tracker;
-  EXPECT_FALSE(index()->GetFileTracker(kInvalidTrackerID, NULL));
+  EXPECT_FALSE(index()->GetFileTracker(kInvalidTrackerID, nullptr));
   ASSERT_TRUE(index()->GetFileTracker(kFileTrackerID, &tracker));
   EXPECT_EQ(kFileTrackerID, tracker.tracker_id());
   EXPECT_EQ("file_id", tracker.file_id());
 
   FileMetadata metadata;
-  EXPECT_FALSE(index()->GetFileMetadata(std::string(), NULL));
+  EXPECT_FALSE(index()->GetFileMetadata(std::string(), nullptr));
   ASSERT_TRUE(index()->GetFileMetadata("file_id", &metadata));
   EXPECT_EQ("file_id", metadata.file_id());
 }
@@ -155,8 +156,8 @@ TEST_F(MetadataDatabaseIndexTest, UpdateTest) {
   index()->RemoveFileMetadata("file_id");
   index()->RemoveFileTracker(kFileTrackerID);
 
-  EXPECT_FALSE(index()->GetFileMetadata("file_id", NULL));
-  EXPECT_FALSE(index()->GetFileTracker(kFileTrackerID, NULL));
+  EXPECT_FALSE(index()->GetFileMetadata("file_id", nullptr));
+  EXPECT_FALSE(index()->GetFileTracker(kFileTrackerID, nullptr));
 }
 
 }  // namespace drive_backend

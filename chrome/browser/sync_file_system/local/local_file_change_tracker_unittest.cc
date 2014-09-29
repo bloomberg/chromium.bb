@@ -59,7 +59,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
-    sync_context_ = NULL;
+    sync_context_ = nullptr;
 
     message_loop_.RunUntilIdle();
     file_system_.TearDown();

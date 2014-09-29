@@ -52,7 +52,7 @@ void SyncFileSystemBackend::ProfileHolder::Observe(
   DCHECK(CalledOnUIThread());
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
   DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
-  profile_ = NULL;
+  profile_ = nullptr;
   registrar_.RemoveAll();
 }
 
@@ -62,7 +62,7 @@ Profile* SyncFileSystemBackend::ProfileHolder::GetProfile() {
 }
 
 SyncFileSystemBackend::SyncFileSystemBackend(Profile* profile)
-    : context_(NULL),
+    : context_(nullptr),
       skip_initialize_syncfs_service_for_testing_(false) {
   DCHECK(CalledOnUIThread());
   if (profile)
@@ -88,7 +88,7 @@ SyncFileSystemBackend::~SyncFileSystemBackend() {
 // static
 SyncFileSystemBackend* SyncFileSystemBackend::CreateForTesting() {
   DCHECK(CalledOnUIThread());
-  SyncFileSystemBackend* backend = new SyncFileSystemBackend(NULL);
+  SyncFileSystemBackend* backend = new SyncFileSystemBackend(nullptr);
   backend->skip_initialize_syncfs_service_for_testing_ = true;
   return backend;
 }
@@ -142,7 +142,7 @@ storage::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(
 
 storage::WatcherManager* SyncFileSystemBackend::GetWatcherManager(
     storage::FileSystemType type) {
-  return NULL;
+  return nullptr;
 }
 
 storage::CopyOrMoveFileValidatorFactory*
@@ -151,7 +151,7 @@ SyncFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
-  return NULL;
+  return nullptr;
 }
 
 storage::FileSystemOperation* SyncFileSystemBackend::CreateFileSystemOperation(
@@ -165,7 +165,7 @@ storage::FileSystemOperation* SyncFileSystemBackend::CreateFileSystemOperation(
   scoped_ptr<storage::FileSystemOperationContext> operation_context =
       GetDelegate()->CreateFileSystemOperationContext(url, context, error_code);
   if (!operation_context)
-    return NULL;
+    return nullptr;
 
   if (url.type() == storage::kFileSystemTypeSyncableForInternalSync) {
     return storage::FileSystemOperation::Create(

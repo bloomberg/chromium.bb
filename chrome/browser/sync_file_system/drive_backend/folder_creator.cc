@@ -96,7 +96,7 @@ void FolderCreator::DidListFolders(
     return;
   }
 
-  const google_apis::FileResource* oldest = NULL;
+  const google_apis::FileResource* oldest = nullptr;
   for (size_t i = 0; i < candidates.size(); ++i) {
     const google_apis::FileResource& entry = *candidates[i];
     if (!entry.IsDirectory() || entry.labels().is_trashed())
@@ -120,7 +120,7 @@ void FolderCreator::DidListFolders(
   }
 
   DCHECK(!file_id.empty());
-  if (!metadata_database_->FindFileByFileID(file_id, NULL)) {
+  if (!metadata_database_->FindFileByFileID(file_id, nullptr)) {
     callback.Run(std::string(), SYNC_FILE_ERROR_NOT_FOUND);
     return;
   }

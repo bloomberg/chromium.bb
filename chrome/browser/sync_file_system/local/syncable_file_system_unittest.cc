@@ -59,7 +59,7 @@ class SyncableFileSystemTest : public testing::Test {
   virtual void TearDown() {
     if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
-    sync_context_ = NULL;
+    sync_context_ = nullptr;
 
     file_system_.TearDown();
 

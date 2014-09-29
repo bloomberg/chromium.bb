@@ -84,7 +84,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
-    sync_context_ = NULL;
+    sync_context_ = nullptr;
 
     file_system_.TearDown();
     RevokeSyncableFileSystem();
@@ -346,7 +346,7 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
 
   // This shouldn't crash nor leak memory.
   sync_context_->ShutdownOnUIThread();
-  sync_context_ = NULL;
+  sync_context_ = nullptr;
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }

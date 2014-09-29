@@ -107,7 +107,7 @@ void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
 
 scoped_ptr<LocalFileSyncService> LocalFileSyncService::Create(
     Profile* profile) {
-  return make_scoped_ptr(new LocalFileSyncService(profile, NULL));
+  return make_scoped_ptr(new LocalFileSyncService(profile, nullptr));
 }
 
 scoped_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
@@ -126,7 +126,7 @@ LocalFileSyncService::~LocalFileSyncService() {
 void LocalFileSyncService::Shutdown() {
   sync_context_->RemoveOriginChangeObserver(this);
   sync_context_->ShutdownOnUIThread();
-  profile_ = NULL;
+  profile_ = nullptr;
 }
 
 void LocalFileSyncService::MaybeInitializeFileSystemContext(
@@ -350,7 +350,7 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
               .get())),
-      local_change_processor_(NULL) {
+      local_change_processor_(nullptr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   sync_context_->AddOriginChangeObserver(this);
 }

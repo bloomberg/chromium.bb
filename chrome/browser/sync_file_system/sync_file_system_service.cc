@@ -130,7 +130,7 @@ LocalChangeProcessor* GetLocalChangeProcessorAdapter(
     base::WeakPtr<SyncFileSystemService> service,
     const GURL& origin) {
   if (!service)
-    return NULL;
+    return nullptr;
   return service->GetLocalChangeProcessor(origin);
 }
 
@@ -267,7 +267,7 @@ void SyncFileSystemService::Shutdown() {
 
   ExtensionRegistry::Get(profile_)->RemoveObserver(this);
 
-  profile_ = NULL;
+  profile_ = nullptr;
 }
 
 SyncFileSystemService::~SyncFileSystemService() {
@@ -569,13 +569,13 @@ void SyncFileSystemService::DidDumpFiles(
 
   // After all metadata loaded, sync status can be added to each entry.
   for (size_t i = 0; i < files->GetSize(); ++i) {
-    base::DictionaryValue* file = NULL;
+    base::DictionaryValue* file = nullptr;
     std::string path_string;
     if (!files->GetDictionary(i, &file) ||
         !file->GetString("path", &path_string)) {
       NOTREACHED();
       completion_callback.Run(
-          NULL, SYNC_FILE_ERROR_FAILED, SYNC_FILE_STATUS_UNKNOWN);
+          nullptr, SYNC_FILE_ERROR_FAILED, SYNC_FILE_STATUS_UNKNOWN);
       continue;
     }
 

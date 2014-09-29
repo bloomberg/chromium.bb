@@ -70,7 +70,7 @@ class LevelDBWrapperTest : public testing::Test {
 
  private:
   void InitializeLevelDB() {
-    leveldb::DB* db = NULL;
+    leveldb::DB* db = nullptr;
     leveldb::Options options;
     options.create_if_missing = true;
     options.max_open_files = 0;  // Use minimum.

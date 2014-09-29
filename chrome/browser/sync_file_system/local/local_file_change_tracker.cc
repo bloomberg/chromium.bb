@@ -415,12 +415,14 @@ void LocalFileChangeTracker::RecordChange(
   int change_seq = current_change_seq_number_++;
   if (ContainsKey(demoted_changes_, url)) {
     RecordChangeToChangeMaps(url, change, change_seq,
-                             &demoted_changes_, NULL);
+                             &demoted_changes_, nullptr);
   } else {
     RecordChangeToChangeMaps(url, change, change_seq, &changes_, &change_seqs_);
   }
-  if (ContainsKey(mirror_changes_, url))
-    RecordChangeToChangeMaps(url, change, change_seq, &mirror_changes_, NULL);
+  if (ContainsKey(mirror_changes_, url)) {
+    RecordChangeToChangeMaps(url, change, change_seq, &mirror_changes_,
+                             nullptr);
+  }
   UpdateNumChanges();
 }
 

@@ -28,7 +28,7 @@ SyncEngineContext::SyncEngineContext(
       drive_uploader_(drive_uploader.Pass()),
       task_logger_(task_logger ? task_logger->AsWeakPtr()
                                : base::WeakPtr<TaskLogger>()),
-      remote_change_processor_(NULL),
+      remote_change_processor_(nullptr),
       ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner) {
   sequence_checker_.DetachFromSequence();

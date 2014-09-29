@@ -154,7 +154,7 @@ void RemoveUnreachableItems(LevelDBWrapper* db, int64 sync_root_tracker_id) {
     std::set<int64> inactive_trackers;
     scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
-      if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
+      if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, nullptr))
         break;
 
       scoped_ptr<FileTracker> tracker(new FileTracker);
@@ -207,7 +207,7 @@ void RemoveUnreachableItems(LevelDBWrapper* db, int64 sync_root_tracker_id) {
   {
     scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
-      if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
+      if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, nullptr))
         break;
 
       scoped_ptr<FileTracker> tracker(new FileTracker);
@@ -229,7 +229,7 @@ void RemoveUnreachableItems(LevelDBWrapper* db, int64 sync_root_tracker_id) {
   {
     scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
-      if (!RemovePrefix(itr->key().ToString(), kFileMetadataKeyPrefix, NULL))
+      if (!RemovePrefix(itr->key().ToString(), kFileMetadataKeyPrefix, nullptr))
         break;
 
       scoped_ptr<FileMetadata> metadata(new FileMetadata);
@@ -353,7 +353,6 @@ void MetadataDatabaseIndexOnDisk::StoreFileTracker(
     UpdateInFileIDIndexes(old_tracker, *tracker);
     UpdateInPathIndexes(old_tracker, *tracker);
     UpdateInDirtyTrackerIndexes(old_tracker, *tracker);
-
   }
 
   PutFileTrackerToDB(*tracker, db_);
@@ -668,7 +667,7 @@ int64 MetadataDatabaseIndexOnDisk::BuildTrackerIndexes() {
 
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
+    if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, nullptr))
       break;
 
     FileTracker tracker;

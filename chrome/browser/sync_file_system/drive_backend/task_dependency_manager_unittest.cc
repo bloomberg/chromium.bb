@@ -109,16 +109,16 @@ TEST(TaskDependencyManagerTest, ExclusiveTask) {
 TEST(TaskDependencyManagerTest, PermissiveTask) {
   TaskDependencyManager manager;
 
-  EXPECT_TRUE(manager.Insert(NULL));
+  EXPECT_TRUE(manager.Insert(nullptr));
   EXPECT_TRUE(InsertPath(&manager, "app_id", FPL("/foo/bar")));
   EXPECT_FALSE(InsertExclusiveTask(&manager));
   ErasePath(&manager, "app_id", FPL("/foo/bar"));
 
   EXPECT_FALSE(InsertExclusiveTask(&manager));
-  manager.Erase(NULL);
+  manager.Erase(nullptr);
   EXPECT_TRUE(InsertExclusiveTask(&manager));
 
-  EXPECT_FALSE(manager.Insert(NULL));
+  EXPECT_FALSE(manager.Insert(nullptr));
 
   EraseExclusiveTask(&manager);
 }

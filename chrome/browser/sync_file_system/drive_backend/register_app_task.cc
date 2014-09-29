@@ -44,7 +44,7 @@ RegisterAppTask::~RegisterAppTask() {
 
 bool RegisterAppTask::CanFinishImmediately() {
   return metadata_database() &&
-         metadata_database()->FindAppRootTracker(app_id_, NULL);
+         metadata_database()->FindAppRootTracker(app_id_, nullptr);
 }
 
 void RegisterAppTask::RunExclusive(const SyncStatusCallback& callback) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 
+#include <string>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -65,7 +67,7 @@ TEST(DriveMetadataDBMigrationUtilTest, RollbackFromV4ToV3) {
   const char kDemotedDirtyIDKeyPrefix[] = "DEMOTED_DIRTY: ";
 
   // Set up environment.
-  leveldb::DB* db_ptr = NULL;
+  leveldb::DB* db_ptr = nullptr;
   base::ScopedTempDir base_dir;
   ASSERT_TRUE(base_dir.CreateUniqueTempDir());
   {

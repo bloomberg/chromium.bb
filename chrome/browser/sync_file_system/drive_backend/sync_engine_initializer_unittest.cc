@@ -55,7 +55,7 @@ class SyncEngineInitializerTest : public testing::Test {
     sync_context_.reset(new SyncEngineContext(
         fake_drive_service.Pass(),
         scoped_ptr<drive::DriveUploaderInterface>(),
-        NULL,
+        nullptr,
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get()));
 

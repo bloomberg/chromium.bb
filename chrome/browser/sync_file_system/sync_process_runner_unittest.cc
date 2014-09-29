@@ -23,7 +23,7 @@ class FakeClient : public SyncProcessRunner::Client {
   }
 
   virtual SyncFileSystemService* GetSyncService() OVERRIDE {
-    return NULL;
+    return nullptr;
   }
 
   void set_service_state(SyncServiceState service_state) {

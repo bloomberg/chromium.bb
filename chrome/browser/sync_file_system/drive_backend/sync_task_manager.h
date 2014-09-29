@@ -163,7 +163,7 @@ class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
                scoped_ptr<SyncTask> task);
 
   // Runs a pending task as a foreground task if possible.
-  // If |token| is non-NULL, put |token| back to |token_| beforehand.
+  // If |token| is non-nullptr, put |token| back to |token_| beforehand.
   void MaybeStartNextForegroundTask(scoped_ptr<SyncTaskToken> token);
 
   base::WeakPtr<Client> client_;

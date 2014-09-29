@@ -72,7 +72,7 @@ class RemoteToLocalSyncerTest : public testing::Test {
     context_.reset(new SyncEngineContext(
         fake_drive_service.PassAs<drive::DriveServiceInterface>(),
         drive_uploader.Pass(),
-        NULL,
+        nullptr,
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get()));
     context_->SetRemoteChangeProcessor(remote_change_processor_.get());
@@ -381,7 +381,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFolder) {
   VerifyConsistency();
 
   // Tracker for the remote file should has low priority.
-  EXPECT_FALSE(GetMetadataDatabase()->GetDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->GetDirtyTracker(nullptr));
   EXPECT_TRUE(GetMetadataDatabase()->HasDemotedDirtyTracker());
 }
 
@@ -446,7 +446,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFile) {
   VerifyConsistency();
 
   // Tracker for the remote file should be lowered.
-  EXPECT_FALSE(GetMetadataDatabase()->GetDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->GetDirtyTracker(nullptr));
   EXPECT_TRUE(GetMetadataDatabase()->HasDemotedDirtyTracker());
 }
 

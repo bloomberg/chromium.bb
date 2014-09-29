@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 
+#include <algorithm>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -57,7 +59,8 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
         test_util::CreateFolderMetadata("sync_root_folder_id",
                                         "Chrome Syncable FileSystem");
     scoped_ptr<FileTracker> sync_root_tracker =
-        test_util::CreateTracker(*sync_root_metadata, kSyncRootTrackerID, NULL);
+        test_util::CreateTracker(*sync_root_metadata, kSyncRootTrackerID,
+                                 nullptr);
 
     scoped_ptr<FileMetadata> app_root_metadata =
         test_util::CreateFolderMetadata("app_root_folder_id", "app_title");
@@ -114,7 +117,7 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
   }
 
   scoped_ptr<LevelDBWrapper> InitializeLevelDB() {
-    leveldb::DB* db = NULL;
+    leveldb::DB* db = nullptr;
     leveldb::Options options;
     options.create_if_missing = true;
     options.max_open_files = 0;  // Use minimum.
@@ -134,22 +137,22 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
 };
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, GetEntryTest) {
-  CreateTestDatabase(false, NULL);
+  CreateTestDatabase(false, nullptr);
 
   FileTracker tracker;
-  EXPECT_FALSE(index()->GetFileTracker(kInvalidTrackerID, NULL));
+  EXPECT_FALSE(index()->GetFileTracker(kInvalidTrackerID, nullptr));
   ASSERT_TRUE(index()->GetFileTracker(kFileTrackerID, &tracker));
   EXPECT_EQ(kFileTrackerID, tracker.tracker_id());
   EXPECT_EQ("file_id", tracker.file_id());
 
   FileMetadata metadata;
-  EXPECT_FALSE(index()->GetFileMetadata(std::string(), NULL));
+  EXPECT_FALSE(index()->GetFileMetadata(std::string(), nullptr));
   ASSERT_TRUE(index()->GetFileMetadata("file_id", &metadata));
   EXPECT_EQ("file_id", metadata.file_id());
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
-  CreateTestDatabase(false, NULL);
+  CreateTestDatabase(false, nullptr);
 
   const int64 tracker_id = 10;
   scoped_ptr<FileMetadata> metadata =
@@ -162,8 +165,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   index()->StoreFileMetadata(metadata.Pass());
   index()->StoreFileTracker(tracker.Pass());
 
-  EXPECT_TRUE(index()->GetFileMetadata("test_file_id", NULL));
-  EXPECT_TRUE(index()->GetFileTracker(tracker_id, NULL));
+  EXPECT_TRUE(index()->GetFileMetadata("test_file_id", nullptr));
+  EXPECT_TRUE(index()->GetFileTracker(tracker_id, nullptr));
 
   WriteToDB();
 
@@ -180,13 +183,13 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   index()->RemoveFileMetadata("test_file_id");
   index()->RemoveFileTracker(tracker_id);
 
-  EXPECT_FALSE(index()->GetFileMetadata("test_file_id", NULL));
-  EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
+  EXPECT_FALSE(index()->GetFileMetadata("test_file_id", nullptr));
+  EXPECT_FALSE(index()->GetFileTracker(tracker_id, nullptr));
 
   WriteToDB();
 
-  EXPECT_FALSE(index()->GetFileMetadata("test_file_id", NULL));
-  EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
+  EXPECT_FALSE(index()->GetFileMetadata("test_file_id", nullptr));
+  EXPECT_FALSE(index()->GetFileTracker(tracker_id, nullptr));
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, RemoveUnreachableItemsTest) {
@@ -199,7 +202,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, RemoveUnreachableItemsTest) {
   scoped_ptr<FileTracker> orphaned_tracker =
       test_util::CreateTracker(*orphaned_metadata,
                                kOrphanedFileTrackerID,
-                               NULL);
+                               nullptr);
 
   PutFileMetadataToDB(*orphaned_metadata, db.get());
   PutFileTrackerToDB(*orphaned_tracker, db.get());
@@ -216,16 +219,16 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, RemoveUnreachableItemsTest) {
   EXPECT_TRUE(db->Commit().ok());
 
   EXPECT_TRUE(db->Get(key, &value).IsNotFound());
-  EXPECT_FALSE(index_on_disk->GetFileTracker(kOrphanedFileTrackerID, NULL));
+  EXPECT_FALSE(index_on_disk->GetFileTracker(kOrphanedFileTrackerID, nullptr));
 
-  EXPECT_TRUE(index_on_disk->GetFileTracker(kSyncRootTrackerID, NULL));
-  EXPECT_TRUE(index_on_disk->GetFileTracker(kAppRootTrackerID, NULL));
-  EXPECT_TRUE(index_on_disk->GetFileTracker(kFileTrackerID, NULL));
+  EXPECT_TRUE(index_on_disk->GetFileTracker(kSyncRootTrackerID, nullptr));
+  EXPECT_TRUE(index_on_disk->GetFileTracker(kAppRootTrackerID, nullptr));
+  EXPECT_TRUE(index_on_disk->GetFileTracker(kFileTrackerID, nullptr));
 }
 
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
-  CreateTestDatabase(false, NULL);
+  CreateTestDatabase(false, nullptr);
 
   TrackerIDSet tracker_ids;
   // Before building indexes, no references exist.
@@ -253,7 +256,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, BuildAndDeleteIndexTest) {
-  CreateTestDatabase(false, NULL);
+  CreateTestDatabase(false, nullptr);
   int64 answer = index()->BuildTrackerIndexes();
   WriteToDB();
   ASSERT_EQ(16, answer);
@@ -264,7 +267,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, BuildAndDeleteIndexTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, AllEntriesTest) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   EXPECT_EQ(3U, index()->CountFileMetadata());
   std::vector<std::string> file_ids(index()->GetAllMetadataIDs());
@@ -285,7 +288,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, AllEntriesTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   std::vector<std::string> app_ids = index()->GetRegisteredAppIDs();
   ASSERT_EQ(1U, app_ids.size());
@@ -345,7 +348,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   FileTracker app_root_tracker;
   EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
@@ -409,7 +412,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   FileTracker app_root_tracker;
   EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
@@ -487,7 +490,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
 
 TEST_F(MetadataDatabaseIndexOnDiskTest,
        TrackerIDSetByParentIDAndTitleTest_EmptyTitle) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   const int64 kFolderTrackerID = 23;
   const int64 kNewFileTrackerID = 42;
@@ -544,7 +547,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest,
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   FileTracker app_root;
   EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root));
@@ -582,7 +585,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
-  CreateTestDatabase(true, NULL);
+  CreateTestDatabase(true, nullptr);
 
   // Testing public methods
   EXPECT_EQ(1U, index()->CountDirtyTracker());
