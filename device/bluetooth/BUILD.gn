@@ -96,12 +96,8 @@ static_library("bluetooth") {
   deps = [
     ":strings",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//net",
-    "//third_party/libxml",
     "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
   ]
 
   if (is_chromeos) {
