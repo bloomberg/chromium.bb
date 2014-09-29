@@ -82,12 +82,12 @@ void ContentProxy::ContentWillUnload() {
 
 gfx::ImageSkia ContentProxy::GetContentImage() {
   // While we compress to PNG, we use the original read back.
-  if (!raw_image_.isNull() || !png_data_.get())
+  if (!png_data_.get())
     return raw_image_;
 
   // Otherwise we convert the PNG.
   std::vector<gfx::ImagePNGRep> image_reps;
-  image_reps.push_back(gfx::ImagePNGRep(png_data_, 0.0f));
+  image_reps.push_back(gfx::ImagePNGRep(png_data_, 1.0f));
   return *(gfx::Image(image_reps).ToImageSkia());
 }
 

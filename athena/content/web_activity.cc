@@ -558,7 +558,7 @@ views::Widget* WebActivity::CreateWidget() {
 
 gfx::ImageSkia WebActivity::GetOverviewModeImage() {
   if (content_proxy_.get())
-    content_proxy_->GetContentImage();
+    return content_proxy_->GetContentImage();
   return gfx::ImageSkia();
 }
 
