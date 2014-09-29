@@ -1018,6 +1018,8 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
   this.updateSubDirectories(false /* recursive */);
   var currentSequence = ++this.sequence_;
   var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  if (!volumeInfo)
+    return;
   volumeInfo.resolveDisplayRoot(function() {
     if (this.sequence_ !== currentSequence)
       return;
