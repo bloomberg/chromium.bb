@@ -11,7 +11,6 @@ namespace cc {
 
 SchedulerSettings::SchedulerSettings()
     : begin_frame_scheduling_enabled(true),
-      main_frame_before_draw_enabled(true),
       main_frame_before_activation_enabled(false),
       impl_side_painting(false),
       timeout_and_draw_when_animation_checkerboards(true),
@@ -22,7 +21,6 @@ SchedulerSettings::SchedulerSettings()
 
 SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
     : begin_frame_scheduling_enabled(settings.begin_frame_scheduling_enabled),
-      main_frame_before_draw_enabled(settings.main_frame_before_draw_enabled),
       main_frame_before_activation_enabled(
           settings.main_frame_before_activation_enabled),
       impl_side_painting(settings.impl_side_painting),
@@ -43,8 +41,6 @@ SchedulerSettings::AsValue() const {
       new base::debug::TracedValue();
   state->SetBoolean("begin_frame_scheduling_enabled",
                     begin_frame_scheduling_enabled);
-  state->SetBoolean("main_frame_before_draw_enabled",
-                    main_frame_before_draw_enabled);
   state->SetBoolean("main_frame_before_activation_enabled",
                     main_frame_before_activation_enabled);
   state->SetBoolean("impl_side_painting", impl_side_painting);

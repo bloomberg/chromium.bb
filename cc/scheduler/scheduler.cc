@@ -91,9 +91,6 @@ Scheduler::Scheduler(
                settings_.AsValue());
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
-  if (settings_.main_frame_before_activation_enabled) {
-    DCHECK(settings_.main_frame_before_draw_enabled);
-  }
 
   begin_retro_frame_closure_ =
       base::Bind(&Scheduler::BeginRetroFrame, weak_factory_.GetWeakPtr());

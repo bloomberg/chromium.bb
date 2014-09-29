@@ -18,7 +18,6 @@ LayerTreeSettings::LayerTreeSettings()
       throttle_frame_production(true),
       single_thread_proxy_scheduler(true),
       begin_frame_scheduling_enabled(false),
-      main_frame_before_draw_enabled(true),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
       report_overscroll_only_for_scrollable_axes(false),

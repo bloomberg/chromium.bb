@@ -96,8 +96,6 @@ const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
       return "COMMIT_STATE_READY_TO_COMMIT";
     case COMMIT_STATE_WAITING_FOR_ACTIVATION:
       return "COMMIT_STATE_WAITING_FOR_ACTIVATION";
-    case COMMIT_STATE_WAITING_FOR_FIRST_DRAW:
-      return "COMMIT_STATE_WAITING_FOR_FIRST_DRAW";
   }
   NOTREACHED();
   return "???";
@@ -569,8 +567,6 @@ void SchedulerStateMachine::UpdateState(Action action) {
     case ACTION_SEND_BEGIN_MAIN_FRAME:
       DCHECK(!has_pending_tree_ ||
              settings_.main_frame_before_activation_enabled);
-      DCHECK(!active_tree_needs_first_draw_ ||
-             settings_.main_frame_before_draw_enabled);
       DCHECK(visible_);
       commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
       needs_commit_ = false;
@@ -620,12 +616,10 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
 
   if (commit_was_aborted || settings_.main_frame_before_activation_enabled) {
     commit_state_ = COMMIT_STATE_IDLE;
-  } else if (settings_.main_frame_before_draw_enabled) {
+  } else {
     commit_state_ = settings_.impl_side_painting
                         ? COMMIT_STATE_WAITING_FOR_ACTIVATION
                         : COMMIT_STATE_IDLE;
-  } else {
-    commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
   }
 
   // If we are impl-side-painting but the commit was aborted, then we behave
@@ -685,11 +679,6 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
 void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
-
-  if (!has_pending_tree_ &&
-      commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW) {
-    commit_state_ = COMMIT_STATE_IDLE;
-  }
 
   needs_redraw_ = false;
   active_tree_needs_first_draw_ = false;

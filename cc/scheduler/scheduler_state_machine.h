@@ -68,7 +68,6 @@ class CC_EXPORT SchedulerStateMachine {
     COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED,
     COMMIT_STATE_READY_TO_COMMIT,
     COMMIT_STATE_WAITING_FOR_ACTIVATION,
-    COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
   };
   static const char* CommitStateToString(CommitState state);
 
