@@ -124,8 +124,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback) OVERRIDE;
+      const base::Callback<void(bool)>& result_callback) OVERRIDE;
+  virtual void CancelGeolocationPermissionRequest(
+      content::WebContents* web_contents,
+      int bridge_id,
+      const GURL& requesting_frame) OVERRIDE;
   virtual void RequestMidiSysExPermission(
       content::WebContents* web_contents,
       int bridge_id,

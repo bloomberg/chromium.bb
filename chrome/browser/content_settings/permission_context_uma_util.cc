@@ -28,6 +28,7 @@ enum PermissionType {
   PERMISSION_MIDI_SYSEX = 1,
   PERMISSION_PUSH_MESSAGING = 2,
   PERMISSION_NOTIFICATIONS = 3,
+  PERMISSION_GEOLOCATION = 4,
 
   // Always keep this at the end.
   PERMISSION_NUM,
@@ -37,8 +38,10 @@ void RecordPermissionAction(
       ContentSettingsType permission, PermissionAction action) {
   switch (permission) {
       case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-        // TODO(miguelg): support geolocation through
-        // the generic permission class.
+        UMA_HISTOGRAM_ENUMERATION(
+                   "ContentSettings.PermissionActions_Geolocation",
+                   action,
+                   PERMISSION_ACTION_NUM);
         break;
       case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
         UMA_HISTOGRAM_ENUMERATION(
@@ -72,6 +75,9 @@ void RecordPermissionRequest(
     ContentSettingsType permission) {
   PermissionType type;
   switch (permission) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      type = PERMISSION_GEOLOCATION;
+      break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       type = PERMISSION_NOTIFICATIONS;
       break;

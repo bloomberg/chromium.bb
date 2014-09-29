@@ -15,39 +15,12 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #endif
 
-namespace {
-
-class Service : public KeyedService {
- public:
-  explicit Service(Profile* profile) {
-#if defined(OS_ANDROID)
-    context_ = new GeolocationPermissionContextAndroid(profile);
-#else
-    context_ = new GeolocationPermissionContext(profile);
-#endif
-  }
-
-  GeolocationPermissionContext* context() {
-    return context_.get();
-  }
-
-  virtual void Shutdown() OVERRIDE {
-    context()->ShutdownOnUIThread();
-  }
-
- private:
-  scoped_refptr<GeolocationPermissionContext> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(Service);
-};
-
-}  // namespace
 
 // static
 GeolocationPermissionContext*
 GeolocationPermissionContextFactory::GetForProfile(Profile* profile) {
-  return static_cast<Service*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true))->context();
+  return static_cast<GeolocationPermissionContext*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -56,11 +29,20 @@ GeolocationPermissionContextFactory::GetInstance() {
   return Singleton<GeolocationPermissionContextFactory>::get();
 }
 
+#if !defined(OS_ANDROID)
 GeolocationPermissionContextFactory::GeolocationPermissionContextFactory()
     : BrowserContextKeyedServiceFactory(
           "GeolocationPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
+#else
+GeolocationPermissionContextFactory::GeolocationPermissionContextFactory()
+    : BrowserContextKeyedServiceFactory(
+          "GeolocationPermissionContextAndroid",
+          BrowserContextDependencyManager::GetInstance()) {
+}
+#endif
+
 
 GeolocationPermissionContextFactory::~GeolocationPermissionContextFactory() {
 }
@@ -68,7 +50,12 @@ GeolocationPermissionContextFactory::~GeolocationPermissionContextFactory() {
 KeyedService*
 GeolocationPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new Service(static_cast<Profile*>(profile));
+#if !defined(OS_ANDROID)
+  return new GeolocationPermissionContext(static_cast<Profile*>(profile));
+#else
+  return new GeolocationPermissionContextAndroid(
+      static_cast<Profile*>(profile));
+#endif
 }
 
 void GeolocationPermissionContextFactory::RegisterProfilePrefs(

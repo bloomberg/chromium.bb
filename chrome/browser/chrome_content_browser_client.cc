@@ -1945,13 +1945,35 @@ void ChromeContentBrowserClient::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
+    const base::Callback<void(bool)>& result_callback) {
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+
+  const PermissionRequestID request_id(render_process_id,
+                                       render_view_id,
+                                       bridge_id,
+                                       requesting_frame);
   GeolocationPermissionContextFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
-          RequestGeolocationPermission(web_contents, bridge_id,
-                                       requesting_frame, user_gesture,
-                                       result_callback, cancel_callback);
+          RequestPermission(web_contents, request_id,
+                            requesting_frame.GetOrigin(), user_gesture,
+                            result_callback);
+}
+
+void ChromeContentBrowserClient::CancelGeolocationPermissionRequest(
+    content::WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame) {
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+
+  const PermissionRequestID request_id(render_process_id,
+                                       render_view_id,
+                                       bridge_id,
+                                       requesting_frame);
+  GeolocationPermissionContextFactory::GetForProfile(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
+            CancelPermissionRequest(web_contents, request_id);
 }
 
 void ChromeContentBrowserClient::RequestMidiSysExPermission(

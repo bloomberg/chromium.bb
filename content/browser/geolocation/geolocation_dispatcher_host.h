@@ -75,7 +75,6 @@ class GeolocationDispatcherHost : public WebContentsObserver {
     int render_frame_id;
     int render_process_id;
     int bridge_id;
-    base::Closure cancel;
   };
   std::vector<PendingPermission> pending_permissions_;
 

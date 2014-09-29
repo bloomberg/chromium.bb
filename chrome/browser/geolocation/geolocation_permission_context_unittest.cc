@@ -27,6 +27,7 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -120,10 +121,7 @@ class GeolocationPermissionContextTests
   void RequestGeolocationPermission(content::WebContents* web_contents,
                                     const PermissionRequestID& id,
                                     const GURL& requesting_frame);
-  void RequestGeolocationPermission(content::WebContents* web_contents,
-                                    const PermissionRequestID& id,
-                                    const GURL& requesting_frame,
-                                    base::Closure* cancel_callback);
+
   void PermissionResponse(const PermissionRequestID& id,
                           bool allowed);
   void CheckPermissionMessageSent(int bridge_id, bool allowed);
@@ -135,7 +133,8 @@ class GeolocationPermissionContextTests
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting);
 
-  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+  // owned by the browser context
+  GeolocationPermissionContext* geolocation_permission_context_;
   ClosedInfoBarTracker closed_infobar_tracker_;
   ScopedVector<content::WebContents> extra_tabs_;
 
@@ -167,20 +166,11 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame) {
-  RequestGeolocationPermission(web_contents, id, requesting_frame, NULL);
-}
-
-void GeolocationPermissionContextTests::RequestGeolocationPermission(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    base::Closure* cancel_callback) {
-  geolocation_permission_context_->RequestGeolocationPermission(
-      web_contents, id.bridge_id(), requesting_frame, false,
+  geolocation_permission_context_->RequestPermission(
+      web_contents, id, requesting_frame, false,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
-                 base::Unretained(this), id),
-      cancel_callback);
-  content::RunAllBlockingPoolTasksUntilIdle();
+                 base::Unretained(this), id));
+   content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(
@@ -467,10 +457,10 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
 
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
+
   // Request permission for two frames.
-  base::Closure cancel_callback;
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, &cancel_callback);
+      web_contents(), RequestID(0), requesting_frame_0);
   RequestGeolocationPermission(
       web_contents(), RequestID(1), requesting_frame_1);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
@@ -483,7 +473,8 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
 
   // Simulate the frame going away, ensure the infobar for this frame
   // is removed and the next pending infobar is created.
-  cancel_callback.Run();
+  geolocation_permission_context_->CancelPermissionRequest(web_contents(),
+      RequestID(0));
   EXPECT_EQ(1U, closed_infobar_tracker_.size());
   EXPECT_TRUE(closed_infobar_tracker_.Contains(infobar_0));
   closed_infobar_tracker_.Clear();
@@ -654,37 +645,6 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   // pending request should have been cleared without an infobar being created.
   ASSERT_EQ(1U, closed_infobar_tracker_.size());
   ASSERT_TRUE(closed_infobar_tracker_.Contains(infobar));
-}
-
-TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
-  GURL requesting_frame_0("http://www.example.com/geolocation");
-  GURL requesting_frame_1("http://www.example-2.com/geolocation");
-  NavigateAndCommit(requesting_frame_0);
-  NavigateAndCommit(requesting_frame_1);
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
-  // Go back: navigate to a pending entry before requesting geolocation
-  // permission.
-  web_contents()->GetController().GoBack();
-  // Request permission for the committed frame (not the pending one).
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_1);
-  // Ensure the infobar is created.
-  ASSERT_EQ(1U, infobar_service()->infobar_count());
-  infobars::InfoBarDelegate* infobar_delegate =
-      infobar_service()->infobar_at(0)->delegate();
-  ASSERT_TRUE(infobar_delegate);
-  // Ensure the infobar wouldn't expire for a navigation to the committed entry.
-  content::LoadCommittedDetails details;
-  details.entry = web_contents()->GetController().GetLastCommittedEntry();
-  EXPECT_FALSE(infobar_delegate->ShouldExpire(
-      InfoBarService::NavigationDetailsFromLoadCommittedDetails(details)));
-  // Ensure the infobar will expire when we commit the pending navigation.
-  details.entry = web_contents()->GetController().GetActiveEntry();
-  EXPECT_TRUE(infobar_delegate->ShouldExpire(
-      InfoBarService::NavigationDetailsFromLoadCommittedDetails(details)));
-
-  // Delete the tab contents.
-  DeleteContents();
 }
 
 TEST_F(GeolocationPermissionContextTests, LastUsageAudited) {

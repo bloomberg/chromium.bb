@@ -29,7 +29,7 @@ PermissionContextBase::PermissionContextBase(
 }
 
 PermissionContextBase::~PermissionContextBase() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void PermissionContextBase::RequestPermission(
@@ -38,7 +38,7 @@ void PermissionContextBase::RequestPermission(
     const GURL& requesting_frame,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DecidePermission(web_contents,
                    id,
@@ -46,6 +46,25 @@ void PermissionContextBase::RequestPermission(
                    web_contents->GetLastCommittedURL().GetOrigin(),
                    user_gesture,
                    callback);
+}
+
+void PermissionContextBase::CancelPermissionRequest(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (PermissionBubbleManager::Enabled()) {
+    PermissionBubbleRequest* cancelling =
+        pending_bubbles_.get(id.ToString());
+    if (cancelling != NULL && web_contents != NULL &&
+        PermissionBubbleManager::FromWebContents(web_contents) != NULL) {
+      PermissionBubbleManager::FromWebContents(web_contents)->
+          CancelRequest(cancelling);
+    }
+    return;
+  }
+
+  GetQueueController()->CancelInfoBarRequest(id);
 }
 
 void PermissionContextBase::DecidePermission(
@@ -58,7 +77,8 @@ void PermissionContextBase::DecidePermission(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ContentSetting content_setting =
-      profile_->GetHostContentSettingsMap()->GetContentSetting(
+      profile_->GetHostContentSettingsMap()
+      ->GetContentSettingAndMaybeUpdateLastUsage(
           requesting_origin, embedder_origin, permission_type_, std::string());
   switch (content_setting) {
     case CONTENT_SETTING_BLOCK:

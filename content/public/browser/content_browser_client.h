@@ -444,8 +444,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback);
+      const base::Callback<void(bool)>& result_callback);
+
+  virtual void CancelGeolocationPermissionRequest(
+      WebContents* web_contents,
+      int bridge_id,
+      const GURL& requesting_frame);
 
   // Invoked when the Geolocation API uses its permission.
   virtual void DidUseGeolocationPermission(WebContents* web_contents,

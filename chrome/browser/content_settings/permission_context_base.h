@@ -63,6 +63,11 @@ class PermissionContextBase : public KeyedService {
                                  bool user_gesture,
                                  const BrowserPermissionCallback& callback);
 
+  // Withdraw an existing permission request, no op if the permission request
+  // was already cancelled by some other means.
+  virtual void CancelPermissionRequest(content::WebContents* web_contents,
+                                       const PermissionRequestID& id);
+
  protected:
   // Decide whether the permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
@@ -116,6 +121,8 @@ class PermissionContextBase : public KeyedService {
   base::ScopedPtrHashMap<std::string, PermissionBubbleRequest>
       pending_bubbles_;
 
+  // Must be the last member, to ensure that it will be
+  // destroyed first, which will invalidate weak pointers
   base::WeakPtrFactory<PermissionContextBase> weak_factory_;
 };
 

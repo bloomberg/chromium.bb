@@ -14,13 +14,15 @@
 GeolocationPermissionContextAndroid::
 PermissionRequestInfo::PermissionRequestInfo()
     : id(0, 0, 0, GURL()),
-      user_gesture(false) {}
+      user_gesture(false) {
+}
 
 GeolocationPermissionContextAndroid::
     GeolocationPermissionContextAndroid(Profile* profile)
     : GeolocationPermissionContext(profile),
       google_location_settings_helper_(
-          GoogleLocationSettingsHelper::Create()) {
+          GoogleLocationSettingsHelper::Create()),
+      weak_factory_(this) {
 }
 
 GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() {
@@ -30,31 +32,60 @@ void GeolocationPermissionContextAndroid::ProceedDecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestInfo& info,
     base::Callback<void(bool)> callback) {
-  // Super class implementation expects everything in UI thread instead.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  GeolocationPermissionContext::DecidePermission(
-      web_contents, info.id, info.requesting_frame, info.user_gesture,
-      info.embedder, callback);
+
+  // The super class implementation expects everything in UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GeolocationPermissionContext::RequestPermission(
+      web_contents, info.id,
+      info.requesting_origin,
+      info.user_gesture,
+      callback);
 }
 
-void GeolocationPermissionContextAndroid::CheckSystemLocation(
+
+// UI thread
+void GeolocationPermissionContextAndroid::RequestPermission(
+    content::WebContents* web_contents,
+     const PermissionRequestID& id,
+     const GURL& requesting_frame_origin,
+     bool user_gesture,
+     const BrowserPermissionCallback& callback) {
+  PermissionRequestInfo info;
+  info.id = id;
+  info.requesting_origin = requesting_frame_origin;
+  info.embedder_origin = web_contents->GetLastCommittedURL().GetOrigin();
+  info.user_gesture = user_gesture;
+
+  // Called on the UI thread. However, do the work on a separate thread
+  // to avoid strict mode violation.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(
+          &GeolocationPermissionContextAndroid::CheckMasterLocation,
+          weak_factory_.GetWeakPtr(), web_contents, info, callback));
+}
+
+// Blocking pool thread
+void GeolocationPermissionContextAndroid::CheckMasterLocation(
     content::WebContents* web_contents,
     const PermissionRequestInfo& info,
-    base::Callback<void(bool)> callback) {
+    const BrowserPermissionCallback& callback) {
   // Check to see if the feature in its entirety has been disabled.
   // This must happen before other services (e.g. tabs, extensions)
   // get an opportunity to allow the geolocation request.
-  bool enabled = google_location_settings_helper_->IsSystemLocationEnabled();
+  bool enabled =
+      google_location_settings_helper_->IsSystemLocationEnabled();
 
   base::Closure ui_closure;
   if (enabled) {
     ui_closure = base::Bind(
         &GeolocationPermissionContextAndroid::ProceedDecidePermission,
-        this, web_contents, info, callback);
+        base::Unretained(this), web_contents, info, callback);
   } else {
     ui_closure = base::Bind(
         &GeolocationPermissionContextAndroid::PermissionDecided,
-        this, info.id, info.requesting_frame, info.embedder, callback, false);
+        base::Unretained(this), info.id, info.requesting_origin,
+        info.embedder_origin, callback, false, false);
   }
 
   // This method is executed from the BlockingPool, post the result
@@ -63,25 +94,8 @@ void GeolocationPermissionContextAndroid::CheckSystemLocation(
       content::BrowserThread::UI, FROM_HERE, ui_closure);
 }
 
-void GeolocationPermissionContextAndroid::DecidePermission(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    const GURL& embedder,
-    base::Callback<void(bool)> callback) {
 
-  PermissionRequestInfo info;
-  info.id = id;
-  info.requesting_frame = requesting_frame;
-  info.user_gesture = user_gesture;
-  info.embedder = embedder;
-
-  // Called on the UI thread. However, do the work on a separate thread
-  // to avoid strict mode violation.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(
-          &GeolocationPermissionContextAndroid::CheckSystemLocation,
-          this, web_contents, info, callback));
+void GeolocationPermissionContextAndroid::InterceptPermissionCheck(
+    const BrowserPermissionCallback& callback, bool granted) {
+  callback.Run(granted);
 }

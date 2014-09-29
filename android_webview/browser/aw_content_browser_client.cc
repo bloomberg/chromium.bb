@@ -151,17 +151,6 @@ void CancelProtectedMediaIdentifierPermissionRequests(
     delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
 }
 
-void CancelGeolocationPermissionRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
-  if (delegate)
-    delegate->CancelGeolocationPermissionRequests(origin);
-}
-
 }  // namespace
 
 std::string AwContentBrowserClient::GetAcceptLangsImpl() {
@@ -419,8 +408,7 @@ void AwContentBrowserClient::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
+    const base::Callback<void(bool)>& result_callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   AwBrowserPermissionRequestDelegate* delegate =
@@ -433,12 +421,20 @@ void AwContentBrowserClient::RequestGeolocationPermission(
   }
 
   GURL origin = requesting_frame.GetOrigin();
-  if (cancel_callback) {
-    *cancel_callback = base::Bind(
-        CancelGeolocationPermissionRequests, render_process_id, render_view_id,
-        origin);
-  }
   delegate->RequestGeolocationPermission(origin, result_callback);
+}
+
+void AwContentBrowserClient::CancelGeolocationPermissionRequest(
+    content::WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame) {
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate)
+    delegate->CancelGeolocationPermissionRequests(requesting_frame);
 }
 
 void AwContentBrowserClient::RequestMidiSysExPermission(

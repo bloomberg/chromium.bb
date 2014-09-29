@@ -163,8 +163,7 @@ void GeolocationDispatcherHost::OnRequestPermission(
       user_gesture,
       base::Bind(&GeolocationDispatcherHost::SendGeolocationPermissionResponse,
                  weak_factory_.GetWeakPtr(),
-                 render_process_id, render_frame_id, bridge_id),
-      &pending_permissions_.back().cancel);
+                 render_process_id, render_frame_id, bridge_id));
 }
 
 void GeolocationDispatcherHost::OnCancelPermissionRequest(
@@ -177,8 +176,9 @@ void GeolocationDispatcherHost::OnCancelPermissionRequest(
     if (pending_permissions_[i].render_process_id == render_process_id &&
         pending_permissions_[i].render_frame_id == render_frame_id &&
         pending_permissions_[i].bridge_id == bridge_id) {
-      if (!pending_permissions_[i].cancel.is_null())
-        pending_permissions_[i].cancel.Run();
+      GetContentClient()->browser()->CancelGeolocationPermissionRequest(
+            web_contents(), bridge_id, requesting_frame);
+
       pending_permissions_.erase(pending_permissions_.begin() + i);
       return;
     }

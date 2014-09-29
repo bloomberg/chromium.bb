@@ -25,6 +25,8 @@
 // per site settings) are queried on the UI thread while the system level
 // permissions are considered I/O and thus checked in the blocking thread pool.
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "url/gurl.h"
@@ -35,39 +37,45 @@ class WebContents;
 
 class GoogleLocationSettingsHelper;
 
-
 class GeolocationPermissionContextAndroid
     : public GeolocationPermissionContext {
  public:
   explicit GeolocationPermissionContextAndroid(Profile* profile);
+  virtual ~GeolocationPermissionContextAndroid();
 
  private:
   struct PermissionRequestInfo {
     PermissionRequestInfo();
 
     PermissionRequestID id;
-    GURL requesting_frame;
+    GURL requesting_origin;
+    GURL embedder_origin;
     bool user_gesture;
-    GURL embedder;
   };
 
-  friend class GeolocationPermissionContext;
+  // PermissionContextBase:
+  virtual void RequestPermission(
+      content::WebContents* web_contents,
+       const PermissionRequestID& id,
+       const GURL& requesting_frame_origin,
+       bool user_gesture,
+       const BrowserPermissionCallback& callback) OVERRIDE;
 
-  virtual ~GeolocationPermissionContextAndroid();
-
-  // GeolocationPermissionContext implementation:
-  virtual void DecidePermission(content::WebContents* web_contents,
-                                const PermissionRequestID& id,
-                                const GURL& requesting_frame,
-                                bool user_gesture,
-                                const GURL& embedder,
-                                base::Callback<void(bool)> callback) OVERRIDE;
+  void CheckMasterLocation(content::WebContents* web_contents,
+                           const PermissionRequestInfo& info,
+                           const BrowserPermissionCallback& callback);
 
   void ProceedDecidePermission(content::WebContents* web_contents,
                                const PermissionRequestInfo& info,
                                base::Callback<void(bool)> callback);
 
+  // Will perform a final check on the system location settings before
+  // granting the permission.
+  void InterceptPermissionCheck(const BrowserPermissionCallback& callback,
+                                bool granted);
+
   scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
+  base::WeakPtrFactory<GeolocationPermissionContextAndroid> weak_factory_;
 
  private:
   void CheckSystemLocation(content::WebContents* web_contents,

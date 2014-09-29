@@ -217,9 +217,16 @@ void ContentBrowserClient::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
+    const base::Callback<void(bool)>& result_callback) {
   result_callback.Run(true);
+}
+
+// TODO(miguelg): replace all Create*Permission with a single
+// CreatePermission(enum permission) method.
+void ContentBrowserClient::CancelGeolocationPermissionRequest(
+    WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame) {
 }
 
 void ContentBrowserClient::RequestMidiSysExPermission(

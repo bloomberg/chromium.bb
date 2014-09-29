@@ -10,6 +10,9 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
+#include "components/content_settings/core/common/permission_request_id.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -216,20 +219,31 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
     return;
   }
 
+  content::WebContents* web_contents =
+      web_view_guest()->embedder_web_contents();
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+
+  const PermissionRequestID request_id(
+      render_process_id,
+      render_view_id,
+      // The geolocation permission request here is not initiated
+      // through WebGeolocationPermissionRequest. We are only interested
+      // in the fact whether the embedder/app has geolocation
+      // permission. Therefore we use an invalid |bridge_id|.
+      -1,
+      GURL());
+
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());
   GeolocationPermissionContextFactory::GetForProfile(profile)->
-      RequestGeolocationPermission(
-          web_view_guest()->embedder_web_contents(),
-          // The geolocation permission request here is not initiated
-          // through WebGeolocationPermissionRequest. We are only interested
-          // in the fact whether the embedder/app has geolocation
-          // permission. Therefore we use an invalid |bridge_id|.
-          -1,
-          web_view_guest()->embedder_web_contents()->GetLastCommittedURL(),
+      RequestPermission(
+          web_contents,
+          request_id,
+          web_view_guest()->embedder_web_contents()
+          ->GetLastCommittedURL().GetOrigin(),
           user_gesture,
-          callback,
-          NULL);
+          callback);
 }
 
 void ChromeWebViewPermissionHelperDelegate::CancelGeolocationPermissionRequest(
