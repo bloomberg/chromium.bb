@@ -572,6 +572,7 @@
   background-color: black;
   border-radius: 10px;
   color: white;
+  display: none;
   font-size: 18px;
   left: 50%;
   margin-left: -250px;
@@ -588,6 +589,7 @@
 
 .text-banner[visible] {
   -webkit-animation: text-banner-blowup 3000ms;
+  display: block;
 }
 
 .playback-state-icon[state] {

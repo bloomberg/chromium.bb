@@ -1048,7 +1048,15 @@ VideoControls.prototype.showIconFeedback_ = function() {
 VideoControls.prototype.showTextBanner_ = function(identifier) {
   this.textBanner_.removeAttribute('visible');
   this.textBanner_.textContent = this.stringFunction_(identifier);
+
   setTimeout(function() {
+    var onAnimationEnd = function(event) {
+      this.textBanner_.removeEventListener(
+          'webkitAnimationEnd', onAnimationEnd);
+      this.textBanner_.removeAttribute('visible');
+    }.bind(this);
+    this.textBanner_.addEventListener('webkitAnimationEnd', onAnimationEnd);
+
     this.textBanner_.setAttribute('visible', 'true');
   }.bind(this), 0);
 };
