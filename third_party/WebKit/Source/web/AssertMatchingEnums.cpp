@@ -190,6 +190,8 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleColumn, ColumnRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleComboBox, ComboBoxRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleComplementary, ComplementaryRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleContentInfo, ContentInfoRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDate, DateRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDateTime, DateTimeRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDefinition, DefinitionRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionListDetail, DescriptionListDetailRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionListTerm, DescriptionListTermRole);
@@ -277,6 +279,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleTableHeaderContainer, TableHeaderContainer
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleTable, TableRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleTextArea, TextAreaRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleTextField, TextFieldRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleTime, TimeRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleTimer, TimerRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleToggleButton, ToggleButtonRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleToolbar, ToolbarRole);
