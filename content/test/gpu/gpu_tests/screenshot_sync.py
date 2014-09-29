@@ -48,7 +48,7 @@ class ScreenshotSyncProcess(benchmark.Benchmark):
   they were requested"""
   test = _ScreenshotSyncValidator
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return expectations.ScreenshotSyncExpectations()
 
   def CreatePageSet(self, options):

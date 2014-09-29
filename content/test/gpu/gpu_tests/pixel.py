@@ -163,5 +163,5 @@ class Pixel(cloud_storage_test_base.TestBase):
       page.script_to_evaluate_on_commit = test_harness_script
     return page_set
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return pixel_expectations.PixelExpectations()

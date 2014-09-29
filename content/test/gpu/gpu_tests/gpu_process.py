@@ -37,7 +37,7 @@ class GpuProcess(benchmark.Benchmark):
   """Tests that accelerated content triggers the creation of a GPU process"""
   test = _GpuProcessValidator
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return expectations.GpuProcessExpectations()
 
   def CreatePageSet(self, options):

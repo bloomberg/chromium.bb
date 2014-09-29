@@ -103,7 +103,7 @@ class MemoryTest(benchmark.Benchmark):
   """Tests GPU memory limits"""
   test = _MemoryValidator
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return memory_test_expectations.MemoryTestExpectations()
 
   def CreatePageSet(self, options):

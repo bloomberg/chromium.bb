@@ -49,7 +49,7 @@ class HardwareAcceleratedFeature(benchmark.Benchmark):
   """Tests GPU acceleration is reported as active for various features"""
   test = _HardwareAcceleratedFeatureValidator
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return expectations.HardwareAcceleratedFeatureExpectations()
 
   def CreatePageSet(self, options):

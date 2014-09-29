@@ -317,7 +317,7 @@ class ContextLost(benchmark_module.Benchmark):
   enabled = True
   test = _ContextLostValidator
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return context_lost_expectations.ContextLostExpectations()
 
   # For the record, this would have been another way to get the pages

@@ -90,7 +90,7 @@ class Maps(cloud_storage_test_base.TestBase):
   """Google Maps pixel tests."""
   test = _MapsValidator
 
-  def CreateExpectations(self, page_set):
+  def CreateExpectations(self):
     return maps_expectations.MapsExpectations()
 
   def CreatePageSet(self, options):
