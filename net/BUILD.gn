@@ -458,10 +458,6 @@ component("net") {
       "udp/udp_socket_libevent.cc",
       "udp/udp_socket_libevent.h",
     ]
-    deps += [
-      "//third_party/nss:nspr",
-      "//third_party/nss",
-    ]
   } else {  # !is_win
     sources -= [
       "base/winsock_init.cc",
@@ -474,12 +470,6 @@ component("net") {
   }
 
   if (is_mac) {
-    if (!use_openssl) {
-      deps += [
-        "//third_party/nss:nspr",
-        "//third_party/nss",
-      ]
-    }
     libs = [
       "Foundation.framework",
       "Security.framework",
@@ -509,9 +499,6 @@ component("net") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     sources -= [ "disk_cache/blockfile/file_posix.cc" ]
-    deps += [
-      "//third_party/nss",
-    ]
     libs = [
       "CFNetwork.framework",
       "MobileCoreServices.framework",
@@ -708,8 +695,8 @@ source_set("test_support") {
     "//url",
   ]
 
-  if (is_ios) {
-    public_deps += [ "//third_party/nss" ]
+  if (!use_openssl && (use_nss_certs || is_ios)) {
+    public_deps += ["//crypto:platform" ]
   }
 
   if (!is_android) {
@@ -732,9 +719,7 @@ source_set("test_support") {
     ]
   }
 
-  if (use_nss_certs) {
-    public_deps += ["//crypto:platform" ]
-  } else {
+  if (!use_nss_certs) {
     sources -= [
       "test/cert_test_util_nss.cc",
     ]
