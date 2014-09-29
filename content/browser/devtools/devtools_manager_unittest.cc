@@ -6,13 +6,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
+#include "content/browser/shared_worker/shared_worker_instance.h"
+#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
+#include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -93,14 +99,129 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   bool renderer_unresponsive_received_;
 };
 
+class TestTarget : public DevToolsTarget {
+ public:
+  explicit TestTarget(scoped_refptr<DevToolsAgentHost> agent_host)
+      : agent_host_(agent_host) {}
+  virtual ~TestTarget() {}
+
+  virtual std::string GetId() const OVERRIDE { return agent_host_->GetId(); }
+  virtual std::string GetParentId() const OVERRIDE { return std::string(); }
+  virtual std::string GetType() const OVERRIDE { return std::string(); }
+  virtual std::string GetTitle() const OVERRIDE {
+    return agent_host_->GetTitle();
+  }
+  virtual std::string GetDescription() const OVERRIDE { return std::string(); }
+  virtual GURL GetURL() const OVERRIDE { return agent_host_->GetURL(); }
+  virtual GURL GetFaviconURL() const OVERRIDE { return GURL(); }
+  virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
+    return base::TimeTicks();
+  }
+  virtual bool IsAttached() const OVERRIDE { return agent_host_->IsAttached(); }
+  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
+    return agent_host_;
+  }
+  virtual bool Activate() const OVERRIDE { return agent_host_->Activate(); }
+  virtual bool Close() const OVERRIDE { return agent_host_->Close(); }
+
+ private:
+  scoped_refptr<DevToolsAgentHost> agent_host_;
+};
+
+class TestDevToolsManagerDelegate : public DevToolsManagerDelegate {
+ public:
+  virtual ~TestDevToolsManagerDelegate() {}
+
+  virtual void Inspect(BrowserContext* browser_context,
+                       DevToolsAgentHost* agent_host) OVERRIDE {}
+
+  virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
+                                         bool attached) OVERRIDE {}
+
+  virtual base::DictionaryValue* HandleCommand(
+      DevToolsAgentHost* agent_host,
+      base::DictionaryValue* command) OVERRIDE { return NULL; }
+
+  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) OVERRIDE {
+    return scoped_ptr<DevToolsTarget>();
+  }
+
+  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
+    TargetList result;
+    DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
+    for (DevToolsAgentHost::List::iterator it = agents.begin();
+         it != agents.end(); ++it) {
+      if ((*it)->GetType() == DevToolsAgentHost::TYPE_WEB_CONTENTS)
+        result.insert(result.begin(), new TestTarget(*it));
+      else
+        result.push_back(new TestTarget(*it));
+    }
+    callback.Run(result);
+  }
+
+  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE {
+    return std::string();
+  }
+};
+
+class ContentBrowserClientWithDevTools : public TestContentBrowserClient {
+ public:
+  virtual ~ContentBrowserClientWithDevTools() {}
+  virtual content::DevToolsManagerDelegate*
+      GetDevToolsManagerDelegate() OVERRIDE {
+    return new TestDevToolsManagerDelegate();
+  }
+};
+
+class TestDevToolsManagerObserver : public DevToolsManager::Observer {
+ public:
+  TestDevToolsManagerObserver()
+      : updates_count_(0) {}
+  virtual ~TestDevToolsManagerObserver() {}
+
+  int updates_count() { return updates_count_; }
+  const std::vector<scoped_refptr<DevToolsAgentHost>> hosts() {
+    return hosts_;
+  }
+
+  virtual void TargetListChanged(const TargetList& targets) OVERRIDE {
+    updates_count_++;
+    hosts_.clear();
+    for (TargetList::const_iterator it = targets.begin();
+         it != targets.end(); ++it) {
+      hosts_.push_back((*it)->GetAgentHost());
+    }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::MessageLoop::QuitClosure());
+  }
+
+ private:
+  int updates_count_;
+  std::vector<scoped_refptr<DevToolsAgentHost>> hosts_;
+};
+
 }  // namespace
 
 class DevToolsManagerTest : public RenderViewHostImplTestHarness {
+ public:
+  DevToolsManagerTest()
+      : old_browser_client_(NULL) {}
+
  protected:
   virtual void SetUp() OVERRIDE {
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
+    old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
   }
+
+  virtual void TearDown() OVERRIDE {
+    SetBrowserClientForTesting(old_browser_client_);
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
+  ContentBrowserClientWithDevTools browser_client_;
+  ContentBrowserClient* old_browser_client_;
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
@@ -237,6 +358,90 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
   agent_host->DispatchProtocolMessage("message2");
 
   client_host.Close();
+}
+
+TEST_F(DevToolsManagerTest, TestObserver) {
+  GURL url1("data:text/html,<body>Body1</body>");
+  GURL url2("data:text/html,<body>Body2</body>");
+  GURL url3("data:text/html,<body>Body3</body>");
+
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  DevToolsManager::SetObserverThrottleIntervalForTest(
+      base::TimeDelta::FromMilliseconds(200));
+
+  contents()->NavigateAndCommit(url1);
+  RunAllPendingInMessageLoop();
+
+  scoped_ptr<TestDevToolsManagerObserver> observer(
+      new TestDevToolsManagerObserver());
+  manager->AddObserver(observer.get());
+  RunMessageLoop();
+  // Added observer should get an update.
+  EXPECT_EQ(1, observer->updates_count());
+  EXPECT_EQ(1u, observer->hosts().size());
+  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
+  EXPECT_EQ(url1.spec(), observer->hosts()[0]->GetURL().spec());
+
+  contents()->NavigateAndCommit(url2);
+  RunAllPendingInMessageLoop();
+  contents()->NavigateAndCommit(url3);
+  RunMessageLoop();
+  // Updates should be coalesced.
+  EXPECT_EQ(2, observer->updates_count());
+  EXPECT_EQ(1u, observer->hosts().size());
+  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
+  EXPECT_EQ(url3.spec(), observer->hosts()[0]->GetURL().spec());
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(250));
+  base::MessageLoop::current()->Run();
+  // Check there were no extra updates.
+  EXPECT_EQ(2, observer->updates_count());
+
+  scoped_ptr<WorkerStoragePartition> partition(new WorkerStoragePartition(
+      browser_context()->GetRequestContext(),
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  WorkerStoragePartitionId partition_id(*partition.get());
+
+  GURL shared_worker_url("http://example.com/shared_worker.js");
+  SharedWorkerInstance shared_worker(
+      shared_worker_url,
+      base::string16(),
+      base::string16(),
+      blink::WebContentSecurityPolicyTypeReport,
+      browser_context()->GetResourceContext(),
+      partition_id);
+  EmbeddedWorkerDevToolsManager::GetInstance()->SharedWorkerCreated(
+      1, 1, shared_worker);
+  contents()->NavigateAndCommit(url2);
+
+  RunMessageLoop();
+  EXPECT_EQ(3, observer->updates_count());
+  EXPECT_EQ(2u, observer->hosts().size());
+  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
+  EXPECT_EQ(url2.spec(), observer->hosts()[0]->GetURL().spec());
+  EXPECT_EQ(DevToolsAgentHost::TYPE_SHARED_WORKER,
+            observer->hosts()[1]->GetType());
+  EXPECT_EQ(shared_worker_url.spec(), observer->hosts()[1]->GetURL().spec());
+
+  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(1, 1);
+  RunMessageLoop();
+  EXPECT_EQ(4, observer->updates_count());
+  EXPECT_EQ(1u, observer->hosts().size());
+  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
+  EXPECT_EQ(url2.spec(), observer->hosts()[0]->GetURL().spec());
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(250));
+  base::MessageLoop::current()->Run();
+  // Check there were no extra updates.
+  EXPECT_EQ(4, observer->updates_count());
+
+  manager->RemoveObserver(observer.get());
 }
 
 }  // namespace content
