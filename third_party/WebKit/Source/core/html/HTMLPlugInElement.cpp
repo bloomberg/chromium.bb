@@ -70,7 +70,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_usePlaceholderContent(false)
 {
-    setHasCustomStyleCallbacks();
 }
 
 HTMLPlugInElement::~HTMLPlugInElement()
@@ -245,13 +244,6 @@ RenderObject* HTMLPlugInElement::createRenderer(RenderStyle* style)
     return new RenderEmbeddedObject(this);
 }
 
-void HTMLPlugInElement::willRecalcStyle(StyleRecalcChange)
-{
-    // FIXME: Why is this necessary? Manual re-attach is almost always wrong.
-    if (!useFallbackContent() && !usePlaceholderContent() && needsWidgetUpdate() && renderer() && !isImageType())
-        reattach();
-}
-
 void HTMLPlugInElement::finishParsingChildren()
 {
     HTMLFrameOwnerElement::finishParsingChildren();
@@ -260,7 +252,7 @@ void HTMLPlugInElement::finishParsingChildren()
 
     setNeedsWidgetUpdate(true);
     if (inDocument())
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Plugin));
+        lazyReattachIfNeeded();
 }
 
 void HTMLPlugInElement::resetInstance()
@@ -596,6 +588,12 @@ void HTMLPlugInElement::setUsePlaceholderContent(bool use)
         m_usePlaceholderContent = use;
         lazyReattachIfAttached();
     }
+}
+
+void HTMLPlugInElement::lazyReattachIfNeeded()
+{
+    if (!useFallbackContent() && !usePlaceholderContent() && needsWidgetUpdate() && renderer() && !isImageType())
+        lazyReattachIfAttached();
 }
 
 }

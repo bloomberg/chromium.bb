@@ -256,7 +256,7 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
     }
     setNeedsWidgetUpdate(true);
     if (needsInvalidation)
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Plugin));
+        lazyReattachIfNeeded();
 }
 
 // FIXME: This should be unified with HTMLEmbedElement::updateWidget and
@@ -331,7 +331,7 @@ void HTMLObjectElement::childrenChanged(const ChildrenChange& change)
 {
     if (inDocument() && !useFallbackContent()) {
         setNeedsWidgetUpdate(true);
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Plugin));
+        lazyReattachIfNeeded();
     }
     HTMLPlugInElement::childrenChanged(change);
 }
