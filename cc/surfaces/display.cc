@@ -11,6 +11,7 @@
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/software_renderer.h"
+#include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
@@ -26,7 +27,9 @@ Display::Display(DisplayClient* client,
       manager_(manager),
       bitmap_manager_(bitmap_manager),
       blocking_main_thread_task_runner_(
-          BlockingTaskRunner::Create(base::MessageLoopProxy::current())) {
+          BlockingTaskRunner::Create(base::MessageLoopProxy::current())),
+      texture_mailbox_deleter_(
+          new TextureMailboxDeleter(base::MessageLoopProxy::current())) {
   manager_->AddObserver(this);
 }
 
@@ -63,13 +66,12 @@ void Display::InitializeOutputSurface() {
     return;
 
   if (output_surface->context_provider()) {
-    TextureMailboxDeleter* texture_mailbox_deleter = NULL;
     scoped_ptr<GLRenderer> renderer =
         GLRenderer::Create(this,
                            &settings_,
                            output_surface.get(),
                            resource_provider.get(),
-                           texture_mailbox_deleter,
+                           texture_mailbox_deleter_.get(),
                            highp_threshold_min);
     if (!renderer)
       return;

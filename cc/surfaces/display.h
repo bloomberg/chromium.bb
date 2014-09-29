@@ -30,6 +30,7 @@ class Surface;
 class SurfaceAggregator;
 class SurfaceIdAllocator;
 class SurfaceFactory;
+class TextureMailboxDeleter;
 
 // A Display produces a surface that can be used to draw to a physical display
 // (OutputSurface). The client is responsible for creating and sizing the
@@ -91,6 +92,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   scoped_ptr<SurfaceAggregator> aggregator_;
   scoped_ptr<DirectRenderer> renderer_;
   scoped_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
+  scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
