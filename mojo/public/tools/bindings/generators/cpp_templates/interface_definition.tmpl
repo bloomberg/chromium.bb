@@ -104,7 +104,7 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
       const {{interface_macros.declare_callback(method)}}& callback)
       : callback_(callback) {
   }
-  virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE;
+  virtual bool Accept(mojo::Message* message) override;
  private:
   {{interface_macros.declare_callback(method)}} callback_;
   MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ForwardToCallback);
@@ -184,7 +184,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
         responder_(responder) {
   }
 
-  virtual void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const MOJO_OVERRIDE;
+  virtual void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const override;
 
  private:
   uint64_t request_id_;

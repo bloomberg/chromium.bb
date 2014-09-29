@@ -348,14 +348,14 @@ class WindowManager
   typedef std::vector<Window*> WindowVector;
 
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     app_ = app;
     views_init_.reset(new ViewsInit);
     window_manager_app_->Initialize(app);
   }
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     connection->AddService(&window_manager_factory_);
     window_manager_app_->ConfigureIncomingConnection(connection);
     return true;
@@ -399,7 +399,7 @@ class WindowManager
     const Id kInvalidSourceViewId = 0;
     OnLaunch(kInvalidSourceViewId, TARGET_DEFAULT, url);
   }
-  virtual void DispatchEvent(EventPtr event) MOJO_OVERRIDE {}
+  virtual void DispatchEvent(EventPtr event) override {}
 
   // Overridden from ui::EventHandler:
   virtual void OnEvent(ui::Event* event) OVERRIDE {

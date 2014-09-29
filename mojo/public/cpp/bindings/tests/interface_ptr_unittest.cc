@@ -20,9 +20,7 @@ class ErrorObserver : public ErrorHandler {
 
   bool encountered_error() const { return encountered_error_; }
 
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    encountered_error_ = true;
-  }
+  virtual void OnConnectionError() override { encountered_error_ = true; }
 
  private:
   bool encountered_error_;
@@ -37,20 +35,16 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
         got_connection_(false) {
   }
 
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE {
-    got_connection_ = true;
-  }
+  virtual void OnConnectionEstablished() override { got_connection_ = true; }
 
-  virtual void Clear() MOJO_OVERRIDE {
-    client()->Output(total_);
-  }
+  virtual void Clear() override { client()->Output(total_); }
 
-  virtual void Add(double value) MOJO_OVERRIDE {
+  virtual void Add(double value) override {
     total_ += value;
     client()->Output(total_);
   }
 
-  virtual void Multiply(double value) MOJO_OVERRIDE {
+  virtual void Multiply(double value) override {
     total_ *= value;
     client()->Output(total_);
   }
@@ -102,9 +96,7 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
 
  private:
   // math::CalculatorUI implementation:
-  virtual void Output(double value) MOJO_OVERRIDE {
-    output_ = value;
-  }
+  virtual void Output(double value) override { output_ = value; }
 
   math::CalculatorPtr calculator_;
   double output_;
@@ -131,7 +123,7 @@ class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
     --num_instances_;
   }
 
-  virtual void Output(double value) MOJO_OVERRIDE {
+  virtual void Output(double value) override {
     if (--nesting_level_ > 0) {
       // Add some more and wait for re-entrant call to Output!
       calculator_->Add(1.0);
@@ -156,9 +148,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
   ReentrantServiceImpl()
       : got_connection_(false), call_depth_(0), max_call_depth_(0) {}
 
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE {
-    got_connection_ = true;
-  }
+  virtual void OnConnectionEstablished() override { got_connection_ = true; }
 
   bool got_connection() const {
     return got_connection_;
@@ -168,7 +158,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
 
   virtual void Frobinate(sample::FooPtr foo,
                          sample::Service::BazOptions baz,
-                         sample::PortPtr port) MOJO_OVERRIDE {
+                         sample::PortPtr port) override {
     max_call_depth_ = std::max(++call_depth_, max_call_depth_);
     if (call_depth_ == 1) {
       EXPECT_TRUE(WaitForIncomingMethodCall());
@@ -176,8 +166,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
     call_depth_--;
   }
 
-  virtual void GetPort(mojo::InterfaceRequest<sample::Port> port)
-      MOJO_OVERRIDE {}
+  virtual void GetPort(mojo::InterfaceRequest<sample::Port> port) override {}
 
  private:
   bool got_connection_;

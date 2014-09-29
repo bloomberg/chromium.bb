@@ -47,9 +47,9 @@ class Router : public MessageReceiverWithResponder {
   }
 
   // MessageReceiver implementation:
-  virtual bool Accept(Message* message) MOJO_OVERRIDE;
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE;
+  virtual bool Accept(Message* message) override;
+  virtual bool AcceptWithResponder(Message* message,
+                                   MessageReceiver* responder) override;
 
   // Blocks the current thread for the first incoming method call, i.e., either
   // a call to a client method or a callback method.
@@ -73,7 +73,7 @@ class Router : public MessageReceiverWithResponder {
     virtual ~HandleIncomingMessageThunk();
 
     // MessageReceiver implementation:
-    virtual bool Accept(Message* message) MOJO_OVERRIDE;
+    virtual bool Accept(Message* message) override;
 
    private:
     Router* router_;

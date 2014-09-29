@@ -37,7 +37,7 @@ class PythonClosure : public mojo::Closure::Runnable {
     Py_DECREF(callable_);
   }
 
-  virtual void Run() const MOJO_OVERRIDE {
+  virtual void Run() const override {
     ScopedGIL acquire_gil;
     PyObject* empty_tuple = PyTuple_New(0);
     if (!empty_tuple) {
@@ -90,7 +90,7 @@ class PythonAsyncWaiter::AsyncWaiterRunnable
 
   void set_wait_id(int wait_id) { wait_id_ = wait_id; }
 
-  virtual void Run(MojoResult mojo_result) const MOJO_OVERRIDE {
+  virtual void Run(MojoResult mojo_result) const override {
     MOJO_DCHECK(wait_id_);
 
     // Remove to reference to this object from PythonAsyncWaiter and ensure this

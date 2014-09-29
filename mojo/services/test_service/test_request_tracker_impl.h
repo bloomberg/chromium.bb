@@ -31,11 +31,10 @@ class TestRequestTrackerImpl : public InterfaceImpl<TestRequestTracker> {
   virtual ~TestRequestTrackerImpl();
 
   // TestRequestTracker.
-  virtual void RecordStats(uint64_t client_id,
-                           ServiceStatsPtr stats) MOJO_OVERRIDE;
+  virtual void RecordStats(uint64_t client_id, ServiceStatsPtr stats) override;
 
   // InterfaceImpl override.
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
+  virtual void OnConnectionEstablished() override;
 
  private:
   void UploaderNameCallback(uint64_t id, const mojo::String& name);
@@ -53,7 +52,7 @@ class TestTrackedRequestServiceImpl
   // |TestTrackedRequestService| implementation.
   virtual void GetReport(
       const mojo::Callback<void(mojo::Array<ServiceReportPtr>)>& callback)
-          MOJO_OVERRIDE;
+      override;
 
  private:
   TrackingContext* context_;

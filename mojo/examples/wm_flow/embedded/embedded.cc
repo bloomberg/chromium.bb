@@ -45,12 +45,12 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
 
  private:
   // Overridden from Application:
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new mojo::ViewManagerClientFactory(app->shell(), this));
   }
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
+      mojo::ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }
@@ -60,7 +60,7 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
       mojo::ViewManager* view_manager,
       mojo::View* root,
       mojo::ServiceProviderImpl* exported_services,
-      scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
+      scoped_ptr<mojo::ServiceProvider> imported_services) override {
     root->SetColor(SK_ColorMAGENTA);
 
     exported_services->AddService(&embeddee_factory_);
@@ -69,7 +69,7 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
                                      base::Unretained(this)));
   }
   virtual void OnViewManagerDisconnected(
-      mojo::ViewManager* view_manager) MOJO_OVERRIDE {}
+      mojo::ViewManager* view_manager) override {}
 
   void HelloWorldAck() {
     printf("HelloWorld() ack'ed\n");

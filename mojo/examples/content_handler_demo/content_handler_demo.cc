@@ -22,10 +22,10 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
   virtual ~ContentHandlerImpl() {}
 
  private:
-  virtual void OnConnect(const mojo::String& url,
-                         URLResponsePtr response,
-                         InterfaceRequest<ServiceProvider> service_provider)
-      MOJO_OVERRIDE;
+  virtual void OnConnect(
+      const mojo::String& url,
+      URLResponsePtr response,
+      InterfaceRequest<ServiceProvider> service_provider) override;
 
   ContentHandlerApp* content_handler_app_;
 };
@@ -35,11 +35,10 @@ class ContentHandlerApp : public ApplicationDelegate {
   ContentHandlerApp() : content_handler_factory_(this) {
   }
 
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
-  }
+  virtual void Initialize(ApplicationImpl* app) override {}
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     connection->AddService(&content_handler_factory_);
     return true;
   }

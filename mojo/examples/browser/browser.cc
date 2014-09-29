@@ -166,15 +166,15 @@ class Browser : public ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
     views_init_.reset(new ViewsInit);
     app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
  }
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+ virtual bool ConfigureIncomingConnection(
+     ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }

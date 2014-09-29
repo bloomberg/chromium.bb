@@ -18,7 +18,7 @@ class InterfaceFactoryImpl : public InterfaceFactory<Interface> {
   virtual ~InterfaceFactoryImpl() {}
 
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Interface> request) MOJO_OVERRIDE {
+                      InterfaceRequest<Interface> request) override {
     BindToRequest(new Impl(), &request);
   }
 };
@@ -36,7 +36,7 @@ class InterfaceFactoryImplWithContext : public InterfaceFactory<Interface> {
   virtual ~InterfaceFactoryImplWithContext() {}
 
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Interface> request) MOJO_OVERRIDE {
+                      InterfaceRequest<Interface> request) override {
     BindToRequest(new Impl(context_), &request);
   }
 

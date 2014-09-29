@@ -18,9 +18,7 @@ class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
 
   virtual ~ShellPtrWatcher() {}
 
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    impl_->OnShellError();
-  }
+  virtual void OnConnectionError() override { impl_->OnShellError(); }
 
  private:
   ApplicationImpl* impl_;

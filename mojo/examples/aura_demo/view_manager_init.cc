@@ -21,7 +21,7 @@ class ViewManagerInit : public mojo::ApplicationDelegate {
   ViewManagerInit() {}
   virtual ~ViewManagerInit() {}
 
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     context_.reset(new mojo::ViewManagerContext(app));
     context_->Embed("mojo:mojo_aura_demo");
   }

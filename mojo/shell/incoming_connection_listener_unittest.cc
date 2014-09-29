@@ -26,8 +26,8 @@ class TestDelegate : public IncomingConnectionListenerPosix::Delegate {
   TestDelegate() {}
   virtual ~TestDelegate() {}
 
-  virtual void OnListening(int rv) MOJO_OVERRIDE { EXPECT_EQ(net::OK, rv); }
-  virtual void OnConnection(net::SocketDescriptor incoming) MOJO_OVERRIDE {
+  virtual void OnListening(int rv) override { EXPECT_EQ(net::OK, rv); }
+  virtual void OnConnection(net::SocketDescriptor incoming) override {
     EXPECT_NE(net::kInvalidSocket, incoming);
   }
 };
@@ -39,10 +39,8 @@ class ListeningFailsDelegate
   explicit ListeningFailsDelegate(int expected) : expected_error_(expected) {}
   virtual ~ListeningFailsDelegate() {}
 
-  virtual void OnListening(int rv) MOJO_OVERRIDE {
-    EXPECT_EQ(expected_error_, rv);
-  }
-  virtual void OnConnection(net::SocketDescriptor incoming) MOJO_OVERRIDE {
+  virtual void OnListening(int rv) override { EXPECT_EQ(expected_error_, rv); }
+  virtual void OnConnection(net::SocketDescriptor incoming) override {
     FAIL() << "No connection should be attempted.";
   }
 

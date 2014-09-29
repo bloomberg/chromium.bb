@@ -30,38 +30,36 @@ class DefaultWindowManager : public ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* impl) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* impl) override {
     window_manager_app_->Initialize(impl);
   }
   virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) MOJO_OVERRIDE {
+      ApplicationConnection* connection) override {
     window_manager_app_->ConfigureIncomingConnection(connection);
     return true;
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(
-      ViewManager* view_manager,
-      View* root,
-      ServiceProviderImpl* exported_services,
-      scoped_ptr<ServiceProvider> imported_services) MOJO_OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager,
+                       View* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) override {
     view_manager_ = view_manager;
     root_ = root;
     view_manager_->SetWindowManagerDelegate(this);
   }
-  virtual void OnViewManagerDisconnected(
-      ViewManager* view_manager) MOJO_OVERRIDE {}
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 
   // Overridden from WindowManagerDelegate:
   virtual void Embed(
       const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) MOJO_OVERRIDE {
+      InterfaceRequest<ServiceProvider> service_provider) override {
     View* view = View::Create(view_manager_);
     root_->AddChild(view);
     view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(
         new mojo::ServiceProviderImpl).Pass());
   }
-  virtual void DispatchEvent(EventPtr event) MOJO_OVERRIDE {}
+  virtual void DispatchEvent(EventPtr event) override {}
 
   scoped_ptr<WindowManagerApp> window_manager_app_;
 

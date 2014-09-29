@@ -33,7 +33,7 @@ class ExampleServiceTest : public testing::Test {
     example_service_.set_client(&example_client_);
   }
 
-  virtual ~ExampleServiceTest() MOJO_OVERRIDE {}
+  virtual ~ExampleServiceTest() override {}
 
  protected:
   ExampleServicePtr example_service_;
@@ -54,7 +54,7 @@ template <typename T>
 struct SetAndQuit : public Callback<void()>::Runnable {
   SetAndQuit(T* val, T result) : val_(val), result_(result) {}
   virtual ~SetAndQuit() {}
-  virtual void Run() const MOJO_OVERRIDE{
+  virtual void Run() const override {
     *val_ = result_;
     RunLoop::current()->Quit();
   }

@@ -21,8 +21,8 @@ class ExampleServiceApplication : public ApplicationDelegate {
 
  private:
   // ApplicationDelegate implementation.
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE;
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override;
 
   InterfaceFactoryImpl<ExampleServiceImpl> example_service_factory_;
 

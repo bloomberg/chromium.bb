@@ -37,7 +37,7 @@ class MessageAccumulator : public MessageReceiver {
   explicit MessageAccumulator(internal::MessageQueue* queue) : queue_(queue) {
   }
 
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+  virtual bool Accept(Message* message) override {
     queue_->Push(message);
     return true;
   }
@@ -51,12 +51,10 @@ class ResponseGenerator : public MessageReceiverWithResponder {
   ResponseGenerator() {
   }
 
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
-    return false;
-  }
+  virtual bool Accept(Message* message) override { return false; }
 
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE {
+  virtual bool AcceptWithResponder(Message* message,
+                                   MessageReceiver* responder) override {
     EXPECT_TRUE(message->has_flag(internal::kMessageExpectsResponse));
 
     return SendResponse(message->name(), message->request_id(), responder);
@@ -82,8 +80,8 @@ class LazyResponseGenerator : public ResponseGenerator {
     delete responder_;
   }
 
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE {
+  virtual bool AcceptWithResponder(Message* message,
+                                   MessageReceiver* responder) override {
     name_ = message->name();
     request_id_ = message->request_id();
     responder_ = responder;
@@ -108,12 +106,11 @@ class RouterTest : public testing::Test {
   RouterTest() {
   }
 
-  virtual void SetUp() MOJO_OVERRIDE {
+  virtual void SetUp() override {
     CreateMessagePipe(NULL, &handle0_, &handle1_);
   }
 
-  virtual void TearDown() MOJO_OVERRIDE {
-  }
+  virtual void TearDown() override {}
 
   void PumpMessages() {
     loop_.RunUntilIdle();

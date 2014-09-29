@@ -23,14 +23,14 @@ class TestServiceImpl : public InterfaceImpl<TestService> {
   virtual ~TestServiceImpl();
 
   // |TestService| methods:
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
-  virtual void OnConnectionError() MOJO_OVERRIDE;
-  virtual void Ping(const mojo::Callback<void()>& callback) MOJO_OVERRIDE;
+  virtual void OnConnectionEstablished() override;
+  virtual void OnConnectionError() override;
+  virtual void Ping(const mojo::Callback<void()>& callback) override;
   virtual void ConnectToAppAndGetTime(
       const mojo::String& app_url,
-      const mojo::Callback<void(int64_t)>& callback) MOJO_OVERRIDE;
-  virtual void StartTrackingRequests(const mojo::Callback<void()>& callback)
-      MOJO_OVERRIDE;
+      const mojo::Callback<void(int64_t)>& callback) override;
+  virtual void StartTrackingRequests(
+      const mojo::Callback<void()>& callback) override;
 
  private:
   TestServiceApplication* const application_;

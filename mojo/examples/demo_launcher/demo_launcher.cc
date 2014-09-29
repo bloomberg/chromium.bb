@@ -23,7 +23,7 @@ class DemoLauncher : public mojo::ApplicationDelegate {
   virtual ~DemoLauncher() {}
 
  private:
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     context_.reset(new mojo::ViewManagerContext(app));
     context_->Embed("mojo:mojo_window_manager");
   }

@@ -90,8 +90,8 @@ class ExternalApplicationListenerPosix
   void StopListening(base::WaitableEvent* event);
 
   // Implementation of IncomingConnectionListener::Delegate
-  virtual void OnListening(int rv) MOJO_OVERRIDE;
-  virtual void OnConnection(net::SocketDescriptor incoming) MOJO_OVERRIDE;
+  virtual void OnListening(int rv) override;
+  virtual void OnConnection(net::SocketDescriptor incoming) override;
 
   // If listener_ fails to start listening, this method is run on shell_runner_
   // to report the error.

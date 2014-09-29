@@ -31,7 +31,7 @@ class PassThroughFilter : public MessageFilter {
  public:
   explicit PassThroughFilter(MessageReceiver* sink = NULL);
 
-  virtual bool Accept(Message* message) MOJO_OVERRIDE;
+  virtual bool Accept(Message* message) override;
 };
 
 }  // namespace mojo

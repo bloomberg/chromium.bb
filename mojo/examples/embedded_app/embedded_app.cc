@@ -49,13 +49,13 @@ class EmbeddedApp
  private:
 
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }

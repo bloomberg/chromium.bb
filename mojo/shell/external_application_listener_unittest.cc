@@ -57,7 +57,7 @@ class StubShellImpl : public InterfaceImpl<Shell> {
  private:
   virtual void ConnectToApplication(
       const String& requestor_url,
-      InterfaceRequest<ServiceProvider> in_service_provider) MOJO_OVERRIDE {
+      InterfaceRequest<ServiceProvider> in_service_provider) override {
     ServiceProviderPtr out_service_provider;
     out_service_provider.Bind(in_service_provider.PassMessagePipe());
     client()->AcceptConnection(requestor_url, out_service_provider.Pass());
@@ -103,10 +103,10 @@ class QuitLoopOnConnectApplicationImpl : public InterfaceImpl<Application> {
       : url_(url), to_quit_(loop), quit_callback_(quit_callback) {}
 
  private:
-  virtual void Initialize(Array<String> args) MOJO_OVERRIDE {}
+  virtual void Initialize(Array<String> args) override {}
 
   virtual void AcceptConnection(const String& requestor_url,
-                                ServiceProviderPtr p) MOJO_OVERRIDE {
+                                ServiceProviderPtr p) override {
     DVLOG(1) << url_ << " accepting connection from " << requestor_url;
     to_quit_->PostTask(FROM_HERE, quit_callback_);
   }

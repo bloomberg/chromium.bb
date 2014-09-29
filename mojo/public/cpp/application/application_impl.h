@@ -88,9 +88,9 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   static void Terminate();
 
   // Application implementation.
-  virtual void Initialize(Array<String> args) MOJO_OVERRIDE;
+  virtual void Initialize(Array<String> args) override;
   virtual void AcceptConnection(const String& requestor_url,
-                                ServiceProviderPtr provider) MOJO_OVERRIDE;
+                                ServiceProviderPtr provider) override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 

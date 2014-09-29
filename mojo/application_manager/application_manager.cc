@@ -29,9 +29,9 @@ class StubServiceProvider : public InterfaceImpl<ServiceProvider> {
   ServiceProvider* GetRemoteServiceProvider() { return client(); }
 
  private:
-  virtual void ConnectToService(const String& service_name,
-                                ScopedMessagePipeHandle client_handle)
-      MOJO_OVERRIDE {}
+  virtual void ConnectToService(
+      const String& service_name,
+      ScopedMessagePipeHandle client_handle) override {}
 };
 
 }  // namespace

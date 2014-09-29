@@ -18,7 +18,8 @@ class TestConnector : public ServiceConnectorBase {
   virtual ~TestConnector() { (*delete_count_)++; }
   virtual void ConnectToService(
       const std::string& name,
-      ScopedMessagePipeHandle client_handle) MOJO_OVERRIDE {}
+      ScopedMessagePipeHandle client_handle) override {}
+
  private:
   int* delete_count_;
 };

@@ -4,10 +4,9 @@ class {{interface.name}}Stub : public mojo::MessageReceiverWithResponder {
   void set_sink({{interface.name}}* sink) { sink_ = sink; }
   {{interface.name}}* sink() { return sink_; }
 
-  virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE;
+  virtual bool Accept(mojo::Message* message) override;
   virtual bool AcceptWithResponder(mojo::Message* message,
-                                   mojo::MessageReceiver* responder)
-                                       MOJO_OVERRIDE;
+                                   mojo::MessageReceiver* responder) override;
 
  private:
   {{interface.name}}* sink_;

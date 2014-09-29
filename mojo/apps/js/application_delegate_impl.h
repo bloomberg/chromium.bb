@@ -28,10 +28,10 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
   virtual ~ContentHandlerImpl();
 
  private:
-  virtual void OnConnect(const mojo::String& url,
-                         URLResponsePtr content,
-                         InterfaceRequest<ServiceProvider> service_provider)
-      MOJO_OVERRIDE;
+  virtual void OnConnect(
+      const mojo::String& url,
+      URLResponsePtr content,
+      InterfaceRequest<ServiceProvider> service_provider) override;
 
   ApplicationDelegateImpl* content_handler_;
 };
@@ -56,9 +56,9 @@ class ApplicationDelegateImpl : public ApplicationDelegate {
   typedef ScopedVector<JSApp> AppVector;
 
   // ApplicationDelegate methods
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE;
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE;
+  virtual void Initialize(ApplicationImpl* app) override;
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override;
 
   ApplicationImpl* application_impl_;
   InterfaceFactoryImplWithContext<ContentHandlerImpl, ApplicationDelegateImpl>

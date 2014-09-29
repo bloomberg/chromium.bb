@@ -70,7 +70,7 @@ class ResponsePrinter {
 
 class WGetApp : public ApplicationDelegate {
  public:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     app->ConnectToService("mojo:mojo_network_service", &network_service_);
     Start();
   }

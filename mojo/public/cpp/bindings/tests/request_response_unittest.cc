@@ -15,9 +15,8 @@ namespace {
 
 class ProviderImpl : public InterfaceImpl<sample::Provider> {
  public:
-  virtual void EchoString(
-      const String& a,
-      const Callback<void(String)>& callback) MOJO_OVERRIDE {
+  virtual void EchoString(const String& a,
+                          const Callback<void(String)>& callback) override {
     Callback<void(String)> callback_copy;
     // Make sure operator= is used.
     callback_copy = callback;
@@ -27,19 +26,18 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
   virtual void EchoStrings(
       const String& a,
       const String& b,
-      const Callback<void(String, String)>& callback) MOJO_OVERRIDE {
+      const Callback<void(String, String)>& callback) override {
     callback.Run(a, b);
   }
 
   virtual void EchoMessagePipeHandle(
       ScopedMessagePipeHandle a,
-      const Callback<void(ScopedMessagePipeHandle)>& callback) MOJO_OVERRIDE {
+      const Callback<void(ScopedMessagePipeHandle)>& callback) override {
     callback.Run(a.Pass());
   }
 
   virtual void EchoEnum(sample::Enum a,
-                        const Callback<void(sample::Enum)>& callback)
-      MOJO_OVERRIDE {
+                        const Callback<void(sample::Enum)>& callback) override {
     callback.Run(a);
   }
 };

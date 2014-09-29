@@ -42,12 +42,11 @@ class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
   friend class internal::WeakServiceProvider;
 
   // Overridden from ServiceProvider:
-  virtual void ConnectToService(
-      const String& service_name,
-      ScopedMessagePipeHandle client_handle) MOJO_OVERRIDE;
+  virtual void ConnectToService(const String& service_name,
+                                ScopedMessagePipeHandle client_handle) override;
 
   // Overridden from InterfaceImpl:
-  virtual void OnConnectionError() MOJO_OVERRIDE;
+  virtual void OnConnectionError() override;
 
   void AddServiceConnector(
       internal::ServiceConnectorBase* service_connector);

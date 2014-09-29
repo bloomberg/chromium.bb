@@ -24,7 +24,7 @@ class DBusEchoApp : public ApplicationDelegate {
   DBusEchoApp() {}
   virtual ~DBusEchoApp() {}
 
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     app->ConnectToService(
         "dbus:org.chromium.EchoService/org/chromium/MojoImpl", &echo_service_);
 

@@ -180,7 +180,7 @@ void RunValidationTests(const std::string& prefix,
 
 class DummyMessageReceiver : public MessageReceiver {
  public:
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+  virtual bool Accept(Message* message) override {
     return true;  // Any message is OK.
   }
 };
@@ -202,7 +202,7 @@ class ValidationIntegrationTest : public ValidationTest {
   virtual ~ValidationIntegrationTest() {
   }
 
-  virtual void SetUp() MOJO_OVERRIDE {
+  virtual void SetUp() override {
     ScopedMessagePipeHandle tester_endpoint;
     ASSERT_EQ(MOJO_RESULT_OK,
               CreateMessagePipe(NULL, &tester_endpoint, &testee_endpoint_));
@@ -210,7 +210,7 @@ class ValidationIntegrationTest : public ValidationTest {
         new TestMessageReceiver(this, tester_endpoint.Pass());
   }
 
-  virtual void TearDown() MOJO_OVERRIDE {
+  virtual void TearDown() override {
     delete test_message_receiver_;
     test_message_receiver_ = NULL;
 
@@ -238,7 +238,7 @@ class ValidationIntegrationTest : public ValidationTest {
     virtual ~TestMessageReceiver() {
     }
 
-    virtual bool Accept(Message* message) MOJO_OVERRIDE {
+    virtual bool Accept(Message* message) override {
       bool rv = connector_.Accept(message);
       owner_->PumpMessages();
       return rv;
@@ -263,8 +263,7 @@ class IntegrationTestInterface1Client : public IntegrationTestInterface1 {
   virtual ~IntegrationTestInterface1Client() {
   }
 
-  virtual void Method0(BasicStructPtr param0) MOJO_OVERRIDE {
-  }
+  virtual void Method0(BasicStructPtr param0) override {}
 };
 
 class IntegrationTestInterface1Impl
@@ -273,8 +272,7 @@ class IntegrationTestInterface1Impl
   virtual ~IntegrationTestInterface1Impl() {
   }
 
-  virtual void Method0(BasicStructPtr param0) MOJO_OVERRIDE {
-  }
+  virtual void Method0(BasicStructPtr param0) override {}
 };
 
 TEST_F(ValidationTest, InputParser) {

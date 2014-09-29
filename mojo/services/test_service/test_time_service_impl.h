@@ -24,9 +24,9 @@ class TestTimeServiceImpl : public InterfaceImpl<TestTimeService> {
 
   // |TestTimeService| methods:
   virtual void GetPartyTime(
-      const mojo::Callback<void(int64_t time_usec)>& callback) MOJO_OVERRIDE;
-  virtual void StartTrackingRequests(const mojo::Callback<void()>& callback)
-      MOJO_OVERRIDE;
+      const mojo::Callback<void(int64_t time_usec)>& callback) override;
+  virtual void StartTrackingRequests(
+      const mojo::Callback<void()>& callback) override;
 
  private:
   ApplicationConnection* application_;

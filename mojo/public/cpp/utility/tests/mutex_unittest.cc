@@ -114,9 +114,7 @@ class FiddlerThread : public Thread {
     delete fiddler_;
   }
 
-  virtual void Run() MOJO_OVERRIDE {
-    fiddler_->Fiddle();
-  }
+  virtual void Run() override { fiddler_->Fiddle(); }
 
  private:
   Fiddler* const fiddler_;
@@ -170,7 +168,7 @@ class TryThread : public Thread {
   explicit TryThread(Mutex* mutex) : mutex_(mutex), try_lock_succeeded_() {}
   virtual ~TryThread() {}
 
-  virtual void Run() MOJO_OVERRIDE {
+  virtual void Run() override {
     try_lock_succeeded_ = mutex_->TryLock();
     if (try_lock_succeeded_)
       mutex_->Unlock();

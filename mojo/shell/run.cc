@@ -13,10 +13,9 @@ namespace shell {
 
 class StubServiceProvider : public InterfaceImpl<ServiceProvider> {
  private:
-  virtual void ConnectToService(const mojo::String& service_name,
-                                ScopedMessagePipeHandle client_handle)
-      MOJO_OVERRIDE {
-  }
+  virtual void ConnectToService(
+      const mojo::String& service_name,
+      ScopedMessagePipeHandle client_handle) override {}
 };
 
 

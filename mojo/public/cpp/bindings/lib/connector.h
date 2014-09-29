@@ -69,7 +69,7 @@ class Connector : public MessageReceiver {
   bool WaitForIncomingMessage();
 
   // MessageReceiver implementation:
-  virtual bool Accept(Message* message) MOJO_OVERRIDE;
+  virtual bool Accept(Message* message) override;
 
  private:
   static void CallOnHandleReady(void* closure, MojoResult result);

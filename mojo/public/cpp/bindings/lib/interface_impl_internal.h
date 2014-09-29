@@ -96,7 +96,7 @@ class InterfaceImplState : public ErrorHandler {
     return static_cast<InterfaceImplBase<Interface>*>(stub_.sink());
   }
 
-  virtual void OnConnectionError() MOJO_OVERRIDE {
+  virtual void OnConnectionError() override {
     // If the the instance is not bound to the pipe, the instance might choose
     // to delete itself in the OnConnectionError handler, which would in turn
     // delete this.  Save the error behavior before invoking the error handler

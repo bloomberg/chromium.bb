@@ -28,21 +28,18 @@ class ClipboardStandaloneImpl : public InterfaceImpl<mojo::Clipboard> {
   virtual ~ClipboardStandaloneImpl();
 
   // InterfaceImpl<mojo::Clipboard> implementation.
-  virtual void GetSequenceNumber(Clipboard::Type clipboard_type,
-                                 const mojo::Callback<void(uint64_t)>& callback)
-      MOJO_OVERRIDE;
+  virtual void GetSequenceNumber(
+      Clipboard::Type clipboard_type,
+      const mojo::Callback<void(uint64_t)>& callback) override;
   virtual void GetAvailableMimeTypes(
       Clipboard::Type clipboard_types,
-      const mojo::Callback<void(mojo::Array<mojo::String>)>& callback)
-      MOJO_OVERRIDE;
+      const mojo::Callback<void(mojo::Array<mojo::String>)>& callback) override;
   virtual void ReadMimeType(
       Clipboard::Type clipboard_type,
       const mojo::String& mime_type,
-      const mojo::Callback<void(mojo::Array<uint8_t>)>& callback)
-      MOJO_OVERRIDE;
+      const mojo::Callback<void(mojo::Array<uint8_t>)>& callback) override;
   virtual void WriteClipboardData(Clipboard::Type clipboard_type,
-                                  mojo::Array<MimeTypePairPtr> data)
-      MOJO_OVERRIDE;
+                                  mojo::Array<MimeTypePairPtr> data) override;
 
  private:
   uint64_t sequence_number_[kNumClipboards];

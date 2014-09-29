@@ -25,15 +25,14 @@ class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
  private:
   // Overridden from WindowManagerService:
   virtual void SetCapture(Id view,
-                          const Callback<void(bool)>& callback) MOJO_OVERRIDE;
+                          const Callback<void(bool)>& callback) override;
   virtual void FocusWindow(Id view,
-                           const Callback<void(bool)>& callback) MOJO_OVERRIDE;
-  virtual void ActivateWindow(
-      Id view,
-      const Callback<void(bool)>& callback) MOJO_OVERRIDE;
+                           const Callback<void(bool)>& callback) override;
+  virtual void ActivateWindow(Id view,
+                              const Callback<void(bool)>& callback) override;
 
   // Overridden from InterfaceImpl:
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
+  virtual void OnConnectionEstablished() override;
 
   WindowManagerApp* window_manager_;
 

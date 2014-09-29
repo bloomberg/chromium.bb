@@ -32,11 +32,8 @@ class TestRunLoopHandler : public RunLoopHandler {
   MojoResult last_error_result() const { return last_error_result_; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
-    ready_count_++;
-  }
-  virtual void OnHandleError(const Handle& handle, MojoResult result)
-      MOJO_OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) override { ready_count_++; }
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
     error_count_++;
     last_error_result_ = result;
   }
@@ -53,11 +50,11 @@ class RunLoopTest : public testing::Test {
  public:
   RunLoopTest() {}
 
-  virtual void SetUp() MOJO_OVERRIDE {
+  virtual void SetUp() override {
     Test::SetUp();
     RunLoop::SetUp();
   }
-  virtual void TearDown() MOJO_OVERRIDE {
+  virtual void TearDown() override {
     RunLoop::TearDown();
     Test::TearDown();
   }
@@ -81,7 +78,7 @@ class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) override {
     run_loop_->RemoveHandler(handle);
     TestRunLoopHandler::OnHandleReady(handle);
   }
@@ -117,7 +114,7 @@ class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) override {
     run_loop_->Quit();
     TestRunLoopHandler::OnHandleReady(handle);
   }
@@ -153,8 +150,7 @@ class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleError(const Handle& handle, MojoResult result)
-      MOJO_OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
     run_loop_->Quit();
     TestRunLoopHandler::OnHandleError(handle, result);
   }
@@ -206,8 +202,7 @@ class RemoveManyRunLoopHandler : public TestRunLoopHandler {
   void add_handle(const Handle& handle) { handles_.push_back(handle); }
 
   // RunLoopHandler:
-  virtual void OnHandleError(const Handle& handle,
-                             MojoResult result) MOJO_OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
     for (size_t i = 0; i < handles_.size(); i++)
       run_loop_->RemoveHandler(handles_[i]);
     TestRunLoopHandler::OnHandleError(handle, result);
@@ -258,8 +253,7 @@ class AddHandlerOnErrorHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleError(const Handle& handle,
-                             MojoResult result) MOJO_OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
     run_loop_->AddHandler(this, handle,
                           MOJO_HANDLE_SIGNAL_READABLE,
                           MOJO_DEADLINE_INDEFINITE);
@@ -314,7 +308,7 @@ class NestingRunLoopHandler : public TestRunLoopHandler {
   bool reached_depth_limit() const { return reached_depth_limit_; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) override {
     TestRunLoopHandler::OnHandleReady(handle);
     EXPECT_EQ(handle.value(), pipe_->handle0.get().value());
 

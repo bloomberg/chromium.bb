@@ -18,7 +18,7 @@ class ExampleClientApplication : public ApplicationDelegate {
 
  private:
   // ApplicationDelegate implementation.
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE;
+  virtual void Initialize(ApplicationImpl* app) override;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ExampleClientApplication);
 };

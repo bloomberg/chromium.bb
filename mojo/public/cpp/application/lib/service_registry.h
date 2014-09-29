@@ -29,20 +29,19 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   virtual ~ServiceRegistry();
 
   // ApplicationConnection overrides.
-  virtual void AddServiceConnector(ServiceConnectorBase* service_connector)
-      MOJO_OVERRIDE;
-  virtual const std::string& GetRemoteApplicationURL() MOJO_OVERRIDE;
+  virtual void AddServiceConnector(
+      ServiceConnectorBase* service_connector) override;
+  virtual const std::string& GetRemoteApplicationURL() override;
   virtual ApplicationConnection* ConnectToApplication(
-      const std::string& url) MOJO_OVERRIDE;
-  virtual ServiceProvider* GetServiceProvider() MOJO_OVERRIDE;
+      const std::string& url) override;
+  virtual ServiceProvider* GetServiceProvider() override;
 
   virtual void RemoveServiceConnector(ServiceConnectorBase* service_connector);
 
  private:
   // ServiceProvider method.
   virtual void ConnectToService(const mojo::String& service_name,
-                                ScopedMessagePipeHandle client_handle)
-      MOJO_OVERRIDE;
+                                ScopedMessagePipeHandle client_handle) override;
 
   ApplicationImpl* application_impl_;
   const std::string url_;

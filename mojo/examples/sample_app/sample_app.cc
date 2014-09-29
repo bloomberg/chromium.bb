@@ -31,7 +31,7 @@ class SampleApp : public mojo::ApplicationDelegate,
     MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
   }
 
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
@@ -47,16 +47,16 @@ class SampleApp : public mojo::ApplicationDelegate,
     viewport_->Show();
   }
 
-  virtual void OnDestroyed() MOJO_OVERRIDE { mojo::RunLoop::current()->Quit(); }
+  virtual void OnDestroyed() override { mojo::RunLoop::current()->Quit(); }
 
-  virtual void OnSizeChanged(mojo::SizePtr size) MOJO_OVERRIDE {
+  virtual void OnSizeChanged(mojo::SizePtr size) override {
     assert(size);
     if (gles2_client_)
       gles2_client_->SetSize(*size);
   }
 
   virtual void OnEvent(mojo::EventPtr event,
-                       const mojo::Callback<void()>& callback) MOJO_OVERRIDE {
+                       const mojo::Callback<void()>& callback) override {
     assert(event);
     if (event->location_data && event->location_data->in_view_location)
       gles2_client_->HandleInputEvent(*event);

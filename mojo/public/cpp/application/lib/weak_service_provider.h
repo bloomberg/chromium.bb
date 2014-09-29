@@ -26,9 +26,8 @@ class WeakServiceProvider : public ServiceProvider {
 
  private:
   // Overridden from ServiceProvider:
-  virtual void ConnectToService(
-      const String& service_name,
-      ScopedMessagePipeHandle client_handle) MOJO_OVERRIDE;
+  virtual void ConnectToService(const String& service_name,
+                                ScopedMessagePipeHandle client_handle) override;
 
   ServiceProviderImpl* creator_;
   ServiceProvider* service_provider_;

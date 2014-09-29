@@ -22,12 +22,12 @@ class TestRequestTrackerApplication : public ApplicationDelegate,
   virtual ~TestRequestTrackerApplication();
 
   // ApplicationDelegate methods:
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE;
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override;
 
   // InterfaceFactory<TestTimeService> methods:
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<TestTimeService> request) MOJO_OVERRIDE;
+                      InterfaceRequest<TestTimeService> request) override;
 
  private:
   TrackingContext context_;

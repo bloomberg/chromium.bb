@@ -25,9 +25,7 @@ class SetIntThread : public Thread {
   virtual ~SetIntThread() {
   }
 
-  virtual void Run() MOJO_OVERRIDE {
-    *int_to_set_ = value_;
-  }
+  virtual void Run() override { *int_to_set_ = value_; }
 
  private:
   int* const int_to_set_;

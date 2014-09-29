@@ -11,14 +11,11 @@
 // Mojo C++ API users can assume that mojo/public/cpp/system/macros.h
 // includes mojo/public/c/system/macros.h.
 
+// TODO(vtl): Get rid of this once all users have been eliminated.
 // Annotate a virtual method indicating it must be overriding a virtual method
 // in the parent class. Use like:
 //   virtual void foo() OVERRIDE;
-#if defined(_MSC_VER) || defined(__clang__)
 #define MOJO_OVERRIDE override
-#else
-#define MOJO_OVERRIDE
-#endif
 
 // A macro to disallow the copy constructor and operator= functions.
 // This should be used in the private: declarations for a class.

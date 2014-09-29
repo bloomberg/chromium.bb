@@ -20,7 +20,7 @@ class ResponderThunk : public MessageReceiver {
   }
 
   // MessageReceiver implementation:
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+  virtual bool Accept(Message* message) override {
     MOJO_DCHECK(message->has_flag(kMessageIsResponse));
 
     bool result = false;

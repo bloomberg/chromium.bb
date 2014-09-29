@@ -55,7 +55,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
 
  private:
   // Overridden from Application:
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new mojo::ViewManagerClientFactory(app->shell(), this));
     view_manager_context_.reset(new mojo::ViewManagerContext(app));
@@ -64,7 +64,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
     OpenNewWindow();
   }
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
+      mojo::ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }
@@ -76,7 +76,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
       mojo::ViewManager* view_manager,
       mojo::View* root,
       mojo::ServiceProviderImpl* exported_services,
-      scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
+      scoped_ptr<mojo::ServiceProvider> imported_services) override {
     root->AddObserver(this);
     root->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
 
@@ -97,17 +97,17 @@ class WMFlowApp : public mojo::ApplicationDelegate,
                                     base::Unretained(this)));
   }
   virtual void OnViewManagerDisconnected(
-      mojo::ViewManager* view_manager) MOJO_OVERRIDE {}
+      mojo::ViewManager* view_manager) override {}
 
   // Overridden from mojo::ViewObserver:
   virtual void OnViewInputEvent(mojo::View* view,
-                                const mojo::EventPtr& event) MOJO_OVERRIDE {
+                                const mojo::EventPtr& event) override {
     if (event->action == mojo::EVENT_TYPE_MOUSE_RELEASED &&
         event->flags & mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
       OpenNewWindow();
     }
   }
-  virtual void OnViewDestroyed(mojo::View* view) MOJO_OVERRIDE {
+  virtual void OnViewDestroyed(mojo::View* view) override {
     --embed_count_;
     view->RemoveObserver(this);
   }

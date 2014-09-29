@@ -47,7 +47,7 @@ class FrameController : mojo::ViewObserver {
   friend class LayoutManager;
   class FrameEventHandler;
 
-  virtual void OnViewDestroyed(mojo::View* view) MOJO_OVERRIDE;
+  virtual void OnViewDestroyed(mojo::View* view) override;
 
   mojo::View* view_;
   mojo::View* app_view_;

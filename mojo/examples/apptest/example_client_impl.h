@@ -21,7 +21,7 @@ class ExampleClientImpl : public InterfaceImpl<ExampleClient> {
 
  private:
   // InterfaceImpl<ExampleClient> overrides.
-  virtual void Pong(uint16_t pong_value) MOJO_OVERRIDE;
+  virtual void Pong(uint16_t pong_value) override;
 
   int16_t last_pong_value_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(ExampleClientImpl);

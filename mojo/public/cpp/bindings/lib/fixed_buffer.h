@@ -43,7 +43,7 @@ class FixedBuffer : public Buffer {
   // Grows the buffer by |num_bytes| and returns a pointer to the start of the
   // addition. The resulting address is 8-byte aligned, and the content of the
   // memory is zero-filled.
-  virtual void* Allocate(size_t num_bytes) MOJO_OVERRIDE;
+  virtual void* Allocate(size_t num_bytes) override;
 
   size_t size() const { return size_; }
 

@@ -38,9 +38,9 @@ class NoInterfaceStub : public MessageReceiverWithResponder {
   NoInterfaceStub() {}
   void set_sink(NoInterface* sink) {}
   NoInterface* sink() { return NULL; }
-  virtual bool Accept(Message* message) MOJO_OVERRIDE;
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE;
+  virtual bool Accept(Message* message) override;
+  virtual bool AcceptWithResponder(Message* message,
+                                   MessageReceiver* responder) override;
 };
 
 

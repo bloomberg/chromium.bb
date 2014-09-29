@@ -25,7 +25,7 @@ class TestRequestTrackerClientImpl : public TestRequestTrackerClient {
   // TestRequestTrackerClient impl.
   virtual void SetIdAndReturnName(
       uint64_t id,
-      const mojo::Callback<void(mojo::String)>& callback) MOJO_OVERRIDE;
+      const mojo::Callback<void(mojo::String)>& callback) override;
 
  private:
   void SendStats();

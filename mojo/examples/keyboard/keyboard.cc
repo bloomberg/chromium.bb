@@ -67,13 +67,13 @@ class Keyboard : public ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     views_init_.reset(new ViewsInit);
     connection->AddService(view_manager_client_factory_.get());
     connection->AddService(&keyboard_service_factory_);

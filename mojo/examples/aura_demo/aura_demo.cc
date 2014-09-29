@@ -161,7 +161,7 @@ class AuraDemo : public mojo::ApplicationDelegate,
     root_->SetContents(bitmap);
   }
 
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new mojo::ViewManagerClientFactory(app->shell(), this));
     aura::Env::CreateInstance(true);
@@ -172,7 +172,7 @@ class AuraDemo : public mojo::ApplicationDelegate,
   }
 
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
+      mojo::ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }

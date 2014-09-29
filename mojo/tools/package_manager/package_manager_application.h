@@ -43,7 +43,7 @@ class PackageManagerApplication
   void PendingLoadComplete(const GURL& url);
 
   // ApplicationDelegate implementation.
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE;
+  virtual void Initialize(ApplicationImpl* app) override;
 
   // PackageFetcher.
   virtual void FetchSucceeded(const GURL& url,

@@ -19,8 +19,8 @@ class ExampleServiceImpl : public InterfaceImpl<ExampleService> {
 
  private:
   // InterfaceImpl<ExampleService> overrides.
-  virtual void Ping(uint16_t ping_value) MOJO_OVERRIDE;
-  virtual void RunCallback(const Callback<void()>& callback) MOJO_OVERRIDE;
+  virtual void Ping(uint16_t ping_value) override;
+  virtual void RunCallback(const Callback<void()>& callback) override;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ExampleServiceImpl);
 };

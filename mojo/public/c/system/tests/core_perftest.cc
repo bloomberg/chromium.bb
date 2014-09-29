@@ -31,7 +31,7 @@ class MessagePipeWriterThread : public mojo::Thread {
       : handle_(handle), num_bytes_(num_bytes), num_writes_(0) {}
   virtual ~MessagePipeWriterThread() {}
 
-  virtual void Run() MOJO_OVERRIDE {
+  virtual void Run() override {
     char buffer[10000];
     assert(num_bytes_ <= sizeof(buffer));
 
@@ -69,7 +69,7 @@ class MessagePipeReaderThread : public mojo::Thread {
       : handle_(handle), num_reads_(0) {}
   virtual ~MessagePipeReaderThread() {}
 
-  virtual void Run() MOJO_OVERRIDE {
+  virtual void Run() override {
     char buffer[10000];
 
     for (;;) {

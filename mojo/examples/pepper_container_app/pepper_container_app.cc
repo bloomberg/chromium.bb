@@ -37,7 +37,7 @@ class PepperContainerApp: public ApplicationDelegate,
 
   virtual ~PepperContainerApp() {}
 
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 

@@ -61,8 +61,8 @@ class DBusExternalService
   }
   virtual ~DBusExternalService() {}
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
@@ -70,7 +70,7 @@ class DBusExternalService
   virtual void Create(
       ApplicationConnection* connection,
       InterfaceRequest<typename ServiceImpl::ImplementedInterface> request)
-      MOJO_OVERRIDE {
+      override {
     BindToRequest(new ServiceImpl, &request);
   }
 

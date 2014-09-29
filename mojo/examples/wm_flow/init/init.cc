@@ -24,7 +24,7 @@ class WMFlowInit : public mojo::ApplicationDelegate {
 
  private:
   // Overridden from Application:
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) override {
     context_.reset(new mojo::ViewManagerContext(app));
     context_->Embed("mojo:mojo_wm_flow_wm");
     app->ConnectToApplication("mojo:mojo_wm_flow_app");

@@ -33,12 +33,11 @@ class RunLoopHandlerImpl : public RunLoopHandler {
   }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) override {
     NotifyCallback(MOJO_RESULT_OK);
   }
 
-  virtual void OnHandleError(const Handle& handle,
-                             MojoResult result) MOJO_OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
     NotifyCallback(result);
   }
 

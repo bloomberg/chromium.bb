@@ -48,16 +48,16 @@ class ExternalApplicationListenerPosix::RegistrarImpl
     : public InterfaceImpl<ExternalApplicationRegistrar> {
  public:
   explicit RegistrarImpl(const RegisterCallback& callback);
-  virtual ~RegistrarImpl() MOJO_OVERRIDE;
+  virtual ~RegistrarImpl() override;
 
-  virtual void OnConnectionError() MOJO_OVERRIDE;
+  virtual void OnConnectionError() override;
 
   embedder::ChannelInit channel_init;
 
  private:
   virtual void Register(const String& app_url,
                         InterfaceRequest<Shell> shell,
-                        const mojo::Closure& callback) MOJO_OVERRIDE;
+                        const mojo::Closure& callback) override;
 
   const RegisterCallback register_callback_;
 };

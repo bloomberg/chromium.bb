@@ -22,7 +22,7 @@ class MessageAccumulator : public MessageReceiver {
   MessageAccumulator() {
   }
 
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+  virtual bool Accept(Message* message) override {
     queue_.Push(message);
     return true;
   }
@@ -44,7 +44,7 @@ class ConnectorDeletingMessageAccumulator : public MessageAccumulator {
   ConnectorDeletingMessageAccumulator(internal::Connector** connector)
       : connector_(connector) {}
 
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+  virtual bool Accept(Message* message) override {
     delete *connector_;
     *connector_ = 0;
     return MessageAccumulator::Accept(message);
@@ -59,7 +59,7 @@ class ReentrantMessageAccumulator : public MessageAccumulator {
   ReentrantMessageAccumulator(internal::Connector* connector)
       : connector_(connector), number_of_calls_(0) {}
 
-  virtual bool Accept(Message* message) MOJO_OVERRIDE {
+  virtual bool Accept(Message* message) override {
     if (!MessageAccumulator::Accept(message))
       return false;
     number_of_calls_++;
@@ -81,12 +81,11 @@ class ConnectorTest : public testing::Test {
   ConnectorTest() {
   }
 
-  virtual void SetUp() MOJO_OVERRIDE {
+  virtual void SetUp() override {
     CreateMessagePipe(NULL, &handle0_, &handle1_);
   }
 
-  virtual void TearDown() MOJO_OVERRIDE {
-  }
+  virtual void TearDown() override {}
 
   void AllocMessage(const char* text, Message* message) {
     size_t payload_size = strlen(text) + 1;  // Plus null terminator.

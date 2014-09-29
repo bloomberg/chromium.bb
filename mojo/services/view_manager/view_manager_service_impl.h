@@ -97,7 +97,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // TODO(sky): move this to private section (currently can't because of
   // bindings).
   // InterfaceImp overrides:
-  virtual void OnConnectionError() MOJO_OVERRIDE;
+  virtual void OnConnectionError() override;
 
  private:
   typedef std::map<ConnectionSpecificId, ServerView*> ViewMap;
@@ -181,7 +181,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
   // InterfaceImpl:
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
+  virtual void OnConnectionEstablished() override;
 
   // AccessPolicyDelegate:
   virtual const base::hash_set<Id>& GetRootsForAccessPolicy() const OVERRIDE;

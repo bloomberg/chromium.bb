@@ -53,7 +53,7 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }

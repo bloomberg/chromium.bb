@@ -213,15 +213,15 @@ class PNGViewer : public ApplicationDelegate {
   PNGViewer() {}
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     content_handler_factory_.reset(
         new InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell>(
             app->shell()));
   }
 
   // Overridden from ApplicationDelegate:
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     connection->AddService(content_handler_factory_.get());
     return true;
   }

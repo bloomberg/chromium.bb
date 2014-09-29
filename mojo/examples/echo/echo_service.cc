@@ -14,17 +14,16 @@ namespace examples {
 
 class EchoServiceImpl : public InterfaceImpl<EchoService> {
  public:
-  virtual void EchoString(
-      const String& value,
-      const Callback<void(String)>& callback) MOJO_OVERRIDE {
+  virtual void EchoString(const String& value,
+                          const Callback<void(String)>& callback) override {
     callback.Run(value);
   }
 };
 
 class EchoServiceDelegate : public ApplicationDelegate {
  public:
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) override {
     connection->AddService(&echo_service_factory_);
     return true;
   }

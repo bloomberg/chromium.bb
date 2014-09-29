@@ -23,8 +23,7 @@ class ViewManagerClientFactory : public InterfaceFactory<ViewManagerClient> {
 
   // InterfaceFactory<ViewManagerClient> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ViewManagerClient> request)
-      MOJO_OVERRIDE;
+                      InterfaceRequest<ViewManagerClient> request) override;
 
  private:
   Shell* shell_;
