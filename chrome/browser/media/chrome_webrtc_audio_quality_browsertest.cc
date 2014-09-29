@@ -378,10 +378,10 @@ bool RunPesq(const base::FilePath& reference_file,
   return true;
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Only implemented on Linux and Windows for now.
 #define MAYBE_MANUAL_TestAudioQuality MANUAL_TestAudioQuality
 #else
-// Not implemented on Android, ChromeOS etc.
 #define MAYBE_MANUAL_TestAudioQuality DISABLED_MANUAL_TestAudioQuality
 #endif
 
