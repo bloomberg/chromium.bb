@@ -137,8 +137,6 @@
         'browser/global_tile_manager.cc',
         'browser/global_tile_manager.h',
         'browser/global_tile_manager_client.h',
-        'browser/gpu_memory_buffer_factory_impl.cc',
-        'browser/gpu_memory_buffer_factory_impl.h',
         'browser/hardware_renderer.cc',
         'browser/hardware_renderer.h',
         'browser/icon_helper.cc',

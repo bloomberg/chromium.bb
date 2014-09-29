@@ -19,7 +19,6 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/gpu_export.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
@@ -56,26 +55,6 @@ class CommandBufferServiceBase;
 class GpuScheduler;
 class TransferBufferManagerInterface;
 
-// TODO(reveman): Remove this interface when InProcessCommandBuffer doesn't need
-// a custom factory interface and android_webview implementation of GPU memory
-// buffers can use the same mechanism for buffer allocation as what's used for
-// out of process GPU service.
-class GPU_EXPORT InProcessGpuMemoryBufferFactory {
- public:
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat,
-      unsigned usage) = 0;
-  virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
-      const gfx::Size& size,
-      unsigned internalformat) = 0;
-
- protected:
-  virtual ~InProcessGpuMemoryBufferFactory() {}
-};
-
 // This class provides a thread-safe interface to the global GPU service (for
 // example GPU thread) when being run in single process mode.
 // However, the behavior for accessing one context (i.e. one instance of this
@@ -86,9 +65,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   class Service;
   explicit InProcessCommandBuffer(const scoped_refptr<Service>& service);
   virtual ~InProcessCommandBuffer();
-
-  static void SetGpuMemoryBufferFactory(
-      InProcessGpuMemoryBufferFactory* factory);
 
   // If |surface| is not NULL, use it directly; in this case, the command
   // buffer gpu thread must be the same as the client thread. Otherwise create
@@ -206,13 +182,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                   const base::Closure& callback);
   void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);
   void DestroyTransferBufferOnGpuThread(int32 id);
-  void RegisterGpuMemoryBufferOnGpuThread(
-      int32 id,
-      const gfx::GpuMemoryBufferHandle& handle,
-      size_t width,
-      size_t height,
-      unsigned internalformat);
-  void UnregisterGpuMemoryBufferOnGpuThread(int32 id);
 
   // Callbacks:
   void OnContextLost();
@@ -238,9 +207,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State last_state_;
   int32 last_put_offset_;
   gpu::Capabilities capabilities_;
-  typedef base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer>
-      GpuMemoryBufferMap;
-  GpuMemoryBufferMap gpu_memory_buffers_;
 
   // Accessed on both threads:
   scoped_ptr<CommandBufferServiceBase> command_buffer_;

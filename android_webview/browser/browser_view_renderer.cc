@@ -76,7 +76,7 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
 }  // namespace
 
 // static
-void BrowserViewRenderer::CalculateTileMemoryPolicy(bool use_zero_copy) {
+void BrowserViewRenderer::CalculateTileMemoryPolicy() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
 
   // If the value was overridden on the command line, use the specified value.
@@ -90,27 +90,12 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy(bool use_zero_copy) {
     g_memory_override_in_bytes *= 1024 * 1024;
   }
 
-  if (!use_zero_copy) {
-    // Use chrome's default tile size, which varies from 256 to 512.
-    // Be conservative here and use the smallest tile size possible.
-    g_tile_area = 256 * 256;
+  // Use chrome's default tile size, which varies from 256 to 512.
+  // Be conservative here and use the smallest tile size possible.
+  g_tile_area = 256 * 256;
 
-    // Also use a high tile limit since there are no file descriptor issues.
-    GlobalTileManager::GetInstance()->SetTileLimit(1000);
-    return;
-  }
-
-  const char kDefaultTileSize[] = "384";
-
-  if (!cl->HasSwitch(switches::kDefaultTileWidth))
-    cl->AppendSwitchASCII(switches::kDefaultTileWidth, kDefaultTileSize);
-
-  if (!cl->HasSwitch(switches::kDefaultTileHeight))
-    cl->AppendSwitchASCII(switches::kDefaultTileHeight, kDefaultTileSize);
-
-  size_t tile_size;
-  base::StringToSizeT(kDefaultTileSize, &tile_size);
-  g_tile_area = tile_size * tile_size;
+  // Also use a high tile limit since there are no file descriptor issues.
+  GlobalTileManager::GetInstance()->SetTileLimit(1000);
 }
 
 BrowserViewRenderer::BrowserViewRenderer(

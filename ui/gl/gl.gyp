@@ -278,8 +278,6 @@
             'gl_jni_headers',
           ],
           'sources': [
-            'gl_image_android_native_buffer.cc',
-            'gl_image_android_native_buffer.h',
             'gl_image_surface_texture.cc',
             'gl_image_surface_texture.h',
           ],

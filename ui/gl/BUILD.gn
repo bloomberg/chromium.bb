@@ -220,8 +220,6 @@ component("gl") {
     sources += [
       "gl_egl_api_implementation.cc",
       "gl_egl_api_implementation.h",
-      "gl_image_android_native_buffer.cc",
-      "gl_image_android_native_buffer.h",
       "gl_image_surface_texture.cc",
       "gl_image_surface_texture.h",
     ]

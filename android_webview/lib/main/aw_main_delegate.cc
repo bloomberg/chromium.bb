@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/browser_view_renderer.h"
-#include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
@@ -40,8 +39,7 @@ base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
 
 }
 
-AwMainDelegate::AwMainDelegate()
-    : gpu_memory_buffer_factory_(new GpuMemoryBufferFactoryImpl) {
+AwMainDelegate::AwMainDelegate() {
 }
 
 AwMainDelegate::~AwMainDelegate() {
@@ -50,23 +48,12 @@ AwMainDelegate::~AwMainDelegate() {
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  bool zero_copy_disabled_by_switch = cl->HasSwitch(switches::kDisableZeroCopy);
-  bool use_zero_copy = !zero_copy_disabled_by_switch &&
-                       cl->HasSwitch(switches::kEnableZeroCopy) &&
-                       gpu_memory_buffer_factory_.get()->Initialize();
-
-  if (use_zero_copy) {
-    cl->AppendSwitch(switches::kEnableZeroCopy);
-  } else if (!zero_copy_disabled_by_switch) {
-    cl->AppendSwitch(switches::kDisableZeroCopy);
-  }
-
   content::BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
       new AwMediaUrlInterceptor());
 
-  BrowserViewRenderer::CalculateTileMemoryPolicy(use_zero_copy);
+  BrowserViewRenderer::CalculateTileMemoryPolicy();
 
+  CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
   cl->AppendSwitch(switches::kEnableImplSidePainting);
 

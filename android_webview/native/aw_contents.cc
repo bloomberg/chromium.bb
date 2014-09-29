@@ -11,7 +11,6 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
-#include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
@@ -328,8 +327,6 @@ static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass,
 
 static void SetAwDrawGLFunctionTable(JNIEnv* env, jclass,
                                      jlong function_table) {
-  GpuMemoryBufferFactoryImpl::SetAwDrawGLFunctionTable(
-      reinterpret_cast<AwDrawGLFunctionTable*>(function_table));
 }
 
 static jlong GetAwDrawGLFunction(JNIEnv* env, jclass) {
