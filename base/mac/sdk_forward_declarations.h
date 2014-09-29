@@ -285,6 +285,10 @@ typedef NSUInteger NSWindowOcclusionState;
 - (NSWindowOcclusionState)occlusionState;
 @end
 
+enum {
+  NSWorkspaceLaunchWithErrorPresentation = 0x00000040
+};
+
 #else  // !MAC_OS_X_VERSION_10_9
 
 typedef enum {

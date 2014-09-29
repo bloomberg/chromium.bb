@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#import "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/strings/sys_string_conversions.h"
 #include "url/gurl.h"
@@ -25,18 +27,34 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
     LOG(WARNING) << "NSWorkspace failed to select file " << full_path.value();
 }
 
-// This function opens a file.  This doesn't use LaunchServices or NSWorkspace
-// because of two bugs:
-//  1. Incorrect app activation with com.apple.quarantine:
-//     http://crbug.com/32921
-//  2. Silent no-op for unassociated file types: http://crbug.com/50263
-// Instead, an AppleEvent is constructed to tell the Finder to open the
-// document.
 void OpenItem(Profile* profile, const base::FilePath& full_path) {
   DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string)
     return;
+
+  // On Mavericks or later, NSWorkspaceLaunchWithErrorPresentation will
+  // properly handle Finder activation for quarantined files
+  // (http://crbug.com/32921) and unassociated file types
+  // (http://crbug.com/50263).
+  if (base::mac::IsOSMavericksOrLater()) {
+    NSURL* url = [NSURL fileURLWithPath:path_string];
+    if (!url)
+      return;
+
+    const NSWorkspaceLaunchOptions launch_options =
+        NSWorkspaceLaunchAsync | NSWorkspaceLaunchWithErrorPresentation;
+    [[NSWorkspace sharedWorkspace] openURLs:@[ url ]
+                    withAppBundleIdentifier:nil
+                                    options:launch_options
+             additionalEventParamDescriptor:nil
+                          launchIdentifiers:NULL];
+    return;
+  }
+
+  // On older OSes, both LaunchServices and NSWorkspace will fail silently for
+  // the two cases described above. On those platforms, use an AppleEvent to
+  // instruct the Finder to open the file.
 
   // Create the target of this AppleEvent, the Finder.
   base::mac::ScopedAEDesc<AEAddressDesc> address;
