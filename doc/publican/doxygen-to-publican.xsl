@@ -42,11 +42,11 @@
 <xsl:template match="parameteritem">
     <varlistentry>
         <term>
-          <xsl:value-of select="parameternamelist/parametername"/>
+          <xsl:apply-templates select="parameternamelist/parametername"/>
         </term>
       <listitem>
         <para>
-          <xsl:value-of select="parameterdescription/para"/>
+          <xsl:apply-templates select="parameterdescription/para"/>
         </para>
       </listitem>
     </varlistentry>
@@ -61,7 +61,7 @@
 </xsl:template>
 
 <xsl:template match="ref">
-  <emphasis><xsl:value-of select="." /></emphasis>
+  <emphasis><xsl:apply-templates /></emphasis>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='return']">
@@ -70,7 +70,7 @@
       <term>Returns:</term>
       <listitem>
         <para>
-          <xsl:value-of select="." />
+          <xsl:apply-templates />
         </para>
       </listitem>
     </varlistentry>
@@ -83,7 +83,7 @@
       <para>
         See also:
         <xsl:for-each select="para/ref">
-          <emphasis><xsl:value-of select="."/><xsl:text> </xsl:text></emphasis>
+          <emphasis><xsl:apply-templates /><xsl:text> </xsl:text></emphasis>
         </xsl:for-each>
       </para>
     </listitem>
@@ -94,18 +94,18 @@
   <itemizedlist>
     <listitem>
       <para>
-        Since: <xsl:value-of select="para"/>
+        Since: <xsl:apply-templates select="para"/>
       </para>
     </listitem>
   </itemizedlist>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='note']">
-  <emphasis>Note: <xsl:value-of select="."/></emphasis>
+  <emphasis>Note: <xsl:apply-templates /></emphasis>
 </xsl:template>
 
 <xsl:template match="programlisting">
-  <programlisting><xsl:value-of select="."/></programlisting>
+  <programlisting><xsl:apply-templates /></programlisting>
 </xsl:template>
 
 <!-- this opens a para for each detaileddescription/para. I could not find a
@@ -129,13 +129,13 @@
   <xsl:if test="@kind = 'function' and @static = 'no'">
     <varlistentry>
         <term>
-          <xsl:value-of select="name"/>
-        - <xsl:value-of select="briefdescription" />
+          <xsl:apply-templates select="name"/>
+        - <xsl:apply-templates select="briefdescription" />
         </term>
         <listitem>
           <para>
             <synopsis>
-              <xsl:value-of select="definition"/><xsl:value-of select="argsstring"/>
+              <xsl:apply-templates select="definition"/><xsl:apply-templates select="argsstring"/>
             </synopsis>
           </para>
           <xsl:apply-templates select="detaileddescription" />
@@ -149,16 +149,14 @@
     <xsl:if test="@kind = 'class' ">
     <varlistentry>
         <term>
-            <xsl:value-of select="compoundname" />
+            <xsl:apply-templates select="compoundname" />
             <xsl:if test="briefdescription">
-                - <xsl:value-of select="briefdescription" />
+                - <xsl:apply-templates select="briefdescription" />
             </xsl:if>
         </term>
 
         <listitem>
-            <xsl:for-each select="detaileddescription/para">
-            <para><xsl:value-of select="." /></para>
-            </xsl:for-each>
+          <xsl:apply-templates select="detaileddescription/para" />
         </listitem>
     </varlistentry>
     </xsl:if>
