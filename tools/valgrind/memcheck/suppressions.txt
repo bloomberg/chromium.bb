@@ -495,6 +495,12 @@
    fun:_ZNK5blink24BaseDateAndTimeInputType15typeMismatchForERKN3WTF6StringE
    fun:_ZNK5blink24BaseDateAndTimeInputType13sanitizeValueERKN3WTF6StringE
 }
+{
+   bug_418234
+   Memcheck:Uninitialized
+   fun:_ZN10extensions19ExtensionManagement7RefreshEv
+   fun:_ZN10extensions19ExtensionManagement22OnExtensionPrefChangedEv
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
