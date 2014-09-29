@@ -1237,12 +1237,11 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const
 
     TextRun textRun = constructTextRun(styleToUse, font);
 
-    GlyphBuffer glyphBuffer;
     SimpleShaper shaper(&font, textRun);
     float lastWidth = 0;
     widths.resize(m_len);
     for (unsigned i = 0; i < m_len; i++) {
-        shaper.advance(i + 1, &glyphBuffer);
+        shaper.advance(i + 1);
         widths[i] = shaper.m_runWidthSoFar - lastWidth;
         lastWidth = shaper.m_runWidthSoFar;
     }
