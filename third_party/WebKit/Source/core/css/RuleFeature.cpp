@@ -344,8 +344,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
 
 void RuleFeatureSet::addContentAttr(const AtomicString& attributeName)
 {
-    DescendantInvalidationSet& invalidationSet = ensureAttributeInvalidationSet(attributeName);
-    invalidationSet.setWholeSubtreeInvalid();
+    ensureAttributeInvalidationSet(attributeName);
 }
 
 void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
