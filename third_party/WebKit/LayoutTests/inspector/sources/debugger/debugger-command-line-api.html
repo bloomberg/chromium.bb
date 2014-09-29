@@ -12,13 +12,17 @@ function testFunction()
 var test = function()
 {
     InspectorTest.addSniffer(WebInspector.Main.prototype, "inspect", inspect);
-    InspectorTest.addSniffer(WebInspector.Revealer, "reveal", updateFocusedNode, true);
+    InspectorTest.addSniffer(WebInspector.Revealer, "revealPromise", oneRevealPromise, true);
 
-    function updateFocusedNode(node)
+    function oneRevealPromise(node, revealPromise)
     {
-        if (!(node instanceof WebInspector.DOMNode))
+        if (!(node instanceof WebInspector.RemoteObject))
             return;
+        revealPromise.then(updateFocusedNode);
+    }
 
+    function updateFocusedNode()
+    {
         InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
         InspectorTest.completeDebuggerTest();
     }

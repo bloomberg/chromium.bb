@@ -1,5 +1,14 @@
 Tests that "Show Function Definition" jumps to the correct location.
 
-Jumping to 7:18
-PASS: Console message has correct line number
+
+Running: testRevealFunctionDefinition
+Function location revealed: [7:18]
+
+Running: testDumpFunctionDefinition
+jumpToMe
+show-function-definition.html:7 function jumpToMe()
+{
+    var result = 12345;
+    return window.foo || result;
+}
 

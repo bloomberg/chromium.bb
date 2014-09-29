@@ -84,7 +84,7 @@ InspectorTest.expandedNodeWithId = function(idValue)
 
 InspectorTest.selectNode = function(node)
 {
-    WebInspector.Revealer.reveal(node);
+    return WebInspector.Revealer.revealPromise(node);
 }
 
 InspectorTest.selectNodeWithId = function(idValue, callback)
@@ -92,8 +92,7 @@ InspectorTest.selectNodeWithId = function(idValue, callback)
     callback = InspectorTest.safeWrap(callback);
     function onNodeFound(node)
     {
-        InspectorTest.selectNode(node);
-        callback(node);
+        InspectorTest.selectNode(node).then(callback.bind(null, node));
     }
     InspectorTest.nodeWithId(idValue, onNodeFound);
 }
@@ -524,7 +523,8 @@ InspectorTest.expandElementsTree = function(callback)
     {
         InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
         expand(InspectorTest.firstElementsTreeOutline());
-        callback(expandedSomething);
+        // Make all promises succeed.
+        setTimeout(callback.bind(null, expandedSomething));
     }
     WebInspector.inspectorView.showPanel("elements");
     InspectorTest.findNode(function() { return false; }, onAllNodesAvailable);

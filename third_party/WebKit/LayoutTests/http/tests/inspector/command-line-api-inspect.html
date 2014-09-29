@@ -25,7 +25,6 @@ function test()
         InspectorTest.evaluateInConsole(expression, dumpCallback);
         function dumpCallback(text)
         {
-            text = text.replace(/Test of session.*/, "Test of session storage...");
             InspectorTest.addResult(expression + " = " + text);
             if (next)
                 next();
@@ -35,14 +34,18 @@ function test()
     InspectorTest.runTestSuite([
         function testRevealElement(next)
         {
-            InspectorTest.addSniffer(WebInspector.Revealer, "reveal", step2, true);
+            InspectorTest.addSniffer(WebInspector.Revealer, "revealPromise", step2, true);
             evalAndDump("inspect($('#p1'))");
 
-            function step2(node)
+            function step2(node, revealPromise)
             {
-                if (!(node instanceof WebInspector.DOMNode))
+                if (!(node instanceof WebInspector.RemoteObject))
                     return;
+                revealPromise.then(step3);
+            }
 
+            function step3()
+            {
                 InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
                 next();
             }

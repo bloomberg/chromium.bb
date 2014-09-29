@@ -57,8 +57,12 @@ function test()
 
     function selectReloadAndDump(next, node)
     {
-        InspectorTest.selectNode(node);
-        InspectorTest.reloadPage(step1);
+        InspectorTest.selectNode(node).then(step0);
+
+        function step0()
+        {
+            InspectorTest.reloadPage(step1);
+        }
 
         function step1()
         {

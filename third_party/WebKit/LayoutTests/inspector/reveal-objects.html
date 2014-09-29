@@ -62,32 +62,27 @@ function test() {
 
         function revealNode(next)
         {
-            WebInspector.Revealer.reveal(node);
-            next();
+            WebInspector.Revealer.revealPromise(node).then(next);
         },
 
         function revealUILocation(next)
         {
-            WebInspector.Revealer.reveal(uiLocation);
-            next();
+            WebInspector.Revealer.revealPromise(uiLocation).then(next);
         },
 
         function revealResource(next)
         {
-            WebInspector.Revealer.reveal(resource);
-            next();
+            WebInspector.Revealer.revealPromise(resource).then(next);
         },
 
         function revealRequestWithResource(next)
         {
-            WebInspector.Revealer.reveal(requestWithResource);
-            next();
+            WebInspector.Revealer.revealPromise(requestWithResource).then(next);
         },
 
         function revealRequestWithoutResource(next)
         {
-            WebInspector.Revealer.reveal(requestWithoutResource);
-            next();
+            WebInspector.Revealer.revealPromise(requestWithoutResource).then(next);
         }
     ]);
 

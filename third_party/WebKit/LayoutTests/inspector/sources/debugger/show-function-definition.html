@@ -12,50 +12,53 @@ function jumpToMe()
 
 function test()
 {
-    var jumpToMeLineNumber = 7;
-
     var panel = WebInspector.inspectorView.showPanel("sources");
-    InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-    WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, didGetFunction);
 
-    function didGetFunction(funcObject, wasThrown)
-    {
-        var error = !funcObject || wasThrown;
-        InspectorTest.assertTrue(!error);
-        panel._showFunctionDefinition(funcObject);
-    }
+    InspectorTest.runTestSuite([
+        function testRevealFunctionDefinition(next)
+        {
+            InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
+            WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, didGetFunction);
 
-    function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
-    {
-        // lineNumber and columnNumber are 0-based
-        ++lineNumber;
-        ++columnNumber;
-        InspectorTest.assertEquals(jumpToMeLineNumber, lineNumber);
-        InspectorTest.addResult("Jumping to " + lineNumber + ":" + columnNumber);
+            function didGetFunction(funcObject, wasThrown)
+            {
+                var error = !funcObject || wasThrown;
+                InspectorTest.assertTrue(!error);
+                panel._showFunctionDefinition(funcObject);
+            }
 
-        InspectorTest.waitUntilNthMessageReceived(2, onConsoleMessagesReceived);
-        WebInspector.ConsoleModel.evaluateCommandInConsole(WebInspector.context.flavor(WebInspector.ExecutionContext), "jumpToMe");
-    }
+            function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
+            {
+                // lineNumber and columnNumber are 0-based
+                ++lineNumber;
+                ++columnNumber;
+                InspectorTest.addResult("Function location revealed: [" + lineNumber + ":" + columnNumber + "]");
+                next();
+            }
+        },
 
-    function onConsoleMessagesReceived()
-    {
-        var messages = [];
-        InspectorTest.disableConsoleViewport();
-        var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
-        for (var i = 0; i < viewMessages.length; ++i) {
-            var uiMessage = viewMessages[i];
-            var element = uiMessage.contentElement();
-            messages.push(element.textContent);
+        function testDumpFunctionDefinition(next)
+        {
+            InspectorTest.waitUntilNthMessageReceived(2, onConsoleMessagesReceived);
+            WebInspector.ConsoleModel.evaluateCommandInConsole(WebInspector.context.flavor(WebInspector.ExecutionContext), "jumpToMe");
+
+            function onConsoleMessagesReceived()
+            {
+                var messages = [];
+                InspectorTest.disableConsoleViewport();
+                var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+                for (var i = 0; i < viewMessages.length; ++i) {
+                    var uiMessage = viewMessages[i];
+                    var element = uiMessage.contentElement();
+                    messages.push(element.textContent);
+                }
+
+                InspectorTest.addResult(messages.join("\n"));
+
+                next();
+            }
         }
-
-        var text = messages.join("\n");
-        if (text.indexOf("show-function-definition.html:" + jumpToMeLineNumber) !== -1)
-            InspectorTest.addResult("PASS: Console message has correct line number");
-        else
-            InspectorTest.addResult("FAIL: Wrong line number in console message:\n" + text);
-
-        InspectorTest.completeTest();
-    }
+    ]);
 }
 
 </script>
