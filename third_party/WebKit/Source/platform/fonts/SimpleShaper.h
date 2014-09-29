@@ -59,10 +59,9 @@ public:
     Vector<SVGGlyph::ArabicForm>& arabicForms() { return m_arabicForms; }
 #endif
 
+private:
     const Font* m_font;
-
     const TextRun& m_run;
-
     unsigned m_currentCharacter;
     float m_runWidthSoFar;
     float m_expansion;
@@ -72,8 +71,6 @@ public:
 #if ENABLE(SVG_FONTS)
     Vector<SVGGlyph::ArabicForm> m_arabicForms;
 #endif
-
-private:
     struct CharacterData {
         UChar32 character;
         unsigned clusterLength;
