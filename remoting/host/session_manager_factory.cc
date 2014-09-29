@@ -25,13 +25,11 @@ scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signal_strategy,
-          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          network_settings));
+          signal_strategy, port_allocator.Pass(), network_settings));
 
   scoped_ptr<protocol::JingleSessionManager> session_manager(
       new protocol::JingleSessionManager(transport_factory.Pass()));
-  return session_manager.PassAs<protocol::SessionManager>();
+  return session_manager.Pass();
 }
 
 } // namespace remoting

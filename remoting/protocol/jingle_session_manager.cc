@@ -54,7 +54,7 @@ scoped_ptr<Session> JingleSessionManager::Connect(
   scoped_ptr<JingleSession> session(new JingleSession(this));
   session->StartConnection(host_jid, authenticator.Pass(), config.Pass());
   sessions_[session->session_id_] = session.get();
-  return session.PassAs<Session>();
+  return session.Pass();
 }
 
 void JingleSessionManager::Close() {

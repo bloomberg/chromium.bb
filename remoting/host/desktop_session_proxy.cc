@@ -291,7 +291,7 @@ void DesktopSessionProxy::DetachFromDesktop() {
   // Generate fake responses to keep the video capturer in sync.
   while (pending_capture_frame_requests_) {
     --pending_capture_frame_requests_;
-    PostCaptureCompleted(scoped_ptr<webrtc::DesktopFrame>());
+    PostCaptureCompleted(nullptr);
   }
 }
 
@@ -313,7 +313,7 @@ void DesktopSessionProxy::CaptureFrame() {
     ++pending_capture_frame_requests_;
     SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
   } else {
-    PostCaptureCompleted(scoped_ptr<webrtc::DesktopFrame>());
+    PostCaptureCompleted(nullptr);
   }
 }
 

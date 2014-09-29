@@ -37,7 +37,7 @@ scoped_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector() {
 scoped_ptr<ScreenControls> BasicDesktopEnvironment::CreateScreenControls() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<ScreenControls>();
+  return nullptr;
 }
 
 scoped_ptr<webrtc::MouseCursorMonitor>
@@ -57,7 +57,7 @@ void BasicDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
 
 scoped_ptr<GnubbyAuthHandler> BasicDesktopEnvironment::CreateGnubbyAuthHandler(
     protocol::ClientStub* client_stub) {
-  return scoped_ptr<GnubbyAuthHandler>();
+  return nullptr;
 }
 
 scoped_ptr<webrtc::DesktopCapturer>

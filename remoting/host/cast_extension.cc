@@ -35,8 +35,7 @@ scoped_ptr<HostExtensionSession> CastExtension::CreateExtensionSession(
                                       url_request_context_getter_,
                                       network_settings_,
                                       client_session_control,
-                                      client_stub)
-      .PassAs<HostExtensionSession>();
+                                      client_stub).Pass();
 }
 
 }  // namespace remoting

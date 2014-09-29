@@ -221,8 +221,7 @@ void DaemonProcessWin::LaunchNetworkProcess() {
 
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
       new UnprivilegedProcessDelegate(io_task_runner(), target.Pass()));
-  network_launcher_.reset(new WorkerProcessLauncher(
-      delegate.PassAs<WorkerProcessLauncher::Delegate>(), this));
+  network_launcher_.reset(new WorkerProcessLauncher(delegate.Pass(), this));
 }
 
 scoped_ptr<DaemonProcess> DaemonProcess::Create(
@@ -233,7 +232,7 @@ scoped_ptr<DaemonProcess> DaemonProcess::Create(
       new DaemonProcessWin(caller_task_runner, io_task_runner,
                            stopped_callback));
   daemon_process->Initialize();
-  return daemon_process.PassAs<DaemonProcess>();
+  return daemon_process.Pass();
 }
 
 void DaemonProcessWin::DisableAutoStart() {

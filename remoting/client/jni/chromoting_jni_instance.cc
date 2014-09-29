@@ -400,10 +400,8 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   view_->set_frame_producer(renderer);
   video_renderer_.reset(renderer);
 
-  client_.reset(new ChromotingClient(client_context_.get(),
-                                     this,
-                                     video_renderer_.get(),
-                                     scoped_ptr<AudioPlayer>()));
+  client_.reset(new ChromotingClient(
+      client_context_.get(), this, video_renderer_.get(), nullptr));
 
   signaling_.reset(new XmppSignalStrategy(
       net::ClientSocketFactory::GetDefaultFactory(),
@@ -424,9 +422,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signaling_.get(),
-          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          network_settings));
+          signaling_.get(), port_allocator.Pass(), network_settings));
 
   client_->Start(signaling_.get(), authenticator_.Pass(),
                  transport_factory.Pass(), host_jid_, capabilities_);

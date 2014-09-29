@@ -214,7 +214,7 @@ scoped_ptr<net::StreamSocket> ChannelMultiplexer::MuxChannel::CreateSocket() {
   DCHECK(!socket_);  // Can't create more than one socket per channel.
   scoped_ptr<MuxSocket> result(new MuxSocket(this));
   socket_ = result.get();
-  return result.PassAs<net::StreamSocket>();
+  return result.Pass();
 }
 
 void ChannelMultiplexer::MuxChannel::OnIncomingPacket(
@@ -378,7 +378,7 @@ void ChannelMultiplexer::CreateChannel(const std::string& name,
     callback.Run(GetOrCreateChannel(name)->CreateSocket());
   } else if (!base_channel_.get() && !base_channel_factory_) {
     // Fail synchronously if we failed to create |base_channel_|.
-    callback.Run(scoped_ptr<net::StreamSocket>());
+    callback.Run(nullptr);
   } else {
     // Still waiting for the |base_channel_|.
     pending_channels_.push_back(PendingChannel(name, callback));

@@ -51,7 +51,7 @@ void SecureChannelFactory::OnBaseChannelCreated(
     const ChannelCreatedCallback& callback,
     scoped_ptr<net::StreamSocket> socket) {
   if (!socket) {
-    callback.Run(scoped_ptr<net::StreamSocket>());
+    callback.Run(nullptr);
     return;
   }
 

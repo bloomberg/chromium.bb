@@ -13,7 +13,7 @@ bool AudioCapturer::IsSupported() {
 
 scoped_ptr<AudioCapturer> AudioCapturer::Create() {
   NOTIMPLEMENTED();
-  return scoped_ptr<AudioCapturer>();
+  return nullptr;
 }
 
 }  // namespace remoting

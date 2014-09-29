@@ -262,8 +262,7 @@ void DesktopProcessTest::RunDesktopProcess() {
       .WillRepeatedly(Return(false));
 
   DesktopProcess desktop_process(ui_task_runner, io_task_runner_, channel_name);
-  EXPECT_TRUE(desktop_process.Start(
-      desktop_environment_factory.PassAs<DesktopEnvironmentFactory>()));
+  EXPECT_TRUE(desktop_process.Start(desktop_environment_factory.Pass()));
 
   ui_task_runner = NULL;
   run_loop.Run();

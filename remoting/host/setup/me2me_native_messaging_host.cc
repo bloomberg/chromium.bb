@@ -117,7 +117,7 @@ void Me2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
   std::string type;
   if (!message_dict->GetString("type", &type)) {
     LOG(ERROR) << "'type' not found";
-    channel_->SendMessage(scoped_ptr<base::Value>());
+    channel_->SendMessage(nullptr);
     return;
   }
 
@@ -174,7 +174,7 @@ void Me2MeNativeMessagingHost::ProcessHello(
   supported_features_list->AppendStrings(std::vector<std::string>(
       kSupportedFeatures, kSupportedFeatures + arraysize(kSupportedFeatures)));
   response->Set("supportedFeatures", supported_features_list.release());
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::ProcessClearPairedClients(
@@ -232,7 +232,7 @@ void Me2MeNativeMessagingHost::ProcessGetHostName(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetString("hostname", net::GetHostName());
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::ProcessGetPinHash(
@@ -253,7 +253,7 @@ void Me2MeNativeMessagingHost::ProcessGetPinHash(
     return;
   }
   response->SetString("hash", MakeHostPinHash(host_id, pin));
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
@@ -264,7 +264,7 @@ void Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::Generate();
   response->SetString("privateKey", key_pair->ToString());
   response->SetString("publicKey", key_pair->GetPublicKey());
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
@@ -387,7 +387,7 @@ void Me2MeNativeMessagingHost::ProcessGetDaemonState(
       response->SetString("state", "UNKNOWN");
       break;
   }
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::ProcessGetHostClientId(
@@ -397,7 +397,7 @@ void Me2MeNativeMessagingHost::ProcessGetHostClientId(
 
   response->SetString("clientId", google_apis::GetOAuth2ClientID(
       google_apis::CLIENT_REMOTING_HOST));
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
@@ -434,7 +434,7 @@ void Me2MeNativeMessagingHost::SendConfigResponse(
   } else {
     response->Set("config", base::Value::CreateNullValue());
   }
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::SendPairedClientsResponse(
@@ -443,7 +443,7 @@ void Me2MeNativeMessagingHost::SendPairedClientsResponse(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->Set("pairedClients", pairings.release());
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::SendUsageStatsConsentResponse(
@@ -454,7 +454,7 @@ void Me2MeNativeMessagingHost::SendUsageStatsConsentResponse(
   response->SetBoolean("supported", consent.supported);
   response->SetBoolean("allowed", consent.allowed);
   response->SetBoolean("setByPolicy", consent.set_by_policy);
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::SendAsyncResult(
@@ -476,7 +476,7 @@ void Me2MeNativeMessagingHost::SendAsyncResult(
       response->SetString("result", "FAILED_DIRECTORY");
       break;
   }
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::SendBooleanResult(
@@ -484,7 +484,7 @@ void Me2MeNativeMessagingHost::SendBooleanResult(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetBoolean("result", result);
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::SendCredentialsResponse(
@@ -495,12 +495,12 @@ void Me2MeNativeMessagingHost::SendCredentialsResponse(
 
   response->SetString("userEmail", user_email);
   response->SetString("refreshToken", refresh_token);
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void Me2MeNativeMessagingHost::OnError() {
   // Trigger a host shutdown by sending a NULL message.
-  channel_->SendMessage(scoped_ptr<base::Value>());
+  channel_->SendMessage(nullptr);
 }
 
 void Me2MeNativeMessagingHost::Stop() {
@@ -536,7 +536,7 @@ bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
 
   // elevated_channel_ will be null if user rejects the UAC request.
   if (elevated_channel_)
-    elevated_channel_->SendMessage(message.PassAs<base::Value>());
+    elevated_channel_->SendMessage(message.Pass());
 
   return elevated_channel_ != NULL;
 }

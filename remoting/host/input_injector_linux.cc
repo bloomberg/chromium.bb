@@ -607,8 +607,8 @@ scoped_ptr<InputInjector> InputInjector::Create(
   scoped_ptr<InputInjectorLinux> injector(
       new InputInjectorLinux(main_task_runner));
   if (!injector->Init())
-    return scoped_ptr<InputInjector>();
-  return injector.PassAs<InputInjector>();
+    return nullptr;
+  return injector.Pass();
 }
 
 }  // namespace remoting

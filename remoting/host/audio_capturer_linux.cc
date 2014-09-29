@@ -83,7 +83,7 @@ scoped_ptr<AudioCapturer> AudioCapturer::Create() {
   scoped_refptr<AudioPipeReader> reader =
       g_pulseaudio_pipe_sink_reader.Get();
   if (!reader.get())
-    return scoped_ptr<AudioCapturer>();
+    return nullptr;
   return scoped_ptr<AudioCapturer>(new AudioCapturerLinux(reader));
 }
 

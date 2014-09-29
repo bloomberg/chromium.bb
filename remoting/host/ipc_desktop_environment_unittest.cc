@@ -402,8 +402,7 @@ void IpcDesktopEnvironmentTest::CreateDesktopProcess() {
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
 
-  EXPECT_TRUE(desktop_process_->Start(
-      desktop_environment_factory.PassAs<DesktopEnvironmentFactory>()));
+  EXPECT_TRUE(desktop_process_->Start(desktop_environment_factory.Pass()));
 }
 
 void IpcDesktopEnvironmentTest::DestoyDesktopProcess() {
@@ -435,7 +434,7 @@ TEST_F(IpcDesktopEnvironmentTest, Basic) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
@@ -456,7 +455,7 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.
@@ -485,7 +484,7 @@ TEST_F(IpcDesktopEnvironmentTest, Reattach) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.
@@ -518,7 +517,7 @@ TEST_F(IpcDesktopEnvironmentTest, InjectClipboardEvent) {
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.
@@ -549,7 +548,7 @@ TEST_F(IpcDesktopEnvironmentTest, InjectKeyEvent) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.
@@ -580,7 +579,7 @@ TEST_F(IpcDesktopEnvironmentTest, InjectTextEvent) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.
@@ -610,7 +609,7 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.
@@ -641,7 +640,7 @@ TEST_F(IpcDesktopEnvironmentTest, SetScreenResolution) {
       .Times(0);
 
   // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  input_injector_->Start(clipboard_stub.Pass());
   video_capturer_->Start(&desktop_capturer_callback_);
 
   // Run the message loop until the desktop is attached.

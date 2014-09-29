@@ -629,7 +629,7 @@ void ChromotingInstance::SetCursorShape(
     dictionary.Set(pp::Var("hotspotY"), cursor_hotspot.y());
     dictionary.Set(pp::Var("data"), array_buffer);
     PostChromotingMessage("setCursorShape", dictionary);
-    input_handler_.SetMouseCursor(scoped_ptr<pp::ImageData>(), cursor_hotspot);
+    input_handler_.SetMouseCursor(nullptr, cursor_hotspot);
   } else {
     if (delegate_large_cursors_) {
       pp::VarDictionary dictionary;
@@ -759,8 +759,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
           signal_strategy_.get(),
-          PepperPortAllocator::Create(this)
-              .PassAs<cricket::HttpPortAllocatorBase>(),
+          PepperPortAllocator::Create(this).Pass(),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL)));
 

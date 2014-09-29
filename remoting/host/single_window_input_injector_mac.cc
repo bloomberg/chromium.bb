@@ -160,7 +160,7 @@ scoped_ptr<InputInjector> SingleWindowInputInjector::CreateForWindow(
     scoped_ptr<InputInjector> input_injector) {
   scoped_ptr<SingleWindowInputInjectorMac> injector(
       new SingleWindowInputInjectorMac(window_id, input_injector.Pass()));
-  return injector.PassAs<InputInjector>();
+  return injector.Pass();
 }
 
 }  // namespace remoting

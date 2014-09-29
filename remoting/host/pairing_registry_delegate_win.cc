@@ -44,7 +44,7 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
     PLOG(ERROR) << "Cannot read value '" << value_name << "'";
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   // Parse the value.
@@ -57,12 +57,12 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
   if (!value) {
     LOG(ERROR) << "Failed to parse '" << value_name << "': " << error_message
                << " (" << error_code << ").";
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   if (value->GetType() != base::Value::TYPE_DICTIONARY) {
     LOG(ERROR) << "Failed to parse '" << value_name << "': not a dictionary.";
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   return scoped_ptr<base::DictionaryValue>(

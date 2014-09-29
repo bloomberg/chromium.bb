@@ -11,7 +11,7 @@ namespace remoting {
 
 scoped_ptr<DesktopShapeTracker> DesktopShapeTracker::Create(
     webrtc::DesktopCaptureOptions options) {
-  return scoped_ptr<DesktopShapeTracker>();
+  return nullptr;
 }
 
 }  // namespace remoting

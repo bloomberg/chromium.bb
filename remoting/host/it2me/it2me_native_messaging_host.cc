@@ -132,7 +132,7 @@ void It2MeNativeMessagingHost::ProcessHello(
   scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
   response->Set("supportedFeatures", supported_features_list.release());
 
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void It2MeNativeMessagingHost::ProcessConnect(
@@ -206,7 +206,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
                                           directory_bot_jid_);
   it2me_host_->Connect();
 
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void It2MeNativeMessagingHost::ProcessDisconnect(
@@ -218,7 +218,7 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
     it2me_host_->Disconnect();
     it2me_host_ = NULL;
   }
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 }
 
 void It2MeNativeMessagingHost::SendErrorAndExit(
@@ -230,10 +230,10 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
 
   response->SetString("type", "error");
   response->SetString("description", description);
-  channel_->SendMessage(response.PassAs<base::Value>());
+  channel_->SendMessage(response.Pass());
 
   // Trigger a host shutdown by sending a NULL message.
-  channel_->SendMessage(scoped_ptr<base::Value>());
+  channel_->SendMessage(nullptr);
 }
 
 void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state) {
@@ -266,7 +266,7 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state) {
       ;
   }
 
-  channel_->SendMessage(message.PassAs<base::Value>());
+  channel_->SendMessage(message.Pass());
 }
 
 void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
@@ -276,7 +276,7 @@ void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
 
   message->SetString("type", "natPolicyChanged");
   message->SetBoolean("natTraversalEnabled", nat_traversal_enabled);
-  channel_->SendMessage(message.PassAs<base::Value>());
+  channel_->SendMessage(message.Pass());
 }
 
 // Stores the Access Code for the web-app to query.

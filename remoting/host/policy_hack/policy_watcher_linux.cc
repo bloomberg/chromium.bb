@@ -149,12 +149,12 @@ class PolicyWatcherLinux : public PolicyWatcher {
       if (!value.get()) {
         LOG(WARNING) << "Failed to read configuration file "
                      << config_file_iter->value() << ": " << error_msg;
-        return scoped_ptr<base::DictionaryValue>();
+        return nullptr;
       }
       if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
         LOG(WARNING) << "Expected JSON dictionary in configuration file "
                      << config_file_iter->value();
-        return scoped_ptr<base::DictionaryValue>();
+        return nullptr;
       }
       policy->MergeDictionary(static_cast<base::DictionaryValue*>(value.get()));
     }

@@ -75,12 +75,12 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     client_fake_socket_->PairWith(host_fake_socket_.get());
 
     client_auth_->SecureAndAuthenticate(
-        client_fake_socket_.PassAs<net::StreamSocket>(),
+        client_fake_socket_.Pass(),
         base::Bind(&SslHmacChannelAuthenticatorTest::OnClientConnected,
                    base::Unretained(this)));
 
     host_auth_->SecureAndAuthenticate(
-        host_fake_socket_.PassAs<net::StreamSocket>(),
+        host_fake_socket_.Pass(),
         base::Bind(&SslHmacChannelAuthenticatorTest::OnHostConnected,
                    base::Unretained(this), std::string("ref argument value")));
 

@@ -182,8 +182,8 @@ class ChromotingHostTest : public testing::Test {
   void SimulateClientConnection(int connection_index, bool authenticate,
                                 bool reject) {
     scoped_ptr<protocol::ConnectionToClient> connection =
-        ((connection_index == 0) ? owned_connection1_ : owned_connection2_).
-        PassAs<protocol::ConnectionToClient>();
+        ((connection_index == 0) ? owned_connection1_ : owned_connection2_)
+            .Pass();
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_ptr<ClientSession> client(new ClientSession(
         host_.get(),

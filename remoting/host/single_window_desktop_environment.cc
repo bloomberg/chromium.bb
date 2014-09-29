@@ -51,7 +51,7 @@ SingleWindowDesktopEnvironment::CreateVideoCapturer() {
         webrtc::WindowCapturer::Create(options));
   window_capturer->SelectWindow(window_id_);
 
-  return window_capturer.PassAs<webrtc::DesktopCapturer>();
+  return window_capturer.Pass();
 }
 
 scoped_ptr<InputInjector>
@@ -62,7 +62,7 @@ SingleWindowDesktopEnvironment::CreateInputInjector() {
       InputInjector::Create(input_task_runner(),
                             ui_task_runner()));
   return SingleWindowInputInjector::CreateForWindow(
-      window_id_, input_injector.Pass()).PassAs<InputInjector>();
+             window_id_, input_injector.Pass()).Pass();
 }
 
 SingleWindowDesktopEnvironment::SingleWindowDesktopEnvironment(
@@ -100,7 +100,7 @@ scoped_ptr<DesktopEnvironment> SingleWindowDesktopEnvironmentFactory::Create(
                                          input_task_runner(),
                                          ui_task_runner(),
                                          window_id_));
-  return desktop_environment.PassAs<DesktopEnvironment>();
+  return desktop_environment.Pass();
 }
 
 }  // namespace remoting

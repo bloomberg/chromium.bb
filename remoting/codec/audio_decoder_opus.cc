@@ -81,15 +81,15 @@ scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
   if (packet->encoding() != AudioPacket::ENCODING_OPUS) {
     LOG(WARNING) << "Received an audio packet with encoding "
                  << packet->encoding() << " when an OPUS packet was expected.";
-    return scoped_ptr<AudioPacket>();
+    return nullptr;
   }
   if (packet->data_size() > kMaxFramesPerPacket) {
     LOG(WARNING) << "Received an packet with too many frames.";
-    return scoped_ptr<AudioPacket>();
+    return nullptr;
   }
 
   if (!ResetForPacket(packet.get())) {
-    return scoped_ptr<AudioPacket>();
+    return nullptr;
   }
 
   // Create a new packet of decoded data.
@@ -121,7 +121,7 @@ scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
     if (result < 0) {
       LOG(ERROR) << "Failed decoding Opus frame. Error code: " << result;
       DestroyDecoder();
-      return scoped_ptr<AudioPacket>();
+      return nullptr;
     }
 
     buffer_pos += result * packet->channels() *
@@ -129,7 +129,7 @@ scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
   }
 
   if (!buffer_pos) {
-    return scoped_ptr<AudioPacket>();
+    return nullptr;
   }
 
   decoded_data->resize(buffer_pos);

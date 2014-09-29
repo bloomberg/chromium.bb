@@ -800,7 +800,7 @@ void HostProcess::OnInitializePairingRegistry(
   if (!result)
     return;
 
-  pairing_registry_delegate_ = delegate.PassAs<PairingRegistry::Delegate>();
+  pairing_registry_delegate_ = delegate.Pass();
 #else  // !defined(OS_WIN)
   NOTREACHED();
 #endif  // !defined(OS_WIN)
@@ -1278,7 +1278,7 @@ void HostProcess::StartHost() {
     scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(
         new VideoFrameRecorderHostExtension());
     frame_recorder_extension->SetMaxContentBytes(frame_recorder_buffer_size_);
-    host_->AddExtension(frame_recorder_extension.PassAs<HostExtension>());
+    host_->AddExtension(frame_recorder_extension.Pass());
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.

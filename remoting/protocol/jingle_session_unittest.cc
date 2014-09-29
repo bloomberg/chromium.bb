@@ -153,8 +153,7 @@ class JingleSessionTest : public testing::Test {
 
     scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
         NULL,
-        ChromiumPortAllocator::Create(NULL, network_settings)
-            .PassAs<cricket::HttpPortAllocatorBase>(),
+        ChromiumPortAllocator::Create(NULL, network_settings).Pass(),
         network_settings));
     host_server_.reset(new JingleSessionManager(host_transport.Pass()));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
@@ -168,8 +167,7 @@ class JingleSessionTest : public testing::Test {
         .Times(1);
     scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
         NULL,
-        ChromiumPortAllocator::Create(NULL, network_settings)
-            .PassAs<cricket::HttpPortAllocatorBase>(),
+        ChromiumPortAllocator::Create(NULL, network_settings).Pass(),
         network_settings));
     client_server_.reset(
         new JingleSessionManager(client_transport.Pass()));

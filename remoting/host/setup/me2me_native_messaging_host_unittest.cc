@@ -328,12 +328,7 @@ void Me2MeNativeMessagingHostTest::StartHost() {
                                output_write_file.Pass()));
 
   host_.reset(new Me2MeNativeMessagingHost(
-        false,
-        0,
-        channel.Pass(),
-        daemon_controller,
-        pairing_registry,
-        scoped_ptr<remoting::OAuthClient>()));
+      false, 0, channel.Pass(), daemon_controller, pairing_registry, nullptr));
   host_->Start(base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
                           base::Unretained(this)));
 
@@ -389,19 +384,19 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   int read_result = output_read_file_.ReadAtCurrentPos(
       reinterpret_cast<char*>(&length), sizeof(length));
   if (read_result != sizeof(length)) {
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   std::string message_json(length, '\0');
   read_result = output_read_file_.ReadAtCurrentPos(
       string_as_array(&message_json), length);
   if (read_result != static_cast<int>(length)) {
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   scoped_ptr<base::Value> message(base::JSONReader::Read(message_json));
   if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   return scoped_ptr<base::DictionaryValue>(

@@ -25,7 +25,7 @@ class GnubbyAuthHandlerWin : public GnubbyAuthHandler {
 // static
 scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
     protocol::ClientStub* client_stub) {
-  return scoped_ptr<GnubbyAuthHandler>();
+  return nullptr;
 }
 
 // static

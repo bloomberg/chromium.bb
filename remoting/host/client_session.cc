@@ -494,15 +494,15 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
   const protocol::ChannelConfig& video_config = config.video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return remoting::VideoEncoderVpx::CreateForVP8().PassAs<VideoEncoder>();
+    return remoting::VideoEncoderVpx::CreateForVP8().Pass();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
-    return remoting::VideoEncoderVpx::CreateForVP9().PassAs<VideoEncoder>();
+    return remoting::VideoEncoderVpx::CreateForVP9().Pass();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return scoped_ptr<VideoEncoder>(new remoting::VideoEncoderVerbatim());
+    return make_scoped_ptr(new remoting::VideoEncoderVerbatim());
   }
 
   NOTREACHED();
-  return scoped_ptr<VideoEncoder>();
+  return nullptr;
 }
 
 // static
@@ -517,7 +517,7 @@ scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
   }
 
   NOTREACHED();
-  return scoped_ptr<AudioEncoder>();
+  return nullptr;
 }
 
 }  // namespace remoting

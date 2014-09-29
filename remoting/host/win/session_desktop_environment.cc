@@ -66,10 +66,10 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
                                     inject_sas_));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled())) {
-    return scoped_ptr<DesktopEnvironment>();
+    return nullptr;
   }
 
-  return desktop_environment.PassAs<DesktopEnvironment>();
+  return desktop_environment.Pass();
 }
 
 }  // namespace remoting

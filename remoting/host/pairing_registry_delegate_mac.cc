@@ -11,7 +11,7 @@ namespace remoting {
 using protocol::PairingRegistry;
 
 scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
-  return scoped_ptr<PairingRegistry::Delegate>();
+  return nullptr;
 }
 
 }  // namespace remoting

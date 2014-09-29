@@ -48,13 +48,13 @@ class RejectingAuthenticator : public Authenticator {
 
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE {
     NOTREACHED();
-    return scoped_ptr<buzz::XmlElement>();
+    return nullptr;
   }
 
   virtual scoped_ptr<ChannelAuthenticator>
   CreateChannelAuthenticator() const OVERRIDE {
     NOTREACHED();
-    return scoped_ptr<ChannelAuthenticator>();
+    return nullptr;
   }
 
  protected:

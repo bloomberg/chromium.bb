@@ -108,7 +108,7 @@ class ResizingHostObserverTest : public testing::Test {
     desktop_resizer_ = desktop_resizer.get();
 
     resizing_host_observer_.reset(
-        new ResizingHostObserver(desktop_resizer.PassAs<DesktopResizer>()));
+        new ResizingHostObserver(desktop_resizer.Pass()));
     resizing_host_observer_->SetNowFunctionForTesting(
         base::Bind(&ResizingHostObserverTest::GetTimeAndIncrement,
                    base::Unretained(this)));

@@ -232,9 +232,8 @@ int StartMe2MeNativeMessagingHost() {
   if (!delegate->SetRootKeys(privileged.Take(), unprivileged.Take()))
     return kInitializationFailed;
 
-  pairing_registry = new PairingRegistry(
-      io_thread.task_runner(),
-      delegate.PassAs<PairingRegistry::Delegate>());
+  pairing_registry =
+      new PairingRegistry(io_thread.task_runner(), delegate.Pass());
 #else  // defined(OS_WIN)
   pairing_registry =
       CreatePairingRegistry(io_thread.task_runner());

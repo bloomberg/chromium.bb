@@ -317,9 +317,7 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
   // Start video frame capture.
   scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor(
       new FakeMouseCursorMonitor());
-  StartVideoScheduler(capturer.PassAs<webrtc::DesktopCapturer>(),
-                      encoder.PassAs<VideoEncoder>(),
-                      cursor_monitor.PassAs<webrtc::MouseCursorMonitor>());
+  StartVideoScheduler(capturer.Pass(), encoder.Pass(), cursor_monitor.Pass());
 
   // Run until there are no more pending tasks from the VideoScheduler.
   // Otherwise, a lingering frame capture might attempt to trigger a capturer

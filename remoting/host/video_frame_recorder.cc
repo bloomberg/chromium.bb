@@ -139,7 +139,7 @@ scoped_ptr<VideoEncoder> VideoFrameRecorder::WrapVideoEncoder(
                                 weak_factory_.GetWeakPtr()));
   recording_encoder_ = recording_encoder->AsWeakPtr();
 
-  return recording_encoder.PassAs<VideoEncoder>();
+  return recording_encoder.Pass();
 }
 
 void VideoFrameRecorder::DetachVideoEncoderWrapper() {

@@ -78,7 +78,7 @@ void IpcDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
 
 scoped_ptr<GnubbyAuthHandler> IpcDesktopEnvironment::CreateGnubbyAuthHandler(
     protocol::ClientStub* client_stub) {
-  return scoped_ptr<GnubbyAuthHandler>();
+  return nullptr;
 }
 
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(

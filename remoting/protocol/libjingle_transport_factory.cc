@@ -194,7 +194,7 @@ void LibjingleTransport::NotifyConnected() {
 
   Transport::ConnectedCallback callback = callback_;
   callback_.Reset();
-  callback.Run(socket.PassAs<net::Socket>());
+  callback.Run(socket.Pass());
 }
 
 void LibjingleTransport::AddRemoteCandidate(
@@ -353,7 +353,7 @@ scoped_ptr<Transport> LibjingleTransportFactory::CreateTransport() {
     result->OnCanStart();
   }
 
-  return result.PassAs<Transport>();
+  return result.Pass();
 }
 
 void LibjingleTransportFactory::EnsureFreshJingleInfo() {

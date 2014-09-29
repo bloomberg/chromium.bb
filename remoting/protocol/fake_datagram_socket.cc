@@ -158,7 +158,7 @@ void FakeDatagramChannelFactory::NotifyChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback) {
   if (channels_.find(name) != channels_.end())
-    callback.Run(owned_socket.PassAs<net::Socket>());
+    callback.Run(owned_socket.Pass());
 }
 
 void FakeDatagramChannelFactory::CancelChannelCreation(

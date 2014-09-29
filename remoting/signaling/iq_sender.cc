@@ -46,7 +46,7 @@ scoped_ptr<IqRequest> IqSender::SendIq(scoped_ptr<buzz::XmlElement> stanza,
   std::string id = signal_strategy_->GetNextId();
   stanza->AddAttr(buzz::QN_ID, id);
   if (!signal_strategy_->SendStanza(stanza.Pass())) {
-    return scoped_ptr<IqRequest>();
+    return nullptr;
   }
   DCHECK(requests_.find(id) == requests_.end());
   scoped_ptr<IqRequest> request(new IqRequest(this, callback, addressee));

@@ -56,7 +56,7 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP8() {
       vpx_codec_dec_init(codec.get(), vpx_codec_vp8_dx(), &config, 0);
   if (ret != VPX_CODEC_OK) {
     LOG(ERROR) << "Cannot initialize codec.";
-    return scoped_ptr<VideoDecoderVpx>();
+    return nullptr;
   }
 
   return scoped_ptr<VideoDecoderVpx>(new VideoDecoderVpx(codec.Pass()));
@@ -76,7 +76,7 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
       vpx_codec_dec_init(codec.get(), vpx_codec_vp9_dx(), &config, 0);
   if (ret != VPX_CODEC_OK) {
     LOG(ERROR) << "Cannot initialize codec.";
-    return scoped_ptr<VideoDecoderVpx>();
+    return nullptr;
   }
 
   return scoped_ptr<VideoDecoderVpx>(new VideoDecoderVpx(codec.Pass()));

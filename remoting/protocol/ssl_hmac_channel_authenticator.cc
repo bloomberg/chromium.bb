@@ -280,12 +280,12 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
     if (callback_called)
       *callback_called = true;
 
-    CallDoneCallback(net::OK, socket_.PassAs<net::StreamSocket>());
+    CallDoneCallback(net::OK, socket_.Pass());
   }
 }
 
 void SslHmacChannelAuthenticator::NotifyError(int error) {
-  CallDoneCallback(error, scoped_ptr<net::StreamSocket>());
+  CallDoneCallback(error, nullptr);
 }
 
 void SslHmacChannelAuthenticator::CallDoneCallback(

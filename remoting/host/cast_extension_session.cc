@@ -185,11 +185,9 @@ scoped_ptr<CastExtensionSession> CastExtensionSession::Create(
                                network_settings,
                                client_session_control,
                                client_stub));
-  if (!cast_extension_session->WrapTasksAndSave()) {
-    return scoped_ptr<CastExtensionSession>();
-  }
-  if (!cast_extension_session->InitializePeerConnection()) {
-    return scoped_ptr<CastExtensionSession>();
+  if (!cast_extension_session->WrapTasksAndSave() ||
+      !cast_extension_session->InitializePeerConnection()) {
+    return nullptr;
   }
   return cast_extension_session.Pass();
 }

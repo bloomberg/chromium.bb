@@ -261,7 +261,7 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
       reinterpret_cast<char*>(&length), sizeof(length));
   if (read_result != sizeof(length)) {
     // The output pipe has been closed, return an empty message.
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   std::string message_json(length, '\0');
@@ -270,13 +270,13 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   if (read_result != static_cast<int>(length)) {
     LOG(ERROR) << "Message size (" << read_result
                << ") doesn't match the header (" << length << ").";
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   scoped_ptr<base::Value> message(base::JSONReader::Read(message_json));
   if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Malformed message:" << message_json;
-    return scoped_ptr<base::DictionaryValue>();
+    return nullptr;
   }
 
   return scoped_ptr<base::DictionaryValue>(

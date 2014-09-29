@@ -382,7 +382,7 @@ scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
   } else {
     // The user declined the UAC prompt or some other error occured.
     done.Run(result);
-    return scoped_ptr<DaemonInstallerWin>();
+    return nullptr;
   }
 }
 
