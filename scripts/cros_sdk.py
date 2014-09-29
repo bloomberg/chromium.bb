@@ -485,10 +485,8 @@ If given args those are passed to the chroot environment, and executed."""
   group.add_option('--proxy-sim', action='store_true', default=False,
                    help='Simulate a restrictive network requiring an outbound'
                         ' proxy.')
-  # TODO(vapier): Turn off pid ns until ccache issues can be fixed.
-  # http://crbug.com/411984
   group.add_option('--no-ns-pid', dest='ns_pid',
-                   default=False, action='store_false',
+                   default=True, action='store_false',
                    help='Do not create a new PID namespace.')
 
   # Internal options.
