@@ -120,4 +120,34 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScript) {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScriptFail) {
   RunTest("testExecuteScriptFail", "web_view/apitest");
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestLoadAbortChromeExtensionURLWrongPartition) {
+  RunTest("testLoadAbortChromeExtensionURLWrongPartition", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortIllegalChromeURL) {
+  RunTest("testLoadAbortIllegalChromeURL", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortIllegalFileURL) {
+  RunTest("testLoadAbortIllegalFileURL", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortIllegalJavaScriptURL) {
+  RunTest("testLoadAbortIllegalJavaScriptURL", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortInvalidNavigation) {
+  RunTest("testLoadAbortInvalidNavigation", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortNonWebSafeScheme) {
+  RunTest("testLoadAbortNonWebSafeScheme", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadProgressEvent) {
+  RunTest("testLoadProgressEvent", "web_view/apitest");
+}
+
 }  // namespace extensions

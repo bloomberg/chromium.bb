@@ -537,6 +537,111 @@ function testExecuteScriptFail() {
   }
 }
 
+// This test verifies that the loadabort event fires when loading a webview
+// accessible resource from a partition that is not privileged.
+function testLoadAbortChromeExtensionURLWrongPartition() {
+  var localResource = chrome.runtime.getURL('guest.html');
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ADDRESS_UNREACHABLE', e.reason);
+    embedder.test.succeed();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.fail();
+  });
+  webview.setAttribute('src', localResource);
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the loadabort event fires as expected when an illegal
+// chrome URL is provided.
+function testLoadAbortIllegalChromeURL() {
+  var webview = document.createElement('webview');
+  var onFirstLoadStop = function(e) {
+    webview.removeEventListener('loadstop', onFirstLoadStop);
+    webview.setAttribute('src', 'chrome://newtab');
+  };
+  webview.addEventListener('loadstop', onFirstLoadStop);
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+}
+
+function testLoadAbortIllegalFileURL() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'file://foo');
+  document.body.appendChild(webview);
+}
+
+function testLoadAbortIllegalJavaScriptURL() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'javascript:void(document.bgColor="#0000FF")');
+  document.body.appendChild(webview);
+}
+
+// Verifies that navigating to invalid URL (e.g. 'http:') doesn't cause a crash.
+function testLoadAbortInvalidNavigation() {
+  var webview = document.createElement('webview');
+  var validSchemeWithEmptyURL = 'http:';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('', e.url);
+    embedder.test.succeed();
+  });
+  webview.addEventListener('exit', function(e) {
+    // We should not crash.
+    embedder.test.fail();
+  });
+  webview.setAttribute('src', validSchemeWithEmptyURL);
+  document.body.appendChild(webview);
+}
+
+// Verifies that navigation to a URL that is valid but not web-safe or
+// pseudo-scheme fires loadabort and doesn't cause a crash.
+function testLoadAbortNonWebSafeScheme() {
+  var webview = document.createElement('webview');
+  var chromeGuestURL = 'chrome-guest://abc123';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('chrome-guest://abc123/', e.url);
+    embedder.test.succeed();
+  });
+  webview.addEventListener('exit', function(e) {
+    // We should not crash.
+    embedder.test.fail();
+  });
+  webview.setAttribute('src', chromeGuestURL);
+  document.body.appendChild(webview);
+};
+
+// Tests that the 'loadprogress' event is triggered correctly.
+function testLoadProgressEvent() {
+  var webview = document.createElement('webview');
+  var progress = 0;
+
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(1, progress);
+    embedder.test.succeed();
+  });
+
+  webview.addEventListener('loadprogress', function(evt) {
+    progress = evt.progress;
+  });
+
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
 
 
 // Tests end.
@@ -556,7 +661,15 @@ embedder.test.testList = {
   'testDisplayNoneWebviewLoad': testDisplayNoneWebviewLoad,
   'testDisplayNoneWebviewRemoveChild': testDisplayNoneWebviewRemoveChild,
   'testExecuteScript': testExecuteScript,
-  'testExecuteScriptFail': testExecuteScriptFail
+  'testExecuteScriptFail': testExecuteScriptFail,
+  'testLoadAbortChromeExtensionURLWrongPartition':
+      testLoadAbortChromeExtensionURLWrongPartition,
+  'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
+  'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
+  'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
+  'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
+  'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
+  'testLoadProgressEvent': testLoadProgressEvent
 };
 
 onload = function() {
