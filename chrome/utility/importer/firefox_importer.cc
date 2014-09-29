@@ -163,11 +163,12 @@ void FirefoxImporter::ImportHistory() {
   // redirects, since we don't want them to appear in history.
   // Firefox transition types are defined in:
   //   toolkit/components/places/public/nsINavHistoryService.idl
-  const char* query = "SELECT h.url, h.title, h.visit_count, "
-                      "h.hidden, h.typed, v.visit_date "
-                      "FROM moz_places h JOIN moz_historyvisits v "
-                      "ON h.id = v.place_id "
-                      "WHERE v.visit_type <= 3";
+  const char query[] =
+      "SELECT h.url, h.title, h.visit_count, "
+      "h.hidden, h.typed, v.visit_date "
+      "FROM moz_places h JOIN moz_historyvisits v "
+      "ON h.id = v.place_id "
+      "WHERE v.visit_type <= 3";
 
   sql::Statement s(db.GetUniqueStatement(query));
 
@@ -231,7 +232,8 @@ void FirefoxImporter::ImportBookmarks() {
   // TODO(jcampan): http://b/issue?id=1196285 we do not support POST based
   //                keywords yet.  We won't include them in the list.
   std::set<int> post_keyword_ids;
-  const char* query = "SELECT b.id FROM moz_bookmarks b "
+  const char query[] =
+      "SELECT b.id FROM moz_bookmarks b "
       "INNER JOIN moz_items_annos ia ON ia.item_id = b.id "
       "INNER JOIN moz_anno_attributes aa ON ia.anno_attribute_id = aa.id "
       "WHERE aa.name = 'bookmarkProperties/POSTData'";
@@ -437,11 +439,12 @@ void FirefoxImporter::GetSearchEnginesXMLData(
   if (!db.Open(file))
     return;
 
-  const char* query = "SELECT engineid FROM engine_data "
-                      "WHERE engineid NOT IN "
-                      "(SELECT engineid FROM engine_data "
-                      "WHERE name='hidden') "
-                      "ORDER BY value ASC";
+  const char query[] =
+      "SELECT engineid FROM engine_data "
+      "WHERE engineid NOT IN "
+      "(SELECT engineid FROM engine_data "
+      "WHERE name='hidden') "
+      "ORDER BY value ASC";
 
   sql::Statement s(db.GetUniqueStatement(query));
   if (!s.is_valid())
@@ -639,7 +642,7 @@ void FirefoxImporter::LoadRootNodeID(sql::Connection* db,
   static const char* kMenuFolderName = "menu";
   static const char* kUnsortedFolderName = "unfiled";
 
-  const char* query = "SELECT root_name, folder_id FROM moz_bookmarks_roots";
+  const char query[] = "SELECT root_name, folder_id FROM moz_bookmarks_roots";
   sql::Statement s(db->GetUniqueStatement(query));
 
   while (s.Step()) {
@@ -659,10 +662,11 @@ void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
   static const char* kFeedAnnotation = "livemark/feedURI";
   livemark->clear();
 
-  const char* query = "SELECT b.item_id "
-                      "FROM moz_anno_attributes a "
-                      "JOIN moz_items_annos b ON a.id = b.anno_attribute_id "
-                      "WHERE a.name = ? ";
+  const char query[] =
+      "SELECT b.item_id "
+      "FROM moz_anno_attributes a "
+      "JOIN moz_items_annos b ON a.id = b.anno_attribute_id "
+      "WHERE a.name = ? ";
   sql::Statement s(db->GetUniqueStatement(query));
   s.BindString(0, kFeedAnnotation);
 
@@ -673,10 +677,11 @@ void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
 void FirefoxImporter::GetTopBookmarkFolder(sql::Connection* db,
                                             int folder_id,
                                             BookmarkList* list) {
-  const char* query = "SELECT b.title "
-                     "FROM moz_bookmarks b "
-                     "WHERE b.type = 2 AND b.id = ? "
-                     "ORDER BY b.position";
+  const char query[] =
+      "SELECT b.title "
+      "FROM moz_bookmarks b "
+      "WHERE b.type = 2 AND b.id = ? "
+      "ORDER BY b.position";
   sql::Statement s(db->GetUniqueStatement(query));
   s.BindInt(0, folder_id);
 
@@ -701,13 +706,14 @@ void FirefoxImporter::GetWholeBookmarkFolder(sql::Connection* db,
     return;
   }
 
-  const char* query = "SELECT b.id, h.url, COALESCE(b.title, h.title), "
-         "b.type, k.keyword, b.dateAdded, h.favicon_id "
-         "FROM moz_bookmarks b "
-         "LEFT JOIN moz_places h ON b.fk = h.id "
-         "LEFT JOIN moz_keywords k ON k.id = b.keyword_id "
-         "WHERE b.type IN (1,2) AND b.parent = ? "
-         "ORDER BY b.position";
+  const char query[] =
+      "SELECT b.id, h.url, COALESCE(b.title, h.title), "
+      "b.type, k.keyword, b.dateAdded, h.favicon_id "
+      "FROM moz_bookmarks b "
+      "LEFT JOIN moz_places h ON b.fk = h.id "
+      "LEFT JOIN moz_keywords k ON k.id = b.keyword_id "
+      "WHERE b.type IN (1,2) AND b.parent = ? "
+      "ORDER BY b.position";
   sql::Statement s(db->GetUniqueStatement(query));
   s.BindInt(0, (*list)[position]->id);
 
@@ -743,7 +749,7 @@ void FirefoxImporter::LoadFavicons(
     sql::Connection* db,
     const FaviconMap& favicon_map,
     std::vector<ImportedFaviconUsage>* favicons) {
-  const char* query = "SELECT url, data FROM moz_favicons WHERE id=?";
+  const char query[] = "SELECT url, data FROM moz_favicons WHERE id=?";
   sql::Statement s(db->GetUniqueStatement(query));
 
   if (!s.is_valid())
